@@ -1,0 +1,13 @@
+{
+  "domain": "luba",
+  "name": "Mammotion Luba",
+  "codeowners": ["@mikey0000"],
+  "config_flow": true,
+  "dependencies": ["application_credentials"],
+  "documentation": "https://www.home-assistant.io/integrations/luba",
+  "homekit": {},
+  "iot_class": "local_polling",
+  "requirements": [],
+  "ssdp": [],
+  "zeroconf": []
+}
