@@ -1,7 +1,8 @@
 """Constants for the Mammotion Luba integration."""
 
-DOMAIN = "luba"
+import logging
+from typing import Final
 
-# TODO Update with your own urls
-OAUTH2_AUTHORIZE = "https://www.example.com/auth/authorize"
-OAUTH2_TOKEN = "https://www.example.com/auth/token"
+DOMAIN: Final = "luba"
+
+LOGGER: Final = logging.getLogger(__package__)
