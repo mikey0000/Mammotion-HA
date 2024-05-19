@@ -7,7 +7,7 @@ import contextlib
 import logging
 from typing import TYPE_CHECKING
 
-import mammotion
+from pyluba.mammotion.devices import MammotionBaseBLEDevice
 
 from homeassistant.components import bluetooth
 from homeassistant.components.bluetooth.active_update_coordinator import (
@@ -32,10 +32,9 @@ class MammotionDataUpdateCoordinator(ActiveBluetoothDataUpdateCoordinator[None])
         hass: HomeAssistant,
         logger: logging.Logger,
         ble_device: BLEDevice,
-        device: mammotion.MammotionLubaDevice,
+        device: MammotionBaseBLEDevice,
         base_unique_id: str,
         device_name: str,
-        connectable: bool,
     ) -> None:
         """Initialize global mammotion data updater."""
         super().__init__(
@@ -45,7 +44,7 @@ class MammotionDataUpdateCoordinator(ActiveBluetoothDataUpdateCoordinator[None])
             needs_poll_method=self._needs_poll,
             poll_method=self._async_update,
             mode=bluetooth.BluetoothScanningMode.ACTIVE,
-            connectable=connectable,
+            connectable=True,
         )
         self.ble_device = ble_device
         self.device = device
@@ -76,7 +75,7 @@ class MammotionDataUpdateCoordinator(ActiveBluetoothDataUpdateCoordinator[None])
         self, service_info: bluetooth.BluetoothServiceInfoBleak
     ) -> None:
         """Poll the device."""
-        await self.device.update()
+        await self.device.start_sync()
 
     @callback
     def _async_handle_unavailable(
@@ -95,7 +94,7 @@ class MammotionDataUpdateCoordinator(ActiveBluetoothDataUpdateCoordinator[None])
         """Handle a Bluetooth event."""
         self.ble_device = service_info.device
         if not (
-            adv := switchbot.parse_advertisement_data(
+            adv := mammotion.parse_advertisement_data(
                 service_info.device, service_info.advertisement, self.model
             )
         ):
