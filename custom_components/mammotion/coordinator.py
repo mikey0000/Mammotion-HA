@@ -6,6 +6,7 @@ import asyncio
 import contextlib
 import logging
 from typing import TYPE_CHECKING
+from datetime import timedelta
 
 from pyluba.mammotion.devices import MammotionBaseBLEDevice
 
@@ -35,6 +36,7 @@ class MammotionDataUpdateCoordinator(ActiveBluetoothDataUpdateCoordinator[None])
         device: MammotionBaseBLEDevice,
         base_unique_id: str,
         device_name: str,
+        update_interval: timedelta,
     ) -> None:
         """Initialize global mammotion data updater."""
         super().__init__(
@@ -45,6 +47,7 @@ class MammotionDataUpdateCoordinator(ActiveBluetoothDataUpdateCoordinator[None])
             poll_method=self._async_update,
             mode=bluetooth.BluetoothScanningMode.ACTIVE,
             connectable=True,
+            update_interval=update_interval,
         )
         self.ble_device = ble_device
         self.device = device
