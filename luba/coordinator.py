@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 
 _LOGGER = logging.getLogger(__name__)
 
-DEVICE_STARTUP_TIMEOUT = 30
+DEVICE_STARTUP_TIMEOUT = 5
 
 
 class MammotionDataUpdateCoordinator(ActiveBluetoothDataUpdateCoordinator[None]):
@@ -42,7 +42,7 @@ class MammotionDataUpdateCoordinator(ActiveBluetoothDataUpdateCoordinator[None])
             logger=logger,
             address=ble_device.address,
             needs_poll_method=self._needs_poll,
-            poll_method=self._async_update,
+            poll_method=self._async_poll,
             mode=bluetooth.BluetoothScanningMode.ACTIVE,
             connectable=True,
         )
@@ -52,6 +52,7 @@ class MammotionDataUpdateCoordinator(ActiveBluetoothDataUpdateCoordinator[None])
         self.base_unique_id = base_unique_id
         self._ready_event = asyncio.Event()
         self._was_unavailable = True
+        self.last_update_success = True
 
     @callback
     def _needs_poll(
@@ -61,9 +62,10 @@ class MammotionDataUpdateCoordinator(ActiveBluetoothDataUpdateCoordinator[None])
     ) -> bool:
         # Only poll if hass is running, we need to poll,
         # and we actually have a way to connect to the device
+        time_to_poll = True if seconds_since_last_poll is None else seconds_since_last_poll > 300
         return (
             self.hass.state is CoreState.running
-            and self.device.poll_needed(seconds_since_last_poll)
+             and time_to_poll
             and bool(
                 bluetooth.async_ble_device_from_address(
                     self.hass, service_info.device.address, connectable=True
@@ -71,11 +73,13 @@ class MammotionDataUpdateCoordinator(ActiveBluetoothDataUpdateCoordinator[None])
             )
         )
 
-    async def _async_update(
+    async def _async_poll(
         self, service_info: bluetooth.BluetoothServiceInfoBleak
     ) -> None:
         """Poll the device."""
-        await self.device.start_sync()
+        await self.device.start_sync("key", 0)
+        print(self.device.raw_data)
+        self.async_set_updated_data(self.device.raw_data)
 
     @callback
     def _async_handle_unavailable(
@@ -93,21 +97,12 @@ class MammotionDataUpdateCoordinator(ActiveBluetoothDataUpdateCoordinator[None])
     ) -> None:
         """Handle a Bluetooth event."""
         self.ble_device = service_info.device
-        if not (
-            adv := mammotion.parse_advertisement_data(
-                service_info.device, service_info.advertisement, self.model
-            )
-        ):
-            return
-        if "modelName" in adv.data:
+        if service_info.name:
             self._ready_event.set()
         _LOGGER.debug(
-            "%s: mammotion Luba data: %s", self.ble_device.address, self.device.data
+            "%s: mammotion Luba data: %s", self.ble_device.address, self.device.raw_data
         )
-        if not self.device.advertisement_changed(adv) and not self._was_unavailable:
-            return
         self._was_unavailable = False
-        self.device.update_from_advertisement(adv)
         super()._async_handle_bluetooth_event(service_info, change)
 
     async def async_wait_ready(self) -> bool:

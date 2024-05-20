@@ -18,6 +18,6 @@
     "dependencies": ["bluetooth_adapters"],
     "documentation": "https://www.home-assistant.io/integrations/mammotion",
     "iot_class": "local_polling",
-    "requirements": ["pyluba==0.0.8"]
+    "requirements": ["pyluba==0.0.9"]
 }
 
