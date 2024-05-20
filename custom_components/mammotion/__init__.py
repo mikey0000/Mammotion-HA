@@ -61,7 +61,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         device,
         entry.unique_id,
         entry.data.get(CONF_NAME, entry.title),
-        update_interval=SCAN_INTERVAL,
+        SCAN_INTERVAL,
     )
 
     entry.async_on_unload(coordinator.async_start())
