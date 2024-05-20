@@ -42,7 +42,7 @@ class MammotionDataUpdateCoordinator(ActiveBluetoothDataUpdateCoordinator[None])
             logger=logger,
             address=ble_device.address,
             needs_poll_method=self._needs_poll,
-            poll_method=self._async_poll,
+            poll_method=self._async_update,
             mode=bluetooth.BluetoothScanningMode.ACTIVE,
             connectable=True,
         )
@@ -62,10 +62,15 @@ class MammotionDataUpdateCoordinator(ActiveBluetoothDataUpdateCoordinator[None])
     ) -> bool:
         # Only poll if hass is running, we need to poll,
         # and we actually have a way to connect to the device
-        time_to_poll = True if seconds_since_last_poll is None else seconds_since_last_poll > 300
+        print("try and poll")
+        time_to_poll = (
+            True if seconds_since_last_poll is None else seconds_since_last_poll > 300
+        )
+        print(time_to_poll)
+        print(seconds_since_last_poll)
         return (
             self.hass.state is CoreState.running
-             and time_to_poll
+            and time_to_poll
             and bool(
                 bluetooth.async_ble_device_from_address(
                     self.hass, service_info.device.address, connectable=True
@@ -73,13 +78,11 @@ class MammotionDataUpdateCoordinator(ActiveBluetoothDataUpdateCoordinator[None])
             )
         )
 
-    async def _async_poll(
+    async def _async_update(
         self, service_info: bluetooth.BluetoothServiceInfoBleak
     ) -> None:
         """Poll the device."""
         await self.device.start_sync("key", 0)
-        print(self.device.raw_data)
-        self.async_set_updated_data(self.device.raw_data)
 
     @callback
     def _async_handle_unavailable(

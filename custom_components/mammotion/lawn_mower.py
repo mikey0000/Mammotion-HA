@@ -1,24 +1,30 @@
 """Luba lawn mowers."""
+
 from __future__ import annotations
+
+from pyluba.utility.constant.device_constant import device_mode
 
 from homeassistant.components.lawn_mower import (
     LawnMowerActivity,
     LawnMowerEntity,
     LawnMowerEntityFeature,
 )
-
-from homeassistant.helpers.device_registry import DeviceInfo
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from pyluba.utility.constant.device_constant import device_mode
-from .coordinator import MammotionDataUpdateCoordinator
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
+from .coordinator import MammotionDataUpdateCoordinator
 
-SUPPORTED_FEATURES = LawnMowerEntityFeature.DOCK | LawnMowerEntityFeature.PAUSE | LawnMowerEntityFeature.START_MOWING
+SUPPORTED_FEATURES = (
+    LawnMowerEntityFeature.DOCK
+    | LawnMowerEntityFeature.PAUSE
+    | LawnMowerEntityFeature.START_MOWING
+)
+
 
 async def async_setup_platform(
     hass: HomeAssistant,
@@ -28,12 +34,12 @@ async def async_setup_platform(
     discovery_info: DiscoveryInfoType | None = None,
 ) -> None:
     """Set up luba lawn mower."""
-    
+
     print(discovery_info)
-    
+
     async_add_entities(
         [
-            MammotionLawnMowerEntity(config.get('title'), coordinator),
+            MammotionLawnMowerEntity(config.get("title"), coordinator),
         ]
     )
 
@@ -45,12 +51,16 @@ async def async_setup_entry(
 ) -> None:
     """Set up the Luba config entry."""
     coordinator: MammotionDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
-    await async_setup_platform(hass, {'title': entry.title}, coordinator, async_add_entities)
+    await async_setup_platform(
+        hass, {"title": entry.title}, coordinator, async_add_entities
+    )
 
 
-class MammotionLawnMowerEntity( CoordinatorEntity[MammotionDataUpdateCoordinator], LawnMowerEntity):
+class MammotionLawnMowerEntity(
+    CoordinatorEntity[MammotionDataUpdateCoordinator], LawnMowerEntity
+):
     """Representation of a Luba lawn mower."""
-    
+
     _attr_supported_features = SUPPORTED_FEATURES
     _attr_has_entity_name = True
 
@@ -71,20 +81,20 @@ class MammotionLawnMowerEntity( CoordinatorEntity[MammotionDataUpdateCoordinator
             suggested_area="Garden",
         )
         self._attr_supported_features = features
-        
+
         activity = LawnMowerActivity.DOCKED
-        
+
         self._attr_activity = activity
-        
+
     @property
     def activity(self) -> LawnMowerActivity:
         """Return the state of the mower."""
         # productkey = coordinator.device.raw_data['net']['toappWifiIotStatus']['productkey']
         # devicename = coordinator.device.raw_data['net']['toappWifiIotStatus']['devicename']
         mode = "MODE_READY"
-        if self.coordinator.device.raw_data.get('dev'):
-            mode = device_mode(self.coordinator.device.raw_data['dev']['sysStatus'])
-        
+        if self.coordinator.device.raw_data.get("dev"):
+            mode = device_mode(self.coordinator.device.raw_data["dev"]["sysStatus"])
+
         if mode == "MODE_PAUSE":
             return LawnMowerActivity.PAUSED
         if mode == "MODE_WORKING":
@@ -92,7 +102,6 @@ class MammotionLawnMowerEntity( CoordinatorEntity[MammotionDataUpdateCoordinator
         if mode == "MODE_LOCK":
             return LawnMowerActivity.ERROR
         return LawnMowerActivity.DOCKED
-
 
     async def async_start_mowing(self) -> None:
         """Start mowing."""
@@ -108,8 +117,7 @@ class MammotionLawnMowerEntity( CoordinatorEntity[MammotionDataUpdateCoordinator
         """Pause mower."""
         self._attr_activity = LawnMowerActivity.PAUSED
         self.async_write_ha_state()
-        
-        
+
     @callback
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
