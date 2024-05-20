@@ -2,6 +2,7 @@
 
 import logging
 from typing import Final
+from datetime import timedelta
 
 DOMAIN: Final = "mammotion"
 
