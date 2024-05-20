@@ -82,16 +82,10 @@ class MammotionLawnMowerEntity(
         )
         self._attr_supported_features = features
 
-        activity = LawnMowerActivity.DOCKED
+        self._attr_activity = LawnMowerActivity.DOCKED
 
-        self._attr_activity = activity
 
-    @property
-    def activity(self) -> LawnMowerActivity:
-        """Return the state of the mower."""
-        # productkey = coordinator.device.raw_data['net']['toappWifiIotStatus']['productkey']
-        # devicename = coordinator.device.raw_data['net']['toappWifiIotStatus']['devicename']
-        mode = "MODE_READY"
+    def _get_mower_activity(self) -> LawnMowerActivity:
         if self.coordinator.device.raw_data.get("dev"):
             mode = device_mode(self.coordinator.device.raw_data["dev"]["sysStatus"])
 
@@ -102,6 +96,13 @@ class MammotionLawnMowerEntity(
         if mode == "MODE_LOCK":
             return LawnMowerActivity.ERROR
         return LawnMowerActivity.DOCKED
+
+    @property
+    def activity(self) -> LawnMowerActivity:
+        """Return the state of the mower."""
+        # productkey = coordinator.device.raw_data['net']['toappWifiIotStatus']['productkey']
+        # devicename = coordinator.device.raw_data['net']['toappWifiIotStatus']['devicename']
+        return self._get_mower_activity()
 
     async def async_start_mowing(self) -> None:
         """Start mowing."""
@@ -123,6 +124,5 @@ class MammotionLawnMowerEntity(
         """Handle updated data from the coordinator."""
         print("coordinator callback")
         print(self.coordinator.device.raw_data)
-        self.activity()
-
+        self._attr_activity = self._get_mower_activity()
         self.async_write_ha_state()
