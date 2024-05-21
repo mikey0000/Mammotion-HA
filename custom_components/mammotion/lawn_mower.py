@@ -20,34 +20,32 @@ from .const import DOMAIN
 from .coordinator import MammotionDataUpdateCoordinator
 
 SUPPORTED_FEATURES = (
-    LawnMowerEntityFeature.DOCK
-    | LawnMowerEntityFeature.PAUSE
-    | LawnMowerEntityFeature.START_MOWING
+        LawnMowerEntityFeature.DOCK
+        | LawnMowerEntityFeature.PAUSE
+        | LawnMowerEntityFeature.START_MOWING
 )
 
 
 async def async_setup_platform(
-    hass: HomeAssistant,
-    config: ConfigType,
-    coordinator: MammotionDataUpdateCoordinator,
-    async_add_entities: AddEntitiesCallback,
-    discovery_info: DiscoveryInfoType | None = None,
+        hass: HomeAssistant,
+        config: ConfigType,
+        coordinator: MammotionDataUpdateCoordinator,
+        async_add_entities: AddEntitiesCallback
 ) -> None:
     """Set up luba lawn mower."""
-
-    print(discovery_info)
 
     async_add_entities(
         [
             MammotionLawnMowerEntity(config.get("title"), coordinator),
-        ]
+        ],
+        update_before_add=True
     )
 
 
 async def async_setup_entry(
-    hass: HomeAssistant,
-    entry: ConfigEntry,
-    async_add_entities: AddEntitiesCallback,
+        hass: HomeAssistant,
+        entry: ConfigEntry,
+        async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the Luba config entry."""
     coordinator: MammotionDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
@@ -65,10 +63,9 @@ class MammotionLawnMowerEntity(
     _attr_has_entity_name = True
 
     def __init__(
-        self,
-        device_name: str,
-        coordinator: MammotionDataUpdateCoordinator,
-        features: LawnMowerEntityFeature = LawnMowerEntityFeature(0),
+            self,
+            device_name: str,
+            coordinator: MammotionDataUpdateCoordinator
     ) -> None:
         """Initialize the lawn mower."""
         super().__init__(coordinator)
@@ -80,12 +77,10 @@ class MammotionLawnMowerEntity(
             name=device_name,
             suggested_area="Garden",
         )
-        self._attr_supported_features = features
-
         self._attr_activity = LawnMowerActivity.DOCKED
 
-
     def _get_mower_activity(self) -> LawnMowerActivity:
+        mode = "MODE_READY"
         if self.coordinator.device.raw_data.get("dev"):
             mode = device_mode(self.coordinator.device.raw_data["dev"]["sysStatus"])
 
