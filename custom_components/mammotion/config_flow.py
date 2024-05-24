@@ -51,7 +51,7 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
             self.hass, discovery_info.address
         )
         if device is None:
-            return self.async_abort(reason="error")
+            return self.async_abort(reason="unknown")
 
         self._address = device.address
         self._discovered_devices = {device.address: device}
