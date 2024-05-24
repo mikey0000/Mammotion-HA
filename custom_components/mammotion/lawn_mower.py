@@ -73,7 +73,7 @@ class MammotionLawnMowerEntity(
             identifiers={(DOMAIN, device_name)},
             manufacturer="Mammotion",
             name=device_name,
-            suggested_area="Garden",
+            suggested_area="Garden"
         )
 
     def _get_mower_activity(self) -> LawnMowerActivity:
@@ -96,8 +96,6 @@ class MammotionLawnMowerEntity(
     @property
     def activity(self) -> LawnMowerActivity:
         """Return the state of the mower."""
-        # productkey = coordinator.device.raw_data['net']['toappWifiIotStatus']['productkey']
-        # devicename = coordinator.device.raw_data['net']['toappWifiIotStatus']['devicename']
         return self._get_mower_activity()
 
     async def async_start_mowing(self) -> None:
