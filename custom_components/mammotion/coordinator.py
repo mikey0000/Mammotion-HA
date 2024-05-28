@@ -50,6 +50,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator):
     async def _async_update_data(self) -> dict:
         """Get data from the device."""
         if bool(
-                bluetooth.async_ble_device_from_address(
+                ble_device := bluetooth.async_ble_device_from_address(
                     self.hass, self.ble_device.address)):
+            self.device.update_device(ble_device)
             await self.device.start_sync("get_report_cfg", 0)
