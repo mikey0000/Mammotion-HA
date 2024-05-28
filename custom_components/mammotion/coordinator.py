@@ -10,7 +10,7 @@ from pyluba.mammotion.devices import MammotionBaseBLEDevice
 
 from homeassistant.components import bluetooth
 
-from homeassistant.core import CoreState, HomeAssistant, callback
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 if TYPE_CHECKING:
