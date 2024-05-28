@@ -46,7 +46,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     address: str = entry.data[CONF_ADDRESS]
     ble_device = bluetooth.async_ble_device_from_address(
-        hass, address.upper(), connectable=True
+        hass, address.upper()
     )
     if not ble_device:
         raise ConfigEntryNotReady(

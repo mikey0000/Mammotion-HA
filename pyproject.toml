@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "ha-luba"
+version = "0.0.1"
+description = "Mammotion lawn mower integration for HACS"
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.12.0,<3.13"
+pyluba = "0.0.15"
+homeassistant = "^2024.5.5"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

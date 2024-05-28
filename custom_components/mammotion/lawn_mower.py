@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
-from pyluba.utility.constant.device_constant import device_mode, work_mode
+import logging
+from enum import StrEnum
+
+from pyluba.utility.constant.device_constant import WorkMode
+from pyluba.devices.luba import has_field
 
 from homeassistant.components.lawn_mower import (
     LawnMowerActivity,
@@ -18,19 +22,22 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
 from .coordinator import MammotionDataUpdateCoordinator
+from .entity import MammotionBaseEntity
 
 SUPPORTED_FEATURES = (
-    LawnMowerEntityFeature.DOCK
-    | LawnMowerEntityFeature.PAUSE
-    | LawnMowerEntityFeature.START_MOWING
+        LawnMowerEntityFeature.DOCK
+        | LawnMowerEntityFeature.PAUSE
+        | LawnMowerEntityFeature.START_MOWING
 )
+
+_LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_platform(
-    hass: HomeAssistant,
-    config: ConfigType,
-    coordinator: MammotionDataUpdateCoordinator,
-    async_add_entities: AddEntitiesCallback,
+        hass: HomeAssistant,
+        config: ConfigType,
+        coordinator: MammotionDataUpdateCoordinator,
+        async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up luba lawn mower."""
 
@@ -43,9 +50,9 @@ async def async_setup_platform(
 
 
 async def async_setup_entry(
-    hass: HomeAssistant,
-    entry: ConfigEntry,
-    async_add_entities: AddEntitiesCallback,
+        hass: HomeAssistant,
+        entry: ConfigEntry,
+        async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the Luba config entry."""
     coordinator: MammotionDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
@@ -55,40 +62,40 @@ async def async_setup_entry(
 
 
 class MammotionLawnMowerEntity(
-    CoordinatorEntity[MammotionDataUpdateCoordinator], LawnMowerEntity
+    MammotionBaseEntity, LawnMowerEntity
 ):
     """Representation of a Luba lawn mower."""
 
     _attr_supported_features = SUPPORTED_FEATURES
-    _attr_has_entity_name = True
+    _attr_activity = None
 
     def __init__(
-        self, device_name: str, coordinator: MammotionDataUpdateCoordinator
+            self, device_name: str, coordinator: MammotionDataUpdateCoordinator
     ) -> None:
         """Initialize the lawn mower."""
-        super().__init__(coordinator)
+        super().__init__(device_name, coordinator)
         self._attr_name = device_name
         self._attr_unique_id = f"{device_name}"
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, device_name)},
             manufacturer="Mammotion",
+            serial_number=coordinator.device.luba_msg.net.toapp_wifi_iot_status.productkey,
             name=device_name,
             suggested_area="Garden"
         )
 
     def _get_mower_activity(self) -> LawnMowerActivity:
-        mode = "FAIL"
-        if "sys" in self.coordinator.device.raw_data:
-            if "toappReportData" in self.coordinator.device.raw_data['sys']:
-                mode = self.coordinator.device.raw_data['sys']['toappReportData']['dev']['sysStatus']
-        
-        if mode == work_mode.MODE_PAUSE.value:
+        mode = 0
+        if has_field(self.mower_data.sys.toapp_report_data.dev):
+            mode = self.mower_data.sys.toapp_report_data.dev.sys_status
+        _LOGGER.debug("activity mode %s", mode)
+        if mode == WorkMode.MODE_PAUSE:
             return LawnMowerActivity.PAUSED
-        if mode == work_mode.MODE_WORKING.value:
+        if mode == WorkMode.MODE_WORKING or mode == WorkMode.MODE_RETURNING:
             return LawnMowerActivity.MOWING
-        if mode == work_mode.MODE_LOCK.value:
+        if mode == WorkMode.MODE_LOCK:
             return LawnMowerActivity.ERROR
-        if mode == work_mode.MODE_CHARGING.value or mode == work_mode.MODE_READY.value or mode == work_mode.MODE_RETURNING.value:
+        if mode == WorkMode.MODE_READY:
             return LawnMowerActivity.DOCKED
 
         return self._attr_activity
@@ -116,7 +123,7 @@ class MammotionLawnMowerEntity(
     @callback
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
-        print("coordinator callback")
-        print(self.coordinator.device.raw_data)
+        _LOGGER.debug("coordinator callback")
+        _LOGGER.debug(self.coordinator.device.raw_data)
         self._attr_activity = self._get_mower_activity()
         self.async_write_ha_state()

@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import asyncio
-import contextlib
 import logging
 from datetime import timedelta
 from typing import TYPE_CHECKING
@@ -11,9 +9,7 @@ from typing import TYPE_CHECKING
 from pyluba.mammotion.devices import MammotionBaseBLEDevice
 
 from homeassistant.components import bluetooth
-from homeassistant.components.bluetooth.active_update_coordinator import (
-    ActiveBluetoothDataUpdateCoordinator,
-)
+
 from homeassistant.core import CoreState, HomeAssistant, callback
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
@@ -52,10 +48,10 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator):
         self._was_unavailable = True
 
     async def _async_update_data(self) -> dict:
-        """Poll the device."""
+        """Get data from the device."""
         if bool(
                 bluetooth.async_ble_device_from_address(
-                    self.hass, self.ble_device.address, connectable=True)):
-            return await self.device.start_sync("key", 0)
+                    self.hass, self.ble_device.address)):
+            return await self.device.start_sync("get_report_cfg", 0)
 
         return self.device.raw_data
