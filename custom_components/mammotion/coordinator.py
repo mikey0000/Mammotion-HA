@@ -52,6 +52,4 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator):
         if bool(
                 bluetooth.async_ble_device_from_address(
                     self.hass, self.ble_device.address)):
-            return await self.device.start_sync("get_report_cfg", 0)
-
-        return self.device.raw_data
+            await self.device.start_sync("get_report_cfg", 0)
