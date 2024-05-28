@@ -3,10 +3,9 @@
 from __future__ import annotations
 
 import logging
-from enum import StrEnum
 
 from pyluba.utility.constant.device_constant import WorkMode
-from pyluba.devices.luba import has_field
+from pyluba.mammotion.devices.luba import has_field
 
 from homeassistant.components.lawn_mower import (
     LawnMowerActivity,
