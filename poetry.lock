@@ -2406,13 +2406,13 @@ tests = ["coverage[toml] (==5.0.4)", "pytest (>=6.0.0,<7.0.0)"]
 
 [[package]]
 name = "pyluba"
-version = "0.0.15"
+version = "0.0.19"
 description = ""
 optional = false
 python-versions = "<3.13,>=3.11"
 files = [
-    {file = "pyluba-0.0.15-py3-none-any.whl", hash = "sha256:9a477fd02962e0dca164fbd213f23a1a4999641f120ec030c567a6cb90d086c4"},
-    {file = "pyluba-0.0.15.tar.gz", hash = "sha256:57845712b307807af0e68db9d2a5b81a97fbaf4cd86b61ef595f049e4d9da01b"},
+    {file = "pyluba-0.0.19-py3-none-any.whl", hash = "sha256:5c5ae0c276ef0878b0050a37143bc31a8e03790f89fe5d5fc41eda42e01c1ac1"},
+    {file = "pyluba-0.0.19.tar.gz", hash = "sha256:e6dbcd790a73b63047547c3c4037c0d6422dd4c0f1a1416bb366724014e9e0ce"},
 ]
 
 [package.dependencies]
@@ -3319,4 +3319,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.12.0,<3.13"
-content-hash = "cdbdad7e139067fb6e0a865c52b5377d342e7d5e069a60c5e3647e3564f22a26"
+content-hash = "7ab79a874ebe4bc14c10d2adf694d064198088cdd80971b1fa4786846302112c"
