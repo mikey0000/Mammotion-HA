@@ -43,15 +43,15 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
         await self.async_set_unique_id(format_unique_id(discovery_info.address))
         self._abort_if_unique_id_configured()
 
-        match_found = any(model in discovery_info.name for model in DEVICE_SUPPORT)
-        if not match_found:
-            return self.async_abort(reason="not_supported")
-
         device = bluetooth.async_ble_device_from_address(
             self.hass, discovery_info.address
         )
         if device is None:
             return self.async_abort(reason="unknown")
+
+        match_found = device.name.startswith(DEVICE_SUPPORT)
+        if not match_found:
+            return self.async_abort(reason="not_supported")
 
         self._address = device.address
         self._discovered_devices = {device.address: device}
