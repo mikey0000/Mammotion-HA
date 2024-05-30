@@ -5,14 +5,13 @@ from __future__ import annotations
 import logging
 
 from bleak_retry_connector import BleakNotFoundError
-from pyluba.mammotion.devices import MammotionBaseBLEDevice
-
 from homeassistant.components import bluetooth
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_ADDRESS, CONF_MAC, CONF_NAME, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import device_registry as dr
+from pyluba.mammotion.devices import MammotionBaseBLEDevice
 
 from .const import CONF_RETRY_COUNT, DEFAULT_RETRY_COUNT, DOMAIN
 from .coordinator import MammotionDataUpdateCoordinator
@@ -45,9 +44,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         )
 
     address: str = entry.data[CONF_ADDRESS]
-    ble_device = bluetooth.async_ble_device_from_address(
-        hass, address.upper()
-    )
+    ble_device = bluetooth.async_ble_device_from_address(hass, address.upper())
     if not ble_device:
         raise ConfigEntryNotReady(
             f"Could not find Mammotion lawn mower with address {address}"

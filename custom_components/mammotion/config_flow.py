@@ -3,9 +3,8 @@
 import logging
 from typing import Any
 
-from bleak import BLEDevice
 import voluptuous as vol
-
+from bleak import BLEDevice
 from homeassistant.components import bluetooth
 from homeassistant.components.bluetooth import (
     BluetoothServiceInfo,
@@ -14,7 +13,7 @@ from homeassistant.components.bluetooth import (
 from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
 from homeassistant.const import CONF_ADDRESS
 
-from .const import DOMAIN, DEVICE_SUPPORT
+from .const import DEVICE_SUPPORT, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 

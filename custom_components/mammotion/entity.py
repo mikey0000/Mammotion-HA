@@ -9,14 +9,14 @@ from .coordinator import MammotionDataUpdateCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
-class MammotionBaseEntity(
-    CoordinatorEntity[MammotionDataUpdateCoordinator]
-):
+
+class MammotionBaseEntity(CoordinatorEntity[MammotionDataUpdateCoordinator]):
     """Representation of a Luba lawn mower."""
+
     _attr_has_entity_name = True
 
     def __init__(
-            self, device_name: str, coordinator: MammotionDataUpdateCoordinator
+        self, device_name: str, coordinator: MammotionDataUpdateCoordinator
     ) -> None:
         """Initialize the lawn mower."""
         super().__init__(coordinator)
@@ -27,7 +27,7 @@ class MammotionBaseEntity(
             manufacturer="Mammotion",
             serial_number=coordinator.device.luba_msg.net.toapp_wifi_iot_status.productkey,
             name=device_name,
-            suggested_area="Garden"
+            suggested_area="Garden",
         )
 
     @property

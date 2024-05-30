@@ -6,12 +6,10 @@ import logging
 from datetime import timedelta
 from typing import TYPE_CHECKING
 
-from pyluba.mammotion.devices import MammotionBaseBLEDevice
-
 from homeassistant.components import bluetooth
-
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
+from pyluba.mammotion.devices import MammotionBaseBLEDevice
 
 if TYPE_CHECKING:
     from bleak.backends.device import BLEDevice
@@ -50,7 +48,9 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator):
     async def _async_update_data(self) -> dict:
         """Get data from the device."""
         if bool(
-                ble_device := bluetooth.async_ble_device_from_address(
-                    self.hass, self.ble_device.address)):
+            ble_device := bluetooth.async_ble_device_from_address(
+                self.hass, self.ble_device.address
+            )
+        ):
             self.device.update_device(ble_device)
             await self.device.start_sync("get_report_cfg", 0)
