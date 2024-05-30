@@ -104,9 +104,9 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
         """Start mowing."""
         # check if job in progress
         #
-        if has_field(self.coordinator.device.luba_msg.net.toapp_report_data.work):
-            work = self.coordinator.device.luba_msg.net.toapp_report_data.work
-            if work.pbHash > 0:
+        if has_field(self.coordinator.device.luba_msg.sys.toapp_report_data.work):
+            work = self.coordinator.device.luba_msg.sys.toapp_report_data.work
+            if work.pb_hash > 0:
                 return await self.coordinator.device.command("resume_execute_task")
 
         await self.coordinator.device.command("start_work_job")
