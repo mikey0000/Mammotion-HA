@@ -106,23 +106,19 @@ class MammotionLawnMowerEntity(
 
     async def async_start_mowing(self) -> None:
         """Start mowing."""
-        self._attr_activity = LawnMowerActivity.MOWING
-        self.async_write_ha_state()
+        self.coordinator.device.start_sync('start_work_job', 0)
 
     async def async_dock(self) -> None:
         """Start docking."""
-        self._attr_activity = LawnMowerActivity.DOCKED
-        self.async_write_ha_state()
+        self.coordinator.device.start_sync('return_to_dock', 0)
 
     async def async_pause(self) -> None:
         """Pause mower."""
-        self._attr_activity = LawnMowerActivity.PAUSED
-        self.async_write_ha_state()
+        self.coordinator.device.start_sync('pause_execute_task', 0)
 
     @callback
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
-        _LOGGER.debug("coordinator callback")
         _LOGGER.debug(self.coordinator.device.raw_data)
         self._attr_activity = self._get_mower_activity()
         self.async_write_ha_state()
