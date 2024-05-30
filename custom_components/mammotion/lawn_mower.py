@@ -103,16 +103,21 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
     async def async_start_mowing(self) -> None:
         """Start mowing."""
         # check if job in progress
-        # await self.coordinator.device.start_sync("resume_execute_task", 0)
-        await self.coordinator.device.start_sync("start_work_job", 0)
+        #
+        if has_field(self.coordinator.device.luba_msg.net.toapp_report_data.work):
+            work = self.coordinator.device.luba_msg.net.toapp_report_data.work
+            if work.pbHash > 0:
+                return await self.coordinator.device.command("resume_execute_task")
+
+        await self.coordinator.device.command("start_work_job")
 
     async def async_dock(self) -> None:
         """Start docking."""
-        await self.coordinator.device.start_sync("return_to_dock", 0)
+        await self.coordinator.device.command("return_to_dock")
 
     async def async_pause(self) -> None:
         """Pause mower."""
-        await self.coordinator.device.start_sync("pause_execute_task", 0)
+        await self.coordinator.device.command("pause_execute_task")
 
     @callback
     def _handle_coordinator_update(self) -> None:

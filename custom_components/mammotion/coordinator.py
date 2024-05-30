@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 from homeassistant.components import bluetooth
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
-from pyluba.mammotion.devices import MammotionBaseBLEDevice
+from pyluba.mammotion.devices import MammotionBaseBLEDevice, has_field
 
 if TYPE_CHECKING:
     from bleak.backends.device import BLEDevice
@@ -53,4 +53,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator):
             )
         ):
             self.device.update_device(ble_device)
-            await self.device.start_sync("get_report_cfg", 0)
+            if not has_field(self.device.luba_msg.net):
+                return await self.device.start_sync(0)
+
+            await self.device.command("get_report_cfg")

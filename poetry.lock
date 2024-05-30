@@ -2565,13 +2565,13 @@ testutils = ["gitpython (>3)"]
 
 [[package]]
 name = "pyluba"
-version = "0.0.22"
+version = "0.0.24"
 description = ""
 optional = false
 python-versions = "<3.13,>=3.11"
 files = [
-    {file = "pyluba-0.0.22-py3-none-any.whl", hash = "sha256:114ba416e25a1aa434f75dd6adbeb25871920ac016141935f6c6ad7680ca1e9d"},
-    {file = "pyluba-0.0.22.tar.gz", hash = "sha256:f773adf94c6b9da995fe7394324c515ab5cc49c3d53bd9a7cbb64e9a62734449"},
+    {file = "pyluba-0.0.24-py3-none-any.whl", hash = "sha256:303912f917990c16617ccdac31d587022e85c4a7e731ae96e64da489ad586573"},
+    {file = "pyluba-0.0.24.tar.gz", hash = "sha256:d8809c66e1af0b2f3b97c2f9bd71cf92c8ffe64892ff2a7b7a5f21e8f7c8cfe9"},
 ]
 
 [package.dependencies]
@@ -2586,10 +2586,13 @@ bleak = ">=0.21.1,<0.22.0"
 bleak-retry-connector = ">=3.5.0,<4.0.0"
 jsonic = ">=1.0.0,<2.0.0"
 mashumaro = ">=3.13,<4.0"
+mypy = ">=1.10.0,<2.0.0"
 orjson = ">=3.9.15,<4.0.0"
 paho-mqtt = ">=1.6.1,<2.0.0"
 protobuf = ">=4.23.1"
 py-jsonic = ">=0.0.2,<0.0.3"
+pylint = ">=3.2.2,<4.0.0"
+ruff = ">=0.4.6,<0.5.0"
 
 [[package]]
 name = "pyobjc-core"
@@ -3515,4 +3518,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.12.0,<3.13"
-content-hash = "d95bbd89b8ba192f23bcc12781a3122c4f7206830f93075f62980a1ae22f6f34"
+content-hash = "f9147c69e35a5289643a3c344601ce0c7c53c47887425a8121cc8b66f9714cca"
