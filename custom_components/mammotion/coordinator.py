@@ -55,5 +55,5 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator):
             self.device.update_device(ble_device)
             if not has_field(self.device.luba_msg.net):
                 return await self.device.start_sync(0)
-
             await self.device.command("get_report_cfg")
+

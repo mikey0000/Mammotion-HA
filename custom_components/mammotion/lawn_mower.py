@@ -81,16 +81,18 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
 
     def _get_mower_activity(self) -> LawnMowerActivity:
         mode = 0
+        charge_state = 0
         if has_field(self.mower_data.sys.toapp_report_data.dev):
             mode = self.mower_data.sys.toapp_report_data.dev.sys_status
+            charge_state = self.mower_data.sys.toapp_report_data.dev.charge_state
         _LOGGER.debug("activity mode %s", mode)
-        if mode == WorkMode.MODE_PAUSE:
+        if mode == WorkMode.MODE_PAUSE or mode == WorkMode.MODE_READY and charge_state == 0:
             return LawnMowerActivity.PAUSED
         if mode in (WorkMode.MODE_WORKING, WorkMode.MODE_RETURNING):
             return LawnMowerActivity.MOWING
         if mode == WorkMode.MODE_LOCK:
             return LawnMowerActivity.ERROR
-        if mode == WorkMode.MODE_READY:
+        if mode == WorkMode.MODE_READY and charge_state != 0:
             return LawnMowerActivity.DOCKED
 
         return self._attr_activity
@@ -104,11 +106,10 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
         """Start mowing."""
         # check if job in progress
         #
-        if has_field(self.coordinator.device.luba_msg.sys.toapp_report_data.work):
-            work = self.coordinator.device.luba_msg.sys.toapp_report_data.work
-            if work.pb_hash > 0:
+        if has_field(self.coordinator.device.luba_msg.sys.toapp_report_data.dev):
+            dev = self.coordinator.device.luba_msg.sys.toapp_report_data.dev
+            if dev.sys_status == WorkMode.MODE_PAUSE:
                 return await self.coordinator.device.command("resume_execute_task")
-
         await self.coordinator.device.command("start_work_job")
 
     async def async_dock(self) -> None:
