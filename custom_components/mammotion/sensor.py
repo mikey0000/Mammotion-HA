@@ -28,16 +28,53 @@ class MammotionSensorEntityDescription(SensorEntityDescription):
 
 
 SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
+    # MammotionSensorEntityDescription(
+    #     key="example",
+    #     name="Example",
+    #     state_class=SensorStateClass.MEASUREMENT,
+    #     device_class=SensorDeviceClass.BATTERY,
+    #     native_unit_of_measurement=PERCENTAGE,
+    #     value_fn=lambda: 50,
+    # ),
     MammotionSensorEntityDescription(
         key="battery_percent",
         name="Battery",
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.BATTERY,
         native_unit_of_measurement=PERCENTAGE,
-        # value_fn=lambda: 50,
-        # value_fn=lambda coordinator: coordinator.device.luba_msg.sys.toapp_report_data.dev.battery_val
-        # value_fn=lambda coordinator: coordinator.device.raw_data["sys"]["toappReportData"]["dev"]["batteryVal"],
         value_fn=lambda coordinator: coordinator.device.raw_data.get("sys", {}).get("toappReportData", {}).get("dev", {}).get("batteryVal", 0),
+    ),
+    MammotionSensorEntityDescription(
+        key="ble_rssi",
+        name="BLE RSSI",
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.SIGNAL_STRENGTH,
+        native_unit_of_measurement="dBm",
+        value_fn=lambda coordinator: coordinator.device.raw_data.get("sys", {}).get("toappReportData", {}).get("connect", {}).get("bleRssi", 0),
+    ),
+    MammotionSensorEntityDescription(
+        key="wifi_rssi",
+        name="WiFi RSSI",
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.SIGNAL_STRENGTH,
+        native_unit_of_measurement="dBm",
+        value_fn=lambda coordinator: coordinator.device.raw_data.get("sys", {}).get("toappReportData", {}).get("connect", {}).get("wifiRssi", 0),
+    ),
+    MammotionSensorEntityDescription(
+        key="gps_stars",
+        name="GPS Stars",
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=None,
+        native_unit_of_measurement=None,
+        value_fn=lambda coordinator: coordinator.device.raw_data.get("sys", {}).get("toappReportData", {}).get("rtk", {}).get("gpsStars", 0),
+    ),
+     MammotionSensorEntityDescription(
+        key="blade_height",
+        name="Blade Height",
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=None,
+        native_unit_of_measurement="mm",
+        value_fn=lambda coordinator: coordinator.device.raw_data.get("sys", {}).get("toappReportData", {}).get("work", {}).get("knifeHeight", 0),
     ),
 )
 
