@@ -82,9 +82,6 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
     def _get_mower_activity(self) -> LawnMowerActivity:
         mode = 0
         charge_state = 0
-        print("++++++++++++++++++++++++++")
-        print(self.mower_data)
-        print("++++++++++++++++++++++++++")
         if has_field(self.mower_data.sys.toapp_report_data.dev):
             mode = self.mower_data.sys.toapp_report_data.dev.sys_status
             charge_state = self.mower_data.sys.toapp_report_data.dev.charge_state
@@ -127,5 +124,8 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
         _LOGGER.debug(self.coordinator.device.raw_data)
+        print("++++++++++++++++++++++++++")
+        print(self.coordinator.device.raw_data)
+        print("++++++++++++++++++++++++++")
         self._attr_activity = self._get_mower_activity()
         self.async_write_ha_state()
