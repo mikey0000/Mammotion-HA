@@ -76,6 +76,22 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         native_unit_of_measurement="mm",
         value_fn=lambda coordinator: coordinator.device.raw_data.get("sys", {}).get("toappReportData", {}).get("work", {}).get("knifeHeight", 0),
     ),
+    MammotionSensorEntityDescription(
+        key="area",
+        name="Area",
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=None,
+        native_unit_of_measurement="m^2",
+        value_fn=lambda coordinator: coordinator.device.raw_data.get("sys", {}).get("toappReportData", {}).get("work", {}).get("area", 0),
+    ),
+    MammotionSensorEntityDescription(
+        key="remaining_mow_time",
+        name="Remaining Mow Time",
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.DURATION,
+        native_unit_of_measurement="min",
+        value_fn=lambda coordinator: coordinator.device.raw_data.get("sys", {}).get("toappReportData", {}).get("work", {}).get("manRunSpeed", 0),
+    ),
 )
 
 
@@ -105,7 +121,7 @@ class MammotionSensorEntity(MammotionBaseEntity, SensorEntity):
         super().__init__(device_name, coordinator)
         self.entity_description = description
         self._attr_unique_id = f"{device_name}_{description.key}"
-        # self._attr_name = f"{device_name} {description.name}"
+        self._attr_name = description.name
         # self.entity_id = f"{DOMAIN}.{device_name}_{description.key}"
 
     @property
