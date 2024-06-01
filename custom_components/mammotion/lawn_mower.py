@@ -82,6 +82,9 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
     def _get_mower_activity(self) -> LawnMowerActivity:
         mode = 0
         charge_state = 0
+        print("++++++++++++++++++++++++++")
+        print(self.mower_data)
+        print("++++++++++++++++++++++++++")
         if has_field(self.mower_data.sys.toapp_report_data.dev):
             mode = self.mower_data.sys.toapp_report_data.dev.sys_status
             charge_state = self.mower_data.sys.toapp_report_data.dev.charge_state
