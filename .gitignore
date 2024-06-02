@@ -1,0 +1,7 @@
+# pytest
+.pytest_cache
+.cache
+
+# GITHUB Proposed Python stuff:
+*.py[cod]
+__pycache__

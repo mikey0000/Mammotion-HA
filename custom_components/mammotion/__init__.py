@@ -16,7 +16,7 @@ from pyluba.mammotion.devices import MammotionBaseBLEDevice
 from .const import CONF_RETRY_COUNT, DEFAULT_RETRY_COUNT, DOMAIN
 from .coordinator import MammotionDataUpdateCoordinator
 
-PLATFORMS: list[Platform] = [Platform.LAWN_MOWER]
+PLATFORMS: list[Platform] = [Platform.LAWN_MOWER, Platform.SENSOR]
 
 _LOGGER = logging.getLogger(__name__)
 
