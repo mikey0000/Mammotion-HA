@@ -26,6 +26,7 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionDataUpdateCoordinator]):
             identifiers={(DOMAIN, device_name)},
             manufacturer="Mammotion",
             serial_number=coordinator.device.luba_msg.net.toapp_wifi_iot_status.productkey,
+            sw_version=coordinator.device.luba_msg.net.toapp_devinfo_resp.resp_ids[0].info,
             name=device_name,
             suggested_area="Garden",
         )
