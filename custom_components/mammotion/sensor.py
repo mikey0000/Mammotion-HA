@@ -42,7 +42,7 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.BATTERY,
         native_unit_of_measurement=PERCENTAGE,
-        value_fn=lambda coordinator: coordinator.device.raw_data.get("sys", {}).get("toappReportData", {}).get("dev", {}).get("batteryVal", 0),
+        value_fn=lambda coordinator: coordinator.device.raw_data.get("sys", {}).get("toapp_report_data", {}).get("dev", {}).get("battery_val", 0),
     ),
     MammotionSensorEntityDescription(
         key="ble_rssi",
@@ -50,7 +50,7 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.SIGNAL_STRENGTH,
         native_unit_of_measurement="dBm",
-        value_fn=lambda coordinator: coordinator.device.raw_data.get("sys", {}).get("toappReportData", {}).get("connect", {}).get("bleRssi", 0),
+        value_fn=lambda coordinator: coordinator.device.raw_data.get("sys", {}).get("toapp_report_data", {}).get("connect", {}).get("ble_rssi", 0),
     ),
     MammotionSensorEntityDescription(
         key="wifi_rssi",
@@ -58,7 +58,7 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.SIGNAL_STRENGTH,
         native_unit_of_measurement="dBm",
-        value_fn=lambda coordinator: coordinator.device.raw_data.get("sys", {}).get("toappReportData", {}).get("connect", {}).get("wifiRssi", 0),
+        value_fn=lambda coordinator: coordinator.device.raw_data.get("sys", {}).get("toapp_report_data", {}).get("connect", {}).get("wifi_rssi", 0),
     ),
     MammotionSensorEntityDescription(
         key="gps_stars",
@@ -66,7 +66,7 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         device_class=None,
         native_unit_of_measurement=None,
-        value_fn=lambda coordinator: coordinator.device.raw_data.get("sys", {}).get("toappReportData", {}).get("rtk", {}).get("gpsStars", 0),
+        value_fn=lambda coordinator: coordinator.device.raw_data.get("sys", {}).get("toapp_report_data", {}).get("rtk", {}).get("gps_stars", 0),
     ),
      MammotionSensorEntityDescription(
         key="blade_height",
@@ -74,7 +74,7 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         device_class=None,
         native_unit_of_measurement="mm",
-        value_fn=lambda coordinator: coordinator.device.raw_data.get("sys", {}).get("toappReportData", {}).get("work", {}).get("knifeHeight", 0),
+        value_fn=lambda coordinator: coordinator.device.raw_data.get("sys", {}).get("toapp_report_data", {}).get("work", {}).get("knife_height", 0),
     ),
     MammotionSensorEntityDescription(
         key="area",
@@ -82,7 +82,7 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         device_class=None,
         native_unit_of_measurement="m^2",
-        value_fn=lambda coordinator: coordinator.device.raw_data.get("sys", {}).get("toappReportData", {}).get("work", {}).get("area", 0),
+        value_fn=lambda coordinator: coordinator.device.raw_data.get("sys", {}).get("toapp_report_data", {}).get("work", {}).get("area", 0),
     ),
     MammotionSensorEntityDescription(
         key="remaining_mow_time",
@@ -90,7 +90,7 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.DURATION,
         native_unit_of_measurement="min",
-        value_fn=lambda coordinator: coordinator.device.raw_data.get("sys", {}).get("toappReportData", {}).get("work", {}).get("manRunSpeed", 0),
+        value_fn=lambda coordinator: coordinator.device.raw_data.get("sys", {}).get("toapp_report_data", {}).get("work", {}).get("man_run_speed", 0),
     ),
 )
 
