@@ -124,8 +124,5 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
         _LOGGER.debug(self.coordinator.device.raw_data)
-        print("++++++++++++++++++++++++++")
-        print(self.coordinator.device.raw_data)
-        print("++++++++++++++++++++++++++")
         self._attr_activity = self._get_mower_activity()
         self.async_write_ha_state()
