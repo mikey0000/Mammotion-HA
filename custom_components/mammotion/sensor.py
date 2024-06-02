@@ -62,7 +62,7 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
     ),
     MammotionSensorEntityDescription(
         key="gps_stars",
-        name="GPS Stars",
+        name="Satellites (Robot)",
         state_class=SensorStateClass.MEASUREMENT,
         device_class=None,
         native_unit_of_measurement=None,
