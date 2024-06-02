@@ -1,5 +1,7 @@
 """Creates the sensor entities for the mower."""
 
+import logging
+
 from dataclasses import dataclass
 from typing import Callable
 
@@ -19,6 +21,8 @@ from .const import DOMAIN
 from .coordinator import MammotionDataUpdateCoordinator
 from .entity import MammotionBaseEntity
 
+_LOGGER = logging.getLogger(__name__)
+
 
 @dataclass(frozen=True, kw_only=True)
 class MammotionSensorEntityDescription(SensorEntityDescription):
@@ -34,7 +38,7 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.BATTERY,
         native_unit_of_measurement=PERCENTAGE,
-        value_fn=lambda coordinator: coordinator.device.luba_msg.sys.toapp_report_data.dev.battery_val,
+        value_fn=lambda mower_data: mower_data.sys.toapp_report_data.dev.battery_val,
     ),
     MammotionSensorEntityDescription(
         key="ble_rssi",
@@ -42,7 +46,7 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.SIGNAL_STRENGTH,
         native_unit_of_measurement="dBm",
-        value_fn=lambda coordinator: coordinator.device.luba_msg.sys.toapp_report_data.connect.ble_rssi,
+        value_fn=lambda mower_data: mower_data.sys.toapp_report_data.connect.ble_rssi,
     ),
     MammotionSensorEntityDescription(
         key="wifi_rssi",
@@ -50,7 +54,7 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.SIGNAL_STRENGTH,
         native_unit_of_measurement="dBm",
-        value_fn=lambda coordinator: coordinator.device.luba_msg.sys.toapp_report_data.connect.wifi_rssi,
+        value_fn=lambda mower_data: mower_data.sys.toapp_report_data.connect.wifi_rssi,
     ),
     MammotionSensorEntityDescription(
         key="gps_stars",
@@ -58,7 +62,7 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         device_class=None,
         native_unit_of_measurement=None,
-        value_fn=lambda coordinator: coordinator.device.luba_msg.sys.toapp_report_data.rtk.gps_stars,
+        value_fn=lambda mower_data: mower_data.sys.toapp_report_data.rtk.gps_stars,
     ),
      MammotionSensorEntityDescription(
         key="blade_height",
@@ -66,7 +70,7 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         device_class=None,
         native_unit_of_measurement="mm",
-        value_fn=lambda coordinator: coordinator.device.luba_msg.sys.toapp_report_data.work.knife_height,
+        value_fn=lambda mower_data: mower_data.sys.toapp_report_data.work.knife_height,
     ),
     MammotionSensorEntityDescription(
         key="area",
@@ -74,7 +78,7 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         device_class=None,
         native_unit_of_measurement="m²",
-        value_fn=lambda coordinator: coordinator.device.luba_msg.sys.toapp_report_data.work.area,
+        value_fn=lambda mower_data: mower_data.sys.toapp_report_data.work.area,
     ),
     MammotionSensorEntityDescription(
         key="remaining_mow_time",
@@ -82,7 +86,7 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.DURATION,
         native_unit_of_measurement="min",
-        value_fn=lambda coordinator: coordinator.device.luba_msg.sys.toapp_report_data.work.man_run_speed,
+        value_fn=lambda mower_data: mower_data.sys.toapp_report_data.work.man_run_speed,
     ),
 )
 
@@ -102,6 +106,7 @@ class MammotionSensorEntity(MammotionBaseEntity, SensorEntity):
     """Defining the Mammotion Sensor."""
 
     entity_description: MammotionSensorEntityDescription
+    _attr_has_entity_name = True
 
     def __init__(
         self,
@@ -119,8 +124,8 @@ class MammotionSensorEntity(MammotionBaseEntity, SensorEntity):
     @property
     def native_value(self) -> StateType:
         """Return the state of the sensor."""
-        print("================= Debug Log =================")
-        print(self.coordinator.device.luba_msg)
-        # print(self.coordinator.device.raw_data)
-        print("==================================")
-        return self.entity_description.value_fn(self.coordinator)
+        _LOGGER.debug("================= Debug Log =================")
+        _LOGGER.debug(self.mower_data)
+        # _LOGGER.debug(self.coordinator.device.raw_data)
+        _LOGGER.debug("==================================")
+        return self.entity_description.value_fn(self.mower_data)
