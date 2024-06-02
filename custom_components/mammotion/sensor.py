@@ -28,21 +28,13 @@ class MammotionSensorEntityDescription(SensorEntityDescription):
 
 
 SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
-    # MammotionSensorEntityDescription(
-    #     key="example",
-    #     name="Example",
-    #     state_class=SensorStateClass.MEASUREMENT,
-    #     device_class=SensorDeviceClass.BATTERY,
-    #     native_unit_of_measurement=PERCENTAGE,
-    #     value_fn=lambda: 50,
-    # ),
     MammotionSensorEntityDescription(
         key="battery_percent",
         name="Battery",
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.BATTERY,
         native_unit_of_measurement=PERCENTAGE,
-        value_fn=lambda coordinator: coordinator.device.raw_data.get("sys", {}).get("toapp_report_data", {}).get("dev", {}).get("battery_val", 0),
+        value_fn=lambda coordinator: coordinator.device.luba_msg.sys.toapp_report_data.dev.battery_val,
     ),
     MammotionSensorEntityDescription(
         key="ble_rssi",
@@ -50,7 +42,7 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.SIGNAL_STRENGTH,
         native_unit_of_measurement="dBm",
-        value_fn=lambda coordinator: coordinator.device.raw_data.get("sys", {}).get("toapp_report_data", {}).get("connect", {}).get("ble_rssi", 0),
+        value_fn=lambda coordinator: coordinator.device.luba_msg.sys.toapp_report_data.connect.ble_rssi,
     ),
     MammotionSensorEntityDescription(
         key="wifi_rssi",
@@ -58,7 +50,7 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.SIGNAL_STRENGTH,
         native_unit_of_measurement="dBm",
-        value_fn=lambda coordinator: coordinator.device.raw_data.get("sys", {}).get("toapp_report_data", {}).get("connect", {}).get("wifi_rssi", 0),
+        value_fn=lambda coordinator: coordinator.device.luba_msg.sys.toapp_report_data.connect.wifi_rssi,
     ),
     MammotionSensorEntityDescription(
         key="gps_stars",
@@ -66,7 +58,7 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         device_class=None,
         native_unit_of_measurement=None,
-        value_fn=lambda coordinator: coordinator.device.raw_data.get("sys", {}).get("toapp_report_data", {}).get("rtk", {}).get("gps_stars", 0),
+        value_fn=lambda coordinator: coordinator.device.luba_msg.sys.toapp_report_data.rtk.gps_stars,
     ),
      MammotionSensorEntityDescription(
         key="blade_height",
@@ -74,15 +66,15 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         device_class=None,
         native_unit_of_measurement="mm",
-        value_fn=lambda coordinator: coordinator.device.raw_data.get("sys", {}).get("toapp_report_data", {}).get("work", {}).get("knife_height", 0),
+        value_fn=lambda coordinator: coordinator.device.luba_msg.sys.toapp_report_data.work.knife_height,
     ),
     MammotionSensorEntityDescription(
         key="area",
         name="Area",
         state_class=SensorStateClass.MEASUREMENT,
         device_class=None,
-        native_unit_of_measurement="m^2",
-        value_fn=lambda coordinator: coordinator.device.raw_data.get("sys", {}).get("toapp_report_data", {}).get("work", {}).get("area", 0),
+        native_unit_of_measurement="m²",
+        value_fn=lambda coordinator: coordinator.device.luba_msg.sys.toapp_report_data.work.area,
     ),
     MammotionSensorEntityDescription(
         key="remaining_mow_time",
@@ -90,7 +82,7 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.DURATION,
         native_unit_of_measurement="min",
-        value_fn=lambda coordinator: coordinator.device.raw_data.get("sys", {}).get("toapp_report_data", {}).get("work", {}).get("man_run_speed", 0),
+        value_fn=lambda coordinator: coordinator.device.luba_msg.sys.toapp_report_data.work.man_run_speed,
     ),
 )
 
@@ -107,7 +99,7 @@ async def async_setup_entry(
     )
 
 class MammotionSensorEntity(MammotionBaseEntity, SensorEntity):
-    """Defining the Mammotion Battery Sensor."""
+    """Defining the Mammotion Sensor."""
 
     entity_description: MammotionSensorEntityDescription
 
@@ -127,7 +119,8 @@ class MammotionSensorEntity(MammotionBaseEntity, SensorEntity):
     @property
     def native_value(self) -> StateType:
         """Return the state of the sensor."""
-        print("==================================")
-        print(self.coordinator.device.raw_data)
+        print("================= Debug Log =================")
+        print(self.coordinator.device.luba_msg)
+        # print(self.coordinator.device.raw_data)
         print("==================================")
         return self.entity_description.value_fn(self.coordinator)
