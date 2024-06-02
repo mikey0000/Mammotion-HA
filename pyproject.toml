@@ -7,7 +7,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.12.0,<3.13"
-pyluba = "0.0.27"
+pyluba = "0.0.30"
 homeassistant = "^2024.5.5"
 pylint = "^3.2.2"
 ruff = "^0.4.6"
