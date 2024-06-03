@@ -44,8 +44,6 @@ class PositionMode(Enum):
             return "None"
         else:
             return "-"
-        
-from enum import Enum
 
 class RTKStatus(Enum):
     NONE = 0

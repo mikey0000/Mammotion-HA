@@ -137,14 +137,6 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         value_fn=lambda mower_data: (mower_data.sys.toapp_report_data.rtk.co_view_stars >> 8) & 255,
     ),
     MammotionSensorEntityDescription(
-        key="l2_satellites",
-        name="L2 Satellites (Co-Viewing)",
-        state_class=SensorStateClass.MEASUREMENT,
-        device_class=None,
-        native_unit_of_measurement=None,
-        value_fn=lambda mower_data: (mower_data.sys.toapp_report_data.rtk.co_view_stars >> 8) & 255,
-    ),
-    MammotionSensorEntityDescription(
         key="position_mode",
         name="RTK Connection",
         state_class=SensorStateClass.MEASUREMENT,
@@ -152,19 +144,17 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         native_unit_of_measurement=None,
         value_fn=lambda mower_data: str(RTKStatus.from_value(mower_data.sys.toapp_report_data.rtk.status)), # Note: This will not work for Luba2 & Yuka. Only for Luba1
     ),
-    """
-    ToDo: We still need to add the following.
-    - Model - Luba1, Luba2, Yuka, RTK (DeviceType.java)
-    - RTK Status - None, Single, Fix, Float, Unknown (RTKStatusFragment.java)
-    - Signal quality (Robot)
-    - Signal quality (Ref. Station)
-    - LoRa number
-    - Multi-point turn
-    - Transverse mode
-    - WiFi status
-    - Side LED
-    - Possibly more I forgot about
-    """
+    # ToDo: We still need to add the following.
+    # - Model - Luba1, Luba2, Yuka, RTK (DeviceType.java)
+    # - RTK Status - None, Single, Fix, Float, Unknown (RTKStatusFragment.java)
+    # - Signal quality (Robot)
+    # - Signal quality (Ref. Station)
+    # - LoRa number
+    # - Multi-point turn
+    # - Transverse mode
+    # - WiFi status
+    # - Side LED
+    # - Possibly more I forgot about
 )
 
 
