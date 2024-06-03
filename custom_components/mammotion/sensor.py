@@ -78,17 +78,16 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         device_class=None,
         native_unit_of_measurement="m²",
-        value_fn=lambda mower_data: int(mower_data.sys.toapp_report_data.work.area & 65535),
+        value_fn=lambda mower_data: mower_data.sys.toapp_report_data.work.area & 65535,
     ),
-    # man_run_speed is not the time
-    # MammotionSensorEntityDescription(
-    #     key="remaining_mow_time",
-    #     name="Remaining Mow Time",
-    #     state_class=SensorStateClass.MEASUREMENT,
-    #     device_class=SensorDeviceClass.DURATION,
-    #     native_unit_of_measurement="min",
-    #     value_fn=lambda mower_data: mower_data.sys.toapp_report_data.work.man_run_speed,
-    # ),
+    MammotionSensorEntityDescription(
+        key="mowing_speed",
+        name="Mowing speed",
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.SPEED,
+        native_unit_of_measurement="m/s",
+        value_fn=lambda mower_data: mower_data.sys.toapp_report_data.work.man_run_speed,
+    ),
     MammotionSensorEntityDescription(
         key="progress",
         name="Progress",
@@ -120,6 +119,22 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.DURATION,
         native_unit_of_measurement="min",
         value_fn=lambda mower_data: mower_data.sys.toapp_report_data.work.progress >> 16,
+    ),
+    MammotionSensorEntityDescription(
+        key="l1_satellites",
+        name="L1 Satellites (Co-Viewing)",
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=None,
+        native_unit_of_measurement=None,
+        value_fn=lambda mower_data: (mower_data.sys.toapp_report_data.rtk.co_view_stars >> 0) & 255,
+    ),
+    MammotionSensorEntityDescription(
+        key="l2_satellites",
+        name="L2 Satellites (Co-Viewing)",
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=None,
+        native_unit_of_measurement=None,
+        value_fn=lambda mower_data: (mower_data.sys.toapp_report_data.rtk.co_view_stars >> 8) & 255,
     ),
 )
 
