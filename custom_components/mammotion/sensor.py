@@ -17,7 +17,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import StateType
 
-from .const import DOMAIN
+from .const import DOMAIN, PositionMode, RTKStatus
 from .coordinator import MammotionDataUpdateCoordinator
 from .entity import MammotionBaseEntity
 
@@ -135,6 +135,22 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         device_class=None,
         native_unit_of_measurement=None,
         value_fn=lambda mower_data: (mower_data.sys.toapp_report_data.rtk.co_view_stars >> 8) & 255,
+    ),
+    MammotionSensorEntityDescription(
+        key="l2_satellites",
+        name="L2 Satellites (Co-Viewing)",
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=None,
+        native_unit_of_measurement=None,
+        value_fn=lambda mower_data: (mower_data.sys.toapp_report_data.rtk.co_view_stars >> 8) & 255,
+    ),
+    MammotionSensorEntityDescription(
+        key="position_mode",
+        name="Position Mode",
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.ENUM,
+        native_unit_of_measurement=None,
+        value_fn=lambda mower_data: str(RTKStatus.from_value(mower_data.sys.toapp_report_data.rtk.status)),
     ),
 )
 
