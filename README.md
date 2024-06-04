@@ -36,7 +36,7 @@ This integration can be installed using [HACS](https://hacs.xyz/)
 1. Install the integration via HACS as mentioned above
 2. Restart HA
 3. Open the Home Assistant web interface.
-4. ⚙Navigate to "Configuration" > "Integrations".
+4. Navigate to "Configuration" > "Integrations".
 5. Click on the "+" button in the bottom right corner to add a new integration.
 6. Search for "Mammotion" and select it from the list.
 7. Select your Luba by name when prompted.
