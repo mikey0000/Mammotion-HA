@@ -24,8 +24,8 @@ This integration allows you to control and monitor your Mammotion Luba, Luba 2 &
 ## Prerequisites 📋
 
 - Home Assistant installed and running
-- Mammotion Luba robot mower connected to your home network
-- Bluetooth proxy for Home Assistant
+- Mower connected to your home network
+- [Bluetooth proxy for Home Assistant](https://esphome.io/components/bluetooth_proxy.html)
 
 ## Installation 🛠️
 
