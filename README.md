@@ -39,7 +39,7 @@ This integration can be installed using [HACS](https://hacs.xyz/)
 4. Navigate to "Configuration" > "Integrations".
 5. Click on the "+" button in the bottom right corner to add a new integration.
 6. Search for "Mammotion" and select it from the list.
-7. Select your Luba by name when prompted.
+7. Select your robot mower by name when prompted.
 8. Click on "Submit" to complete the integration setup.
 
 ## Usage 🎮
