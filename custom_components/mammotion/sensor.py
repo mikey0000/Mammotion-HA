@@ -86,7 +86,7 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.SPEED,
         native_unit_of_measurement="m/s",
-        value_fn=lambda mower_data: mower_data.sys.toapp_report_data.work.man_run_speed,
+        value_fn=lambda mower_data: mower_data.sys.toapp_report_data.work.man_run_speed/100,
     ),
     MammotionSensorEntityDescription(
         key="progress",
