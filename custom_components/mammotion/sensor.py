@@ -140,7 +140,7 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
     MammotionSensorEntityDescription(
         key="position_mode",
         name="RTK Connection",
-        state_class=SensorStateClass.MEASUREMENT,
+        # state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.ENUM,
         native_unit_of_measurement=None,
         value_fn=lambda mower_data: str(RTKStatus.from_value(mower_data.sys.toapp_report_data.rtk.status)), # Note: This will not work for Luba2 & Yuka. Only for Luba1
