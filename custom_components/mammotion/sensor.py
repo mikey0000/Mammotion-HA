@@ -17,7 +17,8 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import StateType
 
-from .const import DOMAIN, PositionMode, RTKStatus
+from .const import DOMAIN
+from pyluba.data.model.enums import PositionMode, RTKStatus
 from .coordinator import MammotionDataUpdateCoordinator
 from .entity import MammotionBaseEntity
 
