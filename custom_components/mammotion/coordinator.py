@@ -17,20 +17,18 @@ if TYPE_CHECKING:
 MOWER_SCAN_INTERVAL = timedelta(minutes=1)
 _LOGGER = logging.getLogger(__name__)
 
-DEVICE_STARTUP_TIMEOUT = 30
-
 
 class MammotionDataUpdateCoordinator(DataUpdateCoordinator):
     """Class to manage fetching mammotion data."""
 
     def __init__(
-        self,
-        hass: HomeAssistant,
-        logger: logging.Logger,
-        ble_device: BLEDevice,
-        device: MammotionBaseBLEDevice,
-        base_unique_id: str,
-        device_name: str,
+            self,
+            hass: HomeAssistant,
+            logger: logging.Logger,
+            ble_device: BLEDevice,
+            device: MammotionBaseBLEDevice,
+            base_unique_id: str,
+            device_name: str,
     ) -> None:
         """Initialize global mammotion data updater."""
         super().__init__(
@@ -48,12 +46,14 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator):
     async def _async_update_data(self) -> dict:
         """Get data from the device."""
         if bool(
-            ble_device := bluetooth.async_ble_device_from_address(
-                self.hass, self.ble_device.address
-            )
+                ble_device := bluetooth.async_ble_device_from_address(
+                    self.hass, self.ble_device.address
+                )
         ):
             self.device.update_device(ble_device)
-            if not has_field(self.device.luba_msg.net):
-                return await self.device.start_sync(0)
-            await self.device.command("get_report_cfg")
-
+            try:
+                if not has_field(self.device.luba_msg.net):
+                    return await self.device.start_sync(0)
+                await self.device.command("get_report_cfg")
+            finally:
+                return self.data
