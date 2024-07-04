@@ -29,7 +29,7 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
     VERSION = 1
 
     _address: str | None = None
-    _discovered_devices: dict[str, BLEDevice] = {}
+    _discovered_devices: dict[str, str] = {}
 
     def __init__(self) -> None:
         """Initialize the config flow."""
@@ -63,13 +63,13 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
     ) -> ConfigFlowResult:
         """Confirm discovery."""
         assert self._address
-        device = self._discovered_devices[self._address]
+        name = self._discovered_devices[self._address]
 
         if user_input is not None:
             return self.async_create_entry(
-                title=device.name,
+                title=name,
                 data={
-                    CONF_ADDRESS: device.address,
+                    CONF_ADDRESS: self._address,
                 },
             )
 
@@ -88,10 +88,10 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
             await self.async_set_unique_id(address, raise_on_progress=False)
             self._abort_if_unique_id_configured()
 
-            device = self._discovered_devices[address]
+            name = self._discovered_devices[address]
 
             return self.async_create_entry(
-                title=device.name,
+                title=name,
                 data={
                     CONF_ADDRESS: address,
                 },
