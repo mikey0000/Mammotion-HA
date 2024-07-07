@@ -2,10 +2,6 @@
 
 from __future__ import annotations
 
-import logging
-
-from bleak_retry_connector import BleakNotFoundError
-
 from homeassistant.components import bluetooth
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_ADDRESS, CONF_MAC, Platform
@@ -17,8 +13,6 @@ from .const import CONF_RETRY_COUNT, DEFAULT_RETRY_COUNT
 from .coordinator import MammotionDataUpdateCoordinator
 
 PLATFORMS: list[Platform] = [Platform.LAWN_MOWER, Platform.SENSOR]
-
-_LOGGER = logging.getLogger(__name__)
 
 type MammotionConfigEntry = ConfigEntry[MammotionDataUpdateCoordinator]
 
