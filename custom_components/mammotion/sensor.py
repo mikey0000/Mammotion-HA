@@ -2,7 +2,6 @@
 
 from collections.abc import Callable
 from dataclasses import dataclass
-import logging
 
 from pyluba.data.model.enums import RTKStatus
 
@@ -20,8 +19,6 @@ from homeassistant.helpers.typing import StateType
 from . import MammotionConfigEntry
 from .coordinator import MammotionDataUpdateCoordinator
 from .entity import MammotionBaseEntity
-
-_LOGGER = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -204,8 +201,4 @@ class MammotionSensorEntity(MammotionBaseEntity, SensorEntity):
     @property
     def native_value(self) -> StateType:
         """Return the state of the sensor."""
-        _LOGGER.debug("================= Debug Log =================")
-        _LOGGER.debug(self.mower_data)
-        # _LOGGER.debug(self.coordinator.device.raw_data)
-        _LOGGER.debug("==================================")
-        return self.entity_description.value_fn(self.mower_data)
+        return self.entity_description.value_fn(self.coordinator.data)

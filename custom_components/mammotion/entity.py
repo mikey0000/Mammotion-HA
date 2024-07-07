@@ -1,7 +1,5 @@
 """Base class for entites."""
 
-from pyluba.proto import luba_msg
-
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
@@ -25,8 +23,3 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionDataUpdateCoordinator]):
             name=coordinator.device_name,
             suggested_area="Garden",
         )
-
-    @property
-    def mower_data(self) -> luba_msg:
-        """Holds the data for the mower."""
-        return self.coordinator.device.luba_msg

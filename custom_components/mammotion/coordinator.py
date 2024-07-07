@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 from bleak_retry_connector import BleakError, BleakNotFoundError
 from pyluba.mammotion.devices import MammotionBaseBLEDevice, has_field
 from pyluba.mammotion.devices.luba import CharacteristicMissingError
+from pyluba.proto.luba_msg import LubaMsg
 
 from homeassistant.components import bluetooth
 from homeassistant.core import HomeAssistant
@@ -21,7 +22,7 @@ if TYPE_CHECKING:
 MOWER_SCAN_INTERVAL = timedelta(minutes=1)
 
 
-class MammotionDataUpdateCoordinator(DataUpdateCoordinator[None]):
+class MammotionDataUpdateCoordinator(DataUpdateCoordinator[LubaMsg]):
     """Class to manage fetching mammotion data."""
 
     def __init__(
@@ -40,7 +41,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[None]):
         self.device_name = ble_device.name
         self.address = ble_device.address
 
-    async def _async_update_data(self) -> None:
+    async def _async_update_data(self) -> LubaMsg:
         """Get data from the device."""
         if ble_device := bluetooth.async_ble_device_from_address(
             self.hass, self.address
@@ -57,3 +58,9 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[None]):
                 TimeoutError,
             ) as exc:
                 raise UpdateFailed(f"Updating Mammotion device failed: {exc}") from exc
+
+            LOGGER.debug("Updated Mammotion device %s", self.device_name)
+            LOGGER.debug("Mammotion device data: %s", self.device.luba_msg)
+            return self.device.luba_msg
+        else:
+            raise UpdateFailed("Could not find device")

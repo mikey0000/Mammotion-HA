@@ -52,9 +52,9 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
     def _get_mower_activity(self) -> LawnMowerActivity | None:
         mode = 0
         charge_state = 0
-        if has_field(self.mower_data.sys.toapp_report_data.dev):
-            mode = self.mower_data.sys.toapp_report_data.dev.sys_status
-            charge_state = self.mower_data.sys.toapp_report_data.dev.charge_state
+        if has_field(self.coordinator.data.sys.toapp_report_data.dev):
+            mode = self.coordinator.data.sys.toapp_report_data.dev.sys_status
+            charge_state = self.coordinator.data.sys.toapp_report_data.dev.charge_state
         _LOGGER.debug("activity mode %s", mode)
         if (
             mode == WorkMode.MODE_PAUSE
