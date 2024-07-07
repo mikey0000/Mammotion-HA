@@ -4,20 +4,18 @@ from __future__ import annotations
 
 import logging
 
+from pyluba.mammotion.devices.luba import has_field
+from pyluba.utility.constant.device_constant import WorkMode
+
 from homeassistant.components.lawn_mower import (
     LawnMowerActivity,
     LawnMowerEntity,
     LawnMowerEntityFeature,
 )
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.typing import ConfigType
-from pyluba.mammotion.devices.luba import has_field
-from pyluba.utility.constant.device_constant import WorkMode
 
-from .const import DOMAIN
+from . import MammotionConfigEntry
 from .coordinator import MammotionDataUpdateCoordinator
 from .entity import MammotionBaseEntity
 
@@ -30,63 +28,39 @@ SUPPORTED_FEATURES = (
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_platform(
-    hass: HomeAssistant,
-    config: ConfigType,
-    coordinator: MammotionDataUpdateCoordinator,
-    async_add_entities: AddEntitiesCallback,
-) -> None:
-    """Set up luba lawn mower."""
-
-    async_add_entities(
-        [
-            MammotionLawnMowerEntity(config.get("title"), coordinator),
-        ],
-        update_before_add=True,
-    )
-
-
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: ConfigEntry,
+    entry: MammotionConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the Luba config entry."""
-    coordinator: MammotionDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
-    await async_setup_platform(
-        hass, {"title": entry.title}, coordinator, async_add_entities
-    )
+    coordinator = entry.runtime_data
+    async_add_entities([MammotionLawnMowerEntity(coordinator)])
 
 
 class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
-    """Representation of a Luba lawn mower."""
+    """Representation of a Mammotion lawn mower."""
 
     _attr_supported_features = SUPPORTED_FEATURES
     _attr_activity = None
 
-    def __init__(
-        self, device_name: str, coordinator: MammotionDataUpdateCoordinator
-    ) -> None:
+    def __init__(self, coordinator: MammotionDataUpdateCoordinator) -> None:
         """Initialize the lawn mower."""
-        super().__init__(device_name, coordinator)
-        self._attr_name = device_name
-        self._attr_unique_id = f"{device_name}"
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, device_name)},
-            manufacturer="Mammotion",
-            serial_number=coordinator.device.luba_msg.net.toapp_wifi_iot_status.productkey,
-            name=device_name,
-            suggested_area="Garden",
-        )
+        super().__init__(coordinator, "mower")
+        self._attr_name = None  # main feature of device
 
-    def _get_mower_activity(self) -> LawnMowerActivity:
+    def _get_mower_activity(self) -> LawnMowerActivity | None:
         mode = 0
         charge_state = 0
         if has_field(self.mower_data.sys.toapp_report_data.dev):
             mode = self.mower_data.sys.toapp_report_data.dev.sys_status
             charge_state = self.mower_data.sys.toapp_report_data.dev.charge_state
         _LOGGER.debug("activity mode %s", mode)
-        if mode == WorkMode.MODE_PAUSE or mode == WorkMode.MODE_READY and charge_state == 0:
+        if (
+            mode == WorkMode.MODE_PAUSE
+            or mode == WorkMode.MODE_READY
+            and charge_state == 0
+        ):
             return LawnMowerActivity.PAUSED
         if mode in (WorkMode.MODE_WORKING, WorkMode.MODE_RETURNING):
             return LawnMowerActivity.MOWING
@@ -98,7 +72,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
         return self._attr_activity
 
     @property
-    def activity(self) -> LawnMowerActivity:
+    def activity(self) -> LawnMowerActivity | None:
         """Return the state of the mower."""
         return self._get_mower_activity()
 

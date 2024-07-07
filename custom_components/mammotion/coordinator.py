@@ -2,58 +2,58 @@
 
 from __future__ import annotations
 
-import logging
 from datetime import timedelta
 from typing import TYPE_CHECKING
 
+from bleak_retry_connector import BleakError, BleakNotFoundError
+from pyluba.mammotion.devices import MammotionBaseBLEDevice, has_field
+from pyluba.mammotion.devices.luba import CharacteristicMissingError
+
 from homeassistant.components import bluetooth
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
-from pyluba.mammotion.devices import MammotionBaseBLEDevice, has_field
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+
+from .const import LOGGER
 
 if TYPE_CHECKING:
     from bleak.backends.device import BLEDevice
 
 MOWER_SCAN_INTERVAL = timedelta(minutes=1)
-_LOGGER = logging.getLogger(__name__)
 
 
-class MammotionDataUpdateCoordinator(DataUpdateCoordinator):
+class MammotionDataUpdateCoordinator(DataUpdateCoordinator[None]):
     """Class to manage fetching mammotion data."""
 
     def __init__(
-            self,
-            hass: HomeAssistant,
-            logger: logging.Logger,
-            ble_device: BLEDevice,
-            device: MammotionBaseBLEDevice,
-            base_unique_id: str,
-            device_name: str,
+        self,
+        hass: HomeAssistant,
+        ble_device: BLEDevice,
     ) -> None:
         """Initialize global mammotion data updater."""
         super().__init__(
             hass=hass,
-            logger=logger,
+            logger=LOGGER,
             name="Mammotion Lawn Mower data",
             update_interval=MOWER_SCAN_INTERVAL,
         )
-        self.ble_device = ble_device
-        self.device = device
-        self.device_name = device_name
-        self.base_unique_id = base_unique_id
-        self._was_unavailable = True
+        self.device = MammotionBaseBLEDevice(ble_device)
+        self.device_name = ble_device.name
+        self.address = ble_device.address
 
-    async def _async_update_data(self) -> dict:
+    async def _async_update_data(self) -> None:
         """Get data from the device."""
-        if bool(
-                ble_device := bluetooth.async_ble_device_from_address(
-                    self.hass, self.ble_device.address
-                )
+        if ble_device := bluetooth.async_ble_device_from_address(
+            self.hass, self.address
         ):
             self.device.update_device(ble_device)
             try:
                 if not has_field(self.device.luba_msg.net):
                     return await self.device.start_sync(0)
                 await self.device.command("get_report_cfg")
-            finally:
-                return self.data
+            except (
+                BleakNotFoundError,
+                CharacteristicMissingError,
+                BleakError,
+                TimeoutError,
+            ) as exc:
+                raise UpdateFailed(f"Updating Mammotion device failed: {exc}") from exc

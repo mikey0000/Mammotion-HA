@@ -1,20 +1,21 @@
 {
     "config": {
         "abort": {
-            "already_configured": "Account is already configured",
+            "already_configured": "Device is already configured",
             "already_in_progress": "Configuration flow is already in progress",
-            "authorize_url_timeout": "Timeout generating authorize URL.",
-            "missing_configuration": "The component is not configured. Please follow the documentation.",
-            "no_url_available": "No URL available. For information about this error, [check the help section]({docs_url})",
-            "oauth_error": "Received invalid token data.",
-            "user_rejected_authorize": "Account linking rejected: {error}"
+            "no_devices_found": "Could not find device(s)",
+            "not_supported": "Device not supported"
         },
-        "create_entry": {
-            "default": "Successfully authenticated"
-        },
+        "flow_title": "Configure your Mammotion lawn mower",
         "step": {
-            "pick_implementation": {
-                "title": "Pick Authentication Method"
+            "bluetooth_confirm": {
+                "description": "Setup {name}"
+            },
+            "user": {
+                "data": {
+                    "address": "Device"
+                },
+                "description": "Select your mower"
             }
         }
     }
