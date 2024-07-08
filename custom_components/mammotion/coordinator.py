@@ -20,11 +20,15 @@ from .const import LOGGER
 if TYPE_CHECKING:
     from bleak.backends.device import BLEDevice
 
+    from . import MammotionConfigEntry
+
 MOWER_SCAN_INTERVAL = timedelta(minutes=1)
 
 
 class MammotionDataUpdateCoordinator(DataUpdateCoordinator[LubaMsg]):
     """Class to manage fetching mammotion data."""
+
+    config_entry: MammotionConfigEntry
 
     def __init__(
         self,
