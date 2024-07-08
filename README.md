@@ -1,63 +1,60 @@
-# Mammotion - Home Assistant Integration [![Discord](https://img.shields.io/discord/1247286396297678879)](https://discord.gg/vpZdWhJX8x)
+# PyMammotion - Python API for Mammotion Mowers [![Discord](https://img.shields.io/discord/1247286396297678879)](https://discord.gg/vpZdWhJX8x)
+
+[![SemVer 0.8.5][img_version]][url_version]
+[![PyPI Releases][img_pypi]][url_pypi]
+[![Supported Python Versions][img_pyversions]][url_pyversions]
+
+[img_version]: https://img.shields.io/static/v1.svg?label=SemVer&message=0.0.1&color=blue
+[url_version]: https://pypi.org/project/pyluba/
+
+[img_pypi]: https://img.shields.io/badge/PyPI-wheels-green.svg
+[url_pypi]: https://pypi.org/project/pyluba/#files
+
+[img_pyversions]: https://img.shields.io/pypi/pyversions/pyluba.svg
+[url_pyversions]: https://pypi.python.org/pypi/pyluba
 
 💬 [Join us on Discord](https://discord.gg/vpZdWhJX8x)
 
-This integration allows you to control and monitor your Mammotion Luba, Luba 2 & Yuka robot mowers using Home Assistant.
+PyMammotion is a Python API for controlling and monitoring Mammotion robot mowers (Luba, Luba 2 & Yuka) via MQTT, Cloud, and Bluetooth.
 
-⚠️ **Please note:** This integration is still a work in progress. You may encounter unfinished features or bugs. If you come across any issues, please open an issue on the GitHub repository. 🐛
+⚠️ **Please note:** This API is still under active development. You may encounter unfinished features or bugs. If you come across any issues, please open an issue on the GitHub repository. 🐛
 
-## Roadmap 🗺️
+## Home Assistant Integration
 
-- [x] Bluetooth (BLE) support
-- [ ] Wi-Fi support
-- [ ] Scheduling
-- [ ] Mapping and zone management
-- [ ] Firmware updates
-- [ ] Automations
-- [ ] More...
-
-## Features ✨
-
-- Start and stop the mower
-- Monitor the mower's status (e.g., mowing, charging, idle)
-- View the mower's battery level
-- More features being added all the time!
-
-## Prerequisites 📋
-
-- Home Assistant installed and running
-- Mower connected to your home network
-- [Bluetooth proxy for Home Assistant](https://esphome.io/components/bluetooth_proxy.html)
+This library is the foundation for the [Mammotion Home Assistant integration](https://github.com/mikey0000/Mammotion-HA). If you're looking to control your Mammotion mower through Home Assistant, check out the integration repository for installation and setup instructions.
 
 ## Installation 🛠️
 
-This integration can be installed using [HACS](https://hacs.xyz/)
+You can install PyMammotion using pip:
 
-[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg?style=for-the-badge)](https://github.com/hacs/integration)
+```bash
+pip install pyluba
+```
 
-1. Install the integration via HACS as mentioned above
-2. Restart HA
-3. Open the Home Assistant web interface.
-4. Navigate to "Configuration" > "Integrations".
-5. Click on the "+" button in the bottom right corner to add a new integration.
-6. Search for "Mammotion" and select it from the list.
-7. Select your robot mower by name when prompted.
-8. Click on "Submit" to complete the integration setup.
+## Development 🔧
 
-## Usage 🎮
+PyMammotion uses `betterproto` and `protoc` for generating protobuf models. To set up the development environment:
 
-Once the integration is set up, you can control and monitor your Mammotion mower using Home Assistant. 🎉
+1. Clone the repository
+2. ???
+3. Profit
 
-## Troubleshooting 🔧
+## Contributing 🤝
 
-If you encounter any issues with the Mammotion integration, please check the Home Assistant logs for error messages. You can also try the following troubleshooting steps:
+Contributions are welcome! Please check the [issues](https://github.com/mikey0000/pymammotion/issues) for ways you can help improve PyMammotion.
 
-- Verify that you have Bluetooth proxy setup with Home Assistant.
-- Ensure that your mower is connected to your home network and accessible from Home Assistant.
-- Restart Home Assistant and check if the issue persists.
+## Troubleshooting 🔍
 
-If the problem continues, please file an issue on the GitHub repository for further assistance. 🙏
+If you encounter any issues:
+
+- Check the [wiki](https://github.com/mikey0000/pymammotion/wiki) for known issues and solutions
+- Ensure you're using the latest version of PyMammotion
+- If the problem persists, please open an issue on GitHub
 
 ## Credits 👥
 
-[![Contributors](https://contrib.rocks/image?repo=mikey0000/HA-Luba)](https://github.com/mikey0000/HA-Luba/graphs/contributors)
+[![Contributors](https://contrib.rocks/image?repo=mikey0000/pymammotion)](https://github.com/mikey0000/pymammotion/graphs/contributors)
+
+## License 📄
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
