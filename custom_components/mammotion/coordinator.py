@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import asdict
 from datetime import timedelta
 from typing import TYPE_CHECKING
 
@@ -38,8 +39,9 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[LubaMsg]):
             update_interval=MOWER_SCAN_INTERVAL,
         )
         self.device = MammotionBaseBLEDevice(ble_device)
-        self.device_name = ble_device.name
+        self.device_name = ble_device.name or "Unknown"
         self.address = ble_device.address
+        self.update_failures = 0
 
     async def _async_update_data(self) -> LubaMsg:
         """Get data from the device."""
@@ -57,10 +59,16 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[LubaMsg]):
                 BleakError,
                 TimeoutError,
             ) as exc:
+                self.update_failures += 1
                 raise UpdateFailed(f"Updating Mammotion device failed: {exc}") from exc
 
             LOGGER.debug("Updated Mammotion device %s", self.device_name)
-            LOGGER.debug("Mammotion device data: %s", self.device.luba_msg)
+            LOGGER.debug("================= Debug Log =================")
+            LOGGER.debug("Mammotion device data: %s", asdict(self.device.luba_msg))
+            LOGGER.debug("==================================")
+
+            self.update_failures = 0
             return self.device.luba_msg
-        else:
-            raise UpdateFailed("Could not find device")
+
+        self.update_failures += 1
+        raise UpdateFailed("Could not find device")

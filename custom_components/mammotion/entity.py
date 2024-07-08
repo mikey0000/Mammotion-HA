@@ -1,10 +1,12 @@
-"""Base class for entites."""
+"""Base class for entities."""
 
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
 from .coordinator import MammotionDataUpdateCoordinator
+
+MAX_UPDATE_FAILURES = 3
 
 
 class MammotionBaseEntity(CoordinatorEntity[MammotionDataUpdateCoordinator]):
@@ -22,4 +24,12 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionDataUpdateCoordinator]):
             serial_number=coordinator.device.luba_msg.net.toapp_wifi_iot_status.productkey,
             name=coordinator.device_name,
             suggested_area="Garden",
+        )
+
+    @property
+    def available(self) -> bool:
+        """Return True if entity is available."""
+        return (
+            self.coordinator.data is not None
+            and self.coordinator.update_failures < MAX_UPDATE_FAILURES
         )
