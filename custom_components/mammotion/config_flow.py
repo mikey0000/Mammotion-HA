@@ -29,18 +29,18 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
     VERSION = 1
 
     _address: str | None = None
-    _discovered_devices: dict[str, BLEDevice] = {}
+    _discovered_devices: dict[str, str] = {}
 
     def __init__(self) -> None:
         """Initialize the config flow."""
 
     async def async_step_bluetooth(
-        self, discovery_info: BluetoothServiceInfo
+            self, discovery_info: BluetoothServiceInfo
     ) -> ConfigFlowResult:
         """Handle the bluetooth discovery step."""
         _LOGGER.debug("Discovered bluetooth device: %s", discovery_info)
         await self.async_set_unique_id(format_unique_id(discovery_info.address))
-        self._abort_if_unique_id_configured()
+        self._abort_if_unique_id_configured(updates={CONF_ADDRESS: discovery_info.address})
 
         device = bluetooth.async_ble_device_from_address(
             self.hass, discovery_info.address
@@ -49,28 +49,27 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
             return self.async_abort(reason="unknown")
 
         match_found = device.name.startswith(DEVICE_SUPPORT)
-        if not match_found:
+        if device.name is None and not match_found:
             return self.async_abort(reason="not_supported")
 
         self._address = device.address
         self._discovered_devices = {device.address: device}
 
         self.context["title_placeholders"] = {"name": device.name}
-
         return await self.async_step_bluetooth_confirm()
 
     async def async_step_bluetooth_confirm(
-        self, user_input: dict[str, Any] | None = None
+            self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Confirm discovery."""
         assert self._address
-        device = self._discovered_devices[self._address]
+        name = self._discovered_devices[self._address]
 
         if user_input is not None:
             return self.async_create_entry(
-                title=device.name,
+                title=name,
                 data={
-                    CONF_ADDRESS: device.address,
+                    CONF_ADDRESS: self._address,
                 },
             )
 
@@ -81,7 +80,7 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
         )
 
     async def async_step_user(
-        self, user_input: dict[str, Any] | None = None
+            self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Handle the user step to pick discovered device."""
         if user_input is not None:
@@ -90,9 +89,6 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
             self._abort_if_unique_id_configured()
 
             name = self._discovered_devices[address]
-            self.context["title_placeholders"] = {
-                "name": name,
-            }
 
             return self.async_create_entry(
                 title=name,
@@ -108,6 +104,9 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                 continue
 
             self._discovered_devices[address] = discovery_info.name
+
+        if not self._discovered_devices:
+            return self.async_abort(reason="no_devices_found")
 
         return self.async_show_form(
             step_id="user",
