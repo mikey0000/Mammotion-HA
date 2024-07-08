@@ -42,12 +42,12 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
     """Representation of a Mammotion lawn mower."""
 
     _attr_supported_features = SUPPORTED_FEATURES
-    _attr_activity = None
 
     def __init__(self, coordinator: MammotionDataUpdateCoordinator) -> None:
         """Initialize the lawn mower."""
         super().__init__(coordinator, "mower")
         self._attr_name = None  # main feature of device
+        self._attr_activity: LawnMowerActivity | None = None
 
     def _get_mower_activity(self) -> LawnMowerActivity | None:
         mode = 0
