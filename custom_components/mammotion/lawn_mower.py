@@ -76,8 +76,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
             identifiers={(DOMAIN, device_name)},
             manufacturer="Mammotion",
             serial_number=device_name.split('-', 1)[-1],
-            # sw_version=self.mower_data.net.toapp_devinfo_resp.resp_ids[0].info,
-            # sw_version=coordinator.device.luba_msg.net.toapp_devinfo_resp.resp_ids[0].info if coordinator.device.luba_msg.net.toapp_devinfo_resp.resp_ids else "Loading...",
+            # ToDo: To add in once betterproto is fixed
             # sw_version=coordinator.device.luba_msg.net.toapp_devinfo_resp.resp_ids.get(0, {}).get('info', "Loading..."),
             model=DeviceType.value_of_str(device_name, coordinator.device.luba_msg.net.toapp_wifi_iot_status.productkey).get_model(),
             name=device_name,
