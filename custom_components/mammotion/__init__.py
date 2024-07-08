@@ -12,7 +12,11 @@ from homeassistant.helpers import device_registry as dr
 from .const import CONF_RETRY_COUNT, DEFAULT_RETRY_COUNT
 from .coordinator import MammotionDataUpdateCoordinator
 
-PLATFORMS: list[Platform] = [Platform.LAWN_MOWER, Platform.SENSOR]
+PLATFORMS: list[Platform] = [
+    Platform.BINARY_SENSOR,
+    Platform.LAWN_MOWER,
+    Platform.SENSOR,
+]
 
 type MammotionConfigEntry = ConfigEntry[MammotionDataUpdateCoordinator]
 
