@@ -1,68 +1,69 @@
 {
-    "config": {
-        "abort": {
-            "already_configured": "Device is already configured",
-            "already_in_progress": "Configuration flow is already in progress",
-            "no_devices_found": "Could not find device(s)",
-            "not_supported": "Device not supported"
-        },
-        "flow_title": "Configure your Mammotion lawn mower",
-        "step": {
-            "bluetooth_confirm": {
-                "description": "Setup {name}"
-            },
-            "user": {
-                "data": {
-                    "address": "Device"
-                },
-                "description": "Select your mower"
-            }
-        }
+  "config": {
+    "abort": {
+      "already_configured": "Device is already configured",
+      "already_in_progress": "Configuration flow is already in progress",
+      "no_devices_found": "Could not find devices",
+      "no_longer_present": "Device is no longer present",
+      "not_supported": "Device not supported"
     },
-    "entity": {
-        "sensor": {
-          "battery_percent": {
-            "name": "Battery"
-          },
-          "ble_rssi": {
-            "name": "BLE RSSI"
-          },
-          "wifi_rssi": {
-            "name": "WiFi RSSI"
-          },
-          "gps_stars": {
-            "name": "Satellites (Robot)"
-          },
-          "blade_height": {
-            "name": "Blade height"
-          },
-          "area": {
-            "name": "Area"
-          },
-          "mowing_speed": {
-            "name": "Mowing speed"
-          },
-          "progress": {
-            "name": "Progress"
-          },
-          "total_time": {
-            "name": "Total time"
-          },
-          "elapsed_time": {
-            "name": "Elapsed time"
-          },
-          "left_time": {
-            "name": "Time left"
-          },
-          "l1_satellites": {
-            "name": "L1 Satellites (Co-Viewing)"
-          },
-          "l2_satellites": {
-            "name": "L2 Satellites (Co-Viewing)"
-          },
-          "position_mode": {
-            "name": "RTK position"
-          }
-        }
+    "flow_title": "Configure your Mammotion lawn mower",
+    "step": {
+      "bluetooth_confirm": {
+        "description": "Setup {name}"
+      },
+      "user": {
+        "data": {
+          "address": "Device"
+        },
+        "description": "Select your mower"
+      }
     }
+  },
+  "entity": {
+    "sensor": {
+      "battery_percent": {
+        "name": "Battery"
+      },
+      "ble_rssi": {
+        "name": "BLE RSSI"
+      },
+      "wifi_rssi": {
+        "name": "WiFi RSSI"
+      },
+      "gps_stars": {
+        "name": "Satellites (Robot)"
+      },
+      "blade_height": {
+        "name": "Blade height"
+      },
+      "area": {
+        "name": "Area"
+      },
+      "mowing_speed": {
+        "name": "Mowing speed"
+      },
+      "progress": {
+        "name": "Progress"
+      },
+      "total_time": {
+        "name": "Total time"
+      },
+      "elapsed_time": {
+        "name": "Elapsed time"
+      },
+      "left_time": {
+        "name": "Time left"
+      },
+      "l1_satellites": {
+        "name": "L1 Satellites (Co-Viewing)"
+      },
+      "l2_satellites": {
+        "name": "L2 Satellites (Co-Viewing)"
+      },
+      "position_mode": {
+        "name": "RTK position"
+      }
+    }
+  }
 }

@@ -41,7 +41,7 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
         )
 
         if device is None:
-            return self.async_abort(reason="no_devices_found")
+            return self.async_abort(reason="no_longer_present")
 
         if device.name is None or not device.name.startswith(DEVICE_SUPPORT):
             return self.async_abort(reason="not_supported")
@@ -82,7 +82,9 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
             await self.async_set_unique_id(address, raise_on_progress=False)
             self._abort_if_unique_id_configured()
 
-            name = discovered_devices[address]
+            name = discovered_devices.get(address)
+            if name is None:
+                return self.async_abort(reason="no_longer_present")
 
             return self.async_create_entry(
                 title=name,
