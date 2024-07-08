@@ -4,6 +4,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 
 from pyluba.data.model.enums import RTKStatus
+from pyluba.proto.luba_msg import LubaMsg
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
@@ -25,13 +26,12 @@ from .entity import MammotionBaseEntity
 class MammotionSensorEntityDescription(SensorEntityDescription):
     """Describes Mammotion sensor entity."""
 
-    value_fn: Callable[[], StateType]
+    value_fn: Callable[[LubaMsg], StateType]
 
 
 SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
     MammotionSensorEntityDescription(
         key="battery_percent",
-        name="Battery",
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.BATTERY,
         native_unit_of_measurement=PERCENTAGE,
@@ -39,7 +39,6 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
     ),
     MammotionSensorEntityDescription(
         key="ble_rssi",
-        name="BLE RSSI",
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.SIGNAL_STRENGTH,
         native_unit_of_measurement="dBm",
@@ -47,7 +46,6 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
     ),
     MammotionSensorEntityDescription(
         key="wifi_rssi",
-        name="WiFi RSSI",
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.SIGNAL_STRENGTH,
         native_unit_of_measurement="dBm",
@@ -55,7 +53,6 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
     ),
     MammotionSensorEntityDescription(
         key="gps_stars",
-        name="Satellites (Robot)",
         state_class=SensorStateClass.MEASUREMENT,
         device_class=None,
         native_unit_of_measurement=None,
@@ -63,7 +60,6 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
     ),
     MammotionSensorEntityDescription(
         key="blade_height",
-        name="Blade Height",
         state_class=SensorStateClass.MEASUREMENT,
         device_class=None,
         native_unit_of_measurement="mm",
@@ -71,7 +67,6 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
     ),
     MammotionSensorEntityDescription(
         key="area",
-        name="Area",
         state_class=SensorStateClass.MEASUREMENT,
         device_class=None,
         native_unit_of_measurement="m²",
@@ -79,7 +74,6 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
     ),
     MammotionSensorEntityDescription(
         key="mowing_speed",
-        name="Mowing speed",
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.SPEED,
         native_unit_of_measurement="m/s",
@@ -88,7 +82,6 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
     ),
     MammotionSensorEntityDescription(
         key="progress",
-        name="Progress",
         state_class=SensorStateClass.MEASUREMENT,
         device_class=None,
         native_unit_of_measurement=PERCENTAGE,
@@ -96,7 +89,6 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
     ),
     MammotionSensorEntityDescription(
         key="total_time",
-        name="Total Time",
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.DURATION,
         native_unit_of_measurement="min",
@@ -105,7 +97,6 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
     ),
     MammotionSensorEntityDescription(
         key="elapsed_time",
-        name="Elapsed Time",
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.DURATION,
         native_unit_of_measurement="min",
@@ -116,7 +107,6 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
     ),
     MammotionSensorEntityDescription(
         key="left_time",
-        name="Time Left",
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.DURATION,
         native_unit_of_measurement="min",
@@ -125,7 +115,6 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
     ),
     MammotionSensorEntityDescription(
         key="l1_satellites",
-        name="L1 Satellites (Co-Viewing)",
         state_class=SensorStateClass.MEASUREMENT,
         device_class=None,
         native_unit_of_measurement=None,
@@ -136,7 +125,6 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
     ),
     MammotionSensorEntityDescription(
         key="l2_satellites",
-        name="L2 Satellites (Co-Viewing)",
         state_class=SensorStateClass.MEASUREMENT,
         device_class=None,
         native_unit_of_measurement=None,
@@ -147,7 +135,6 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
     ),
     MammotionSensorEntityDescription(
         key="position_mode",
-        name="RTK Connection",
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.ENUM,
         native_unit_of_measurement=None,
@@ -195,8 +182,7 @@ class MammotionSensorEntity(MammotionBaseEntity, SensorEntity):
         """Set up MammotionSensor."""
         super().__init__(coordinator, description.key)
         self.entity_description = description
-        self._attr_name = description.name
-        # self.entity_id = f"{DOMAIN}.{device_name}_{description.key}"
+        self._attr_translation_key = description.key
 
     @property
     def native_value(self) -> StateType:
