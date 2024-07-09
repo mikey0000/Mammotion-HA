@@ -64,7 +64,7 @@ class MammotionBinarySensorEntity(MammotionBaseEntity, BinarySensorEntity):
         """Initialize the binary sensor entity."""
         super().__init__(coordinator, entity_description.key)
         self.entity_description = entity_description
-        self.translation_key = entity_description.translation_key
+        self._attr_translation_key = entity_description.translation_key
 
     @property
     def is_on(self) -> bool | None:
