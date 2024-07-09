@@ -17,12 +17,18 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .const import LOGGER
+from .const import DOMAIN, LOGGER
 
 if TYPE_CHECKING:
     from . import MammotionConfigEntry
 
-MOWER_SCAN_INTERVAL = timedelta(minutes=1)
+SCAN_INTERVAL = timedelta(minutes=1)
+UPDATE_EXCEPTIONS = (
+    BleakNotFoundError,
+    CharacteristicMissingError,
+    BleakError,
+    TimeoutError,
+)
 
 
 class MammotionDataUpdateCoordinator(DataUpdateCoordinator[LubaMsg]):
@@ -42,8 +48,8 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[LubaMsg]):
         super().__init__(
             hass=hass,
             logger=LOGGER,
-            name="Mammotion Lawn Mower data",
-            update_interval=MOWER_SCAN_INTERVAL,
+            name=DOMAIN,
+            update_interval=SCAN_INTERVAL,
         )
         self.update_failures = 0
 
@@ -62,12 +68,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[LubaMsg]):
         self.device.update_device(ble_device)
         try:
             await self.device.start_sync(0)
-        except (
-            BleakNotFoundError,
-            CharacteristicMissingError,
-            BleakError,
-            TimeoutError,
-        ) as exc:
+        except UPDATE_EXCEPTIONS as exc:
             raise ConfigEntryNotReady("Unable to setup Mammotion device") from exc
 
     async def _async_update_data(self) -> LubaMsg:
@@ -78,12 +79,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[LubaMsg]):
             self.device.update_device(ble_device)
             try:
                 await self.device.command("get_report_cfg")
-            except (
-                BleakNotFoundError,
-                CharacteristicMissingError,
-                BleakError,
-                TimeoutError,
-            ) as exc:
+            except UPDATE_EXCEPTIONS as exc:
                 self.update_failures += 1
                 raise UpdateFailed(f"Updating Mammotion device failed: {exc}") from exc
 
