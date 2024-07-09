@@ -1,5 +1,7 @@
 # Mammotion - Home Assistant Integration [![Discord](https://img.shields.io/discord/1247286396297678879)](https://discord.gg/vpZdWhJX8x)
 
+💬 [Join us on Discord](https://discord.gg/vpZdWhJX8x)
+
 This integration allows you to control and monitor your Mammotion Luba, Luba 2 & Yuka robot mowers using Home Assistant.
 
 ⚠️ **Please note:** This integration is still a work in progress. You may encounter unfinished features or bugs. If you come across any issues, please open an issue on the GitHub repository. 🐛
@@ -54,8 +56,12 @@ If you encounter any issues with the Mammotion integration, please check the Hom
 - Ensure that your mower is connected to your home network and accessible from Home Assistant.
 - Restart Home Assistant and check if the issue persists.
 
+## PyMammotion Library 📚
+
+This integration uses the [PyMammotion library](https://github.com/mikey0000/PyMammotion) to communicate with Mammotion mowers. PyMammotion provides a Python API for controlling and monitoring Mammotion robot mowers via MQTT, Cloud, and Bluetooth.
+
 If the problem continues, please file an issue on the GitHub repository for further assistance. 🙏
 
 ## Credits 👥
 
-[![Contributors](https://contrib.rocks/image?repo=mikey0000/HA-Luba)](https://github.com/mikey0000/HA-Luba/graphs/contributors)
+[![Contributors](https://contrib.rocks/image?repo=mikey0000/Mammotion-HA)](https://github.com/mikey0000/Mammotion-HA/graphs/contributors)
