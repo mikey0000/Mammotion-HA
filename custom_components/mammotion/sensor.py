@@ -143,7 +143,6 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         ),  # Note: This will not work for Luba2 & Yuka. Only for Luba1
     ),
     # ToDo: We still need to add the following.
-    # - Model - Luba1, Luba2, Yuka, RTK (DeviceType.java)
     # - RTK Status - None, Single, Fix, Float, Unknown (RTKStatusFragment.java)
     # - Signal quality (Robot)
     # - Signal quality (Ref. Station)
