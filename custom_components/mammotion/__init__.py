@@ -2,11 +2,9 @@
 
 from __future__ import annotations
 
-from homeassistant.components import bluetooth
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_ADDRESS, CONF_MAC, Platform
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import device_registry as dr
 
 from .const import CONF_RETRY_COUNT, DEFAULT_RETRY_COUNT
@@ -43,19 +41,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
             options={CONF_RETRY_COUNT: DEFAULT_RETRY_COUNT},
         )
 
-    address: str = entry.data[CONF_ADDRESS]
-    ble_device = bluetooth.async_ble_device_from_address(hass, address.upper())
-    if not ble_device:
-        raise ConfigEntryNotReady(
-            f"Could not find Mammotion lawn mower with address {address}"
-        )
+    coordinator = MammotionDataUpdateCoordinator(hass)
 
-    coordinator = MammotionDataUpdateCoordinator(
-        hass,
-        ble_device,
-    )
+    await coordinator.async_setup()
     await coordinator.async_config_entry_first_refresh()
-
     entry.runtime_data = coordinator
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
