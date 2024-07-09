@@ -12,7 +12,6 @@ from . import MammotionConfigEntry
 
 TO_REDACT = {
     "productkey",
-    "devicename",
 }
 
 
