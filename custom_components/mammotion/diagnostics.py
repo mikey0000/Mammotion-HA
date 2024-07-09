@@ -10,7 +10,10 @@ from homeassistant.core import HomeAssistant
 
 from . import MammotionConfigEntry
 
-TO_REDACT: list[str] = []
+TO_REDACT = {
+    "productkey",
+    "devicename",
+}
 
 
 async def async_get_config_entry_diagnostics(
