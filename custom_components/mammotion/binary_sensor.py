@@ -32,7 +32,7 @@ BINARY_SENSORS: tuple[MammotionBinarySensorEntityDescription, ...] = (
         key="charging",
         device_class=BinarySensorDeviceClass.BATTERY_CHARGING,
         is_on_fn=lambda mower_data: mower_data.sys.toapp_report_data.dev.charge_state
-        == 1,
+        in (1, 2),
     ),
 )
 
