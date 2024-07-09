@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import logging
-
 from pyluba.mammotion.devices.luba import has_field
 from pyluba.utility.constant.device_constant import WorkMode
 
@@ -16,6 +14,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import MammotionConfigEntry
+from .const import LOGGER
 from .coordinator import MammotionDataUpdateCoordinator
 from .entity import MammotionBaseEntity
 
@@ -24,8 +23,6 @@ SUPPORTED_FEATURES = (
     | LawnMowerEntityFeature.PAUSE
     | LawnMowerEntityFeature.START_MOWING
 )
-
-_LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(
@@ -55,7 +52,8 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
         if has_field(self.coordinator.data.sys.toapp_report_data.dev):
             mode = self.coordinator.data.sys.toapp_report_data.dev.sys_status
             charge_state = self.coordinator.data.sys.toapp_report_data.dev.charge_state
-        _LOGGER.debug("activity mode %s", mode)
+
+        LOGGER.debug("activity mode %s", mode)
         if (
             mode == WorkMode.MODE_PAUSE
             or mode == WorkMode.MODE_READY
@@ -97,6 +95,6 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
     @callback
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
-        _LOGGER.debug(self.coordinator.device.raw_data)
+        LOGGER.debug(self.coordinator.device.raw_data)
         self._attr_activity = self._get_mower_activity()
         self.async_write_ha_state()
