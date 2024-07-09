@@ -24,7 +24,7 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionDataUpdateCoordinator]):
             name=coordinator.device_name,
             # ToDo: To add in once betterproto is fixed
             # sw_version=coordinator.device.luba_msg.net.toapp_devinfo_resp.resp_ids.get(0, {}).get('info', "Loading..."),
-            model=DeviceType.value_of_str(device_name, coordinator.device.luba_msg.net.toapp_wifi_iot_status.productkey).get_model(),
+            model=DeviceType.value_of_str(coordinator.device_name, coordinator.device.luba_msg.net.toapp_wifi_iot_status.productkey).get_model(),
             suggested_area="Garden",
         )
 
