@@ -39,7 +39,6 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[LubaMsg]):
     device_name: str
     device: MammotionBaseBLEDevice
 
-
     def __init__(
         self,
         hass: HomeAssistant,
