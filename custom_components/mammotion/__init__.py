@@ -12,7 +12,7 @@ from .coordinator import MammotionDataUpdateCoordinator
 
 PLATFORMS: list[Platform] = [
     Platform.BINARY_SENSOR,
-    Platform.LAWN_MOWER, 
+    Platform.LAWN_MOWER,
     Platform.SENSOR,
 ]
 

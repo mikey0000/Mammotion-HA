@@ -19,8 +19,6 @@ from .const import DEVICE_SUPPORT, DOMAIN, LOGGER
 class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Mammotion."""
 
-    VERSION = 1
-
     def __init__(self) -> None:
         """Initialize the config flow."""
         self._discovered_device: BLEDevice | None = None
@@ -45,6 +43,8 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
 
         if device.name is None or not device.name.startswith(DEVICE_SUPPORT):
             return self.async_abort(reason="not_supported")
+
+        self.context["title_placeholders"] = {"name": device.name}
 
         self._discovered_device = device
 
