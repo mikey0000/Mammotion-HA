@@ -1,14 +1,6 @@
-name: Report an issue with Home Assistant Core
-description: Report an issue with Home Assistant Core.
+name: Report an issue with the Intergration
+description: Report an issue with the Intergration.
 body:
-  - type: markdown
-    attributes:
-      value: |
-        This issue form is for reporting bugs only!
-
-        If you have a feature or enhancement request, please use the [feature request][fr] section of our [Community Forum][fr].
-
-        [fr]: https://community.home-assistant.io/c/feature-requests
   - type: textarea
     validations:
       required: true
@@ -28,48 +20,12 @@ body:
     validations:
       required: true
     attributes:
-      label: What version of Home Assistant Core has the issue?
+      label: What version of Home Assistant Core are you running?
       placeholder: core-
       description: >
         Can be found in: [Settings ⇒ System ⇒ Repairs ⇒ Three Dots in Upper Right ⇒ System information](https://my.home-assistant.io/redirect/system_health/).
 
         [![Open your Home Assistant instance and show the system information.](https://my.home-assistant.io/badges/system_health.svg)](https://my.home-assistant.io/redirect/system_health/)
-  - type: input
-    attributes:
-      label: What was the last working version of Home Assistant Core?
-      placeholder: core-
-      description: >
-        If known, otherwise leave blank.
-  - type: dropdown
-    validations:
-      required: true
-    attributes:
-      label: What type of installation are you running?
-      description: >
-        Can be found in: [Settings ⇒ System ⇒ Repairs ⇒ Three Dots in Upper Right ⇒ System information](https://my.home-assistant.io/redirect/system_health/).
-
-        [![Open your Home Assistant instance and show the system information.](https://my.home-assistant.io/badges/system_health.svg)](https://my.home-assistant.io/redirect/system_health/)
-      options:
-        - Home Assistant OS
-        - Home Assistant Container
-        - Home Assistant Supervised
-        - Home Assistant Core
-  - type: input
-    id: integration_name
-    attributes:
-      label: Integration causing the issue
-      description: >
-        The name of the integration, for example Automation or Philips Hue.
-  - type: input
-    id: integration_link
-    attributes:
-      label: Link to integration documentation on our website
-      placeholder: "https://www.home-assistant.io/integrations/..."
-      description: |
-        Providing a link [to the documentation][docs] helps us categorize the issue and might speed up the
-        investigation by automatically informing a contributor, while also providing a useful reference for others.
-
-        [docs]: https://www.home-assistant.io/integrations
 
   - type: markdown
     attributes:
