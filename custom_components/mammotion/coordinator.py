@@ -6,14 +6,13 @@ from dataclasses import asdict
 from datetime import timedelta
 from typing import TYPE_CHECKING
 
-from pyluba.mammotion.devices import MammotionBaseBLEDevice
-from pyluba.proto.luba_msg import LubaMsg
-
 from homeassistant.components import bluetooth
 from homeassistant.const import CONF_ADDRESS
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from pyluba.mammotion.devices import MammotionBaseBLEDevice
+from pyluba.proto.luba_msg import LubaMsg
 
 from .const import COMMAND_EXCEPTIONS, DOMAIN, LOGGER
 

@@ -2,9 +2,8 @@
 
 from typing import Any
 
-from bleak import BLEDevice
 import voluptuous as vol
-
+from bleak import BLEDevice
 from homeassistant.components import bluetooth
 from homeassistant.components.bluetooth import (
     BluetoothServiceInfo,

@@ -3,9 +3,6 @@
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from pyluba.data.model.enums import RTKStatus
-from pyluba.proto.luba_msg import ReportInfoData
-
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity,
@@ -16,6 +13,8 @@ from homeassistant.const import PERCENTAGE
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import StateType
+from pyluba.data.model.enums import RTKStatus
+from pyluba.proto.luba_msg import ReportInfoData
 
 from . import MammotionConfigEntry
 from .coordinator import MammotionDataUpdateCoordinator
