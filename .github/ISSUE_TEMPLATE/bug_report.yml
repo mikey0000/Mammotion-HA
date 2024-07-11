@@ -11,13 +11,16 @@ body:
         maintainers. Tell us what you were trying to do and what happened.
 
         Provide a clear and concise description of what the problem is.
-  - type: input
+  - type: dropdown
     id: robot
     validations:
       required: true
     attributes:
       label: What Mammotion mower are you using?
-      placeholder: Luba 1, Luba 2 or Yuka
+      options:
+        - Luba 1
+        - Luba 2
+        - Yuka
   - type: input
     id: intergration_version
     validations:
