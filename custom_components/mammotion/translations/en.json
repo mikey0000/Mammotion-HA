@@ -65,5 +65,10 @@
         "name": "RTK position"
       }
     }
+  },
+  "exceptions": {
+    "device_not_ready": {
+      "message": "Device is not ready."
+    }
   }
 }
