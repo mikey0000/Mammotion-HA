@@ -29,20 +29,30 @@ This integration allows you to control and monitor your Mammotion Luba, Luba 2 &
 - Mower connected to your home network
 - [Bluetooth proxy for Home Assistant](https://esphome.io/components/bluetooth_proxy.html)
 
+Here's a cleaned-up version of the installation instructions for your GitHub repo README:
+
 ## Installation 🛠️
 
 This integration can be installed using [HACS](https://hacs.xyz/)
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg?style=for-the-badge)](https://github.com/hacs/integration)
 
-1. Install the integration via HACS as mentioned above
-2. Restart HA
-3. Open the Home Assistant web interface.
-4. Navigate to "Configuration" > "Integrations".
-5. Click on the "+" button in the bottom right corner to add a new integration.
-6. Search for "Mammotion" and select it from the list.
-7. Select your robot mower by name when prompted.
-8. Click on "Submit" to complete the integration setup.
+1. Open the Home Assistant web interface.
+2. Navigate to "Configuration" > "Integrations".
+3. Click the 3 dots in the top right corner and select "Custom repositories".
+4. In the "Add custom repository" dialog:
+   - Repository: `https://github.com/mikey0000/Mammotion-HA`
+   - Category: Select "Integration"
+   - Click "ADD"
+5. Close the custom repositories dialog.
+6. Click the "+" button in the bottom right corner to add a new integration.
+7. Search for "Mammotion" and select it from the list.
+8. Follow the prompts to complete the setup:
+   - Select your robot mower by name when prompted.
+   - Click "Submit" to finalize the integration setup.
+9. Restart Home Assistant to apply the changes.
+
+Note: If you encounter any issues, please ensure that HACS is properly installed and configured in your Home Assistant instance.
 
 ## Usage 🎮
 
