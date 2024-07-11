@@ -48,7 +48,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
     @property
     def rpt_dev_status(self) -> RptDevStatus | None:
         """Return the device status."""
-        if not has_field(self.coordinator.data.sys.toapp_report_data.dev):
+        if has_field(self.coordinator.data.sys.toapp_report_data.dev):
             return self.coordinator.data.sys.toapp_report_data.dev
 
     @property
