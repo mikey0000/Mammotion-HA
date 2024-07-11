@@ -19,14 +19,14 @@ body:
       label: What Mammotion mower are you using?
       placeholder: Luba 1, Luba 2 or Yuka
   - type: input
-    id: robot
+    id: intergration_version
     validations:
       required: true
     attributes:
       label: What version of the Mammotion intergration are you using?
       placeholder: 4280d63, unsure
   - type: input
-    id: version
+    id: ha_version
     validations:
       required: true
     attributes:
