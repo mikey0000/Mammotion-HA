@@ -69,6 +69,18 @@
   "exceptions": {
     "device_not_ready": {
       "message": "Device is not ready."
+    },
+    "pause_failed": {
+      "message": "Failed to pause the mower."
+    },
+    "resume_failed": {
+      "message": "Failed to resume the mower."
+    },
+    "start_failed": {
+      "message": "Failed to start the mower."
+    },
+    "dock_failed": {
+      "message": "Failed to send the mower to the dock."
     }
   }
 }
