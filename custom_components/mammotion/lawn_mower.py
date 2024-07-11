@@ -16,7 +16,7 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import MammotionConfigEntry
-from .const import DOMAIN, LOGGER
+from .const import COMMAND_EXCEPTIONS, DOMAIN, LOGGER
 from .coordinator import MammotionDataUpdateCoordinator
 from .entity import MammotionBaseEntity
 
@@ -50,6 +50,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
         """Return the device status."""
         if has_field(self.coordinator.data.sys.toapp_report_data.dev):
             return self.coordinator.data.sys.toapp_report_data.dev
+        return None
 
     @property
     def activity(self) -> LawnMowerActivity | None:
@@ -74,6 +75,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
             return LawnMowerActivity.ERROR
         if mode == WorkMode.MODE_READY and charge_state != 0:
             return LawnMowerActivity.DOCKED
+        return None
 
     async def async_start_mowing(self) -> None:
         """Start mowing."""
@@ -84,13 +86,33 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
                 translation_domain=DOMAIN, translation_key="device_not_ready"
             )
         if self.rpt_dev_status.sys_status == WorkMode.MODE_PAUSE:
-            return await self.coordinator.device.command("resume_execute_task")
-        await self.coordinator.device.command("start_work_job")
+            try:
+                return await self.coordinator.device.command("resume_execute_task")
+            except COMMAND_EXCEPTIONS as exc:
+                raise HomeAssistantError(
+                    translation_domain=DOMAIN, translation_key="resume_failed"
+                ) from exc
+        try:
+            await self.coordinator.device.command("start_work_job")
+        except COMMAND_EXCEPTIONS as exc:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key="start_failed"
+            ) from exc
 
     async def async_dock(self) -> None:
         """Start docking."""
-        await self.coordinator.device.command("return_to_dock")
+        try:
+            await self.coordinator.device.command("return_to_dock")
+        except COMMAND_EXCEPTIONS as exc:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key="dock_failed"
+            ) from exc
 
     async def async_pause(self) -> None:
         """Pause mower."""
-        await self.coordinator.device.command("pause_execute_task")
+        try:
+            await self.coordinator.device.command("pause_execute_task")
+        except COMMAND_EXCEPTIONS as exc:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key="pause_failed"
+            ) from exc
