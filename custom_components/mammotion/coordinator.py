@@ -72,23 +72,25 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[LubaMsg]):
 
     async def _async_update_data(self) -> LubaMsg:
         """Get data from the device."""
-        if ble_device := bluetooth.async_ble_device_from_address(
-            self.hass, self.address
+        if not (
+            ble_device := bluetooth.async_ble_device_from_address(
+                self.hass, self.address
+            )
         ):
-            self.device.update_device(ble_device)
-            try:
-                await self.device.command("get_report_cfg")
-            except UPDATE_EXCEPTIONS as exc:
-                self.update_failures += 1
-                raise UpdateFailed(f"Updating Mammotion device failed: {exc}") from exc
+            self.update_failures += 1
+            raise UpdateFailed("Could not find device")
 
-            LOGGER.debug("Updated Mammotion device %s", self.device_name)
-            LOGGER.debug("================= Debug Log =================")
-            LOGGER.debug("Mammotion device data: %s", asdict(self.device.luba_msg))
-            LOGGER.debug("==================================")
+        self.device.update_device(ble_device)
+        try:
+            await self.device.command("get_report_cfg")
+        except UPDATE_EXCEPTIONS as exc:
+            self.update_failures += 1
+            raise UpdateFailed(f"Updating Mammotion device failed: {exc}") from exc
 
-            self.update_failures = 0
-            return self.device.luba_msg
+        LOGGER.debug("Updated Mammotion device %s", self.device_name)
+        LOGGER.debug("================= Debug Log =================")
+        LOGGER.debug("Mammotion device data: %s", asdict(self.device.luba_msg))
+        LOGGER.debug("==================================")
 
-        self.update_failures += 1
-        raise UpdateFailed("Could not find device")
+        self.update_failures = 0
+        return self.device.luba_msg
