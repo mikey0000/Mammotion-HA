@@ -10,9 +10,9 @@ from homeassistant.components.lawn_mower import (
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from pyluba.mammotion.devices.luba import has_field
-from pyluba.proto.luba_msg import RptDevStatus
-from pyluba.utility.constant.device_constant import WorkMode
+from pymammotion.mammotion.devices.luba import has_field
+from pymammotion.proto.luba_msg import RptDevStatus
+from pymammotion.utility.constant.device_constant import WorkMode
 
 from . import MammotionConfigEntry
 from .const import COMMAND_EXCEPTIONS, DOMAIN, LOGGER

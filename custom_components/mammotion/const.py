@@ -4,7 +4,7 @@ import logging
 from typing import Final
 
 from bleak_retry_connector import BleakError, BleakNotFoundError
-from pyluba.mammotion.devices.luba import CharacteristicMissingError
+from pymammotion.mammotion.devices.luba import CharacteristicMissingError
 
 DOMAIN: Final = "mammotion"
 

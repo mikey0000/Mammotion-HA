@@ -2,7 +2,7 @@
 
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from pyluba.utility.device_type import DeviceType
+from pymammotion.utility.device_type import DeviceType
 
 from .const import CONF_RETRY_COUNT, DOMAIN
 from .coordinator import MammotionDataUpdateCoordinator
