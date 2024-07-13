@@ -1,0 +1,49 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Get version from manifest.json
+        id: get_version
+        run: |
+          version=$(jq -r .version custom_components/mammotion/manifest.json)
+          echo "::set-output name=version::$version"
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.get_version.outputs.version }}
+          release_name: Release v${{ steps.get_version.outputs.version }}
+          draft: false
+          prerelease: false
+
+      - name: Bump version
+        run: |
+          current_version=$(jq -r .version custom_components/mammotion/manifest.json)
+          IFS='.' read -ra version_parts <<< "$current_version"
+          ((version_parts[2]++))
+          new_version="${version_parts[0]}.${version_parts[1]}.${version_parts[2]}"
+          jq --arg version "$new_version" '.version = $version' custom_components/mammotion/manifest.json > custom_components/mammotion/manifest.json.tmp && mv custom_components/mammotion/manifest.json.tmp custom_components/mammotion/manifest.json
+
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add custom_components/mammotion/manifest.json
+          git commit -m "Bump version to $(jq -r .version custom_components/mammotion/manifest.json)"
+          git push
