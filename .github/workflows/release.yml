@@ -21,6 +21,21 @@ jobs:
           version=$(jq -r .version custom_components/mammotion/manifest.json)
           echo "::set-output name=version::$version"
 
+      - name: Get previous version
+        id: get_previous_version
+        run: |
+          previous_version=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "::set-output name=previous_version::$previous_version"
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          changelog=$(git log --pretty=format:"- %h - %an: %s" ${{ steps.get_previous_version.outputs.previous_version }}..HEAD)
+          changelog="${changelog//'%'/'%25'}"
+          changelog="${changelog//$'\n'/'%0A'}"
+          changelog="${changelog//$'\r'/'%0D'}"
+          echo "::set-output name=changelog::$changelog"
+
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -29,6 +44,13 @@ jobs:
         with:
           tag_name: v${{ steps.get_version.outputs.version }}
           release_name: Release v${{ steps.get_version.outputs.version }}
+          body: |
+            **Release v${{ steps.get_version.outputs.version }}**
+
+            ## Changelog
+            ${{ steps.changelog.outputs.changelog }}
+
+            **Full Changelog**: https://github.com/${{ github.repository }}/compare/${{ steps.get_previous_version.outputs.previous_version }}...v${{ steps.get_version.outputs.version }}
           draft: false
           prerelease: false
 
