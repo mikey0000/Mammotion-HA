@@ -45,10 +45,33 @@ jobs:
           tag_name: v${{ steps.get_version.outputs.version }}
           release_name: Release v${{ steps.get_version.outputs.version }}
           body: |
-            **Release v${{ steps.get_version.outputs.version }}**
+            # Mammotion - Home Assistant Integration v${{ steps.get_version.outputs.version }} 🚀
 
-            ## Changelog
+            [![Discord](https://img.shields.io/discord/1247286396297678879)](https://discord.gg/vpZdWhJX8x)
+
+            This release brings new features and improvements to the Mammotion integration for Home Assistant. Control and monitor your Mammotion Luba, Luba 2 & Yuka robot mowers with ease! 🌿🤖
+
+            ## What's New 🎉
+
             ${{ steps.changelog.outputs.changelog }}
+
+            ## Installation 🛠️
+
+            1. Use HACS to install this custom repository.
+            2. Restart Home Assistant.
+            3. Add the Mammotion integration via the UI.
+
+            For detailed instructions, please refer to the [README](https://github.com/${{ github.repository }}/blob/main/README.md).
+
+            ## Feedback and Support 💬
+
+            If you encounter any issues or have suggestions, please:
+            - [Open an issue](https://github.com/${{ github.repository }}/issues) on GitHub
+            - [Join our Discord](https://discord.gg/vpZdWhJX8x) for community support
+
+            ## Thank You 🙏
+
+            A big thank you to all contributors and users of this integration. Your feedback and support help make this project better!
 
             **Full Changelog**: https://github.com/${{ github.repository }}/compare/${{ steps.get_previous_version.outputs.previous_version }}...v${{ steps.get_version.outputs.version }}
           draft: false
