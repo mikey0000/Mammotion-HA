@@ -25,13 +25,17 @@ jobs:
       - name: Get previous version
         id: get_previous_version
         run: |
-          previous_version=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          previous_version=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
           echo "::set-output name=previous_version::$previous_version"
-
+        
       - name: Generate changelog
         id: changelog
         run: |
-          changelog=$(git log --pretty=format:"- %h - @%an: %s" ${{ steps.get_previous_version.outputs.previous_version }}..HEAD)
+          if [ -z "${{ steps.get_previous_version.outputs.previous_version }}" ]; then
+            changelog=$(git log --pretty=format:"- %h - @%an: %s")
+          else
+            changelog=$(git log --pretty=format:"- %h - @%an: %s" ${{ steps.get_previous_version.outputs.previous_version }}..HEAD)
+          fi
           changelog="${changelog//'%'/'%25'}"
           changelog="${changelog//$'\n'/'%0A'}"
           changelog="${changelog//$'\r'/'%0D'}"
