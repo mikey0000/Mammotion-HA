@@ -10,7 +10,7 @@ from homeassistant.components.binary_sensor import (
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from pyluba.proto.luba_msg import LubaMsg
+from pymammotion.proto.luba_msg import LubaMsg
 
 from . import MammotionConfigEntry
 from .coordinator import MammotionDataUpdateCoordinator
