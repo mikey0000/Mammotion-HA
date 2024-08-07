@@ -2,11 +2,11 @@
 
 from collections.abc import Callable
 from dataclasses import dataclass
+from typing import Awaitable
 
 from homeassistant.components.button import ButtonEntity, ButtonEntityDescription
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from pymammotion.proto.luba_msg import LubaMsg
 
 from . import MammotionConfigEntry
 from .coordinator import MammotionDataUpdateCoordinator
@@ -17,7 +17,7 @@ from .entity import MammotionBaseEntity
 class MammotionButtonSensorEntityDescription(ButtonEntityDescription):
     """Describes Mammotion button sensor entity."""
 
-    press_fn: Callable[[MammotionDataUpdateCoordinator], None]
+    press_fn: Callable[[MammotionDataUpdateCoordinator], Awaitable[None]]
 
 
 BUTTON_SENSORS: tuple[MammotionButtonSensorEntityDescription, ...] = (
@@ -60,4 +60,4 @@ class MammotionButtonSensorEntity(MammotionBaseEntity, ButtonEntity):
 
     async def async_press(self) -> None:
         """Handle the button press."""
-        self.entity_description.press_fn(self.coordinator)
+        await self.entity_description.press_fn(self.coordinator)

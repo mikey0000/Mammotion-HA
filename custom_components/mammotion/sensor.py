@@ -126,7 +126,7 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         key="activity_mode",
         state_class=None,
         device_class=SensorDeviceClass.ENUM,
-        value_fn=lambda mower_data: device_mode(mower_data.activity_mode),
+        value_fn=lambda mower_data: device_mode(mower_data.dev.sys_status),
     ),
     MammotionSensorEntityDescription(
         key="position_mode",
