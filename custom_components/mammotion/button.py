@@ -46,6 +46,7 @@ class MammotionButtonSensorEntity(MammotionBaseEntity, ButtonEntity):
     """Mammotion button sensor entity."""
 
     entity_description: MammotionButtonSensorEntityDescription
+    _attr_has_entity_name = True
 
     def __init__(
         self,
@@ -55,6 +56,7 @@ class MammotionButtonSensorEntity(MammotionBaseEntity, ButtonEntity):
         """Initialize the button sensor entity."""
         super().__init__(coordinator, entity_description.key)
         self.entity_description = entity_description
+        self._attr_translation_key = entity_description.key
 
     async def async_press(self) -> None:
         """Handle the button press."""
