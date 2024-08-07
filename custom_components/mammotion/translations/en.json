@@ -63,6 +63,14 @@
       },
       "position_mode": {
         "name": "RTK position"
+      },
+      "activity_mode": {
+        "name": "Activity mode"
+      }
+    },
+    "button": {
+      "start_map_sync": {
+        "name": "Sync maps"
       }
     }
   },
