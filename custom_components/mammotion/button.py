@@ -23,7 +23,6 @@ class MammotionButtonSensorEntityDescription(ButtonEntityDescription):
 BUTTON_SENSORS: tuple[MammotionButtonSensorEntityDescription, ...] = (
     MammotionButtonSensorEntityDescription(
         key="start_map_sync",
-        name="Start Map Sync",
         press_fn=lambda coordinator: coordinator.async_sync_maps(),
     ),
 )
