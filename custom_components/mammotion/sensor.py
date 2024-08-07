@@ -15,6 +15,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import StateType
 from pymammotion.data.model.enums import RTKStatus
 from pymammotion.proto.luba_msg import ReportInfoData
+from pymammotion.utility.constant.device_constant import device_mode
 
 from . import MammotionConfigEntry
 from .coordinator import MammotionDataUpdateCoordinator
@@ -120,6 +121,12 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         device_class=None,
         native_unit_of_measurement=None,
         value_fn=lambda mower_data: (mower_data.rtk.co_view_stars >> 8) & 255,
+    ),
+    MammotionSensorEntityDescription(
+        key="activity_mode",
+        state_class=None,
+        device_class=SensorDeviceClass.ENUM,
+        value_fn=lambda mower_data: device_mode(mower_data.activity_mode),
     ),
     MammotionSensorEntityDescription(
         key="position_mode",
