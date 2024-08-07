@@ -61,6 +61,11 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[LubaMsg]):
         except COMMAND_EXCEPTIONS as exc:
             raise ConfigEntryNotReady("Unable to setup Mammotion device") from exc
 
+
+    async def async_sync_maps(self) -> None:
+        """Get map data from the device."""
+        await self.device.start_map_sync()
+
     async def _async_update_data(self) -> LubaMsg:
         """Get data from the device."""
         if not (

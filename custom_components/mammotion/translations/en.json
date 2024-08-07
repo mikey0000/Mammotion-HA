@@ -67,6 +67,11 @@
       "activity_mode": {
         "name": "Activity mode"
       }
+    },
+    "button": {
+      "start_map_sync": {
+        "name": "Sync maps"
+      }
     }
   },
   "exceptions": {
