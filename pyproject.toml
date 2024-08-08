@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "Mammotion-HA"
-version = "0.0.7"
+version = "0.0.8"
 description = "Mammotion lawn mower integration for HACS"
 authors = ["Michael Arthur <michael@jumblesoft.co.nz>", "jLynx <@jlynx>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "~3.12.0"
-pymammotion = "0.0.42"
+pymammotion = "0.0.43"
 homeassistant = "^2024.5.5"
 
 
