@@ -14,6 +14,8 @@ from homeassistant.const import PERCENTAGE, UnitOfLength, AREA_SQUARE_METERS, SI
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import StateType
+from homeassistant.util.unit_conversion import DistanceConverter, SpeedConverter
+from homeassistant.util.unit_system import US_CUSTOMARY_SYSTEM
 from pymammotion.data.model.enums import RTKStatus
 from pymammotion.proto.luba_msg import ReportInfoData
 from pymammotion.utility.constant.device_constant import device_mode
@@ -22,6 +24,9 @@ from . import MammotionConfigEntry
 from .coordinator import MammotionDataUpdateCoordinator
 from .entity import MammotionBaseEntity
 
+
+LENGTH_UNITS = DistanceConverter.VALID_UNITS
+SPEED_UNITS = SpeedConverter.VALID_UNITS
 
 @dataclass(frozen=True, kw_only=True)
 class MammotionSensorEntityDescription(SensorEntityDescription):
@@ -182,6 +187,16 @@ class MammotionSensorEntity(MammotionBaseEntity, SensorEntity):
     @property
     def native_value(self) -> StateType:
         """Return the state of the sensor."""
-        return self.entity_description.value_fn(
+        current_value = self.entity_description.value_fn(
             self.coordinator.data.sys.toapp_report_data
         )
+        unit = self.entity_description.native_unit_of_measurement
+        unit_system = self.hass.config.units
+
+        if unit_system is US_CUSTOMARY_SYSTEM:
+            if unit in LENGTH_UNITS:
+                return DistanceConverter.convert(current_value, LENGTH_UNITS[unit], UnitOfLength.FEET)
+            if unit in SPEED_UNITS:
+                return SpeedConverter.convert(current_value, SPEED_UNITS[unit], UnitOfSpeed.FEET_PER_SECOND)
+
+        return current_value
