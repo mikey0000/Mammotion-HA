@@ -11,6 +11,7 @@ from homeassistant.const import CONF_ADDRESS
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from pymammotion.data.model.device import MowingDevice
 from pymammotion.mammotion.devices import MammotionBaseBLEDevice
 from pymammotion.proto.luba_msg import LubaMsg
 
@@ -66,7 +67,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[LubaMsg]):
         """Get map data from the device."""
         await self.device.start_map_sync()
 
-    async def _async_update_data(self) -> LubaMsg:
+    async def _async_update_data(self) -> MowingDevice:
         """Get data from the device."""
         if not (
             ble_device := bluetooth.async_ble_device_from_address(
