@@ -15,6 +15,9 @@ PLATFORMS: list[Platform] = [
     Platform.LAWN_MOWER,
     Platform.SENSOR,
     Platform.BUTTON,
+    Platform.SWITCH,
+    Platform.NUMBER,
+    Platform.SELECT
 ]
 
 type MammotionConfigEntry = ConfigEntry[MammotionDataUpdateCoordinator]
