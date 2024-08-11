@@ -2,7 +2,7 @@
   "config": {
     "abort": {
       "already_configured": "Device is already configured",
-      "already_in_progress": "Configuration flow is already in progress",
+      "already_in_progress": "[%key:common::config_flow::abort::already_in_progress%]",
       "no_devices_found": "Could not find devices",
       "no_longer_present": "Device is no longer present",
       "not_supported": "Device not supported"
@@ -71,6 +71,64 @@
     "button": {
       "start_map_sync": {
         "name": "Sync maps"
+      }
+    },
+    "switch": {
+      "blades_on_off": {
+        "name": "Blades On/Off",
+        "description": "Turn the blades on or off."
+      },
+      "mowing_on_off": {
+        "name": "Mowing On/Off",
+        "description": "Start or stop mowing."
+      },
+      "dump_grass_on_off": {
+        "name": "Dump Grass On/Off",
+        "description": "Enable or disable grass dumping."
+      },
+      "rain_detection_on_off": {
+        "name": "Rain Detection On/Off",
+        "description": "Turn rain detection on or off."
+      },
+      "side_led_on_off": {
+        "name": "Side LED On/Off",
+        "description": "Enable or disable the side LED."
+      },
+       "perimeter_on_off": {
+        "name": "Perimeter First",
+        "description": "Perimeter first or lines/zigzag first mowing."
+      }
+    },
+    "select": {
+       "cutting_mode": {
+        "name": "Cutting Mode",
+        "description": "Select the cutting mode for the mower."
+      },
+      "border_patrol_mode": {
+        "name": "Border Patrol Mode",
+        "description": "Select the border patrol mode for the mower."
+      },
+      "obstacle_laps_mode": {
+        "name": "Obstacle Laps Mode",
+        "description": "Select the obstacle laps mode for the mower."
+      },
+      "mow_order": {
+        "name": "Mow Order",
+        "description": "Select the order in which the areas should be mowed."
+      }
+    },
+    "number": {
+       "start_progress": {
+        "name": "Start Progress",
+        "description": "Set the start progress percentage."
+      },
+      "cutter_height": {
+        "name": "Cutter Height",
+        "description": "Adjust the height of the cutter in increments."
+      },
+      "working_speed": {
+        "name": "Working Speed",
+        "description": "Set the working speed of the mower."
       }
     }
   },

@@ -23,7 +23,7 @@ class MammotionNumberEntityDescription(NumberEntityDescription):
 
 NUMBER_ENTITIES: tuple[MammotionNumberEntityDescription, ...] = (
     MammotionNumberEntityDescription(
-        key="working_speed",
+        key="start_progress",
         min_value=0,
         max_value=100,
         step=1,
