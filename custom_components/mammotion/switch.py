@@ -1,0 +1,87 @@
+from dataclasses import dataclass
+from homeassistant.components.switch import SwitchEntity
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity import EntityCategory
+from typing import Callable, Awaitable
+
+from . import MammotionConfigEntry
+from .coordinator import MammotionDataUpdateCoordinator
+
+from .entity import MammotionBaseEntity
+
+
+@dataclass(frozen=True, kw_only=True)
+class MammotionSwitchEntityDescription(MammotionBaseEntity, SwitchEntity):
+    """Describes Mammotion switch entity."""
+    key: str
+    set_fn: Callable[[HomeAssistant, bool], Awaitable[None]]
+
+
+YUKA_SWITCH_ENTITIES: tuple[MammotionSwitchEntityDescription, ...] = (
+    MammotionSwitchEntityDescription(
+        key="mowing_on_off",
+        set_fn=lambda hass, value: print(f"Mowing {'on' if value else 'off'}"),
+    ),
+    MammotionSwitchEntityDescription(
+        key="dump_grass_on_off",
+        set_fn=lambda hass, value: print(f"Dump grass {'on' if value else 'off'}"),
+    ),
+)
+
+SWITCH_ENTITIES: tuple[MammotionSwitchEntityDescription, ...] = (
+    MammotionSwitchEntityDescription(
+        key="blades_on_off",
+        set_fn=lambda hass, value: print(f"Blades {'on' if value else 'off'}"),
+    ),
+    MammotionSwitchEntityDescription(
+        key="rain_detection_on_off",
+        set_fn=lambda hass, value: print(f"Rain detection {'on' if value else 'off'}"),
+    ),
+    MammotionSwitchEntityDescription(
+        key="side_led_on_off",
+        set_fn=lambda hass, value: print(f"Side LED {'on' if value else 'off'}"),
+    ),
+)
+
+
+class MammotionSwitchEntity(MammotionBaseEntity, SwitchEntity):
+    _attr_entity_category = EntityCategory.CONFIG
+
+    entity_description: MammotionSwitchEntityDescription
+    _attr_has_entity_name = True
+
+    def __init__(
+            self,
+            coordinator: MammotionDataUpdateCoordinator,
+            entity_description: MammotionSwitchEntityDescription
+    ) -> None:
+        super().__init__(coordinator, entity_description.key)
+        self.entity_description = entity_description
+        self._attr_is_on = False  # Default state
+
+    async def async_turn_on(self, **kwargs) -> None:
+        self._attr_is_on = True
+        await self.entity_description.set_fn(self.hass, True)
+        self.async_write_ha_state()
+
+    async def async_turn_off(self, **kwargs) -> None:
+        self._attr_is_on = False
+        await self.entity_description.set_fn(self.hass, False)
+        self.async_write_ha_state()
+
+    async def async_update(self) -> None:
+        """Update the entity state."""
+        pass
+
+
+# Example setup usage
+async def async_setup_entry(
+        hass: HomeAssistant,
+        entry: MammotionConfigEntry,
+        async_add_entities: Callable
+) -> None:
+    """Set up the Mammotion switch entities."""
+    async_add_entities(
+        MammotionSwitchEntity(entity_description)
+        for entity_description in SWITCH_ENTITIES
+    )
