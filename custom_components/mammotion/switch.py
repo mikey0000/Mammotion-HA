@@ -20,10 +20,12 @@ class MammotionSwitchEntityDescription(MammotionBaseEntity, SwitchEntity):
 YUKA_SWITCH_ENTITIES: tuple[MammotionSwitchEntityDescription, ...] = (
     MammotionSwitchEntityDescription(
         key="mowing_on_off",
+        entity_category=EntityCategory.CONFIG,
         set_fn=lambda hass, value: print(f"Mowing {'on' if value else 'off'}"),
     ),
     MammotionSwitchEntityDescription(
         key="dump_grass_on_off",
+        entity_category=EntityCategory.CONFIG,
         set_fn=lambda hass, value: print(f"Dump grass {'on' if value else 'off'}"),
     ),
 )
@@ -35,17 +37,35 @@ SWITCH_ENTITIES: tuple[MammotionSwitchEntityDescription, ...] = (
     ),
     MammotionSwitchEntityDescription(
         key="rain_detection_on_off",
+        entity_category=EntityCategory.CONFIG,
         set_fn=lambda hass, value: print(f"Rain detection {'on' if value else 'off'}"),
     ),
     MammotionSwitchEntityDescription(
         key="side_led_on_off",
+        entity_category=EntityCategory.CONFIG,
         set_fn=lambda hass, value: print(f"Side LED {'on' if value else 'off'}"),
+    ),
+    MammotionSwitchEntityDescription(
+        key="perimeter_first_on_off",
+        entity_category=EntityCategory.CONFIG,
+        set_fn=lambda hass, value: print(f"perimeter mow first {'on' if value else 'off'}"),
     ),
 )
 
+# Example setup usage
+async def async_setup_entry(
+        hass: HomeAssistant,
+        entry: MammotionConfigEntry,
+        async_add_entities: Callable
+) -> None:
+    """Set up the Mammotion switch entities."""
+    async_add_entities(
+        MammotionSwitchEntity(entity_description)
+        for entity_description in SWITCH_ENTITIES
+    )
+
 
 class MammotionSwitchEntity(MammotionBaseEntity, SwitchEntity):
-    _attr_entity_category = EntityCategory.CONFIG
 
     entity_description: MammotionSwitchEntityDescription
     _attr_has_entity_name = True
@@ -56,6 +76,7 @@ class MammotionSwitchEntity(MammotionBaseEntity, SwitchEntity):
             entity_description: MammotionSwitchEntityDescription
     ) -> None:
         super().__init__(coordinator, entity_description.key)
+        self.coordinator = coordinator
         self.entity_description = entity_description
         self._attr_is_on = False  # Default state
 
@@ -72,16 +93,3 @@ class MammotionSwitchEntity(MammotionBaseEntity, SwitchEntity):
     async def async_update(self) -> None:
         """Update the entity state."""
         pass
-
-
-# Example setup usage
-async def async_setup_entry(
-        hass: HomeAssistant,
-        entry: MammotionConfigEntry,
-        async_add_entities: Callable
-) -> None:
-    """Set up the Mammotion switch entities."""
-    async_add_entities(
-        MammotionSwitchEntity(entity_description)
-        for entity_description in SWITCH_ENTITIES
-    )
