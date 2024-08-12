@@ -46,7 +46,7 @@ NUMBER_WORKING_ENTITIES: tuple[MammotionWorkingNumberEntityDescription, ...] = (
         key="cutter_height",
         step=5.0,
         entity_category=EntityCategory.CONFIG,
-        set_fn=lambda value: value,
+        set_fn=lambda coordinator, value: coordinator.async_blade_height(value),
     ),
     MammotionWorkingNumberEntityDescription(
         key="working_speed",
@@ -92,6 +92,7 @@ class MammotionNumberEntity(MammotionBaseEntity, NumberEntity):
                  coordinator: MammotionDataUpdateCoordinator,
                  entity_description: MammotionNumberEntityDescription) -> None:
         super().__init__(coordinator, entity_description.key)
+        self.coordinator = coordinator
         self.entity_description = entity_description
         self._attr_min_value = entity_description.min_value
         self._attr_max_value = entity_description.max_value

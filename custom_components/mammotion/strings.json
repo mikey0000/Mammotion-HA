@@ -64,6 +64,9 @@
       "position_mode": {
         "name": "RTK position"
       },
+      "position_type": {
+        "name": "Device position type"
+      },
       "activity_mode": {
         "name": "Activity mode"
       }

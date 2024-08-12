@@ -14,41 +14,41 @@ from .entity import MammotionBaseEntity
 class MammotionSwitchEntityDescription(MammotionBaseEntity, SwitchEntity):
     """Describes Mammotion switch entity."""
     key: str
-    set_fn: Callable[[HomeAssistant, bool], Awaitable[None]]
+    set_fn: Callable[[MammotionDataUpdateCoordinator, bool], Awaitable[None]]
 
 
 YUKA_SWITCH_ENTITIES: tuple[MammotionSwitchEntityDescription, ...] = (
     MammotionSwitchEntityDescription(
         key="mowing_on_off",
         entity_category=EntityCategory.CONFIG,
-        set_fn=lambda hass, value: print(f"Mowing {'on' if value else 'off'}"),
+        set_fn=lambda coordinator, value: print(f"Mowing {'on' if value else 'off'}"),
     ),
     MammotionSwitchEntityDescription(
         key="dump_grass_on_off",
         entity_category=EntityCategory.CONFIG,
-        set_fn=lambda hass, value: print(f"Dump grass {'on' if value else 'off'}"),
+        set_fn=lambda coordinator, value: print(f"Dump grass {'on' if value else 'off'}"),
     ),
 )
 
 SWITCH_ENTITIES: tuple[MammotionSwitchEntityDescription, ...] = (
     MammotionSwitchEntityDescription(
         key="blades_on_off",
-        set_fn=lambda hass, value: print(f"Blades {'on' if value else 'off'}"),
+        set_fn=lambda coordinator, value: coordinator.async_start_stop_blades(value),
     ),
     MammotionSwitchEntityDescription(
         key="rain_detection_on_off",
         entity_category=EntityCategory.CONFIG,
-        set_fn=lambda hass, value: print(f"Rain detection {'on' if value else 'off'}"),
+        set_fn=lambda coordinator, value: print(f"Rain detection {'on' if value else 'off'}"),
     ),
     MammotionSwitchEntityDescription(
         key="side_led_on_off",
         entity_category=EntityCategory.CONFIG,
-        set_fn=lambda hass, value: print(f"Side LED {'on' if value else 'off'}"),
+        set_fn=lambda coordinator, value: print(f"Side LED {'on' if value else 'off'}"),
     ),
     MammotionSwitchEntityDescription(
         key="perimeter_first_on_off",
         entity_category=EntityCategory.CONFIG,
-        set_fn=lambda hass, value: print(f"perimeter mow first {'on' if value else 'off'}"),
+        set_fn=lambda coordinator, value: print(f"perimeter mow first {'on' if value else 'off'}"),
     ),
 )
 
@@ -82,12 +82,12 @@ class MammotionSwitchEntity(MammotionBaseEntity, SwitchEntity):
 
     async def async_turn_on(self, **kwargs) -> None:
         self._attr_is_on = True
-        await self.entity_description.set_fn(self.hass, True)
+        await self.entity_description.set_fn(self.coordinator, True)
         self.async_write_ha_state()
 
     async def async_turn_off(self, **kwargs) -> None:
         self._attr_is_on = False
-        await self.entity_description.set_fn(self.hass, False)
+        await self.entity_description.set_fn(self.coordinator, False)
         self.async_write_ha_state()
 
     async def async_update(self) -> None:

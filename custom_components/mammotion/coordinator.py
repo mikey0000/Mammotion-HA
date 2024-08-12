@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 from homeassistant.components import bluetooth
 from homeassistant.const import CONF_ADDRESS
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.exceptions import ConfigEntryNotReady, HomeAssistantError
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from pymammotion.data.model.device import MowingDevice
 from pymammotion.mammotion.devices import MammotionBaseBLEDevice
@@ -66,6 +66,24 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[LubaMsg]):
     async def async_sync_maps(self) -> None:
         """Get map data from the device."""
         await self.device.start_map_sync()
+
+    async def async_start_stop_blades(self, start_stop: bool) -> None:
+        if start_stop:
+            await self.async_send_command("set_blade_control", on_off=1)
+        else:
+            await self.async_send_command("set_blade_control", on_off=0)
+
+    async def async_blade_height(self, height: int) -> None:
+        await self.async_send_command("set_blade_height", height=height)
+
+    async def async_send_command(self, command: str, kwargs) -> None:
+        try:
+
+            await self.device.command(command, **kwargs)
+        except COMMAND_EXCEPTIONS as exc:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key="command_failed"
+            ) from exc
 
     async def _async_update_data(self) -> MowingDevice:
         """Get data from the device."""

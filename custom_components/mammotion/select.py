@@ -17,14 +17,14 @@ class MammotionSelectEntityDescription(SelectEntityDescription):
     """Describes Mammotion select entity."""
     key: str
     options: list[str]
-    select_fn: Callable[[HomeAssistant, str], Awaitable[None]]
+    select_fn: Callable[[MammotionDataUpdateCoordinator, str], Awaitable[None]]
 
 
 SELECT_ENTITIES: tuple[MammotionSelectEntityDescription, ...] = (
     MammotionSelectEntityDescription(
         key="cutting_mode",
         options=[mode.name for mode in CuttingMode],
-        select_fn=lambda value: CuttingMode[value],
+        select_fn=lambda coordinator, value: CuttingMode[value],
     ),
     MammotionSelectEntityDescription(
         key="border_patrol_mode",
@@ -76,5 +76,5 @@ class MammotionSelectEntity(MammotionBaseEntity, SelectEntity):
 
     async def async_select_option(self, option: str) -> None:
         self._attr_current_option = option
-        await self.entity_description.select_fn(option)
+        await self.entity_description.select_fn(self.coordinator, option)
         self.async_write_ha_state()
