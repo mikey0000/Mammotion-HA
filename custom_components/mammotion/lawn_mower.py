@@ -86,13 +86,15 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
             )
         if self.rpt_dev_status.sys_status == WorkMode.MODE_PAUSE:
             try:
-                return await self.coordinator.device.command("resume_execute_task")
+                await self.coordinator.device.command("resume_execute_task")
+                return await self.coordinator.device.command("get_report_cfg")
             except COMMAND_EXCEPTIONS as exc:
                 raise HomeAssistantError(
                     translation_domain=DOMAIN, translation_key="resume_failed"
                 ) from exc
         try:
             await self.coordinator.device.command("start_job")
+            await self.coordinator.device.command("get_report_cfg")
         except COMMAND_EXCEPTIONS as exc:
             raise HomeAssistantError(
                 translation_domain=DOMAIN, translation_key="start_failed"
@@ -100,8 +102,17 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
 
     async def async_dock(self) -> None:
         """Start docking."""
+
+        mode = self.rpt_dev_status.sys_status
+
         try:
+            if mode == WorkMode.MODE_RETURNING:
+                await self.coordinator.device.command("cancel_return_to_dock")
+                return await self.coordinator.device.command("get_report_cfg")
+            if mode == WorkMode.MODE_WORKING:
+                await self.coordinator.device.command("pause_execute_task")
             await self.coordinator.device.command("return_to_dock")
+            await self.coordinator.device.command("get_report_cfg")
         except COMMAND_EXCEPTIONS as exc:
             raise HomeAssistantError(
                 translation_domain=DOMAIN, translation_key="dock_failed"
@@ -111,6 +122,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
         """Pause mower."""
         try:
             await self.coordinator.device.command("pause_execute_task")
+            await self.coordinator.device.command("get_report_cfg")
         except COMMAND_EXCEPTIONS as exc:
             raise HomeAssistantError(
                 translation_domain=DOMAIN, translation_key="pause_failed"

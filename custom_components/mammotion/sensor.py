@@ -18,7 +18,8 @@ from homeassistant.util.unit_conversion import DistanceConverter, SpeedConverter
 from homeassistant.util.unit_system import US_CUSTOMARY_SYSTEM
 from pymammotion.data.model.enums import RTKStatus
 from pymammotion.proto.luba_msg import ReportInfoData
-from pymammotion.utility.constant.device_constant import device_mode
+from pymammotion.utility.constant.device_constant import device_mode, PosType
+from pymammotion.utility.device_type import DeviceType
 
 from . import MammotionConfigEntry
 from .coordinator import MammotionDataUpdateCoordinator
@@ -34,6 +35,15 @@ class MammotionSensorEntityDescription(SensorEntityDescription):
 
     value_fn: Callable[[ReportInfoData], StateType]
 
+LUBA_SENSOR_ONLY_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
+    MammotionSensorEntityDescription(
+        key="blade_height",
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=None,
+        native_unit_of_measurement=UnitOfLength.MILLIMETERS,
+        value_fn=lambda mower_data: mower_data.work.knife_height,
+    ),
+)
 
 SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
     MammotionSensorEntityDescription(
@@ -63,13 +73,6 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         device_class=None,
         native_unit_of_measurement=None,
         value_fn=lambda mower_data: mower_data.rtk.gps_stars,
-    ),
-    MammotionSensorEntityDescription(
-        key="blade_height",
-        state_class=SensorStateClass.MEASUREMENT,
-        device_class=None,
-        native_unit_of_measurement=UnitOfLength.MILLIMETERS,
-        value_fn=lambda mower_data: mower_data.work.knife_height,
     ),
     MammotionSensorEntityDescription(
         key="area",
@@ -143,6 +146,15 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
             RTKStatus.from_value(mower_data.rtk.status)
         ),  # Note: This will not work for Luba2 & Yuka. Only for Luba1
     ),
+    MammotionSensorEntityDescription(
+        key="position_type",
+        state_class=None,
+        device_class=SensorDeviceClass.ENUM,
+        native_unit_of_measurement=None,
+        value_fn=lambda mower_data: str(
+            PosType(mower_data.locations[0].pos_type).name
+        ),  # Note: This will not work for Luba2 & Yuka. Only for Luba1
+    ),
     # ToDo: We still need to add the following.
     # - RTK Status - None, Single, Fix, Float, Unknown (RTKStatusFragment.java)
     # - Signal quality (Robot)
@@ -153,6 +165,7 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
     # - WiFi status
     # - Side LED
     # - Possibly more I forgot about
+    # 'real_pos_x': -142511, 'real_pos_y': -20548, 'real_toward': 50915, 'pos_type': 3 PosType(IntEnm) (robot position)
 )
 
 
@@ -163,6 +176,12 @@ async def async_setup_entry(
 ) -> None:
     """Set up sensor platform."""
     coordinator = entry.runtime_data
+
+    if not DeviceType.is_yuka(coordinator.device_name):
+        async_add_entities(
+            MammotionSensorEntity(coordinator, description) for description in LUBA_SENSOR_ONLY_TYPES
+        )
+
     async_add_entities(
         MammotionSensorEntity(coordinator, description) for description in SENSOR_TYPES
     )
