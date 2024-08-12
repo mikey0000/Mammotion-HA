@@ -61,7 +61,7 @@ async def async_setup_entry(
     # Example limits, replace this with actual coordinator data
     coordinator = entry.runtime_data
 
-    limits = coordinator.device.limits
+    limits = coordinator.device.luba_msg.limits
 
     entities: list[MammotionNumberEntity] = [
         MammotionWorkingNumberEntity(coordinator, entity_description, limits)
