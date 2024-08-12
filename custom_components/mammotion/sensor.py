@@ -152,7 +152,7 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.ENUM,
         native_unit_of_measurement=None,
         value_fn=lambda mower_data: str(
-            PosType(mower_data.sys.toapp_report_data.locations[0].pos_type).name
+            PosType(mower_data.locations[0].pos_type).name
         ),  # Note: This will not work for Luba2 & Yuka. Only for Luba1
     ),
     # ToDo: We still need to add the following.

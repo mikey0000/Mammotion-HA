@@ -18,7 +18,7 @@ from .entity import MammotionBaseEntity
 @dataclass(frozen=True, kw_only=True)
 class MammotionNumberEntityDescription(NumberEntityDescription):
     """Describes Mammotion number entity."""
-    set_fn: Callable[[HomeAssistant, float], Awaitable[None]]
+    set_fn: Callable[[MammotionDataUpdateCoordinator, float], Awaitable[None]]
 
 
 NUMBER_ENTITIES: tuple[MammotionNumberEntityDescription, ...] = (
@@ -30,29 +30,23 @@ NUMBER_ENTITIES: tuple[MammotionNumberEntityDescription, ...] = (
         mode=NumberMode.SLIDER,
         native_unit_of_measurement=PERCENTAGE,
         entity_category=EntityCategory.CONFIG,
-        set_fn=lambda value: value,
+        set_fn=lambda coordinator, value: value,
     ),
 )
 
 
-@dataclass
-class MammotionWorkingNumberEntityDescription(NumberEntityDescription):
-    """Describes Mammotion number entity."""
-    set_fn: Callable[[HomeAssistant, float], Awaitable[None]]
-
-
-NUMBER_WORKING_ENTITIES: tuple[MammotionWorkingNumberEntityDescription, ...] = (
-    MammotionWorkingNumberEntityDescription(
+NUMBER_WORKING_ENTITIES: tuple[MammotionNumberEntityDescription, ...] = (
+    MammotionNumberEntityDescription(
         key="cutter_height",
         step=5.0,
         entity_category=EntityCategory.CONFIG,
         set_fn=lambda coordinator, value: coordinator.async_blade_height(value),
     ),
-    MammotionWorkingNumberEntityDescription(
+    MammotionNumberEntityDescription(
         key="working_speed",
         entity_category=EntityCategory.CONFIG,
         step=0.1,
-        set_fn=lambda value: value,
+        set_fn=lambda coordinator, value: value,
     ),
 )
 
@@ -83,7 +77,6 @@ async def async_setup_entry(
 
 
 class MammotionNumberEntity(MammotionBaseEntity, NumberEntity):
-    _attr_entity_category = EntityCategory.CONFIG
 
     entity_description: MammotionNumberEntityDescription
     _attr_has_entity_name = True
@@ -94,6 +87,7 @@ class MammotionNumberEntity(MammotionBaseEntity, NumberEntity):
         super().__init__(coordinator, entity_description.key)
         self.coordinator = coordinator
         self.entity_description = entity_description
+        self._attr_translation_key = entity_description.key
         self._attr_min_value = entity_description.min_value
         self._attr_max_value = entity_description.max_value
         self._attr_step = entity_description.step
@@ -102,18 +96,27 @@ class MammotionNumberEntity(MammotionBaseEntity, NumberEntity):
 
     async def async_set_native_value(self, value: float) -> None:
         self._attr_native_value = value
-        await self.entity_description.set_fn(self.hass, value)
+        await self.entity_description.set_fn(self.coordinator, value)
         self.async_write_ha_state()
 
 
 class MammotionWorkingNumberEntity(MammotionNumberEntity):
     """Mammotion working number entity."""
-    entity_description: MammotionWorkingNumberEntityDescription
+    entity_description: MammotionNumberEntityDescription
     _attr_has_entity_name = True
 
-    def __init__(self, entity_description: MammotionNumberEntityDescription,
-                 coordinator: MammotionDataUpdateCoordinator, limits: DeviceLimits) -> None:
+    def __init__(self, coordinator: MammotionDataUpdateCoordinator,
+                 entity_description: MammotionNumberEntityDescription,
+                  limits: DeviceLimits) -> None:
         super().__init__(coordinator, entity_description)
-
+        self.coordinator = coordinator
+        self.entity_description = entity_description
+        self._attr_translation_key = entity_description.key
         self._attr_min_value = limits[f"{entity_description.key}_min"]
         self._attr_max_value = limits[f"{entity_description.key}_max"]
+
+
+    async def async_set_native_value(self, value: float) -> None:
+        self._attr_native_value = value
+        await self.entity_description.set_fn(self.coordinator, value)
+        self.async_write_ha_state()

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from homeassistant.components.switch import SwitchEntity
+from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 from typing import Callable, Awaitable
@@ -11,7 +11,7 @@ from .entity import MammotionBaseEntity
 
 
 @dataclass(frozen=True, kw_only=True)
-class MammotionSwitchEntityDescription(MammotionBaseEntity, SwitchEntity):
+class MammotionSwitchEntityDescription(SwitchEntityDescription):
     """Describes Mammotion switch entity."""
     key: str
     set_fn: Callable[[MammotionDataUpdateCoordinator, bool], Awaitable[None]]
@@ -59,8 +59,10 @@ async def async_setup_entry(
         async_add_entities: Callable
 ) -> None:
     """Set up the Mammotion switch entities."""
+    coordinator = entry.runtime_data
+
     async_add_entities(
-        MammotionSwitchEntity(entity_description)
+        MammotionSwitchEntity(coordinator, entity_description)
         for entity_description in SWITCH_ENTITIES
     )
 
@@ -78,6 +80,7 @@ class MammotionSwitchEntity(MammotionBaseEntity, SwitchEntity):
         super().__init__(coordinator, entity_description.key)
         self.coordinator = coordinator
         self.entity_description = entity_description
+        self._attr_translation_key = entity_description.key
         self._attr_is_on = False  # Default state
 
     async def async_turn_on(self, **kwargs) -> None:

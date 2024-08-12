@@ -23,23 +23,27 @@ class MammotionSelectEntityDescription(SelectEntityDescription):
 SELECT_ENTITIES: tuple[MammotionSelectEntityDescription, ...] = (
     MammotionSelectEntityDescription(
         key="cutting_mode",
+        entity_category=EntityCategory.CONFIG,
         options=[mode.name for mode in CuttingMode],
         select_fn=lambda coordinator, value: CuttingMode[value],
     ),
     MammotionSelectEntityDescription(
         key="border_patrol_mode",
+        entity_category=EntityCategory.CONFIG,
         options=[mode.name for mode in BorderPatrolMode],
-        select_fn=lambda value: BorderPatrolMode[value],
+        select_fn=lambda coordinator, value: BorderPatrolMode[value],
     ),
     MammotionSelectEntityDescription(
         key="obstacle_laps_mode",
+        entity_category=EntityCategory.CONFIG,
         options=[mode.name for mode in ObstacleLapsMode],
-        select_fn=lambda value: ObstacleLapsMode[value],
+        select_fn=lambda coordinator, value: ObstacleLapsMode[value],
     ),
     MammotionSelectEntityDescription(
         key="mow_order",
+        entity_category=EntityCategory.CONFIG,
         options=[order.name for order in MowOrder],
-        select_fn=lambda value: MowOrder[value],
+        select_fn=lambda coordinator, value: MowOrder[value],
     )
 )
 
@@ -72,6 +76,7 @@ class MammotionSelectEntity(MammotionBaseEntity, SelectEntity):
         super().__init__(coordinator, entity_description.key)
         self.coordinator = coordinator
         self.entity_description = entity_description
+        self._attr_translation_key = entity_description.key
         self._attr_options = entity_description.options
 
     async def async_select_option(self, option: str) -> None:
