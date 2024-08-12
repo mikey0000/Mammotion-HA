@@ -112,8 +112,8 @@ class MammotionWorkingNumberEntity(MammotionNumberEntity):
         self.coordinator = coordinator
         self.entity_description = entity_description
         self._attr_translation_key = entity_description.key
-        self._attr_min_value = limits[f"{entity_description.key}_min"]
-        self._attr_max_value = limits[f"{entity_description.key}_max"]
+        self._attr_min_value = getattr(limits, f"{entity_description.key}_min")
+        self._attr_max_value = getattr(limits, f"{entity_description.key}_max")
 
 
     async def async_set_native_value(self, value: float) -> None:
