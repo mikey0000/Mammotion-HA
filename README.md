@@ -1,5 +1,7 @@
 # Mammotion - Home Assistant Integration [![Discord](https://img.shields.io/discord/1247286396297678879)](https://discord.gg/vpZdWhJX8x)
 
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=mikey0000&repository=mammotion-HA&category=Integration)
+
 💬 [Join us on Discord](https://discord.gg/vpZdWhJX8x)
 
 This integration allows you to control and monitor your Mammotion Luba, Luba 2 & Yuka robot mowers using Home Assistant.
