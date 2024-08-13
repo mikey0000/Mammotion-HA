@@ -22,7 +22,7 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionDataUpdateCoordinator]):
             manufacturer="Mammotion",
             serial_number=coordinator.device_name.split("-", 1)[-1],
             name=coordinator.device_name,
-            sw_version=coordinator.device.luba_msg.net.toapp_devinfo_resp.resp_ids.get(0, {}).get('info', "Loading..."),
+            sw_version=coordinator.device.luba_msg.net.toapp_devinfo_resp.resp_ids[0].info,
             model=DeviceType.value_of_str(
                 coordinator.device_name,
                 coordinator.device.luba_msg.net.toapp_wifi_iot_status.productkey,
