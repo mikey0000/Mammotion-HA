@@ -14,6 +14,8 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from pymammotion.data.model.device import MowingDevice
 from pymammotion.mammotion.devices import MammotionBaseBLEDevice
 from pymammotion.proto.luba_msg import LubaMsg
+from pymammotion.proto.mctrl_sys import RptInfoType, RptAct
+from pymammotion.utility.constant import WorkMode
 
 from .const import COMMAND_EXCEPTIONS, DOMAIN, LOGGER
 
@@ -76,9 +78,17 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[LubaMsg]):
     async def async_blade_height(self, height: int) -> None:
         await self.async_send_command("set_blade_height", height=height)
 
-    async def async_send_command(self, command: str, kwargs) -> None:
-        try:
 
+    async def async_request_iot_sync(self) -> None:
+        await self.async_send_command("request_iot_sys", rpt_act=RptAct.RPT_START,
+                               rpt_info_type=[RptInfoType.RIT_CONNECT, RptInfoType.RIT_DEV_STA],
+                               timeout=1000,
+                               period=3000,
+                               no_change_period=4000,
+                               count=0)
+
+    async def async_send_command(self, command: str, **kwargs) -> None:
+        try:
             await self.device.command(command, **kwargs)
         except COMMAND_EXCEPTIONS as exc:
             raise HomeAssistantError(
@@ -97,10 +107,13 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[LubaMsg]):
 
         self.device.update_device(ble_device)
         try:
-            await self.device.command("get_report_cfg")
+            await self.async_request_iot_sync()
+            if self.device.luba_msg.device.sys.toapp_report_data.dev.sys_status != WorkMode.MODE_WORKING:
+                await self.async_send_command("get_report_cfg")
         except COMMAND_EXCEPTIONS as exc:
             self.update_failures += 1
             raise UpdateFailed(f"Updating Mammotion device failed: {exc}") from exc
+
 
         LOGGER.debug("Updated Mammotion device %s", self.device_name)
         LOGGER.debug("================= Debug Log =================")

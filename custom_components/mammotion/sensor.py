@@ -15,7 +15,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import StateType
 from homeassistant.util.unit_conversion import DistanceConverter, SpeedConverter
-from homeassistant.util.unit_system import US_CUSTOMARY_SYSTEM
+from homeassistant.util.unit_system import US_CUSTOMARY_SYSTEM, LENGTH_UNITS
 from pymammotion.data.model.enums import RTKStatus
 from pymammotion.proto.luba_msg import ReportInfoData
 from pymammotion.utility.constant.device_constant import device_mode, PosType
@@ -25,8 +25,6 @@ from . import MammotionConfigEntry
 from .coordinator import MammotionDataUpdateCoordinator
 from .entity import MammotionBaseEntity
 
-
-LENGTH_UNITS = DistanceConverter.VALID_UNITS
 SPEED_UNITS = SpeedConverter.VALID_UNITS
 
 @dataclass(frozen=True, kw_only=True)
@@ -214,8 +212,8 @@ class MammotionSensorEntity(MammotionBaseEntity, SensorEntity):
 
         if unit_system is US_CUSTOMARY_SYSTEM:
             if unit in LENGTH_UNITS:
-                return DistanceConverter.convert(current_value, LENGTH_UNITS[unit], UnitOfLength.FEET)
+                return DistanceConverter.convert(current_value, UnitOfLength[unit], UnitOfLength.FEET)
             if unit in SPEED_UNITS:
-                return SpeedConverter.convert(current_value, SPEED_UNITS[unit], UnitOfSpeed.FEET_PER_SECOND)
+                return SpeedConverter.convert(current_value, UnitOfSpeed[unit], UnitOfSpeed.FEET_PER_SECOND)
 
         return current_value
