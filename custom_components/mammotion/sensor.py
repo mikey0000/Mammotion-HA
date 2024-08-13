@@ -9,16 +9,21 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
     SensorStateClass,
 )
-from homeassistant.const import PERCENTAGE, UnitOfLength, AREA_SQUARE_METERS, SIGNAL_STRENGTH_DECIBELS_MILLIWATT, \
-    UnitOfSpeed, UnitOfTime
+from homeassistant.const import (
+    AREA_SQUARE_METERS,
+    PERCENTAGE,
+    SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
+    UnitOfLength,
+    UnitOfSpeed,
+    UnitOfTime,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import StateType
-from homeassistant.util.unit_conversion import DistanceConverter, SpeedConverter
-from homeassistant.util.unit_system import US_CUSTOMARY_SYSTEM, LENGTH_UNITS
+from homeassistant.util.unit_conversion import SpeedConverter
 from pymammotion.data.model.enums import RTKStatus
 from pymammotion.proto.luba_msg import ReportInfoData
-from pymammotion.utility.constant.device_constant import device_mode, PosType
+from pymammotion.utility.constant.device_constant import PosType, device_mode
 from pymammotion.utility.device_type import DeviceType
 
 from . import MammotionConfigEntry
@@ -37,7 +42,7 @@ LUBA_SENSOR_ONLY_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
     MammotionSensorEntityDescription(
         key="blade_height",
         state_class=SensorStateClass.MEASUREMENT,
-        device_class=None,
+        device_class=SensorDeviceClass.DISTANCE,
         native_unit_of_measurement=UnitOfLength.MILLIMETERS,
         value_fn=lambda mower_data: mower_data.work.knife_height,
     ),
@@ -163,7 +168,7 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
     # - WiFi status
     # - Side LED
     # - Possibly more I forgot about
-    # 'real_pos_x': -142511, 'real_pos_y': -20548, 'real_toward': 50915, 'pos_type': 3 PosType(IntEnm) (robot position)
+    # 'real_pos_x': -142511, 'real_pos_y': -20548, 'real_toward': 50915, (robot position)
 )
 
 
@@ -207,13 +212,4 @@ class MammotionSensorEntity(MammotionBaseEntity, SensorEntity):
         current_value = self.entity_description.value_fn(
             self.coordinator.data.sys.toapp_report_data
         )
-        unit = self.entity_description.native_unit_of_measurement
-        unit_system = self.hass.config.units
-
-        if unit_system is US_CUSTOMARY_SYSTEM:
-            if unit in LENGTH_UNITS:
-                return DistanceConverter.convert(current_value, UnitOfLength[unit], UnitOfLength.FEET)
-            if unit in SPEED_UNITS:
-                return SpeedConverter.convert(current_value, UnitOfSpeed[unit], UnitOfSpeed.FEET_PER_SECOND)
-
         return current_value

@@ -1,23 +1,26 @@
-from typing import Callable, Awaitable
-
 from dataclasses import dataclass
-from homeassistant.components.number import NumberEntity, NumberEntityDescription, NumberMode
+from typing import Awaitable, Callable
+
+from homeassistant.components.number import (
+    NumberEntity,
+    NumberEntityDescription,
+    NumberMode,
+)
 from homeassistant.const import PERCENTAGE
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
-
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pymammotion.data.model.device_config import DeviceLimits
 
 from . import MammotionConfigEntry
 from .coordinator import MammotionDataUpdateCoordinator
-
 from .entity import MammotionBaseEntity
 
 
 @dataclass(frozen=True, kw_only=True)
 class MammotionNumberEntityDescription(NumberEntityDescription):
     """Describes Mammotion number entity."""
+
     set_fn: Callable[[MammotionDataUpdateCoordinator, float], Awaitable[None]]
 
 
@@ -102,6 +105,7 @@ class MammotionNumberEntity(MammotionBaseEntity, NumberEntity):
 
 class MammotionWorkingNumberEntity(MammotionNumberEntity):
     """Mammotion working number entity."""
+
     entity_description: MammotionNumberEntityDescription
     _attr_has_entity_name = True
 

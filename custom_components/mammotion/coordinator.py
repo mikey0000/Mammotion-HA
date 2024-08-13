@@ -14,7 +14,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from pymammotion.data.model.device import MowingDevice
 from pymammotion.mammotion.devices import MammotionBaseBLEDevice
 from pymammotion.proto.luba_msg import LubaMsg
-from pymammotion.proto.mctrl_sys import RptInfoType, RptAct
+from pymammotion.proto.mctrl_sys import RptAct, RptInfoType
 from pymammotion.utility.constant import WorkMode
 
 from .const import COMMAND_EXCEPTIONS, DOMAIN, LOGGER
@@ -108,7 +108,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[LubaMsg]):
         self.device.update_device(ble_device)
         try:
             await self.async_request_iot_sync()
-            if self.device.luba_msg.device.sys.toapp_report_data.dev.sys_status != WorkMode.MODE_WORKING:
+            if self.device.luba_msg.sys.toapp_report_data.dev.sys_status != WorkMode.MODE_WORKING:
                 await self.async_send_command("get_report_cfg")
         except COMMAND_EXCEPTIONS as exc:
             self.update_failures += 1
@@ -122,3 +122,4 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[LubaMsg]):
 
         self.update_failures = 0
         return self.device.luba_msg
+

@@ -5,7 +5,12 @@ from homeassistant.components.select import SelectEntity, SelectEntityDescriptio
 from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from pymammotion.data.model.mowing_modes import CuttingMode, BorderPatrolMode, ObstacleLapsMode, MowOrder
+from pymammotion.data.model.mowing_modes import (
+    BorderPatrolMode,
+    CuttingMode,
+    MowOrder,
+    ObstacleLapsMode,
+)
 
 from . import MammotionConfigEntry
 from .coordinator import MammotionDataUpdateCoordinator
@@ -15,6 +20,7 @@ from .entity import MammotionBaseEntity
 @dataclass(frozen=True, kw_only=True)
 class MammotionSelectEntityDescription(SelectEntityDescription):
     """Describes Mammotion select entity."""
+
     key: str
     options: list[str]
     select_fn: Callable[[MammotionDataUpdateCoordinator, str], Awaitable[None]]
@@ -66,6 +72,7 @@ async def async_setup_entry(
 # Define the select entity class with entity_category: config
 class MammotionSelectEntity(MammotionBaseEntity, SelectEntity):
     """Representation of a Mammotion select entities."""
+
     _attr_entity_category = EntityCategory.CONFIG
 
     entity_description: MammotionSelectEntityDescription

@@ -1,18 +1,19 @@
 from dataclasses import dataclass
+from typing import Awaitable, Callable
+
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
-from typing import Callable, Awaitable
 
 from . import MammotionConfigEntry
 from .coordinator import MammotionDataUpdateCoordinator
-
 from .entity import MammotionBaseEntity
 
 
 @dataclass(frozen=True, kw_only=True)
 class MammotionSwitchEntityDescription(SwitchEntityDescription):
     """Describes Mammotion switch entity."""
+
     key: str
     set_fn: Callable[[MammotionDataUpdateCoordinator, bool], Awaitable[None]]
 
