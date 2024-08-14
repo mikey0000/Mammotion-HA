@@ -123,3 +123,10 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
         self.update_failures = 0
         return self.device.luba_msg
 
+    async def _async_setup(self) -> None:
+        try:
+            await self.device.start_sync(0)
+        except COMMAND_EXCEPTIONS as exc:
+            self.update_failures += 1
+            raise UpdateFailed(f"Updating Mammotion device failed: {exc}") from exc
+
