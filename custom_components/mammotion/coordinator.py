@@ -107,7 +107,10 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
 
         self.device.update_device(ble_device)
         try:
-            await self.async_request_iot_sync()
+            if len(self.device.luba_msg.net.toapp_devinfo_resp.resp_ids) == 0:
+                await self.device.start_sync(0)
+            else:
+                await self.async_request_iot_sync()
             if self.device.luba_msg.report_data.dev.sys_status != WorkMode.MODE_WORKING:
                 await self.async_send_command("get_report_cfg")
         except COMMAND_EXCEPTIONS as exc:
