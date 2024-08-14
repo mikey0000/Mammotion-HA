@@ -13,7 +13,6 @@ from homeassistant.exceptions import ConfigEntryNotReady, HomeAssistantError
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from pymammotion.data.model.device import MowingDevice
 from pymammotion.mammotion.devices import MammotionBaseBLEDevice
-from pymammotion.proto.luba_msg import LubaMsg
 from pymammotion.proto.mctrl_sys import RptAct, RptInfoType
 from pymammotion.utility.constant import WorkMode
 
@@ -81,7 +80,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
 
     async def async_request_iot_sync(self) -> None:
         await self.async_send_command("request_iot_sys", rpt_act=RptAct.RPT_START,
-                               rpt_info_type=[RptInfoType.RIT_CONNECT, RptInfoType.RIT_DEV_STA],
+                               rpt_info_type=[RptInfoType.RIT_CONNECT, RptInfoType.RIT_DEV_STA, RptInfoType.RIT_DEV_LOCAL, RptInfoType.RIT_RTK, RptInfoType.RIT_WORK],
                                timeout=1000,
                                period=3000,
                                no_change_period=4000,
@@ -109,10 +108,13 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
         try:
             if len(self.device.luba_msg.net.toapp_devinfo_resp.resp_ids) == 0:
                 await self.device.start_sync(0)
-            else:
-                await self.async_request_iot_sync()
             if self.device.luba_msg.report_data.dev.sys_status != WorkMode.MODE_WORKING:
                 await self.async_send_command("get_report_cfg")
+
+            else:
+                await self.async_request_iot_sync()
+
+
         except COMMAND_EXCEPTIONS as exc:
             self.update_failures += 1
             raise UpdateFailed(f"Updating Mammotion device failed: {exc}") from exc
@@ -130,6 +132,5 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
         try:
             await self.device.start_sync(0)
         except COMMAND_EXCEPTIONS as exc:
-            self.update_failures += 1
-            raise UpdateFailed(f"Updating Mammotion device failed: {exc}") from exc
+            raise UpdateFailed(f"Setting up Mammotion device failed: {exc}") from exc
 
