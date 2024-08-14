@@ -78,6 +78,11 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
         await self.async_send_command("set_blade_height", height=height)
 
 
+    async def async_rtk_dock_location(self):
+        """RTK and dock location."""
+        await self.async_send_command("allpowerfull_rw", id=5, rw=1, context=1)
+
+
     async def async_request_iot_sync(self) -> None:
         await self.async_send_command("request_iot_sys", rpt_act=RptAct.RPT_START,
                                rpt_info_type=[RptInfoType.RIT_CONNECT, RptInfoType.RIT_DEV_STA, RptInfoType.RIT_DEV_LOCAL, RptInfoType.RIT_RTK, RptInfoType.RIT_WORK],
@@ -133,4 +138,5 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
             await self.device.start_sync(0)
         except COMMAND_EXCEPTIONS as exc:
             raise UpdateFailed(f"Setting up Mammotion device failed: {exc}") from exc
+
 
