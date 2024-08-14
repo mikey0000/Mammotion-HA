@@ -21,6 +21,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import StateType
 from homeassistant.util.unit_conversion import SpeedConverter
+from pymammotion.data.model.device import MowingDevice
 from pymammotion.data.model.enums import RTKStatus
 from pymammotion.proto.luba_msg import ReportInfoData
 from pymammotion.utility.constant.device_constant import PosType, device_mode
@@ -36,7 +37,7 @@ SPEED_UNITS = SpeedConverter.VALID_UNITS
 class MammotionSensorEntityDescription(SensorEntityDescription):
     """Describes Mammotion sensor entity."""
 
-    value_fn: Callable[[ReportInfoData], StateType]
+    value_fn: Callable[[MowingDevice], StateType]
 
 LUBA_SENSOR_ONLY_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
     MammotionSensorEntityDescription(
@@ -44,7 +45,7 @@ LUBA_SENSOR_ONLY_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.DISTANCE,
         native_unit_of_measurement=UnitOfLength.MILLIMETERS,
-        value_fn=lambda mower_data: mower_data.work.knife_height,
+        value_fn=lambda mower_data: mower_data.report_data.work.knife_height,
     ),
 )
 
@@ -54,91 +55,91 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.BATTERY,
         native_unit_of_measurement=PERCENTAGE,
-        value_fn=lambda mower_data: mower_data.dev.battery_val,
+        value_fn=lambda mower_data: mower_data.report_data.dev.battery_val,
     ),
     MammotionSensorEntityDescription(
         key="ble_rssi",
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.SIGNAL_STRENGTH,
         native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
-        value_fn=lambda mower_data: mower_data.connect.ble_rssi,
+        value_fn=lambda mower_data: mower_data.report_data.connect.ble_rssi,
     ),
     MammotionSensorEntityDescription(
         key="wifi_rssi",
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.SIGNAL_STRENGTH,
         native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
-        value_fn=lambda mower_data: mower_data.connect.wifi_rssi,
+        value_fn=lambda mower_data: mower_data.report_data.connect.wifi_rssi,
     ),
     MammotionSensorEntityDescription(
         key="gps_stars",
         state_class=SensorStateClass.MEASUREMENT,
         device_class=None,
         native_unit_of_measurement=None,
-        value_fn=lambda mower_data: mower_data.rtk.gps_stars,
+        value_fn=lambda mower_data: mower_data.report_data.rtk.gps_stars,
     ),
     MammotionSensorEntityDescription(
         key="area",
         state_class=SensorStateClass.MEASUREMENT,
         device_class=None,
         native_unit_of_measurement=AREA_SQUARE_METERS,
-        value_fn=lambda mower_data: mower_data.work.area & 65535,
+        value_fn=lambda mower_data: mower_data.report_data.work.area & 65535,
     ),
     MammotionSensorEntityDescription(
         key="mowing_speed",
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.SPEED,
         native_unit_of_measurement=UnitOfSpeed.METERS_PER_SECOND,
-        value_fn=lambda mower_data: mower_data.work.man_run_speed / 100,
+        value_fn=lambda mower_data: mower_data.report_data.work.max_run_speed / 100,
     ),
     MammotionSensorEntityDescription(
         key="progress",
         state_class=SensorStateClass.MEASUREMENT,
         device_class=None,
         native_unit_of_measurement=PERCENTAGE,
-        value_fn=lambda mower_data: mower_data.work.area >> 16,
+        value_fn=lambda mower_data: mower_data.report_data.work.area >> 16,
     ),
     MammotionSensorEntityDescription(
         key="total_time",
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.DURATION,
         native_unit_of_measurement=UnitOfTime.MINUTES,
-        value_fn=lambda mower_data: mower_data.work.progress & 65535,
+        value_fn=lambda mower_data: mower_data.report_data.work.progress & 65535,
     ),
     MammotionSensorEntityDescription(
         key="elapsed_time",
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.DURATION,
         native_unit_of_measurement=UnitOfTime.MINUTES,
-        value_fn=lambda mower_data: (mower_data.work.progress & 65535)
-        - (mower_data.work.progress >> 16),
+        value_fn=lambda mower_data: (mower_data.report_data.work.progress & 65535)
+        - (mower_data.report_data.work.progress >> 16),
     ),
     MammotionSensorEntityDescription(
         key="left_time",
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.DURATION,
         native_unit_of_measurement=UnitOfTime.MINUTES,
-        value_fn=lambda mower_data: mower_data.work.progress >> 16,
+        value_fn=lambda mower_data: mower_data.report_data.work.progress >> 16,
     ),
     MammotionSensorEntityDescription(
         key="l1_satellites",
         state_class=SensorStateClass.MEASUREMENT,
         device_class=None,
         native_unit_of_measurement=None,
-        value_fn=lambda mower_data: (mower_data.rtk.co_view_stars >> 0) & 255,
+        value_fn=lambda mower_data: (mower_data.report_data.rtk.co_view_stars >> 0) & 255,
     ),
     MammotionSensorEntityDescription(
         key="l2_satellites",
         state_class=SensorStateClass.MEASUREMENT,
         device_class=None,
         native_unit_of_measurement=None,
-        value_fn=lambda mower_data: (mower_data.rtk.co_view_stars >> 8) & 255,
+        value_fn=lambda mower_data: (mower_data.report_data.rtk.co_view_stars >> 8) & 255,
     ),
     MammotionSensorEntityDescription(
         key="activity_mode",
         state_class=None,
         device_class=SensorDeviceClass.ENUM,
-        value_fn=lambda mower_data: device_mode(mower_data.dev.sys_status),
+        value_fn=lambda mower_data: device_mode(mower_data.report_data.dev.sys_status),
     ),
     MammotionSensorEntityDescription(
         key="position_mode",
@@ -146,7 +147,7 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.ENUM,
         native_unit_of_measurement=None,
         value_fn=lambda mower_data: str(
-            RTKStatus.from_value(mower_data.rtk.status)
+            RTKStatus.from_value(mower_data.report_data.rtk.status)
         ),  # Note: This will not work for Luba2 & Yuka. Only for Luba1
     ),
     MammotionSensorEntityDescription(
@@ -155,9 +156,16 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.ENUM,
         native_unit_of_measurement=None,
         value_fn=lambda mower_data: str(
-            PosType(mower_data.locations[0].pos_type).name
+            PosType(mower_data.location.position_type).name
         ),  # Note: This will not work for Luba2 & Yuka. Only for Luba1
     ),
+    # MammotionSensorEntityDescription(
+    #     key="lawn_mower_position",
+    #     state_class=None,
+    #     device_class=None,  # Set device class to "geo_location"
+    #     native_unit_of_measurement=None,
+    #     value_fn=lambda mower_data: f"{mower_data.location.device.latitude}, {mower_data.location.device.longitude}"
+    # )
     # ToDo: We still need to add the following.
     # - RTK Status - None, Single, Fix, Float, Unknown (RTKStatusFragment.java)
     # - Signal quality (Robot)
@@ -210,6 +218,6 @@ class MammotionSensorEntity(MammotionBaseEntity, SensorEntity):
     def native_value(self) -> StateType:
         """Return the state of the sensor."""
         current_value = self.entity_description.value_fn(
-            self.coordinator.data.sys.toapp_report_data
+            self.coordinator.data
         )
         return current_value

@@ -133,6 +133,9 @@
         "name": "Working Speed",
         "description": "Set the working speed of the mower."
       }
+    },
+    "device_tracker": {
+      "name": "Device Tracking"
     }
   },
   "exceptions": {

@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 SCAN_INTERVAL = timedelta(minutes=1)
 
 
-class MammotionDataUpdateCoordinator(DataUpdateCoordinator[LubaMsg]):
+class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
     """Class to manage fetching mammotion data."""
 
     address: str
@@ -108,7 +108,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[LubaMsg]):
         self.device.update_device(ble_device)
         try:
             await self.async_request_iot_sync()
-            if self.device.luba_msg.sys.toapp_report_data.dev.sys_status != WorkMode.MODE_WORKING:
+            if self.device.luba_msg.report_data.dev.sys_status != WorkMode.MODE_WORKING:
                 await self.async_send_command("get_report_cfg")
         except COMMAND_EXCEPTIONS as exc:
             self.update_failures += 1
