@@ -1,7 +1,7 @@
 {
   "domain": "mammotion",
   "name": "Mammotion",
-  "version": "0.0.23",
+  "version": "0.0.24",
   "integration_type": "device",
   "bluetooth": [
     {
