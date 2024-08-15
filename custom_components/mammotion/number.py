@@ -42,8 +42,8 @@ NUMBER_WORKING_ENTITIES: tuple[MammotionNumberEntityDescription, ...] = (
     MammotionNumberEntityDescription(
         key="cutter_height",
         step=5.0,
-        min_value=30.0,
-        max_value=70.0,
+        min_value=30.0, # ToDo: To be dynamiclly set based on model (h\non H)
+        max_value=70.0, # ToDo: To be dynamiclly set based on model (h\non H)
         entity_category=EntityCategory.CONFIG,
         set_fn=lambda coordinator, value: coordinator.async_blade_height(value),
     ),
