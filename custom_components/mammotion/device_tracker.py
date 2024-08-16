@@ -2,6 +2,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
+from cryptography.utils import cached_property
 from homeassistant.components.device_tracker import SourceType, TrackerEntity
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -56,6 +57,11 @@ class MammotionTracker(MammotionBaseEntity, TrackerEntity):
     def longitude(self) -> float | None:
         """Return longitude value of the device."""
         return self.coordinator.device.luba_msg.location.device.longitude
+
+    @property
+    def battery_level(self) -> int | None:
+        """Return the battery level of the device."""
+        return self.coordinator.data.report_data.dev.battery_val
 
     @property
     def source_type(self) -> SourceType:

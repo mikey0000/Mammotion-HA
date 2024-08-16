@@ -74,6 +74,10 @@
     "button": {
       "start_map_sync": {
         "name": "Sync maps"
+      },
+       "resync_rtk_dock": {
+        "name": "Sync RTK and dock",
+        "description": "Syncs RTK and dock location for when you move them."
       }
     },
     "switch": {
