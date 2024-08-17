@@ -9,10 +9,14 @@ from homeassistant.components.bluetooth import (
     BluetoothServiceInfo,
     async_discovered_service_info,
 )
-from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
-from homeassistant.const import CONF_ADDRESS
+from homeassistant.config_entries import ConfigFlow, ConfigFlowResult, OptionsFlowWithConfigEntry, ConfigEntry, \
+    OptionsFlow
+from homeassistant.const import CONF_ADDRESS, CONF_USERNAME, CONF_PASSWORD
+from homeassistant.core import callback
 
-from .const import DEVICE_SUPPORT, DOMAIN, LOGGER
+from homeassistant.helpers import config_validation as cv
+
+from .const import DEVICE_SUPPORT, DOMAIN, LOGGER, CONF_USE_BLUETOOTH, CONF_USE_WIFI, CONF_STAY_CONNECTED_BLUETOOTH
 
 
 class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
@@ -68,9 +72,9 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
 
         self._set_confirm_only()
         return self.async_show_form(
-            step_id="bluetooth_confirm",
             description_placeholders={"name": self._discovered_device.name},
         )
+
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
@@ -96,19 +100,59 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
         current_addresses = self._async_current_ids()
         for discovery_info in async_discovered_service_info(self.hass):
             address = discovery_info.address
+            name = discovery_info.name
             if address in current_addresses or address in self._discovered_devices:
                 continue
-
+            if name is None or not name.startswith(DEVICE_SUPPORT):
+                continue
             self._discovered_devices[address] = discovery_info.name
 
         if not self._discovered_devices:
             return self.async_abort(reason="no_devices_found")
 
         return self.async_show_form(
-            step_id="user",
             data_schema=vol.Schema(
                 {
                     vol.Required(CONF_ADDRESS): vol.In(self._discovered_devices),
                 },
             ),
+        )
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(
+            config_entry: ConfigEntry,
+    ) -> OptionsFlow:
+        """Create the options flow."""
+        return MammotionConfigFlowHandler(config_entry)
+
+class MammotionConfigFlowHandler(OptionsFlowWithConfigEntry):
+    """Handles options flow for the component."""
+
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Manage the options for the custom component."""
+        if user_input:
+            return self.async_create_entry(title="", data=user_input)
+
+        options_schema = vol.Schema(
+            {
+                vol.Optional(
+                    CONF_USE_BLUETOOTH,
+                    default=self.options.get(CONF_USE_BLUETOOTH, True),
+                ): cv.boolean,
+                vol.Optional(
+                    CONF_STAY_CONNECTED_BLUETOOTH,
+                    default=self.options.get(CONF_STAY_CONNECTED_BLUETOOTH, False),
+                ): cv.boolean,
+                vol.Optional(
+                    CONF_USE_WIFI,
+                    default=self.options.get(CONF_USE_WIFI, True),
+                ): cv.boolean,
+            }
+        )
+
+        return self.async_show_form(
+            data_schema=options_schema,
         )

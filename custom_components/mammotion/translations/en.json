@@ -129,7 +129,7 @@
         "name": "Start Progress",
         "description": "Set the start progress percentage."
       },
-      "cutter_height": {
+      "blade_height": {
         "name": "Blade Height",
         "description": "Adjust the height of the cutter in increments."
       },

@@ -22,3 +22,7 @@ COMMAND_EXCEPTIONS = (
     BleakError,
     TimeoutError,
 )
+
+CONF_USE_BLUETOOTH: Final = "use_bluetooth"
+CONF_STAY_CONNECTED_BLUETOOTH: Final = "stay_connected_bluetooth"
+CONF_USE_WIFI: Final = "use_wifi"
