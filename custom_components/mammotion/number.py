@@ -40,7 +40,7 @@ NUMBER_ENTITIES: tuple[MammotionNumberEntityDescription, ...] = (
 
 NUMBER_WORKING_ENTITIES: tuple[MammotionNumberEntityDescription, ...] = (
     MammotionNumberEntityDescription(
-        key="cutter_height",
+        key="blade_height",
         step=5.0,
         min_value=30.0, # ToDo: To be dynamiclly set based on model (h\non H)
         max_value=70.0, # ToDo: To be dynamiclly set based on model (h\non H)
