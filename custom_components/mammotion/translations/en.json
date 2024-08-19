@@ -14,9 +14,23 @@
       },
       "user": {
         "data": {
-          "address": "Device"
+          "address": "Device",
+          "use_wifi": "Use Wi-fi",
+          "account_name": "Mammotion email or account number",
+          "password": "Mammotion account password"
+
         },
         "description": "Select your mower"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "title": "Update Configuration",
+          "stay_connected_bluetooth": "Keep bluetooth connected"
+        }
       }
     }
   },
