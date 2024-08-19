@@ -7,16 +7,17 @@ from datetime import timedelta
 from typing import TYPE_CHECKING
 
 from homeassistant.components import bluetooth
-from homeassistant.const import CONF_ADDRESS
+from homeassistant.const import CONF_ADDRESS, CONF_PASSWORD
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady, HomeAssistantError
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from pymammotion.data.model.account import Credentials
 from pymammotion.data.model.device import MowingDevice
-from pymammotion.mammotion.devices import MammotionBaseBLEDevice
+from pymammotion.mammotion.devices.mammotion import MammotionDevice, ConnectionPreference
 from pymammotion.proto.mctrl_sys import RptAct, RptInfoType
 from pymammotion.utility.constant import WorkMode
 
-from .const import COMMAND_EXCEPTIONS, DOMAIN, LOGGER
+from .const import COMMAND_EXCEPTIONS, DOMAIN, LOGGER, CONF_ACCOUNTNAME
 
 if TYPE_CHECKING:
     from . import MammotionConfigEntry
@@ -30,7 +31,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
     address: str
     config_entry: MammotionConfigEntry
     device_name: str
-    device: MammotionBaseBLEDevice
+    device: MammotionDevice
 
     def __init__(
         self,
@@ -47,17 +48,31 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
 
     async def async_setup(self) -> None:
         """Set coordinator up."""
+        ble_device = None
+        credentials = Credentials()
+        preference = ConnectionPreference.BLUETOOTH
+        address = self.config_entry.data.get(CONF_ADDRESS)
+        if address:
+            ble_device = bluetooth.async_ble_device_from_address(self.hass, address)
+            if not ble_device:
+                raise ConfigEntryNotReady(
+                    f"Could not find Mammotion lawn mower with address {address}"
+                )
 
-        address = self.config_entry.data[CONF_ADDRESS]
-        ble_device = bluetooth.async_ble_device_from_address(self.hass, address)
-        if not ble_device:
-            raise ConfigEntryNotReady(
-                f"Could not find Mammotion lawn mower with address {address}"
-            )
-        self.device = MammotionBaseBLEDevice(ble_device)
-        self.device_name = ble_device.name or "Unknown"
-        self.address = ble_device.address
-        self.device.update_device(ble_device)
+            self.device_name = ble_device.name or "Unknown"
+            self.address = ble_device.address
+            self.device._ble_device.update_device(ble_device)
+
+
+        account = self.config_entry.data.get(CONF_ACCOUNTNAME)
+        password = self.config_entry.data.get(CONF_PASSWORD)
+        if account and password:
+            preference = ConnectionPreference.WIFI
+            credentials.email = account
+            credentials.password = password
+
+        self.device = await self.hass.async_add_executor_job(MammotionDevice, ble_device, credentials, preference)
+
         try:
             await self.device.start_sync(0)
         except COMMAND_EXCEPTIONS as exc:
@@ -93,7 +108,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
 
     async def async_send_command(self, command: str, **kwargs) -> None:
         try:
-            await self.device.command(command, **kwargs)
+            await self.device.send_command_with_args(command, **kwargs)
         except COMMAND_EXCEPTIONS as exc:
             raise HomeAssistantError(
                 translation_domain=DOMAIN, translation_key="command_failed"
@@ -109,7 +124,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
             self.update_failures += 1
             raise UpdateFailed("Could not find device")
 
-        self.device.update_device(ble_device)
+        self.device._ble_device.update_device(ble_device)
         try:
             if len(self.device.luba_msg.net.toapp_devinfo_resp.resp_ids) == 0:
                 await self.device.start_sync(0)

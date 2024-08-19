@@ -93,6 +93,14 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                 if name is None:
                     return self.async_abort(reason="no_longer_present")
 
+                if user_input.get(CONF_USE_WIFI) is False:
+                    return self.async_create_entry(
+                        title=name,
+                        data={
+                            CONF_ADDRESS: address
+                        },
+                    )
+
             return await self.async_step_wifi(user_input)
 
         current_addresses = self._async_current_ids()
