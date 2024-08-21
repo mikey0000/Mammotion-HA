@@ -1,0 +1,165 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "L'appareil est déjà configuré",
+      "already_in_progress": "Le flux de configuration est déjà en cours",
+      "no_devices_found": "Aucun appareils trouvés",
+      "no_longer_present": "L'appareil n'est plus présent",
+      "not_supported": "L'appareil n'est pas supporté"
+    },
+    "flow_title": "Configurer votre robot tondeuse Mammotion",
+    "step": {
+      "bluetooth_confirm": {
+        "description": "Installation {name}"
+      },
+      "user": {
+        "data": {
+          "address": "Appareil"
+        },
+        "description": "Sélectionner votre robot tondeuse"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "battery_percent": {
+        "name": "Batterie"
+      },
+      "ble_rssi": {
+        "name": "BLE RSSI"
+      },
+      "wifi_rssi": {
+        "name": "WiFi RSSI"
+      },
+      "gps_stars": {
+        "name": "Satellites (Robot)"
+      },
+      "blade_height": {
+        "name": "Hauteur des lames"
+      },
+      "area": {
+        "name": "Zone"
+      },
+      "mowing_speed": {
+        "name": "Vitesse de tonte"
+      },
+      "progress": {
+        "name": "Progrès"
+      },
+      "total_time": {
+        "name": "Temps total"
+      },
+      "elapsed_time": {
+        "name": "Temps écoulé"
+      },
+      "left_time": {
+        "name": "Temps restant"
+      },
+      "l1_satellites": {
+        "name": "L1 Satellites (Co-Visionnage)"
+      },
+      "l2_satellites": {
+        "name": "L2 Satellites (Co-Visionnage)"
+      },
+      "position_mode": {
+        "name": "Position RTK"
+      },
+      "position_type": {
+        "name": "Type de position de l'appareil"
+      },
+      "activity_mode": {
+        "name": "Mode activité"
+      }
+    },
+    "button": {
+      "start_map_sync": {
+        "name": "Synchroniser les cartes"
+      },
+       "resync_rtk_dock": {
+        "name": "Synchroniser RTK et base de charge",
+        "description": "Synchroniser RTK et l'emplacement de la base de charge pour quand tu les déplaces."
+      }
+    },
+    "switch": {
+      "blades_on_off": {
+        "name": "Lames On/Off",
+        "description": "Allume ou éteint les lames."
+      },
+      "mowing_on_off": {
+        "name": "Tonte On/Off",
+        "description": "Démarrer ou stopper la tonte."
+      },
+      "dump_grass_on_off": {
+        "name": "Déversement d'herbe On/Off",
+        "description": "Active ou désactive le déversement d'herbe."
+      },
+      "rain_detection_on_off": {
+        "name": "Détection de pluie On/Off",
+        "description": "Activer ou désactiver la détection de pluie."
+      },
+      "side_led_on_off": {
+        "name": "Voyants LED On/Off",
+        "description": "Active ou désactive les voyants LED."
+      },
+       "perimeter_first_on_off": {
+        "name": "Bordure en premier",
+        "description": "Tond la bordure en premier ou les lignes/zigzag."
+      }
+    },
+    "select": {
+       "cutting_mode": {
+        "name": "Mode de coupe",
+        "description": "Sélectionner le mode de coupe pour votre robot tondeuse."
+      },
+      "border_patrol_mode": {
+        "name": "Mode chien de garde",
+        "description": "Sélectionner le mode chien de garde pour votre robot tondeuse."
+      },
+      "obstacle_laps_mode": {
+        "name": "Mode d'évitement d'obstacles",
+        "description": "Sélectionner le mode d'évitement d'obstacles pour votre robot tondeuse."
+      },
+      "mow_order": {
+        "name": "Ordre de tonte",
+        "description": "Sélectionner l'ordre dans lequel les zones doivent être tondues."
+      }
+    },
+    "number": {
+       "start_progress": {
+        "name": "Départ de la progression",
+        "description": "Régler le pourcentage de départ de la progression."
+      },
+      "cutter_height": {
+        "name": "Hauteur des lames",
+        "description": "Régler la hauteur des lames par incréments."
+      },
+      "working_speed": {
+        "name": "Vitesse de fonctionnement",
+        "description": "Régler la vitesse de fonctionnement du robot tondeuse."
+      }
+    },
+    "device_tracker": {
+      "name": "Suivi de l'appareil"
+    }
+  },
+  "exceptions": {
+    "device_not_ready": {
+      "message": "L'appareil n'est pas prêt."
+    },
+    "pause_failed": {
+      "message": "Impossible de mettre la tondeuse en pause."
+    },
+    "resume_failed": {
+      "message": "Impossible de reprendre la tonte."
+    },
+    "start_failed": {
+      "message": "Impossible de démarrer la tonte."
+    },
+    "dock_failed": {
+      "message": "Impossible d'envoyer la tondeuse sur la base de chargement."
+    },
+    "command_failed": {
+      "message": "Impossible d'envoyer la commande au robot."
+    }
+  }
+}
