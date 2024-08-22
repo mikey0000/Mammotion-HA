@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+from pymammotion.mammotion.devices.mammotion import has_field
+from pymammotion.proto.luba_msg import RptDevStatus
+from pymammotion.utility.constant.device_constant import WorkMode
+
 from homeassistant.components.lawn_mower import (
     LawnMowerActivity,
     LawnMowerEntity,
@@ -10,9 +14,6 @@ from homeassistant.components.lawn_mower import (
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from pymammotion.mammotion.devices.mammotion import has_field
-from pymammotion.proto.luba_msg import RptDevStatus
-from pymammotion.utility.constant.device_constant import WorkMode
 
 from . import MammotionConfigEntry
 from .const import COMMAND_EXCEPTIONS, DOMAIN, LOGGER
@@ -100,7 +101,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
                 translation_domain=DOMAIN, translation_key="start_failed"
             ) from exc
         finally:
-            self.coordinator.async_set_updated_data(self.coordinator.device.luba_msg)
+            self.coordinator.async_set_updated_data(self.coordinator.devices.mower(self.coordinator.device_name))
 
     async def async_dock(self) -> None:
         """Start docking."""
@@ -120,7 +121,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
                 translation_domain=DOMAIN, translation_key="dock_failed"
             ) from exc
         finally:
-            self.coordinator.async_set_updated_data(self.coordinator.device.luba_msg)
+            self.coordinator.async_set_updated_data(self.coordinator.devices.mower(self.coordinator.device_name))
 
     async def async_pause(self) -> None:
         """Pause mower."""
@@ -132,4 +133,4 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
                 translation_domain=DOMAIN, translation_key="pause_failed"
             ) from exc
         finally:
-            self.coordinator.async_set_updated_data(self.coordinator.device.luba_msg)
+            self.coordinator.async_set_updated_data(self.coordinator.devices.mower(self.coordinator.device_name))

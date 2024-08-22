@@ -26,4 +26,4 @@ COMMAND_EXCEPTIONS = (
 CONF_STAY_CONNECTED_BLUETOOTH: Final = "stay_connected_bluetooth"
 CONF_ACCOUNTNAME: Final = "account_name"
 CONF_USE_WIFI: Final = "use_wifi"
-CONF_DEVICELIST: Final = "device_list"
+CONF_DEVICE_NAME: Final = "device_name"
