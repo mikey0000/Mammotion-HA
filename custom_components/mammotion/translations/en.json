@@ -5,7 +5,8 @@
       "already_in_progress": "Configuration flow is already in progress",
       "no_devices_found": "Could not find devices",
       "no_longer_present": "Device is no longer present",
-      "not_supported": "Device not supported"
+      "not_supported": "Device not supported",
+      "no_device_name": "Device name required to proceed"
     },
     "flow_title": "Configure your Mammotion lawn mower",
     "step": {
@@ -15,6 +16,7 @@
       "user": {
         "data": {
           "address": "Device",
+          "device_name": "Device name e.g Luba-****, Yuka-**** which needs to be unique",
           "use_wifi": "Use Wi-fi",
           "account_name": "Mammotion email or account number",
           "password": "Mammotion account password"

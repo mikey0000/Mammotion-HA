@@ -28,7 +28,7 @@ BUTTON_SENSORS: tuple[MammotionButtonSensorEntityDescription, ...] = (
 MammotionButtonSensorEntityDescription(
         key="resync_rtk_dock",
         press_fn=lambda coordinator: coordinator.async_rtk_dock_location(),
-    ),
+    )
 )
 
 
