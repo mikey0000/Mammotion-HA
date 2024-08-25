@@ -76,66 +76,52 @@
         "name": "Sincronizza mappe"
       },
       "resync_rtk_dock": {
-        "name": "Sincronizza base e RTK",
-        "description": "Ri-sincronizza RTK e posizione della base di ricarica quando vengono spostati."
+        "name": "Sincronizza base e RTK"
       }
     },
     "switch": {
       "blades_on_off": {
-        "name": "Lame On/Off",
-        "description": "Avvia o ferma le lame."
+        "name": "Lame On/Off"
       },
       "mowing_on_off": {
-        "name": "Taglio On/Off",
-        "description": "Avvia o interrompi il taglio."
+        "name": "Taglio On/Off"
       },
       "dump_grass_on_off": {
-        "name": "Scarico erba On/Off",
-        "description": "Abilita o disabilita lo scarico dell'erba."
+        "name": "Scarico erba On/Off"
       },
       "rain_detection_on_off": {
-        "name": "Rilevamento pioggia On/Off",
-        "description": "Attiva o disattiva il rilevamento della pioggia."
+        "name": "Rilevamento pioggia On/Off"
       },
       "side_led_on_off": {
-        "name": "LED laterale On/Off",
-        "description": "Abilita o disabilita il LED laterale."
+        "name": "LED laterale On/Off"
       },
       "perimeter_first_on_off": {
-        "name": "Taglio perimetro",
-        "description": "Taglia prima il perimetro o le linee/zigzag."
+        "name": "Taglio perimetro"
       }
     },
     "select": {
       "cutting_mode": {
-        "name": "Modalità di taglio",
-        "description": "Seleziona la modalità di taglio."
+        "name": "Modalità di taglio"
       },
       "border_patrol_mode": {
-        "name": "Modalità controllo bordi",
-        "description": "Seleziona la modalità di controllo dei bordi."
+        "name": "Modalità controllo bordi"
       },
       "obstacle_laps_mode": {
-        "name": "Modalità aggiramento ostacoli",
-        "description": "Seleziona la modalità aggiramento ostacoli."
+        "name": "Modalità aggiramento ostacoli"
       },
       "mow_order": {
-        "name": "Ordine di taglio",
-        "description": "Seleziona l'ordine in cui le aree devono essere tagliate."
+        "name": "Ordine di taglio"
       }
     },
     "number": {
       "start_progress": {
-        "name": "Avanzamento iniziale",
-        "description": "Imposta la percentuale di avanzamento iniziale."
+        "name": "Avanzamento iniziale"
       },
       "cutter_height": {
-        "name": "Altezza della lama",
-        "description": "Regola l'altezza del lama."
+        "name": "Altezza della lama"
       },
       "working_speed": {
-        "name": "Velocità di lavoro",
-        "description": "Imposta la velocità di lavoro del rasaerba."
+        "name": "Velocità di lavoro"
       }
     },
     "device_tracker": {

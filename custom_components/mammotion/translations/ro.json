@@ -1,0 +1,151 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "Echipamentul este deja configurat",
+      "already_in_progress": "Procesul de configurare este deja în progres",
+      "no_devices_found": "Nu pot găsi niciun dispozitiv",
+      "no_longer_present": "Echipamentul nu mai este prezent",
+      "not_supported": "Dispozitivul nu este suportat"
+    },
+    "flow_title": "Configurați mașina de tuns iarba Mammotion",
+    "step": {
+      "bluetooth_confirm": {
+        "description": "Configurație{name}"
+      },
+      "user": {
+        "data": {
+          "address": "Dispozitiv"
+        },
+        "description": "Selectați mașina de tuns iarba"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "battery_percent": {
+        "name": "Acumulator"
+      },
+      "ble_rssi": {
+        "name": "BLE RSSI"
+      },
+      "wifi_rssi": {
+        "name": "WiFi RSSI"
+      },
+      "gps_stars": {
+        "name": "Sateliți (Robot)"
+      },
+      "blade_height": {
+        "name": "Înălțimea lamelor"
+      },
+      "area": {
+        "name": "Suprafață"
+      },
+      "mowing_speed": {
+        "name": "Viteza de tundere"
+      },
+      "progress": {
+        "name": "Progres"
+      },
+      "total_time": {
+        "name": "Durata totală"
+      },
+      "elapsed_time": {
+        "name": "Timpul scurs"
+      },
+      "left_time": {
+        "name": "Timpul rămas"
+      },
+      "l1_satellites": {
+        "name": "Sateliți L1 (vedere în comun)"
+      },
+      "l2_satellites": {
+        "name": "Sateliți L2 (vedere în comun)"
+      },
+      "position_mode": {
+        "name": "Poziția RTK"
+      },
+      "position_type": {
+        "name": "Tipul de poziționare a dispozitivului"
+      },
+      "activity_mode": {
+        "name": "Tipul de activitate"
+      }
+    },
+    "button": {
+      "start_map_sync": {
+        "name": "Sincronizați harta"
+      },
+       "resync_rtk_dock": {
+        "name": "Sincronizați RTK și docul"
+      }
+    },
+    "switch": {
+      "blades_on_off": {
+        "name": "Lame pornite/oprite"
+      },
+      "mowing_on_off": {
+        "name": "Tundere pornită/oprită"
+      },
+      "dump_grass_on_off": {
+        "name": "Descărcarea ierbii On/Off"
+      },
+      "rain_detection_on_off": {
+        "name": "Detectarea ploii activată/dezactivată"
+      },
+      "side_led_on_off": {
+        "name": "LED lateral Pornit/Oprit"
+      },
+       "perimeter_first_on_off": {
+        "name": "Perimetrul întâi"
+      }
+    },
+    "select": {
+       "cutting_mode": {
+        "name": "Modul de tăiere"
+      },
+      "border_patrol_mode": {
+        "name": "Modul patrulă de graniță"
+      },
+      "obstacle_laps_mode": {
+        "name": "Modul Secțiuni obstacol"
+      },
+      "mow_order": {
+        "name": "Ordinea de cosire"
+      }
+    },
+    "number": {
+       "start_progress": {
+        "name": "Progresul la start"
+      },
+      "cutter_height": {
+        "name": "Înălțimea lamelor"
+      },
+      "working_speed": {
+        "name": "Viteza de lucru"
+      }
+    },
+    "device_tracker": {
+      "name": "Monitorizarea dispozitivului"
+    }
+  },
+  "exceptions": {
+    "device_not_ready": {
+      "message": "Dispozitivul nu este pregătit."
+    },
+    "pause_failed": {
+      "message": "Nu s-a reușit punerea în pauză a mașinii de tuns iarba."
+    },
+    "resume_failed": {
+      "message": "Nu s-a reușit reluarea activității mașinii de tuns iarba."
+    },
+    "start_failed": {
+      "message": "Nu s-a reușit pornirea mașinii de tuns iarba."
+    },
+    "dock_failed": {
+      "message": "Nu s-a reușit trimiterea cositoarei la doc."
+    },
+    "command_failed": {
+      "message": "Nu s-a reușit trimiterea comenzii către mașina de tuns iarba."
+    }
+  }
+}

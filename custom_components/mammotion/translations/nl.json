@@ -1,0 +1,151 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "Het apparaat is al ingesteld",
+      "already_in_progress": "De configuratie-flow is al in uitvoering",
+      "no_devices_found": "Kon geen apparaten vinden",
+      "no_longer_present": "Het apparaat is niet langer aanwezig",
+      "not_supported": "Apparaat wordt niet ondersteund"
+    },
+    "flow_title": "Stel uw Mammotion gazonmachines in",
+    "step": {
+      "bluetooth_confirm": {
+        "description": "Installeer {name}"
+      },
+      "user": {
+        "data": {
+          "address": "Apparaat"
+        },
+        "description": "Kies uw gazonmachines"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "battery_percent": {
+        "name": "Batterij"
+      },
+      "ble_rssi": {
+        "name": "BLE RSSI"
+      },
+      "wifi_rssi": {
+        "name": "WiFi RSSI"
+      },
+      "gps_stars": {
+        "name": "Satellieten (Robot)"
+      },
+      "blade_height": {
+        "name": "Blad hoogte"
+      },
+      "area": {
+        "name": "Gebied"
+      },
+      "mowing_speed": {
+        "name": "Maaisnelheid"
+      },
+      "progress": {
+        "name": "Voortgang"
+      },
+      "total_time": {
+        "name": "Totaal tijd"
+      },
+      "elapsed_time": {
+        "name": "Verstreken tijd"
+      },
+      "left_time": {
+        "name": "tijd nog tegaan"
+      },
+      "l1_satellites": {
+        "name": "L1 Satellieten (Co-Weergave)"
+      },
+      "l2_satellites": {
+        "name": "L2 Satellieten (Co-Weergave)"
+      },
+      "position_mode": {
+        "name": "RTK positie"
+      },
+      "position_type": {
+        "name": "Apparaatpositie type"
+      },
+      "activity_mode": {
+        "name": "Activiteitsmodus"
+      }
+    },
+    "button": {
+      "start_map_sync": {
+        "name": "Synchroniseer kaarten"
+      },
+       "resync_rtk_dock": {
+        "name": "Synchroniseer RTK en dok"
+      }
+    },
+    "switch": {
+      "blades_on_off": {
+        "name": "Blad aan/uit"
+      },
+      "mowing_on_off": {
+        "name": "Gazonmachines aan/uit"
+      },
+      "dump_grass_on_off": {
+        "name": "Gras dumpen aan/uit"
+      },
+      "rain_detection_on_off": {
+        "name": "Regendetectie Aan/Uit"
+      },
+      "side_led_on_off": {
+        "name": "Zij-LED's aan/uit"
+      },
+       "perimeter_first_on_off": {
+        "name": "Perimeter Eerst"
+      }
+    },
+    "select": {
+       "cutting_mode": {
+        "name": "Snijmodus"
+      },
+      "border_patrol_mode": {
+        "name": "Randpatrolmodus"
+      },
+      "obstacle_laps_mode": {
+        "name": "Obstakel-lapsmodus"
+      },
+      "mow_order": {
+        "name": "Maai volgorde"
+      }
+    },
+    "number": {
+       "start_progress": {
+        "name": "Start voortgang"
+      },
+      "cutter_height": {
+        "name": "Blad hoogte"
+      },
+      "working_speed": {
+        "name": "Werkende snelheid"
+      }
+    },
+    "device_tracker": {
+      "name": "Apparaatvolgsysteem"
+    }
+  },
+  "exceptions": {
+    "device_not_ready": {
+      "message": "Het apparaat is nog niet klaar"
+    },
+    "pause_failed": {
+      "message": "Kon de gazonmachines niet pauzeren"
+    },
+    "resume_failed": {
+      "message": "Kon de gazonmachines niet hervatten"
+    },
+    "start_failed": {
+      "message": "Kon de gazonmachines niet starten"
+    },
+    "dock_failed": {
+      "message": "Kon de gazonmachines niet naar het dok sturen"
+    },
+    "command_failed": {
+      "message": "Kon het opdracht niet verzenden naar de gazonmachines"
+    }
+  }
+}

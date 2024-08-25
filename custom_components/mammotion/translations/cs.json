@@ -1,0 +1,151 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "Zařízení je již nakonfigurováno",
+      "already_in_progress": "Konfigurační proces již probíhá",
+      "no_devices_found": "Nelze najít zařízení",
+      "no_longer_present": "Zařízení již není k dispozici",
+      "not_supported": "Zařízení není podporováno"
+    },
+    "flow_title": "Nastavení sekačky Mammotion",
+    "step": {
+      "bluetooth_confirm": {
+        "description": "Nastavení {name}"
+      },
+      "user": {
+        "data": {
+          "address": "Zařízení"
+        },
+        "description": "Vyberte si svou sekačku"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "battery_percent": {
+        "name": "Baterie"
+      },
+      "ble_rssi": {
+        "name": "BLE RSSI"
+      },
+      "wifi_rssi": {
+        "name": "WiFi RSSI"
+      },
+      "gps_stars": {
+        "name": "Družice (Robot)"
+      },
+      "blade_height": {
+        "name": "Výška nože"
+      },
+      "area": {
+        "name": "Oblast"
+      },
+      "mowing_speed": {
+        "name": "Rychlost sečení"
+      },
+      "progress": {
+        "name": "Pokrok"
+      },
+      "total_time": {
+        "name": "Celkový čas"
+      },
+      "elapsed_time": {
+        "name": "Uplynulý čas"
+      },
+      "left_time": {
+        "name": "Zbývající čas"
+      },
+      "l1_satellites": {
+        "name": "Satelity L1 (společný výhled)"
+      },
+      "l2_satellites": {
+        "name": "Satelity L2 (společný výhled)"
+      },
+      "position_mode": {
+        "name": "Poloha RTK"
+      },
+      "position_type": {
+        "name": "Druh polohování zařízení"
+      },
+      "activity_mode": {
+        "name": "Režim činnosti"
+      }
+    },
+    "button": {
+      "start_map_sync": {
+        "name": "Synchronizace mapy"
+      },
+       "resync_rtk_dock": {
+        "name": "Synchronizace RTK a dokovací stanice"
+      }
+    },
+  "switch": {
+    "blades_on_off": {
+      "name": "Zapnutí/vypnutí nožů"
+    },
+    "mowing_on_off": {
+      "name": "Zapnutí a vypnutí sekání"
+    },
+    "dump_grass_on_off": {
+      "name": "Zapnutí/vypnutí výsypu trávy"
+    },
+    "rain_detection_on_off": {
+      "name": "Zapnutá/vypnutá detekce deště"
+    },
+    "side_led_on_off": {
+      "name": "Zapnutí/vypnutí boční LED"
+    },
+     "perimeter_first_on_off": {
+      "name": "Nejprve obvod"
+    }
+  },
+  "select": {
+     "cutting_mode": {
+      "name": "Režim řezu"
+    },
+    "border_patrol_mode": {
+      "name": "Režim hraniční hlídky"
+    },
+    "obstacle_laps_mode": {
+      "name": "Režim Překážkové úseky"
+    },
+    "mow_order": {
+      "name": "Pořadí sečení"
+    }
+  },
+  "number": {
+     "start_progress": {
+      "name": "Pokrok na startu"
+    },
+    "cutter_height": {
+      "name": "Výška žacího ústrojí"
+    },
+    "working_speed": {
+      "name": "Pracovní rychlost"
+    }
+  },
+  "device_tracker": {
+    "name": "Sledování zařízení"
+  }
+},
+  "exceptions": {
+    "device_not_ready": {
+      "message": "Sekačka není připravena."
+    },
+    "pause_failed": {
+      "message": "Sekačku se nepodařilo pozastavit."
+    },
+    "resume_failed": {
+      "message": "Nepodařilo se obnovit činnost sekačky."
+    },
+    "start_failed": {
+      "message": "Sekačku se nepodařilo nastartovat."
+    },
+    "dock_failed": {
+      "message": "Nepodařilo se odeslat sekačku do nabíjecí stanice."
+    },
+    "command_failed": {
+      "message": "Nepodařilo se odeslat příkaz do sekačky."
+    }
+  }
+}
