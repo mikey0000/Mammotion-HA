@@ -117,7 +117,7 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                 continue
             self._discovered_devices[address] = discovery_info.name
 
-        if not self._discovered_devices:
+        if not self._discovered_devices and user_input is not None:
             return await self.async_step_wifi(user_input)
 
         return self.async_show_form(
