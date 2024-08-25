@@ -6,10 +6,6 @@ from dataclasses import asdict
 from datetime import timedelta
 from typing import TYPE_CHECKING
 
-import asyncio
-
-from pymammotion.utility.rocker_util import RockerControlUtil
-
 from homeassistant.components import bluetooth
 from homeassistant.const import CONF_ADDRESS, CONF_PASSWORD
 from homeassistant.core import HomeAssistant
@@ -133,8 +129,11 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
             self.update_failures += 1
             raise UpdateFailed("Could not find device")
 
-        if ble_device:
+        if ble_device and device.ble() is not None:
             device.ble().update_device(ble_device)
+        else:
+            device.add_ble(ble_device)
+
         try:
             if len(device.mower_state().net.toapp_devinfo_resp.resp_ids) == 0 or device.mower_state().net.toapp_wifi_iot_status.productkey is None:
                 await self.devices.start_sync(self.device_name, 0)
