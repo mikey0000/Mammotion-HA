@@ -58,27 +58,29 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
         address = self.config_entry.data.get(CONF_ADDRESS)
         name = self.config_entry.data.get(CONF_DEVICE_NAME)
 
-        if address:
-            ble_device = bluetooth.async_ble_device_from_address(self.hass, address)
-            if not ble_device:
-                raise ConfigEntryNotReady(
-                    f"Could not find Mammotion lawn mower with address {address}"
-                )
+        if self.devices is None or self.devices.get_device_by_name(name) is None:
 
-            self.device_name = ble_device.name or "Unknown"
-            self.address = ble_device.address
+            if address:
+                ble_device = bluetooth.async_ble_device_from_address(self.hass, address)
+                if not ble_device:
+                    raise ConfigEntryNotReady(
+                        f"Could not find Mammotion lawn mower with address {address}"
+                    )
 
-        account = self.config_entry.data.get(CONF_ACCOUNTNAME)
-        password = self.config_entry.data.get(CONF_PASSWORD)
-        if account and password:
-            if name:
-                self.device_name = name
-            preference = ConnectionPreference.WIFI
-            credentials.email = account
-            credentials.password = password
+                self.device_name = ble_device.name or "Unknown"
+                self.address = ble_device.address
 
-        self.devices = await create_devices(ble_device, credentials, preference)
-        print("creating devices")
+            account = self.config_entry.data.get(CONF_ACCOUNTNAME)
+            password = self.config_entry.data.get(CONF_PASSWORD)
+            if account and password:
+                if name:
+                    self.device_name = name
+                preference = ConnectionPreference.WIFI
+                credentials.email = account
+                credentials.password = password
+
+            self.devices = await create_devices(ble_device, credentials, preference)
+            print("creating devices")
         try:
             if preference is not ConnectionPreference.WIFI:
                 await self.devices.start_sync(self.device_name, 0)
