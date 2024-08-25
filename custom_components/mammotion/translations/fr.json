@@ -76,66 +76,52 @@
         "name": "Synchroniser les cartes"
       },
        "resync_rtk_dock": {
-        "name": "Synchroniser RTK et base de charge",
-        "description": "Synchroniser RTK et l'emplacement de la base de charge pour quand tu les déplaces."
+        "name": "Synchroniser RTK et base de charge"
       }
     },
     "switch": {
       "blades_on_off": {
-        "name": "Lames On/Off",
-        "description": "Allume ou éteint les lames."
+        "name": "Lames On/Off"
       },
       "mowing_on_off": {
-        "name": "Tonte On/Off",
-        "description": "Démarrer ou stopper la tonte."
+        "name": "Tonte On/Off"
       },
       "dump_grass_on_off": {
-        "name": "Déversement d'herbe On/Off",
-        "description": "Active ou désactive le déversement d'herbe."
+        "name": "Déversement d'herbe On/Off"
       },
       "rain_detection_on_off": {
-        "name": "Détection de pluie On/Off",
-        "description": "Activer ou désactiver la détection de pluie."
+        "name": "Détection de pluie On/Off"
       },
       "side_led_on_off": {
-        "name": "Voyants LED On/Off",
-        "description": "Active ou désactive les voyants LED."
+        "name": "Voyants LED On/Off"
       },
        "perimeter_first_on_off": {
-        "name": "Bordure en premier",
-        "description": "Tond la bordure en premier ou les lignes/zigzag."
+        "name": "Bordure en premier"
       }
     },
     "select": {
        "cutting_mode": {
-        "name": "Mode de coupe",
-        "description": "Sélectionner le mode de coupe pour votre robot tondeuse."
+        "name": "Mode de coupe"
       },
       "border_patrol_mode": {
-        "name": "Mode chien de garde",
-        "description": "Sélectionner le mode chien de garde pour votre robot tondeuse."
+        "name": "Mode chien de garde"
       },
       "obstacle_laps_mode": {
-        "name": "Mode d'évitement d'obstacles",
-        "description": "Sélectionner le mode d'évitement d'obstacles pour votre robot tondeuse."
+        "name": "Mode d'évitement d'obstacles"
       },
       "mow_order": {
-        "name": "Ordre de tonte",
-        "description": "Sélectionner l'ordre dans lequel les zones doivent être tondues."
+        "name": "Ordre de tonte"
       }
     },
     "number": {
        "start_progress": {
-        "name": "Départ de la progression",
-        "description": "Régler le pourcentage de départ de la progression."
+        "name": "Départ de la progression"
       },
       "cutter_height": {
-        "name": "Hauteur des lames",
-        "description": "Régler la hauteur des lames par incréments."
+        "name": "Hauteur des lames"
       },
       "working_speed": {
-        "name": "Vitesse de fonctionnement",
-        "description": "Régler la vitesse de fonctionnement du robot tondeuse."
+        "name": "Vitesse de fonctionnement"
       }
     },
     "device_tracker": {
