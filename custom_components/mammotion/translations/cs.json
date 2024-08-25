@@ -76,66 +76,52 @@
         "name": "Synchronizace mapy"
       },
        "resync_rtk_dock": {
-        "name": "Synchronizace RTK a dokovací stanice",
-        "description": "Synchronizuje polohu RTK a dokovací stanice při jejich přesunu."
+        "name": "Synchronizace RTK a dokovací stanice"
       }
     },
   "switch": {
     "blades_on_off": {
-      "name": "Zapnutí/vypnutí nožů",
-      "description": "Zapínání a vypínání nožů."
+      "name": "Zapnutí/vypnutí nožů"
     },
     "mowing_on_off": {
-      "name": "Zapnutí a vypnutí sekání",
-      "description": "Zahájení nebo ukončení sečení."
+      "name": "Zapnutí a vypnutí sekání"
     },
     "dump_grass_on_off": {
-      "name": "Zapnutí/vypnutí výsypu trávy",
-      "description": "Povolení nebo zakázání výsypu trávy."
+      "name": "Zapnutí/vypnutí výsypu trávy"
     },
     "rain_detection_on_off": {
-      "name": "Zapnutá/vypnutá detekce deště",
-      "description": "Zapněte nebo vypněte detekci deště."
+      "name": "Zapnutá/vypnutá detekce deště"
     },
     "side_led_on_off": {
-      "name": "Zapnutí/vypnutí boční LED",
-      "description": "Zapnutí nebo vypnutí boční LED diody."
+      "name": "Zapnutí/vypnutí boční LED"
     },
      "perimeter_first_on_off": {
-      "name": "Nejprve obvod",
-      "description": "První sečení po obvodu nebo první sečení čar/kličkování."
+      "name": "Nejprve obvod"
     }
   },
   "select": {
      "cutting_mode": {
-      "name": "Režim řezu",
-      "description": "Zvolte režim sečení pro sekačku."
+      "name": "Režim řezu"
     },
     "border_patrol_mode": {
-      "name": "Režim hraniční hlídky",
-      "description": "Zvolte pro sekačku režim hraniční hlídky."
+      "name": "Režim hraniční hlídky"
     },
     "obstacle_laps_mode": {
-      "name": "Režim Překážkové úseky",
-      "description": "Zvolte pro sekačku režim kroužení kolem překážek."
+      "name": "Režim Překážkové úseky"
     },
     "mow_order": {
-      "name": "Pořadí sečení",
-      "description": "Zvolte pořadí, v jakém se mají plochy sekat."
+      "name": "Pořadí sečení"
     }
   },
   "number": {
      "start_progress": {
-      "name": "Pokrok na startu",
-      "description": "Nastavení procenta pokroku při spuštění."
+      "name": "Pokrok na startu"
     },
     "cutter_height": {
-      "name": "Výška žacího ústrojí",
-      "description": "Nastavte výšku nože v krocích."
+      "name": "Výška žacího ústrojí"
     },
     "working_speed": {
-      "name": "Pracovní rychlost",
-      "description": "Nastavení pracovní rychlost sekačky."
+      "name": "Pracovní rychlost"
     }
   },
   "device_tracker": {

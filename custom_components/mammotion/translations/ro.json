@@ -76,66 +76,52 @@
         "name": "Sincronizați harta"
       },
        "resync_rtk_dock": {
-        "name": "Sincronizați RTK și docul",
-        "description": "Sincronizează RTK și locația docului când le mutați."
+        "name": "Sincronizați RTK și docul"
       }
     },
     "switch": {
       "blades_on_off": {
-        "name": "Lame pornite/oprite",
-        "description": "Porniți sau opriți lamele."
+        "name": "Lame pornite/oprite"
       },
       "mowing_on_off": {
-        "name": "Tundere pornită/oprită",
-        "description": "Porniți sau opriți tunderea."
+        "name": "Tundere pornită/oprită"
       },
       "dump_grass_on_off": {
-        "name": "Descărcarea ierbii On/Off",
-        "description": "Activați sau dezactivați descărcarea ierbii."
+        "name": "Descărcarea ierbii On/Off"
       },
       "rain_detection_on_off": {
-        "name": "Detectarea ploii activată/dezactivată",
-        "description": "Activați sau dezactivați detectarea ploii."
+        "name": "Detectarea ploii activată/dezactivată"
       },
       "side_led_on_off": {
-        "name": "LED lateral Pornit/Oprit",
-        "description": "Activați sau dezactivați LED-rile laterale."
+        "name": "LED lateral Pornit/Oprit"
       },
        "perimeter_first_on_off": {
-        "name": "Perimetrul întâi",
-        "description": "Prima cosire a perimetrului sau a liniilor/zigzagului."
+        "name": "Perimetrul întâi"
       }
     },
     "select": {
        "cutting_mode": {
-        "name": "Modul de tăiere",
-        "description": "Selectați modul de tăiere pentru mașina de tuns iarba."
+        "name": "Modul de tăiere"
       },
       "border_patrol_mode": {
-        "name": "Modul patrulă de graniță",
-        "description": "Selectați modul de patrulare la graniță pentru mașina de tuns iarba."
+        "name": "Modul patrulă de graniță"
       },
       "obstacle_laps_mode": {
-        "name": "Modul Secțiuni obstacol",
-        "description": "Selectați modul de evitare a obstacolelor pentru mașina de tuns iarba."
+        "name": "Modul Secțiuni obstacol"
       },
       "mow_order": {
-        "name": "Ordinea de cosire",
-        "description": "Selectați ordinea în care zonele trebuie cosite."
+        "name": "Ordinea de cosire"
       }
     },
     "number": {
        "start_progress": {
-        "name": "Progresul la start",
-        "description": "Setați procentajul progresului la start."
+        "name": "Progresul la start"
       },
       "cutter_height": {
-        "name": "Înălțimea lamelor",
-        "description": "Reglați înălțimea dispozitivului de tăiere în trepte."
+        "name": "Înălțimea lamelor"
       },
       "working_speed": {
-        "name": "Viteza de lucru",
-        "description": "Setați viteza de lucru a mașinii de tuns iarba."
+        "name": "Viteza de lucru"
       }
     },
     "device_tracker": {
