@@ -1,0 +1,151 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "Das Gerät ist bereits konfiguriert",
+      "already_in_progress": "Der Konfigurationsprozess läuft bereits",
+      "no_devices_found": "Es wurden keine Geräte gefunden",
+      "no_longer_present": "Das Gerät ist nicht länger verfügbar",
+      "not_supported": "Das Gerät wird nicht unterstützt"
+    },
+    "flow_title": "Konfiguriere deinen Mammotion Mähroboter",
+    "step": {
+      "bluetooth_confirm": {
+        "description": "Installiere {name}"
+      },
+      "user": {
+        "data": {
+          "address": "Gerät"
+        },
+        "description": "Wähle deinen Mähroboter"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "battery_percent": {
+        "name": "Batterie"
+      },
+      "ble_rssi": {
+        "name": "BLE RSSI"
+      },
+      "wifi_rssi": {
+        "name": "WiFi RSSI"
+      },
+      "gps_stars": {
+        "name": "Satelliten (Roboter)"
+      },
+      "blade_height": {
+        "name": "Schnitthöhe"
+      },
+      "area": {
+        "name": "Bereich"
+      },
+      "mowing_speed": {
+        "name": "Mähgeschwindigkeit"
+      },
+      "progress": {
+        "name": "Fortschritt"
+      },
+      "total_time": {
+        "name": "Gesamtzeit"
+      },
+      "elapsed_time": {
+        "name": "Vergangene Zeit"
+      },
+      "left_time": {
+        "name": "Verbleibende Zeit"
+      },
+      "l1_satellites": {
+        "name": "L1 Satelliten (Co-Viewing)"
+      },
+      "l2_satellites": {
+        "name": "L2 Satelliten (Co-Viewing)"
+      },
+      "position_mode": {
+        "name": "RTK Position"
+      },
+      "position_type": {
+        "name": "RTL Link Modus"
+      },
+      "activity_mode": {
+        "name": "Aktivitätsmodus"
+      }
+    },
+    "button": {
+      "start_map_sync": {
+        "name": "Synchronisiere Karte"
+      },
+       "resync_rtk_dock": {
+        "name": "Synchronisiere RTK und Ladestation"
+      }
+    },
+    "switch": {
+      "blades_on_off": {
+        "name": "Klingen An/Aus"
+      },
+      "mowing_on_off": {
+        "name": "Mähen An/Aus"
+      },
+      "dump_grass_on_off": {
+        "name": "Gras sammeln An/Aus"
+      },
+      "rain_detection_on_off": {
+        "name": "Regenerkennung An/Aus"
+      },
+      "side_led_on_off": {
+        "name": "Seitenlicht An/Aus"
+      },
+       "perimeter_first_on_off": {
+        "name": "Zuerst den Umfang berechnen An/Aus"
+      }
+    },
+    "select": {
+       "cutting_mode": {
+        "name": "Mähmodus"
+      },
+      "border_patrol_mode": {
+        "name": "Patrouillenmodus für die seitlichen Grenzen"
+      },
+      "obstacle_laps_mode": {
+        "name": "Bypass-Strategie"
+      },
+      "mow_order": {
+        "name": "Ausführungsreihenfolge des Pfades"
+      }
+    },
+    "number": {
+       "start_progress": {
+        "name": "Mähen bei x % Fortschritt beginnen"
+      },
+      "cutter_height": {
+        "name": "Schnitthöhe"
+      },
+      "working_speed": {
+        "name": "Aufgabengeschwindigkeit"
+      }
+    },
+    "device_tracker": {
+      "name": "Geräteverfolgung"
+    }
+  },
+  "exceptions": {
+    "device_not_ready": {
+      "message": "Das Gerät ist aktuell nicht bereit."
+    },
+    "pause_failed": {
+      "message": "Pausieren des Mähroboters fehlgeschlagen."
+    },
+    "resume_failed": {
+      "message": "Fortsetzen des Mähroboters fehlgeschlagen."
+    },
+    "start_failed": {
+      "message": "Starten des Mähroboters fehlgeschlagen."
+    },
+    "dock_failed": {
+      "message": "Rückkehr des Mähroboters zur Ladestation fehlgeschlagen."
+    },
+    "command_failed": {
+      "message": "Senden eines Befehls zum Mähroboter fehlgeschlagen."
+    }
+  }
+}
