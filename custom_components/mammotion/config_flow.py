@@ -161,7 +161,7 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                 return self.async_abort(reason=str(err))
 
             return self.async_create_entry(
-                title=name,
+                title=name or device_name,
                 data={
                     **self._config,
                     CONF_ACCOUNTNAME: account,
