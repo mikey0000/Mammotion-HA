@@ -91,11 +91,9 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
         device = self.manager.get_device_by_name(self.device_name)
         if device is None:
             try:
-                self.device_name = (
-                    self.manager.cloud_client.get_devices_by_account_response()
-                    .data.data[0]
-                    .deviceName
-                )
+                mowing_devices = filter(lambda dev: dev.productModel != 'ReferenceStation', self.manager.cloud_client.get_devices_by_account_response()
+                    .data.data)
+                self.device_name = mowing_devices[0].deviceName
                 device = self.manager.get_device_by_name(self.device_name)
             except:
                 raise ConfigEntryNotReady(
