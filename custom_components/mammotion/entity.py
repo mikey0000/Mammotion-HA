@@ -4,6 +4,7 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from pymammotion.utility.device_type import DeviceType
 
+from . import DEFAULT_RETRY_COUNT
 from .const import CONF_RETRY_COUNT, DOMAIN
 from .coordinator import MammotionDataUpdateCoordinator
 
@@ -53,5 +54,5 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionDataUpdateCoordinator]):
         return (
             self.coordinator.data is not None
             and self.coordinator.update_failures
-            <= self.coordinator.config_entry.options[CONF_RETRY_COUNT]
+            <= self.coordinator.config_entry.options.get(CONF_RETRY_COUNT, DEFAULT_RETRY_COUNT)
         )

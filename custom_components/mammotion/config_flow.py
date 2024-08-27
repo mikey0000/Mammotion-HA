@@ -18,7 +18,7 @@ from homeassistant.config_entries import (
     ConfigEntry,
     OptionsFlow,
 )
-from homeassistant.const import CONF_ADDRESS, CONF_USERNAME, CONF_PASSWORD
+from homeassistant.const import CONF_ADDRESS, CONF_PASSWORD
 from homeassistant.core import callback
 
 from homeassistant.helpers import config_validation as cv
@@ -30,7 +30,7 @@ from .const import (
     CONF_USE_WIFI,
     CONF_STAY_CONNECTED_BLUETOOTH,
     CONF_ACCOUNTNAME,
-    CONF_DEVICE_NAME,
+    CONF_DEVICE_NAME
 )
 
 
@@ -204,7 +204,12 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
         if user_input:
             if not errors:
                 return self.async_update_reload_and_abort(
-                    entry, data=user_input, reason="reconfigure_successful"
+                    entry, data={
+                        **entry.data,
+                        **user_input,
+                    },
+                    reason="reconfigure_successful"
+
                 )
 
         schema = {
@@ -221,8 +226,8 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
 
         if user_input is not None and entry.data.get(CONF_ADDRESS) is None:
             schema = {
-                vol.Required(CONF_ACCOUNTNAME): vol.All(cv.string, vol.Strip),
-                vol.Required(CONF_PASSWORD): vol.All(cv.string, vol.Strip),
+                vol.Required(CONF_ACCOUNTNAME, default=entry.data.get(CONF_ACCOUNTNAME)): vol.All(cv.string, vol.Strip),
+                vol.Required(CONF_PASSWORD, default=entry.data.get(CONF_PASSWORD)): vol.All(cv.string, vol.Strip),
             }
 
         return self.async_show_form(

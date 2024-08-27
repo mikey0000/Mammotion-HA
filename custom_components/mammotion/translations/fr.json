@@ -5,18 +5,43 @@
       "already_in_progress": "Le flux de configuration est déjà en cours",
       "no_devices_found": "Aucun appareils trouvés",
       "no_longer_present": "L'appareil n'est plus présent",
-      "not_supported": "L'appareil n'est pas supporté"
+      "not_supported": "L'appareil n'est pas supporté",
+      "no_device_name": "Nom de l'appareil nécessaire pour continuer",
+      "reconfigure_successful": "Re-configuration réussi"
     },
     "flow_title": "Configurer votre robot tondeuse Mammotion",
     "step": {
       "bluetooth_confirm": {
         "description": "Installation {name}"
       },
+      "reconfigure": {
+        "data": {
+          "device_name": "Nom de l'appareil ex. Luba-****, Yuka-**** qui doivent être unique",
+          "use_wifi": "Utiliser le Wi-fi",
+          "account_name": "Email Mammotion ou numéro de compte",
+          "password": "Mot de passe du compte Mammotion"
+        }
+      },
       "user": {
         "data": {
-          "address": "Appareil"
+          "address": "Appareil",
+          "device_name": "Nom de l'appareil ex. Luba-****, Yuka-**** qui doivent être unique",
+          "use_wifi": "Utiliser le Wi-fi",
+          "account_name": "Email Mammotion ou numéro de compte",
+          "password": "Mot de passe du compte Mammotion"
+
         },
         "description": "Sélectionner votre robot tondeuse"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "title": "Modifier la configuration",
+          "stay_connected_bluetooth": "Garder le bluetooth connecté"
+        }
       }
     }
   },
