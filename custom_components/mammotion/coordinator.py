@@ -64,8 +64,20 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
         preference = ConnectionPreference.BLUETOOTH
         address = self.config_entry.data.get(CONF_ADDRESS)
         name = self.config_entry.data.get(CONF_DEVICE_NAME)
+        account = self.config_entry.data.get(CONF_ACCOUNTNAME)
+        password = self.config_entry.data.get(CONF_PASSWORD)
 
         if self.manager is None or self.manager.get_device_by_name(name) is None:
+
+            if account and password:
+                if name:
+                    self.device_name = name
+                preference = ConnectionPreference.WIFI
+                credentials = Credentials()
+                credentials.email = account
+                credentials.password = password
+
+
             if address:
                 ble_device = bluetooth.async_ble_device_from_address(self.hass, address)
                 if not ble_device and credentials is None:
@@ -75,16 +87,6 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
                 if ble_device is not None:
                     self.device_name = ble_device.name or "Unknown"
                 self.address = address
-
-            account = self.config_entry.data.get(CONF_ACCOUNTNAME)
-            password = self.config_entry.data.get(CONF_PASSWORD)
-            if account and password:
-                if name:
-                    self.device_name = name
-                preference = ConnectionPreference.WIFI
-                credentials = Credentials()
-                credentials.email = account
-                credentials.password = password
 
             self.manager = await create_devices(ble_device, credentials, preference)
 
