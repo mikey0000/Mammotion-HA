@@ -1,6 +1,6 @@
 """Config flow for Mammotion Luba."""
 
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 import voluptuous as vol
 from bleak import BLEDevice
@@ -94,7 +94,7 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
         """Handle the user step to pick discovered device."""
 
         if user_input is not None:
-            address = user_input.get(CONF_ADDRESS)
+            address = user_input.get(CONF_ADDRESS) or self._config.get(CONF_ADDRESS)
             if address is not None:
                 name = self._discovered_devices.get(address)
                 if name is None:
@@ -176,7 +176,7 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
             vol.Optional(CONF_USE_WIFI, default=True): cv.boolean,
         }
 
-        if user_input is not None and user_input.get(CONF_ADDRESS) is None:
+        if self._config.get(CONF_ADDRESS) is None:
             schema = {
                 vol.Required(CONF_DEVICE_NAME): vol.All(cv.string, vol.Strip),
                 vol.Required(CONF_ACCOUNTNAME): vol.All(cv.string, vol.Strip),
@@ -192,6 +192,38 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
     ) -> OptionsFlow:
         """Create the options flow."""
         return MammotionConfigFlowHandler(config_entry)
+
+
+    async def async_step_reconfigure(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Handle reconfiguration."""
+        entry = self.hass.config_entries.async_get_entry(self.context["entry_id"])
+        if TYPE_CHECKING:
+            assert entry
+
+        errors: dict[str, str] | None = None
+        user_input = user_input or {}
+        if user_input:
+            if not errors:
+                return self.async_update_reload_and_abort(entry, data=user_input, reason="reconfigure_successful")
+
+        schema = {
+            vol.Optional(CONF_ACCOUNTNAME, default=entry.data.get(CONF_ACCOUNTNAME)): cv.string,
+            vol.Optional(CONF_PASSWORD, default=entry.data.get(CONF_PASSWORD)): cv.string,
+            vol.Optional(CONF_USE_WIFI, default=entry.data.get(CONF_USE_WIFI)): cv.boolean,
+        }
+
+        if user_input is not None and entry.data.get(CONF_ADDRESS) is None:
+            schema = {
+                vol.Required(CONF_ACCOUNTNAME): vol.All(cv.string, vol.Strip),
+                vol.Required(CONF_PASSWORD): vol.All(cv.string, vol.Strip),
+            }
+
+        return self.async_show_form(
+            data_schema=vol.Schema(schema),
+            errors=errors,
+        )
 
 
 class MammotionConfigFlowHandler(OptionsFlowWithConfigEntry):

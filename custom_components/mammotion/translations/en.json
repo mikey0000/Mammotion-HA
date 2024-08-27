@@ -6,7 +6,8 @@
       "no_devices_found": "Could not find devices",
       "no_longer_present": "Device is no longer present",
       "not_supported": "Device not supported",
-      "no_device_name": "Device name required to proceed"
+      "no_device_name": "Device name required to proceed",
+      "reconfigure_successful": "Re-configure successful"
     },
     "flow_title": "Configure your Mammotion lawn mower",
     "step": {
