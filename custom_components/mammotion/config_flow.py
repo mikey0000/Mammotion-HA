@@ -176,7 +176,7 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
             vol.Optional(CONF_USE_WIFI, default=True): cv.boolean,
         }
 
-        if user_input.get(CONF_ADDRESS) is None:
+        if user_input is not None and user_input.get(CONF_ADDRESS) is None:
             schema = {
                 vol.Required(CONF_DEVICE_NAME): vol.All(cv.string, vol.Strip),
                 vol.Required(CONF_ACCOUNTNAME): vol.All(cv.string, vol.Strip),
