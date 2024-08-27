@@ -7,7 +7,7 @@ from homeassistant.const import CONF_ADDRESS, CONF_MAC, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr
 
-from .const import CONF_RETRY_COUNT, DEFAULT_RETRY_COUNT
+from .const import CONF_RETRY_COUNT, DEFAULT_RETRY_COUNT, CONF_AUTH_DATA, CONF_USE_WIFI
 from .coordinator import MammotionDataUpdateCoordinator
 
 PLATFORMS: list[Platform] = [
@@ -49,7 +49,19 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
     coordinator = MammotionDataUpdateCoordinator(hass)
 
     await coordinator.async_setup()
-    await coordinator.async_config_entry_first_refresh()
+
+    # config_updates = {}
+    # if CONF_AUTH_DATA not in entry.data:
+    #     config_updates = {
+    #         **entry.data,
+    #         CONF_AUTH_DATA: coordinator.devices.cloud_client,
+    #     }
+    #
+    # if config_updates:
+    #     hass.config_entries.async_update_entry(entry, data=config_updates)
+    use_wifi = entry.data.get(CONF_USE_WIFI)
+    if use_wifi is False:
+        await coordinator.async_config_entry_first_refresh()
     entry.runtime_data = coordinator
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 

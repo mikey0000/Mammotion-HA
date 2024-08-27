@@ -17,8 +17,19 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionDataUpdateCoordinator]):
         """Initialize the lawn mower."""
         super().__init__(coordinator)
         swversion = "0.0.0"
-        if len(coordinator.devices.mower(coordinator.device_name).net.toapp_devinfo_resp.resp_ids) > 0:
-            swversion = coordinator.devices.mower(coordinator.device_name).net.toapp_devinfo_resp.resp_ids[0].info
+        if (
+            len(
+                coordinator.devices.mower(
+                    coordinator.device_name
+                ).net.toapp_devinfo_resp.resp_ids
+            )
+            > 0
+        ):
+            swversion = (
+                coordinator.devices.mower(coordinator.device_name)
+                .net.toapp_devinfo_resp.resp_ids[0]
+                .info
+            )
 
         self._attr_unique_id = f"{coordinator.device_name}_{key}"
         self._attr_device_info = DeviceInfo(
@@ -29,7 +40,9 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionDataUpdateCoordinator]):
             sw_version=swversion,
             model=DeviceType.value_of_str(
                 coordinator.device_name,
-                coordinator.devices.mower(coordinator.device_name).net.toapp_wifi_iot_status.productkey,
+                coordinator.devices.mower(
+                    coordinator.device_name
+                ).net.toapp_wifi_iot_status.productkey,
             ).get_model(),
             suggested_area="Garden",
         )

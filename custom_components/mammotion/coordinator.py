@@ -6,18 +6,29 @@ from dataclasses import asdict
 from datetime import timedelta
 from typing import TYPE_CHECKING
 
+from pymammotion.data.model.account import Credentials
+from pymammotion.data.model.device import MowingDevice
+from pymammotion.mammotion.devices.mammotion import (
+    ConnectionPreference,
+    Mammotion,
+    create_devices,
+)
+from pymammotion.proto.mctrl_sys import RptAct, RptInfoType
+from pymammotion.utility.constant import WorkMode
+
 from homeassistant.components import bluetooth
 from homeassistant.const import CONF_ADDRESS, CONF_PASSWORD
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady, HomeAssistantError
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
-from pymammotion.data.model.account import Credentials
-from pymammotion.data.model.device import MowingDevice
-from pymammotion.mammotion.devices.mammotion import Mammotion, ConnectionPreference, create_devices
-from pymammotion.proto.mctrl_sys import RptAct, RptInfoType
-from pymammotion.utility.constant import WorkMode
 
-from .const import COMMAND_EXCEPTIONS, DOMAIN, LOGGER, CONF_ACCOUNTNAME, CONF_DEVICE_NAME
+from .const import (
+    COMMAND_EXCEPTIONS,
+    CONF_ACCOUNTNAME,
+    CONF_DEVICE_NAME,
+    DOMAIN,
+    LOGGER,
+)
 
 if TYPE_CHECKING:
     from . import MammotionConfigEntry
@@ -61,7 +72,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
                     raise ConfigEntryNotReady(
                         f"Could not find Mammotion lawn mower with address {address}"
                     )
-                elif ble_device is not None:
+                if ble_device is not None:
                     self.device_name = ble_device.name or "Unknown"
                 self.address = address
 
@@ -75,14 +86,15 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
                 credentials.password = password
 
             self.devices = await create_devices(ble_device, credentials, preference)
-            print("creating devices")
         try:
             if preference is not ConnectionPreference.WIFI:
                 await self.devices.start_sync(self.device_name, 0)
+            else:
+                cloud_device = self.devices.get_device_by_name(self.device_name).cloud()
+                cloud_device.on_ready_callback = lambda: cloud_device.start_sync(0)
 
         except COMMAND_EXCEPTIONS as exc:
             raise ConfigEntryNotReady("Unable to setup Mammotion device") from exc
-
 
     async def async_sync_maps(self) -> None:
         """Get map data from the device."""
@@ -101,18 +113,28 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
         """RTK and dock location."""
         await self.async_send_command("allpowerfull_rw", id=5, rw=1, context=1)
 
-
     async def async_request_iot_sync(self) -> None:
-        await self.async_send_command("request_iot_sys", rpt_act=RptAct.RPT_START,
-                               rpt_info_type=[RptInfoType.RIT_CONNECT, RptInfoType.RIT_DEV_STA, RptInfoType.RIT_DEV_LOCAL, RptInfoType.RIT_RTK, RptInfoType.RIT_WORK],
-                               timeout=1000,
-                               period=3000,
-                               no_change_period=4000,
-                               count=0)
+        await self.async_send_command(
+            "request_iot_sys",
+            rpt_act=RptAct.RPT_START,
+            rpt_info_type=[
+                RptInfoType.RIT_CONNECT,
+                RptInfoType.RIT_DEV_STA,
+                RptInfoType.RIT_DEV_LOCAL,
+                RptInfoType.RIT_RTK,
+                RptInfoType.RIT_WORK,
+            ],
+            timeout=1000,
+            period=3000,
+            no_change_period=4000,
+            count=0,
+        )
 
     async def async_send_command(self, command: str, **kwargs: any) -> None:
         try:
-            await self.devices.send_command_with_args(self.device_name, command, **kwargs)
+            await self.devices.send_command_with_args(
+                self.device_name, command, **kwargs
+            )
         except COMMAND_EXCEPTIONS as exc:
             raise HomeAssistantError(
                 translation_domain=DOMAIN, translation_key="command_failed"
@@ -121,9 +143,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
     async def _async_update_data(self) -> MowingDevice:
         """Get data from the device."""
         device = self.devices.get_device_by_name(self.device_name)
-        ble_device = bluetooth.async_ble_device_from_address(
-            self.hass, self.address
-        )
+        ble_device = bluetooth.async_ble_device_from_address(self.hass, self.address)
 
         if not ble_device and device.cloud() is None:
             self.update_failures += 1
@@ -135,7 +155,10 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
             device.add_ble(ble_device)
 
         try:
-            if len(device.mower_state().net.toapp_devinfo_resp.resp_ids) == 0 or device.mower_state().net.toapp_wifi_iot_status.productkey is None:
+            if (
+                len(device.mower_state().net.toapp_devinfo_resp.resp_ids) == 0
+                or device.mower_state().net.toapp_wifi_iot_status.productkey is None
+            ):
                 await self.devices.start_sync(self.device_name, 0)
             if device.mower_state().report_data.dev.sys_status != WorkMode.MODE_WORKING:
                 await self.async_send_command("get_report_cfg")
@@ -143,15 +166,16 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
             else:
                 await self.async_request_iot_sync()
 
-
         except COMMAND_EXCEPTIONS as exc:
             self.update_failures += 1
             raise UpdateFailed(f"Updating Mammotion device failed: {exc}") from exc
 
-
         LOGGER.debug("Updated Mammotion device %s", self.device_name)
         LOGGER.debug("================= Debug Log =================")
-        LOGGER.debug("Mammotion device data: %s", asdict(self.devices.get_device_by_name(self.device_name).mower_state()))
+        LOGGER.debug(
+            "Mammotion device data: %s",
+            asdict(self.devices.get_device_by_name(self.device_name).mower_state()),
+        )
         LOGGER.debug("==================================")
 
         self.update_failures = 0
@@ -163,5 +187,3 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
     #         await self.async_setup()
     #     except COMMAND_EXCEPTIONS as exc:
     #         raise UpdateFailed(f"Setting up Mammotion device failed: {exc}") from exc
-
-

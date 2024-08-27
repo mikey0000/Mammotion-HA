@@ -33,11 +33,13 @@ from .entity import MammotionBaseEntity
 
 SPEED_UNITS = SpeedConverter.VALID_UNITS
 
+
 @dataclass(frozen=True, kw_only=True)
 class MammotionSensorEntityDescription(SensorEntityDescription):
     """Describes Mammotion sensor entity."""
 
     value_fn: Callable[[MowingDevice], StateType]
+
 
 LUBA_SENSOR_ONLY_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
     MammotionSensorEntityDescription(
@@ -126,14 +128,16 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         device_class=None,
         native_unit_of_measurement=None,
-        value_fn=lambda mower_data: (mower_data.report_data.rtk.co_view_stars >> 0) & 255,
+        value_fn=lambda mower_data: (mower_data.report_data.rtk.co_view_stars >> 0)
+        & 255,
     ),
     MammotionSensorEntityDescription(
         key="l2_satellites",
         state_class=SensorStateClass.MEASUREMENT,
         device_class=None,
         native_unit_of_measurement=None,
-        value_fn=lambda mower_data: (mower_data.report_data.rtk.co_view_stars >> 8) & 255,
+        value_fn=lambda mower_data: (mower_data.report_data.rtk.co_view_stars >> 8)
+        & 255,
     ),
     MammotionSensorEntityDescription(
         key="activity_mode",
@@ -190,7 +194,8 @@ async def async_setup_entry(
 
     if not DeviceType.is_yuka(coordinator.device_name):
         async_add_entities(
-            MammotionSensorEntity(coordinator, description) for description in LUBA_SENSOR_ONLY_TYPES
+            MammotionSensorEntity(coordinator, description)
+            for description in LUBA_SENSOR_ONLY_TYPES
         )
 
     async_add_entities(
@@ -217,7 +222,5 @@ class MammotionSensorEntity(MammotionBaseEntity, SensorEntity):
     @property
     def native_value(self) -> StateType:
         """Return the state of the sensor."""
-        current_value = self.entity_description.value_fn(
-            self.coordinator.data
-        )
+        current_value = self.entity_description.value_fn(self.coordinator.data)
         return current_value

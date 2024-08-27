@@ -42,8 +42,8 @@ NUMBER_WORKING_ENTITIES: tuple[MammotionNumberEntityDescription, ...] = (
     MammotionNumberEntityDescription(
         key="blade_height",
         step=5.0,
-        min_value=30.0, # ToDo: To be dynamiclly set based on model (h\non H)
-        max_value=70.0, # ToDo: To be dynamiclly set based on model (h\non H)
+        min_value=30.0,  # ToDo: To be dynamiclly set based on model (h\non H)
+        max_value=70.0,  # ToDo: To be dynamiclly set based on model (h\non H)
         entity_category=EntityCategory.CONFIG,
         set_fn=lambda coordinator, value: coordinator.async_blade_height(value),
     ),
@@ -59,9 +59,9 @@ NUMBER_WORKING_ENTITIES: tuple[MammotionNumberEntityDescription, ...] = (
 
 
 async def async_setup_entry(
-        hass: HomeAssistant,
-        entry: MammotionConfigEntry,
-        async_add_entities: AddEntitiesCallback,
+    hass: HomeAssistant,
+    entry: MammotionConfigEntry,
+    async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the Mammotion number entities."""
     coordinator = entry.runtime_data
@@ -81,13 +81,14 @@ async def async_setup_entry(
 
 
 class MammotionNumberEntity(MammotionBaseEntity, NumberEntity):
-
     entity_description: MammotionNumberEntityDescription
     _attr_has_entity_name = True
 
-    def __init__(self,
-                 coordinator: MammotionDataUpdateCoordinator,
-                 entity_description: MammotionNumberEntityDescription) -> None:
+    def __init__(
+        self,
+        coordinator: MammotionDataUpdateCoordinator,
+        entity_description: MammotionNumberEntityDescription,
+    ) -> None:
         super().__init__(coordinator, entity_description.key)
         self.entity_description = entity_description
         self._attr_translation_key = entity_description.key
@@ -105,9 +106,12 @@ class MammotionNumberEntity(MammotionBaseEntity, NumberEntity):
 class MammotionWorkingNumberEntity(MammotionNumberEntity):
     """Mammotion working number entity."""
 
-    def __init__(self, coordinator: MammotionDataUpdateCoordinator,
-                 entity_description: MammotionNumberEntityDescription,
-                 limits: DeviceLimits) -> None:
+    def __init__(
+        self,
+        coordinator: MammotionDataUpdateCoordinator,
+        entity_description: MammotionNumberEntityDescription,
+        limits: DeviceLimits,
+    ) -> None:
         super().__init__(coordinator, entity_description)
 
         min_attr = f"{entity_description.key}_min"

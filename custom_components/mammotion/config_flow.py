@@ -11,15 +11,27 @@ from homeassistant.components.bluetooth import (
     BluetoothServiceInfo,
     async_discovered_service_info,
 )
-from homeassistant.config_entries import ConfigFlow, ConfigFlowResult, OptionsFlowWithConfigEntry, ConfigEntry, \
-    OptionsFlow
+from homeassistant.config_entries import (
+    ConfigFlow,
+    ConfigFlowResult,
+    OptionsFlowWithConfigEntry,
+    ConfigEntry,
+    OptionsFlow,
+)
 from homeassistant.const import CONF_ADDRESS, CONF_USERNAME, CONF_PASSWORD
 from homeassistant.core import callback
 
 from homeassistant.helpers import config_validation as cv
 
-from .const import DEVICE_SUPPORT, DOMAIN, LOGGER, CONF_USE_WIFI, CONF_STAY_CONNECTED_BLUETOOTH, \
-    CONF_ACCOUNTNAME, CONF_DEVICE_NAME
+from .const import (
+    DEVICE_SUPPORT,
+    DOMAIN,
+    LOGGER,
+    CONF_USE_WIFI,
+    CONF_STAY_CONNECTED_BLUETOOTH,
+    CONF_ACCOUNTNAME,
+    CONF_DEVICE_NAME,
+)
 
 
 class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
@@ -30,7 +42,6 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
         self._config = {}
         self._discovered_device: BLEDevice | None = None
         self._discovered_devices: dict[str, str] = {}
-
 
     async def async_step_bluetooth(
         self, discovery_info: BluetoothServiceInfo
@@ -77,7 +88,6 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
             description_placeholders={"name": self._discovered_device.name},
         )
 
-
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
@@ -96,9 +106,7 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                 if user_input.get(CONF_USE_WIFI) is False:
                     return self.async_create_entry(
                         title=name,
-                        data={
-                            CONF_ADDRESS: address
-                        },
+                        data={CONF_ADDRESS: address},
                     )
 
                 self._config = {
@@ -129,18 +137,17 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
             ),
         )
 
-    async def async_step_wifi( self, user_input: dict[str, Any]
-    ) -> ConfigFlowResult:
+    async def async_step_wifi(self, user_input: dict[str, Any]) -> ConfigFlowResult:
         """Handle the user step for Wi-Fi control."""
-        print("step_wifi")
-        print(user_input)
-        if user_input is not None and (user_input.get(CONF_ACCOUNTNAME) is not None or user_input.get(CONF_USE_WIFI) is True):
+        if user_input is not None and (
+            user_input.get(CONF_ACCOUNTNAME) is not None
+            or user_input.get(CONF_USE_WIFI) is True
+        ):
             account = user_input.get(CONF_ACCOUNTNAME)
             password = user_input.get(CONF_PASSWORD)
             address = self._config.get(CONF_ADDRESS)
             device_name = user_input.get(CONF_DEVICE_NAME)
             name = self._discovered_devices.get(address)
-            print(self._config)
             if address is None or name is None:
                 if device_name is not None:
                     await self.async_set_unique_id(device_name, raise_on_progress=False)
@@ -163,12 +170,11 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                 },
             )
 
-
         schema = {
-                    vol.Optional(CONF_ACCOUNTNAME): cv.string,
-                    vol.Optional(CONF_PASSWORD): cv.string,
-                    vol.Optional(CONF_USE_WIFI, default=True): cv.boolean,
-                }
+            vol.Optional(CONF_ACCOUNTNAME): cv.string,
+            vol.Optional(CONF_PASSWORD): cv.string,
+            vol.Optional(CONF_USE_WIFI, default=True): cv.boolean,
+        }
 
         if user_input.get(CONF_ADDRESS) is None:
             schema = {
@@ -177,18 +183,16 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                 vol.Required(CONF_PASSWORD): vol.All(cv.string, vol.Strip),
             }
 
-        return self.async_show_form(
-            data_schema=vol.Schema(schema)
-        )
-
+        return self.async_show_form(data_schema=vol.Schema(schema))
 
     @staticmethod
     @callback
     def async_get_options_flow(
-            config_entry: ConfigEntry,
+        config_entry: ConfigEntry,
     ) -> OptionsFlow:
         """Create the options flow."""
         return MammotionConfigFlowHandler(config_entry)
+
 
 class MammotionConfigFlowHandler(OptionsFlowWithConfigEntry):
     """Handles options flow for the component."""

@@ -50,15 +50,15 @@ SELECT_ENTITIES: tuple[MammotionSelectEntityDescription, ...] = (
         entity_category=EntityCategory.CONFIG,
         options=[order.name for order in MowOrder],
         select_fn=lambda coordinator, value: MowOrder[value],
-    )
+    ),
 )
 
 
 # Define the setup entry function
 async def async_setup_entry(
-        hass: HomeAssistant,
-        entry: MammotionConfigEntry,
-        async_add_entities: AddEntitiesCallback,
+    hass: HomeAssistant,
+    entry: MammotionConfigEntry,
+    async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the Mammotion select entity."""
     coordinator = entry.runtime_data
@@ -78,8 +78,11 @@ class MammotionSelectEntity(MammotionBaseEntity, SelectEntity):
     entity_description: MammotionSelectEntityDescription
     _attr_has_entity_name = True
 
-    def __init__(self, coordinator: MammotionDataUpdateCoordinator,
-                 entity_description: MammotionSelectEntityDescription) -> None:
+    def __init__(
+        self,
+        coordinator: MammotionDataUpdateCoordinator,
+        entity_description: MammotionSelectEntityDescription,
+    ) -> None:
         super().__init__(coordinator, entity_description.key)
         self.coordinator = coordinator
         self.entity_description = entity_description
