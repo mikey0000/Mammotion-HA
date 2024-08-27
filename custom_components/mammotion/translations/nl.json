@@ -117,7 +117,7 @@
        "start_progress": {
         "name": "Start voortgang"
       },
-      "cutter_height": {
+      "blade_height": {
         "name": "Blad hoogte"
       },
       "working_speed": {
