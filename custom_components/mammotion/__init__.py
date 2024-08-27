@@ -59,7 +59,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
     await mammotion_coordinator.async_setup()
 
     # config_updates = {}
-    if CONF_AUTH_DATA not in entry.data:
+    if CONF_AUTH_DATA not in entry.data and mammotion_coordinator.manager.cloud_client:
         config_updates = {
             **entry.data,
             CONF_AUTH_DATA: mammotion_coordinator.manager.cloud_client.get_login_by_oauth_response(),
