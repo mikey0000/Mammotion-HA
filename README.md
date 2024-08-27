@@ -11,7 +11,7 @@ This integration allows you to control and monitor your Mammotion Luba, Luba 2 &
 ## Roadmap 🗺️
 
 - [x] Bluetooth (BLE) support
-- [ ] Wi-Fi support
+- [x] Wi-Fi support
 - [ ] Scheduling
 - [ ] Mapping and zone management
 - [ ] Firmware updates

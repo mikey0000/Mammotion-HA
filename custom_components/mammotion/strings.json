@@ -5,7 +5,9 @@
       "already_in_progress": "[%key:common::config_flow::abort::already_in_progress%]",
       "no_devices_found": "Could not find devices",
       "no_longer_present": "Device is no longer present",
-      "not_supported": "Device not supported"
+      "not_supported": "Device not supported",
+      "reconfigure_successful": "[%key:common::config_flow::abort::reconfigure_successful%]"
+    }
     },
     "flow_title": "Configure your Mammotion lawn mower",
     "step": {
@@ -129,7 +131,7 @@
         "name": "Start Progress",
         "description": "Set the start progress percentage."
       },
-      "cutter_height": {
+      "blade_height": {
         "name": "Blade Height",
         "description": "Adjust the height of the cutter in increments."
       },

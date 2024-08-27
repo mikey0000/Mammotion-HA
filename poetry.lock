@@ -2645,13 +2645,13 @@ testutils = ["gitpython (>3)"]
 
 [[package]]
 name = "pymammotion"
-version = "0.1.9"
+version = "0.2.9"
 description = ""
 optional = false
 python-versions = "<3.13,>=3.10"
 files = [
-    {file = "pymammotion-0.1.9-py3-none-any.whl", hash = "sha256:c874dd464c420f8e1607c8a86a1817b6c05770f3cc2ef1207c2468ff6e592cad"},
-    {file = "pymammotion-0.1.9.tar.gz", hash = "sha256:c4fcd739f724fbef89023f96a920e5dbfd417a45e4b405e5db4cb6fd57af4595"},
+    {file = "pymammotion-0.2.9-py3-none-any.whl", hash = "sha256:afc8d18855a0055ae754a870cddc40a040abc24269a74d6db346851ea2f9582d"},
+    {file = "pymammotion-0.2.9.tar.gz", hash = "sha256:ecfbad47ca43f6c592d985d6ff9bd5005dc1c06046889022a3deafc566e39d67"},
 ]
 
 [package.dependencies]
@@ -2661,6 +2661,7 @@ alibabacloud-iot-api-gateway = ">=0.0.4,<0.0.5"
 alicloud-gateway-iot = ">=1.0.0,<2.0.0"
 aliyun-iot-linkkit = ">=1.2.12,<2.0.0"
 aliyun-python-sdk-iot = ">=8.57.0,<9.0.0"
+async-timeout = ">=4.0.3,<5.0.0"
 betterproto = ">=1.2.5,<2.0.0"
 bleak = ">=0.21.0"
 bleak-retry-connector = ">=3.5.0,<4.0.0"
@@ -3639,4 +3640,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "~3.12.0"
-content-hash = "02ebcedc175c9bf8197d53adc7bf06d722dc60f7288107d2fe5a8a5cd4aba192"
+content-hash = "189e7a4813243111def050e87ae70e87d5f6a4c07acd2a9df65236f686745bfb"

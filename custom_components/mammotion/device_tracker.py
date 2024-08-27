@@ -14,6 +14,7 @@ from .entity import MammotionBaseEntity
 
 _LOGGER = logging.getLogger(__name__)
 
+
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: MammotionConfigEntry,
@@ -22,9 +23,7 @@ async def async_setup_entry(
     """Set up the RTK tracker from config entry."""
     coordinator = config_entry.runtime_data
 
-    async_add_entities(
-       [MammotionTracker(coordinator)]
-        )
+    async_add_entities([MammotionTracker(coordinator)])
 
 
 class MammotionTracker(MammotionBaseEntity, TrackerEntity):
@@ -34,10 +33,7 @@ class MammotionTracker(MammotionBaseEntity, TrackerEntity):
     _attr_translation_key = "device_tracker"
     _attr_icon = "mdi:car"
 
-    def __init__(
-        self,
-        coordinator: MammotionDataUpdateCoordinator
-    ) -> None:
+    def __init__(self, coordinator: MammotionDataUpdateCoordinator) -> None:
         """Initialize the Tracker."""
         super().__init__(coordinator, f"{coordinator.device_name}_gps")
 
@@ -46,17 +42,25 @@ class MammotionTracker(MammotionBaseEntity, TrackerEntity):
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return entity specific state attributes."""
-        return {ATTR_DIRECTION: self.coordinator.device.luba_msg.location.orientation}
+        return {
+            ATTR_DIRECTION: self.coordinator.manager.mower(
+                self.coordinator.device_name
+            ).location.orientation
+        }
 
     @property
     def latitude(self) -> float | None:
         """Return latitude value of the device."""
-        return self.coordinator.device.luba_msg.location.device.latitude
+        return self.coordinator.manager.mower(
+            self.coordinator.device_name
+        ).location.device.latitude
 
     @property
     def longitude(self) -> float | None:
         """Return longitude value of the device."""
-        return self.coordinator.device.luba_msg.location.device.longitude
+        return self.coordinator.manager.mower(
+            self.coordinator.device_name
+        ).location.device.longitude
 
     @property
     def battery_level(self) -> int | None:

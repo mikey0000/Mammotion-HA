@@ -5,18 +5,43 @@
       "already_in_progress": "Configuration flow is already in progress",
       "no_devices_found": "Could not find devices",
       "no_longer_present": "Device is no longer present",
-      "not_supported": "Device not supported"
+      "not_supported": "Device not supported",
+      "no_device_name": "Device name required to proceed",
+      "reconfigure_successful": "Re-configure successful"
     },
     "flow_title": "Configure your Mammotion lawn mower",
     "step": {
       "bluetooth_confirm": {
         "description": "Setup {name}"
       },
+      "reconfigure": {
+        "data": {
+          "device_name": "Device name e.g Luba-****, Yuka-**** which needs to be unique",
+          "use_wifi": "Use Wi-fi",
+          "account_name": "Mammotion email or account number",
+          "password": "Mammotion account password"
+        }
+      },
       "user": {
         "data": {
-          "address": "Device"
+          "address": "Device",
+          "device_name": "Device name e.g Luba-****, Yuka-**** which needs to be unique",
+          "use_wifi": "Use Wi-fi",
+          "account_name": "Mammotion email or account number",
+          "password": "Mammotion account password"
+
         },
         "description": "Select your mower"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "title": "Update Configuration",
+          "stay_connected_bluetooth": "Keep bluetooth connected"
+        }
       }
     }
   },
@@ -117,7 +142,7 @@
        "start_progress": {
         "name": "Start Progress"
       },
-      "cutter_height": {
+      "blade_height": {
         "name": "Blade Height"
       },
       "working_speed": {

@@ -27,7 +27,9 @@ YUKA_SWITCH_ENTITIES: tuple[MammotionSwitchEntityDescription, ...] = (
     MammotionSwitchEntityDescription(
         key="dump_grass_on_off",
         entity_category=EntityCategory.CONFIG,
-        set_fn=lambda coordinator, value: print(f"Dump grass {'on' if value else 'off'}"),
+        set_fn=lambda coordinator, value: print(
+            f"Dump grass {'on' if value else 'off'}"
+        ),
     ),
 )
 
@@ -39,7 +41,9 @@ SWITCH_ENTITIES: tuple[MammotionSwitchEntityDescription, ...] = (
     MammotionSwitchEntityDescription(
         key="rain_detection_on_off",
         entity_category=EntityCategory.CONFIG,
-        set_fn=lambda coordinator, value: print(f"Rain detection {'on' if value else 'off'}"),
+        set_fn=lambda coordinator, value: print(
+            f"Rain detection {'on' if value else 'off'}"
+        ),
     ),
     MammotionSwitchEntityDescription(
         key="side_led_on_off",
@@ -49,15 +53,16 @@ SWITCH_ENTITIES: tuple[MammotionSwitchEntityDescription, ...] = (
     MammotionSwitchEntityDescription(
         key="perimeter_first_on_off",
         entity_category=EntityCategory.CONFIG,
-        set_fn=lambda coordinator, value: print(f"perimeter mow first {'on' if value else 'off'}"),
+        set_fn=lambda coordinator, value: print(
+            f"perimeter mow first {'on' if value else 'off'}"
+        ),
     ),
 )
 
+
 # Example setup usage
 async def async_setup_entry(
-        hass: HomeAssistant,
-        entry: MammotionConfigEntry,
-        async_add_entities: Callable
+    hass: HomeAssistant, entry: MammotionConfigEntry, async_add_entities: Callable
 ) -> None:
     """Set up the Mammotion switch entities."""
     coordinator = entry.runtime_data
@@ -69,14 +74,13 @@ async def async_setup_entry(
 
 
 class MammotionSwitchEntity(MammotionBaseEntity, SwitchEntity):
-
     entity_description: MammotionSwitchEntityDescription
     _attr_has_entity_name = True
 
     def __init__(
-            self,
-            coordinator: MammotionDataUpdateCoordinator,
-            entity_description: MammotionSwitchEntityDescription
+        self,
+        coordinator: MammotionDataUpdateCoordinator,
+        entity_description: MammotionSwitchEntityDescription,
     ) -> None:
         super().__init__(coordinator, entity_description.key)
         self.coordinator = coordinator

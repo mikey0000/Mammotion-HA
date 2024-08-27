@@ -117,7 +117,7 @@
        "start_progress": {
         "name": "Mähen bei x % Fortschritt beginnen"
       },
-      "cutter_height": {
+      "blade_height": {
         "name": "Schnitthöhe"
       },
       "working_speed": {
