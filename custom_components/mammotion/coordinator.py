@@ -39,9 +39,9 @@ SCAN_INTERVAL = timedelta(minutes=1)
 class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
     """Class to manage fetching mammotion data."""
 
-    address: str
+    address: str | None = None
     config_entry: MammotionConfigEntry
-    device_name: str
+    device_name: str = ""
     manager: Mammotion | None = None
 
     def __init__(
@@ -158,16 +158,18 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
     async def _async_update_data(self) -> MowingDevice:
         """Get data from the device."""
         device = self.manager.get_device_by_name(self.device_name)
-        ble_device = bluetooth.async_ble_device_from_address(self.hass, self.address)
 
-        if not ble_device and device.cloud() is None:
-            self.update_failures += 1
-            raise UpdateFailed("Could not find device")
+        if self.address:
+            ble_device = bluetooth.async_ble_device_from_address(self.hass, self.address)
 
-        if ble_device and device.ble() is not None:
-            device.ble().update_device(ble_device)
-        else:
-            device.add_ble(ble_device)
+            if not ble_device and device.cloud() is None:
+                self.update_failures += 1
+                raise UpdateFailed("Could not find device")
+
+            if ble_device and device.ble() is not None:
+                device.ble().update_device(ble_device)
+            else:
+                device.add_ble(ble_device)
 
         try:
             if (

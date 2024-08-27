@@ -152,8 +152,6 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                 if device_name is not None:
                     await self.async_set_unique_id(device_name, raise_on_progress=False)
                     self._abort_if_unique_id_configured()
-                else:
-                    return self.async_abort(reason="no_device_name")
 
             try:
                 await connect_http(account, password)
