@@ -209,9 +209,9 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                 return self.async_update_reload_and_abort(entry, data=user_input, reason="reconfigure_successful")
 
         schema = {
-            vol.Optional(CONF_ACCOUNTNAME, default=entry.data.get(CONF_ACCOUNTNAME)): cv.string,
-            vol.Optional(CONF_PASSWORD, default=entry.data.get(CONF_PASSWORD)): cv.string,
-            vol.Optional(CONF_USE_WIFI, default=entry.data.get(CONF_USE_WIFI)): cv.boolean,
+            vol.Required(CONF_ACCOUNTNAME, default=entry.data.get(CONF_ACCOUNTNAME)): cv.string,
+            vol.Required(CONF_PASSWORD, default=entry.data.get(CONF_PASSWORD)): cv.string,
+            vol.Optional(CONF_USE_WIFI, default=entry.data.get(CONF_USE_WIFI) or True): cv.boolean,
         }
 
         if user_input is not None and entry.data.get(CONF_ADDRESS) is None:
@@ -221,6 +221,7 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
             }
 
         return self.async_show_form(
+            step_id="reconfigure",
             data_schema=vol.Schema(schema),
             errors=errors,
         )

@@ -14,6 +14,14 @@
       "bluetooth_confirm": {
         "description": "Setup {name}"
       },
+      "reconfigure": {
+        "data": {
+          "device_name": "Device name e.g Luba-****, Yuka-**** which needs to be unique",
+          "use_wifi": "Use Wi-fi",
+          "account_name": "Mammotion email or account number",
+          "password": "Mammotion account password"
+        }
+      },
       "user": {
         "data": {
           "address": "Device",
