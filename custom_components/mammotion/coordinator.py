@@ -85,7 +85,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
                 credentials.email = account
                 credentials.password = password
 
-            self.devices = await create_devices(ble_device, credentials, preference)
+                self.devices = await create_devices(ble_device, credentials, preference)
         try:
             if preference is not ConnectionPreference.WIFI:
                 await self.devices.start_sync(self.device_name, 0)
