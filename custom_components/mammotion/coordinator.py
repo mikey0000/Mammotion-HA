@@ -68,7 +68,6 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
         password = self.config_entry.data.get(CONF_PASSWORD)
 
         if self.manager is None or self.manager.get_device_by_name(name) is None:
-
             if account and password:
                 if name:
                     self.device_name = name
@@ -76,7 +75,6 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
                 credentials = Credentials()
                 credentials.email = account
                 credentials.password = password
-
 
             if address:
                 ble_device = bluetooth.async_ble_device_from_address(self.hass, address)
@@ -93,7 +91,11 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
         device = self.manager.get_device_by_name(self.device_name)
         if device is None:
             try:
-                self.device_name = self.manager.cloud_client.get_devices_by_account_response().data.data[0].deviceName
+                self.device_name = (
+                    self.manager.cloud_client.get_devices_by_account_response()
+                    .data.data[0]
+                    .deviceName
+                )
                 device = self.manager.get_device_by_name(self.device_name)
             except:
                 raise ConfigEntryNotReady(
@@ -104,8 +106,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
             if preference is not ConnectionPreference.WIFI:
                 await device.ble().start_sync(0)
             else:
-                device.cloud().on_ready_callback = lambda : device.cloud().start_sync(0)
-
+                device.cloud().on_ready_callback = lambda: device.cloud().start_sync(0)
 
         except COMMAND_EXCEPTIONS as exc:
             raise ConfigEntryNotReady("Unable to setup Mammotion device") from exc
@@ -201,5 +202,3 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
     #         await self.async_setup()
     #     except COMMAND_EXCEPTIONS as exc:
     #         raise UpdateFailed(f"Setting up Mammotion device failed: {exc}") from exc
-
-

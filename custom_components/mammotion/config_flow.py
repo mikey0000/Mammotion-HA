@@ -193,7 +193,6 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
         """Create the options flow."""
         return MammotionConfigFlowHandler(config_entry)
 
-
     async def async_step_reconfigure(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
@@ -206,12 +205,20 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
         user_input = user_input or {}
         if user_input:
             if not errors:
-                return self.async_update_reload_and_abort(entry, data=user_input, reason="reconfigure_successful")
+                return self.async_update_reload_and_abort(
+                    entry, data=user_input, reason="reconfigure_successful"
+                )
 
         schema = {
-            vol.Required(CONF_ACCOUNTNAME, default=entry.data.get(CONF_ACCOUNTNAME)): cv.string,
-            vol.Required(CONF_PASSWORD, default=entry.data.get(CONF_PASSWORD)): cv.string,
-            vol.Optional(CONF_USE_WIFI, default=entry.data.get(CONF_USE_WIFI) or True): cv.boolean,
+            vol.Required(
+                CONF_ACCOUNTNAME, default=entry.data.get(CONF_ACCOUNTNAME)
+            ): cv.string,
+            vol.Required(
+                CONF_PASSWORD, default=entry.data.get(CONF_PASSWORD)
+            ): cv.string,
+            vol.Optional(
+                CONF_USE_WIFI, default=entry.data.get(CONF_USE_WIFI) or True
+            ): cv.boolean,
         }
 
         if user_input is not None and entry.data.get(CONF_ADDRESS) is None:

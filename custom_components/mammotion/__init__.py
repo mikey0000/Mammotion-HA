@@ -7,8 +7,16 @@ from homeassistant.const import CONF_ADDRESS, CONF_MAC, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr
 
-from .const import CONF_RETRY_COUNT, DEFAULT_RETRY_COUNT, CONF_AUTH_DATA, CONF_USE_WIFI, \
-    CONF_REGION_DATA, CONF_AEP_DATA, CONF_SESSION_DATA, CONF_DEVICE_DATA
+from .const import (
+    CONF_RETRY_COUNT,
+    DEFAULT_RETRY_COUNT,
+    CONF_AUTH_DATA,
+    CONF_USE_WIFI,
+    CONF_REGION_DATA,
+    CONF_AEP_DATA,
+    CONF_SESSION_DATA,
+    CONF_DEVICE_DATA,
+)
 from .coordinator import MammotionDataUpdateCoordinator
 
 PLATFORMS: list[Platform] = [
