@@ -60,7 +60,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
     async def async_setup(self) -> None:
         """Set coordinator up."""
         ble_device = None
-        credentials = Credentials()
+        credentials = None
         preference = ConnectionPreference.BLUETOOTH
         address = self.config_entry.data.get(CONF_ADDRESS)
         name = self.config_entry.data.get(CONF_DEVICE_NAME)
@@ -82,10 +82,11 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
                 if name:
                     self.device_name = name
                 preference = ConnectionPreference.WIFI
+                credentials = Credentials()
                 credentials.email = account
                 credentials.password = password
 
-                self.devices = await create_devices(ble_device, credentials, preference)
+            self.devices = await create_devices(ble_device, credentials, preference)
         try:
             if preference is not ConnectionPreference.WIFI:
                 await self.devices.start_sync(self.device_name, 0)
