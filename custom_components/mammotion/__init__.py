@@ -88,6 +88,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unload_ok:
-        if entry.runtime_data.manager.mqtt.is_connected:
+        if entry.runtime_data.manager.mqtt and entry.runtime_data.manager.mqtt.is_connected:
             await hass.async_add_executor_job(entry.runtime_data.manager.mqtt.disconnect)
     return unload_ok
