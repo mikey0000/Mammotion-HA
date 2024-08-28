@@ -5,18 +5,42 @@
       "already_in_progress": "Der Konfigurationsprozess läuft bereits",
       "no_devices_found": "Es wurden keine Geräte gefunden",
       "no_longer_present": "Das Gerät ist nicht länger verfügbar",
-      "not_supported": "Das Gerät wird nicht unterstützt"
+      "not_supported": "Das Gerät wird nicht unterstützt",
+      "no_device_name": "Der Gerätename ist erforderlich, um fortfahren zu können",
+      "reconfigure_successful": "Die Neukonfiguration war erfolgreich"
     },
     "flow_title": "Konfiguriere deinen Mammotion Mähroboter",
     "step": {
       "bluetooth_confirm": {
         "description": "Installiere {name}"
       },
+      "reconfigure": {
+        "data": {
+          "device_name": "Eindeutiger Gerätename wie Luba-**** oder Yuka-****",
+          "use_wifi": "Nutze Wi-fi",
+          "account_name": "Mammotion E-Mail oder Account Nummer",
+          "password": "Mammotion Kennwort"
+        }
+      },
       "user": {
         "data": {
-          "address": "Gerät"
+          "address": "Gerät",
+          "device_name": "Eindeutiger Gerätename wie Luba-**** oder Yuka-****",
+          "use_wifi": "Nutze Wi-fi",
+          "account_name": "Mammotion E-Mail oder Account Nummer",
+          "password": "Mammotion Kennwort"
         },
         "description": "Wähle deinen Mähroboter"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "title": "Aktualisiere die Konfiguration",
+          "stay_connected_bluetooth": "Bluetooth-Verbindung aufrechterhalten"
+        }
       }
     }
   },
