@@ -91,13 +91,15 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
         device = self.manager.get_device_by_name(self.device_name)
         if device is None:
             try:
-                mowing_devices = filter(lambda dev: dev.productModel != 'ReferenceStation', self.manager.cloud_client.get_devices_by_account_response()
-                    .data.data)
-                self.device_name = mowing_devices[0].deviceName
-                device = self.manager.get_device_by_name(self.device_name)
+                device_list = self.manager.cloud_client.get_devices_by_account_response().data.data
+                mowing_devices = [dev for dev in device_list if
+                                  (dev.productModel is None or dev.productModel != 'ReferenceStation')]
+                if len(mowing_devices) > 0:
+                    self.device_name = mowing_devices[0].deviceName
+                    device = self.manager.get_device_by_name(self.device_name)
             except:
                 raise ConfigEntryNotReady(
-                    f"Could not find Mammotion lawn mower with address {self.device_name}"
+                    f"Could not find Mammotion lawn mower with name {self.device_name}"
                 )
 
         try:
@@ -105,6 +107,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
                 await device.ble().start_sync(0)
             else:
                 device.cloud().on_ready_callback = lambda: device.cloud().start_sync(0)
+                device.cloud().set_notifiction_callback(self._async_update_cloud)
 
         except COMMAND_EXCEPTIONS as exc:
             raise ConfigEntryNotReady("Unable to setup Mammotion device") from exc
@@ -152,6 +155,11 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
             raise HomeAssistantError(
                 translation_domain=DOMAIN, translation_key="command_failed"
             ) from exc
+
+    async def _async_update_cloud(self):
+        self.async_set_updated_data(
+            self.manager.mower(self.device_name)
+        )
 
     async def _async_update_data(self) -> MowingDevice:
         """Get data from the device."""
