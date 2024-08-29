@@ -1,0 +1,179 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "Urządzenie jest już skonfigurowane",
+      "already_in_progress": "Proces konfiguracji już trwa",
+      "no_devices_found": "Nie znaleziono żadnych urządzeń",
+      "no_longer_present": "Urządzenie nie jest już dostępne",
+      "not_supported": "Urządzenie nie jest obsługiwane",
+      "no_device_name": "Aby kontynuować, wymagana jest nazwa urządzenia",
+      "reconfigure_successful": "Ponowna konfiguracja zakończona powodzeniem"
+    },
+    "flow_title": "Skonfiguruj swoją kosiarkę Mammotion",
+    "step": {
+      "bluetooth_confirm": {
+        "description": "Konfiguracja {name}"
+      },
+      "reconfigure": {
+        "data": {
+          "use_wifi": "Użyj Wi-Fi",
+          "account_name": "E-mail lub numer konta Mammotion",
+          "password": "Hasło do konta Mammotion"
+        }
+      },
+      "user": {
+        "data": {
+          "address": "Urządzenie"
+        },
+        "description": "Wybierz swoją kosiarkę"
+      },
+      "wifi": {
+        "data": {
+          "use_wifi": "Użyj Wi-Fi",
+          "account_name": "E-mail lub numer konta Mammotion",
+          "password": "Hasło do konta Mammotion"
+        },
+        "title": "Połącz z Wi-Fi",
+        "description": "Wprowadź adres e-mail lub identyfikator oraz hasło do swojego konta Mammotion"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "title": "Aktualizuj konfigurację",
+          "stay_connected_bluetooth": "Użyj połączenia Bluetooth"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "battery_percent": {
+        "name": "Bateria"
+      },
+      "ble_rssi": {
+        "name": "BLE RSSI"
+      },
+      "wifi_rssi": {
+        "name": "WiFi RSSI"
+      },
+      "gps_stars": {
+        "name": "Satelity (Robot)"
+      },
+      "blade_height": {
+        "name": "Wysokość koszenia"
+      },
+      "area": {
+        "name": "Obszar"
+      },
+      "mowing_speed": {
+        "name": "Prędkość koszenia"
+      },
+      "progress": {
+        "name": "Postęp"
+      },
+      "total_time": {
+        "name": "Całkowity czas"
+      },
+      "elapsed_time": {
+        "name": "Miniony czas"
+      },
+      "left_time": {
+        "name": "Pozostały czas"
+      },
+      "l1_satellites": {
+        "name": "Satelity L1 (wspólne oglądanie)"
+      },
+      "l2_satellites": {
+        "name": "Satelity L2 (wspólne oglądanie)"
+      },
+      "position_mode": {
+        "name": "Pozycjonowanie RTK"
+      },
+      "position_type": {
+        "name": "Stan urządzenia"
+      },
+      "activity_mode": {
+        "name": "Stan pracy"
+      }
+    },
+    "button": {
+      "start_map_sync": {
+        "name": "Synchronizuj mapy"
+      },
+       "resync_rtk_dock": {
+        "name": "Zsynchronizuj RTK i stację ładującą"
+      }
+    },
+    "switch": {
+      "blades_on_off": {
+        "name": "Ostrza wł/wył"
+      },
+      "mowing_on_off": {
+        "name": "Koszenie wł/wył"
+      },
+      "dump_grass_on_off": {
+        "name": "Wysypywanie trawy wł/wył"
+      },
+      "rain_detection_on_off": {
+        "name": "Wykrywanie deszczu wł/wył"
+      },
+      "side_led_on_off": {
+        "name": "Boczna dioda LED wł/wył"
+      },
+       "perimeter_first_on_off": {
+        "name": "Najpierw obwód"
+      }
+    },
+    "select": {
+       "cutting_mode": {
+        "name": "Tryb cięcia"
+      },
+      "border_patrol_mode": {
+        "name": "Koszenie obwodu"
+      },
+      "obstacle_laps_mode": {
+        "name": "Koszenie stref zakazanych"
+      },
+      "mow_order": {
+        "name": "Kolejność wykonania ścieżki"
+      }
+    },
+    "number": {
+       "start_progress": {
+        "name": "Rozpocznij koszenie przy x% postępie"
+      },
+      "blade_height": {
+        "name": "Wysokość cięcia"
+      },
+      "working_speed": {
+        "name": "Prędkość robocza"
+      }
+    },
+    "device_tracker": {
+      "name": "Śledzenie urządzenia"
+    }
+  },
+  "exceptions": {
+    "device_not_ready": {
+      "message": "Urządzenie obecnie nie jest gotowe."
+    },
+    "pause_failed": {
+      "message": "Wstrzymanie kosiarki nie powiodło się."
+    },
+    "resume_failed": {
+      "message": "Wznowienie kosiarki nie powiodło się."
+    },
+    "start_failed": {
+      "message": "Nie udało się uruchomić kosiarki."
+    },
+    "dock_failed": {
+      "message": "Nie udało się wysłać kosiarki do stacji ładującej."
+    },
+    "command_failed": {
+      "message": "Nie udało się wysłać polecenia do kosiarki."
+    }
+  }
+}
