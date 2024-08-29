@@ -5,18 +5,36 @@
       "already_in_progress": "Procesul de configurare este deja în progres",
       "no_devices_found": "Nu pot găsi niciun dispozitiv",
       "no_longer_present": "Echipamentul nu mai este prezent",
-      "not_supported": "Dispozitivul nu este suportat"
+      "not_supported": "Dispozitivul nu este suportat",
+      "no_device_name": "Numele dispozitivului este necesar pentru a continua",
+      "reconfigure_successful": "Reconfigurare reușită"
     },
     "flow_title": "Configurați mașina de tuns iarba Mammotion",
     "step": {
       "bluetooth_confirm": {
         "description": "Configurație{name}"
       },
-      "user": {
+      "reconfigure": {
+        "data": {
+          "use_wifi": "Folosește Wi-Fi",
+          "account_name": "Email sau număr de cont Mammotion",
+          "password": "Parola contului Mammotion"
+        }
+      },
+   "user": {
         "data": {
           "address": "Dispozitiv"
         },
         "description": "Selectați mașina de tuns iarba"
+      },
+      "wifi": {
+        "data": {
+          "use_wifi": "Folosește Wi-Fi (debifează și trimite pentru a folosi Bluetooth)",
+          "account_name": "Email sau număr de cont Mammotion",
+          "password": "Parola contului Mammotion"
+        },
+        "title": "Conectează-te la Wi-Fi",
+        "description": "Introdu adresa de email sau id-ul contului Mammotion și parola"
       }
     }
   },

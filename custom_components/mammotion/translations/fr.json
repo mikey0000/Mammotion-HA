@@ -16,7 +16,6 @@
       },
       "reconfigure": {
         "data": {
-          "device_name": "Nom de l'appareil ex. Luba-****, Yuka-**** qui doivent être unique",
           "use_wifi": "Utiliser le Wi-fi",
           "account_name": "Email Mammotion ou numéro de compte",
           "password": "Mot de passe du compte Mammotion"
@@ -24,14 +23,18 @@
       },
       "user": {
         "data": {
-          "address": "Appareil",
-          "device_name": "Nom de l'appareil ex. Luba-****, Yuka-**** qui doivent être unique",
+          "address": "Appareil"
+        },
+        "description": "Sélectionner votre robot tondeuse"
+      },
+      "wifi": {
+        "data": {
           "use_wifi": "Utiliser le Wi-fi",
           "account_name": "Email Mammotion ou numéro de compte",
           "password": "Mot de passe du compte Mammotion"
-
         },
-        "description": "Sélectionner votre robot tondeuse"
+        "title": "Se connecter au Wi-Fi",
+        "description": "Entrez l'email ou l'identifiant de votre compte Mammotion et le mot de passe"
       }
     }
   },

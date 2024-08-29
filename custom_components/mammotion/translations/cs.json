@@ -5,18 +5,36 @@
       "already_in_progress": "Konfigurační proces již probíhá",
       "no_devices_found": "Nelze najít zařízení",
       "no_longer_present": "Zařízení již není k dispozici",
-      "not_supported": "Zařízení není podporováno"
+      "not_supported": "Zařízení není podporováno",
+      "no_device_name": "Pro pokračování je vyžadován název zařízení",
+      "reconfigure_successful": "Znovu nastavení bylo úspěšné"
     },
     "flow_title": "Nastavení sekačky Mammotion",
     "step": {
       "bluetooth_confirm": {
         "description": "Nastavení {name}"
       },
+      "reconfigure": {
+        "data": {
+          "use_wifi": "Použít Wi-Fi",
+          "account_name": "Mammotion e-mail nebo číslo účtu",
+          "password": "Heslo k účtu Mammotion"
+        }
+      },
       "user": {
         "data": {
           "address": "Zařízení"
         },
         "description": "Vyberte si svou sekačku"
+      },
+      "wifi": {
+        "data": {
+          "use_wifi": "Použít Wi-Fi (odškrtněte a odešlete pro použití Bluetooth)",
+          "account_name": "Mammotion e-mail nebo číslo účtu",
+          "password": "Heslo k účtu Mammotion"
+        },
+        "title": "Připojit k Wi-Fi",
+        "description": "Zadejte svůj Mammotion e-mail nebo ID účtu a heslo"
       }
     }
   },

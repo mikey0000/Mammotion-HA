@@ -16,7 +16,6 @@
       },
       "reconfigure": {
         "data": {
-          "device_name": "Device name e.g Luba-****, Yuka-**** which needs to be unique",
           "use_wifi": "Use Wi-fi",
           "account_name": "Mammotion email or account number",
           "password": "Mammotion account password"
@@ -24,14 +23,18 @@
       },
       "user": {
         "data": {
-          "address": "Device",
-          "device_name": "Device name e.g Luba-****, Yuka-**** which needs to be unique",
-          "use_wifi": "Use Wi-fi",
-          "account_name": "Mammotion email or account number",
-          "password": "Mammotion account password"
-
+          "address": "Device"
         },
         "description": "Select your mower"
+      },
+      "wifi": {
+        "data": {
+          "use_wifi": "Use Wi-fi (un-tick and submit to use bluetooth)",
+          "account_name": "Mammotion email or account number",
+          "password": "Mammotion account password"
+        },
+        "title": "Connect to Wi-Fi",
+        "description": "Enter your Mammotion account email or id and password"
       }
     }
   },

@@ -16,7 +16,6 @@
       },
       "reconfigure": {
         "data": {
-          "device_name": "Eindeutiger Gerätename wie Luba-**** oder Yuka-****",
           "use_wifi": "Nutze Wi-fi",
           "account_name": "Mammotion E-Mail oder Account Nummer",
           "password": "Mammotion Kennwort"
@@ -24,13 +23,18 @@
       },
       "user": {
         "data": {
-          "address": "Gerät",
-          "device_name": "Eindeutiger Gerätename wie Luba-**** oder Yuka-****",
+          "address": "Gerät"
+        },
+        "description": "Wähle deinen Mähroboter"
+      },
+      "wifi": {
+        "data": {
           "use_wifi": "Nutze Wi-fi",
           "account_name": "Mammotion E-Mail oder Account Nummer",
           "password": "Mammotion Kennwort"
         },
-        "description": "Wähle deinen Mähroboter"
+        "title": "Mit WLAN verbinden",
+        "description": "Geben Sie Ihre Mammotion E-Mail oder ID und das Passwort ein"
       }
     }
   },

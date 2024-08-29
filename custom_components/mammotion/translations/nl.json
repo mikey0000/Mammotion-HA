@@ -16,7 +16,6 @@
       },
       "reconfigure": {
         "data": {
-          "device_name": "Apparaatnaam, bijvoorbeeld Luba-****, Yuka-****, het moet uniek zijn",
           "use_wifi": "Gebruik Wi-fi",
           "account_name": "Mammotion e-mailadres of accountnummer",
           "password": "Mammotion-accountwachtwoord"
@@ -24,14 +23,18 @@
 	  },
       "user": {
         "data": {
-          "address": "Apparaat",
-          "device_name": "Apparaatnaam, bijvoorbeeld Luba-****, Yuka-****, het moet uniek zijn",
-          "use_wifi": "Gebruik Wi-fi",
-          "account_name": "Mammotion e-mailadres of accountnummer",
-          "password": "Mammotion-accountwachtwoord"
-
+          "address": "Apparaat"
         },
         "description": "Kies uw gazonmachines"
+      },
+      "wifi": {
+        "data": {
+          "use_wifi": "Gebruik Wi-fi (haal het vinkje weg en verstuur om Bluetooth te gebruiken)",
+          "account_name": "Mammotion e-mailadres of accountnummer",
+          "password": "Mammotion-accountwachtwoord"
+        },
+         "title": "Verbind met Wi-Fi",
+         "description": "Voer je Mammotion account e-mail of id en wachtwoord in"
       }
     }
   },

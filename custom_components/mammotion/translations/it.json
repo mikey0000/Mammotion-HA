@@ -5,18 +5,36 @@
       "already_in_progress": "La configurazione è già in corso",
       "no_devices_found": "Impossibile trovare il dispositivo",
       "no_longer_present": "Il dispositivo non è più presente",
-      "not_supported": "Dispositivo non supportato"
+      "not_supported": "Dispositivo non supportato",
+      "no_device_name": "È necessario il nome del dispositivo per procedere",
+      "reconfigure_successful": "Riconfigurazione avvenuta con successo"
     },
     "flow_title": "Configura il tuo rasaerba Mammotion",
     "step": {
       "bluetooth_confirm": {
         "description": "Configura {nome}"
       },
+      "reconfigure": {
+        "data": {
+          "use_wifi": "Usa Wi-Fi",
+          "account_name": "Email o numero di conto Mammotion",
+          "password": "Password dell'account Mammotion"
+        }
+      },
       "user": {
         "data": {
           "address": "Dispositivo"
         },
         "description": "Seleziona il tuo rasaerba"
+      },
+      "wifi": {
+        "data": {
+          "use_wifi": "Usa Wi-Fi (deseleziona e invia per utilizzare il Bluetooth)",
+          "account_name": "Email o numero di conto Mammotion",
+          "password": "Password dell'account Mammotion"
+        },
+        "title": "Connetti al Wi-Fi",
+        "description": "Inserisci l'email o l'id del tuo account Mammotion e la password"
       }
     }
   },
