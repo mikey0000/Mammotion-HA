@@ -6,17 +6,42 @@
       "no_devices_found": "Kon geen apparaten vinden",
       "no_longer_present": "Het apparaat is niet langer aanwezig",
       "not_supported": "Apparaat wordt niet ondersteund"
+	  "no_device_name": "Apparaatnaam vereist om door te gaan",
+      "reconfigure_successful": "instelling succesvol"
     },
     "flow_title": "Stel uw Mammotion gazonmachines in",
     "step": {
       "bluetooth_confirm": {
         "description": "Installeer {name}"
       },
+      "reconfigure": {
+        "data": {
+          "device_name": "Apparaatnaam, bijvoorbeeld Luba-****, Yuka-****, het moet uniek zijn",
+          "use_wifi": "Gebruik Wi-fi",
+          "account_name": "Mammotion e-mailadres of accountnummer",
+          "password": "Mammotion-accountwachtwoord"
+        }
+	  },
       "user": {
         "data": {
           "address": "Apparaat"
+		  "device_name": "Apparaatnaam, bijvoorbeeld Luba-****, Yuka-****, het moet uniek zijn",
+          "use_wifi": "Gebruik Wi-fi",
+          "account_name": "Mammotion e-mailadres of accountnummer",
+          "password": "Mammotion-accountwachtwoord"
+
         },
         "description": "Kies uw gazonmachines"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "title": "Configuratie bijwerken",
+          "stay_connected_bluetooth": "Houd Bluetooth verbonden"
+        }
       }
     }
   },
