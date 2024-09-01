@@ -2,6 +2,8 @@
 
 💬 [Join us on Discord](https://discord.gg/vpZdWhJX8x)
 
+[Support this project on Ko-fi!](https://ko-fi.com/DenimJackRabbit)
+
 This integration allows you to control and monitor your Mammotion Luba, Luba 2 & Yuka robot mowers using Home Assistant.
 
 ⚠️ **Please note:** This integration is still a work in progress. You may encounter unfinished features or bugs. If you come across any issues, please open an issue on the GitHub repository. 🐛
@@ -52,3 +54,7 @@ If the problem continues, please file an issue on the GitHub repository for furt
 ## Credits 👥
 
 [![Contributors](https://contrib.rocks/image?repo=mikey0000/Mammotion-HA)](https://github.com/mikey0000/Mammotion-HA/graphs/contributors)
+
+## Supporters
+
+Thank you so much!
