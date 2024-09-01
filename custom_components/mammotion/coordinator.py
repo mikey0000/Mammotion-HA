@@ -92,8 +92,14 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
         if device is None:
             try:
                 device_list = self.manager.cloud_client.get_devices_by_account_response().data.data
-                mowing_devices = [dev for dev in device_list if
-                                  (dev.productModel is None or dev.productModel != 'ReferenceStation')]
+                mowing_devices = [
+                    dev
+                    for dev in device_list
+                    if (
+                        dev.productModel is None
+                        or dev.productModel != "ReferenceStation"
+                    )
+                ]
                 if len(mowing_devices) > 0:
                     self.device_name = mowing_devices[0].deviceName
                     device = self.manager.get_device_by_name(self.device_name)
@@ -107,7 +113,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
                 await device.ble().start_sync(0)
             else:
                 device.cloud().on_ready_callback = lambda: device.cloud().start_sync(0)
-                device.cloud().set_notifiction_callback(self._async_update_cloud)
+                device.cloud().set_notification_callback(self._async_update_cloud)
 
         except COMMAND_EXCEPTIONS as exc:
             raise ConfigEntryNotReady("Unable to setup Mammotion device") from exc
@@ -124,6 +130,29 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
 
     async def async_blade_height(self, height: int) -> None:
         await self.async_send_command("set_blade_height", height=height)
+
+    async def async_leave_dock(self, height: int) -> None:
+        await self.async_send_command("leave_dock", height=height)
+
+    async def async_move_forward(self, speed: float) -> None:
+        device = self.manager.get_device_by_name(self.device_name)
+        if self.manager.get_device_by_name(self.device_name).ble():
+            await device.ble().move_forward(speed)
+
+    async def async_move_left(self, speed: float) -> None:
+        device = self.manager.get_device_by_name(self.device_name)
+        if self.manager.get_device_by_name(self.device_name).ble():
+            await device.ble().move_left(speed)
+
+    async def async_move_right(self, speed: float) -> None:
+        device = self.manager.get_device_by_name(self.device_name)
+        if self.manager.get_device_by_name(self.device_name).ble():
+            await device.ble().move_right(speed)
+
+    async def async_move_back(self, speed: float) -> None:
+        device = self.manager.get_device_by_name(self.device_name)
+        if self.manager.get_device_by_name(self.device_name).ble():
+            await device.ble().move_back(speed)
 
     async def async_rtk_dock_location(self):
         """RTK and dock location."""
@@ -157,16 +186,16 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
             ) from exc
 
     async def _async_update_cloud(self):
-        self.async_set_updated_data(
-            self.manager.mower(self.device_name)
-        )
+        self.async_set_updated_data(self.manager.mower(self.device_name))
 
     async def _async_update_data(self) -> MowingDevice:
         """Get data from the device."""
         device = self.manager.get_device_by_name(self.device_name)
 
         if self.address:
-            ble_device = bluetooth.async_ble_device_from_address(self.hass, self.address)
+            ble_device = bluetooth.async_ble_device_from_address(
+                self.hass, self.address
+            )
 
             if not ble_device and device.cloud() is None:
                 self.update_failures += 1

@@ -54,5 +54,7 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionDataUpdateCoordinator]):
         return (
             self.coordinator.data is not None
             and self.coordinator.update_failures
-            <= self.coordinator.config_entry.options.get(CONF_RETRY_COUNT, DEFAULT_RETRY_COUNT)
+            <= self.coordinator.config_entry.options.get(
+                CONF_RETRY_COUNT, DEFAULT_RETRY_COUNT
+            )
         )

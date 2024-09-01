@@ -163,6 +163,15 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
             PosType(mower_data.location.position_type).name
         ),  # Note: This will not work for Luba2 & Yuka. Only for Luba1
     ),
+    MammotionSensorEntityDescription(
+        key="work_area",
+        state_class=None,
+        device_class=SensorDeviceClass.ENUM,
+        native_unit_of_measurement=None,
+        value_fn=lambda mower_data: str(
+            mower_data.location.work_zone or "Not working"
+        ),
+    ),
     # MammotionSensorEntityDescription(
     #     key="lawn_mower_position",
     #     state_class=None,

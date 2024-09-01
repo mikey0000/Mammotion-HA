@@ -97,6 +97,9 @@
       },
       "activity_mode": {
         "name": "Activity mode"
+      },
+      "work_area": {
+        "name": "Work area hash"
       }
     },
     "button": {
@@ -105,6 +108,21 @@
       },
        "resync_rtk_dock": {
         "name": "Sync RTK and dock"
+      },
+      "release_from_dock": {
+        "name": "Undock"
+      },
+      "emergency_nudge_forward": {
+        "name": "Emergency nudge forward"
+      },
+       "emergency_nudge_left": {
+        "name": "Emergency nudge left"
+      },
+      "emergency_nudge_right": {
+        "name": "Emergency nudge right"
+      },
+      "emergency_nudge_back": {
+        "name": "Emergency nudge back"
       }
     },
     "switch": {

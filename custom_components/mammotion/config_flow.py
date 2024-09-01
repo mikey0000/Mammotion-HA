@@ -1,9 +1,15 @@
 """Config flow for Mammotion Luba."""
+
 from typing import Any, TYPE_CHECKING
 
 import voluptuous as vol
 from bleak import BLEDevice
-from homeassistant.helpers.selector import SelectSelectorConfig, SelectOptionDict, SelectSelectorMode, SelectSelector
+from homeassistant.helpers.selector import (
+    SelectSelectorConfig,
+    SelectOptionDict,
+    SelectSelectorMode,
+    SelectSelector,
+)
 from pymammotion.http.http import connect_http
 from pymammotion.mammotion.devices.mammotion import Mammotion
 
@@ -31,7 +37,7 @@ from .const import (
     CONF_USE_WIFI,
     CONF_STAY_CONNECTED_BLUETOOTH,
     CONF_ACCOUNTNAME,
-    CONF_DEVICE_NAME
+    CONF_DEVICE_NAME,
 )
 
 
@@ -174,8 +180,9 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
 
         return self.async_show_form(step_id="wifi", data_schema=vol.Schema(schema))
 
-
-    async def async_step_wifi_confirm(self, user_input: dict[str, Any]) -> ConfigFlowResult:
+    async def async_step_wifi_confirm(
+        self, user_input: dict[str, Any]
+    ) -> ConfigFlowResult:
         """Confirm device discovery."""
 
         device_name = user_input.get(CONF_DEVICE_NAME)
@@ -186,18 +193,19 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
             account = user_input.get(CONF_ACCOUNTNAME)
             password = user_input.get(CONF_PASSWORD)
 
-            if address is None or name is None:
-
-                if device_name is not None:
-                    await self.async_set_unique_id(device_name, raise_on_progress=False)
-                    self._abort_if_unique_id_configured()
-
             if name:
                 cloud_client = await Mammotion.login(account, password)
                 devices = cloud_client.get_devices_by_account_response().data.data
-                found_device = [device for device in devices if device.deviceName == name]
+                found_device = [
+                    device for device in devices if device.deviceName == name
+                ]
                 if not found_device:
-                    return self.async_abort(reason=f"{device_name or name} not found in account: {account}")
+                    return self.async_abort(
+                        reason=f"{device_name or name} not found in account: {account}"
+                    )
+
+            await self.async_set_unique_id(device_name or name, raise_on_progress=False)
+            self._abort_if_unique_id_configured()
 
             return self.async_create_entry(
                 title=name or device_name,
@@ -209,8 +217,6 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                 },
             )
 
-
-
         account = user_input.get(CONF_ACCOUNTNAME)
         password = user_input.get(CONF_PASSWORD)
         self._config = {
@@ -220,13 +226,10 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
         cloud_client = await Mammotion.login(account, password)
 
         mowing_devices = [
-                    dev
-                    for dev in cloud_client.get_devices_by_account_response().data.data
-                    if (
-                        dev.productModel is None
-                        or dev.productModel != "ReferenceStation"
-                    )
-                ]
+            dev
+            for dev in cloud_client.get_devices_by_account_response().data.data
+            if (dev.productModel is None or dev.productModel != "ReferenceStation")
+        ]
 
         machine_options = [
             SelectOptionDict(
@@ -250,10 +253,8 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
         )
 
         return self.async_show_form(
-            step_id="wifi_confirm",
-            data_schema=machine_selection_schema
+            step_id="wifi_confirm", data_schema=machine_selection_schema
         )
-
 
     @staticmethod
     @callback
@@ -276,12 +277,12 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
         if user_input:
             if not errors:
                 return self.async_update_reload_and_abort(
-                    entry, data={
+                    entry,
+                    data={
                         **entry.data,
                         **user_input,
                     },
-                    reason="reconfigure_successful"
-
+                    reason="reconfigure_successful",
                 )
 
         schema = {
@@ -298,8 +299,12 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
 
         if user_input is not None and entry.data.get(CONF_ADDRESS) is None:
             schema = {
-                vol.Required(CONF_ACCOUNTNAME, default=entry.data.get(CONF_ACCOUNTNAME)): vol.All(cv.string, vol.Strip),
-                vol.Required(CONF_PASSWORD, default=entry.data.get(CONF_PASSWORD)): vol.All(cv.string, vol.Strip),
+                vol.Required(
+                    CONF_ACCOUNTNAME, default=entry.data.get(CONF_ACCOUNTNAME)
+                ): vol.All(cv.string, vol.Strip),
+                vol.Required(
+                    CONF_PASSWORD, default=entry.data.get(CONF_PASSWORD)
+                ): vol.All(cv.string, vol.Strip),
             }
 
         return self.async_show_form(

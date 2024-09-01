@@ -29,6 +29,26 @@ BUTTON_SENSORS: tuple[MammotionButtonSensorEntityDescription, ...] = (
         key="resync_rtk_dock",
         press_fn=lambda coordinator: coordinator.async_rtk_dock_location(),
     ),
+    MammotionButtonSensorEntityDescription(
+        key="release_from_dock",
+        press_fn=lambda coordinator: coordinator.async_leave_dock(),
+    ),
+    MammotionButtonSensorEntityDescription(
+        key="emergency_nudge_forward",
+        press_fn=lambda coordinator: coordinator.async_move_forward(0.4),
+    ),
+    MammotionButtonSensorEntityDescription(
+        key="emergency_nudge_left",
+        press_fn=lambda coordinator: coordinator.async_move_left(0.4),
+    ),
+    MammotionButtonSensorEntityDescription(
+        key="emergency_nudge_right",
+        press_fn=lambda coordinator: coordinator.async_move_right(0.4),
+    ),
+    MammotionButtonSensorEntityDescription(
+        key="emergency_nudge_back",
+        press_fn=lambda coordinator: coordinator.async_move_back(0.4),
+    ),
 )
 
 
