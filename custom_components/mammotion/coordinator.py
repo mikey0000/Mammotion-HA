@@ -89,7 +89,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
             self.manager = await create_devices(ble_device, credentials, preference)
 
         device = self.manager.get_device_by_name(self.device_name)
-        if device is None:
+        if device is None and self.manager.cloud_client:
             try:
                 device_list = self.manager.cloud_client.get_devices_by_account_response().data.data
                 mowing_devices = [
@@ -109,11 +109,12 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
                 )
 
         try:
-            if preference is not ConnectionPreference.WIFI:
-                await device.ble().start_sync(0)
-            else:
+            if preference is ConnectionPreference.WIFI:
                 device.cloud().on_ready_callback = lambda: device.cloud().start_sync(0)
                 device.cloud().set_notification_callback(self._async_update_cloud)
+            else:
+                await device.ble().start_sync(0)
+
 
         except COMMAND_EXCEPTIONS as exc:
             raise ConfigEntryNotReady("Unable to setup Mammotion device") from exc
@@ -132,7 +133,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
         await self.async_send_command("set_blade_height", height=height)
 
     async def async_leave_dock(self, height: int) -> None:
-        await self.async_send_command("leave_dock", height=height)
+        await self.async_send_command("leave_dock")
 
     async def async_move_forward(self, speed: float) -> None:
         device = self.manager.get_device_by_name(self.device_name)
