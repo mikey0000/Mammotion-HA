@@ -129,10 +129,10 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
         else:
             await self.async_send_command("set_blade_control", on_off=0)
 
-    async def async_blade_height(self, height: int) -> None:
-        await self.async_send_command("set_blade_height", height=height)
+    async def async_blade_height(self, height: float) -> None:
+        await self.async_send_command("set_blade_height", height=float(height))
 
-    async def async_leave_dock(self, height: int) -> None:
+    async def async_leave_dock(self) -> None:
         await self.async_send_command("leave_dock")
 
     async def async_move_forward(self, speed: float) -> None:
