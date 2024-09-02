@@ -38,6 +38,16 @@
       }
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "title": "Aktualizovat konfiguraci",
+          "stay_connected_bluetooth": "Udržujte připojení Bluetooth"
+        }
+      }
+    }
+  },
   "entity": {
     "sensor": {
       "battery_percent": {
@@ -87,6 +97,9 @@
       },
       "activity_mode": {
         "name": "Režim činnosti"
+      },
+      "work_area": {
+        "name": "Pracovní oblast hash"
       }
     },
     "button": {
@@ -95,6 +108,21 @@
       },
        "resync_rtk_dock": {
         "name": "Synchronizace RTK a dokovací stanice"
+      },
+      "release_from_dock": {
+        "name": "Odpojení z doku"
+      },
+      "emergency_nudge_forward": {
+        "name": "Nouzové postrčení vpřed"
+      },
+       "emergency_nudge_left": {
+        "name": "Nouzové postrčení doleva"
+      },
+      "emergency_nudge_right": {
+        "name": "Nouzové postrčení doprava"
+      },
+      "emergency_nudge_back": {
+        "name": "Nouzové postrčení zpět"
       }
     },
   "switch": {
