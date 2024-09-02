@@ -293,7 +293,7 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                 CONF_PASSWORD, default=entry.data.get(CONF_PASSWORD)
             ): cv.string,
             vol.Optional(
-                CONF_USE_WIFI, default=entry.data.get(CONF_USE_WIFI) or True
+                CONF_USE_WIFI, default=entry.data.get(CONF_USE_WIFI, True)
             ): cv.boolean,
         }
 

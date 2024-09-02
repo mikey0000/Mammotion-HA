@@ -168,9 +168,7 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         state_class=None,
         device_class=SensorDeviceClass.ENUM,
         native_unit_of_measurement=None,
-        value_fn=lambda mower_data: str(
-            mower_data.location.work_zone or "Not working"
-        ),
+        value_fn=lambda mower_data: str(mower_data.location.work_zone or "Not working"),
     ),
     # MammotionSensorEntityDescription(
     #     key="lawn_mower_position",

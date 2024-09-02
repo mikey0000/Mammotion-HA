@@ -21,8 +21,6 @@ from .entity import MammotionBaseEntity
 class MammotionNumberEntityDescription(NumberEntityDescription):
     """Describes Mammotion number entity."""
 
-    set_fn: Callable[[MammotionDataUpdateCoordinator, float], Awaitable[None]]
-
 
 NUMBER_ENTITIES: tuple[MammotionNumberEntityDescription, ...] = (
     MammotionNumberEntityDescription(
@@ -33,7 +31,6 @@ NUMBER_ENTITIES: tuple[MammotionNumberEntityDescription, ...] = (
         mode=NumberMode.SLIDER,
         native_unit_of_measurement=PERCENTAGE,
         entity_category=EntityCategory.CONFIG,
-        set_fn=lambda coordinator, value: value,
     ),
 )
 
@@ -41,11 +38,10 @@ NUMBER_ENTITIES: tuple[MammotionNumberEntityDescription, ...] = (
 NUMBER_WORKING_ENTITIES: tuple[MammotionNumberEntityDescription, ...] = (
     MammotionNumberEntityDescription(
         key="blade_height",
-        step=5.0,
-        min_value=30.0,  # ToDo: To be dynamiclly set based on model (h\non H)
-        max_value=70.0,  # ToDo: To be dynamiclly set based on model (h\non H)
+        step=5,
+        min_value=30,  # ToDo: To be dynamiclly set based on model (h\non H)
+        max_value=70,  # ToDo: To be dynamiclly set based on model (h\non H)
         entity_category=EntityCategory.CONFIG,
-        set_fn=lambda coordinator, value: coordinator.async_blade_height(value),
     ),
     MammotionNumberEntityDescription(
         key="working_speed",
@@ -53,7 +49,6 @@ NUMBER_WORKING_ENTITIES: tuple[MammotionNumberEntityDescription, ...] = (
         step=0.1,
         min_value=0.2,
         max_value=0.6,
-        set_fn=lambda coordinator, value: value,
     ),
 )
 
@@ -97,9 +92,8 @@ class MammotionNumberEntity(MammotionBaseEntity, NumberEntity):
         self._attr_native_step = entity_description.step
         self._attr_native_value = self._attr_native_min_value  # Default value
 
-    async def async_set_native_value(self, value: float) -> None:
+    async def async_set_native_value(self, value: float | int) -> None:
         self._attr_native_value = value
-        await self.entity_description.set_fn(self.coordinator, value)
         self.async_write_ha_state()
 
 

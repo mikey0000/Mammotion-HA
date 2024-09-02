@@ -2,6 +2,7 @@
   "domain": "mammotion",
   "name": "Mammotion",
   "version": "0.1.16",
+  "issue_tracker": "https://github.com/mikey0000/Mammotion-HA/issues",
   "integration_type": "device",
   "bluetooth": [
     {
@@ -23,7 +24,7 @@
   "dependencies": [
     "bluetooth_adapters"
   ],
-  "documentation": "https://www.home-assistant.io/integrations/mammotion",
+  "documentation": "https://github.com/mikey0000/Mammotion-HA/wiki",
   "loggers": [
     "pymammotion"
   ],

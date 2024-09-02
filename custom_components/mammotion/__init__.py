@@ -27,7 +27,7 @@ PLATFORMS: list[Platform] = [
     Platform.BUTTON,
     Platform.SWITCH,
     Platform.NUMBER,
-    # Platform.SELECT
+    Platform.SELECT,
 ]
 
 type MammotionConfigEntry = ConfigEntry[MammotionDataUpdateCoordinator]
