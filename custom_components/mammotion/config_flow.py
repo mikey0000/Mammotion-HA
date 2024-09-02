@@ -118,6 +118,8 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                     CONF_ADDRESS: address,
                 }
 
+            self._discovered_device = bluetooth.async_ble_device_from_address(self.hass, address)
+
             return await self.async_step_wifi(user_input)
 
         current_addresses = self._async_current_ids()

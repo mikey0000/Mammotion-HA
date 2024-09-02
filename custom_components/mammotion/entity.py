@@ -19,6 +19,7 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionDataUpdateCoordinator]):
         super().__init__(coordinator)
         self._attr_unique_id = f"{coordinator.device_name}_{key}"
 
+    @property
     def device_info(self) -> DeviceInfo:
         mower = self.coordinator.manager.mower(self.coordinator.device_name)
         swversion = None
