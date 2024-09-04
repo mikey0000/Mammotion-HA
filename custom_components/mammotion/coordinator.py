@@ -122,7 +122,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
             if preference is ConnectionPreference.WIFI and device.cloud():
                 device.cloud().on_ready_callback = lambda: device.cloud().start_sync(0)
                 device.cloud().set_notification_callback(self._async_update_cloud)
-            elif device.ble():
+            elif ble_device:
                 await device.ble().start_sync(0)
             else:
                 raise ConfigEntryNotReady("No configuration available to setup Mammotion lawn mower")
