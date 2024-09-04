@@ -93,10 +93,13 @@
         "name": "RTK Position"
       },
       "position_type": {
-        "name": "RTL Link Modus"
+        "name": "Typ der Gerätepositionierung"
       },
       "activity_mode": {
         "name": "Aktivitätsmodus"
+      },
+      "work_area": {
+        "name": "Arbeitsbereich Hash"
       }
     },
     "button": {
@@ -105,6 +108,21 @@
       },
        "resync_rtk_dock": {
         "name": "Synchronisiere RTK und Ladestation"
+      },
+      "release_from_dock": {
+        "name": "Abdocken"
+      },
+      "emergency_nudge_forward": {
+        "name": "Notfall-Schub vorwärts"
+      },
+       "emergency_nudge_left": {
+        "name": "Notfall-Schub links"
+      },
+      "emergency_nudge_right": {
+        "name": "Notfall-Schub rechts"
+      },
+      "emergency_nudge_back": {
+        "name": "Notfall-Schub rückwärts"
       }
     },
     "switch": {
@@ -124,7 +142,7 @@
         "name": "Seitenlicht An/Aus"
       },
        "perimeter_first_on_off": {
-        "name": "Zuerst den Umfang berechnen An/Aus"
+        "name": "Zuerst den Umfang berechnen"
       }
     },
     "select": {
@@ -135,7 +153,7 @@
         "name": "Patrouillenmodus für die seitlichen Grenzen"
       },
       "obstacle_laps_mode": {
-        "name": "Bypass-Strategie"
+        "name": "Modus der Hindernisserkennung"
       },
       "mow_order": {
         "name": "Ausführungsreihenfolge des Pfades"
@@ -143,7 +161,7 @@
     },
     "number": {
        "start_progress": {
-        "name": "Mähen bei x % Fortschritt beginnen"
+        "name": "Fortschritt beim Start"
       },
       "blade_height": {
         "name": "Schnitthöhe"
