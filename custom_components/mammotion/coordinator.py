@@ -67,7 +67,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
         credentials = None
         preference = (
             ConnectionPreference.WIFI
-            if self.config_entry.data.get(CONF_USE_WIFI, True)
+            if self.config_entry.data.get(CONF_USE_WIFI, False)
             else ConnectionPreference.BLUETOOTH
         )
         address = self.config_entry.data.get(CONF_ADDRESS)
