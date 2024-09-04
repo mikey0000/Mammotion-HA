@@ -13,6 +13,7 @@
     "step": {
       "bluetooth_confirm": {
         "description": "Nastavení {name}"
+        "stay_connected_bluetooth": "Udržovat Bluetooth připojený"
       },
       "reconfigure": {
         "data": {
@@ -148,7 +149,13 @@
   "select": {
      "cutting_mode": {
       "name": "Režim řezu"
-    },
+         "state": {
+           "single_grid": "Jednoduchá mřížka",
+           "double_grid": "Šachovnicová mřížka",
+           "segment_grid": "Smíšená/segmentová mřížka",
+           "no_grid": "Žádná mřížka"
+         }
+      },
     "border_patrol_mode": {
       "name": "Režim hraniční hlídky"
     },
@@ -168,10 +175,13 @@
     },
     "working_speed": {
       "name": "Pracovní rychlost"
-    }
-  },
-  "device_tracker": {
-    "name": "Sledování zařízení"
+       },
+      "cutting_angle": {
+        "name": "Úhel sečení"
+      }
+    },
+    "device_tracker": {
+       "name": "Sledování zařízení"
   }
 },
   "exceptions": {
