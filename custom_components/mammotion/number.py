@@ -6,7 +6,7 @@ from homeassistant.components.number import (
     NumberEntityDescription,
     NumberMode,
 )
-from homeassistant.const import PERCENTAGE
+from homeassistant.const import PERCENTAGE, DEGREE
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -54,7 +54,7 @@ NUMBER_WORKING_ENTITIES: tuple[MammotionNumberEntityDescription, ...] = (
         key="cutting_angle",
         entity_category=EntityCategory.CONFIG,
         step=1,
-        value=0,
+        native_unit_of_measurement=DEGREE,
         min_value=-180,
         max_value=180,
     ),
