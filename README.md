@@ -31,8 +31,6 @@ This integration allows you to control and monitor your Mammotion Luba, Luba 2 &
 - Mower connected to your home network
 - [Bluetooth proxy for Home Assistant](https://esphome.io/components/bluetooth_proxy.html)
 
-Here's a cleaned-up version of the installation instructions for your GitHub repo README:
-
 ## Installation 🛠️
 
 This integration can be installed using [HACS](https://hacs.xyz/)
@@ -73,6 +71,10 @@ If you encounter any issues with the Mammotion integration, please check the Hom
 This integration uses the [PyMammotion library](https://github.com/mikey0000/PyMammotion) to communicate with Mammotion mowers. PyMammotion provides a Python API for controlling and monitoring Mammotion robot mowers via MQTT, Cloud, and Bluetooth.
 
 If the problem continues, please file an issue on the GitHub repository for further assistance. 🙏
+
+## Support me
+<a href='https://ko-fi.com/DenimJackRabbit' target='_blank'><img height='46' style='border:0px;height:46px;' src='https://az743702.vo.msecnd.net/cdn/kofi3.png?v=0' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
+[Buy a Mammotion Lawn mower](https://mammotion.com/?ref=tbbzqsog) disclaimer: Referral link
 
 ## Credits 👥
 
