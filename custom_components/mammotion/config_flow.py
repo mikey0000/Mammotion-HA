@@ -57,7 +57,7 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
         """Handle the bluetooth discovery step."""
         LOGGER.debug("Discovered bluetooth device: %s", discovery_info)
         if discovery_info is None:
-            return self.async_abort(reason="no_device")
+            return self.async_abort(reason="no_devices_found")
 
         await self.async_set_unique_id(discovery_info.name)
         self._abort_if_unique_id_configured(
@@ -182,7 +182,10 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
         if user_input is not None and user_input.get(CONF_USE_WIFI) is False:
             return self.async_create_entry(
                 title=self._discovered_device.name,
-                data={CONF_ADDRESS: self._discovered_device.address},
+                data={
+                    CONF_ADDRESS: self._discovered_device.address,
+                    CONF_USE_WIFI: user_input.get(CONF_USE_WIFI),
+                },
                 options={CONF_STAY_CONNECTED_BLUETOOTH: self._stay_connected},
             )
 
@@ -213,15 +216,19 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
             account = user_input.get(CONF_ACCOUNTNAME)
             password = user_input.get(CONF_PASSWORD)
 
+            cloud_client = await Mammotion.login(account, password)
+            devices = cloud_client.get_devices_by_account_response().data.data
+            if len(devices) == 0:
+                return self.async_abort(
+                    reason="no_devices_found_in_account"
+                )
             if name:
-                cloud_client = await Mammotion.login(account, password)
-                devices = cloud_client.get_devices_by_account_response().data.data
                 found_device = [
                     device for device in devices if device.deviceName == name
                 ]
                 if not found_device:
                     return self.async_abort(
-                        reason=f"{device_name or name} not found in account: {account}"
+                        reason="bluetooth_and_account_mismatch"
                     )
 
             await self.async_set_unique_id(device_name or name, raise_on_progress=False)

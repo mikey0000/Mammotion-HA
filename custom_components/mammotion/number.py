@@ -4,7 +4,7 @@ from typing import Awaitable, Callable
 from homeassistant.components.number import (
     NumberEntity,
     NumberEntityDescription,
-    NumberMode,
+    NumberMode, NumberDeviceClass,
 )
 from homeassistant.const import PERCENTAGE, DEGREE
 from homeassistant.core import HomeAssistant
