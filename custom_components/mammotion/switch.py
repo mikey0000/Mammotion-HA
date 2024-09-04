@@ -48,14 +48,7 @@ SWITCH_ENTITIES: tuple[MammotionSwitchEntityDescription, ...] = (
     MammotionSwitchEntityDescription(
         key="side_led_on_off",
         entity_category=EntityCategory.CONFIG,
-        set_fn=lambda coordinator, value: print(f"Side LED {'on' if value else 'off'}"),
-    ),
-    MammotionSwitchEntityDescription(
-        key="perimeter_first_on_off",
-        entity_category=EntityCategory.CONFIG,
-        set_fn=lambda coordinator, value: print(
-            f"perimeter mow first {'on' if value else 'off'}"
-        ),
+        set_fn=lambda coordinator, value: coordinator.async_set_sidelight(int(value)),
     ),
 )
 

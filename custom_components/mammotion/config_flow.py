@@ -47,6 +47,7 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
     def __init__(self) -> None:
         """Initialize the config flow."""
         self._config = {}
+        self._stay_connected = False
         self._discovered_device: BLEDevice | None = None
         self._discovered_devices: dict[str, str] = {}
 
@@ -94,9 +95,16 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
             return await self.async_step_wifi(user_input)
 
         return self.async_show_form(
-            step_id="bluetooth_confirm",
             last_step=False,
             description_placeholders={"name": self._discovered_device.name},
+            data_schema=vol.Schema(
+                {
+                    vol.Optional(
+                        CONF_STAY_CONNECTED_BLUETOOTH,
+                        default=False,
+                    ): cv.boolean
+                },
+            ),
         )
 
     async def async_step_user(
@@ -117,8 +125,13 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                 self._config = {
                     CONF_ADDRESS: address,
                 }
+                self._stay_connected = user_input.get(
+                    CONF_STAY_CONNECTED_BLUETOOTH, False
+                )
 
-            self._discovered_device = bluetooth.async_ble_device_from_address(self.hass, address)
+                self._discovered_device = bluetooth.async_ble_device_from_address(
+                    self.hass, address
+                )
 
             return await self.async_step_wifi(user_input)
 
@@ -140,6 +153,10 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
             data_schema=vol.Schema(
                 {
                     vol.Optional(CONF_ADDRESS): vol.In(self._discovered_devices),
+                    vol.Optional(
+                        CONF_STAY_CONNECTED_BLUETOOTH,
+                        default=False,
+                    ): cv.boolean,
                 },
             ),
         )
@@ -166,6 +183,7 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
             return self.async_create_entry(
                 title=self._discovered_device.name,
                 data={CONF_ADDRESS: self._discovered_device.address},
+                options={CONF_STAY_CONNECTED_BLUETOOTH: self._stay_connected},
             )
 
         schema = {
@@ -217,6 +235,7 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                     CONF_DEVICE_NAME: name or device_name,
                     **self._config,
                 },
+                options={CONF_STAY_CONNECTED_BLUETOOTH: self._stay_connected},
             )
 
         account = user_input.get(CONF_ACCOUNTNAME)
@@ -324,13 +343,13 @@ class MammotionConfigFlowHandler(OptionsFlowWithConfigEntry):
     ) -> ConfigFlowResult:
         """Manage the options for the custom component."""
         if user_input:
-            return self.async_create_entry(title="", data=user_input)
+            return self.async_create_entry(data=user_input)
 
         options_schema = vol.Schema(
             {
                 vol.Optional(
                     CONF_STAY_CONNECTED_BLUETOOTH,
-                    default=self.options.get(CONF_STAY_CONNECTED_BLUETOOTH, False),
+                    default=self.config_entry.options.get(CONF_STAY_CONNECTED_BLUETOOTH, False),
                 ): cv.boolean
             }
         )

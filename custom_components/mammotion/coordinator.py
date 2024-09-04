@@ -7,6 +7,7 @@ from datetime import timedelta
 from typing import TYPE_CHECKING
 
 from homeassistant.helpers import device_registry as dr
+from pymammotion.aliyun.cloud_gateway import SetupException
 from pymammotion.data.model.account import Credentials
 from pymammotion.data.model.device import MowingDevice
 from pymammotion.mammotion.devices.mammotion import (
@@ -29,6 +30,8 @@ from .const import (
     CONF_DEVICE_NAME,
     DOMAIN,
     LOGGER,
+    CONF_STAY_CONNECTED_BLUETOOTH,
+    CONF_USE_WIFI
 )
 
 if TYPE_CHECKING:
@@ -62,17 +65,19 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
         """Set coordinator up."""
         ble_device = None
         credentials = None
-        preference = ConnectionPreference.BLUETOOTH
+        preference = ConnectionPreference.WIFI if self.config_entry.data.get(CONF_USE_WIFI, False) else ConnectionPreference.BLUETOOTH
         address = self.config_entry.data.get(CONF_ADDRESS)
         name = self.config_entry.data.get(CONF_DEVICE_NAME)
         account = self.config_entry.data.get(CONF_ACCOUNTNAME)
         password = self.config_entry.data.get(CONF_PASSWORD)
+        stay_connected_ble = self.config_entry.options.get(
+            CONF_STAY_CONNECTED_BLUETOOTH, False
+        )
 
         if self.manager is None or self.manager.get_device_by_name(name) is None:
             if account and password:
                 if name:
                     self.device_name = name
-                preference = ConnectionPreference.WIFI
                 credentials = Credentials()
                 credentials.email = account
                 credentials.password = password
@@ -90,6 +95,10 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
             self.manager = await create_devices(ble_device, credentials, preference)
 
         device = self.manager.get_device_by_name(self.device_name)
+
+        if ble_device:
+            device.ble().set_disconnect_strategy(not stay_connected_ble)
+
         if device is None and self.manager.cloud_client:
             try:
                 device_list = self.manager.cloud_client.get_devices_by_account_response().data.data
@@ -110,11 +119,13 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
                 )
 
         try:
-            if preference is ConnectionPreference.WIFI:
+            if preference is ConnectionPreference.WIFI and device.cloud():
                 device.cloud().on_ready_callback = lambda: device.cloud().start_sync(0)
                 device.cloud().set_notification_callback(self._async_update_cloud)
-            else:
+            elif device.ble():
                 await device.ble().start_sync(0)
+            else:
+                raise ConfigEntryNotReady("No configuration available to setup Mammotion lawn mower")
 
         except COMMAND_EXCEPTIONS as exc:
             raise ConfigEntryNotReady("Unable to setup Mammotion device") from exc
@@ -128,6 +139,15 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
             await self.async_send_command("set_blade_control", on_off=1)
         else:
             await self.async_send_command("set_blade_control", on_off=0)
+
+    async def async_set_sidelight(self, on_off: int):
+        if on_off == 1:
+            on_off = 0
+        elif on_off == 0:
+            on_off = 1
+        await self.async_send_command(
+            "read_and_set_sidelight", is_sidelight=on_off, operate=0
+        )
 
     async def async_blade_height(self, height: int) -> int:
         await self.async_send_command("set_blade_height", height=float(height))
@@ -241,6 +261,16 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
         except COMMAND_EXCEPTIONS as exc:
             self.update_failures += 1
             raise UpdateFailed(f"Updating Mammotion device failed: {exc}") from exc
+        except SetupException:
+            self.manager.mqtt.disconnect()
+            cloud_client = self.manager.cloud_client
+            await cloud_client.connect()
+            mammotion_http = cloud_client.mammotion_http
+            await cloud_client.login_by_oauth(mammotion_http.login_info.userInformation.domainAbbreviation, mammotion_http.login_info.authorization_code)
+            await self.hass.async_add_executor_job(cloud_client.aep_handle)
+            await self.hass.async_add_executor_job(cloud_client.session_by_auth_code)
+            await self.hass.async_add_executor_job(cloud_client.list_binding_by_account)
+            await self.manager.initiate_cloud_connection(cloud_client)
 
         LOGGER.debug("Updated Mammotion device %s", self.device_name)
         LOGGER.debug("================= Debug Log =================")

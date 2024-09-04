@@ -50,6 +50,14 @@ NUMBER_WORKING_ENTITIES: tuple[MammotionNumberEntityDescription, ...] = (
         min_value=0.2,
         max_value=0.6,
     ),
+    MammotionNumberEntityDescription(
+        key="cutting_angle",
+        entity_category=EntityCategory.CONFIG,
+        step=1,
+        value=0,
+        min_value=-180,
+        max_value=180,
+    ),
 )
 
 
