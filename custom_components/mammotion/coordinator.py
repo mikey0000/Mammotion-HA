@@ -31,7 +31,7 @@ from .const import (
     DOMAIN,
     LOGGER,
     CONF_STAY_CONNECTED_BLUETOOTH,
-    CONF_USE_WIFI
+    CONF_USE_WIFI,
 )
 
 if TYPE_CHECKING:
@@ -65,7 +65,11 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
         """Set coordinator up."""
         ble_device = None
         credentials = None
-        preference = ConnectionPreference.WIFI if self.config_entry.data.get(CONF_USE_WIFI, False) else ConnectionPreference.BLUETOOTH
+        preference = (
+            ConnectionPreference.WIFI
+            if self.config_entry.data.get(CONF_USE_WIFI, True)
+            else ConnectionPreference.BLUETOOTH
+        )
         address = self.config_entry.data.get(CONF_ADDRESS)
         name = self.config_entry.data.get(CONF_DEVICE_NAME)
         account = self.config_entry.data.get(CONF_ACCOUNTNAME)
@@ -125,7 +129,9 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
             elif device.ble():
                 await device.ble().start_sync(0)
             else:
-                raise ConfigEntryNotReady("No configuration available to setup Mammotion lawn mower")
+                raise ConfigEntryNotReady(
+                    "No configuration available to setup Mammotion lawn mower"
+                )
 
         except COMMAND_EXCEPTIONS as exc:
             raise ConfigEntryNotReady("Unable to setup Mammotion device") from exc
@@ -266,7 +272,10 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
             cloud_client = self.manager.cloud_client
             await cloud_client.connect()
             mammotion_http = cloud_client.mammotion_http
-            await cloud_client.login_by_oauth(mammotion_http.login_info.userInformation.domainAbbreviation, mammotion_http.login_info.authorization_code)
+            await cloud_client.login_by_oauth(
+                mammotion_http.login_info.userInformation.domainAbbreviation,
+                mammotion_http.login_info.authorization_code,
+            )
             await self.hass.async_add_executor_job(cloud_client.aep_handle)
             await self.hass.async_add_executor_job(cloud_client.session_by_auth_code)
             await self.hass.async_add_executor_job(cloud_client.list_binding_by_account)

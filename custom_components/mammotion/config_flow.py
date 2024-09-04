@@ -233,6 +233,7 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                     CONF_ACCOUNTNAME: account,
                     CONF_PASSWORD: password,
                     CONF_DEVICE_NAME: name or device_name,
+                    CONF_USE_WIFI: user_input.get(CONF_USE_WIFI, True),
                     **self._config,
                 },
                 options={CONF_STAY_CONNECTED_BLUETOOTH: self._stay_connected},
@@ -349,7 +350,9 @@ class MammotionConfigFlowHandler(OptionsFlowWithConfigEntry):
             {
                 vol.Optional(
                     CONF_STAY_CONNECTED_BLUETOOTH,
-                    default=self.config_entry.options.get(CONF_STAY_CONNECTED_BLUETOOTH, False),
+                    default=self.config_entry.options.get(
+                        CONF_STAY_CONNECTED_BLUETOOTH, False
+                    ),
                 ): cv.boolean
             }
         )

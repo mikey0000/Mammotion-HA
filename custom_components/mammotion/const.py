@@ -20,7 +20,7 @@ COMMAND_EXCEPTIONS = (
     BleakNotFoundError,
     CharacteristicMissingError,
     BleakError,
-    TimeoutError
+    TimeoutError,
 )
 
 CONF_STAY_CONNECTED_BLUETOOTH: Final = "stay_connected_bluetooth"
