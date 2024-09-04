@@ -1,3 +1,4 @@
+
 {
   "config": {
     "abort": {
@@ -35,6 +36,16 @@
         },
         "title": "Conectează-te la Wi-Fi",
         "description": "Introdu adresa de email sau id-ul contului Mammotion și parola"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "title": "Actualizarea configurației",
+          "stay_connected_bluetooth": "Mențineți bluetooth-ul conectat"
+        }
       }
     }
   },
@@ -87,6 +98,9 @@
       },
       "activity_mode": {
         "name": "Tipul de activitate"
+      },
+      "work_area": {
+        "name": "Zona de lucru tip de hașură"
       }
     },
     "button": {
@@ -95,6 +109,21 @@
       },
        "resync_rtk_dock": {
         "name": "Sincronizați RTK și docul"
+      },
+      "release_from_dock": {
+        "name": "Detașare"
+      },
+      "emergency_nudge_forward": {
+        "name": "Un impuls de urgență înainte"
+      },
+       "emergency_nudge_left": {
+        "name": "Un impuls de urgență la stânga"
+      },
+      "emergency_nudge_right": {
+        "name": "Un impuls de urgență la dreapta"
+      },
+      "emergency_nudge_back": {
+        "name": "Un impuls de urgență înapoi"
       }
     },
     "switch": {
@@ -120,6 +149,12 @@
     "select": {
        "cutting_mode": {
         "name": "Modul de tăiere"
+         "state": {
+           "single_grid": "Grilă simplă",
+           "double_grid": "Grila de șah",
+           "segment_grid": "Grilă mixtă/segmentată",
+           "no_grid": "Fără grilă"
+         }
       },
       "border_patrol_mode": {
         "name": "Modul patrulă de graniță"
@@ -140,6 +175,9 @@
       },
       "working_speed": {
         "name": "Viteza de lucru"
+      },
+      "cutting_angle": {
+        "name": "Unghiul de tăiere"
       }
     },
     "device_tracker": {
