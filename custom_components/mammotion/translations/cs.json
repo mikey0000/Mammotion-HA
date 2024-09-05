@@ -161,20 +161,20 @@
         "name": "Režim hraniční hlídky",
         "state": {
           "none": "Žádné",
-          "one": "1",
-          "two": "2",
-          "three": "3",
-          "four": "4"
+          "one": "jeden",
+          "two": "dvě",
+          "three": "tři",
+          "four": "čtyři"
         }
       },
     "obstacle_laps_mode": {
         "name": "Režim Překážkové úseky",
         "state": {
           "none": "Žádné",
-          "one": "1",
-          "two": "2",
-          "three": "3",
-          "four": "4"
+          "one": "jeden",
+          "two": "dvě",
+          "three": "tři",
+          "four": "čtyři"
         }
       },
     "mow_order": {
