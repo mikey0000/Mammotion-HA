@@ -221,12 +221,10 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
 
             if self._cloud_client is None:
                 return self.async_abort(reason="Something went wrong. cloud_client is None.")
-            devices = self._cloud_client.get_devices_by_account_response().data.data
-            if len(devices) == 0:
-                return self.async_abort(reason="no_devices_found_in_account")
+            mowing_devices = self._cloud_client.get_devices_by_account_response().data.data
             if name:
                 found_device = [
-                    device for device in devices if device.deviceName == name
+                    device for device in mowing_devices if device.deviceName == name
                 ]
                 if not found_device:
                     return self.async_abort(reason="bluetooth_and_account_mismatch")
@@ -253,13 +251,19 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
             **self._config,
             **user_input,
         }
-        self._cloud_client = await Mammotion.login(account, password)
+        try:
+            self._cloud_client = await Mammotion.login(account, password)
+        except Exception as err:
+            return self.async_abort(reason=str(err))
 
         mowing_devices = [
             dev
             for dev in self._cloud_client.get_devices_by_account_response().data.data
             if (dev.productModel is None or dev.productModel != "ReferenceStation")
         ]
+
+        if len(mowing_devices) == 0:
+            return self.async_abort(reason="no_devices_found_in_account")
 
         machine_options = [
             SelectOptionDict(
