@@ -59,6 +59,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
             name=DOMAIN,
             update_interval=SCAN_INTERVAL,
         )
+        assert self.config_entry.unique_id
         self.update_failures = 0
 
     async def async_setup(self) -> None:
