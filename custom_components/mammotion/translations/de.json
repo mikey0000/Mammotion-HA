@@ -12,7 +12,8 @@
     "flow_title": "Konfiguriere deinen Mammotion Mähroboter",
     "step": {
       "bluetooth_confirm": {
-        "description": "Installiere {name}"
+        "description": "Installiere {name}",
+        "stay_connected_bluetooth": "Bluetooth-Verbindung aufrechterhalten"															  
       },
       "reconfigure": {
         "data": {
@@ -147,7 +148,13 @@
     },
     "select": {
        "cutting_mode": {
-        "name": "Mähmodus"
+        "name": "Navigationsmodus",
+         "state": {
+           "single_grid": "Einzelnes Raster",
+           "double_grid": "Doppeltes Raster",
+           "segment_grid": "Segment Raster",
+           "no_grid": "Kein Raster"
+         }
       },
       "border_patrol_mode": {
         "name": "Patrouillenmodus für die seitlichen Grenzen"
@@ -168,6 +175,9 @@
       },
       "working_speed": {
         "name": "Aufgabengeschwindigkeit"
+      },
+      "cutting_angle": {
+        "name": "Wegwinkel (°)"
       }
     },
     "device_tracker": {
