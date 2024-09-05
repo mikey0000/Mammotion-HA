@@ -69,8 +69,10 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
             and charge_state == 0
         ):
             return LawnMowerActivity.PAUSED
-        if mode in (WorkMode.MODE_WORKING, WorkMode.MODE_RETURNING):
+        if mode == WorkMode.MODE_WORKING:
             return LawnMowerActivity.MOWING
+        if mode == WorkMode.MODE_RETURNING:
+            return LawnMowerActivity.RETURNING
         if mode == WorkMode.MODE_LOCK:
             return LawnMowerActivity.ERROR
         if mode == WorkMode.MODE_READY and charge_state != 0:
