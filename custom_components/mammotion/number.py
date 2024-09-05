@@ -8,11 +8,12 @@ from homeassistant.components.number import (
     NumberDeviceClass,
 )
 from homeassistant.components.sensor import SensorStateClass
-from homeassistant.const import PERCENTAGE, DEGREE, UnitOfLength, UnitOfSpeed
+from homeassistant.const import PERCENTAGE, DEGREE, UnitOfLength, UnitOfSpeed, AREA_SQUARE_METERS
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pymammotion.data.model.device_config import DeviceLimits
+from pymammotion.utility.device_type import DeviceType
 
 from . import MammotionConfigEntry
 from .coordinator import MammotionDataUpdateCoordinator
@@ -42,6 +43,18 @@ NUMBER_ENTITIES: tuple[MammotionNumberEntityDescription, ...] = (
         min_value=-180,
         max_value=180,
     ),
+)
+
+YUKA_NUMBER_ENTITIES: tuple[MammotionNumberEntityDescription, ...] = (
+    MammotionNumberEntityDescription(
+        key="dumping_interval",
+        min_value=5,
+        max_value=100,
+        step=1,
+        mode=NumberMode.SLIDER,
+        native_unit_of_measurement=AREA_SQUARE_METERS,
+        entity_category=EntityCategory.CONFIG,
+)
 )
 
 
@@ -92,6 +105,11 @@ async def async_setup_entry(
     for entity_description in NUMBER_ENTITIES:
         entity = MammotionNumberEntity(coordinator, entity_description)
         entities.append(entity)
+
+    if not DeviceType.is_yuka(coordinator.device_name):
+        for entity_description in YUKA_NUMBER_ENTITIES:
+            entity = MammotionNumberEntity(coordinator, entity_description)
+            entities.append(entity)
 
     async_add_entities(entities)
 
