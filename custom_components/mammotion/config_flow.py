@@ -219,17 +219,13 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
             cloud_client = await Mammotion.login(account, password)
             devices = cloud_client.get_devices_by_account_response().data.data
             if len(devices) == 0:
-                return self.async_abort(
-                    reason="no_devices_found_in_account"
-                )
+                return self.async_abort(reason="no_devices_found_in_account")
             if name:
                 found_device = [
                     device for device in devices if device.deviceName == name
                 ]
                 if not found_device:
-                    return self.async_abort(
-                        reason="bluetooth_and_account_mismatch"
-                    )
+                    return self.async_abort(reason="bluetooth_and_account_mismatch")
 
             await self.async_set_unique_id(device_name or name, raise_on_progress=False)
             self._abort_if_unique_id_configured()

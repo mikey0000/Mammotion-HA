@@ -101,8 +101,6 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
                     self.device_name = ble_device.name or "Unknown"
                 self.address = address
 
-
-
             self.manager = await create_devices(ble_device, credentials, preference)
 
         device = self.manager.get_device_by_name(self.device_name)

@@ -4,8 +4,8 @@
       "already_configured": "Device is already configured",
       "already_in_progress": "Configuration flow is already in progress",
       "no_devices_found": "Could not find devices",
-      "no_devices_found_in_account": "No devices present in account",
-      "bluetooth_and_account_mismatch": "Bluetooth device not found in account",
+      "no_devices_found_in_account": "No devices present in your account",
+      "bluetooth_and_account_mismatch": "Bluetooth device not found in your account",
       "no_longer_present": "Device is no longer present",
       "not_supported": "Device not supported",
       "reconfigure_successful": "Re-configure successful"

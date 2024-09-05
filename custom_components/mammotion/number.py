@@ -4,9 +4,11 @@ from typing import Awaitable, Callable
 from homeassistant.components.number import (
     NumberEntity,
     NumberEntityDescription,
-    NumberMode, NumberDeviceClass,
+    NumberMode,
+    NumberDeviceClass,
 )
-from homeassistant.const import PERCENTAGE, DEGREE
+from homeassistant.components.sensor import SensorStateClass
+from homeassistant.const import PERCENTAGE, DEGREE, UnitOfLength, UnitOfSpeed
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -32,6 +34,14 @@ NUMBER_ENTITIES: tuple[MammotionNumberEntityDescription, ...] = (
         native_unit_of_measurement=PERCENTAGE,
         entity_category=EntityCategory.CONFIG,
     ),
+    MammotionNumberEntityDescription(
+        key="cutting_angle",
+        entity_category=EntityCategory.CONFIG,
+        step=1,
+        native_unit_of_measurement=DEGREE,
+        min_value=-180,
+        max_value=180,
+    ),
 )
 
 
@@ -46,17 +56,20 @@ NUMBER_WORKING_ENTITIES: tuple[MammotionNumberEntityDescription, ...] = (
     MammotionNumberEntityDescription(
         key="working_speed",
         entity_category=EntityCategory.CONFIG,
+        device_class=NumberDeviceClass.SPEED,
+        native_unit_of_measurement=UnitOfSpeed.METERS_PER_SECOND,
         step=0.1,
         min_value=0.2,
         max_value=0.6,
     ),
     MammotionNumberEntityDescription(
-        key="cutting_angle",
+        key="path_spacing",
         entity_category=EntityCategory.CONFIG,
         step=1,
-        native_unit_of_measurement=DEGREE,
-        min_value=-180,
-        max_value=180,
+        device_class=NumberDeviceClass.DISTANCE,
+        native_unit_of_measurement=UnitOfLength.CENTIMETERS,
+        min_value=20,
+        max_value=35,
     ),
 )
 
