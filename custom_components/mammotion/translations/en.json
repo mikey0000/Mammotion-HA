@@ -14,7 +14,9 @@
     "step": {
       "bluetooth_confirm": {
         "description": "Setup {name}",
-        "stay_connected_bluetooth": "Keep bluetooth connected"
+        "data": {
+          "stay_connected_bluetooth": "Keep bluetooth connected"
+        }
       },
       "reconfigure": {
         "data": {

@@ -12,7 +12,10 @@
     "flow_title": "Nastavení sekačky Mammotion",
     "step": {
       "bluetooth_confirm": {
-        "description": "Nastavení {name}"
+        "description": "Nastavení {name}",
+        "data": {
+          "stay_connected_bluetooth": "Udržujte připojení Bluetooth"
+        }
       },
       "reconfigure": {
         "data": {
