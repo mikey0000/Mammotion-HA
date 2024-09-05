@@ -56,6 +56,9 @@ Note: If you encounter any issues, please ensure that HACS is properly installed
 
 ## Usage 🎮
 
+### Getting Started
+See the wiki for how to [get started](https://github.com/mikey0000/Mammotion-HA/wiki/Getting-Started)
+
 Once the integration is set up, you can control and monitor your Mammotion mower using Home Assistant. 🎉
 
 ## Troubleshooting 🔧
@@ -74,7 +77,8 @@ If the problem continues, please file an issue on the GitHub repository for furt
 
 ## Support me
 <a href='https://ko-fi.com/DenimJackRabbit' target='_blank'><img height='46' style='border:0px;height:46px;' src='https://az743702.vo.msecnd.net/cdn/kofi3.png?v=0' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
-[Buy a Mammotion Lawn mower](https://mammotion.com/?ref=tbbzqsog) disclaimer: Referral link
+
+[Buy a Mammotion Lawn mower](https://mammotion.com/?ref=tbbzqsog)
 
 ## Credits 👥
 
