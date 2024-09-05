@@ -10,6 +10,7 @@ from homeassistant.helpers.selector import (
     SelectSelectorMode,
     SelectSelector,
 )
+from pymammotion.aliyun.cloud_gateway import CloudIOTGateway
 from pymammotion.http.http import connect_http
 from pymammotion.mammotion.devices.mammotion import Mammotion
 
@@ -48,6 +49,7 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
         """Initialize the config flow."""
         self._config = {}
         self._stay_connected = False
+        self._cloud_client: CloudIOTGateway | None = None
         self._discovered_device: BLEDevice | None = None
         self._discovered_devices: dict[str, str] = {}
 
@@ -217,8 +219,9 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
             account = user_input.get(CONF_ACCOUNTNAME)
             password = user_input.get(CONF_PASSWORD)
 
-            cloud_client = await Mammotion.login(account, password)
-            devices = cloud_client.get_devices_by_account_response().data.data
+            if self._cloud_client is None:
+                return self.async_abort(reason="Something went wrong. cloud_client is None.")
+            devices = self._cloud_client.get_devices_by_account_response().data.data
             if len(devices) == 0:
                 return self.async_abort(reason="no_devices_found_in_account")
             if name:
@@ -250,11 +253,11 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
             **self._config,
             **user_input,
         }
-        cloud_client = await Mammotion.login(account, password)
+        self._cloud_client = await Mammotion.login(account, password)
 
         mowing_devices = [
             dev
-            for dev in cloud_client.get_devices_by_account_response().data.data
+            for dev in self._cloud_client.get_devices_by_account_response().data.data
             if (dev.productModel is None or dev.productModel != "ReferenceStation")
         ]
 
