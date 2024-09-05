@@ -161,20 +161,20 @@
         "name": "Modul patrulă de graniță",
         "state": {
           "none": "Niciuna",
-          "one": "1",
-          "two": "2",
-          "three": "3",
-          "four": "4"
+          "one": "unu",
+          "two": "doi",
+          "three": "trei",
+          "four": "patru"
         }
       },
       "obstacle_laps_mode": {
         "name": "Modul Secțiuni obstacol",
         "state": {
           "none": "Niciuna",
-          "one": "1",
-          "two": "2",
-          "three": "3",
-          "four": "4"
+          "one": "unu",
+          "two": "doi",
+          "three": "trei",
+          "four": "patru"
         }
       },
       "mow_order": {
