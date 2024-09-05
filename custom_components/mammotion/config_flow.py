@@ -95,6 +95,7 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
             return await self.async_step_wifi(user_input)
 
         return self.async_show_form(
+            step_id="bluetooth_confirm",
             last_step=False,
             description_placeholders={"name": self._discovered_device.name},
             data_schema=vol.Schema(
