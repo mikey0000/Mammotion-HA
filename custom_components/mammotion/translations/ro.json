@@ -1,19 +1,20 @@
-
 {
   "config": {
     "abort": {
       "already_configured": "Echipamentul este deja configurat",
       "already_in_progress": "Procesul de configurare este deja în progres",
       "no_devices_found": "Nu pot găsi niciun dispozitiv",
+      "no_devices_found_in_account": "În cont nu există dispozitive",
+      "bluetooth_and_account_mismatch": "Bluetooth dispozitiv nu a fost găsit în cont",
       "no_longer_present": "Echipamentul nu mai este prezent",
       "not_supported": "Dispozitivul nu este suportat",
-      "no_device_name": "Numele dispozitivului este necesar pentru a continua",
       "reconfigure_successful": "Reconfigurare reușită"
     },
     "flow_title": "Configurați mașina de tuns iarba Mammotion",
     "step": {
       "bluetooth_confirm": {
-        "description": "Configurație{name}"
+        "description": "Configurație{name}",
+        "stay_connected_bluetooth": "Mențineți bluetooth-ul conectat"
       },
       "reconfigure": {
         "data": {
@@ -157,13 +158,31 @@
          }
       },
       "border_patrol_mode": {
-        "name": "Modul patrulă de graniță"
+        "name": "Modul patrulă de graniță",
+        "state": {
+          "none": "Niciuna",
+          "one": "1",
+          "two": "2",
+          "three": "3",
+          "four": "4"
+        }
       },
       "obstacle_laps_mode": {
-        "name": "Modul Secțiuni obstacol"
+        "name": "Modul Secțiuni obstacol",
+        "state": {
+          "none": "Niciuna",
+          "one": "1",
+          "two": "2",
+          "three": "3",
+          "four": "4"
+        }
       },
       "mow_order": {
-        "name": "Ordinea de cosire"
+        "name": "Ordinea de cosire",
+        "state": {
+          "border_first": "Întâi frontiera",
+          "grid_first": "Mai întâi grila"
+        }
       }
     },
     "number": {
