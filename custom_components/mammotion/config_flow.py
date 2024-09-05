@@ -228,8 +228,9 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                 if not found_device:
                     return self.async_abort(reason="bluetooth_and_account_mismatch")
 
-            await self.async_set_unique_id(device_name or name, raise_on_progress=False)
-            self._abort_if_unique_id_configured()
+            if not name:
+                await self.async_set_unique_id(device_name, raise_on_progress=False)
+                self._abort_if_unique_id_configured()
 
             return self.async_create_entry(
                 title=name or device_name,
