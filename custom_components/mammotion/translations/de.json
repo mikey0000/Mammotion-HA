@@ -179,7 +179,7 @@
         "name": "Aufgabengeschwindigkeit"
       },
       "cutting_angle": {
-        "name": "Wegwinkel (°)"
+        "name": "Wegwinkel"
       }
     },
     "device_tracker": {
