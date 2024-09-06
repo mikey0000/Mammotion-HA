@@ -12,7 +12,10 @@
     "flow_title": "Configurer votre robot tondeuse Mammotion",
     "step": {
       "bluetooth_confirm": {
-        "description": "Installation {name}"
+        "description": "Installation {name}",
+        "data": {
+          "stay_connected_bluetooth": "Garder le bluetooth connecté"
+        }
       },
       "reconfigure": {
         "data": {

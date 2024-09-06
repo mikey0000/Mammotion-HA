@@ -12,7 +12,10 @@
     "flow_title": "Konfiguriere deinen Mammotion Mähroboter",
     "step": {
       "bluetooth_confirm": {
-        "description": "Installiere {name}"
+        "description": "Installiere {name}",
+        "data": {
+          "stay_connected_bluetooth": "Bluetooth-Verbindung aufrechterhalten"
+        }
       },
       "reconfigure": {
         "data": {

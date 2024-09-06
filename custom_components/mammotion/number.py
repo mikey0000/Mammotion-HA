@@ -5,12 +5,15 @@ from homeassistant.components.number import (
     NumberEntity,
     NumberEntityDescription,
     NumberMode,
+    NumberDeviceClass,
 )
-from homeassistant.const import PERCENTAGE, DEGREE
+from homeassistant.components.sensor import SensorStateClass
+from homeassistant.const import PERCENTAGE, DEGREE, UnitOfLength, UnitOfSpeed, AREA_SQUARE_METERS
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pymammotion.data.model.device_config import DeviceLimits
+from pymammotion.utility.device_type import DeviceType
 
 from . import MammotionConfigEntry
 from .coordinator import MammotionDataUpdateCoordinator
@@ -32,6 +35,26 @@ NUMBER_ENTITIES: tuple[MammotionNumberEntityDescription, ...] = (
         native_unit_of_measurement=PERCENTAGE,
         entity_category=EntityCategory.CONFIG,
     ),
+    MammotionNumberEntityDescription(
+        key="cutting_angle",
+        entity_category=EntityCategory.CONFIG,
+        step=1,
+        native_unit_of_measurement=DEGREE,
+        min_value=-180,
+        max_value=180,
+    ),
+)
+
+YUKA_NUMBER_ENTITIES: tuple[MammotionNumberEntityDescription, ...] = (
+    MammotionNumberEntityDescription(
+        key="dumping_interval",
+        min_value=5,
+        max_value=100,
+        step=1,
+        mode=NumberMode.SLIDER,
+        native_unit_of_measurement=AREA_SQUARE_METERS,
+        entity_category=EntityCategory.CONFIG,
+)
 )
 
 
@@ -46,17 +69,20 @@ NUMBER_WORKING_ENTITIES: tuple[MammotionNumberEntityDescription, ...] = (
     MammotionNumberEntityDescription(
         key="working_speed",
         entity_category=EntityCategory.CONFIG,
+        device_class=NumberDeviceClass.SPEED,
+        native_unit_of_measurement=UnitOfSpeed.METERS_PER_SECOND,
         step=0.1,
         min_value=0.2,
         max_value=0.6,
     ),
     MammotionNumberEntityDescription(
-        key="cutting_angle",
+        key="path_spacing",
         entity_category=EntityCategory.CONFIG,
         step=1,
-        native_unit_of_measurement=DEGREE,
-        min_value=-180,
-        max_value=180,
+        device_class=NumberDeviceClass.DISTANCE,
+        native_unit_of_measurement=UnitOfLength.CENTIMETERS,
+        min_value=20,
+        max_value=35,
     ),
 )
 
@@ -79,6 +105,11 @@ async def async_setup_entry(
     for entity_description in NUMBER_ENTITIES:
         entity = MammotionNumberEntity(coordinator, entity_description)
         entities.append(entity)
+
+    if not DeviceType.is_yuka(coordinator.device_name):
+        for entity_description in YUKA_NUMBER_ENTITIES:
+            entity = MammotionNumberEntity(coordinator, entity_description)
+            entities.append(entity)
 
     async_add_entities(entities)
 
