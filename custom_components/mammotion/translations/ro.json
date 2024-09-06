@@ -14,7 +14,9 @@
     "step": {
       "bluetooth_confirm": {
         "description": "Configurație{name}",
-        "stay_connected_bluetooth": "Mențineți bluetooth-ul conectat"
+        "data": {
+          "stay_connected_bluetooth": "Mențineți bluetooth-ul conectat"
+        }
       },
       "reconfigure": {
         "data": {
