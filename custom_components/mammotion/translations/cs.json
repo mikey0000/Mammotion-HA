@@ -4,9 +4,10 @@
       "already_configured": "Zařízení je již nakonfigurováno",
       "already_in_progress": "Konfigurační proces již probíhá",
       "no_devices_found": "Nelze najít zařízení",
+      "no_devices_found_in_account": "V účtu nejsou žádná zařízení",
+      "bluetooth_and_account_mismatch": "V účtu nebylo nalezeno zařízení Bluetooth",
       "no_longer_present": "Zařízení již není k dispozici",
       "not_supported": "Zařízení není podporováno",
-      "no_device_name": "Pro pokračování je vyžadován název zařízení",
       "reconfigure_successful": "Znovu nastavení bylo úspěšné"
     },
     "flow_title": "Nastavení sekačky Mammotion",
@@ -151,16 +152,40 @@
   "select": {
      "cutting_mode": {
       "name": "Režim řezu"
-    },
+         "state": {
+           "single_grid": "Jednoduchá mřížka",
+           "double_grid": "Šachovnicová mřížka",
+           "segment_grid": "Smíšená/segmentová mřížka",
+           "no_grid": "Žádná mřížka"
+         }
+      },
     "border_patrol_mode": {
-      "name": "Režim hraniční hlídky"
-    },
+        "name": "Režim hraniční hlídky",
+        "state": {
+          "none": "Žádné",
+          "one": "jeden",
+          "two": "dvě",
+          "three": "tři",
+          "four": "čtyři"
+        }
+      },
     "obstacle_laps_mode": {
-      "name": "Režim Překážkové úseky"
-    },
+        "name": "Režim Překážkové úseky",
+        "state": {
+          "none": "Žádné",
+          "one": "jeden",
+          "two": "dvě",
+          "three": "tři",
+          "four": "čtyři"
+        }
+      },
     "mow_order": {
-      "name": "Pořadí sečení"
-    }
+      "name": "Pořadí sečení",
+        "state": {
+          "border_first": "Hranice jako první",
+          "grid_first": "Mřížka jako první"
+        }
+      }
   },
   "number": {
      "start_progress": {
@@ -171,10 +196,13 @@
     },
     "working_speed": {
       "name": "Pracovní rychlost"
-    }
-  },
-  "device_tracker": {
-    "name": "Sledování zařízení"
+       },
+      "cutting_angle": {
+        "name": "Úhel sečení"
+      }
+    },
+    "device_tracker": {
+       "name": "Sledování zařízení"
   }
 },
   "exceptions": {
