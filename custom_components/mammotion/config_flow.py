@@ -10,6 +10,7 @@ from homeassistant.helpers.selector import (
     SelectSelectorMode,
     SelectSelector,
 )
+from pymammotion.aliyun.cloud_gateway import CloudIOTGateway
 from pymammotion.http.http import connect_http
 from pymammotion.mammotion.devices.mammotion import Mammotion
 
@@ -48,6 +49,7 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
         """Initialize the config flow."""
         self._config = {}
         self._stay_connected = False
+        self._cloud_client: CloudIOTGateway | None = None
         self._discovered_device: BLEDevice | None = None
         self._discovered_devices: dict[str, str] = {}
 
@@ -57,7 +59,7 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
         """Handle the bluetooth discovery step."""
         LOGGER.debug("Discovered bluetooth device: %s", discovery_info)
         if discovery_info is None:
-            return self.async_abort(reason="no_device")
+            return self.async_abort(reason="no_devices_found")
 
         await self.async_set_unique_id(discovery_info.name)
         self._abort_if_unique_id_configured(
@@ -95,6 +97,7 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
             return await self.async_step_wifi(user_input)
 
         return self.async_show_form(
+            step_id="bluetooth_confirm",
             last_step=False,
             description_placeholders={"name": self._discovered_device.name},
             data_schema=vol.Schema(
@@ -182,7 +185,10 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
         if user_input is not None and user_input.get(CONF_USE_WIFI) is False:
             return self.async_create_entry(
                 title=self._discovered_device.name,
-                data={CONF_ADDRESS: self._discovered_device.address},
+                data={
+                    CONF_ADDRESS: self._discovered_device.address,
+                    CONF_USE_WIFI: user_input.get(CONF_USE_WIFI),
+                },
                 options={CONF_STAY_CONNECTED_BLUETOOTH: self._stay_connected},
             )
 
@@ -213,19 +219,19 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
             account = user_input.get(CONF_ACCOUNTNAME)
             password = user_input.get(CONF_PASSWORD)
 
+            if self._cloud_client is None:
+                return self.async_abort(reason="Something went wrong. cloud_client is None.")
+            mowing_devices = self._cloud_client.get_devices_by_account_response().data.data
             if name:
-                cloud_client = await Mammotion.login(account, password)
-                devices = cloud_client.get_devices_by_account_response().data.data
                 found_device = [
-                    device for device in devices if device.deviceName == name
+                    device for device in mowing_devices if device.deviceName == name
                 ]
                 if not found_device:
-                    return self.async_abort(
-                        reason=f"{device_name or name} not found in account: {account}"
-                    )
+                    return self.async_abort(reason="bluetooth_and_account_mismatch")
 
-            await self.async_set_unique_id(device_name or name, raise_on_progress=False)
-            self._abort_if_unique_id_configured()
+            if not name:
+                await self.async_set_unique_id(device_name, raise_on_progress=False)
+                self._abort_if_unique_id_configured()
 
             return self.async_create_entry(
                 title=name or device_name,
@@ -245,13 +251,19 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
             **self._config,
             **user_input,
         }
-        cloud_client = await Mammotion.login(account, password)
+        try:
+            self._cloud_client = await Mammotion.login(account, password)
+        except Exception as err:
+            return self.async_abort(reason=str(err))
 
         mowing_devices = [
             dev
-            for dev in cloud_client.get_devices_by_account_response().data.data
+            for dev in self._cloud_client.get_devices_by_account_response().data.data
             if (dev.productModel is None or dev.productModel != "ReferenceStation")
         ]
+
+        if len(mowing_devices) == 0:
+            return self.async_abort(reason="no_devices_found_in_account")
 
         machine_options = [
             SelectOptionDict(

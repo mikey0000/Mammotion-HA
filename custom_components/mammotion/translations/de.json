@@ -13,7 +13,9 @@
     "step": {
       "bluetooth_confirm": {
         "description": "Installiere {name}",
-        "stay_connected_bluetooth": "Bluetooth-Verbindung aufrechterhalten"															  
+        "data": {
+          "stay_connected_bluetooth": "Bluetooth-Verbindung aufrechterhalten"
+        }
       },
       "reconfigure": {
         "data": {

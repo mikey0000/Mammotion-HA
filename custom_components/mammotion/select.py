@@ -9,7 +9,7 @@ from pymammotion.data.model.mowing_modes import (
     BorderPatrolMode,
     CuttingMode,
     MowOrder,
-    ObstacleLapsMode,
+    ObstacleLapsMode, BypassStrategy, PathAngleSetting
 )
 
 from . import MammotionConfigEntry
@@ -45,6 +45,16 @@ SELECT_ENTITIES: tuple[MammotionSelectEntityDescription, ...] = (
         key="mow_order",
         entity_category=EntityCategory.CONFIG,
         options=[order.name for order in MowOrder],
+    ),
+    MammotionSelectEntityDescription(
+        key="bypass_mode",
+        entity_category=EntityCategory.CONFIG,
+        options=[strategy.name for strategy in BypassStrategy],
+    ),
+MammotionSelectEntityDescription(
+        key="cutting_angle_mode",
+        entity_category=EntityCategory.CONFIG,
+        options=[angle_type.name for angle_type in PathAngleSetting],
     ),
 )
 

@@ -59,6 +59,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
             name=DOMAIN,
             update_interval=SCAN_INTERVAL,
         )
+        assert self.config_entry.unique_id
         self.update_failures = 0
 
     async def async_setup(self) -> None:
@@ -86,6 +87,10 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
                 credentials.email = account
                 credentials.password = password
 
+                # address previous bugs
+                if address is None and preference == ConnectionPreference.BLUETOOTH:
+                    preference = ConnectionPreference.WIFI
+
             if address:
                 ble_device = bluetooth.async_ble_device_from_address(self.hass, address)
                 if not ble_device and credentials is None:
@@ -100,7 +105,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
 
         device = self.manager.get_device_by_name(self.device_name)
 
-        if ble_device:
+        if ble_device and device:
             device.ble().set_disconnect_strategy(not stay_connected_ble)
 
         if device is None and self.manager.cloud_client:
