@@ -4,9 +4,10 @@
       "already_configured": "Das Gerät ist bereits konfiguriert",
       "already_in_progress": "Der Konfigurationsprozess läuft bereits",
       "no_devices_found": "Es wurden keine Geräte gefunden",
+      "no_devices_found_in_account": "Es wurden keine Geräte in deinem Account gefunden",
+      "bluetooth_and_account_mismatch": "Es wurde kein Bluetooth-Gerät in deinem Account gefunden",
       "no_longer_present": "Das Gerät ist nicht länger verfügbar",
-      "not_supported": "Das Gerät wird nicht unterstützt",
-      "no_device_name": "Der Gerätename ist erforderlich, um fortfahren zu können",
+      "not_supported": "Das Gerät wird nicht unterstützt",											  
       "reconfigure_successful": "Die Neukonfiguration war erfolgreich"
     },
     "flow_title": "Konfiguriere deinen Mammotion Mähroboter",
@@ -145,7 +146,7 @@
         "name": "Seitenlicht An/Aus"
       },
        "perimeter_first_on_off": {
-        "name": "Zuerst den Umfang berechnen"
+        "name": "Zuerst den Umfang"
       }
     },
     "select": {
@@ -159,13 +160,31 @@
          }
       },
       "border_patrol_mode": {
-        "name": "Patrouillenmodus für die seitlichen Grenzen"
+        "name": "Patrouillenrunden für den seitlichen Rasenschnitt",
+        "state": {
+          "none": "Keine",
+          "one": "Eine",
+          "two": "Zwei",
+          "three": "Drei",
+          "four": "Vier"
+        }
       },
       "obstacle_laps_mode": {
-        "name": "Modus der Hindernisserkennung"
+        "name": "Mähen von No-Go-Zonen",
+        "state": {
+          "none": "Keine",
+          "one": "Eine",
+          "two": "Zwei",
+          "three": "Drei",
+          "four": "Vier"
+        }
       },
       "mow_order": {
-        "name": "Ausführungsreihenfolge des Pfades"
+        "name": "Ausführungsreihenfolge des Pfades",
+        "state": {
+          "border_first": "Zuerst den Umfang",
+          "grid_first": "Zuerst das Raster"
+        }
       }
     },
     "number": {
