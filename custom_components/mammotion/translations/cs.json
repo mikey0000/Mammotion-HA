@@ -14,7 +14,9 @@
     "step": {
       "bluetooth_confirm": {
         "description": "Nastavení {name}"
-        "stay_connected_bluetooth": "Udržovat Bluetooth připojený"
+        "data": {
+          "stay_connected_bluetooth": "Udržovat Bluetooth připojený"
+        }
       },
       "reconfigure": {
         "data": {
