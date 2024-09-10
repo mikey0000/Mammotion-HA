@@ -62,11 +62,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
     if CONF_AUTH_DATA not in entry.data and mammotion_coordinator.manager.cloud_client:
         config_updates = {
             **entry.data,
-            CONF_AUTH_DATA: mammotion_coordinator.manager.cloud_client.get_login_by_oauth_response(),
-            CONF_REGION_DATA: mammotion_coordinator.manager.cloud_client.get_region_response(),
-            CONF_AEP_DATA: mammotion_coordinator.manager.cloud_client.get_aep_response(),
-            CONF_SESSION_DATA: mammotion_coordinator.manager.cloud_client.get_session_by_authcode_response(),
-            CONF_DEVICE_DATA: mammotion_coordinator.manager.cloud_client.get_devices_by_account_response(),
+            CONF_AUTH_DATA: mammotion_coordinator.manager.cloud_client.login_by_oauth_response,
+            CONF_REGION_DATA: mammotion_coordinator.manager.cloud_client.region_response,
+            CONF_AEP_DATA: mammotion_coordinator.manager.cloud_client.aep_response,
+            CONF_SESSION_DATA: mammotion_coordinator.manager.cloud_client.session_by_authcode_response,
+            CONF_DEVICE_DATA: mammotion_coordinator.manager.cloud_client.devices_by_account_response,
         }
         hass.config_entries.async_update_entry(entry, data=config_updates)
 

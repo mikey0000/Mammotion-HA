@@ -127,26 +127,32 @@
       },
       "emergency_nudge_back": {
         "name": "Emergency nudge back"
+      },
+      "cancel_task": {
+        "name": "Cancel current task"
       }
     },
     "switch": {
       "blades_on_off": {
-        "name": "Blades On/Off"
+        "name": "Blades on/off"
       },
       "mowing_on_off": {
-        "name": "Mowing On/Off"
+        "name": "Mowing on/off"
       },
       "dump_grass_on_off": {
-        "name": "Dump Grass On/Off"
+        "name": "Dump grass on/off"
+      },
+      "edge_on_off": {
+        "name": "Edge cutting"
       },
       "rain_detection_on_off": {
-        "name": "Rain Detection On/Off"
+        "name": "Rain detection On/Off"
       },
       "side_led_on_off": {
-        "name": "Side LED On/Off"
+        "name": "Side LED on/off"
       },
       "perimeter_first_on_off": {
-        "name": "Perimeter First"
+        "name": "Perimeter first"
       }
     },
     "select": {

@@ -2,6 +2,7 @@
 
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from pymammotion.mammotion.devices import has_field
 from pymammotion.utility.device_type import DeviceType
 
 from . import DEFAULT_RETRY_COUNT
@@ -29,7 +30,7 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionDataUpdateCoordinator]):
         product_key = mower.net.toapp_wifi_iot_status.productkey
         if product_key is None or product_key == "":
             if self.coordinator.manager.cloud_client:
-                device_list = self.coordinator.manager.cloud_client.get_devices_by_account_response().data.data
+                device_list = self.coordinator.manager.cloud_client.devices_by_account_response.data.data
                 device = next(
                     (
                         device
@@ -45,10 +46,15 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionDataUpdateCoordinator]):
             product_key,
         ).get_model()
 
+        model_id = None
+        if has_field(mower.sys.device_product_type_info):
+            model_id = mower.sys.device_product_type_info.main_product_type
+
         return DeviceInfo(
             identifiers={(DOMAIN, self.coordinator.device_name)},
             manufacturer="Mammotion",
             serial_number=self.coordinator.device_name.split("-", 1)[-1],
+            model_id=model_id,
             name=self.coordinator.device_name,
             sw_version=swversion,
             model=device_model,

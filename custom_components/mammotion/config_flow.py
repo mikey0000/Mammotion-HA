@@ -47,14 +47,14 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
 
     def __init__(self) -> None:
         """Initialize the config flow."""
-        self._config = {}
+        self._config: dict = {}
         self._stay_connected = False
         self._cloud_client: CloudIOTGateway | None = None
         self._discovered_device: BLEDevice | None = None
         self._discovered_devices: dict[str, str] = {}
 
     async def async_step_bluetooth(
-        self, discovery_info: BluetoothServiceInfo
+        self, discovery_info: BluetoothServiceInfo | None = None
     ) -> ConfigFlowResult:
         """Handle the bluetooth discovery step."""
         LOGGER.debug("Discovered bluetooth device: %s", discovery_info)
@@ -220,8 +220,10 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
             password = user_input.get(CONF_PASSWORD)
 
             if self._cloud_client is None:
-                return self.async_abort(reason="Something went wrong. cloud_client is None.")
-            mowing_devices = self._cloud_client.get_devices_by_account_response().data.data
+                return self.async_abort(
+                    reason="Something went wrong. cloud_client is None."
+                )
+            mowing_devices = self._cloud_client.devices_by_account_response.data.data
             if name:
                 found_device = [
                     device for device in mowing_devices if device.deviceName == name
@@ -258,7 +260,7 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
 
         mowing_devices = [
             dev
-            for dev in self._cloud_client.get_devices_by_account_response().data.data
+            for dev in self._cloud_client.devices_by_account_response.data.data
             if (dev.productModel is None or dev.productModel != "ReferenceStation")
         ]
 
