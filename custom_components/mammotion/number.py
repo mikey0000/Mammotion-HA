@@ -1,23 +1,23 @@
 from dataclasses import dataclass
-from typing import Awaitable, Callable
+from typing import Callable
 
 from homeassistant.components.number import (
+    NumberDeviceClass,
     NumberEntity,
     NumberEntityDescription,
     NumberMode,
-    NumberDeviceClass,
 )
-from homeassistant.components.sensor import SensorStateClass
 from homeassistant.const import (
-    PERCENTAGE,
+    AREA_SQUARE_METERS,
     DEGREE,
+    PERCENTAGE,
     UnitOfLength,
     UnitOfSpeed,
-    AREA_SQUARE_METERS,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.restore_state import RestoreEntity
 from pymammotion.data.model.device_config import DeviceLimits
 from pymammotion.utility.device_type import DeviceType
 
@@ -29,7 +29,9 @@ from .entity import MammotionBaseEntity
 @dataclass(frozen=True, kw_only=True)
 class MammotionConfigNumberEntityDescription(NumberEntityDescription):
     """Describes Mammotion number entity."""
+
     set_fn: Callable[[MammotionDataUpdateCoordinator, int], None]
+
 
 NUMBER_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
     MammotionConfigNumberEntityDescription(
@@ -39,7 +41,9 @@ NUMBER_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
         step=1,
         mode=NumberMode.SLIDER,
         native_unit_of_measurement=PERCENTAGE,
-        set_fn=lambda coordinator, value: setattr(coordinator.operation_settings, 'start_progress', value)
+        set_fn=lambda coordinator, value: setattr(
+            coordinator.operation_settings, "start_progress", value
+        ),
     ),
     MammotionConfigNumberEntityDescription(
         key="cutting_angle",
@@ -47,7 +51,9 @@ NUMBER_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
         native_unit_of_measurement=DEGREE,
         min_value=-180,
         max_value=180,
-        set_fn=lambda coordinator, value: setattr(coordinator.operation_settings, 'toward', value)
+        set_fn=lambda coordinator, value: setattr(
+            coordinator.operation_settings, "toward", value
+        ),
     ),
 )
 
@@ -59,19 +65,26 @@ YUKA_NUMBER_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
         step=1,
         mode=NumberMode.SLIDER,
         native_unit_of_measurement=AREA_SQUARE_METERS,
-        set_fn=lambda coordinator, value: setattr(coordinator.operation_settings, 'collect_grass_frequency', value)
-    )
+        set_fn=lambda coordinator, value: setattr(
+            coordinator.operation_settings, "collect_grass_frequency", value
+        ),
+    ),
 )
 
-
-NUMBER_WORKING_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
+LUBA_WORKING_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
     MammotionConfigNumberEntityDescription(
         key="blade_height",
         step=5,
         min_value=30,  # ToDo: To be dynamiclly set based on model (h\non H)
         max_value=70,  # ToDo: To be dynamiclly set based on model (h\non H)
-        set_fn=lambda coordinator, value: setattr(coordinator.operation_settings, 'blade_height', value)
+        set_fn=lambda coordinator, value: setattr(
+            coordinator.operation_settings, "blade_height", value
+        ),
     ),
+)
+
+
+NUMBER_WORKING_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
     MammotionConfigNumberEntityDescription(
         key="working_speed",
         device_class=NumberDeviceClass.SPEED,
@@ -79,7 +92,9 @@ NUMBER_WORKING_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
         step=0.1,
         min_value=0.2,
         max_value=0.6,
-        set_fn=lambda coordinator, value: setattr(coordinator.operation_settings, 'speed', value)
+        set_fn=lambda coordinator, value: setattr(
+            coordinator.operation_settings, "speed", value
+        ),
     ),
     MammotionConfigNumberEntityDescription(
         key="path_spacing",
@@ -88,7 +103,9 @@ NUMBER_WORKING_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfLength.CENTIMETERS,
         min_value=20,
         max_value=35,
-        set_fn=lambda coordinator, value: setattr(coordinator.operation_settings, 'channel_width', value)
+        set_fn=lambda coordinator, value: setattr(
+            coordinator.operation_settings, "channel_width", value
+        ),
     ),
 )
 
@@ -112,15 +129,21 @@ async def async_setup_entry(
         entity = MammotionConfigNumberEntity(coordinator, entity_description)
         entities.append(entity)
 
-    if not DeviceType.is_yuka(coordinator.device_name):
+    if DeviceType.is_yuka(coordinator.device_name):
         for entity_description in YUKA_NUMBER_ENTITIES:
             entity = MammotionConfigNumberEntity(coordinator, entity_description)
+            entities.append(entity)
+    else:
+        for entity_description in LUBA_WORKING_ENTITIES:
+            entity = MammotionWorkingNumberEntity(
+                coordinator, entity_description, limits
+            )
             entities.append(entity)
 
     async_add_entities(entities)
 
 
-class MammotionConfigNumberEntity(MammotionBaseEntity, NumberEntity):
+class MammotionConfigNumberEntity(MammotionBaseEntity, NumberEntity, RestoreEntity):
     entity_description: MammotionConfigNumberEntityDescription
     _attr_has_entity_name = True
     _attr_entity_category = EntityCategory.CONFIG
@@ -140,6 +163,7 @@ class MammotionConfigNumberEntity(MammotionBaseEntity, NumberEntity):
 
     async def async_set_native_value(self, value: float | int) -> None:
         self._attr_native_value = value
+        self.entity_description.set_fn(self.coordinator, value)
         self.async_write_ha_state()
 
 
@@ -174,3 +198,8 @@ class MammotionWorkingNumberEntity(MammotionConfigNumberEntity):
     def native_max_value(self) -> float:
         """Return the maximum value."""
         return self._attr_native_max_value
+
+    async def async_set_native_value(self, value: float | int) -> None:
+        self._attr_native_value = value
+        self.entity_description.set_fn(self.coordinator, value)
+        self.async_write_ha_state()

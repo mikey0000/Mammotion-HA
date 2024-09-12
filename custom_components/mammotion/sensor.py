@@ -23,7 +23,6 @@ from homeassistant.helpers.typing import StateType
 from homeassistant.util.unit_conversion import SpeedConverter
 from pymammotion.data.model.device import MowingDevice
 from pymammotion.data.model.enums import RTKStatus
-from pymammotion.proto.luba_msg import ReportInfoData
 from pymammotion.utility.constant.device_constant import PosType, device_mode
 from pymammotion.utility.device_type import DeviceType
 

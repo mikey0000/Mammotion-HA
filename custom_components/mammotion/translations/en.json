@@ -27,7 +27,8 @@
       },
       "user": {
         "data": {
-          "address": "Device"
+          "address": "Device",
+          "stay_connected_bluetooth": "Keep bluetooth connected"
         },
         "description": "Select your mower"
       },
@@ -191,6 +192,23 @@
           "border_first": "Border first",
           "grid_first": "Grid first"
         }
+      },
+      "bypass_mode": {
+        "name": "Obstacle avoidance mode",
+        "state": {
+          "direct_touch": "Direct touch",
+          "slow_touch": "Slow touch",
+          "less_touch": "Less touch",
+          "no_touch": "Collision-free mode"
+        }
+      },
+      "cutting_angle_mode": {
+        "name": "Cutting angle mode",
+        "state": {
+          "relative_angle": "Relative angle",
+          "absolute_angle": "Absolute angle",
+          "random_angle": "Random angle"
+        }
       }
     },
     "number": {
@@ -205,6 +223,12 @@
       },
       "cutting_angle": {
         "name": "Cutting Angle"
+      },
+      "path_spacing": {
+        "name": "Path spacing"
+      },
+      "dumping_interval": {
+        "name": "Dumping frequency"
       }
     },
     "device_tracker": {

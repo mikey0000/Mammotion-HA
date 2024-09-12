@@ -1,44 +1,43 @@
 """Config flow for Mammotion Luba."""
 
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import voluptuous as vol
-from bleak import BLEDevice
-from homeassistant.helpers.selector import (
-    SelectSelectorConfig,
-    SelectOptionDict,
-    SelectSelectorMode,
-    SelectSelector,
-)
-from pymammotion.aliyun.cloud_gateway import CloudIOTGateway
-from pymammotion.http.http import connect_http
-from pymammotion.mammotion.devices.mammotion import Mammotion
-
+from aiohttp.web_exceptions import HTTPException
+from bleak.backends.device import BLEDevice
 from homeassistant.components import bluetooth
 from homeassistant.components.bluetooth import (
     BluetoothServiceInfo,
     async_discovered_service_info,
 )
 from homeassistant.config_entries import (
+    ConfigEntry,
     ConfigFlow,
     ConfigFlowResult,
-    OptionsFlowWithConfigEntry,
-    ConfigEntry,
     OptionsFlow,
+    OptionsFlowWithConfigEntry,
 )
 from homeassistant.const import CONF_ADDRESS, CONF_PASSWORD
 from homeassistant.core import callback
-
 from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers.selector import (
+    SelectOptionDict,
+    SelectSelector,
+    SelectSelectorConfig,
+    SelectSelectorMode,
+)
+from pymammotion.aliyun.cloud_gateway import CloudIOTGateway
+from pymammotion.http.http import connect_http
+from pymammotion.mammotion.devices.mammotion import Mammotion
 
 from .const import (
+    CONF_ACCOUNTNAME,
+    CONF_DEVICE_NAME,
+    CONF_STAY_CONNECTED_BLUETOOTH,
+    CONF_USE_WIFI,
     DEVICE_SUPPORT,
     DOMAIN,
     LOGGER,
-    CONF_USE_WIFI,
-    CONF_STAY_CONNECTED_BLUETOOTH,
-    CONF_ACCOUNTNAME,
-    CONF_DEVICE_NAME,
 )
 
 
@@ -164,20 +163,22 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
             ),
         )
 
-    async def async_step_wifi(self, user_input: dict[str, Any]) -> ConfigFlowResult:
+    async def async_step_wifi(
+        self, user_input: dict[str, Any] | None
+    ) -> ConfigFlowResult:
         """Handle the user step for Wi-Fi control."""
         if user_input is not None and (
             user_input.get(CONF_ACCOUNTNAME) is not None
             or user_input.get(CONF_USE_WIFI) is True
         ):
-            account = user_input.get(CONF_ACCOUNTNAME)
-            password = user_input.get(CONF_PASSWORD)
+            account = user_input.get(CONF_ACCOUNTNAME, "")
+            password = user_input.get(CONF_PASSWORD, "")
 
             try:
                 response = await connect_http(account, password)
                 if response.login_info is None:
                     return self.async_abort(reason=str(response.msg))
-            except Exception as err:
+            except HTTPException as err:
                 return self.async_abort(reason=str(err))
 
             return await self.async_step_wifi_confirm(user_input)
@@ -255,7 +256,7 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
         }
         try:
             self._cloud_client = await Mammotion.login(account, password)
-        except Exception as err:
+        except HTTPException as err:
             return self.async_abort(reason=str(err))
 
         mowing_devices = [

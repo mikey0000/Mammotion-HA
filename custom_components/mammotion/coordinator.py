@@ -4,10 +4,15 @@ from __future__ import annotations
 
 from dataclasses import asdict
 from datetime import timedelta
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
+from homeassistant.components import bluetooth
+from homeassistant.const import CONF_ADDRESS, CONF_PASSWORD
+from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryNotReady, HomeAssistantError
 from homeassistant.helpers import device_registry as dr
-from pymammotion.aliyun.cloud_gateway import SetupException, DeviceOfflineException
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from pymammotion.aliyun.cloud_gateway import DeviceOfflineException, SetupException
 from pymammotion.data.model import GenerateRouteInformation
 from pymammotion.data.model.account import Credentials
 from pymammotion.data.model.device import MowingDevice
@@ -16,25 +21,19 @@ from pymammotion.mammotion.devices.mammotion import (
     ConnectionPreference,
     Mammotion,
     create_devices,
-    has_field,
 )
+from pymammotion.proto import has_field
 from pymammotion.proto.mctrl_sys import RptAct, RptInfoType
 from pymammotion.utility.constant import WorkMode
-
-from homeassistant.components import bluetooth
-from homeassistant.const import CONF_ADDRESS, CONF_PASSWORD
-from homeassistant.core import HomeAssistant, callback
-from homeassistant.exceptions import ConfigEntryNotReady, HomeAssistantError
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import (
     COMMAND_EXCEPTIONS,
     CONF_ACCOUNTNAME,
     CONF_DEVICE_NAME,
-    DOMAIN,
-    LOGGER,
     CONF_STAY_CONNECTED_BLUETOOTH,
     CONF_USE_WIFI,
+    DOMAIN,
+    LOGGER,
 )
 
 if TYPE_CHECKING:
@@ -49,7 +48,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
     address: str | None = None
     config_entry: MammotionConfigEntry
     device_name: str = ""
-    manager: Mammotion | None = None
+    manager: Mammotion = None
     _operation_settings: OperationSettings = OperationSettings()
 
     def __init__(
@@ -113,22 +112,18 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
             device.ble().set_disconnect_strategy(not stay_connected_ble)
 
         if device is None and self.manager.cloud_client:
-            try:
-                device_list = (
-                    self.manager.cloud_client.devices_by_account_response.data.data
-                )
-                mowing_devices = [
-                    dev
-                    for dev in device_list
-                    if (
-                        dev.productModel is None
-                        or dev.productModel != "ReferenceStation"
-                    )
-                ]
-                if len(mowing_devices) > 0:
-                    self.device_name = mowing_devices[0].deviceName
-                    device = self.manager.get_device_by_name(self.device_name)
-            except:
+            device_list = (
+                self.manager.cloud_client.devices_by_account_response.data.data
+            )
+            mowing_devices = [
+                dev
+                for dev in device_list
+                if (dev.productModel is None or dev.productModel != "ReferenceStation")
+            ]
+            if len(mowing_devices) > 0:
+                self.device_name = mowing_devices[0].deviceName
+                device = self.manager.get_device_by_name(self.device_name)
+            else:
                 raise ConfigEntryNotReady(
                     f"Could not find Mammotion lawn mower with name {self.device_name}"
                 )
@@ -158,6 +153,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
             await self.async_send_command("set_blade_control", on_off=0)
 
     async def async_set_sidelight(self, on_off: int) -> None:
+        """Set Sidelight."""
         if on_off == 1:
             on_off = 0
         elif on_off == 0:
@@ -167,31 +163,38 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
         )
 
     async def async_blade_height(self, height: int) -> int:
+        """Set blade height."""
         await self.async_send_command("set_blade_height", height=float(height))
         return height
 
     async def async_leave_dock(self) -> None:
+        """Leave dock."""
         await self.async_send_command("leave_dock")
 
     async def async_cancel_task(self) -> None:
+        """Cancel task."""
         await self.async_send_command("cancel_job")
 
     async def async_move_forward(self, speed: float) -> None:
+        """Move forward."""
         device = self.manager.get_device_by_name(self.device_name)
         if self.manager.get_device_by_name(self.device_name).ble():
             await device.ble().move_forward(speed)
 
     async def async_move_left(self, speed: float) -> None:
+        """Move left."""
         device = self.manager.get_device_by_name(self.device_name)
         if self.manager.get_device_by_name(self.device_name).ble():
             await device.ble().move_left(speed)
 
     async def async_move_right(self, speed: float) -> None:
+        """Move right."""
         device = self.manager.get_device_by_name(self.device_name)
         if self.manager.get_device_by_name(self.device_name).ble():
             await device.ble().move_right(speed)
 
     async def async_move_back(self, speed: float) -> None:
+        """Move back."""
         device = self.manager.get_device_by_name(self.device_name)
         if self.manager.get_device_by_name(self.device_name).ble():
             await device.ble().move_back(speed)
@@ -201,6 +204,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
         await self.async_send_command("allpowerfull_rw", id=5, rw=1, context=1)
 
     async def async_request_iot_sync(self) -> None:
+        """Sync specific info from device."""
         await self.async_send_command(
             "request_iot_sys",
             rpt_act=RptAct.RPT_START,
@@ -217,7 +221,8 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
             count=0,
         )
 
-    async def async_send_command(self, command: str, **kwargs: any) -> None:
+    async def async_send_command(self, command: str, **kwargs: Any) -> None:
+        """Send command."""
         try:
             await self.manager.send_command_with_args(
                 self.device_name, command, **kwargs
@@ -228,6 +233,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
             ) from exc
 
     async def async_plan_route(self) -> None:
+        """Plan mow."""
         self.data.map.area.keys()
         route_information = GenerateRouteInformation(
             one_hashs=list(self.data.map.area.keys()),
@@ -244,12 +250,17 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
             path_order=create_path_order(self._operation_settings, self.device_name),
             obstacle_laps=self._operation_settings.obstacle_laps,
         )
-        await self.async_send_command("generate_route_information", generate_route_information=route_information)
+
+        await self.async_send_command(
+            "generate_route_information", generate_route_information=route_information
+        )
 
     async def _async_update_cloud(self) -> None:
+        """Update data from incoming messages."""
         self.async_set_updated_data(self.manager.mower(self.device_name))
 
     async def check_firmware_version(self) -> None:
+        """Check if firmware version is udpated."""
         mower = self.manager.mower(self.device_name)
         device_registry = dr.async_get(self.hass)
         device_entry = device_registry.async_get_device(
@@ -274,6 +285,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
             device_registry.async_update_device(device_entry.id, model_id=model_id)
 
     async def async_login(self) -> None:
+        """Login to cloud servers."""
         self.manager.mqtt.disconnect()
         account = self.config_entry.data.get(CONF_ACCOUNTNAME)
         password = self.config_entry.data.get(CONF_PASSWORD)
@@ -334,7 +346,8 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
         return self.manager.get_device_by_name(self.device_name).mower_state()
 
     @property
-    def operation_settings(self):
+    def operation_settings(self) -> OperationSettings:
+        """Return operation settings for planning."""
         return self._operation_settings
 
     # TODO when submitting to HA use this 2024.8 and up

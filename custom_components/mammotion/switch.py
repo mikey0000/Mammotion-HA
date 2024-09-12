@@ -1,9 +1,11 @@
 from dataclasses import dataclass
-from typing import Awaitable, Callable, cast
+from typing import Any, Awaitable, Callable, cast
 
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import EntityCategory
+from homeassistant.helpers.restore_state import RestoreEntity
+from pymammotion.proto.mctrl_nav import AreaHashName
 from pymammotion.utility.device_type import DeviceType
 
 from . import MammotionConfigEntry
@@ -21,7 +23,7 @@ class MammotionSwitchEntityDescription(SwitchEntityDescription):
 
 @dataclass(frozen=True, kw_only=True)
 class MammotionConfigSwitchEntityDescription(SwitchEntityDescription):
-    """Describes Mammotion switch entity."""
+    """Describes Mammotion Config switch entity."""
 
     key: str
     set_fn: Callable[[MammotionDataUpdateCoordinator, bool], None]
@@ -30,15 +32,21 @@ class MammotionConfigSwitchEntityDescription(SwitchEntityDescription):
 YUKA_CONFIG_SWITCH_ENTITIES: tuple[MammotionConfigSwitchEntityDescription, ...] = (
     MammotionConfigSwitchEntityDescription(
         key="mowing_on_off",
-        set_fn=lambda coordinator, value: setattr(coordinator.operation_settings, 'is_mow', value)
+        set_fn=lambda coordinator, value: setattr(
+            coordinator.operation_settings, "is_mow", value
+        ),
     ),
     MammotionConfigSwitchEntityDescription(
         key="dump_grass_on_off",
-        set_fn=lambda coordinator, value: setattr(coordinator.operation_settings, 'is_dump', value)
+        set_fn=lambda coordinator, value: setattr(
+            coordinator.operation_settings, "is_dump", value
+        ),
     ),
     MammotionConfigSwitchEntityDescription(
         key="edge_on_off",
-        set_fn=lambda coordinator, value: setattr(coordinator.operation_settings, 'is_edge', value)
+        set_fn=lambda coordinator, value: setattr(
+            coordinator.operation_settings, "is_edge", value
+        ),
     ),
 )
 
@@ -56,33 +64,70 @@ SWITCH_ENTITIES: tuple[MammotionSwitchEntityDescription, ...] = (
 CONFIG_SWITCH_ENTITIES: tuple[MammotionConfigSwitchEntityDescription, ...] = (
     MammotionConfigSwitchEntityDescription(
         key="rain_detection_on_off",
-        set_fn=lambda coordinator, value: setattr(coordinator.operation_settings, 'rain_tactics', cast(value, int))
+        set_fn=lambda coordinator, value: setattr(
+            coordinator.operation_settings, "rain_tactics", cast(value, int)
+        ),
     ),
-
 )
 
 
 # Example setup usage
 async def async_setup_entry(
-        hass: HomeAssistant, entry: MammotionConfigEntry, async_add_entities: Callable
+    hass: HomeAssistant, entry: MammotionConfigEntry, async_add_entities: Callable
 ) -> None:
     """Set up the Mammotion switch entities."""
     coordinator = entry.runtime_data
-    entities = []
+    added_areas: set[int] = set()
 
+    @callback
+    def add_entities() -> None:
+        """Handle addition of mowing areas."""
+
+        switch_entities: list[MammotionConfigSwitchEntity] = []
+        areas = coordinator.data.map.area.keys()
+        area_name = coordinator.data.map.area_name
+        new_areas = areas - added_areas
+        if new_areas:
+            for area_id in new_areas:
+                existing_name: AreaHashName = next(
+                    (area for area in area_name if area.hash == area_id), None
+                )
+                name = existing_name.name if existing_name else area_id
+                base_area_switch_entity = MammotionConfigSwitchEntityDescription(
+                    key=f"{area_id}",
+                    name=f"{name}",
+                    set_fn=lambda coord, value: coord.operation_settings.areas.append(
+                        value
+                    )
+                    if value
+                    else coord.operation_settings.areas.remove(value),
+                )
+                switch_entities.append(
+                    MammotionConfigSwitchEntity(
+                        coordinator,
+                        base_area_switch_entity,
+                    )
+                )
+                added_areas.add(area_id)
+
+        if switch_entities:
+            async_add_entities(switch_entities)
+
+    coordinator.async_add_listener(add_entities)
+
+    entities = []
     for entity_description in SWITCH_ENTITIES:
         entity = MammotionSwitchEntity(coordinator, entity_description)
         entities.append(entity)
 
     for entity_description in CONFIG_SWITCH_ENTITIES:
-        entity = MammotionConfigSwitchEntity(coordinator, entity_description)
-        entities.append(entity)
+        config_entity = MammotionConfigSwitchEntity(coordinator, entity_description)
+        entities.append(config_entity)
 
-    if not DeviceType.is_yuka(coordinator.device_name):
+    if DeviceType.is_yuka(coordinator.device_name):
         for entity_description in YUKA_CONFIG_SWITCH_ENTITIES:
-            entity = MammotionConfigSwitchEntity(coordinator, entity_description)
-            entities.append(entity)
-
+            config_entity = MammotionConfigSwitchEntity(coordinator, entity_description)
+            entities.append(config_entity)
     async_add_entities(entities)
 
 
@@ -91,9 +136,9 @@ class MammotionSwitchEntity(MammotionBaseEntity, SwitchEntity):
     _attr_has_entity_name = True
 
     def __init__(
-            self,
-            coordinator: MammotionDataUpdateCoordinator,
-            entity_description: MammotionSwitchEntityDescription,
+        self,
+        coordinator: MammotionDataUpdateCoordinator,
+        entity_description: MammotionSwitchEntityDescription,
     ) -> None:
         super().__init__(coordinator, entity_description.key)
         self.coordinator = coordinator
@@ -101,30 +146,29 @@ class MammotionSwitchEntity(MammotionBaseEntity, SwitchEntity):
         self._attr_translation_key = entity_description.key
         self._attr_is_on = False  # Default state
 
-    async def async_turn_on(self, **kwargs) -> None:
+    async def async_turn_on(self, **kwargs: Any) -> None:
         self._attr_is_on = True
         await self.entity_description.set_fn(self.coordinator, True)
         self.async_write_ha_state()
 
-    async def async_turn_off(self, **kwargs) -> None:
+    async def async_turn_off(self, **kwargs: Any) -> None:
         self._attr_is_on = False
         await self.entity_description.set_fn(self.coordinator, False)
         self.async_write_ha_state()
 
     async def async_update(self) -> None:
         """Update the entity state."""
-        pass
 
 
-class MammotionConfigSwitchEntity(MammotionBaseEntity, SwitchEntity):
+class MammotionConfigSwitchEntity(MammotionBaseEntity, SwitchEntity, RestoreEntity):
     entity_description: MammotionConfigSwitchEntityDescription
     _attr_has_entity_name = True
     _attr_entity_category = EntityCategory.CONFIG
 
     def __init__(
-            self,
-            coordinator: MammotionDataUpdateCoordinator,
-            entity_description: MammotionConfigSwitchEntityDescription,
+        self,
+        coordinator: MammotionDataUpdateCoordinator,
+        entity_description: MammotionConfigSwitchEntityDescription,
     ) -> None:
         super().__init__(coordinator, entity_description.key)
         self.coordinator = coordinator
@@ -133,16 +177,15 @@ class MammotionConfigSwitchEntity(MammotionBaseEntity, SwitchEntity):
         # TODO grab defaults from operation_settings
         self._attr_is_on = False  # Default state
 
-    async def async_turn_on(self, **kwargs) -> None:
+    async def async_turn_on(self, **kwargs: Any) -> None:
         self._attr_is_on = True
         self.entity_description.set_fn(self.coordinator, True)
         self.async_write_ha_state()
 
-    async def async_turn_off(self, **kwargs) -> None:
+    async def async_turn_off(self, **kwargs: Any) -> None:
         self._attr_is_on = False
         self.entity_description.set_fn(self.coordinator, False)
         self.async_write_ha_state()
 
     async def async_update(self) -> None:
         """Update the entity state."""
-        pass

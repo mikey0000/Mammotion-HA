@@ -2,11 +2,10 @@
 
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from pymammotion.mammotion.devices import has_field
+from pymammotion.proto import has_field
 from pymammotion.utility.device_type import DeviceType
 
-from . import DEFAULT_RETRY_COUNT
-from .const import CONF_RETRY_COUNT, DOMAIN
+from .const import CONF_RETRY_COUNT, DEFAULT_RETRY_COUNT, DOMAIN
 from .coordinator import MammotionDataUpdateCoordinator
 
 
@@ -31,14 +30,12 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionDataUpdateCoordinator]):
         if product_key is None or product_key == "":
             if self.coordinator.manager.cloud_client:
                 device_list = self.coordinator.manager.cloud_client.devices_by_account_response.data.data
-                device = next(
-                    (
-                        device
-                        for device in device_list
-                        if device.deviceName == self.coordinator.device_name
-                    ),
-                    None,
-                )
+                device = [
+                    device
+                    for device in device_list
+                    if device.deviceName == self.coordinator.device_name
+                ].pop()
+
                 product_key = device.productKey
 
         device_model = DeviceType.value_of_str(
