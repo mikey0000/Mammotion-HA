@@ -47,14 +47,10 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
 
     address: str | None = None
     config_entry: MammotionConfigEntry
-    device_name: str = ""
     manager: Mammotion = None
-    _operation_settings: OperationSettings = OperationSettings()
+    _operation_settings: OperationSettings
 
-    def __init__(
-        self,
-        hass: HomeAssistant,
-    ) -> None:
+    def __init__(self, hass: HomeAssistant, config_entry: MammotionConfigEntry) -> None:
         """Initialize global mammotion data updater."""
         super().__init__(
             hass=hass,
@@ -63,6 +59,8 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
             update_interval=UPDATE_INTERVAL,
         )
         assert self.config_entry.unique_id
+        self.config_entry = config_entry
+        self._operation_settings = OperationSettings()
         self.update_failures = 0
 
     async def async_setup(self) -> None:

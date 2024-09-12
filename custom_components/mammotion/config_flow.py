@@ -221,9 +221,10 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
             password = user_input.get(CONF_PASSWORD)
 
             if self._cloud_client is None:
-                return self.async_abort(
-                    reason="Something went wrong. cloud_client is None."
-                )
+                try:
+                    self._cloud_client = await Mammotion.login(account, password)
+                except HTTPException as err:
+                    return self.async_abort(reason=str(err))
             mowing_devices = self._cloud_client.devices_by_account_response.data.data
             if name:
                 found_device = [

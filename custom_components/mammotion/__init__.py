@@ -8,14 +8,14 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr
 
 from .const import (
-    CONF_RETRY_COUNT,
-    DEFAULT_RETRY_COUNT,
-    CONF_AUTH_DATA,
-    CONF_USE_WIFI,
-    CONF_REGION_DATA,
     CONF_AEP_DATA,
-    CONF_SESSION_DATA,
+    CONF_AUTH_DATA,
     CONF_DEVICE_DATA,
+    CONF_REGION_DATA,
+    CONF_RETRY_COUNT,
+    CONF_SESSION_DATA,
+    CONF_USE_WIFI,
+    DEFAULT_RETRY_COUNT,
 )
 from .coordinator import MammotionDataUpdateCoordinator
 
@@ -54,7 +54,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
             options={CONF_RETRY_COUNT: DEFAULT_RETRY_COUNT},
         )
 
-    mammotion_coordinator = MammotionDataUpdateCoordinator(hass)
+    mammotion_coordinator = MammotionDataUpdateCoordinator(hass, entry)
 
     await mammotion_coordinator.async_setup()
 
