@@ -49,6 +49,10 @@ BUTTON_SENSORS: tuple[MammotionButtonSensorEntityDescription, ...] = (
         key="emergency_nudge_back",
         press_fn=lambda coordinator: coordinator.async_move_back(0.4),
     ),
+    MammotionButtonSensorEntityDescription(
+        key="cancel_task",
+        press_fn=lambda coordinator: coordinator.async_cancel_task(),
+    ),
 )
 
 

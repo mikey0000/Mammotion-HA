@@ -2,10 +2,6 @@
 
 from __future__ import annotations
 
-from pymammotion.mammotion.devices.mammotion import has_field
-from pymammotion.proto.luba_msg import RptDevStatus
-from pymammotion.utility.constant.device_constant import WorkMode
-
 from homeassistant.components.lawn_mower import (
     LawnMowerActivity,
     LawnMowerEntity,
@@ -14,6 +10,10 @@ from homeassistant.components.lawn_mower import (
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from pymammotion.data.model.report_info import ReportData
+from pymammotion.proto import has_field
+from pymammotion.proto.luba_msg import RptDevStatus
+from pymammotion.utility.constant.device_constant import WorkMode
 
 from . import MammotionConfigEntry
 from .const import COMMAND_EXCEPTIONS, DOMAIN, LOGGER
@@ -53,6 +53,10 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
         return None
 
     @property
+    def report_data(self) -> ReportData:
+        return self.coordinator.data.report_data
+
+    @property
     def activity(self) -> LawnMowerActivity | None:
         """Return the state of the mower."""
 
@@ -85,7 +89,12 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
             raise HomeAssistantError(
                 translation_domain=DOMAIN, translation_key="device_not_ready"
             )
-        if self.rpt_dev_status.sys_status == WorkMode.MODE_PAUSE:
+        work_area = self.report_data.work.area >> 16
+
+        if work_area > 0 and (
+            self.rpt_dev_status.sys_status == WorkMode.MODE_PAUSE
+            or self.rpt_dev_status.sys_status == WorkMode.MODE_READY
+        ):
             try:
                 await self.coordinator.async_send_command("resume_execute_task")
                 return await self.coordinator.async_request_iot_sync()
@@ -94,6 +103,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
                     translation_domain=DOMAIN, translation_key="resume_failed"
                 ) from exc
         try:
+            await self.coordinator.async_plan_route()
             await self.coordinator.async_send_command("start_job")
             await self.coordinator.async_request_iot_sync()
         except COMMAND_EXCEPTIONS as exc:
@@ -126,6 +136,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
             self.coordinator.async_set_updated_data(
                 self.coordinator.manager.mower(self.coordinator.device_name)
             )
+        return
 
     async def async_pause(self) -> None:
         """Pause mower."""
