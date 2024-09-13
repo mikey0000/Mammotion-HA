@@ -238,9 +238,8 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
 
     async def async_plan_route(self) -> None:
         """Plan mow."""
-        self.data.map.area.keys()
         route_information = GenerateRouteInformation(
-            one_hashs=list(self.data.map.area.keys()),
+            one_hashs=self._operation_settings.areas,
             rain_tactics=self._operation_settings.rain_tactics,
             speed=self._operation_settings.speed,
             ultra_wave=self._operation_settings.ultra_wave,  # touch no touch etc
