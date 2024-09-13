@@ -214,12 +214,13 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
             "request_iot_sys",
             rpt_act=RptAct.RPT_STOP if stop else RptAct.RPT_START,
             rpt_info_type=[
+                RptInfoType.RIT_DEV_STA,
                 RptInfoType.RIT_DEV_LOCAL,
                 RptInfoType.RIT_WORK,
             ],
             timeout=10000,
-            period=1000,
-            no_change_period=1000,
+            period=3000,
+            no_change_period=4000,
             count=0,
         )
 
@@ -288,7 +289,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
 
     async def async_login(self) -> None:
         """Login to cloud servers."""
-        self.manager.mqtt.disconnect()
+        self.manager.get_device_by_name(self.device_name).cloud().mqtt.disconnect()
         account = self.config_entry.data.get(CONF_ACCOUNTNAME)
         password = self.config_entry.data.get(CONF_PASSWORD)
         await self.manager.login_and_initiate_cloud(account, password, True)
