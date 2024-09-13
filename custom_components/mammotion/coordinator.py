@@ -267,7 +267,8 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
         device_entry = device_registry.async_get_device(
             identifiers={(DOMAIN, self.device_name)}
         )
-        assert device_entry
+        if device_entry is None:
+            return
 
         new_swversion = None
         if len(mower.net.toapp_devinfo_resp.resp_ids) > 0:
