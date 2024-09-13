@@ -253,7 +253,7 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                 data={
                     CONF_ACCOUNTNAME: account,
                     CONF_PASSWORD: password,
-                    CONF_DEVICE_NAME: name or device_name,
+                    CONF_DEVICE_NAME: device_name or name,
                     CONF_USE_WIFI: user_input.get(CONF_USE_WIFI, True),
                     **self._config,
                 },

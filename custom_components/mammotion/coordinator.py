@@ -20,7 +20,6 @@ from pymammotion.data.model.device_config import OperationSettings, create_path_
 from pymammotion.mammotion.devices.mammotion import (
     ConnectionPreference,
     Mammotion,
-    create_devices,
 )
 from pymammotion.proto import has_field
 from pymammotion.proto.mctrl_sys import RptAct, RptInfoType
@@ -104,9 +103,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
                 if ble_device is not None:
                     self.device_name = ble_device.name or "Unknown"
                     self.address = address
-                    self.manager = await create_devices(
-                        ble_device, credentials, preference
-                    )
+                    self.manager.add_ble_device(ble_device, preference)
 
         device = self.manager.get_device_by_name(self.device_name)
         device.preference = preference
@@ -309,8 +306,8 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
                 self.update_failures += 1
                 raise UpdateFailed("Could not find device")
 
-            if ble_device.name == device.name:
-                if ble_device and device.ble() is not None:
+            if ble_device and ble_device.name == device.name:
+                if device.ble() is not None:
                     device.ble().update_device(ble_device)
                 else:
                     device.add_ble(ble_device)
