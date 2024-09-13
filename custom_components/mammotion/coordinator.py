@@ -80,11 +80,12 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
             CONF_STAY_CONNECTED_BLUETOOTH, False
         )
 
+        if name:
+            self.device_name = name
+
         if self.manager is None or self.manager.get_device_by_name(name) is None:
             self.manager = Mammotion()
             if account and password:
-                if name:
-                    self.device_name = name
                 credentials = Credentials()
                 credentials.email = account
                 credentials.password = password
@@ -113,7 +114,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
         if ble_device and device:
             device.ble().set_disconnect_strategy(not stay_connected_ble)
 
-        cloud_client = device.cloud()._mqtt.cloud_client if device.cloud() else None
+        cloud_client = device.cloud().mqtt.cloud_client if device.cloud() else None
 
         if device is None and cloud_client:
             device_list = cloud_client.devices_by_account_response.data.data
