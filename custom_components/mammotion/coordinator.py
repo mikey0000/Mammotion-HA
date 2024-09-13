@@ -81,12 +81,14 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
         )
 
         if self.manager is None or self.manager.get_device_by_name(name) is None:
+            self.manager = Mammotion()
             if account and password:
                 if name:
                     self.device_name = name
                 credentials = Credentials()
                 credentials.email = account
                 credentials.password = password
+                await self.manager.login_and_initiate_cloud(account, password)
 
                 # address previous bugs
                 if address is None and preference == ConnectionPreference.BLUETOOTH:
@@ -100,19 +102,21 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
                     )
                 if ble_device is not None:
                     self.device_name = ble_device.name or "Unknown"
-                self.address = address
-
-            self.manager = await create_devices(ble_device, credentials, preference)
+                    self.address = address
+                    self.manager = await create_devices(
+                        ble_device, credentials, preference
+                    )
 
         device = self.manager.get_device_by_name(self.device_name)
+        device.preference = preference
 
         if ble_device and device:
             device.ble().set_disconnect_strategy(not stay_connected_ble)
 
-        if device is None and self.manager.cloud_client:
-            device_list = (
-                self.manager.cloud_client.devices_by_account_response.data.data
-            )
+        cloud_client = device.cloud()._mqtt.cloud_client if device.cloud() else None
+
+        if device is None and cloud_client:
+            device_list = cloud_client.devices_by_account_response.data.data
             mowing_devices = [
                 dev
                 for dev in device_list
@@ -129,9 +133,12 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
         try:
             if preference is ConnectionPreference.WIFI and device.cloud():
                 device.cloud().on_ready_callback = lambda: device.cloud().start_sync(0)
-                device.cloud().set_notification_callback(self._async_update_cloud)
+                device.cloud().set_notification_callback(
+                    self._async_update_notification
+                )
             elif device.ble():
                 await device.ble().start_sync(0)
+                device.ble().set_notification_callback(self._async_update_notification)
             else:
                 raise ConfigEntryNotReady(
                     "No configuration available to setup Mammotion lawn mower"
@@ -152,12 +159,14 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
 
     async def async_set_sidelight(self, on_off: int) -> None:
         """Set Sidelight."""
-        if on_off == 1:
-            on_off = 0
-        elif on_off == 0:
-            on_off = 1
         await self.async_send_command(
-            "read_and_set_sidelight", is_sidelight=on_off, operate=0
+            "read_and_set_sidelight", is_sidelight=bool(on_off), operate=0
+        )
+
+    async def async_read_sidelight(self) -> None:
+        """Set Sidelight."""
+        await self.async_send_command(
+            "read_and_set_sidelight", is_sidelight=False, operate=1
         )
 
     async def async_blade_height(self, height: int) -> int:
@@ -201,21 +210,18 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
         """RTK and dock location."""
         await self.async_send_command("allpowerfull_rw", id=5, rw=1, context=1)
 
-    async def async_request_iot_sync(self) -> None:
+    async def async_request_iot_sync(self, stop: bool = False) -> None:
         """Sync specific info from device."""
         await self.async_send_command(
             "request_iot_sys",
-            rpt_act=RptAct.RPT_START,
+            rpt_act=RptAct.RPT_STOP if stop else RptAct.RPT_START,
             rpt_info_type=[
-                RptInfoType.RIT_CONNECT,
-                RptInfoType.RIT_DEV_STA,
                 RptInfoType.RIT_DEV_LOCAL,
-                RptInfoType.RIT_RTK,
                 RptInfoType.RIT_WORK,
             ],
-            timeout=1000,
-            period=3000,
-            no_change_period=4000,
+            timeout=10000,
+            period=1000,
+            no_change_period=1000,
             count=0,
         )
 
@@ -253,7 +259,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
             "generate_route_information", generate_route_information=route_information
         )
 
-    async def _async_update_cloud(self) -> None:
+    async def _async_update_notification(self) -> None:
         """Update data from incoming messages."""
         self.async_set_updated_data(self.manager.mower(self.device_name))
 
@@ -287,8 +293,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
         self.manager.mqtt.disconnect()
         account = self.config_entry.data.get(CONF_ACCOUNTNAME)
         password = self.config_entry.data.get(CONF_PASSWORD)
-        self.manager.cloud_client = await self.manager.login(account, password)
-        await self.manager.initiate_cloud_connection(self.manager.cloud_client)
+        await self.manager.login_and_initiate_cloud(account, password, True)
 
     async def _async_update_data(self) -> MowingDevice:
         """Get data from the device."""
@@ -304,10 +309,11 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
                 self.update_failures += 1
                 raise UpdateFailed("Could not find device")
 
-            if ble_device and device.ble() is not None:
-                device.ble().update_device(ble_device)
-            else:
-                device.add_ble(ble_device)
+            if ble_device.name == device.name:
+                if ble_device and device.ble() is not None:
+                    device.ble().update_device(ble_device)
+                else:
+                    device.add_ble(ble_device)
 
         try:
             if (
@@ -317,7 +323,6 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
                 await self.manager.start_sync(self.device_name, 0)
             if device.mower_state().report_data.dev.sys_status != WorkMode.MODE_WORKING:
                 await self.async_send_command("get_report_cfg")
-
             else:
                 await self.async_request_iot_sync()
 

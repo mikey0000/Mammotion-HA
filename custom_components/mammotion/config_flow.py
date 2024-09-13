@@ -145,6 +145,11 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                 continue
             if name is None or not name.startswith(DEVICE_SUPPORT):
                 continue
+            if self.hass.config_entries.async_entry_for_domain_unique_id(
+                self.handler, name
+            ):
+                continue
+
             self._discovered_devices[address] = discovery_info.name
 
         if not self._discovered_devices:
@@ -215,6 +220,7 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
         device_name = user_input.get(CONF_DEVICE_NAME)
         address = self._config.get(CONF_ADDRESS)
         name = self._discovered_devices.get(address)
+        mammotion = Mammotion()
 
         if user_input is not None and (device_name or name):
             account = user_input.get(CONF_ACCOUNTNAME)
@@ -222,7 +228,12 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
 
             if self._cloud_client is None:
                 try:
-                    self._cloud_client = await Mammotion.login(account, password)
+                    if mammotion.mqtt_list.get(account) is None:
+                        self._cloud_client = await Mammotion().login(account, password)
+                    else:
+                        self._cloud_client = mammotion.mqtt_list.get(
+                            account
+                        ).cloud_client
                 except HTTPException as err:
                     return self.async_abort(reason=str(err))
             mowing_devices = self._cloud_client.devices_by_account_response.data.data
@@ -256,7 +267,10 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
             **user_input,
         }
         try:
-            self._cloud_client = await Mammotion.login(account, password)
+            if mammotion.mqtt_list.get(account) is None:
+                self._cloud_client = await Mammotion().login(account, password)
+            else:
+                self._cloud_client = mammotion.mqtt_list.get(account).cloud_client
         except HTTPException as err:
             return self.async_abort(reason=str(err))
 
