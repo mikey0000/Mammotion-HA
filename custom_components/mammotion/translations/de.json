@@ -27,7 +27,8 @@
       },
       "user": {
         "data": {
-          "address": "Gerät"
+          "address": "Gerät",
+          "stay_connected_bluetooth": "Bluetooth-Verbindung aufrechterhalten"																
         },
         "description": "Wähle deinen Mähroboter"
       },
@@ -127,6 +128,9 @@
       },
       "emergency_nudge_back": {
         "name": "Notfall-Schub rückwärts"
+      },
+      "cancel_task": {
+        "name": "Aktuelle Aufgabe abbrechen"
       }
     },
     "switch": {
@@ -137,13 +141,16 @@
         "name": "Mähen An/Aus"
       },
       "dump_grass_on_off": {
-        "name": "Gras sammeln An/Aus"
+        "name": "Gras sammeln"
+      },
+      "edge_on_off": {
+        "name": "Kanten schneiden"
       },
       "rain_detection_on_off": {
-        "name": "Regenerkennung An/Aus"
+        "name": "Regenerkennung"
       },
       "side_led_on_off": {
-        "name": "Seitenlicht An/Aus"
+        "name": "Seitenlicht"
       },
        "perimeter_first_on_off": {
         "name": "Zuerst den Umfang"
@@ -185,6 +192,23 @@
           "border_first": "Zuerst den Umfang",
           "grid_first": "Zuerst das Raster"
         }
+      },
+      "bypass_mode": {
+        "name": "Modus der Hinderniserkennung",
+        "state": {
+          "direct_touch": "Direkte Berührung",
+          "slow_touch": "Langsame Berührung",
+          "less_touch": "Weniger Berührung",
+          "no_touch": "Keine Berührung"
+        }
+      },
+      "cutting_angle_mode": {
+        "name": "Wegwinkel Modus",
+        "state": {
+          "relative_angle": "Relativer Winkel",
+          "absolute_angle": "Absoluter Winkel",
+          "random_angle": "Zufälliger Winkel"
+        }
       }
     },
     "number": {
@@ -199,6 +223,12 @@
       },
       "cutting_angle": {
         "name": "Wegwinkel"
+      },
+      "path_spacing": {
+        "name": "Wegabstand"
+      },
+      "dumping_interval": {
+        "name": "Intervall für das Entleeren"
       }
     },
     "device_tracker": {
