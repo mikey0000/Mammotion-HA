@@ -153,4 +153,6 @@ class MammotionConfigSelectEntity(MammotionBaseEntity, SelectEntity, RestoreEnti
         self._attr_current_option = entity_description.options[0]
 
     async def async_select_option(self, option: str) -> None:
+        self._attr_current_option = option
         self.entity_description.set_fn(self.coordinator, option)
+        self.async_write_ha_state()
