@@ -58,6 +58,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
 
     await mammotion_coordinator.async_setup()
 
+
     # config_updates = {}
     mqtt = mammotion_coordinator.manager.mqtt_list.get(
         mammotion_coordinator.device_name
@@ -82,7 +83,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     return True
-
 
 async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Handle options update."""

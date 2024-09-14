@@ -6,11 +6,13 @@ from dataclasses import asdict
 from datetime import timedelta
 from typing import TYPE_CHECKING, Any
 
+from aiohttp import ClientConnectorError
 from homeassistant.components import bluetooth
 from homeassistant.const import CONF_ADDRESS, CONF_PASSWORD
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady, HomeAssistantError
 from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from pymammotion.aliyun.cloud_gateway import DeviceOfflineException, SetupException
 from pymammotion.data.model import GenerateRouteInformation
@@ -22,6 +24,7 @@ from pymammotion.mammotion.devices.mammotion import (
     Mammotion,
 )
 from pymammotion.proto import has_field
+from pymammotion.proto.luba_msg import LubaMsg
 from pymammotion.proto.mctrl_sys import RptAct, RptInfoType
 from pymammotion.utility.constant import WorkMode
 
@@ -88,7 +91,12 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
                 credentials = Credentials()
                 credentials.email = account
                 credentials.password = password
-                await self.manager.login_and_initiate_cloud(account, password)
+                try:
+                    await self.manager.login_and_initiate_cloud(account, password)
+                except ClientConnectorError as err:
+                    raise ConfigEntryNotReady(
+                        err
+                    )
 
                 # address previous bugs
                 if address is None and preference == ConnectionPreference.BLUETOOTH:
@@ -128,6 +136,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
                     f"Could not find Mammotion lawn mower with name {self.device_name}"
                 )
 
+        await self.async_restore_data()
         try:
             if preference is ConnectionPreference.WIFI and device.cloud():
                 device.cloud().on_ready_callback = lambda: device.cloud().start_sync(0)
@@ -144,6 +153,18 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
 
         except COMMAND_EXCEPTIONS as exc:
             raise ConfigEntryNotReady("Unable to setup Mammotion device") from exc
+
+    # async def async_restore_data(self):
+    #     store = Store(self.hass, version=1, key=self.device_name)
+    #     restored_data = await store.async_load()
+    #
+    #     if restored_data:
+    #         self.data = MowingDevice.from_dict(restored_data)
+    #         self.data.device = LubaMsg()
+    #
+    # async def async_save_data(self, data: Any):
+    #     store = Store(self.hass, version=1, key=self.device_name)
+    #     await store.async_save(data)
 
     async def async_sync_maps(self) -> None:
         """Get map data from the device."""
@@ -345,7 +366,9 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
         LOGGER.debug("==================================")
 
         self.update_failures = 0
-        return self.manager.get_device_by_name(self.device_name).mower_state()
+        data = self.manager.get_device_by_name(self.device_name).mower_state()
+        await self.async_save_data(data)
+        return data
 
     @property
     def operation_settings(self) -> OperationSettings:
