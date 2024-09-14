@@ -131,6 +131,9 @@
       },
       "cancel_task": {
         "name": "Cancel current task"
+      },
+      "clear_all_mapdata": {
+        "name": "Clear maps and area names"
       }
     },
     "switch": {

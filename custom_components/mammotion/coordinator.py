@@ -14,7 +14,7 @@ from homeassistant.exceptions import ConfigEntryNotReady, HomeAssistantError
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from pymammotion.aliyun.cloud_gateway import DeviceOfflineException, SetupException
-from pymammotion.data.model import GenerateRouteInformation
+from pymammotion.data.model import GenerateRouteInformation, HashList
 from pymammotion.data.model.account import Credentials
 from pymammotion.data.model.device import MowingDevice
 from pymammotion.data.model.device_config import OperationSettings, create_path_order
@@ -273,6 +273,10 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
         await self.async_send_command(
             "generate_route_information", generate_route_information=route_information
         )
+
+    def clear_all_maps(self) -> None:
+        data = self.manager.get_device_by_name(self.device_name).mower_state()
+        data.map = HashList()
 
     async def _async_update_notification(self) -> None:
         """Update data from incoming messages."""

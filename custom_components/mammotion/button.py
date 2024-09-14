@@ -53,6 +53,10 @@ BUTTON_SENSORS: tuple[MammotionButtonSensorEntityDescription, ...] = (
         key="cancel_task",
         press_fn=lambda coordinator: coordinator.async_cancel_task(),
     ),
+    MammotionButtonSensorEntityDescription(
+        key="clear_all_mapdata",
+        press_fn=lambda coordinator: coordinator.clear_all_maps(),
+    ),
 )
 
 
