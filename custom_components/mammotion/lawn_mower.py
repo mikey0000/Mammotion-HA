@@ -104,6 +104,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
             if work_area > 0 and (
                 mode == WorkMode.MODE_PAUSE
                 or mode == WorkMode.MODE_READY
+                or mode == WorkMode.MODE_RETURNING
             ):
                 trans_key = "resume_failed"
                 await self.coordinator.async_send_command("resume_execute_task")
