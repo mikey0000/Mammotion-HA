@@ -125,26 +125,31 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
     async def async_dock(self) -> None:
         """Start docking."""
 
+        charge_state = self.rpt_dev_status.charge_state
         mode = self.rpt_dev_status.sys_status
         if mode is None:
             mode = WorkMode.MODE_READY
 
-        try:
-            if mode == WorkMode.MODE_RETURNING:
-                await self.coordinator.async_send_command("cancel_return_to_dock")
-                return await self.coordinator.async_request_iot_sync()
-            if mode == WorkMode.MODE_WORKING:
-                await self.coordinator.async_send_command("pause_execute_task")
-            await self.coordinator.async_send_command("return_to_dock")
-            await self.coordinator.async_request_iot_sync()
-        except COMMAND_EXCEPTIONS as exc:
-            raise HomeAssistantError(
-                translation_domain=DOMAIN, translation_key="dock_failed"
-            ) from exc
-        finally:
-            self.coordinator.async_set_updated_data(
-                self.coordinator.manager.mower(self.coordinator.device_name)
-            )
+        if charge_state == 0:
+            try:
+                if mode == WorkMode.MODE_RETURNING:
+                    trans_key = "dock_failed"
+                    await self.coordinator.async_send_command("cancel_return_to_dock")
+                    return await self.coordinator.async_request_iot_sync()
+                if mode == WorkMode.MODE_WORKING:
+                    trans_key = "pause_failed"
+                    await self.coordinator.async_send_command("pause_execute_task")
+                trans_key = "dock_failed"
+                await self.coordinator.async_send_command("return_to_dock")
+                await self.coordinator.async_request_iot_sync()
+            except COMMAND_EXCEPTIONS as exc:
+                raise HomeAssistantError(
+                    translation_domain=DOMAIN, translation_key=trans_key
+                ) from exc
+            finally:
+                self.coordinator.async_set_updated_data(
+                    self.coordinator.manager.mower(self.coordinator.device_name)
+                )
         return
 
     async def async_pause(self) -> None:
