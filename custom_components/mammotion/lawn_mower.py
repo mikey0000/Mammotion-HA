@@ -84,15 +84,11 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
         """Start mowing."""
         # check if job in progress
         #
-        if self.rpt_dev_status is None:
+        mode = self.rpt_dev_status.sys_status
+        if mode is None:
             raise HomeAssistantError(
                 translation_domain=DOMAIN, translation_key="device_not_ready"
             )
-        work_area = self.report_data.work.area >> 16
-
-        mode = self.rpt_dev_status.sys_status
-        if mode is None:
-            return
         
         if (
             mode == WorkMode.MODE_WORKING
@@ -131,7 +127,9 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
         charge_state = self.rpt_dev_status.charge_state
         mode = self.rpt_dev_status.sys_status
         if mode is None:
-            return
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key="device_not_ready"
+            )
 
         if (
             charge_state == 0 
@@ -168,7 +166,9 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
         
         mode = self.rpt_dev_status.sys_status
         if mode is None:
-            return
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key="device_not_ready"
+            )
             
         if (
             mode == WorkMode.MODE_WORKING
