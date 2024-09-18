@@ -11,7 +11,7 @@ This integration allows you to control and monitor your Mammotion Luba, Luba 2 &
 ## Roadmap 🗺️
 
 - [x] Bluetooth (BLE) support
-- [x] Wi-Fi support
+- [x] Wi-Fi support (Including SIM 3G)
 - [ ] Scheduling
 - [ ] Mapping and zone management
 - [ ] Firmware updates
@@ -23,13 +23,15 @@ This integration allows you to control and monitor your Mammotion Luba, Luba 2 &
 - Start and stop the mower
 - Monitor the mower's status (e.g., mowing, charging, idle)
 - View the mower's battery level
+- Start a mow based on configuration
 - More features being added all the time!
 
 ## Prerequisites 📋
 
 - Home Assistant installed and running
 - Mower connected to your home network
-- [Bluetooth proxy for Home Assistant](https://esphome.io/components/bluetooth_proxy.html)
+- (Optional)[Bluetooth proxy for Home Assistant](https://esphome.io/components/bluetooth_proxy.html)
+- Second account with your mower shared to it for using Wi-Fi (If you use your primary it will log you out of your mobile app)
 
 ## Installation 🛠️
 
