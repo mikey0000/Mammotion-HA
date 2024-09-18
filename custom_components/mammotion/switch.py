@@ -92,7 +92,7 @@ async def async_setup_entry(
     def add_entities() -> None:
         """Handle addition of mowing areas."""
 
-        switch_entities: list[MammotionConfigSwitchEntity] = []
+        switch_entities: list[MammotionConfigAreaSwitchEntity] = []
         areas = coordinator.data.map.area.keys()
         area_name = coordinator.data.map.area_name
         new_areas = areas - added_areas
@@ -123,6 +123,7 @@ async def async_setup_entry(
         if switch_entities:
             async_add_entities(switch_entities)
 
+    add_entities()
     coordinator.async_add_listener(add_entities)
 
     entities = []
