@@ -99,7 +99,7 @@ async def async_setup_entry(
         if new_areas:
             for area_id in new_areas:
                 existing_name: AreaHashName = next(
-                    (area for area in area_name if area.hash == area_id), None
+                    (area for area in area_name if area.hash.__str__() == area_id), None
                 )
                 name = existing_name.name if existing_name else area_id
                 base_area_switch_entity = MammotionConfigAreaSwitchEntityDescription(
