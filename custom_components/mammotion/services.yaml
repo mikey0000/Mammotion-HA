@@ -1,0 +1,150 @@
+start_mow:
+  fields:
+    is_mow:
+      example: true
+      default: true
+      required: true
+    is_dump:
+      example: true
+      default: true
+      required: true
+    is_edge:
+      example: false
+      default: false
+      required: false
+    collect_grass_frequency:
+      example: 10
+      default: 10
+      required: false
+    job_mode:
+      example: 0
+      default: 0
+      required: true
+      selector:
+        select:
+          options:
+            - value: 0
+              label: "Single Grid"
+            - value: 1
+              label: "Double Grid"
+            - value: 2
+              label: "Segment Grid"
+            - value: 3
+              label: "No Grid"
+    job_version:
+      example: 0
+      default: 0
+      required: false
+    job_id:
+      example: 0
+      default: 0
+      required: false
+    speed:
+      example: 0.3
+      default: 0.3
+      required: false
+    ultra_wave:
+      example: 2
+      default: 2
+      selector:
+        select:
+          options:
+            - value: 0
+              label: "Direct Touch"
+            - value: 1
+              label: "Slow Touch"
+            - value: 2
+              label: "Less Touch"
+            - value: 10
+              label: "No Touch"
+      required: false
+    channel_mode:
+      example: 0
+      default: 0
+      required: false
+    channel_width:
+      example: 25
+      default: 25
+      required: false
+    rain_tactics:
+      example: 0
+      default: 1
+      required: false
+    blade_height:
+      example: 0
+      default: 25
+      required: false
+    path_order:
+      example: 0
+      default: 0
+      selector:
+        select:
+          options:
+            - value: 0
+              label: "Border First"
+            - value: 1
+              label: "Grid First"
+      required: false
+    toward:
+      example: 0
+      default: 0
+      required: false
+    toward_included_angle:
+      example: 0
+      default: 0
+      required: false
+    toward_mode:
+      example: 0
+      default: 0
+      selector:
+        select:
+          options:
+            - value: 0
+              label: "Relative Angle"
+            - value: 1
+              label: "Absolute Angle"
+            - value: 2
+              label: "Random Angle"
+      required: false
+    border_mode:
+      example: 1
+      default: 1
+      selector:
+        select:
+          options:
+            - value: 0
+              label: "None"
+            - value: 1
+              label: "One Lap"
+            - value: 2
+              label: "Two Laps"
+            - value: 3
+              label: "Three Laps"
+            - value: 4
+              label: "Four Laps"
+      required: false
+    obstacle_laps:
+      example: 1
+      default: 1
+      selector:
+        select:
+          options:
+            - value: 0
+              label: "None"
+            - value: 1
+              label: "One Lap"
+            - value: 2
+              label: "Two Laps"
+            - value: 3
+              label: "Three Laps"
+            - value: 4
+              label: "Four Laps"
+      required: false
+    start_progress:
+      example: 0
+      default: 0
+      required: false
+    areas:
+      example: [1256568344, 2234234523, 32345235234]
+      default: []
+      required: false

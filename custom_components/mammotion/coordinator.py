@@ -274,7 +274,8 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
             speed=self._operation_settings.speed,
             ultra_wave=self._operation_settings.ultra_wave,  # touch no touch etc
             toward=self._operation_settings.toward,  # is just angle
-            toward_included_angle=self._operation_settings.toward_included_angle,  # angle type relative etc
+            toward_included_angle=self._operation_settings.toward_included_angle,  # angle relative to grid??
+            toward_mode=self._operation_settings.toward_mode,
             blade_height=self._operation_settings.blade_height,
             channel_mode=self._operation_settings.channel_mode,  # line mode is grid single double or single2
             channel_width=self._operation_settings.channel_width,
