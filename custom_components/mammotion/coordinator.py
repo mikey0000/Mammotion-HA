@@ -6,6 +6,7 @@ from dataclasses import asdict
 from datetime import timedelta
 from typing import TYPE_CHECKING, Any
 
+import betterproto
 from aiohttp import ClientConnectorError
 from homeassistant.components import bluetooth
 from homeassistant.const import CONF_ADDRESS, CONF_PASSWORD
@@ -24,6 +25,7 @@ from pymammotion.mammotion.devices.mammotion import (
     Mammotion,
 )
 from pymammotion.proto import has_field
+from pymammotion.proto.luba_msg import LubaMsg
 from pymammotion.proto.mctrl_sys import RptAct, RptInfoType
 
 from .const import (
@@ -151,23 +153,23 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
             raise ConfigEntryNotReady("Unable to setup Mammotion device") from exc
 
     async def async_restore_data(self) -> None:
+        """Restore saved data."""
         store = Store(self.hass, version=1, key=self.device_name)
+        restored_data = await store.async_load()
+        if restored_data:
+            if device_dict := restored_data.get("device"):
+                restored_data["device"] = None
+            else:
+                device_dict = LubaMsg().to_dict(casing=betterproto.Casing.SNAKE)
 
-        if restored_data := await store.async_load():
-            try:
-                self.data = MowingDevice().from_dict(restored_data)
-                if device_dict := restored_data.get("device"):
-                    self.data.from_raw(device_dict)
-            except:
-                self.data = MowingDevice()
+            self.data = MowingDevice().from_dict(restored_data)
+            self.data.from_raw(device_dict)
 
     async def async_save_data(self, data: MowingDevice) -> None:
-        store = Store(self.hass, version=1, key=self.device_name)
-        await store.async_save(data.to_dict())
-
-    async def async_sync_maps(self) -> None:
         """Get map data from the device."""
-        await self.manager.start_map_sync(self.device_name)
+        store = Store(self.hass, version=1, key=self.device_name)
+        stored_data = asdict(data)
+        await store.async_save(stored_data)
 
     async def async_start_stop_blades(self, start_stop: bool) -> None:
         if start_stop:
