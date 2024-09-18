@@ -1,7 +1,7 @@
 {
   "domain": "mammotion",
   "name": "Mammotion",
-  "version": "0.1.35-alpha",
+  "version": "0.1.36",
   "issue_tracker": "https://github.com/mikey0000/Mammotion-HA/issues",
   "integration_type": "device",
   "bluetooth": [
