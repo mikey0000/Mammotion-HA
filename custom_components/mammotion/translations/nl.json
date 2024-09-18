@@ -12,7 +12,10 @@
     "flow_title": "Stel uw Mammotion gazonmachines in",
     "step": {
       "bluetooth_confirm": {
-        "description": "Installeer {name}"
+        "description": "Installeer {name}",
+        "data": {
+          "stay_connected_bluetooth": "Houd Bluetooth verbonden"
+        }
       },
       "reconfigure": {
         "data": {

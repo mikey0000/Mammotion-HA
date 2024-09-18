@@ -11,7 +11,7 @@ This integration allows you to control and monitor your Mammotion Luba, Luba 2 &
 ## Roadmap 🗺️
 
 - [x] Bluetooth (BLE) support
-- [x] Wi-Fi support
+- [x] Wi-Fi support (Including SIM 3G)
 - [ ] Scheduling
 - [ ] Mapping and zone management
 - [ ] Firmware updates
@@ -23,13 +23,15 @@ This integration allows you to control and monitor your Mammotion Luba, Luba 2 &
 - Start and stop the mower
 - Monitor the mower's status (e.g., mowing, charging, idle)
 - View the mower's battery level
+- Start a mow based on configuration
 - More features being added all the time!
 
 ## Prerequisites 📋
 
 - Home Assistant installed and running
 - Mower connected to your home network
-- [Bluetooth proxy for Home Assistant](https://esphome.io/components/bluetooth_proxy.html)
+- (Optional)[Bluetooth proxy for Home Assistant](https://esphome.io/components/bluetooth_proxy.html)
+- Second account with your mower shared to it for using Wi-Fi (If you use your primary it will log you out of your mobile app)
 
 ## Installation 🛠️
 
@@ -56,6 +58,9 @@ Note: If you encounter any issues, please ensure that HACS is properly installed
 
 ## Usage 🎮
 
+### Getting Started
+See the wiki for how to [get started](https://github.com/mikey0000/Mammotion-HA/wiki/Getting-Started)
+
 Once the integration is set up, you can control and monitor your Mammotion mower using Home Assistant. 🎉
 
 ## Troubleshooting 🔧
@@ -74,7 +79,8 @@ If the problem continues, please file an issue on the GitHub repository for furt
 
 ## Support me
 <a href='https://ko-fi.com/DenimJackRabbit' target='_blank'><img height='46' style='border:0px;height:46px;' src='https://az743702.vo.msecnd.net/cdn/kofi3.png?v=0' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
-[Buy a Mammotion Lawn mower](https://mammotion.com/?ref=tbbzqsog) disclaimer: Referral link
+
+[Buy a Mammotion Lawn mower](https://mammotion.com/?ref=tbbzqsog)
 
 ## Credits 👥
 

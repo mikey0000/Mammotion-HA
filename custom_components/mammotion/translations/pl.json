@@ -4,15 +4,20 @@
       "already_configured": "Urządzenie jest już skonfigurowane",
       "already_in_progress": "Proces konfiguracji już trwa",
       "no_devices_found": "Nie znaleziono żadnych urządzeń",
+      "no_devices_found_in_account": "Na Twoim koncie nie ma żadnych urządzeń",
+      "bluetooth_and_account_mismatch": "Na Twoim koncie nie znaleziono żadnego urządzenia Bluetooth",
       "no_longer_present": "Urządzenie nie jest już dostępne",
       "not_supported": "Urządzenie nie jest obsługiwane",
-      "no_device_name": "Aby kontynuować, wymagana jest nazwa urządzenia",
+
       "reconfigure_successful": "Ponowna konfiguracja zakończona powodzeniem"
     },
     "flow_title": "Skonfiguruj swoją kosiarkę Mammotion",
     "step": {
       "bluetooth_confirm": {
-        "description": "Konfiguracja {name}"
+        "description": "Konfiguracja {name}",
+        "data": {
+          "stay_connected_bluetooth": "Utrzymuj połączenie Bluetooth"
+        }
       },
       "reconfigure": {
         "data": {
@@ -23,7 +28,8 @@
       },
       "user": {
         "data": {
-          "address": "Urządzenie"
+          "address": "Urządzenie",
+          "stay_connected_bluetooth": "Utrzymuj połączenie Bluetooth"
         },
         "description": "Wybierz swoją kosiarkę"
       },
@@ -97,6 +103,9 @@
       },
       "activity_mode": {
         "name": "Stan pracy"
+     },
+      "work_area": {
+        "name": "Obszar roboczy hash"
       }
     },
     "button": {
@@ -105,6 +114,24 @@
       },
        "resync_rtk_dock": {
         "name": "Zsynchronizuj RTK i stację ładującą"
+      },
+      "release_from_dock": {
+        "name": "Oddokuj"
+      },
+      "emergency_nudge_forward": {
+        "name": "Awaryjne ruszenie do przodu"
+      },
+       "emergency_nudge_left": {
+        "name": "Awaryjne ruszenie w lewo"
+      },
+      "emergency_nudge_right": {
+        "name": "Awaryjne ruszenie w prawo"
+      },
+      "emergency_nudge_back": {
+        "name": "Awaryjne ruszenie do tył"
+      },
+      "cancel_task": {
+        "name": "Anuluj bieżące zadanie"
       }
     },
     "switch": {
@@ -116,6 +143,9 @@
       },
       "dump_grass_on_off": {
         "name": "Wysypywanie trawy wł/wył"
+      },
+      "edge_on_off": {
+        "name": "Cięcie krawędzi"
       },
       "rain_detection_on_off": {
         "name": "Wykrywanie deszczu wł/wył"
@@ -129,16 +159,57 @@
     },
     "select": {
        "cutting_mode": {
-        "name": "Tryb cięcia"
+        "name": "Tryb cięcia",
+        "state": {
+           "single_grid": "Pojedyncza siatka",
+           "double_grid": "Podwójna siatka",
+           "segment_grid": "Siatka mieszana/segmentowa",
+           "no_grid": "Brak siatki"
+         }
       },
       "border_patrol_mode": {
-        "name": "Koszenie obwodu"
+        "name": "Koszenie obwodu",
+        "state": {
+          "none": "Nie koś",
+          "one": "Jeden raz",
+          "two": "Dwa razy",
+          "three": "Trzy razy",
+          "four": "Cztery razy"
+        }
       },
       "obstacle_laps_mode": {
-        "name": "Koszenie stref zakazanych"
+        "name": "Koszenie stref zakazanych",
+        "state": {
+          "none": "Nie koś",
+          "one": "Jeden raz",
+          "two": "Dwa razy",
+          "three": "Trzy razy",
+          "four": "Cztery razy"
+        }
       },
       "mow_order": {
-        "name": "Kolejność wykonania ścieżki"
+        "name": "Kolejność wykonania ścieżki",
+        "state": {
+          "border_first": "Najpierw obwód",
+          "grid_first": "Najpierw siatka"
+        }
+      },
+      "bypass_mode": {
+        "name": "Tryb wykrywania przeszkód",
+        "state": {
+          "direct_touch": "Bezpośredne dotknięcie",
+          "slow_touch": "Wolne dotknięcie",
+          "less_touch": "Mniej dotyku",
+          "no_touch": "Brak dotyku"
+        }
+      },
+      "cutting_angle_mode": {
+        "name": "Kąt cięcia siatki",
+        "state": {
+          "relative_angle": "Kąt względny",
+          "absolute_angle": "Kąt bezwzględny",
+          "random_angle": "Kąt losowy"
+        }
       }
     },
     "number": {
@@ -150,6 +221,15 @@
       },
       "working_speed": {
         "name": "Prędkość robocza"
+      },
+      "cutting_angle": {
+        "name": "Kąt cięcia"
+      },
+      "path_spacing": {
+        "name": "Odległość między ścieżkami"
+      },
+      "dumping_interval": {
+        "name": "Częstotliwość zrzutu"
       }
     },
     "device_tracker": {

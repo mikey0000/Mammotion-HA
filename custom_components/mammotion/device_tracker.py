@@ -1,11 +1,12 @@
 from __future__ import annotations
+
 import logging
 from typing import Any
 
-from cryptography.utils import cached_property
 from homeassistant.components.device_tracker import SourceType, TrackerEntity
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.restore_state import RestoreEntity
 
 from . import MammotionConfigEntry
 from .const import ATTR_DIRECTION
@@ -26,7 +27,7 @@ async def async_setup_entry(
     async_add_entities([MammotionTracker(coordinator)])
 
 
-class MammotionTracker(MammotionBaseEntity, TrackerEntity):
+class MammotionTracker(MammotionBaseEntity, TrackerEntity, RestoreEntity):
     """Mammotion device tracker."""
 
     _attr_force_update = False

@@ -2,10 +2,10 @@
 
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from pymammotion.proto import has_field
 from pymammotion.utility.device_type import DeviceType
 
-from . import DEFAULT_RETRY_COUNT
-from .const import CONF_RETRY_COUNT, DOMAIN
+from .const import CONF_RETRY_COUNT, DEFAULT_RETRY_COUNT, DOMAIN
 from .coordinator import MammotionDataUpdateCoordinator
 
 
@@ -28,16 +28,17 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionDataUpdateCoordinator]):
 
         product_key = mower.net.toapp_wifi_iot_status.productkey
         if product_key is None or product_key == "":
-            if self.coordinator.manager.cloud_client:
-                device_list = self.coordinator.manager.cloud_client.get_devices_by_account_response().data.data
-                device = next(
-                    (
-                        device
-                        for device in device_list
-                        if device.deviceName == self.coordinator.device_name
-                    ),
-                    None,
+            if self.coordinator.manager.mqtt_list.get(self.coordinator.device_name):
+                cloud_client = self.coordinator.manager.mqtt_list.get(
+                    self.coordinator.device_name
                 )
+                device_list = cloud_client.devices_by_account_response.data.data
+                device = [
+                    device
+                    for device in device_list
+                    if device.deviceName == self.coordinator.device_name
+                ].pop()
+
                 product_key = device.productKey
 
         device_model = DeviceType.value_of_str(
@@ -45,10 +46,15 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionDataUpdateCoordinator]):
             product_key,
         ).get_model()
 
+        model_id = None
+        if has_field(mower.sys.device_product_type_info):
+            model_id = mower.sys.device_product_type_info.main_product_type
+
         return DeviceInfo(
             identifiers={(DOMAIN, self.coordinator.device_name)},
             manufacturer="Mammotion",
             serial_number=self.coordinator.device_name.split("-", 1)[-1],
+            model_id=model_id,
             name=self.coordinator.device_name,
             sw_version=swversion,
             model=device_model,

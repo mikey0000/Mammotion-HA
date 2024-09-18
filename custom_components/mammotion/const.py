@@ -3,8 +3,9 @@
 import logging
 from typing import Final
 
-from bleak_retry_connector import BleakError, BleakNotFoundError
-from pymammotion.mammotion.devices.mammotion import CharacteristicMissingError
+from bleak.exc import BleakError
+from bleak_retry_connector import BleakNotFoundError
+from pymammotion.mammotion.devices.mammotion_bluetooth import CharacteristicMissingError
 
 DOMAIN: Final = "mammotion"
 

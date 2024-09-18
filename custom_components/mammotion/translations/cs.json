@@ -4,15 +4,19 @@
       "already_configured": "Zařízení je již nakonfigurováno",
       "already_in_progress": "Konfigurační proces již probíhá",
       "no_devices_found": "Nelze najít zařízení",
+      "no_devices_found_in_account": "V účtu nejsou žádná zařízení",
+      "bluetooth_and_account_mismatch": "V účtu nebylo nalezeno zařízení Bluetooth",
       "no_longer_present": "Zařízení již není k dispozici",
       "not_supported": "Zařízení není podporováno",
-      "no_device_name": "Pro pokračování je vyžadován název zařízení",
       "reconfigure_successful": "Znovu nastavení bylo úspěšné"
     },
     "flow_title": "Nastavení sekačky Mammotion",
     "step": {
       "bluetooth_confirm": {
-        "description": "Nastavení {name}"
+        "description": "Nastavení {name}",
+        "data": {
+          "stay_connected_bluetooth": "Udržujte připojení Bluetooth"
+        }
       },
       "reconfigure": {
         "data": {
@@ -23,7 +27,8 @@
       },
       "user": {
         "data": {
-          "address": "Zařízení"
+          "address": "Zařízení",
+          "stay_connected_bluetooth": "Udržujte připojení Bluetooth"
         },
         "description": "Vyberte si svou sekačku"
       },
@@ -106,7 +111,7 @@
       "start_map_sync": {
         "name": "Synchronizace mapy"
       },
-       "resync_rtk_dock": {
+      "resync_rtk_dock": {
         "name": "Synchronizace RTK a dokovací stanice"
       },
       "release_from_dock": {
@@ -115,7 +120,7 @@
       "emergency_nudge_forward": {
         "name": "Nouzové postrčení vpřed"
       },
-       "emergency_nudge_left": {
+      "emergency_nudge_left": {
         "name": "Nouzové postrčení doleva"
       },
       "emergency_nudge_right": {
@@ -123,57 +128,116 @@
       },
       "emergency_nudge_back": {
         "name": "Nouzové postrčení zpět"
+      },
+      "cancel_task": {
+        "name": "Zrušit aktuální úkol"
+      },
+      "clear_all_mapdata": {
+        "name": "Vyčištění map a názvů oblastí"
       }
     },
-  "switch": {
-    "blades_on_off": {
-      "name": "Zapnutí/vypnutí nožů"
+    "switch": {
+      "blades_on_off": {
+        "name": "Zapnutí/vypnutí nožů"
+      },
+      "mowing_on_off": {
+        "name": "Zapnutí a vypnutí sekání"
+      },
+      "dump_grass_on_off": {
+        "name": "Zapnutí/vypnutí výsypu trávy"
+      },
+      "edge_on_off": {
+        "name": "Řezání okrajů"
+      },
+      "rain_detection_on_off": {
+        "name": "Zapnutá/vypnutá detekce deště"
+      },
+      "side_led_on_off": {
+        "name": "Zapnutí/vypnutí boční LED"
+      },
+      "perimeter_first_on_off": {
+        "name": "Nejprve obvod"
+      }
     },
-    "mowing_on_off": {
-      "name": "Zapnutí a vypnutí sekání"
+    "select": {
+      "cutting_mode": {
+        "name": "Režim řezu",
+        "state": {
+          "single_grid": "Jednoduchá mřížka",
+          "double_grid": "Šachovnicová mřížka",
+          "segment_grid": "Smíšená/segmentová mřížka",
+          "no_grid": "Žádná mřížka"
+        }
+      },
+      "border_patrol_mode": {
+        "name": "Režim hraniční hlídky",
+        "state": {
+          "none": "Žádné",
+          "one": "jeden",
+          "two": "dvě",
+          "three": "tři",
+          "four": "čtyři"
+        }
+      },
+      "obstacle_laps_mode": {
+        "name": "Režim Překážkové úseky",
+        "state": {
+          "none": "Žádné",
+          "one": "jeden",
+          "two": "dvě",
+          "three": "tři",
+          "four": "čtyři"
+        }
+      },
+      "mow_order": {
+        "name": "Pořadí sečení",
+        "state": {
+          "border_first": "Hranice jako první",
+          "grid_first": "Mřížka jako první"
+        }
+      },
+      "bypass_mode": {
+        "name": "Režim vyhýbání se překážkám",
+        "state": {
+          "direct_touch": "Přímý dotek",
+          "slow_touch": "Pomalý dotek",
+          "less_touch": "Méně dotyků",
+          "no_touch": "Režim bez kolize"
+        }
+      },
+      "cutting_angle_mode": {
+        "name": "Režim řezného úhlu",
+        "state": {
+          "relative_angle": "Relativní úhel",
+          "absolute_angle": "Absolutní úhel",
+          "random_angle": "Náhodný úhel"
+        }
+      }
     },
-    "dump_grass_on_off": {
-      "name": "Zapnutí/vypnutí výsypu trávy"
+    "number": {
+      "start_progress": {
+        "name": "Pokrok na startu"
+      },
+      "blade_height": {
+        "name": "Výška žacího ústrojí"
+      },
+      "working_speed": {
+        "name": "Pracovní rychlost"
+      },
+      "cutting_angle": {
+        "name": "Úhel sečení"
+      },
+      "path_spacing": {
+        "name": "Rozestupy cest"
+      },
+      "dumping_interval": {
+        "name": "Frekvence vykládky"
+      }
     },
-    "rain_detection_on_off": {
-      "name": "Zapnutá/vypnutá detekce deště"
-    },
-    "side_led_on_off": {
-      "name": "Zapnutí/vypnutí boční LED"
-    },
-     "perimeter_first_on_off": {
-      "name": "Nejprve obvod"
+    "device_tracker": {
+      "name": "Sledování zařízení"
     }
   },
-  "select": {
-     "cutting_mode": {
-      "name": "Režim řezu"
-    },
-    "border_patrol_mode": {
-      "name": "Režim hraniční hlídky"
-    },
-    "obstacle_laps_mode": {
-      "name": "Režim Překážkové úseky"
-    },
-    "mow_order": {
-      "name": "Pořadí sečení"
-    }
-  },
-  "number": {
-     "start_progress": {
-      "name": "Pokrok na startu"
-    },
-    "blade_height": {
-      "name": "Výška žacího ústrojí"
-    },
-    "working_speed": {
-      "name": "Pracovní rychlost"
-    }
-  },
-  "device_tracker": {
-    "name": "Sledování zařízení"
-  }
-},
   "exceptions": {
     "device_not_ready": {
       "message": "Sekačka není připravena."
