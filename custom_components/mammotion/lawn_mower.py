@@ -92,11 +92,12 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
 
         mode = self.rpt_dev_status.sys_status
         if mode is None:
-            mode = WorkMode.MODE_READY
+            return
         
         if (
             mode == WorkMode.MODE_WORKING
             or mode == WorkMode.MODE_PAUSE
+            or mode == WorkMode.MODE_READY
             or mode == WorkMode.MODE_RETURNING
         ):
             try:
@@ -130,13 +131,14 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
         charge_state = self.rpt_dev_status.charge_state
         mode = self.rpt_dev_status.sys_status
         if mode is None:
-            mode = WorkMode.MODE_READY
+            return
 
         if (
             charge_state == 0 
             and (
                 mode == WorkMode.MODE_WORKING
                 or mode == WorkMode.MODE_PAUSE
+                or mode == WorkMode.MODE_READY
                 or mode == WorkMode.MODE_RETURNING
             )
         ):
@@ -166,7 +168,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
         
         mode = self.rpt_dev_status.sys_status
         if mode is None:
-            mode = WorkMode.MODE_READY
+            return
             
         if (
             mode == WorkMode.MODE_WORKING
