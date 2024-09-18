@@ -105,7 +105,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
         try:
             await self.coordinator.async_plan_route()
             await self.coordinator.async_send_command("start_job")
-            await self.coordinator.async_send_command("get_report_cfg")
+            await self.coordinator.async_request_iot_sync()
         except COMMAND_EXCEPTIONS as exc:
             raise HomeAssistantError(
                 translation_domain=DOMAIN, translation_key="start_failed"
@@ -125,7 +125,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
         try:
             if mode == WorkMode.MODE_RETURNING:
                 await self.coordinator.async_send_command("cancel_return_to_dock")
-                return await self.coordinator.async_send_command("get_report_cfg")
+                return await self.coordinator.async_request_iot_sync()
             if mode == WorkMode.MODE_WORKING:
                 await self.coordinator.async_send_command("pause_execute_task")
             await self.coordinator.async_send_command("return_to_dock")
