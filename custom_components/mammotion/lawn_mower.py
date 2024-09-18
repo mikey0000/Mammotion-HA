@@ -104,19 +104,16 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
                     trans_key = "dock_failed"
                     await self.coordinator.async_send_command("cancel_return_to_dock")
                     await self.coordinator.async_request_iot_sync()
-                if work_area > 0 and (
-                    mode == WorkMode.MODE_PAUSE
-                    or mode == WorkMode.MODE_READY
-                    or mode == WorkMode.MODE_RETURNING
-                ):
+                    mode = self.rpt_dev_status.sys_status
+                if mode == WorkMode.MODE_PAUSE :
                     trans_key = "resume_failed"
                     await self.coordinator.async_send_command("resume_execute_task")
                     return await self.coordinator.async_request_iot_sync()
-
-                trans_key = "start_failed"
-                await self.coordinator.async_plan_route()
-                await self.coordinator.async_send_command("start_job")
-                await self.coordinator.async_request_iot_sync()
+                if mode == WorkMode.MODE_READY:
+                    trans_key = "start_failed"
+                    await self.coordinator.async_plan_route()
+                    await self.coordinator.async_send_command("start_job")
+                    await self.coordinator.async_request_iot_sync()
             except COMMAND_EXCEPTIONS as exc:
                 raise HomeAssistantError(
                     translation_domain=DOMAIN, translation_key=trans_key
