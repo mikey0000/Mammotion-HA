@@ -60,21 +60,22 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
     def activity(self) -> LawnMowerActivity | None:
         """Return the state of the mower."""
 
-        if self.rpt_dev_status is None:
-            return None
-
-        mode = self.rpt_dev_status.sys_status
         charge_state = self.rpt_dev_status.charge_state
+        mode = self.rpt_dev_status.sys_status
+        if mode is None:
+            return None
 
         LOGGER.debug("activity mode %s", mode)
         if (
             mode == WorkMode.MODE_PAUSE
-            or mode == WorkMode.MODE_READY
-            and charge_state == 0
+            or (mode == WorkMode.MODE_READY
+            and charge_state == 0)
         ):
             return LawnMowerActivity.PAUSED
-        if mode in (WorkMode.MODE_WORKING, WorkMode.MODE_RETURNING):
+        if mode == WorkMode.MODE_WORKING:
             return LawnMowerActivity.MOWING
+        if mode == WorkMode.MODE_RETURNING:
+            return LawnMowerActivity.RETURNING
         if mode == WorkMode.MODE_LOCK:
             return LawnMowerActivity.ERROR
         if mode == WorkMode.MODE_READY and charge_state != 0:
