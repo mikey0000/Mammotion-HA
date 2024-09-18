@@ -92,14 +92,14 @@ async def async_setup_entry(
     def add_entities() -> None:
         """Handle addition of mowing areas."""
 
-        switch_entities: list[MammotionConfigSwitchEntity] = []
+        switch_entities: list[MammotionConfigAreaSwitchEntity] = []
         areas = coordinator.data.map.area.keys()
         area_name = coordinator.data.map.area_name
         new_areas = areas - added_areas
         if new_areas:
             for area_id in new_areas:
                 existing_name: AreaHashName = next(
-                    (area for area in area_name if area.hash == area_id), None
+                    (area for area in area_name if area.hash.__str__() == area_id), None
                 )
                 name = existing_name.name if existing_name else area_id
                 base_area_switch_entity = MammotionConfigAreaSwitchEntityDescription(
@@ -123,6 +123,7 @@ async def async_setup_entry(
         if switch_entities:
             async_add_entities(switch_entities)
 
+    add_entities()
     coordinator.async_add_listener(add_entities)
 
     entities = []
