@@ -105,7 +105,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
         try:
             await self.coordinator.async_plan_route()
             await self.coordinator.async_send_command("start_job")
-            await self.coordinator.async_request_iot_sync()
+            await self.coordinator.async_send_command("get_report_cfg")
         except COMMAND_EXCEPTIONS as exc:
             raise HomeAssistantError(
                 translation_domain=DOMAIN, translation_key="start_failed"
@@ -119,6 +119,8 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
         """Start docking."""
 
         mode = self.rpt_dev_status.sys_status
+        if mode is None:
+            mode = WorkMode.MODE_READY
 
         try:
             if mode == WorkMode.MODE_RETURNING:

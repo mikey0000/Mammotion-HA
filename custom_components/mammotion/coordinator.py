@@ -12,6 +12,7 @@ from homeassistant.const import CONF_ADDRESS, CONF_PASSWORD
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady, HomeAssistantError
 from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from pymammotion.aliyun.cloud_gateway import DeviceOfflineException, SetupException
 from pymammotion.data.model import GenerateRouteInformation, HashList
@@ -24,7 +25,6 @@ from pymammotion.mammotion.devices.mammotion import (
 )
 from pymammotion.proto import has_field
 from pymammotion.proto.mctrl_sys import RptAct, RptInfoType
-from pymammotion.utility.constant import WorkMode
 
 from .const import (
     COMMAND_EXCEPTIONS,
@@ -132,10 +132,10 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
                     f"Could not find Mammotion lawn mower with name {self.device_name}"
                 )
 
-        # await self.async_restore_data()
+        await self.async_restore_data()
         try:
             if preference is ConnectionPreference.WIFI and device.cloud():
-                device.cloud().on_ready_callback = lambda: device.cloud().start_sync(0)
+                await device.cloud().start_sync(0)
                 device.cloud().set_notification_callback(
                     self._async_update_notification
                 )
@@ -150,17 +150,18 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
         except COMMAND_EXCEPTIONS as exc:
             raise ConfigEntryNotReady("Unable to setup Mammotion device") from exc
 
-    # async def async_restore_data(self):
-    #     store = Store(self.hass, version=1, key=self.device_name)
-    #     restored_data = await store.async_load()
-    #
-    #     if restored_data:
-    #         self.data = MowingDevice.from_dict(restored_data)
-    #         self.data.device = LubaMsg()
-    #
-    # async def async_save_data(self, data: Any):
-    #     store = Store(self.hass, version=1, key=self.device_name)
-    #     await store.async_save(data)
+    async def async_restore_data(self) -> None:
+        store = Store(self.hass, version=1, key=self.device_name)
+        restored_data = await store.async_load()
+
+        if restored_data:
+            self.data = MowingDevice().from_dict(restored_data)
+            if device_dict := restored_data.get("device"):
+                self.data.from_raw(device_dict)
+
+    async def async_save_data(self, data: MowingDevice) -> None:
+        store = Store(self.hass, version=1, key=self.device_name)
+        await store.async_save(data.to_dict())
 
     async def async_sync_maps(self) -> None:
         """Get map data from the device."""
@@ -199,27 +200,19 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
 
     async def async_move_forward(self, speed: float) -> None:
         """Move forward."""
-        device = self.manager.get_device_by_name(self.device_name)
-        if self.manager.get_device_by_name(self.device_name).ble():
-            await device.ble().move_forward(speed)
+        await self.async_send_command("move_forward", linear=speed)
 
     async def async_move_left(self, speed: float) -> None:
         """Move left."""
-        device = self.manager.get_device_by_name(self.device_name)
-        if self.manager.get_device_by_name(self.device_name).ble():
-            await device.ble().move_left(speed)
+        await self.async_send_command("move_left", angular=speed)
 
     async def async_move_right(self, speed: float) -> None:
         """Move right."""
-        device = self.manager.get_device_by_name(self.device_name)
-        if self.manager.get_device_by_name(self.device_name).ble():
-            await device.ble().move_right(speed)
+        await self.async_send_command("move_right", angular=speed)
 
     async def async_move_back(self, speed: float) -> None:
         """Move back."""
-        device = self.manager.get_device_by_name(self.device_name)
-        if self.manager.get_device_by_name(self.device_name).ble():
-            await device.ble().move_back(speed)
+        await self.async_send_command("move_back", linear=speed)
 
     async def async_rtk_dock_location(self) -> None:
         """RTK and dock location."""
@@ -247,10 +240,21 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
             await self.manager.send_command_with_args(
                 self.device_name, command, **kwargs
             )
-        except COMMAND_EXCEPTIONS as exc:
-            raise HomeAssistantError(
-                translation_domain=DOMAIN, translation_key="command_failed"
-            ) from exc
+        except SetupException:
+            await self.async_login()
+        except DeviceOfflineException:
+            """Device is offline try bluetooth if we have it."""
+            try:
+                if self.manager.get_device_by_name(self.device_name).ble():
+                    await (
+                        self.manager.get_device_by_name(self.device_name)
+                        .ble()
+                        .queue_command(command, **kwargs)
+                    )
+            except COMMAND_EXCEPTIONS as exc:
+                raise HomeAssistantError(
+                    translation_domain=DOMAIN, translation_key="command_failed"
+                ) from exc
 
     async def async_plan_route(self) -> None:
         """Plan mow."""
@@ -274,7 +278,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
             "generate_route_information", generate_route_information=route_information
         )
 
-    def clear_all_maps(self) -> None:
+    async def clear_all_maps(self) -> None:
         data = self.manager.get_device_by_name(self.device_name).mower_state()
         data.map = HashList()
 
@@ -310,7 +314,9 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
 
     async def async_login(self) -> None:
         """Login to cloud servers."""
-        self.manager.get_device_by_name(self.device_name).cloud().mqtt.disconnect()
+        await self.hass.async_add_executor_job(
+            self.manager.get_device_by_name(self.device_name).cloud().mqtt.disconnect
+        )
         account = self.config_entry.data.get(CONF_ACCOUNTNAME)
         password = self.config_entry.data.get(CONF_PASSWORD)
         await self.manager.login_and_initiate_cloud(account, password, True)
@@ -341,10 +347,8 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
                 or device.mower_state().net.toapp_wifi_iot_status.productkey is None
             ):
                 await self.manager.start_sync(self.device_name, 0)
-            if device.mower_state().report_data.dev.sys_status != WorkMode.MODE_WORKING:
-                await self.async_send_command("get_report_cfg")
-            else:
-                await self.async_request_iot_sync()
+
+            await self.async_send_command("get_report_cfg")
 
         except COMMAND_EXCEPTIONS as exc:
             self.update_failures += 1
@@ -367,7 +371,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
 
         self.update_failures = 0
         data = self.manager.get_device_by_name(self.device_name).mower_state()
-        # await self.async_save_data(data)
+        await self.async_save_data(data)
         return data
 
     @property
