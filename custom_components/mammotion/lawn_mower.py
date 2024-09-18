@@ -119,11 +119,13 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
         """Start docking."""
 
         mode = self.rpt_dev_status.sys_status
+        if mode is None:
+            mode = WorkMode.MODE_READY
 
         try:
             if mode == WorkMode.MODE_RETURNING:
                 await self.coordinator.async_send_command("cancel_return_to_dock")
-                return await self.coordinator.async_send_command("get_report_cfg")
+                return await self.coordinator.async_request_iot_sync()
             if mode == WorkMode.MODE_WORKING:
                 await self.coordinator.async_send_command("pause_execute_task")
             await self.coordinator.async_send_command("return_to_dock")

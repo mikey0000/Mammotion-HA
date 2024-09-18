@@ -27,7 +27,8 @@
       },
       "user": {
         "data": {
-          "address": "Zařízení"
+          "address": "Zařízení",
+          "stay_connected_bluetooth": "Udržujte připojení Bluetooth"
         },
         "description": "Vyberte si svou sekačku"
       },
@@ -127,6 +128,12 @@
       },
       "emergency_nudge_back": {
         "name": "Nouzové postrčení zpět"
+      },
+      "cancel_task": {
+        "name": "Zrušit aktuální úkol"
+      },
+      "clear_all_mapdata": {
+        "name": "Vyčištění map a názvů oblastí"
       }
     },
     "switch": {
@@ -138,6 +145,9 @@
       },
       "dump_grass_on_off": {
         "name": "Zapnutí/vypnutí výsypu trávy"
+      },
+      "edge_on_off": {
+        "name": "Řezání okrajů"
       },
       "rain_detection_on_off": {
         "name": "Zapnutá/vypnutá detekce deště"
@@ -185,6 +195,23 @@
           "border_first": "Hranice jako první",
           "grid_first": "Mřížka jako první"
         }
+      },
+      "bypass_mode": {
+        "name": "Režim vyhýbání se překážkám",
+        "state": {
+          "direct_touch": "Přímý dotek",
+          "slow_touch": "Pomalý dotek",
+          "less_touch": "Méně dotyků",
+          "no_touch": "Režim bez kolize"
+        }
+      },
+      "cutting_angle_mode": {
+        "name": "Režim řezného úhlu",
+        "state": {
+          "relative_angle": "Relativní úhel",
+          "absolute_angle": "Absolutní úhel",
+          "random_angle": "Náhodný úhel"
+        }
       }
     },
     "number": {
@@ -199,6 +226,12 @@
       },
       "cutting_angle": {
         "name": "Úhel sečení"
+      },
+      "path_spacing": {
+        "name": "Rozestupy cest"
+      },
+      "dumping_interval": {
+        "name": "Frekvence vykládky"
       }
     },
     "device_tracker": {
