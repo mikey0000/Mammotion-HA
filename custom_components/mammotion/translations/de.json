@@ -111,7 +111,7 @@
       "start_map_sync": {
         "name": "Synchronisiere Karte"
       },
-       "resync_rtk_dock": {
+      "resync_rtk_dock": {
         "name": "Synchronisiere RTK und Ladestation"
       },
       "release_from_dock": {
@@ -120,7 +120,7 @@
       "emergency_nudge_forward": {
         "name": "Notfall-Schub vorwärts"
       },
-       "emergency_nudge_left": {
+      "emergency_nudge_left": {
         "name": "Notfall-Schub links"
       },
       "emergency_nudge_right": {
@@ -131,6 +131,9 @@
       },
       "cancel_task": {
         "name": "Aktuelle Aufgabe abbrechen"
+      },
+      "clear_all_mapdata": {
+        "name": "Bereinige alle Karten- und Bereichsdaten"
       }
     },
     "switch": {
@@ -152,19 +155,19 @@
       "side_led_on_off": {
         "name": "Seitenlicht"
       },
-       "perimeter_first_on_off": {
+      "perimeter_first_on_off": {
         "name": "Zuerst den Umfang"
       }
     },
     "select": {
-       "cutting_mode": {
+      "cutting_mode": {
         "name": "Navigationsmodus",
-         "state": {
-           "single_grid": "Einzelnes Raster",
-           "double_grid": "Doppeltes Raster",
-           "segment_grid": "Segment Raster",
-           "no_grid": "Kein Raster"
-         }
+        "state": {
+          "single_grid": "Einzelnes Raster",
+          "double_grid": "Doppeltes Raster",
+          "segment_grid": "Segment Raster",
+          "no_grid": "Kein Raster"
+        }
       },
       "border_patrol_mode": {
         "name": "Patrouillenrunden für den seitlichen Rasenschnitt",
@@ -212,7 +215,7 @@
       }
     },
     "number": {
-       "start_progress": {
+      "start_progress": {
         "name": "Fortschritt beim Start"
       },
       "blade_height": {
