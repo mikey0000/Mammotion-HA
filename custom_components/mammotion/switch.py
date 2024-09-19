@@ -97,11 +97,11 @@ async def async_setup_entry(
         area_name = coordinator.data.map.area_name
         new_areas = areas - added_areas
         if new_areas:
-            for index, area_id in new_areas:
+            for area_id in new_areas:
                 existing_name: AreaHashName = next(
                     (area for area in area_name if area.hash.__str__() == area_id), None
                 )
-                name = existing_name.name if existing_name else f"area {index+1}"
+                name = existing_name.name if existing_name else f"mowing area {area_id}"
                 base_area_switch_entity = MammotionConfigAreaSwitchEntityDescription(
                     key=f"{area_id}",
                     area=area_id,
