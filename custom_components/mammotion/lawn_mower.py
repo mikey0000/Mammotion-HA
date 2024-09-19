@@ -90,11 +90,10 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
                 translation_domain=DOMAIN, translation_key="device_not_ready"
             )
         
-        if (
-            mode == WorkMode.MODE_WORKING
-            or mode == WorkMode.MODE_PAUSE
-            or mode == WorkMode.MODE_READY
-            or mode == WorkMode.MODE_RETURNING
+        if mode in (
+            WorkMode.MODE_PAUSE,
+            WorkMode.MODE_READY,
+            WorkMode.MODE_RETURNING,
         ):
             try:
                 if mode == WorkMode.MODE_RETURNING:
@@ -134,11 +133,11 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
 
         if (
             charge_state == 0 
-            and (
-                mode == WorkMode.MODE_WORKING
-                or mode == WorkMode.MODE_PAUSE
-                or mode == WorkMode.MODE_READY
-                or mode == WorkMode.MODE_RETURNING
+            and mode in (
+                WorkMode.MODE_WORKING,
+                WorkMode.MODE_PAUSE,
+                WorkMode.MODE_READY,
+                WorkMode.MODE_RETURNING,
             )
         ):
             try:
@@ -172,9 +171,9 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
                 translation_domain=DOMAIN, translation_key="device_not_ready"
             )
             
-        if (
-            mode == WorkMode.MODE_WORKING
-            or mode == WorkMode.MODE_RETURNING
+        if mode in (
+            WorkMode.MODE_WORKING,
+            WorkMode.MODE_RETURNING,
         ):
             try:
                 if mode == WorkMode.MODE_WORKING:
