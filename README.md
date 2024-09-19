@@ -12,10 +12,10 @@ This integration allows you to control and monitor your Mammotion Luba, Luba 2 &
 
 - [x] Bluetooth (BLE) support
 - [x] Wi-Fi support (Including SIM 3G)
-- [ ] Scheduling
-- [ ] Mapping and zone management
-- [ ] Firmware updates
-- [ ] Automations
+- [x] Scheduling
+- [x] Mapping and zone management
+- [x] Firmware updates
+- [x] Automations
 - [ ] More...
 
 ## Features ✨
@@ -62,6 +62,18 @@ Note: If you encounter any issues, please ensure that HACS is properly installed
 See the wiki for how to [get started](https://github.com/mikey0000/Mammotion-HA/wiki/Getting-Started)
 
 Once the integration is set up, you can control and monitor your Mammotion mower using Home Assistant. 🎉
+
+### Scheduling
+To use the new scheduling feature, you can create schedules for your mower to start and stop mowing at specific times. This can be done through the Home Assistant interface or by using automations.
+
+### Mapping and Zone Management
+The mapping and zone management feature allows you to create, update, and delete zones for your mower. You can also retrieve and display zone information through the Home Assistant interface.
+
+### Firmware Updates
+The firmware update feature allows you to check for, download, and install firmware updates for your mower. This can be done through the Home Assistant interface.
+
+### Automations
+The automation feature allows you to create, update, and delete automations for your mower. You can trigger automations based on the mower's status and events.
 
 ## Troubleshooting 🔧
 
