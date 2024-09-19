@@ -101,8 +101,8 @@ NUMBER_WORKING_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
         step=1,
         device_class=NumberDeviceClass.DISTANCE,
         native_unit_of_measurement=UnitOfLength.CENTIMETERS,
-        min_value=20,
-        max_value=35,
+        min_value=15 if DeviceType.is_yuka(coordinator.device_name) else 20,
+        max_value=30 if DeviceType.is_yuka(coordinator.device_name) else 35,
         set_fn=lambda coordinator, value: setattr(
             coordinator.operation_settings, "channel_width", value
         ),
