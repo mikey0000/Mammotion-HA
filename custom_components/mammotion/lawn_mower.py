@@ -100,26 +100,26 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
                 if mode == WorkMode.MODE_RETURNING:
                     trans_key = "dock_failed"
                     await self.coordinator.async_send_command("cancel_return_to_dock")
-                    await self.coordinator.async_request_iot_sync()
+                    await self.coordinator.async_request_iot_sync() # TODO is this updated on iot sync?
                     mode = self.rpt_dev_status.sys_status
+
                 if mode == WorkMode.MODE_PAUSE :
                     trans_key = "resume_failed"
                     await self.coordinator.async_send_command("resume_execute_task")
-                    return await self.coordinator.async_request_iot_sync()
                 if mode == WorkMode.MODE_READY:
                     trans_key = "start_failed"
                     await self.coordinator.async_plan_route()
                     await self.coordinator.async_send_command("start_job")
-                    await self.coordinator.async_request_iot_sync()
+                
             except COMMAND_EXCEPTIONS as exc:
                 raise HomeAssistantError(
                     translation_domain=DOMAIN, translation_key=trans_key
                 ) from exc
             finally:
+                await self.coordinator.async_request_iot_sync()
                 self.coordinator.async_set_updated_data(
                     self.coordinator.manager.mower(self.coordinator.device_name)
                 )
-        return
 
     async def async_dock(self) -> None:
         """Start docking."""
@@ -141,25 +141,26 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
             )
         ):
             try:
-                if mode == WorkMode.MODE_RETURNING:
-                    trans_key = "dock_failed"
-                    await self.coordinator.async_send_command("cancel_return_to_dock")
-                    return await self.coordinator.async_request_iot_sync()
                 if mode == WorkMode.MODE_WORKING:
                     trans_key = "pause_failed"
                     await self.coordinator.async_send_command("pause_execute_task")
-                trans_key = "dock_failed"
-                await self.coordinator.async_send_command("return_to_dock")
-                await self.coordinator.async_request_iot_sync()
+                    await self.coordinator.async_request_iot_sync()
+
+                if mode == WorkMode.MODE_RETURNING:
+                    trans_key = "dock_failed" # TODO can this be dock_cancel_failed?
+                    await self.coordinator.async_send_command("cancel_return_to_dock")
+                else:
+                    trans_key = "dock_failed"
+                    await self.coordinator.async_send_command("return_to_dock")
             except COMMAND_EXCEPTIONS as exc:
                 raise HomeAssistantError(
                     translation_domain=DOMAIN, translation_key=trans_key
                 ) from exc
             finally:
+                await self.coordinator.async_request_iot_sync()
                 self.coordinator.async_set_updated_data(
                     self.coordinator.manager.mower(self.coordinator.device_name)
                 )
-        return
 
     async def async_pause(self) -> None:
         """Pause mower."""
@@ -175,19 +176,18 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
             or mode == WorkMode.MODE_RETURNING
         ):
             try:
+                if mode == WorkMode.MODE_WORKING:
+                    trans_key = "pause_failed"
+                    await self.coordinator.async_send_command("pause_execute_task")
                 if mode == WorkMode.MODE_RETURNING:
                     trans_key = "dock_failed"
                     await self.coordinator.async_send_command("cancel_return_to_dock")
-                    return await self.coordinator.async_request_iot_sync()
-                trans_key = "pause_failed"
-                await self.coordinator.async_send_command("pause_execute_task")
-                await self.coordinator.async_request_iot_sync()
             except COMMAND_EXCEPTIONS as exc:
                 raise HomeAssistantError(
                     translation_domain=DOMAIN, translation_key=trans_key
                 ) from exc
             finally:
+                await self.coordinator.async_request_iot_sync()
                 self.coordinator.async_set_updated_data(
                     self.coordinator.manager.mower(self.coordinator.device_name)
                 )
-        return
