@@ -5,7 +5,7 @@ from homeassistant.components.switch import SwitchEntity, SwitchEntityDescriptio
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.restore_state import RestoreEntity
-from pymammotion.proto.mctrl_nav import AreaHashName
+from pymammotion.data.model.hash_list import AreaHashNameList
 from pymammotion.utility.device_type import DeviceType
 
 from . import MammotionConfigEntry
@@ -98,8 +98,8 @@ async def async_setup_entry(
         new_areas = areas - added_areas
         if new_areas:
             for area_id in new_areas:
-                existing_name: AreaHashName = next(
-                    (area for area in area_name if area.hash.__str__() == area_id), None
+                existing_name: AreaHashNameList = next(
+                    (area for area in area_name if str(area.hash) == str(area_id)), None
                 )
                 name = existing_name.name if existing_name else f"mowing area {area_id}"
                 base_area_switch_entity = MammotionConfigAreaSwitchEntityDescription(
