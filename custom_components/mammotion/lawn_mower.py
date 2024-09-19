@@ -35,7 +35,7 @@ START_MOW_SCHEMA = {
     vol.Optional("collect_grass_frequency", default=10): vol.All(
         vol.Coerce(int), vol.Range(min=5, max=100)
     ),
-    vol.Optional("job_mode", default=0): vol.Coerce(int),
+    vol.Optional("job_mode", default=0): vol.In([0, 1]),
     vol.Optional("job_version", default=0): vol.Coerce(int),
     vol.Optional("job_id", default=0): vol.Coerce(int),
     vol.Optional("speed", default=0.3): vol.All(
@@ -50,7 +50,6 @@ START_MOW_SCHEMA = {
     vol.Optional("blade_height", default=25): vol.All(
         vol.Coerce(int), vol.Range(min=15, max=100)
     ),
-    vol.Optional("path_order", default=0): vol.In([0, 1]),
     vol.Optional("toward", default=0): vol.All(
         vol.Coerce(int), vol.Range(min=-180, max=180)
     ),
