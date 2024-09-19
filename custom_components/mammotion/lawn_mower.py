@@ -100,7 +100,8 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
                 if mode == WorkMode.MODE_RETURNING:
                     trans_key = "dock_failed"
                     await self.coordinator.async_send_command("cancel_return_to_dock")
-                    await self.coordinator.async_request_iot_sync() # TODO is this updated on iot sync?
+                    await self.coordinator.async_request_iot_sync()
+                    # TODO is rpt_dev_status updated on iot sync?
                     mode = self.rpt_dev_status.sys_status
 
                 if mode == WorkMode.MODE_PAUSE :
