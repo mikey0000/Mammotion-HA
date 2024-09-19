@@ -86,7 +86,7 @@ async def async_setup_entry(
 ) -> None:
     """Set up the Mammotion switch entities."""
     coordinator = entry.runtime_data
-    added_areas: set[int] = set()
+    added_areas: set[str] = set()
 
     @callback
     def add_entities() -> None:
@@ -216,6 +216,7 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
         self.coordinator = coordinator
         self.entity_description = entity_description
         self._attr_translation_key = entity_description.key
+        self._attr_extra_state_attributes = {"hash": entity_description.area}
         # TODO grab defaults from operation_settings
         self._attr_is_on = False  # Default state
 
