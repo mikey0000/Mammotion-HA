@@ -260,8 +260,8 @@
           "description": "Frequency to collect grass (in meters squared). (Yuka)"
         },
         "job_mode": {
-          "name": "Job Mode",
-          "description": "Job mode for cutting."
+          "name": "Mow Order",
+          "description": "Mowing path order (border first or grid first)."
         },
         "job_version": {
           "name": "Job Version",
@@ -294,10 +294,6 @@
         "blade_height": {
           "name": "Blade Height",
           "description": "Height of the blade."
-        },
-        "path_order": {
-          "name": "Path Order",
-          "description": "Mowing path order (border first or grid first)."
         },
         "toward": {
           "name": "Angle",

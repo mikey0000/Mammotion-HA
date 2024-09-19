@@ -279,7 +279,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
             blade_height=operation_settings.blade_height,
             channel_mode=operation_settings.channel_mode,  # line mode is grid single double or single2
             channel_width=operation_settings.channel_width,
-            job_mode=operation_settings.job_mode,  # taskMode
+            job_mode=operation_settings.job_mode,  # taskMode grid or border first
             edge_mode=operation_settings.border_mode,  # border laps
             path_order=create_path_order(operation_settings, self.device_name),
             obstacle_laps=operation_settings.obstacle_laps,
