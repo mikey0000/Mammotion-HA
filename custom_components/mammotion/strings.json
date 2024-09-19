@@ -157,9 +157,6 @@
     "dock_failed": {
       "message": "Failed to send the mower to the dock."
     },
-    "dock_cancel_failed": {
-      "message": "Failed to stop the mower returning."
-    },
     "command_failed": {
       "message": "Failed to send command to the mower."
     }
