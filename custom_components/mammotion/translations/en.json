@@ -245,19 +245,19 @@
       "fields": {
         "is_mow": {
           "name": "Is Mow",
-          "description": "Whether mowing is active."
+          "description": "Whether mowing is active. (Yuka)"
         },
         "is_dump": {
           "name": "Is Dump",
-          "description": "Whether grass dumping is active."
+          "description": "Whether grass dumping is active. (Yuka)"
         },
         "is_edge": {
           "name": "Is Edge",
-          "description": "Whether edge mode is active."
+          "description": "Whether edge mode is active. (Yuka)"
         },
         "collect_grass_frequency": {
           "name": "Grass Collection Frequency",
-          "description": "Frequency to collect grass (in minutes)."
+          "description": "Frequency to collect grass (in meters squared). (Yuka)"
         },
         "job_mode": {
           "name": "Job Mode",
@@ -305,11 +305,11 @@
         },
         "toward_included_angle": {
           "name": "Angle Relative to Grid?",
-          "description": "Type of angle to use (relative, absolute, or random)."
+          "description": "When selecting grid change the second angle."
         },
         "toward_mode": {
           "name": "Direction Mode",
-          "description": "Toward mode."
+          "description": "Angle mode."
         },
         "border_mode": {
           "name": "Border Patrol Mode",

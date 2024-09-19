@@ -266,23 +266,23 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
                     translation_domain=DOMAIN, translation_key="command_failed"
                 ) from exc
 
-    async def async_plan_route(self) -> None:
+    async def async_plan_route(self, operation_settings: OperationSettings) -> None:
         """Plan mow."""
         route_information = GenerateRouteInformation(
-            one_hashs=self._operation_settings.areas,
-            rain_tactics=self._operation_settings.rain_tactics,
-            speed=self._operation_settings.speed,
-            ultra_wave=self._operation_settings.ultra_wave,  # touch no touch etc
-            toward=self._operation_settings.toward,  # is just angle
-            toward_included_angle=self._operation_settings.toward_included_angle,  # angle relative to grid??
-            toward_mode=self._operation_settings.toward_mode,
-            blade_height=self._operation_settings.blade_height,
-            channel_mode=self._operation_settings.channel_mode,  # line mode is grid single double or single2
-            channel_width=self._operation_settings.channel_width,
-            job_mode=self._operation_settings.job_mode,  # taskMode
-            edge_mode=self._operation_settings.border_mode,  # border laps
-            path_order=create_path_order(self._operation_settings, self.device_name),
-            obstacle_laps=self._operation_settings.obstacle_laps,
+            one_hashs=operation_settings.areas,
+            rain_tactics=operation_settings.rain_tactics,
+            speed=operation_settings.speed,
+            ultra_wave=operation_settings.ultra_wave,  # touch no touch etc
+            toward=operation_settings.toward,  # is just angle
+            toward_included_angle=operation_settings.toward_included_angle,  # angle relative to grid??
+            toward_mode=operation_settings.toward_mode,
+            blade_height=operation_settings.blade_height,
+            channel_mode=operation_settings.channel_mode,  # line mode is grid single double or single2
+            channel_width=operation_settings.channel_width,
+            job_mode=operation_settings.job_mode,  # taskMode
+            edge_mode=operation_settings.border_mode,  # border laps
+            path_order=create_path_order(operation_settings, self.device_name),
+            obstacle_laps=operation_settings.obstacle_laps,
         )
 
         await self.async_send_command(

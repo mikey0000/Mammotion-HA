@@ -4,11 +4,8 @@ from __future__ import annotations
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_ADDRESS, CONF_MAC, Platform
-from homeassistant.core import HomeAssistant, ServiceCall
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr
-from pymammotion.data.model.device_config import OperationSettings
-
-SERVICE_START_MOWING = "start_mow"
 
 from .const import (
     CONF_AEP_DATA,
@@ -82,14 +79,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
     entry.runtime_data = mammotion_coordinator
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
-    async def async_start_mowing(service: ServiceCall) -> None:
-        operation_settings = OperationSettings.from_dict(service.data)
-        mammotion_coordinator._operation_settings = operation_settings
-        await mammotion_coordinator.async_plan_route()
-        await mammotion_coordinator.async_send_command("start_job")
-        await mammotion_coordinator.async_request_iot_sync()
-
-    hass.services.async_register(DOMAIN, SERVICE_START_MOWING, async_start_mowing)
+    # need to register service for triggering tasks
+    # hass.services.async_register(DOMAIN, SERVICE_START_tASK, async_start_mowing)
 
     return True
 
