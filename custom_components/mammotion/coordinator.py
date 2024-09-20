@@ -60,6 +60,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
             name=DOMAIN,
             update_interval=UPDATE_INTERVAL,
         )
+        self.device_name = None
         assert self.config_entry.unique_id
         self.config_entry = config_entry
         self._operation_settings = OperationSettings()
@@ -111,36 +112,26 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
                     self.address = address
                     self.manager.add_ble_device(ble_device, preference)
 
-        device = self.manager.get_device_by_name(self.device_name)
+        if self.device_name:
+            device = self.manager.get_device_by_name(self.device_name)
+        else:
+            device_names = self.manager.devices.devices.keys()
+            if len(device_names) == 0:
+                raise ConfigEntryNotReady("no_devices")
+            self.device_name = device_names[0]
+            device = self.manager.get_device_by_name(device_names[0])
         device.preference = preference
 
         if ble_device and device:
             device.ble().set_disconnect_strategy(not stay_connected_ble)
 
-        cloud_client = device.cloud().mqtt.cloud_client if device.cloud() else None
-
-        if device is None and cloud_client:
-            device_list = cloud_client.devices_by_account_response.data.data
-            mowing_devices = [
-                dev
-                for dev in device_list
-                if (dev.productModel is None or dev.productModel != "ReferenceStation")
-            ]
-            if len(mowing_devices) > 0:
-                self.device_name = mowing_devices[0].deviceName
-                device = self.manager.get_device_by_name(self.device_name)
-            else:
-                raise ConfigEntryNotReady(
-                    f"Could not find Mammotion lawn mower with name {self.device_name}"
-                )
-
         try:
-            if preference is ConnectionPreference.WIFI and device.cloud():
+            if preference is ConnectionPreference.WIFI and device.has_cloud():
                 await device.cloud().start_sync(0)
                 device.cloud().set_notification_callback(
                     self._async_update_notification
                 )
-            elif device.ble():
+            elif device.has_ble():
                 await device.ble().start_sync(0)
                 device.ble().set_notification_callback(self._async_update_notification)
             else:
