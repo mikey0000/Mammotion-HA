@@ -238,6 +238,98 @@
       "name": "Device Tracking"
     }
   },
+  "services": {
+    "start_mow": {
+      "name": "Start Mowing",
+      "description": "Start the mowing operation with custom settings.",
+      "fields": {
+        "is_mow": {
+          "name": "Is Mow",
+          "description": "Whether mowing is active. (Yuka)"
+        },
+        "is_dump": {
+          "name": "Is Dump",
+          "description": "Whether grass dumping is active. (Yuka)"
+        },
+        "is_edge": {
+          "name": "Is Edge",
+          "description": "Whether edge mode is active. (Yuka)"
+        },
+        "collect_grass_frequency": {
+          "name": "Grass Collection Frequency",
+          "description": "Frequency to collect grass (in meters squared). (Yuka)"
+        },
+        "job_mode": {
+          "name": "Job Mode",
+          "description": "Job mode for cutting."
+        },
+        "job_version": {
+          "name": "Job Version",
+          "description": "Job version."
+        },
+        "job_id": {
+          "name": "Job ID",
+          "description": "Job ID."
+        },
+        "speed": {
+          "name": "Speed",
+          "description": "Mowing speed."
+        },
+        "ultra_wave": {
+          "name": "Obstacle Detection",
+          "description": "Bypass strategy for mowing."
+        },
+        "channel_mode": {
+          "name": "Channel Mode",
+          "description": "Channel mode (grid, single, double, or single2)."
+        },
+        "channel_width": {
+          "name": "Channel Width",
+          "description": "Width of the mowing channel (in cm)."
+        },
+        "rain_tactics": {
+          "name": "Rain Detection",
+          "description": "Rain detection."
+        },
+        "blade_height": {
+          "name": "Blade Height",
+          "description": "Height of the blade."
+        },
+        "path_order": {
+          "name": "Path Order",
+          "description": "Mowing path order (border first or grid first)."
+        },
+        "toward": {
+          "name": "Angle",
+          "description": "Direction angle for mowing."
+        },
+        "toward_included_angle": {
+          "name": "Angle Relative to Grid?",
+          "description": "When selecting grid change the second angle."
+        },
+        "toward_mode": {
+          "name": "Direction Mode",
+          "description": "Angle mode."
+        },
+        "border_mode": {
+          "name": "Border Patrol Mode",
+          "description": "Border patrol mode (number of laps)."
+        },
+        "obstacle_laps": {
+          "name": "Obstacle Laps",
+          "description": "Number of laps around obstacles."
+        },
+        "start_progress": {
+          "name": "Start Progress",
+          "description": "Starting progress percentage."
+        },
+        "areas": {
+          "name": "Areas",
+          "description": "List of areas to mow (represented as integers)."
+        }
+      }
+    }
+  },
   "exceptions": {
     "device_not_ready": {
       "message": "Device is not ready."

@@ -1,0 +1,212 @@
+start_mow:
+  target:
+    entity:
+      integration: mammotion
+      domain: lawn_mower
+  fields:
+    is_mow:
+      example: true
+      default: true
+      required: false
+      selector:
+        boolean:
+    is_dump:
+      example: true
+      default: true
+      required: false
+      selector:
+        boolean:
+    is_edge:
+      example: false
+      default: false
+      required: false
+      selector:
+        boolean:
+    collect_grass_frequency:
+      example: 10
+      default: 10
+      required: false
+      selector:
+        number:
+          min: 5
+          max: 100
+          unit_of_measurement: "m²"
+    job_mode:
+      example: 0
+      default: 0
+      required: false
+      selector:
+        number:
+    job_version:
+      example: 0
+      default: 0
+      required: false
+      selector:
+        number:
+    job_id:
+      example: 0
+      default: 0
+      required: false
+      selector:
+        number:
+    speed:
+      example: 0.3
+      default: 0.3
+      required: false
+      selector:
+        number:
+          min: 0.2
+          max: 1.2
+          step: 0.1
+          mode: box
+          unit_of_measurement: "m/s"
+    ultra_wave:
+      example: 2
+      default: 2
+      selector:
+        select:
+          options:
+            - value: 0
+              label: "Direct Touch"
+            - value: 1
+              label: "Slow Touch"
+            - value: 2
+              label: "Less Touch"
+            - value: 10
+              label: "No Touch"
+      required: false
+    channel_mode:
+      example: 0
+      default: 0
+      required: false
+      selector:
+        select:
+          options:
+            - value: 0
+              label: "Single Grid"
+            - value: 1
+              label: "Double Grid"
+            - value: 2
+              label: "Segment Grid"
+            - value: 3
+              label: "No Grid"
+    channel_width:
+      example: 25
+      default: 25
+      required: false
+      selector:
+        number:
+          min: 20
+          max: 35
+    rain_tactics:
+      example: 1
+      default: 1
+      required: false
+      selector:
+        options:
+          - value: 0
+            label: "Off"
+          - value: 1
+            label: "On"
+    blade_height:
+      example: 0
+      default: 25
+      required: false
+      selector:
+        number:
+          min: 15
+          max: 100
+          step: 5
+          unit_of_measurement: "cm"
+    path_order:
+      example: 0
+      default: 0
+      selector:
+        select:
+          options:
+            - value: 0
+              label: "Border First"
+            - value: 1
+              label: "Grid First"
+      required: false
+    toward:
+      example: 0
+      default: 0
+      required: false
+      selector:
+        number:
+          min: -180
+          max: 180
+          unit_of_measurement: degrees
+    toward_included_angle:
+      example: 0
+      default: 0
+      required: false
+      selector:
+        number:
+          min: -180
+          max: 180
+          unit_of_measurement: degrees
+    toward_mode:
+      example: 0
+      default: 0
+      selector:
+        select:
+          options:
+            - value: 0
+              label: "Relative Angle"
+            - value: 1
+              label: "Absolute Angle"
+            - value: 2
+              label: "Random Angle"
+      required: false
+    border_mode:
+      example: 1
+      default: 1
+      selector:
+        select:
+          options:
+            - value: 0
+              label: "None"
+            - value: 1
+              label: "One Lap"
+            - value: 2
+              label: "Two Laps"
+            - value: 3
+              label: "Three Laps"
+            - value: 4
+              label: "Four Laps"
+      required: false
+    obstacle_laps:
+      example: 1
+      default: 1
+      selector:
+        select:
+          options:
+            - value: 0
+              label: "None"
+            - value: 1
+              label: "One Lap"
+            - value: 2
+              label: "Two Laps"
+            - value: 3
+              label: "Three Laps"
+            - value: 4
+              label: "Four Laps"
+      required: false
+    start_progress:
+      example: 0
+      default: 0
+      required: false
+      selector:
+        number:
+          min: 0
+          max: 100
+          unit_of_measurement: "%"
+    areas:
+      required: true
+      selector:
+        entity:
+          multiple: true
+          integration: mammotion
+          domain: switch

@@ -16,6 +16,7 @@ from .const import (
     CONF_SESSION_DATA,
     CONF_USE_WIFI,
     DEFAULT_RETRY_COUNT,
+    DOMAIN,
 )
 from .coordinator import MammotionDataUpdateCoordinator
 
@@ -55,9 +56,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
         )
 
     mammotion_coordinator = MammotionDataUpdateCoordinator(hass, entry)
-
     await mammotion_coordinator.async_setup()
-
 
     # config_updates = {}
     mqtt = mammotion_coordinator.manager.mqtt_list.get(
@@ -76,13 +75,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
         }
         hass.config_entries.async_update_entry(entry, data=config_updates)
 
-    use_wifi = entry.data.get(CONF_USE_WIFI)
-    if use_wifi is False:
-        await mammotion_coordinator.async_config_entry_first_refresh()
+    await mammotion_coordinator.async_config_entry_first_refresh()
     entry.runtime_data = mammotion_coordinator
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
+    # need to register service for triggering tasks
+    # hass.services.async_register(DOMAIN, SERVICE_START_tASK, async_start_mowing)
+
     return True
+
 
 async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Handle options update."""

@@ -6,6 +6,7 @@ from dataclasses import asdict
 from datetime import timedelta
 from typing import TYPE_CHECKING, Any
 
+import betterproto
 from aiohttp import ClientConnectorError
 from homeassistant.components import bluetooth
 from homeassistant.const import CONF_ADDRESS, CONF_PASSWORD
@@ -24,6 +25,7 @@ from pymammotion.mammotion.devices.mammotion import (
     Mammotion,
 )
 from pymammotion.proto import has_field
+from pymammotion.proto.luba_msg import LubaMsg
 from pymammotion.proto.mctrl_sys import RptAct, RptInfoType
 
 from .const import (
@@ -132,7 +134,6 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
                     f"Could not find Mammotion lawn mower with name {self.device_name}"
                 )
 
-        await self.async_restore_data()
         try:
             if preference is ConnectionPreference.WIFI and device.cloud():
                 await device.cloud().start_sync(0)
@@ -150,20 +151,27 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
         except COMMAND_EXCEPTIONS as exc:
             raise ConfigEntryNotReady("Unable to setup Mammotion device") from exc
 
-    async def async_restore_data(self) -> None:
-        store = Store(self.hass, version=1, key=self.device_name)
+        await self.async_restore_data()
 
-        if restored_data := await store.async_load():
-            try:
-                self.data = MowingDevice().from_dict(restored_data)
-                if device_dict := restored_data.get("device"):
-                    self.data.from_raw(device_dict)
-            except:
-                self.data = MowingDevice()
+    async def async_restore_data(self) -> None:
+        """Restore saved data."""
+        store = Store(self.hass, version=1, key=self.device_name)
+        restored_data = await store.async_load()
+        if restored_data:
+            if device_dict := restored_data.get("device"):
+                restored_data["device"] = None
+            else:
+                device_dict = LubaMsg().to_dict(casing=betterproto.Casing.SNAKE)
+
+            self.data = MowingDevice().from_dict(restored_data)
+            self.data.update_raw(device_dict)
+            self.manager.get_device_by_name(self.device_name).mower_state = self.data
 
     async def async_save_data(self, data: MowingDevice) -> None:
+        """Get map data from the device."""
         store = Store(self.hass, version=1, key=self.device_name)
-        await store.async_save(data.to_dict())
+        stored_data = asdict(data)
+        await store.async_save(stored_data)
 
     async def async_sync_maps(self) -> None:
         """Get map data from the device."""
@@ -258,22 +266,23 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
                     translation_domain=DOMAIN, translation_key="command_failed"
                 ) from exc
 
-    async def async_plan_route(self) -> None:
+    async def async_plan_route(self, operation_settings: OperationSettings) -> None:
         """Plan mow."""
         route_information = GenerateRouteInformation(
-            one_hashs=self._operation_settings.areas,
-            rain_tactics=self._operation_settings.rain_tactics,
-            speed=self._operation_settings.speed,
-            ultra_wave=self._operation_settings.ultra_wave,  # touch no touch etc
-            toward=self._operation_settings.toward,  # is just angle
-            toward_included_angle=self._operation_settings.toward_included_angle,  # angle type relative etc
-            blade_height=self._operation_settings.blade_height,
-            channel_mode=self._operation_settings.channel_mode,  # line mode is grid single double or single2
-            channel_width=self._operation_settings.channel_width,
-            job_mode=self._operation_settings.job_mode,  # taskMode
-            edge_mode=self._operation_settings.border_mode,  # border laps
-            path_order=create_path_order(self._operation_settings, self.device_name),
-            obstacle_laps=self._operation_settings.obstacle_laps,
+            one_hashs=operation_settings.areas,
+            rain_tactics=operation_settings.rain_tactics,
+            speed=operation_settings.speed,
+            ultra_wave=operation_settings.ultra_wave,  # touch no touch etc
+            toward=operation_settings.toward,  # is just angle
+            toward_included_angle=operation_settings.toward_included_angle,  # angle relative to grid??
+            toward_mode=operation_settings.toward_mode,
+            blade_height=operation_settings.blade_height,
+            channel_mode=operation_settings.channel_mode,  # line mode is grid single double or single2
+            channel_width=operation_settings.channel_width,
+            job_mode=operation_settings.job_mode,  # taskMode
+            edge_mode=operation_settings.border_mode,  # border laps
+            path_order=create_path_order(operation_settings, self.device_name),
+            obstacle_laps=operation_settings.obstacle_laps,
         )
 
         await self.async_send_command(
@@ -281,12 +290,13 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
         )
 
     async def clear_all_maps(self) -> None:
-        data = self.manager.get_device_by_name(self.device_name).mower_state()
+        data = self.manager.get_device_by_name(self.device_name).mower_state
         data.map = HashList()
 
     async def _async_update_notification(self) -> None:
         """Update data from incoming messages."""
-        self.async_set_updated_data(self.manager.mower(self.device_name))
+        mower = self.manager.mower(self.device_name)
+        self.async_set_updated_data(mower)
 
     async def check_firmware_version(self) -> None:
         """Check if firmware version is udpated."""
@@ -345,8 +355,8 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
 
         try:
             if (
-                len(device.mower_state().net.toapp_devinfo_resp.resp_ids) == 0
-                or device.mower_state().net.toapp_wifi_iot_status.productkey is None
+                len(device.mower_state.net.toapp_devinfo_resp.resp_ids) == 0
+                or device.mower_state.net.toapp_wifi_iot_status.productkey is None
             ):
                 await self.manager.start_sync(self.device_name, 0)
 
@@ -367,12 +377,12 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
         LOGGER.debug("================= Debug Log =================")
         LOGGER.debug(
             "Mammotion device data: %s",
-            asdict(self.manager.get_device_by_name(self.device_name).mower_state()),
+            asdict(self.manager.get_device_by_name(self.device_name).mower_state),
         )
         LOGGER.debug("==================================")
 
         self.update_failures = 0
-        data = self.manager.get_device_by_name(self.device_name).mower_state()
+        data = self.manager.get_device_by_name(self.device_name).mower_state
         await self.async_save_data(data)
         return data
 

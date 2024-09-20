@@ -86,22 +86,22 @@ async def async_setup_entry(
 ) -> None:
     """Set up the Mammotion switch entities."""
     coordinator = entry.runtime_data
-    added_areas: set[int] = set()
+    added_areas: set[str] = set()
 
     @callback
     def add_entities() -> None:
         """Handle addition of mowing areas."""
 
-        switch_entities: list[MammotionConfigSwitchEntity] = []
+        switch_entities: list[MammotionConfigAreaSwitchEntity] = []
         areas = coordinator.data.map.area.keys()
         area_name = coordinator.data.map.area_name
         new_areas = areas - added_areas
         if new_areas:
             for area_id in new_areas:
                 existing_name: AreaHashName = next(
-                    (area for area in area_name if area.hash == area_id), None
+                    (area for area in area_name if area.hash.__str__() == area_id), None
                 )
-                name = existing_name.name if existing_name else area_id
+                name = existing_name.name if existing_name else f"mowing area {area_id}"
                 base_area_switch_entity = MammotionConfigAreaSwitchEntityDescription(
                     key=f"{area_id}",
                     area=area_id,
@@ -123,6 +123,7 @@ async def async_setup_entry(
         if switch_entities:
             async_add_entities(switch_entities)
 
+    add_entities()
     coordinator.async_add_listener(add_entities)
 
     entities = []
@@ -215,6 +216,7 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
         self.coordinator = coordinator
         self.entity_description = entity_description
         self._attr_translation_key = entity_description.key
+        self._attr_extra_state_attributes = {"hash": entity_description.area}
         # TODO grab defaults from operation_settings
         self._attr_is_on = False  # Default state
 
