@@ -252,18 +252,21 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
             WorkMode.MODE_RETURNING,
         ):
             try:
-                if mode != WorkMode.MODE_PAUSE:
-                    if mode == WorkMode.MODE_WORKING:
-                        trans_key = "pause_failed"
-                        await self.coordinator.async_send_command("pause_execute_task")
-                    if mode == WorkMode.MODE_RETURNING:
-                        trans_key = "dock_failed"
-                        await self.coordinator.async_send_command("cancel_return_to_dock")
+                if mode == WorkMode.MODE_WORKING:
+                    trans_key = "pause_failed"
+                    await self.coordinator.async_send_command("pause_execute_task")
                     # TODO is this needed here between commands?
                     await self.coordinator.async_request_iot_sync()
+                if mode == WorkMode.MODE_RETURNING:
+                    trans_key = "dock_failed"
+                    await self.coordinator.async_send_command("cancel_return_to_dock")
+                    # TODO is this needed here between commands?
+                    await self.coordinator.async_request_iot_sync()
+                    mode = self.rpt_dev_status.sys_status
                     
-                trans_key = "pause_failed"
-                await self.coordinator.async_send_command("cancel_job")
+                if mode != WorkMode.MODE_PAUSE:
+                    trans_key = "pause_failed"
+                    await self.coordinator.async_send_command("cancel_job")
 
             except COMMAND_EXCEPTIONS as exc:
                 raise HomeAssistantError(
