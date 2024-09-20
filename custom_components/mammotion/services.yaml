@@ -1,3 +1,8 @@
+cancel_job:
+  target:
+    entity:
+      integration: mammotion
+      domain: lawn_mower
 start_mow:
   target:
     entity:
