@@ -272,6 +272,3 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
                 ) from exc
             finally:
                 await self.coordinator.async_request_iot_sync()
-                self.coordinator.async_set_updated_data(
-                    self.coordinator.manager.mower(self.coordinator.device_name)
-                )
