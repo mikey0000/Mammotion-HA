@@ -264,7 +264,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
                     # TODO is this updated by iot_sync? seems to be.
                     mode = self.rpt_dev_status.sys_status
                     
-                if mode != WorkMode.MODE_PAUSE:
+                if mode == WorkMode.MODE_PAUSE:
                     trans_key = "pause_failed"
                     await self.coordinator.async_send_command("cancel_job")
 
