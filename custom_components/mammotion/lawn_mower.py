@@ -252,16 +252,14 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
             WorkMode.MODE_RETURNING,
         ):
             try:
-                if mode == WorkMode.MODE_WORKING:
-                    trans_key = "pause_failed"
-                    await self.coordinator.async_send_command("pause_execute_task")
-                    # TODO is this needed here between commands?
+                if mode != WorkMode.MODE_PAUSE:
+                    if mode == WorkMode.MODE_WORKING:
+                        trans_key = "pause_failed"
+                        await self.coordinator.async_send_command("pause_execute_task")
+                    if mode == WorkMode.MODE_RETURNING:
+                        trans_key = "dock_failed"
+                        await self.coordinator.async_send_command("cancel_return_to_dock")
                     await self.coordinator.async_request_iot_sync()
-                if mode == WorkMode.MODE_RETURNING:
-                    trans_key = "dock_failed"
-                    await self.coordinator.async_send_command("cancel_return_to_dock")
-                    await self.coordinator.async_request_iot_sync()
-                    # TODO is this updated by iot_sync? seems to be.
                     mode = self.rpt_dev_status.sys_status
                     
                 if mode == WorkMode.MODE_PAUSE:
