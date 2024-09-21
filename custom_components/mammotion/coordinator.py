@@ -146,7 +146,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
 
     async def async_restore_data(self) -> None:
         """Restore saved data."""
-        store = Store(self.hass, version=1, key=self.device_name)
+        store = Store(self.hass, version=2, key=self.device_name)
         restored_data = await store.async_load()
         if restored_data:
             if device_dict := restored_data.get("device"):
