@@ -15,6 +15,7 @@ from homeassistant.exceptions import ConfigEntryNotReady, HomeAssistantError
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from mashumaro.exceptions import InvalidFieldValue
 from pymammotion.aliyun.cloud_gateway import DeviceOfflineException, SetupException
 from pymammotion.data.model import GenerateRouteInformation, HashList
 from pymammotion.data.model.account import Credentials
@@ -146,16 +147,23 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
 
     async def async_restore_data(self) -> None:
         """Restore saved data."""
-        store = Store(self.hass, version=2, key=self.device_name)
+        store = Store(self.hass, version=1, key=self.device_name)
         restored_data = await store.async_load()
-        if restored_data:
-            if device_dict := restored_data.get("device"):
-                restored_data["device"] = None
-            else:
-                device_dict = LubaMsg().to_dict(casing=betterproto.Casing.SNAKE)
+        try:
+            if restored_data:
+                if device_dict := restored_data.get("device"):
+                    restored_data["device"] = None
+                else:
+                    device_dict = LubaMsg().to_dict(casing=betterproto.Casing.SNAKE)
 
-            self.data = MowingDevice().from_dict(restored_data)
-            self.data.update_raw(device_dict)
+                self.data = MowingDevice().from_dict(restored_data)
+                self.data.update_raw(device_dict)
+                self.manager.get_device_by_name(
+                    self.device_name
+                ).mower_state = self.data
+        except InvalidFieldValue:
+            """invalid"""
+            self.data = MowingDevice()
             self.manager.get_device_by_name(self.device_name).mower_state = self.data
 
     async def async_save_data(self, data: MowingDevice) -> None:
