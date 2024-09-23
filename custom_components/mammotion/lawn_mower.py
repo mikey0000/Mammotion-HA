@@ -238,7 +238,6 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
                 ) from exc
             finally:
                 await self.coordinator.async_request_iot_sync()
-                self.coordinator.async_set_updated_data(
 
     async def async_pause(self) -> None:
         """Pause mower."""
