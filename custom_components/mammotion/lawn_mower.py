@@ -200,9 +200,6 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
                 ) from exc
             finally:
                 await self.coordinator.async_request_iot_sync()
-                self.coordinator.async_set_updated_data(
-                    self.coordinator.manager.mower(self.coordinator.device_name)
-                )
 
     async def async_dock(self) -> None:
         """Start docking."""
@@ -242,8 +239,6 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
             finally:
                 await self.coordinator.async_request_iot_sync()
                 self.coordinator.async_set_updated_data(
-                    self.coordinator.manager.mower(self.coordinator.device_name)
-                )
 
     async def async_pause(self) -> None:
         """Pause mower."""
@@ -271,6 +266,3 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
                 ) from exc
             finally:
                 await self.coordinator.async_request_iot_sync()
-                self.coordinator.async_set_updated_data(
-                    self.coordinator.manager.mower(self.coordinator.device_name)
-                )
