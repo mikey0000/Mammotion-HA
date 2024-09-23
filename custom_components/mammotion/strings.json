@@ -142,6 +142,10 @@
     }
   },
   "services": {
+    "cancel_job": {
+      "name": "Cancel current task",
+      "description": "Stops the mower and clears the current task.",
+    },
     "start_mow": {
       "name": "Start Mowing",
       "description": "Start the mowing operation with custom settings.",
@@ -231,7 +235,7 @@
           "description": "List of areas to mow (represented as integers)."
         }
       }
-    }
+    },
   },
   "exceptions": {
     "device_not_ready": {
