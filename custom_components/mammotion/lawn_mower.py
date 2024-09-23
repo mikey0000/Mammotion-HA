@@ -155,6 +155,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
     async def async_start_mowing(self, **kwargs: Any) -> None:
         """Start mowing."""
         if kwargs:
+            await self.async_cancel()
             entity_ids = kwargs.get("areas", [])
 
             attributes = [
