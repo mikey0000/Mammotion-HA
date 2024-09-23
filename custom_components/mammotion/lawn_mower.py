@@ -149,6 +149,8 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
 
     async def async_start_mowing(self, **kwargs: Any) -> None:
         """Start mowing."""
+        
+        operational_settings = self.coordinator.operation_settings
         if kwargs:
             entity_ids = kwargs.get("areas", [])
 
@@ -160,10 +162,8 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
             kwargs["areas"] = attributes
             operational_settings = OperationSettings.from_dict(kwargs)
             LOGGER.debug(kwargs)
-            await self.coordinator.async_plan_route(operational_settings)
-            await self.coordinator.async_send_command("start_job")
-            await self.coordinator.async_request_iot_sync()
-            return
+        else:
+            operational_settings = self.coordinator.operation_settings
 
         # check if job in progress
         #
@@ -191,7 +191,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
                     await self.coordinator.async_send_command("resume_execute_task")
                 if mode == WorkMode.MODE_READY:
                     trans_key = "start_failed"
-                    await self.coordinator.async_plan_route(self.coordinator.operation_settings)
+                    await self.coordinator.async_plan_route(operational_settings)
                     await self.coordinator.async_send_command("start_job")
                 
             except COMMAND_EXCEPTIONS as exc:
