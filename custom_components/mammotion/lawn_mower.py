@@ -153,7 +153,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
             entity_ids = kwargs.get("areas", [])
 
             attributes = [
-                get_entity_attribute(self.hass, entity_id, "hash")
+                int(get_entity_attribute(self.hass, entity_id, "hash"))
                 for entity_id in entity_ids
                 if get_entity_attribute(self.hass, entity_id, "hash") is not None
             ]
