@@ -150,7 +150,6 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
     async def async_start_mowing(self, **kwargs: Any) -> None:
         """Start mowing."""
         
-        operational_settings = self.coordinator.operation_settings
         if kwargs:
             entity_ids = kwargs.get("areas", [])
 
@@ -180,7 +179,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
         ):
             try:
                 if mode == WorkMode.MODE_RETURNING:
-                    trans_key = "pause_failed"
+                    trans_key = "dock_cancel_failed"
                     await self.coordinator.async_send_command("cancel_return_to_dock")
                     await self.coordinator.async_request_iot_sync()
                     # TODO is rpt_dev_status updated on iot sync?
@@ -227,7 +226,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
                     await self.coordinator.async_request_iot_sync()
 
                 if mode == WorkMode.MODE_RETURNING:
-                    trans_key = "pause_failed"
+                    trans_key = "dock_cancel_failed"
                     await self.coordinator.async_send_command("cancel_return_to_dock")
                 else:
                     trans_key = "dock_failed"
@@ -257,7 +256,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
                     trans_key = "pause_failed"
                     await self.coordinator.async_send_command("pause_execute_task")
                 if mode == WorkMode.MODE_RETURNING:
-                    trans_key = "pause_failed"
+                    trans_key = "dock_cancel_failed"
                     await self.coordinator.async_send_command("cancel_return_to_dock")
             except COMMAND_EXCEPTIONS as exc:
                 raise HomeAssistantError(
