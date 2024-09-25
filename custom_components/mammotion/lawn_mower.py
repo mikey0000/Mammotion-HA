@@ -228,7 +228,6 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
                 if mode == WorkMode.MODE_WORKING:
                     trans_key = "pause_failed"
                     await self.coordinator.async_send_command("pause_execute_task")
-                    await self.coordinator.async_request_iot_sync()
 
                 if mode == WorkMode.MODE_RETURNING:
                     trans_key = "dock_cancel_failed"
