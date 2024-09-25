@@ -27,6 +27,7 @@ from .coordinator import MammotionDataUpdateCoordinator
 from .entity import MammotionBaseEntity
 
 SERVICE_START_MOWING = "start_mow"
+SERVICE_CANCEL_JOB = "cancel_job"
 
 START_MOW_SCHEMA = {
     vol.Optional("is_mow", default=True): cv.boolean,
@@ -35,7 +36,7 @@ START_MOW_SCHEMA = {
     vol.Optional("collect_grass_frequency", default=10): vol.All(
         vol.Coerce(int), vol.Range(min=5, max=100)
     ),
-    vol.Optional("job_mode", default=0): vol.Coerce(int),
+    vol.Optional("job_mode", default=0): vol.In([0, 1]),
     vol.Optional("job_version", default=0): vol.Coerce(int),
     vol.Optional("job_id", default=0): vol.Coerce(int),
     vol.Optional("speed", default=0.3): vol.All(
@@ -50,7 +51,6 @@ START_MOW_SCHEMA = {
     vol.Optional("blade_height", default=25): vol.All(
         vol.Coerce(int), vol.Range(min=15, max=100)
     ),
-    vol.Optional("path_order", default=0): vol.In([0, 1]),
     vol.Optional("toward", default=0): vol.All(
         vol.Coerce(int), vol.Range(min=-180, max=180)
     ),
@@ -97,6 +97,9 @@ async def async_setup_entry(
         SERVICE_START_MOWING, START_MOW_SCHEMA, "async_start_mowing"
     )
 
+    platform.async_register_entity_service(
+        SERVICE_CANCEL_JOB, None, "async_cancel"
+    )
 
 class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
     """Representation of a Mammotion lawn mower."""
@@ -151,10 +154,12 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
         """Start mowing."""
         
         if kwargs:
+            await self.async_cancel()
             entity_ids = kwargs.get("areas", [])
 
             attributes = [
-                get_entity_attribute(self.hass, entity_id, "hash")
+                # TODO this should not need to be cast. 
+                int(get_entity_attribute(self.hass, entity_id, "hash"))
                 for entity_id in entity_ids
                 if get_entity_attribute(self.hass, entity_id, "hash") is not None
             ]
@@ -248,16 +253,47 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
             )
             
         if mode in (
-            WorkMode.MODE_WORKING,
+          WorkMode.MODE_WORKING,
             WorkMode.MODE_RETURNING,
         ):
-            try:
-                if mode == WorkMode.MODE_WORKING:
+          try:
+          
+          if mode == WorkMode.MODE_WORKING:
                     trans_key = "pause_failed"
                     await self.coordinator.async_send_command("pause_execute_task")
                 if mode == WorkMode.MODE_RETURNING:
                     trans_key = "dock_cancel_failed"
                     await self.coordinator.async_send_command("cancel_return_to_dock")
+
+    async def async_cancel(self) -> None:
+        """Cancel Job"""
+        
+        mode = self.rpt_dev_status.sys_status
+        if mode is None:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key="device_not_ready"
+            )
+            
+       if mode in (
+            WorkMode.MODE_PAUSE,
+            WorkMode.MODE_WORKING,
+            WorkMode.MODE_RETURNING,
+        ):
+            try:
+                 if mode != WorkMode.MODE_PAUSE:
+                    if mode == WorkMode.MODE_WORKING:
+                        trans_key = "pause_failed"
+                        await self.coordinator.async_send_command("pause_execute_task")
+                    if mode == WorkMode.MODE_RETURNING:
+                        trans_key = "dock_failed"
+                        await self.coordinator.async_send_command("cancel_return_to_dock")
+                    await self.coordinator.async_request_iot_sync()
+                    mode = self.rpt_dev_status.sys_status
+                    
+                if mode == WorkMode.MODE_PAUSE:
+                    trans_key = "pause_failed"
+                    await self.coordinator.async_send_command("cancel_job")
+
             except COMMAND_EXCEPTIONS as exc:
                 raise HomeAssistantError(
                     translation_domain=DOMAIN, translation_key=trans_key

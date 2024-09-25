@@ -8,18 +8,17 @@
       "not_supported": "Device not supported",
       "reconfigure_successful": "[%key:common::config_flow::abort::reconfigure_successful%]"
     }
+  },
+  "flow_title": "Configure your Mammotion lawn mower",
+  "step": {
+    "bluetooth_confirm": {
+      "description": "Setup {name}"
     },
-    "flow_title": "Configure your Mammotion lawn mower",
-    "step": {
-      "bluetooth_confirm": {
-        "description": "Setup {name}"
+    "user": {
+      "data": {
+        "address": "Device"
       },
-      "user": {
-        "data": {
-          "address": "Device"
-        },
-        "description": "Select your mower"
-      }
+      "description": "Select your mower"
     }
   },
   "entity": {
@@ -103,13 +102,13 @@
         "name": "Side LED On/Off",
         "description": "Enable or disable the side LED."
       },
-       "perimeter_first_on_off": {
+      "perimeter_first_on_off": {
         "name": "Perimeter First",
         "description": "Perimeter first or lines/zigzag first mowing."
       }
     },
     "select": {
-       "cutting_mode": {
+      "cutting_mode": {
         "name": "Cutting Mode",
         "description": "Select the cutting mode for the mower."
       },
@@ -127,7 +126,7 @@
       }
     },
     "number": {
-       "start_progress": {
+      "start_progress": {
         "name": "Start Progress",
         "description": "Set the start progress percentage."
       },
@@ -142,6 +141,10 @@
     }
   },
   "services": {
+    "cancel_job": {
+      "name": "Cancel current task",
+      "description": "Stops the mower and clears the current task."
+    },
     "start_mow": {
       "name": "Start Mowing",
       "description": "Start the mowing operation with custom settings.",

@@ -5,7 +5,7 @@ from homeassistant.components.switch import SwitchEntity, SwitchEntityDescriptio
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.restore_state import RestoreEntity
-from pymammotion.proto.mctrl_nav import AreaHashName
+from pymammotion.data.model.hash_list import AreaHashNameList
 from pymammotion.utility.device_type import DeviceType
 
 from . import MammotionConfigEntry
@@ -98,8 +98,8 @@ async def async_setup_entry(
         new_areas = areas - added_areas
         if new_areas:
             for area_id in new_areas:
-                existing_name: AreaHashName = next(
-                    (area for area in area_name if area.hash.__str__() == area_id), None
+                existing_name: AreaHashNameList = next(
+                    (area for area in area_name if str(area.hash) == str(area_id)), None
                 )
                 name = existing_name.name if existing_name else f"mowing area {area_id}"
                 base_area_switch_entity = MammotionConfigAreaSwitchEntityDescription(
@@ -216,21 +216,24 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
         self.coordinator = coordinator
         self.entity_description = entity_description
         self._attr_translation_key = entity_description.key
-        self._attr_extra_state_attributes = {"hash": entity_description.area}
+        # TODO this should not need to be cast. 
+        self._attr_extra_state_attributes = {"hash": int(entity_description.area)}
         # TODO grab defaults from operation_settings
         self._attr_is_on = False  # Default state
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         self._attr_is_on = True
         self.entity_description.set_fn(
-            self.coordinator, True, self.entity_description.area
+            # TODO this should not need to be cast. 
+            self.coordinator, True, int(self.entity_description.area)
         )
         self.async_write_ha_state()
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         self._attr_is_on = False
         self.entity_description.set_fn(
-            self.coordinator, False, self.entity_description.area
+            # TODO this should not need to be cast. 
+            self.coordinator, False, int(self.entity_description.area)
         )
         self.async_write_ha_state()
 

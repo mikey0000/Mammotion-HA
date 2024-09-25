@@ -15,6 +15,7 @@ from homeassistant.exceptions import ConfigEntryNotReady, HomeAssistantError
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from mashumaro.exceptions import InvalidFieldValue
 from pymammotion.aliyun.cloud_gateway import DeviceOfflineException, SetupException
 from pymammotion.data.model import GenerateRouteInformation, HashList
 from pymammotion.data.model.account import Credentials
@@ -60,6 +61,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
             name=DOMAIN,
             update_interval=UPDATE_INTERVAL,
         )
+        self.device_name = None
         assert self.config_entry.unique_id
         self.config_entry = config_entry
         self._operation_settings = OperationSettings()
@@ -111,36 +113,26 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
                     self.address = address
                     self.manager.add_ble_device(ble_device, preference)
 
-        device = self.manager.get_device_by_name(self.device_name)
+        if self.device_name:
+            device = self.manager.get_device_by_name(self.device_name)
+        else:
+            device_names = self.manager.devices.devices.keys()
+            if len(device_names) == 0:
+                raise ConfigEntryNotReady("no_devices")
+            self.device_name = device_names[0]
+            device = self.manager.get_device_by_name(device_names[0])
         device.preference = preference
 
         if ble_device and device:
             device.ble().set_disconnect_strategy(not stay_connected_ble)
 
-        cloud_client = device.cloud().mqtt.cloud_client if device.cloud() else None
-
-        if device is None and cloud_client:
-            device_list = cloud_client.devices_by_account_response.data.data
-            mowing_devices = [
-                dev
-                for dev in device_list
-                if (dev.productModel is None or dev.productModel != "ReferenceStation")
-            ]
-            if len(mowing_devices) > 0:
-                self.device_name = mowing_devices[0].deviceName
-                device = self.manager.get_device_by_name(self.device_name)
-            else:
-                raise ConfigEntryNotReady(
-                    f"Could not find Mammotion lawn mower with name {self.device_name}"
-                )
-
         try:
-            if preference is ConnectionPreference.WIFI and device.cloud():
+            if preference is ConnectionPreference.WIFI and device.has_cloud():
                 await device.cloud().start_sync(0)
                 device.cloud().set_notification_callback(
                     self._async_update_notification
                 )
-            elif device.ble():
+            elif device.has_ble():
                 await device.ble().start_sync(0)
                 device.ble().set_notification_callback(self._async_update_notification)
             else:
@@ -157,14 +149,21 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
         """Restore saved data."""
         store = Store(self.hass, version=1, key=self.device_name)
         restored_data = await store.async_load()
-        if restored_data:
-            if device_dict := restored_data.get("device"):
-                restored_data["device"] = None
-            else:
-                device_dict = LubaMsg().to_dict(casing=betterproto.Casing.SNAKE)
+        try:
+            if restored_data:
+                if device_dict := restored_data.get("device"):
+                    restored_data["device"] = None
+                else:
+                    device_dict = LubaMsg().to_dict(casing=betterproto.Casing.SNAKE)
 
-            self.data = MowingDevice().from_dict(restored_data)
-            self.data.update_raw(device_dict)
+                self.data = MowingDevice().from_dict(restored_data)
+                self.data.update_raw(device_dict)
+                self.manager.get_device_by_name(
+                    self.device_name
+                ).mower_state = self.data
+        except InvalidFieldValue:
+            """invalid"""
+            self.data = MowingDevice()
             self.manager.get_device_by_name(self.device_name).mower_state = self.data
 
     async def async_save_data(self, data: MowingDevice) -> None:
@@ -279,7 +278,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
             blade_height=operation_settings.blade_height,
             channel_mode=operation_settings.channel_mode,  # line mode is grid single double or single2
             channel_width=operation_settings.channel_width,
-            job_mode=operation_settings.job_mode,  # taskMode
+            job_mode=operation_settings.job_mode,  # taskMode grid or border first
             edge_mode=operation_settings.border_mode,  # border laps
             path_order=create_path_order(operation_settings, self.device_name),
             obstacle_laps=operation_settings.obstacle_laps,

@@ -1,3 +1,8 @@
+cancel_job:
+  target:
+    entity:
+      integration: mammotion
+      domain: lawn_mower
 start_mow:
   target:
     entity:
@@ -36,7 +41,12 @@ start_mow:
       default: 0
       required: false
       selector:
-        number:
+        select:
+          options:
+            - value: 0
+              label: "Border First"
+            - value: 1
+              label: "Grid First"
     job_version:
       example: 0
       default: 0
@@ -118,17 +128,6 @@ start_mow:
           max: 100
           step: 5
           unit_of_measurement: "cm"
-    path_order:
-      example: 0
-      default: 0
-      selector:
-        select:
-          options:
-            - value: 0
-              label: "Border First"
-            - value: 1
-              label: "Grid First"
-      required: false
     toward:
       example: 0
       default: 0
