@@ -216,21 +216,24 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
         self.coordinator = coordinator
         self.entity_description = entity_description
         self._attr_translation_key = entity_description.key
-        self._attr_extra_state_attributes = {"hash": entity_description.area}
+        # TODO this should not need to be cast. 
+        self._attr_extra_state_attributes = {"hash": int(entity_description.area)}
         # TODO grab defaults from operation_settings
         self._attr_is_on = False  # Default state
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         self._attr_is_on = True
         self.entity_description.set_fn(
-            self.coordinator, True, self.entity_description.area
+            # TODO this should not need to be cast. 
+            self.coordinator, True, int(self.entity_description.area)
         )
         self.async_write_ha_state()
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         self._attr_is_on = False
         self.entity_description.set_fn(
-            self.coordinator, False, self.entity_description.area
+            # TODO this should not need to be cast. 
+            self.coordinator, False, int(self.entity_description.area)
         )
         self.async_write_ha_state()
 
