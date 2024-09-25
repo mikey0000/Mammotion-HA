@@ -69,7 +69,9 @@ START_MOW_SCHEMA = {
 }
 
 
-def get_entity_attribute(hass, entity_id, attribute_name):
+def get_entity_attribute(
+    hass: HomeAssistant, entity_id: str, attribute_name: str
+) -> str | None:
     # Get the state object of the entity
     entity = hass.states.get(entity_id)
 
@@ -97,9 +99,8 @@ async def async_setup_entry(
         SERVICE_START_MOWING, START_MOW_SCHEMA, "async_start_mowing"
     )
 
-    platform.async_register_entity_service(
-        SERVICE_CANCEL_JOB, None, "async_cancel"
-    )
+    platform.async_register_entity_service(SERVICE_CANCEL_JOB, None, "async_cancel")
+
 
 class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
     """Representation of a Mammotion lawn mower."""
@@ -116,11 +117,11 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
         self._attr_name = None  # main feature of device
 
     @property
-    def rpt_dev_status(self) -> RptDevStatus | None:
+    def rpt_dev_status(self) -> RptDevStatus:
         """Return the device status."""
         if has_field(self.coordinator.data.sys.toapp_report_data.dev):
             return self.coordinator.data.sys.toapp_report_data.dev
-        return None
+        return RptDevStatus()
 
     @property
     def report_data(self) -> ReportData:
@@ -136,10 +137,8 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
             return None
 
         LOGGER.debug("activity mode %s", mode)
-        if (
-            mode == WorkMode.MODE_PAUSE
-            or (mode == WorkMode.MODE_READY
-            and charge_state == 0)
+        if mode == WorkMode.MODE_PAUSE or (
+            mode == WorkMode.MODE_READY and charge_state == 0
         ):
             return LawnMowerActivity.PAUSED
         if mode in (WorkMode.MODE_WORKING, WorkMode.MODE_RETURNING):
@@ -152,13 +151,13 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
 
     async def async_start_mowing(self, **kwargs: Any) -> None:
         """Start mowing."""
-        
+        trans_key = "pause_failed"
         if kwargs:
             await self.async_cancel()
             entity_ids = kwargs.get("areas", [])
 
             attributes = [
-                # TODO this should not need to be cast. 
+                # TODO this should not need to be cast.
                 int(get_entity_attribute(self.hass, entity_id, "hash"))
                 for entity_id in entity_ids
                 if get_entity_attribute(self.hass, entity_id, "hash") is not None
@@ -190,14 +189,14 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
                     # TODO is rpt_dev_status updated on iot sync?
                     mode = self.rpt_dev_status.sys_status
 
-                if mode == WorkMode.MODE_PAUSE :
+                if mode == WorkMode.MODE_PAUSE:
                     trans_key = "resume_failed"
                     await self.coordinator.async_send_command("resume_execute_task")
                 if mode == WorkMode.MODE_READY:
                     trans_key = "start_failed"
                     await self.coordinator.async_plan_route(operational_settings)
                     await self.coordinator.async_send_command("start_job")
-                
+
             except COMMAND_EXCEPTIONS as exc:
                 raise HomeAssistantError(
                     translation_domain=DOMAIN, translation_key=trans_key
@@ -207,7 +206,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
 
     async def async_dock(self) -> None:
         """Start docking."""
-
+        trans_key = "pause_failed"
         charge_state = self.rpt_dev_status.charge_state
         mode = self.rpt_dev_status.sys_status
         if mode is None:
@@ -215,14 +214,11 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
                 translation_domain=DOMAIN, translation_key="device_not_ready"
             )
 
-        if (
-            charge_state == 0 
-            and mode in (
-                WorkMode.MODE_WORKING,
-                WorkMode.MODE_PAUSE,
-                WorkMode.MODE_READY,
-                WorkMode.MODE_RETURNING,
-            )
+        if charge_state == 0 and mode in (
+            WorkMode.MODE_WORKING,
+            WorkMode.MODE_PAUSE,
+            WorkMode.MODE_READY,
+            WorkMode.MODE_RETURNING,
         ):
             try:
                 if mode == WorkMode.MODE_WORKING:
@@ -244,51 +240,61 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
 
     async def async_pause(self) -> None:
         """Pause mower."""
-        
+
         mode = self.rpt_dev_status.sys_status
         if mode is None:
             raise HomeAssistantError(
                 translation_domain=DOMAIN, translation_key="device_not_ready"
             )
-            
-        if mode in (
-          WorkMode.MODE_WORKING,
-            WorkMode.MODE_RETURNING,
-        ):
-          try:
-          
-          if mode == WorkMode.MODE_WORKING:
+
+        try:
+            if mode in (
+                WorkMode.MODE_WORKING,
+                WorkMode.MODE_RETURNING,
+            ):
+                if mode == WorkMode.MODE_WORKING:
                     trans_key = "pause_failed"
                     await self.coordinator.async_send_command("pause_execute_task")
+                    await self.coordinator.async_request_iot_sync()
                 if mode == WorkMode.MODE_RETURNING:
                     trans_key = "dock_cancel_failed"
                     await self.coordinator.async_send_command("cancel_return_to_dock")
+        except COMMAND_EXCEPTIONS as exc:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key="pause_failed"
+            ) from exc
+        finally:
+            self.coordinator.async_set_updated_data(
+                self.coordinator.manager.mower(self.coordinator.device_name)
+            )
 
     async def async_cancel(self) -> None:
-        """Cancel Job"""
-        
+        """Cancel Job."""
+        trans_key = "pause_failed"
         mode = self.rpt_dev_status.sys_status
         if mode is None:
             raise HomeAssistantError(
                 translation_domain=DOMAIN, translation_key="device_not_ready"
             )
-            
-       if mode in (
+
+        if mode in (
             WorkMode.MODE_PAUSE,
             WorkMode.MODE_WORKING,
             WorkMode.MODE_RETURNING,
         ):
             try:
-                 if mode != WorkMode.MODE_PAUSE:
+                if mode != WorkMode.MODE_PAUSE:
                     if mode == WorkMode.MODE_WORKING:
                         trans_key = "pause_failed"
                         await self.coordinator.async_send_command("pause_execute_task")
                     if mode == WorkMode.MODE_RETURNING:
                         trans_key = "dock_failed"
-                        await self.coordinator.async_send_command("cancel_return_to_dock")
+                        await self.coordinator.async_send_command(
+                            "cancel_return_to_dock"
+                        )
                     await self.coordinator.async_request_iot_sync()
                     mode = self.rpt_dev_status.sys_status
-                    
+
                 if mode == WorkMode.MODE_PAUSE:
                     trans_key = "pause_failed"
                     await self.coordinator.async_send_command("cancel_job")

@@ -113,7 +113,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
                     self.address = address
                     self.manager.add_ble_device(ble_device, preference)
 
-        if self.device_name:
+        if self.device_name is not None:
             device = self.manager.get_device_by_name(self.device_name)
         else:
             device_names = self.manager.devices.devices.keys()
