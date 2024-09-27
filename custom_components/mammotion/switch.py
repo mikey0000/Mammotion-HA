@@ -94,8 +94,9 @@ async def async_setup_entry(
 
         switch_entities: list[MammotionConfigAreaSwitchEntity] = []
         areas = coordinator.data.map.area.keys()
+        area_name_hashes = [f"{area.hash}" for area in coordinator.data.map.area_name]
         area_name = coordinator.data.map.area_name
-        new_areas = areas - added_areas
+        new_areas = (set(areas) | set(area_name_hashes)) - added_areas
         if new_areas:
             for area_id in new_areas:
                 existing_name: AreaHashNameList = next(
@@ -216,7 +217,7 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
         self.coordinator = coordinator
         self.entity_description = entity_description
         self._attr_translation_key = entity_description.key
-        # TODO this should not need to be cast. 
+        # TODO this should not need to be cast.
         self._attr_extra_state_attributes = {"hash": int(entity_description.area)}
         # TODO grab defaults from operation_settings
         self._attr_is_on = False  # Default state
@@ -224,16 +225,20 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
     async def async_turn_on(self, **kwargs: Any) -> None:
         self._attr_is_on = True
         self.entity_description.set_fn(
-            # TODO this should not need to be cast. 
-            self.coordinator, True, int(self.entity_description.area)
+            # TODO this should not need to be cast.
+            self.coordinator,
+            True,
+            int(self.entity_description.area),
         )
         self.async_write_ha_state()
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         self._attr_is_on = False
         self.entity_description.set_fn(
-            # TODO this should not need to be cast. 
-            self.coordinator, False, int(self.entity_description.area)
+            # TODO this should not need to be cast.
+            self.coordinator,
+            False,
+            int(self.entity_description.area),
         )
         self.async_write_ha_state()
 

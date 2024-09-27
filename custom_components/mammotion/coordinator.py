@@ -334,6 +334,10 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
 
     async def _async_update_data(self) -> MowingDevice:
         """Get data from the device."""
+        if self.update_failures > 10:
+            """Don't hammer the mammotion/ali servers"""
+            return self.data
+
         device = self.manager.get_device_by_name(self.device_name)
         await self.check_firmware_version()
 
@@ -365,6 +369,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
             self.update_failures += 1
             raise UpdateFailed(f"Updating Mammotion device failed: {exc}") from exc
         except SetupException:
+            self.update_failures += 1
             await self.async_login()
         except DeviceOfflineException:
             """Device is offline try bluetooth if we have it."""
