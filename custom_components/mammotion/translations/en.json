@@ -164,13 +164,13 @@
         "name": "Cutting Mode",
         "state": {
           "single_grid": "Single Grid",
-          "double_grid": "Checker Grid",
+          "double_grid": "Checkered Grid",
           "segment_grid": "Mixed/Segment Grid",
           "no_grid": "No Grid"
         }
       },
       "border_patrol_mode": {
-        "name": "Border Patrol Mode",
+        "name": "Perimeter Laps",
         "state": {
           "none": "None",
           "one": "One",
@@ -180,7 +180,7 @@
         }
       },
       "obstacle_laps_mode": {
-        "name": "Obstacle Laps Mode",
+        "name": "Obstacle Laps",
         "state": {
           "none": "None",
           "one": "One",
@@ -192,7 +192,7 @@
       "mow_order": {
         "name": "Mow Order",
         "state": {
-          "border_first": "Border first",
+          "border_first": "Perimeter first",
           "grid_first": "Grid first"
         }
       },
@@ -265,7 +265,7 @@
         },
         "job_mode": {
           "name": "Mow Order",
-          "description": "Mowing path order (border first or grid first)."
+          "description": "Mowing path order (perimeter first or grid first)."
         },
         "job_version": {
           "name": "Job Version",
@@ -312,8 +312,8 @@
           "description": "Angle mode."
         },
         "border_mode": {
-          "name": "Border Patrol Mode",
-          "description": "Border patrol mode (number of laps)."
+          "name": "Perimeter Laps",
+          "description": "Perimeter Laps (number of laps)."
         },
         "obstacle_laps": {
           "name": "Obstacle Laps",

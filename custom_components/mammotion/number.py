@@ -75,7 +75,7 @@ LUBA_WORKING_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
     MammotionConfigNumberEntityDescription(
         key="blade_height",
         step=5,
-        min_value=30,  # ToDo: To be dynamiclly set based on model (h\non H)
+        min_value=25,  # ToDo: To be dynamiclly set based on model (h\non H)
         max_value=70,  # ToDo: To be dynamiclly set based on model (h\non H)
         set_fn=lambda coordinator, value: setattr(
             coordinator.operation_settings, "blade_height", value

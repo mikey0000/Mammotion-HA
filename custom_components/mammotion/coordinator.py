@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import asdict
 from datetime import timedelta
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 import betterproto
 from aiohttp import ClientConnectorError
@@ -27,7 +27,8 @@ from pymammotion.mammotion.devices.mammotion import (
 )
 from pymammotion.proto import has_field
 from pymammotion.proto.luba_msg import LubaMsg
-from pymammotion.proto.mctrl_sys import RptAct, RptInfoType
+from pymammotion.proto.mctrl_sys import RptAct, RptDevStatus, RptInfoType
+from pymammotion.utility.device_type import DeviceType
 
 from .const import (
     COMMAND_EXCEPTIONS,
@@ -170,6 +171,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
         """Get map data from the device."""
         store = Store(self.hass, version=1, key=self.device_name)
         stored_data = asdict(data)
+        stored_data.device = None
         await store.async_save(stored_data)
 
     async def async_sync_maps(self) -> None:
@@ -177,10 +179,27 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
         await self.manager.start_map_sync(self.device_name)
 
     async def async_start_stop_blades(self, start_stop: bool) -> None:
-        if start_stop:
-            await self.async_send_command("set_blade_control", on_off=1)
+        if DeviceType.is_luba1(self.device_name):
+            if start_stop:
+                await self.async_send_command("set_blade_control", on_off=1)
+            else:
+                await self.async_send_command("set_blade_control", on_off=0)
+        elif start_stop:
+            await self.async_send_command(
+                "operate_on_device",
+                main_ctrl=1,
+                cut_knife_ctrl=1,
+                cut_knife_height=60,
+                max_run_speed=1.2,
+            )
         else:
-            await self.async_send_command("set_blade_control", on_off=0)
+            await self.async_send_command(
+                "operate_on_device",
+                main_ctrl=0,
+                cut_knife_ctrl=0,
+                cut_knife_height=60,
+                max_run_speed=1.2,
+            )
 
     async def async_set_sidelight(self, on_off: int) -> None:
         """Set Sidelight."""
@@ -267,6 +286,15 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
 
     async def async_plan_route(self, operation_settings: OperationSettings) -> None:
         """Plan mow."""
+        operation_settings.is_dump = False
+        operation_settings.is_edge = True
+        if has_field(self.data.sys.toapp_report_data.dev):
+            dev = cast(RptDevStatus, self.data.sys.toapp_report_data.dev)
+            if has_field(dev.collector_status):
+                if dev.collector_status.collector_installation_status != 0:
+                    operation_settings.is_dump = True
+                    operation_settings.is_edge = False
+
         route_information = GenerateRouteInformation(
             one_hashs=operation_settings.areas,
             rain_tactics=operation_settings.rain_tactics,

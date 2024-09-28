@@ -29,17 +29,18 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionDataUpdateCoordinator]):
         product_key = mower.net.toapp_wifi_iot_status.productkey
         if product_key is None or product_key == "":
             if self.coordinator.manager.mqtt_list.get(self.coordinator.device_name):
-                cloud_client = self.coordinator.manager.mqtt_list.get(
+                mammotion_cloud = self.coordinator.manager.mqtt_list.get(
                     self.coordinator.device_name
                 )
-                device_list = cloud_client.devices_by_account_response.data.data
-                device = [
-                    device
-                    for device in device_list
-                    if device.deviceName == self.coordinator.device_name
-                ].pop()
+                if mammotion_cloud is not None:
+                    device_list = mammotion_cloud.cloud_client.devices_by_account_response.data.data
+                    device = [
+                        device
+                        for device in device_list
+                        if device.deviceName == self.coordinator.device_name
+                    ].pop()
 
-                product_key = device.productKey
+                    product_key = device.productKey
 
         device_model = DeviceType.value_of_str(
             self.coordinator.device_name,
