@@ -3,41 +3,43 @@
     "abort": {
       "already_configured": "L'appareil est déjà configuré",
       "already_in_progress": "Le flux de configuration est déjà en cours",
-      "no_devices_found": "Aucun appareils trouvés",
+      "no_devices_found": "Impossible de trouver des appareils",
+      "no_devices_found_in_account": "Aucun appareil présent sur votre compte",
+      "bluetooth_and_account_mismatch": "Appareil Bluetooth introuvable dans votre compte",
       "no_longer_present": "L'appareil n'est plus présent",
-      "not_supported": "L'appareil n'est pas supporté",
-      "no_device_name": "Nom de l'appareil nécessaire pour continuer",
-      "reconfigure_successful": "Re-configuration réussi"
+      "not_supported": "Appareil non pris en charge",
+      "reconfigure_successful": "Reconfiguration réussie"
     },
-    "flow_title": "Configurer votre robot tondeuse Mammotion",
+    "flow_title": "Configurez votre tondeuse à gazon Mammotion",
     "step": {
       "bluetooth_confirm": {
-        "description": "Installation {name}",
+        "description": "Configuration de {name}",
         "data": {
-          "stay_connected_bluetooth": "Garder le bluetooth connecté"
+          "stay_connected_bluetooth": "Gardez le Bluetooth connecté"
         }
       },
       "reconfigure": {
         "data": {
-          "use_wifi": "Utiliser le Wi-fi",
-          "account_name": "Email Mammotion ou numéro de compte",
+          "use_wifi": "Utiliser le Wi-Fi",
+          "account_name": "E-mail ou numéro de compte Mammotion",
           "password": "Mot de passe du compte Mammotion"
         }
       },
       "user": {
         "data": {
-          "address": "Appareil"
+          "address": "Appareil",
+          "stay_connected_bluetooth": "Gardez le Bluetooth connecté"
         },
-        "description": "Sélectionner votre robot tondeuse"
+        "description": "Choisissez votre tondeuse"
       },
       "wifi": {
         "data": {
-          "use_wifi": "Utiliser le Wi-fi",
-          "account_name": "Email Mammotion ou numéro de compte",
+          "use_wifi": "Utiliser le Wi-Fi (décocher et confirmer pour utiliser le Bluetooth)",
+          "account_name": "E-mail ou numéro de compte Mammotion",
           "password": "Mot de passe du compte Mammotion"
         },
         "title": "Se connecter au Wi-Fi",
-        "description": "Entrez l'email ou l'identifiant de votre compte Mammotion et le mot de passe"
+        "description": "Entrez l'adresse e-mail ou l'identifiant et le mot de passe de votre compte Mammotion"
       }
     }
   },
@@ -45,8 +47,8 @@
     "step": {
       "init": {
         "data": {
-          "title": "Modifier la configuration",
-          "stay_connected_bluetooth": "Garder le bluetooth connecté"
+          "title": "Mettre à jour la configuration",
+          "stay_connected_bluetooth": "Gardez le Bluetooth connecté"
         }
       }
     }
@@ -87,10 +89,10 @@
         "name": "Temps restant"
       },
       "l1_satellites": {
-        "name": "L1 Satellites (Co-Visionnage)"
+        "name": "Satellites L1 (Co-Visionnage)"
       },
       "l2_satellites": {
-        "name": "L2 Satellites (Co-Visionnage)"
+        "name": "Satellites L2 (Co-Visionnage)"
       },
       "position_mode": {
         "name": "Position RTK"
@@ -100,6 +102,9 @@
       },
       "activity_mode": {
         "name": "Mode activité"
+      },
+      "work_area": {
+        "name": "Work area hash"
       }
     },
     "button": {
@@ -108,6 +113,27 @@
       },
        "resync_rtk_dock": {
         "name": "Synchroniser RTK et base de charge"
+      },
+      "release_from_dock": {
+        "name": "Détacher de la base"
+      },
+      "emergency_nudge_forward": {
+        "name": "Mouvement d'urgence en avant"
+      },
+      "emergency_nudge_left": {
+        "name": "Mouvement d'urgence à gauche"
+      },
+      "emergency_nudge_right": {
+        "name": "Mouvement d'urgence à droite"
+      },
+      "emergency_nudge_back": {
+        "name": "Mouvement d'urgence en arrière"
+      },
+      "cancel_task": {
+        "name": "Annuler la tâche en cours"
+      },
+      "clear_all_mapdata": {
+        "name": "Supprimer les cartes et les noms de zones"
       }
     },
     "switch": {
@@ -120,6 +146,9 @@
       "dump_grass_on_off": {
         "name": "Déversement d'herbe On/Off"
       },
+      "edge_on_off": {
+        "name": "Coupe des bordures"
+      },
       "rain_detection_on_off": {
         "name": "Détection de pluie On/Off"
       },
@@ -131,21 +160,62 @@
       }
     },
     "select": {
-       "cutting_mode": {
-        "name": "Mode de coupe"
+      "cutting_mode": {
+        "name": "Mode de coupe",
+        "state": {
+          "single_grid": "Grille unique",
+          "double_grid": "Grille à damier",
+          "segment_grid": "Grille mixte/segmentée",
+          "no_grid": "Pas de grille" 
+        }
       },
       "border_patrol_mode": {
-        "name": "Mode chien de garde"
+        "name": "Mode Chien de Garde",
+        "state": {
+          "none": "Aucun",
+          "one": "Un",
+          "two": "Deux",
+          "three": "Trois",
+          "four": "Quatre"
+        }
       },
       "obstacle_laps_mode": {
-        "name": "Mode d'évitement d'obstacles"
+        "name": "Mode contours d'obstacles",
+        "state": {
+          "none": "Aucun",
+          "one": "Un",
+          "two": "Deux",
+          "three": "Trois",
+          "four": "Quatre"
+        }
       },
       "mow_order": {
-        "name": "Ordre de tonte"
+        "name": "Ordre de tonte",
+        "state": {
+          "border_first": "Bordure d'abord",
+          "grid_first": "Grille d'abord"
+        }
+      },
+      "bypass_mode": {
+        "name": "Mode d'évitement d'obstacles",
+        "state": {
+          "direct_touch": "Toucher direct",
+          "slow_touch": "Toucher lent",
+          "less_touch": "Moins de contact",
+          "no_touch": "Mode sans collision"
+        }
+      },
+      "cutting_angle_mode": {
+        "name": "Mode angle de coupe",
+        "state": {
+          "relative_angle": "Angle relatif",
+          "absolute_angle": "Angle absolu",
+          "random_angle": "Angle aléatoire"
+        }
       }
     },
     "number": {
-       "start_progress": {
+      "start_progress": {
         "name": "Départ de la progression"
       },
       "blade_height": {
@@ -153,10 +223,111 @@
       },
       "working_speed": {
         "name": "Vitesse de fonctionnement"
+      },
+      "cutting_angle": {
+        "name": "Angle de coupe"
+      },
+      "path_spacing": {
+        "name": "Espacement des chemins"
+      },
+      "dumping_interval": {
+        "name": "Fréquence de vidage"
       }
     },
     "device_tracker": {
       "name": "Suivi de l'appareil"
+    }
+  },
+  "services": {
+    "cancel_job": {
+      "name": "Annuler la tâche en cours",
+      "description": "Arrête la tondeuse et efface la tâche en cours."
+    },
+    "start_mow": {
+      "name": "Commencer à tondre",
+      "description": "Démarrer l'opération de tonte avec des paramètres personnalisés.",
+      "fields": {
+        "is_mow": {
+          "name": "Est-ce que la tonte est active",
+          "description": "Si la tonte est active. (Yuka)"
+        },
+        "is_dump": {
+          "name": "Est-ce que le déversement est actif",
+          "description": "Si le déversement d'herbe est actif. (Yuka)"
+        },
+        "is_edge": {
+          "name": "Est-ce que le mode bordure est actif",
+          "description": "Si le mode bordure est actif. (Yuka)"
+        },
+        "collect_grass_frequency": {
+          "name": "Fréquence de ramassage de l'herbe",
+          "description": "Fréquence de ramassage de l'herbe (en mètres carrés). (Yuka)"
+        },
+        "job_mode": {
+          "name": "Ordre de tonte",
+          "description": "Ordre du chemin de tonte (bordure d'abord ou grille d'abord)."
+        },
+        "job_version": {
+          "name": "Version de travail",
+          "description": "Version de travail."
+        },
+        "job_id": {
+          "name": "Identifiant de travail",
+          "description": "Identifiant de travail."
+        },
+        "speed": {
+          "name": "Vitesse",
+          "description": "Vitesse de tonte."
+        },
+        "ultra_wave": {
+          "name": "Détection d'obstacles",
+          "description": "Stratégie de contournement pour la tonte."
+        },
+        "channel_mode": {
+          "name": "Mode canal",
+          "description": "Mode canal (grille, simple, double ou simple2)."
+        },
+        "channel_width": {
+          "name": "Largeur du canal",
+          "description": "Largeur du canal de tonte (en cm)."
+        },
+        "rain_tactics": {
+          "name": "Détection de pluie",
+          "description": "Détection de pluie."
+        },
+        "blade_height": {
+          "name": "Hauteur de la lame",
+          "description": "Hauteur de la lame."
+        },
+        "toward": {
+          "name": "Angle",
+          "description": "Angle de direction pour la tonte."
+        },
+        "toward_included_angle": {
+          "name": "Angle par rapport à la grille ?",
+          "description": "Lors de la sélection de la grille, modifiez le deuxième angle."
+        },
+        "toward_mode": {
+          "name": "Mode de direction",
+          "description": "Mode angle."
+        },
+        "border_mode": {
+          "name": "Mode Chien de Garde",
+          "description": "Mode chien de garde (nombre de tours)."
+        },
+        "obstacle_laps": {
+          "name": "Tours d'obstacles",
+          "description": "Nombre de tours autour des obstacles."
+        },
+        "start_progress": {
+          "name": "Démarrer à un pourcentage de progression",
+          "description": "Pourcentage de progression de départ."
+        },
+        "areas": {
+          "name": "Zones",
+          "description": "Liste des zones à tondre (représentées sous forme d'entiers)."
+        }
+      }
     }
   },
   "exceptions": {
@@ -173,7 +344,10 @@
       "message": "Impossible de démarrer la tonte."
     },
     "dock_failed": {
-      "message": "Impossible d'envoyer la tondeuse sur la base de chargement."
+      "message": "Impossible d'envoyer la tondeuse à la base."
+    },
+    "dock_cancel_failed": {
+      "message": "Impossible d'empêcher la tondeuse de revenir à la base."
     },
     "command_failed": {
       "message": "Impossible d'envoyer la commande au robot."
