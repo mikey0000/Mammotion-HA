@@ -8,8 +8,10 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr
 
 from .const import (
+    CONF_ACCOUNTNAME,
     CONF_AEP_DATA,
     CONF_AUTH_DATA,
+    CONF_CONNECT_DATA,
     CONF_DEVICE_DATA,
     CONF_REGION_DATA,
     CONF_RETRY_COUNT,
@@ -59,14 +61,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
     await mammotion_coordinator.async_setup()
 
     # config_updates = {}
-    mqtt = mammotion_coordinator.manager.mqtt_list.get(
-        mammotion_coordinator.device_name
+    mammotion_cloud = mammotion_coordinator.manager.mqtt_list.get(
+        entry.data.get(CONF_ACCOUNTNAME, "")
     )
-    cloud_client = mqtt.cloud_client if mqtt else None
+    cloud_client = mammotion_cloud.cloud_client if mammotion_cloud else None
 
-    if CONF_AUTH_DATA not in entry.data and cloud_client:
+    if cloud_client is not None:
         config_updates = {
             **entry.data,
+            CONF_CONNECT_DATA: cloud_client.connect_response,
             CONF_AUTH_DATA: cloud_client.login_by_oauth_response,
             CONF_REGION_DATA: cloud_client.region_response,
             CONF_AEP_DATA: cloud_client.aep_response,

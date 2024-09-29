@@ -161,16 +161,16 @@
     },
     "select": {
       "cutting_mode": {
-        "name": "Cutting Mode",
+        "name": "Cutting Path Mode",
         "state": {
-          "single_grid": "Single Grid",
-          "double_grid": "Checker Grid",
-          "segment_grid": "Mixed/Segment Grid",
-          "no_grid": "No Grid"
+          "single_grid": "Zigzag Path",
+          "double_grid": "Chessboard Path",
+          "segment_grid": "Adaptive Zigzag Path",
+          "no_grid": "Perimeter Only"
         }
       },
       "border_patrol_mode": {
-        "name": "Border Patrol Mode",
+        "name": "Perimeter Mowing Laps",
         "state": {
           "none": "None",
           "one": "One",
@@ -180,7 +180,7 @@
         }
       },
       "obstacle_laps_mode": {
-        "name": "Obstacle Laps Mode",
+        "name": "No-go Zone Mowing Laps",
         "state": {
           "none": "None",
           "one": "One",
@@ -192,7 +192,7 @@
       "mow_order": {
         "name": "Mow Order",
         "state": {
-          "border_first": "Border first",
+          "border_first": "Perimeter first",
           "grid_first": "Grid first"
         }
       },
@@ -202,7 +202,7 @@
           "direct_touch": "Direct touch",
           "slow_touch": "Slow touch",
           "less_touch": "Less touch",
-          "no_touch": "Collision-free mode"
+          "no_touch": "No Touch"
         }
       },
       "cutting_angle_mode": {
@@ -228,10 +228,10 @@
         "name": "Cutting Angle"
       },
       "path_spacing": {
-        "name": "Path spacing"
+        "name": "Path Spacing"
       },
       "dumping_interval": {
-        "name": "Dumping frequency"
+        "name": "Dumping Frequency"
       }
     },
     "device_tracker": {
@@ -248,15 +248,15 @@
       "description": "Start the mowing operation with custom settings.",
       "fields": {
         "is_mow": {
-          "name": "Is Mow",
+          "name": "Is Mowing",
           "description": "Whether mowing is active. (Yuka)"
         },
         "is_dump": {
-          "name": "Is Dump",
+          "name": "Is Dumping",
           "description": "Whether grass dumping is active. (Yuka)"
         },
         "is_edge": {
-          "name": "Is Edge",
+          "name": "Is Edging",
           "description": "Whether edge mode is active. (Yuka)"
         },
         "collect_grass_frequency": {
@@ -265,7 +265,7 @@
         },
         "job_mode": {
           "name": "Mow Order",
-          "description": "Mowing path order (border first or grid first)."
+          "description": "Mowing path order (Perimeter first or grid first)."
         },
         "job_version": {
           "name": "Job Version",
@@ -312,12 +312,12 @@
           "description": "Angle mode."
         },
         "border_mode": {
-          "name": "Border Patrol Mode",
-          "description": "Border patrol mode (number of laps)."
+          "name": "Perimeter Mowing Laps",
+          "description": "Number of laps around the mowing area perimeter."
         },
         "obstacle_laps": {
-          "name": "Obstacle Laps",
-          "description": "Number of laps around obstacles."
+          "name": "No-go zone Mowing Laps",
+          "description": "Number of laps around No-go zones."
         },
         "start_progress": {
           "name": "Start Progress",

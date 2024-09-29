@@ -4,19 +4,32 @@ from __future__ import annotations
 
 from dataclasses import asdict
 from datetime import timedelta
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 import betterproto
 from aiohttp import ClientConnectorError
 from homeassistant.components import bluetooth
 from homeassistant.const import CONF_ADDRESS, CONF_PASSWORD
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, _DataT
 from homeassistant.exceptions import ConfigEntryNotReady, HomeAssistantError
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from mashumaro.exceptions import InvalidFieldValue
-from pymammotion.aliyun.cloud_gateway import DeviceOfflineException, SetupException
+from pymammotion import CloudIOTGateway
+from pymammotion.aliyun.cloud_gateway import (
+    CheckSessionException,
+    DeviceOfflineException,
+    SetupException,
+)
+from pymammotion.aliyun.model.aep_response import AepResponse
+from pymammotion.aliyun.model.connect_response import ConnectResponse
+from pymammotion.aliyun.model.dev_by_account_response import ListingDevByAccountResponse
+from pymammotion.aliyun.model.login_by_oauth_response import LoginByOAuthResponse
+from pymammotion.aliyun.model.regions_response import RegionResponse
+from pymammotion.aliyun.model.session_by_authcode_response import (
+    SessionByAuthCodeResponse,
+)
 from pymammotion.data.model import GenerateRouteInformation, HashList
 from pymammotion.data.model.account import Credentials
 from pymammotion.data.model.device import MowingDevice
@@ -27,12 +40,19 @@ from pymammotion.mammotion.devices.mammotion import (
 )
 from pymammotion.proto import has_field
 from pymammotion.proto.luba_msg import LubaMsg
-from pymammotion.proto.mctrl_sys import RptAct, RptInfoType
+from pymammotion.proto.mctrl_sys import RptAct, RptDevStatus, RptInfoType
+from pymammotion.utility.device_type import DeviceType
 
 from .const import (
     COMMAND_EXCEPTIONS,
     CONF_ACCOUNTNAME,
+    CONF_AEP_DATA,
+    CONF_AUTH_DATA,
+    CONF_CONNECT_DATA,
+    CONF_DEVICE_DATA,
     CONF_DEVICE_NAME,
+    CONF_REGION_DATA,
+    CONF_SESSION_DATA,
     CONF_STAY_CONNECTED_BLUETOOTH,
     CONF_USE_WIFI,
     DOMAIN,
@@ -45,9 +65,7 @@ if TYPE_CHECKING:
 UPDATE_INTERVAL = timedelta(minutes=1)
 
 
-class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
-    """Class to manage fetching mammotion data."""
-
+class MammotionBaseUpdateCoordinator(DataUpdateCoordinator[_DataT]):
     address: str | None = None
     config_entry: MammotionConfigEntry
     manager: Mammotion = None
@@ -66,6 +84,74 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
         self.config_entry = config_entry
         self._operation_settings = OperationSettings()
         self.update_failures = 0
+
+    async def async_login(self) -> None:
+        """Login to cloud servers."""
+        await self.hass.async_add_executor_job(
+            self.manager.get_device_by_name(self.device_name).cloud().mqtt.disconnect
+        )
+        account = self.config_entry.data.get(CONF_ACCOUNTNAME)
+        password = self.config_entry.data.get(CONF_PASSWORD)
+        await self.manager.login_and_initiate_cloud(account, password, True)
+
+    async def async_send_command(self, command: str, **kwargs: Any) -> None:
+        """Send command."""
+        try:
+            await self.manager.send_command_with_args(
+                self.device_name, command, **kwargs
+            )
+        except SetupException:
+            await self.async_login()
+        except DeviceOfflineException:
+            """Device is offline try bluetooth if we have it."""
+            try:
+                if self.manager.get_device_by_name(self.device_name).ble():
+                    await (
+                        self.manager.get_device_by_name(self.device_name)
+                        .ble()
+                        .queue_command(command, **kwargs)
+                    )
+            except COMMAND_EXCEPTIONS as exc:
+                raise HomeAssistantError(
+                    translation_domain=DOMAIN, translation_key="command_failed"
+                ) from exc
+
+
+class MammotionDataUpdateCoordinator(MammotionBaseUpdateCoordinator):
+    """Class to manage fetching mammotion data."""
+
+    async def check_and_restore_cloud(self) -> CloudIOTGateway | None:
+        """Check and restore previous cloud connection."""
+        print(self.config_entry.data)
+        if CONF_AUTH_DATA not in self.config_entry.data:
+            return None
+
+        auth_data = self.config_entry.data[CONF_AUTH_DATA]
+        region_data = self.config_entry.data[CONF_REGION_DATA]
+        aep_data = self.config_entry.data[CONF_AEP_DATA]
+        session_data = self.config_entry.data[CONF_SESSION_DATA]
+        device_data = self.config_entry.data[CONF_DEVICE_DATA]
+        connect_data = self.config_entry.data[CONF_CONNECT_DATA]
+
+        cloud_client = CloudIOTGateway(
+            connect_response=ConnectResponse.from_dict(connect_data),
+            aep_response=AepResponse.from_dict(aep_data),
+            region_response=RegionResponse.from_dict(region_data),
+            session_by_authcode_response=SessionByAuthCodeResponse.from_dict(
+                session_data
+            ),
+            dev_by_account=ListingDevByAccountResponse.from_dict(device_data),
+            login_by_oauth_response=LoginByOAuthResponse.from_dict(auth_data),
+        )
+        try:
+            await self.hass.async_add_executor_job(
+                cloud_client.check_or_refresh_session
+            )
+        except CheckSessionException as exc:
+            LOGGER.debug(exc)
+            return None
+
+        return cloud_client
 
     async def async_setup(self) -> None:
         """Set coordinator up."""
@@ -94,7 +180,13 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
                 credentials.email = account
                 credentials.password = password
                 try:
-                    await self.manager.login_and_initiate_cloud(account, password)
+                    cloud_client = await self.check_and_restore_cloud()
+                    if cloud_client is None:
+                        await self.manager.login_and_initiate_cloud(account, password)
+                    else:
+                        await self.manager.initiate_cloud_connection(
+                            account, cloud_client
+                        )
                 except ClientConnectorError as err:
                     raise ConfigEntryNotReady(err)
 
@@ -170,6 +262,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
         """Get map data from the device."""
         store = Store(self.hass, version=1, key=self.device_name)
         stored_data = asdict(data)
+        stored_data["device"] = None
         await store.async_save(stored_data)
 
     async def async_sync_maps(self) -> None:
@@ -177,10 +270,27 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
         await self.manager.start_map_sync(self.device_name)
 
     async def async_start_stop_blades(self, start_stop: bool) -> None:
-        if start_stop:
-            await self.async_send_command("set_blade_control", on_off=1)
+        if DeviceType.is_luba1(self.device_name):
+            if start_stop:
+                await self.async_send_command("set_blade_control", on_off=1)
+            else:
+                await self.async_send_command("set_blade_control", on_off=0)
+        elif start_stop:
+            await self.async_send_command(
+                "operate_on_device",
+                main_ctrl=1,
+                cut_knife_ctrl=1,
+                cut_knife_height=60,
+                max_run_speed=1.2,
+            )
         else:
-            await self.async_send_command("set_blade_control", on_off=0)
+            await self.async_send_command(
+                "operate_on_device",
+                main_ctrl=0,
+                cut_knife_ctrl=0,
+                cut_knife_height=60,
+                max_run_speed=1.2,
+            )
 
     async def async_set_sidelight(self, on_off: int) -> None:
         """Set Sidelight."""
@@ -243,30 +353,17 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
             count=0,
         )
 
-    async def async_send_command(self, command: str, **kwargs: Any) -> None:
-        """Send command."""
-        try:
-            await self.manager.send_command_with_args(
-                self.device_name, command, **kwargs
-            )
-        except SetupException:
-            await self.async_login()
-        except DeviceOfflineException:
-            """Device is offline try bluetooth if we have it."""
-            try:
-                if self.manager.get_device_by_name(self.device_name).ble():
-                    await (
-                        self.manager.get_device_by_name(self.device_name)
-                        .ble()
-                        .queue_command(command, **kwargs)
-                    )
-            except COMMAND_EXCEPTIONS as exc:
-                raise HomeAssistantError(
-                    translation_domain=DOMAIN, translation_key="command_failed"
-                ) from exc
-
     async def async_plan_route(self, operation_settings: OperationSettings) -> None:
         """Plan mow."""
+        operation_settings.is_dump = False
+        operation_settings.is_edge = True
+        if has_field(self.data.sys.toapp_report_data.dev):
+            dev = cast(RptDevStatus, self.data.sys.toapp_report_data.dev)
+            if has_field(dev.collector_status):
+                if dev.collector_status.collector_installation_status != 0:
+                    operation_settings.is_dump = True
+                    operation_settings.is_edge = False
+
         route_information = GenerateRouteInformation(
             one_hashs=operation_settings.areas,
             rain_tactics=operation_settings.rain_tactics,
@@ -323,17 +420,9 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
         if model_id is not None or model_id != device_entry.model_id:
             device_registry.async_update_device(device_entry.id, model_id=model_id)
 
-    async def async_login(self) -> None:
-        """Login to cloud servers."""
-        await self.hass.async_add_executor_job(
-            self.manager.get_device_by_name(self.device_name).cloud().mqtt.disconnect
-        )
-        account = self.config_entry.data.get(CONF_ACCOUNTNAME)
-        password = self.config_entry.data.get(CONF_PASSWORD)
-        await self.manager.login_and_initiate_cloud(account, password, True)
-
     async def _async_update_data(self) -> MowingDevice:
         """Get data from the device."""
+
         if self.update_failures > 10:
             """Don't hammer the mammotion/ali servers"""
             return self.data
@@ -363,7 +452,20 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
             ):
                 await self.manager.start_sync(self.device_name, 0)
 
-            await self.async_send_command("get_report_cfg")
+            if (
+                not has_field(device.mower_state.sys.device_product_type_info)
+                or device.mower_state.mqtt_properties is None
+            ):
+                await self.async_send_command("get_device_product_model")
+
+            if (
+                len(device.mower_state.map.hashlist) == 0
+                or len(device.mower_state.map.missing_hashlist) > 0
+            ):
+                await self.manager.start_map_sync(self.device_name)
+
+            if not device.has_queued_commands():
+                await self.async_send_command("get_report_cfg")
 
         except COMMAND_EXCEPTIONS as exc:
             self.update_failures += 1

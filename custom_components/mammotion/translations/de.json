@@ -238,6 +238,94 @@
       "name": "Geräteverfolgung"
     }
   },
+  "services": {
+    "start_mow": {
+      "name": "Starte Mähvorgang",
+      "description": "Startet einen Mähvorgang mit individuellen Einstellungen.",
+      "fields": {
+        "is_mow": {
+          "name": "Mähen",
+          "description": "Gibt an, ob Mähen aktiviert ist. (Yuka)"
+        },
+        "is_dump": {
+          "name": "Gras sammeln",
+          "description": "Gibt an, ob Gras sammeln aktiviert ist. (Yuka)"
+        },
+        "is_edge": {
+          "name": "Kanten schneiden",
+          "description": "Gibt an, ob der Modus zum Kanten schneiden aktiv ist. (Yuka)"
+        },
+        "collect_grass_frequency": {
+          "name": "Intervall für das Entleeren",
+          "description": "Intervall für das Entleeren beim Modus für Gras sammeln. (Quadratmeter). (Yuka)"
+        },
+        "job_mode": {
+          "name": "Ausführungsreihenfolge des Pfades",
+          "description": "Abfolge bei der Ausführung des Pfades (Umfang zuerst oder Raster zuerst)."
+        },
+        "job_version": {
+          "name": "Job Version",
+          "description": "Version des Jobs."
+        },
+        "job_id": {
+          "name": "Job ID",
+          "description": "ID des Jobs."
+        },
+        "speed": {
+          "name": "Geschwindigkeit",
+          "description": "Geschwindigkeit beim Mähen."
+        },
+        "ultra_wave": {
+          "name": "Modus der Hinderniserkennung",
+          "description": "Bypass Strategie / Modus der Hinderniserkennung beim Mähen."
+        },
+        "channel_mode": {
+          "name": "Navigationsmodus",
+          "description": "Raster für die Navigation (Einzel, Doppel, Segment oder kein Raster)."
+        },
+        "channel_width": {
+          "name": "Wegabstand",
+          "description": "Wähle den Wegabstand (in cm)."
+        },
+        "rain_tactics": {
+          "name": "Erkennung von Regen",
+          "description": "Stoppt das Mähen, wenn Regen erkannt wird."
+        },
+        "blade_height": {
+          "name": "Schnitthöhe",
+          "description": "Gewünschte Schnitthöhe."
+        },
+        "toward": {
+          "name": "Wegwinkel",
+          "description": "Wegwinkel für das Mähen."
+        },
+        "toward_included_angle": {
+          "name": "Wegwinkel im Verhältnis zum Raster",
+          "description": "Ändern des zweiten Winkels bei Auswahl eines Rasters."
+        },
+        "toward_mode": {
+          "name": "Wegwinkel Modus",
+          "description": "Wähle den Modus für den Wegwinkel."
+        },
+        "border_mode": {
+          "name": "Patrouillenrunden für den seitlichen Rasenschnitt",
+          "description": "Anzahl der Runden für den seitlichen Rasenschnitt."
+        },
+        "obstacle_laps": {
+          "name": "Mähen von No-Go-Zonen",
+          "description": "Anzahl der Runden rund um Hindernisse."
+        },
+        "start_progress": {
+          "name": "Fortschritt beim Start",
+          "description": "Fortschritt beim Start in Prozent."
+        },
+        "areas": {
+          "name": "Bereiche",
+          "description": "Auswahl der zu mähenden Bereiche."
+        }
+      }
+    }
+  },
   "exceptions": {
     "device_not_ready": {
       "message": "Das Gerät ist aktuell nicht bereit."
