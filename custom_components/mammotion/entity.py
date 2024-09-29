@@ -5,7 +5,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from pymammotion.proto import has_field
 from pymammotion.utility.device_type import DeviceType
 
-from .const import CONF_RETRY_COUNT, DEFAULT_RETRY_COUNT, DOMAIN
+from .const import CONF_ACCOUNTNAME, CONF_RETRY_COUNT, DEFAULT_RETRY_COUNT, DOMAIN
 from .coordinator import MammotionDataUpdateCoordinator
 
 
@@ -28,7 +28,9 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionDataUpdateCoordinator]):
 
         product_key = mower.net.toapp_wifi_iot_status.productkey
         if product_key is None or product_key == "":
-            if self.coordinator.manager.mqtt_list.get(self.coordinator.device_name):
+            if self.coordinator.manager.mqtt_list.get(
+                self.coordinator.config_entry.data.get(CONF_ACCOUNTNAME)
+            ):
                 mammotion_cloud = self.coordinator.manager.mqtt_list.get(
                     self.coordinator.device_name
                 )
@@ -48,8 +50,11 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionDataUpdateCoordinator]):
         ).get_model()
 
         model_id = None
-        if has_field(mower.sys.device_product_type_info):
-            model_id = mower.sys.device_product_type_info.main_product_type
+        if mower is not None:
+            if has_field(mower.sys.device_product_type_info):
+                model_id = mower.sys.device_product_type_info.main_product_type
+            if mower.mqtt_properties is not None:
+                model_id = mower.mqtt_properties.params.items.extMod.value
 
         return DeviceInfo(
             identifiers={(DOMAIN, self.coordinator.device_name)},
