@@ -16,7 +16,20 @@ from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from mashumaro.exceptions import InvalidFieldValue
-from pymammotion.aliyun.cloud_gateway import DeviceOfflineException, SetupException
+from pymammotion import CloudIOTGateway
+from pymammotion.aliyun.cloud_gateway import (
+    CheckSessionException,
+    DeviceOfflineException,
+    SetupException,
+)
+from pymammotion.aliyun.model.aep_response import AepResponse
+from pymammotion.aliyun.model.connect_response import ConnectResponse
+from pymammotion.aliyun.model.dev_by_account_response import ListingDevByAccountResponse
+from pymammotion.aliyun.model.login_by_oauth_response import LoginByOAuthResponse
+from pymammotion.aliyun.model.regions_response import RegionResponse
+from pymammotion.aliyun.model.session_by_authcode_response import (
+    SessionByAuthCodeResponse,
+)
 from pymammotion.data.model import GenerateRouteInformation, HashList
 from pymammotion.data.model.account import Credentials
 from pymammotion.data.model.device import MowingDevice
@@ -33,7 +46,13 @@ from pymammotion.utility.device_type import DeviceType
 from .const import (
     COMMAND_EXCEPTIONS,
     CONF_ACCOUNTNAME,
+    CONF_AEP_DATA,
+    CONF_AUTH_DATA,
+    CONF_CONNECT_DATA,
+    CONF_DEVICE_DATA,
     CONF_DEVICE_NAME,
+    CONF_REGION_DATA,
+    CONF_SESSION_DATA,
     CONF_STAY_CONNECTED_BLUETOOTH,
     CONF_USE_WIFI,
     DOMAIN,
@@ -68,6 +87,39 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
         self._operation_settings = OperationSettings()
         self.update_failures = 0
 
+    async def check_and_restore_cloud(self) -> CloudIOTGateway | None:
+        """Check and restore previous cloud connection."""
+        print(self.config_entry.data)
+        if CONF_AUTH_DATA not in self.config_entry.data:
+            return None
+
+        auth_data = self.config_entry.data[CONF_AUTH_DATA]
+        region_data = self.config_entry.data[CONF_REGION_DATA]
+        aep_data = self.config_entry.data[CONF_AEP_DATA]
+        session_data = self.config_entry.data[CONF_SESSION_DATA]
+        device_data = self.config_entry.data[CONF_DEVICE_DATA]
+        connect_data = self.config_entry.data[CONF_CONNECT_DATA]
+
+        cloud_client = CloudIOTGateway(
+            connect_response=ConnectResponse.from_dict(connect_data),
+            aep_response=AepResponse.from_dict(aep_data),
+            region_response=RegionResponse.from_dict(region_data),
+            session_by_authcode_response=SessionByAuthCodeResponse.from_dict(
+                session_data
+            ),
+            dev_by_account=ListingDevByAccountResponse.from_dict(device_data),
+            login_by_oauth_response=LoginByOAuthResponse.from_dict(auth_data),
+        )
+        try:
+            await self.hass.async_add_executor_job(
+                cloud_client.check_or_refresh_session
+            )
+        except CheckSessionException as exc:
+            LOGGER.debug(exc)
+            return None
+
+        return cloud_client
+
     async def async_setup(self) -> None:
         """Set coordinator up."""
         ble_device = None
@@ -95,7 +147,13 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
                 credentials.email = account
                 credentials.password = password
                 try:
-                    await self.manager.login_and_initiate_cloud(account, password)
+                    cloud_client = await self.check_and_restore_cloud()
+                    if cloud_client is None:
+                        await self.manager.login_and_initiate_cloud(account, password)
+                    else:
+                        await self.manager.initiate_cloud_connection(
+                            account, cloud_client
+                        )
                 except ClientConnectorError as err:
                     raise ConfigEntryNotReady(err)
 
@@ -171,7 +229,7 @@ class MammotionDataUpdateCoordinator(DataUpdateCoordinator[MowingDevice]):
         """Get map data from the device."""
         store = Store(self.hass, version=1, key=self.device_name)
         stored_data = asdict(data)
-        stored_data.device = None
+        stored_data["device"] = None
         await store.async_save(stored_data)
 
     async def async_sync_maps(self) -> None:
