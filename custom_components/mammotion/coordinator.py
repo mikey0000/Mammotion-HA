@@ -122,7 +122,6 @@ class MammotionDataUpdateCoordinator(MammotionBaseUpdateCoordinator):
 
     async def check_and_restore_cloud(self) -> CloudIOTGateway | None:
         """Check and restore previous cloud connection."""
-        print(self.config_entry.data)
         if CONF_AUTH_DATA not in self.config_entry.data:
             return None
 
@@ -464,8 +463,8 @@ class MammotionDataUpdateCoordinator(MammotionBaseUpdateCoordinator):
             ):
                 await self.manager.start_map_sync(self.device_name)
 
-            if not device.has_queued_commands():
-                await self.async_send_command("get_report_cfg")
+            # if not device.has_queued_commands():
+            await self.async_send_command("get_report_cfg")
 
         except COMMAND_EXCEPTIONS as exc:
             self.update_failures += 1
