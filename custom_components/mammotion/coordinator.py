@@ -133,14 +133,26 @@ class MammotionDataUpdateCoordinator(MammotionBaseUpdateCoordinator):
         connect_data = self.config_entry.data[CONF_CONNECT_DATA]
 
         cloud_client = CloudIOTGateway(
-            connect_response=ConnectResponse.from_dict(connect_data),
-            aep_response=AepResponse.from_dict(aep_data),
-            region_response=RegionResponse.from_dict(region_data),
+            connect_response=ConnectResponse.from_dict(connect_data)
+            if isinstance(connect_data, dict)
+            else connect_data,
+            aep_response=AepResponse.from_dict(aep_data)
+            if isinstance(aep_data, dict)
+            else aep_data,
+            region_response=RegionResponse.from_dict(region_data)
+            if isinstance(region_data, dict)
+            else region_data,
             session_by_authcode_response=SessionByAuthCodeResponse.from_dict(
                 session_data
-            ),
-            dev_by_account=ListingDevByAccountResponse.from_dict(device_data),
-            login_by_oauth_response=LoginByOAuthResponse.from_dict(auth_data),
+            )
+            if isinstance(session_data, dict)
+            else session_data,
+            dev_by_account=ListingDevByAccountResponse.from_dict(device_data)
+            if isinstance(device_data, dict)
+            else device_data,
+            login_by_oauth_response=LoginByOAuthResponse.from_dict(auth_data)
+            if isinstance(auth_data, dict)
+            else auth_data,
         )
         try:
             await self.hass.async_add_executor_job(
