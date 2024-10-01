@@ -239,6 +239,10 @@
     }
   },
   "services": {
+    "cancel_job": {
+      "name": "Aktuelle Aufgabe abbrechen",
+      "description": "Stoppt den Mähroboter und bereinigt die aktuelle Aufgabe."
+    },
     "start_mow": {
       "name": "Starte Mähvorgang",
       "description": "Startet einen Mähvorgang mit individuellen Einstellungen.",
@@ -341,6 +345,9 @@
     },
     "dock_failed": {
       "message": "Rückkehr des Mähroboters zur Ladestation fehlgeschlagen."
+    },
+    "dock_cancel_failed": {
+      "message": "Stoppen der Rückkehr des Mähroboters zur Ladestation fehlgeschlagen."
     },
     "command_failed": {
       "message": "Senden eines Befehls zum Mähroboter fehlgeschlagen."

@@ -20,7 +20,6 @@ from pymammotion import CloudIOTGateway
 from pymammotion.aliyun.cloud_gateway import (
     CheckSessionException,
     DeviceOfflineException,
-    SetupException,
 )
 from pymammotion.aliyun.model.aep_response import AepResponse
 from pymammotion.aliyun.model.connect_response import ConnectResponse
@@ -56,6 +55,7 @@ from .const import (
     CONF_STAY_CONNECTED_BLUETOOTH,
     CONF_USE_WIFI,
     DOMAIN,
+    EXPIRED_CREDENTIAL_EXCEPTIONS,
     LOGGER,
 )
 
@@ -66,10 +66,9 @@ UPDATE_INTERVAL = timedelta(minutes=1)
 
 
 class MammotionBaseUpdateCoordinator(DataUpdateCoordinator[_DataT]):
-    address: str | None = None
-    config_entry: MammotionConfigEntry
+    """Mammotion DataUpdateCoordinator."""
+
     manager: Mammotion = None
-    _operation_settings: OperationSettings
 
     def __init__(self, hass: HomeAssistant, config_entry: MammotionConfigEntry) -> None:
         """Initialize global mammotion data updater."""
@@ -93,6 +92,7 @@ class MammotionBaseUpdateCoordinator(DataUpdateCoordinator[_DataT]):
         account = self.config_entry.data.get(CONF_ACCOUNTNAME)
         password = self.config_entry.data.get(CONF_PASSWORD)
         await self.manager.login_and_initiate_cloud(account, password, True)
+        self.store_cloud_credentials()
 
     async def async_send_command(self, command: str, **kwargs: Any) -> None:
         """Send command."""
@@ -100,7 +100,8 @@ class MammotionBaseUpdateCoordinator(DataUpdateCoordinator[_DataT]):
             await self.manager.send_command_with_args(
                 self.device_name, command, **kwargs
             )
-        except SetupException:
+        except EXPIRED_CREDENTIAL_EXCEPTIONS:
+            self.update_failures += 1
             await self.async_login()
         except DeviceOfflineException:
             """Device is offline try bluetooth if we have it."""
@@ -116,21 +117,55 @@ class MammotionBaseUpdateCoordinator(DataUpdateCoordinator[_DataT]):
                     translation_domain=DOMAIN, translation_key="command_failed"
                 ) from exc
 
+    def store_cloud_credentials(self) -> None:
+        """Store cloud credentials in config entry."""
+        # config_updates = {}
+        mammotion_cloud = self.manager.mqtt_list.get(
+            self.config_entry.data.get(CONF_ACCOUNTNAME, "")
+        )
+        cloud_client = mammotion_cloud.cloud_client if mammotion_cloud else None
 
-class MammotionDataUpdateCoordinator(MammotionBaseUpdateCoordinator):
-    """Class to manage fetching mammotion data."""
+        if cloud_client is not None:
+            config_updates = {
+                **self.config_entry.data,
+                CONF_CONNECT_DATA: cloud_client.connect_response,
+                CONF_AUTH_DATA: cloud_client.login_by_oauth_response,
+                CONF_REGION_DATA: cloud_client.region_response,
+                CONF_AEP_DATA: cloud_client.aep_response,
+                CONF_SESSION_DATA: cloud_client.session_by_authcode_response,
+                CONF_DEVICE_DATA: cloud_client.devices_by_account_response,
+            }
+            self.hass.config_entries.async_update_entry(
+                self.config_entry, data=config_updates
+            )
+
+    async def _async_update_notification(self) -> None:
+        """Update data from incoming messages."""
+        mower = self.manager.mower(self.device_name)
+        self.async_set_updated_data(mower)
 
     async def check_and_restore_cloud(self) -> CloudIOTGateway | None:
         """Check and restore previous cloud connection."""
-        if CONF_AUTH_DATA not in self.config_entry.data:
-            return None
 
-        auth_data = self.config_entry.data[CONF_AUTH_DATA]
-        region_data = self.config_entry.data[CONF_REGION_DATA]
-        aep_data = self.config_entry.data[CONF_AEP_DATA]
-        session_data = self.config_entry.data[CONF_SESSION_DATA]
-        device_data = self.config_entry.data[CONF_DEVICE_DATA]
-        connect_data = self.config_entry.data[CONF_CONNECT_DATA]
+        auth_data = self.config_entry.data.get(CONF_AUTH_DATA)
+        region_data = self.config_entry.data.get(CONF_REGION_DATA)
+        aep_data = self.config_entry.data.get(CONF_AEP_DATA)
+        session_data = self.config_entry.data.get(CONF_SESSION_DATA)
+        device_data = self.config_entry.data.get(CONF_DEVICE_DATA)
+        connect_data = self.config_entry.data.get(CONF_CONNECT_DATA)
+
+        if all(
+            data is None
+            for data in [
+                auth_data,
+                region_data,
+                aep_data,
+                session_data,
+                device_data,
+                connect_data,
+            ]
+        ):
+            return None
 
         cloud_client = CloudIOTGateway(
             connect_response=ConnectResponse.from_dict(connect_data)
@@ -213,7 +248,6 @@ class MammotionDataUpdateCoordinator(MammotionBaseUpdateCoordinator):
                     )
                 if ble_device is not None:
                     self.device_name = ble_device.name or "Unknown"
-                    self.address = address
                     self.manager.add_ble_device(ble_device, preference)
 
         if self.device_name is not None:
@@ -231,6 +265,7 @@ class MammotionDataUpdateCoordinator(MammotionBaseUpdateCoordinator):
 
         try:
             if preference is ConnectionPreference.WIFI and device.has_cloud():
+                self.store_cloud_credentials()
                 await device.cloud().start_sync(0)
                 device.cloud().set_notification_callback(
                     self._async_update_notification
@@ -276,11 +311,16 @@ class MammotionDataUpdateCoordinator(MammotionBaseUpdateCoordinator):
         stored_data["device"] = None
         await store.async_save(stored_data)
 
+
+class MammotionDataUpdateCoordinator(MammotionBaseUpdateCoordinator):
+    """Class to manage fetching mammotion data."""
+
     async def async_sync_maps(self) -> None:
         """Get map data from the device."""
         await self.manager.start_map_sync(self.device_name)
 
     async def async_start_stop_blades(self, start_stop: bool) -> None:
+        """Start stop blades."""
         if DeviceType.is_luba1(self.device_name):
             if start_stop:
                 await self.async_send_command("set_blade_control", on_off=1)
@@ -397,13 +437,9 @@ class MammotionDataUpdateCoordinator(MammotionBaseUpdateCoordinator):
         )
 
     async def clear_all_maps(self) -> None:
+        """Clear all map data stored."""
         data = self.manager.get_device_by_name(self.device_name).mower_state
         data.map = HashList()
-
-    async def _async_update_notification(self) -> None:
-        """Update data from incoming messages."""
-        mower = self.manager.mower(self.device_name)
-        self.async_set_updated_data(mower)
 
     async def check_firmware_version(self) -> None:
         """Check if firmware version is udpated."""
@@ -441,9 +477,9 @@ class MammotionDataUpdateCoordinator(MammotionBaseUpdateCoordinator):
         device = self.manager.get_device_by_name(self.device_name)
         await self.check_firmware_version()
 
-        if self.address:
+        if device.has_ble():
             ble_device = bluetooth.async_ble_device_from_address(
-                self.hass, self.address
+                self.hass, device.ble().get_address()
             )
 
             if not ble_device and device.cloud() is None:
@@ -456,39 +492,26 @@ class MammotionDataUpdateCoordinator(MammotionBaseUpdateCoordinator):
                 else:
                     device.add_ble(ble_device)
 
-        try:
-            if (
-                len(device.mower_state.net.toapp_devinfo_resp.resp_ids) == 0
-                or device.mower_state.net.toapp_wifi_iot_status.productkey is None
-            ):
-                await self.manager.start_sync(self.device_name, 0)
+        if (
+            len(device.mower_state.net.toapp_devinfo_resp.resp_ids) == 0
+            or device.mower_state.net.toapp_wifi_iot_status.productkey is None
+        ):
+            await self.manager.start_sync(self.device_name, 0)
 
-            if (
-                not has_field(device.mower_state.sys.device_product_type_info)
-                or device.mower_state.mqtt_properties is None
-            ):
-                await self.async_send_command("get_device_product_model")
+        if (
+            not has_field(device.mower_state.sys.device_product_type_info)
+            or device.mower_state.mqtt_properties is None
+        ):
+            await self.async_send_command("get_device_product_model")
 
-            if (
-                len(device.mower_state.map.hashlist) == 0
-                or len(device.mower_state.map.missing_hashlist) > 0
-            ):
-                await self.manager.start_map_sync(self.device_name)
+        if (
+            len(device.mower_state.map.hashlist) == 0
+            or len(device.mower_state.map.missing_hashlist) > 0
+        ):
+            await self.manager.start_map_sync(self.device_name)
 
-            # if not device.has_queued_commands():
-            await self.async_send_command("get_report_cfg")
-
-        except COMMAND_EXCEPTIONS as exc:
-            self.update_failures += 1
-            raise UpdateFailed(f"Updating Mammotion device failed: {exc}") from exc
-        except SetupException:
-            self.update_failures += 1
-            await self.async_login()
-        except DeviceOfflineException:
-            """Device is offline try bluetooth if we have it."""
-            if device.ble():
-                await device.ble().command("get_report_cfg")
-            # TODO set a sensor to offline
+        # if not device.has_queued_commands():
+        await self.async_send_command("get_report_cfg")
 
         LOGGER.debug("Updated Mammotion device %s", self.device_name)
         LOGGER.debug("================= Debug Log =================")
