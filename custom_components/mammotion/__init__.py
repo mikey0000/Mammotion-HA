@@ -60,24 +60,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
     mammotion_coordinator = MammotionDataUpdateCoordinator(hass, entry)
     await mammotion_coordinator.async_setup()
 
-    # config_updates = {}
-    mammotion_cloud = mammotion_coordinator.manager.mqtt_list.get(
-        entry.data.get(CONF_ACCOUNTNAME, "")
-    )
-    cloud_client = mammotion_cloud.cloud_client if mammotion_cloud else None
-
-    if cloud_client is not None:
-        config_updates = {
-            **entry.data,
-            CONF_CONNECT_DATA: cloud_client.connect_response,
-            CONF_AUTH_DATA: cloud_client.login_by_oauth_response,
-            CONF_REGION_DATA: cloud_client.region_response,
-            CONF_AEP_DATA: cloud_client.aep_response,
-            CONF_SESSION_DATA: cloud_client.session_by_authcode_response,
-            CONF_DEVICE_DATA: cloud_client.devices_by_account_response,
-        }
-        hass.config_entries.async_update_entry(entry, data=config_updates)
-
     await mammotion_coordinator.async_config_entry_first_refresh()
     entry.runtime_data = mammotion_coordinator
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
