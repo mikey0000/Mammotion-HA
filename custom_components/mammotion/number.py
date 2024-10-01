@@ -55,6 +55,16 @@ NUMBER_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
             coordinator.operation_settings, "toward", value
         ),
     ),
+    MammotionConfigNumberEntityDescription(
+        key="toward_included_angle",
+        step=1,
+        native_unit_of_measurement=DEGREE,
+        min_value=-180,
+        max_value=180,
+        set_fn=lambda coordinator, value: setattr(
+            coordinator.operation_settings, "toward_included_angle", value
+        ),
+    ),
 )
 
 YUKA_NUMBER_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
@@ -160,6 +170,10 @@ class MammotionConfigNumberEntity(MammotionBaseEntity, NumberEntity, RestoreEnti
         self._attr_native_max_value = entity_description.max_value
         self._attr_native_step = entity_description.step
         self._attr_native_value = self._attr_native_min_value  # Default value
+        if self.entity_description.native_unit_of_measurement == DEGREE:
+            self._attr_native_value = 0
+        if self.entity_description.key == "toward_included_angle":
+            self._attr_native_value = 90
 
     async def async_set_native_value(self, value: float | int) -> None:
         self._attr_native_value = value

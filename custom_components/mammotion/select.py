@@ -42,7 +42,7 @@ SELECT_ENTITIES: tuple[MammotionConfigSelectEntityDescription, ...] = (
         key="border_patrol_mode",
         options=[mode.name for mode in BorderPatrolMode],
         set_fn=lambda coordinator, value: setattr(
-            coordinator.operation_settings, "border_mode", BorderPatrolMode[value]
+            coordinator.operation_settings, "mowing_laps", BorderPatrolMode[value]
         ),
     ),
     MammotionConfigSelectEntityDescription(
@@ -56,7 +56,7 @@ SELECT_ENTITIES: tuple[MammotionConfigSelectEntityDescription, ...] = (
         key="mow_order",
         options=[order.name for order in MowOrder],
         set_fn=lambda coordinator, value: setattr(
-            coordinator.operation_settings, "job_mode", MowOrder[value]
+            coordinator.operation_settings, "border_mode", MowOrder[value]
         ),
     ),
 )

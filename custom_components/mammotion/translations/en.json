@@ -232,6 +232,9 @@
       },
       "dumping_interval": {
         "name": "Dumping Frequency"
+      },
+      "toward_included_angle": {
+        "name": "Angle Relative to Grid"
       }
     },
     "device_tracker": {
@@ -304,7 +307,7 @@
           "description": "Direction angle for mowing."
         },
         "toward_included_angle": {
-          "name": "Angle Relative to Grid?",
+          "name": "Angle Relative to Grid",
           "description": "When selecting grid change the second angle."
         },
         "toward_mode": {
