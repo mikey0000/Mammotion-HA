@@ -135,22 +135,22 @@
       }
     },
     "switch": {
-      "blades_on_off": {
+      "blade_status": {
         "name": "Ostrza wł/wył"
       },
-      "mowing_on_off": {
+      "is_mow": {
         "name": "Koszenie wł/wył"
       },
-      "dump_grass_on_off": {
+      "is_dump": {
         "name": "Wysypywanie trawy wł/wył"
       },
-      "edge_on_off": {
+      "is_edge": {
         "name": "Cięcie krawędzi"
       },
       "rain_detection_on_off": {
         "name": "Wykrywanie deszczu wł/wył"
       },
-      "side_led_on_off": {
+      "side_led": {
         "name": "Boczna dioda LED wł/wył"
       },
        "perimeter_first_on_off": {

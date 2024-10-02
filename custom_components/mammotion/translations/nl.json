@@ -111,19 +111,19 @@
       }
     },
     "switch": {
-      "blades_on_off": {
+      "blade_status": {
         "name": "Blad aan/uit"
       },
-      "mowing_on_off": {
+      "is_mow": {
         "name": "Gazonmachines aan/uit"
       },
-      "dump_grass_on_off": {
+      "is_dump": {
         "name": "Gras dumpen aan/uit"
       },
       "rain_detection_on_off": {
         "name": "Regendetectie Aan/Uit"
       },
-      "side_led_on_off": {
+      "side_led": {
         "name": "Zij-LED's aan/uit"
       },
        "perimeter_first_on_off": {

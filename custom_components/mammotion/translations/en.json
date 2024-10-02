@@ -137,22 +137,22 @@
       }
     },
     "switch": {
-      "blades_on_off": {
+      "blade_status": {
         "name": "Blades on/off"
       },
-      "mowing_on_off": {
+      "is_mow": {
         "name": "Mowing on/off"
       },
-      "dump_grass_on_off": {
+      "is_dump": {
         "name": "Dump grass on/off"
       },
-      "edge_on_off": {
+      "is_edge": {
         "name": "Edge cutting"
       },
       "rain_detection_on_off": {
         "name": "Rain detection On/Off"
       },
-      "side_led_on_off": {
+      "side_led": {
         "name": "Side LED on/off"
       },
       "perimeter_first_on_off": {
