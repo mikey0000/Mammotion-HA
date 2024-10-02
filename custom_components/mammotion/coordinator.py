@@ -421,7 +421,9 @@ class MammotionDataUpdateCoordinator(MammotionBaseUpdateCoordinator):
             speed=operation_settings.speed,
             ultra_wave=operation_settings.ultra_wave,  # touch no touch etc
             toward=operation_settings.toward,  # is just angle
-            toward_included_angle=operation_settings.toward_included_angle,  # angle relative to grid??
+            toward_included_angle=operation_settings.toward_included_angle
+            if operation_settings.channel_mode == 1
+            else 0,  # angle relative to grid
             toward_mode=operation_settings.toward_mode,
             blade_height=operation_settings.blade_height,
             channel_mode=operation_settings.channel_mode,  # single, double, segment or none
