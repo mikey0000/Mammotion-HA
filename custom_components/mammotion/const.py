@@ -25,7 +25,7 @@ COMMAND_EXCEPTIONS = (
     TimeoutError,
 )
 
-EXPIRED_CREDENTIAL_EXCEPTIONS = {CheckSessionException, SetupException}
+EXPIRED_CREDENTIAL_EXCEPTIONS = (CheckSessionException, SetupException)
 
 CONF_STAY_CONNECTED_BLUETOOTH: Final = "stay_connected_bluetooth"
 CONF_ACCOUNTNAME: Final = "account_name"

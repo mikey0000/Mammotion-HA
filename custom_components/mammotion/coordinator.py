@@ -18,7 +18,6 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from mashumaro.exceptions import InvalidFieldValue
 from pymammotion import CloudIOTGateway
 from pymammotion.aliyun.cloud_gateway import (
-    CheckSessionException,
     DeviceOfflineException,
 )
 from pymammotion.aliyun.model.aep_response import AepResponse
@@ -86,9 +85,16 @@ class MammotionBaseUpdateCoordinator(DataUpdateCoordinator[_DataT]):
 
     async def async_login(self) -> None:
         """Login to cloud servers."""
-        await self.hass.async_add_executor_job(
-            self.manager.get_device_by_name(self.device_name).cloud().mqtt.disconnect
-        )
+        if (
+            self.manager.get_device_by_name(self.device_name)
+            and self.manager.get_device_by_name(self.device_name).has_cloud()
+        ):
+            await self.hass.async_add_executor_job(
+                self.manager.get_device_by_name(self.device_name)
+                .cloud()
+                .mqtt.disconnect
+            )
+
         account = self.config_entry.data.get(CONF_ACCOUNTNAME)
         password = self.config_entry.data.get(CONF_PASSWORD)
         await self.manager.login_and_initiate_cloud(account, password, True)
@@ -189,13 +195,8 @@ class MammotionBaseUpdateCoordinator(DataUpdateCoordinator[_DataT]):
             if isinstance(auth_data, dict)
             else auth_data,
         )
-        try:
-            await self.hass.async_add_executor_job(
-                cloud_client.check_or_refresh_session
-            )
-        except CheckSessionException as exc:
-            LOGGER.debug(exc)
-            return None
+
+        await self.hass.async_add_executor_job(cloud_client.check_or_refresh_session)
 
         return cloud_client
 
@@ -235,6 +236,9 @@ class MammotionBaseUpdateCoordinator(DataUpdateCoordinator[_DataT]):
                         )
                 except ClientConnectorError as err:
                     raise ConfigEntryNotReady(err)
+                except EXPIRED_CREDENTIAL_EXCEPTIONS as exc:
+                    LOGGER.debug(exc)
+                    await self.async_login()
 
                 # address previous bugs
                 if address is None and preference == ConnectionPreference.BLUETOOTH:
@@ -266,13 +270,13 @@ class MammotionBaseUpdateCoordinator(DataUpdateCoordinator[_DataT]):
         try:
             if preference is ConnectionPreference.WIFI and device.has_cloud():
                 self.store_cloud_credentials()
-                await device.cloud().start_sync(0)
                 device.cloud().set_notification_callback(
                     self._async_update_notification
                 )
+                await device.cloud().start_sync(0)
             elif device.has_ble():
-                await device.ble().start_sync(0)
                 device.ble().set_notification_callback(self._async_update_notification)
+                await device.ble().start_sync(0)
             else:
                 raise ConfigEntryNotReady(
                     "No configuration available to setup Mammotion lawn mower"
@@ -421,7 +425,9 @@ class MammotionDataUpdateCoordinator(MammotionBaseUpdateCoordinator):
             speed=operation_settings.speed,
             ultra_wave=operation_settings.ultra_wave,  # touch no touch etc
             toward=operation_settings.toward,  # is just angle
-            toward_included_angle=operation_settings.toward_included_angle,  # angle relative to grid??
+            toward_included_angle=operation_settings.toward_included_angle
+            if operation_settings.channel_mode == 1
+            else 0,  # angle relative to grid
             toward_mode=operation_settings.toward_mode,
             blade_height=operation_settings.blade_height,
             channel_mode=operation_settings.channel_mode,  # single, double, segment or none
