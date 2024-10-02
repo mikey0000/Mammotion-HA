@@ -150,7 +150,7 @@
       }
     },
     "select": {
-       "cutting_mode": {
+       "channel_mode": {
         "name": "Modul de tăiere"
          "state": {
            "single_grid": "Grilă simplă",
@@ -159,7 +159,7 @@
            "no_grid": "Fără grilă"
          }
       },
-      "border_patrol_mode": {
+      "mowing_laps": {
         "name": "Modul patrulă de graniță",
         "state": {
           "none": "Niciuna",
@@ -169,7 +169,7 @@
           "four": "patru"
         }
       },
-      "obstacle_laps_mode": {
+      "obstacle_laps": {
         "name": "Modul Secțiuni obstacol",
         "state": {
           "none": "Niciuna",
@@ -179,7 +179,7 @@
           "four": "patru"
         }
       },
-      "mow_order": {
+      "border_mode": {
         "name": "Ordinea de cosire",
         "state": {
           "border_first": "Întâi frontiera",

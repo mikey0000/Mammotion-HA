@@ -160,7 +160,7 @@
       }
     },
     "select": {
-      "cutting_mode": {
+      "channel_mode": {
         "name": "Režim řezu",
         "state": {
           "single_grid": "Jednoduchá mřížka",
@@ -169,7 +169,7 @@
           "no_grid": "Žádná mřížka"
         }
       },
-      "border_patrol_mode": {
+      "mowing_laps": {
         "name": "Režim hraniční hlídky",
         "state": {
           "none": "Žádné",
@@ -179,7 +179,7 @@
           "four": "čtyři"
         }
       },
-      "obstacle_laps_mode": {
+      "obstacle_laps": {
         "name": "Režim Překážkové úseky",
         "state": {
           "none": "Žádné",
@@ -189,7 +189,7 @@
           "four": "čtyři"
         }
       },
-      "mow_order": {
+      "border_mode": {
         "name": "Pořadí sečení",
         "state": {
           "border_first": "Hranice jako první",

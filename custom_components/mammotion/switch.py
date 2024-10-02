@@ -84,7 +84,7 @@ UPDATE_SWITCH_ENTITIES: tuple[MammotionUpdateSwitchEntityDescription, ...] = (
         key="schedule_updates",
         is_on_func=lambda coordinator: coordinator.enabled,
         set_fn=lambda coordinator, value: coordinator.set_scheduled_updates(value),
-    )
+    ),
 )
 
 CONFIG_SWITCH_ENTITIES: tuple[MammotionConfigSwitchEntityDescription, ...] = (
@@ -214,12 +214,12 @@ class MammotionUpdateSwitchEntity(MammotionBaseEntity, SwitchEntity, RestoreEnti
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         self._attr_is_on = True
-        await self.entity_description.set_fn(self.coordinator, True)
+        self.entity_description.set_fn(self.coordinator, True)
         self.async_write_ha_state()
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         self._attr_is_on = False
-        await self.entity_description.set_fn(self.coordinator, False)
+        self.entity_description.set_fn(self.coordinator, False)
         self.async_write_ha_state()
 
 

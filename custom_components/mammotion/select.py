@@ -32,28 +32,28 @@ class MammotionConfigSelectEntityDescription(SelectEntityDescription):
 
 SELECT_ENTITIES: tuple[MammotionConfigSelectEntityDescription, ...] = (
     MammotionConfigSelectEntityDescription(
-        key="cutting_mode",
+        key="channel_mode",
         options=[mode.name for mode in CuttingMode],
         set_fn=lambda coordinator, value: setattr(
             coordinator.operation_settings, "channel_mode", CuttingMode[value]
         ),
     ),
     MammotionConfigSelectEntityDescription(
-        key="border_patrol_mode",
+        key="mowing_laps",
         options=[mode.name for mode in BorderPatrolMode],
         set_fn=lambda coordinator, value: setattr(
             coordinator.operation_settings, "mowing_laps", BorderPatrolMode[value]
         ),
     ),
     MammotionConfigSelectEntityDescription(
-        key="obstacle_laps_mode",
+        key="obstacle_laps",
         options=[mode.name for mode in ObstacleLapsMode],
         set_fn=lambda coordinator, value: setattr(
             coordinator.operation_settings, "obstacle_laps", ObstacleLapsMode[value]
         ),
     ),
     MammotionConfigSelectEntityDescription(
-        key="mow_order",
+        key="border_mode",
         options=[order.name for order in MowOrder],
         set_fn=lambda coordinator, value: setattr(
             coordinator.operation_settings, "border_mode", MowOrder[value]

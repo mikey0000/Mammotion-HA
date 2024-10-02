@@ -131,16 +131,16 @@
       }
     },
     "select": {
-       "cutting_mode": {
+       "channel_mode": {
         "name": "Snijmodus"
       },
-      "border_patrol_mode": {
+      "mowing_laps": {
         "name": "Randpatrolmodus"
       },
-      "obstacle_laps_mode": {
+      "obstacle_laps": {
         "name": "Obstakel-lapsmodus"
       },
-      "mow_order": {
+      "border_mode": {
         "name": "Maai volgorde"
       }
     },

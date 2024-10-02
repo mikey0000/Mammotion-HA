@@ -118,16 +118,16 @@
       }
     },
     "select": {
-      "cutting_mode": {
+      "channel_mode": {
         "name": "Modalità di taglio"
       },
-      "border_patrol_mode": {
+      "mowing_laps": {
         "name": "Modalità controllo bordi"
       },
-      "obstacle_laps_mode": {
+      "obstacle_laps": {
         "name": "Modalità aggiramento ostacoli"
       },
-      "mow_order": {
+      "border_mode": {
         "name": "Ordine di taglio"
       }
     },

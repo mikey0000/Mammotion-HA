@@ -108,19 +108,19 @@
       }
     },
     "select": {
-      "cutting_mode": {
+      "channel_mode": {
         "name": "Cutting Mode",
         "description": "Select the cutting mode for the mower."
       },
-      "border_patrol_mode": {
+      "mowing_laps": {
         "name": "Border Patrol Mode",
         "description": "Select the border patrol mode for the mower."
       },
-      "obstacle_laps_mode": {
+      "obstacle_laps": {
         "name": "Obstacle Laps Mode",
         "description": "Select the obstacle laps mode for the mower."
       },
-      "mow_order": {
+      "border_mode": {
         "name": "Mow Order",
         "description": "Select the order in which the areas should be mowed."
       }

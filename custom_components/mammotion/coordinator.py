@@ -330,8 +330,6 @@ class MammotionDataUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevice
         """Initialize global mammotion data updater."""
         super().__init__(
             hass=hass,
-            logger=LOGGER,
-            name=DOMAIN,
             config_entry=config_entry,
             update_interval=timedelta(minutes=1),
         )
