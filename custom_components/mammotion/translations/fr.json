@@ -137,22 +137,22 @@
       }
     },
     "switch": {
-      "blades_on_off": {
+      "blade_status": {
         "name": "Lames On/Off"
       },
-      "mowing_on_off": {
+      "is_mow": {
         "name": "Tonte On/Off"
       },
-      "dump_grass_on_off": {
+      "is_dump": {
         "name": "Déversement d'herbe On/Off"
       },
-      "edge_on_off": {
+      "is_edge": {
         "name": "Coupe des bordures"
       },
       "rain_detection_on_off": {
         "name": "Détection de pluie On/Off"
       },
-      "side_led_on_off": {
+      "side_led": {
         "name": "Voyants LED On/Off"
       },
        "perimeter_first_on_off": {
@@ -160,7 +160,7 @@
       }
     },
     "select": {
-      "cutting_mode": {
+      "channel_mode": {
         "name": "Mode de coupe",
         "state": {
           "single_grid": "Grille unique",
@@ -169,7 +169,7 @@
           "no_grid": "Pas de grille" 
         }
       },
-      "border_patrol_mode": {
+      "mowing_laps": {
         "name": "Mode Chien de Garde",
         "state": {
           "none": "Aucun",
@@ -179,7 +179,7 @@
           "four": "Quatre"
         }
       },
-      "obstacle_laps_mode": {
+      "obstacle_laps": {
         "name": "Mode contours d'obstacles",
         "state": {
           "none": "Aucun",
@@ -189,7 +189,7 @@
           "four": "Quatre"
         }
       },
-      "mow_order": {
+      "border_mode": {
         "name": "Ordre de tonte",
         "state": {
           "border_first": "Bordure d'abord",

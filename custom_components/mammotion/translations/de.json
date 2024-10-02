@@ -137,22 +137,22 @@
       }
     },
     "switch": {
-      "blades_on_off": {
+      "blade_status": {
         "name": "Klingen An/Aus"
       },
-      "mowing_on_off": {
+      "is_mow": {
         "name": "Mähen An/Aus"
       },
-      "dump_grass_on_off": {
+      "is_dump": {
         "name": "Gras sammeln"
       },
-      "edge_on_off": {
+      "is_edge": {
         "name": "Kanten schneiden"
       },
       "rain_detection_on_off": {
         "name": "Regenerkennung"
       },
-      "side_led_on_off": {
+      "side_led": {
         "name": "Seitenlicht"
       },
       "perimeter_first_on_off": {
@@ -160,7 +160,7 @@
       }
     },
     "select": {
-      "cutting_mode": {
+      "channel_mode": {
         "name": "Navigationsmodus",
         "state": {
           "single_grid": "Einzelnes Raster",
@@ -169,7 +169,7 @@
           "no_grid": "Kein Raster"
         }
       },
-      "border_patrol_mode": {
+      "mowing_laps": {
         "name": "Patrouillenrunden für den seitlichen Rasenschnitt",
         "state": {
           "none": "Keine",
@@ -179,7 +179,7 @@
           "four": "Vier"
         }
       },
-      "obstacle_laps_mode": {
+      "obstacle_laps": {
         "name": "Mähen von No-Go-Zonen",
         "state": {
           "none": "Keine",
@@ -189,7 +189,7 @@
           "four": "Vier"
         }
       },
-      "mow_order": {
+      "border_mode": {
         "name": "Ausführungsreihenfolge des Pfades",
         "state": {
           "border_first": "Zuerst den Umfang",

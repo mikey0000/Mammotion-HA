@@ -137,22 +137,22 @@
       }
     },
     "switch": {
-      "blades_on_off": {
+      "blade_status": {
         "name": "Zapnutí/vypnutí nožů"
       },
-      "mowing_on_off": {
+      "is_mow": {
         "name": "Zapnutí a vypnutí sekání"
       },
-      "dump_grass_on_off": {
+      "is_dump": {
         "name": "Zapnutí/vypnutí výsypu trávy"
       },
-      "edge_on_off": {
+      "is_edge": {
         "name": "Řezání okrajů"
       },
       "rain_detection_on_off": {
         "name": "Zapnutá/vypnutá detekce deště"
       },
-      "side_led_on_off": {
+      "side_led": {
         "name": "Zapnutí/vypnutí boční LED"
       },
       "perimeter_first_on_off": {
@@ -160,7 +160,7 @@
       }
     },
     "select": {
-      "cutting_mode": {
+      "channel_mode": {
         "name": "Režim řezu",
         "state": {
           "single_grid": "Jednoduchá mřížka",
@@ -169,7 +169,7 @@
           "no_grid": "Žádná mřížka"
         }
       },
-      "border_patrol_mode": {
+      "mowing_laps": {
         "name": "Režim hraniční hlídky",
         "state": {
           "none": "Žádné",
@@ -179,7 +179,7 @@
           "four": "čtyři"
         }
       },
-      "obstacle_laps_mode": {
+      "obstacle_laps": {
         "name": "Režim Překážkové úseky",
         "state": {
           "none": "Žádné",
@@ -189,7 +189,7 @@
           "four": "čtyři"
         }
       },
-      "mow_order": {
+      "border_mode": {
         "name": "Pořadí sečení",
         "state": {
           "border_first": "Hranice jako první",

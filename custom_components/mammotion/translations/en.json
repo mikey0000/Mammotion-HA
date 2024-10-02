@@ -137,30 +137,33 @@
       }
     },
     "switch": {
-      "blades_on_off": {
+      "blade_status": {
         "name": "Blades on/off"
       },
-      "mowing_on_off": {
+      "is_mow": {
         "name": "Mowing on/off"
       },
-      "dump_grass_on_off": {
+      "is_dump": {
         "name": "Dump grass on/off"
       },
-      "edge_on_off": {
+      "is_edge": {
         "name": "Edge cutting"
       },
       "rain_detection_on_off": {
         "name": "Rain detection On/Off"
       },
-      "side_led_on_off": {
+      "side_led": {
         "name": "Side LED on/off"
       },
       "perimeter_first_on_off": {
         "name": "Perimeter first"
+      },
+      "schedule_updates": {
+        "name": "Turn Updates On/Off"
       }
     },
     "select": {
-      "cutting_mode": {
+      "channel_mode": {
         "name": "Cutting Path Mode",
         "state": {
           "single_grid": "Zigzag Path",
@@ -169,7 +172,7 @@
           "no_grid": "Perimeter Only"
         }
       },
-      "border_patrol_mode": {
+      "mowing_laps": {
         "name": "Perimeter Mowing Laps",
         "state": {
           "none": "None",
@@ -179,7 +182,7 @@
           "four": "Four"
         }
       },
-      "obstacle_laps_mode": {
+      "obstacle_laps": {
         "name": "No-go Zone Mowing Laps",
         "state": {
           "none": "None",
@@ -189,7 +192,7 @@
           "four": "Four"
         }
       },
-      "mow_order": {
+      "border_mode": {
         "name": "Mow Order",
         "state": {
           "border_first": "Perimeter first",

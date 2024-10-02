@@ -130,19 +130,19 @@
       }
     },
     "switch": {
-      "blades_on_off": {
+      "blade_status": {
         "name": "Lame pornite/oprite"
       },
-      "mowing_on_off": {
+      "is_mow": {
         "name": "Tundere pornită/oprită"
       },
-      "dump_grass_on_off": {
+      "is_dump": {
         "name": "Descărcarea ierbii On/Off"
       },
       "rain_detection_on_off": {
         "name": "Detectarea ploii activată/dezactivată"
       },
-      "side_led_on_off": {
+      "side_led": {
         "name": "LED lateral Pornit/Oprit"
       },
        "perimeter_first_on_off": {
@@ -150,7 +150,7 @@
       }
     },
     "select": {
-       "cutting_mode": {
+       "channel_mode": {
         "name": "Modul de tăiere"
          "state": {
            "single_grid": "Grilă simplă",
@@ -159,7 +159,7 @@
            "no_grid": "Fără grilă"
          }
       },
-      "border_patrol_mode": {
+      "mowing_laps": {
         "name": "Modul patrulă de graniță",
         "state": {
           "none": "Niciuna",
@@ -169,7 +169,7 @@
           "four": "patru"
         }
       },
-      "obstacle_laps_mode": {
+      "obstacle_laps": {
         "name": "Modul Secțiuni obstacol",
         "state": {
           "none": "Niciuna",
@@ -179,7 +179,7 @@
           "four": "patru"
         }
       },
-      "mow_order": {
+      "border_mode": {
         "name": "Ordinea de cosire",
         "state": {
           "border_first": "Întâi frontiera",

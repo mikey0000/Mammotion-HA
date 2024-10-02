@@ -82,15 +82,15 @@
       }
     },
     "switch": {
-      "blades_on_off": {
+      "blade_status": {
         "name": "Blades On/Off",
         "description": "Turn the blades on or off."
       },
-      "mowing_on_off": {
+      "is_mow": {
         "name": "Mowing On/Off",
         "description": "Start or stop mowing."
       },
-      "dump_grass_on_off": {
+      "is_dump": {
         "name": "Dump Grass On/Off",
         "description": "Enable or disable grass dumping."
       },
@@ -98,7 +98,7 @@
         "name": "Rain Detection On/Off",
         "description": "Turn rain detection on or off."
       },
-      "side_led_on_off": {
+      "side_led": {
         "name": "Side LED On/Off",
         "description": "Enable or disable the side LED."
       },
@@ -108,19 +108,19 @@
       }
     },
     "select": {
-      "cutting_mode": {
+      "channel_mode": {
         "name": "Cutting Mode",
         "description": "Select the cutting mode for the mower."
       },
-      "border_patrol_mode": {
+      "mowing_laps": {
         "name": "Border Patrol Mode",
         "description": "Select the border patrol mode for the mower."
       },
-      "obstacle_laps_mode": {
+      "obstacle_laps": {
         "name": "Obstacle Laps Mode",
         "description": "Select the obstacle laps mode for the mower."
       },
-      "mow_order": {
+      "border_mode": {
         "name": "Mow Order",
         "description": "Select the order in which the areas should be mowed."
       }

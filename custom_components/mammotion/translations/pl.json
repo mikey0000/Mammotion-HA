@@ -135,22 +135,22 @@
       }
     },
     "switch": {
-      "blades_on_off": {
+      "blade_status": {
         "name": "Ostrza wł/wył"
       },
-      "mowing_on_off": {
+      "is_mow": {
         "name": "Koszenie wł/wył"
       },
-      "dump_grass_on_off": {
+      "is_dump": {
         "name": "Wysypywanie trawy wł/wył"
       },
-      "edge_on_off": {
+      "is_edge": {
         "name": "Cięcie krawędzi"
       },
       "rain_detection_on_off": {
         "name": "Wykrywanie deszczu wł/wył"
       },
-      "side_led_on_off": {
+      "side_led": {
         "name": "Boczna dioda LED wł/wył"
       },
        "perimeter_first_on_off": {
@@ -158,7 +158,7 @@
       }
     },
     "select": {
-       "cutting_mode": {
+       "channel_mode": {
         "name": "Tryb cięcia",
         "state": {
            "single_grid": "Pojedyncza siatka",
@@ -167,7 +167,7 @@
            "no_grid": "Brak siatki"
          }
       },
-      "border_patrol_mode": {
+      "mowing_laps": {
         "name": "Koszenie obwodu",
         "state": {
           "none": "Nie koś",
@@ -177,7 +177,7 @@
           "four": "Cztery razy"
         }
       },
-      "obstacle_laps_mode": {
+      "obstacle_laps": {
         "name": "Koszenie stref zakazanych",
         "state": {
           "none": "Nie koś",
@@ -187,7 +187,7 @@
           "four": "Cztery razy"
         }
       },
-      "mow_order": {
+      "border_mode": {
         "name": "Kolejność wykonania ścieżki",
         "state": {
           "border_first": "Najpierw obwód",

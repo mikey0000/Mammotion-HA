@@ -10,7 +10,7 @@ import betterproto
 from aiohttp import ClientConnectorError
 from homeassistant.components import bluetooth
 from homeassistant.const import CONF_ADDRESS, CONF_PASSWORD
-from homeassistant.core import HomeAssistant, _DataT
+from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady, HomeAssistantError
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.storage import Store
@@ -61,27 +61,34 @@ from .const import (
 if TYPE_CHECKING:
     from . import MammotionConfigEntry
 
-UPDATE_INTERVAL = timedelta(minutes=1)
 
-
-class MammotionBaseUpdateCoordinator(DataUpdateCoordinator[_DataT]):
+class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
     """Mammotion DataUpdateCoordinator."""
 
     manager: Mammotion = None
 
-    def __init__(self, hass: HomeAssistant, config_entry: MammotionConfigEntry) -> None:
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        config_entry: MammotionConfigEntry,
+        update_interval: timedelta,
+    ) -> None:
         """Initialize global mammotion data updater."""
         super().__init__(
             hass=hass,
             logger=LOGGER,
             name=DOMAIN,
-            update_interval=UPDATE_INTERVAL,
+            update_interval=update_interval,
         )
         self.device_name = None
         assert self.config_entry.unique_id
         self.config_entry = config_entry
         self._operation_settings = OperationSettings()
         self.update_failures = 0
+        self.enabled = True
+
+    def set_scheduled_updates(self, enabled: bool) -> None:
+        self.enabled = enabled
 
     async def async_login(self) -> None:
         """Login to cloud servers."""
@@ -316,8 +323,16 @@ class MammotionBaseUpdateCoordinator(DataUpdateCoordinator[_DataT]):
         await store.async_save(stored_data)
 
 
-class MammotionDataUpdateCoordinator(MammotionBaseUpdateCoordinator):
+class MammotionDataUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevice]):
     """Class to manage fetching mammotion data."""
+
+    def __init__(self, hass: HomeAssistant, config_entry: MammotionConfigEntry) -> None:
+        """Initialize global mammotion data updater."""
+        super().__init__(
+            hass=hass,
+            config_entry=config_entry,
+            update_interval=timedelta(minutes=1),
+        )
 
     async def async_sync_maps(self) -> None:
         """Get map data from the device."""
@@ -476,6 +491,9 @@ class MammotionDataUpdateCoordinator(MammotionBaseUpdateCoordinator):
     async def _async_update_data(self) -> MowingDevice:
         """Get data from the device."""
 
+        if not self.enabled:
+            return self.data
+
         if self.update_failures > 10:
             """Don't hammer the mammotion/ali servers"""
             return self.data
@@ -503,6 +521,9 @@ class MammotionDataUpdateCoordinator(MammotionBaseUpdateCoordinator):
             or device.mower_state.net.toapp_wifi_iot_status.productkey is None
         ):
             await self.manager.start_sync(self.device_name, 0)
+
+        if not device.mower_state.sys.todev_time_ctrl_light:
+            await self.async_read_sidelight()
 
         if (
             not has_field(device.mower_state.sys.device_product_type_info)

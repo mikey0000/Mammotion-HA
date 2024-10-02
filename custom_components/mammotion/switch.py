@@ -22,6 +22,15 @@ class MammotionSwitchEntityDescription(SwitchEntityDescription):
 
 
 @dataclass(frozen=True, kw_only=True)
+class MammotionUpdateSwitchEntityDescription(SwitchEntityDescription):
+    """Describes Mammotion switch entity."""
+
+    key: str
+    set_fn: Callable[[MammotionDataUpdateCoordinator, bool], None]
+    is_on_func: Callable[[MammotionDataUpdateCoordinator], bool]
+
+
+@dataclass(frozen=True, kw_only=True)
 class MammotionConfigSwitchEntityDescription(SwitchEntityDescription):
     """Describes Mammotion Config switch entity."""
 
@@ -40,19 +49,19 @@ class MammotionConfigAreaSwitchEntityDescription(SwitchEntityDescription):
 
 YUKA_CONFIG_SWITCH_ENTITIES: tuple[MammotionConfigSwitchEntityDescription, ...] = (
     MammotionConfigSwitchEntityDescription(
-        key="mowing_on_off",
+        key="is_mow",
         set_fn=lambda coordinator, value: setattr(
             coordinator.operation_settings, "is_mow", value
         ),
     ),
     MammotionConfigSwitchEntityDescription(
-        key="dump_grass_on_off",
+        key="is_dump",
         set_fn=lambda coordinator, value: setattr(
             coordinator.operation_settings, "is_dump", value
         ),
     ),
     MammotionConfigSwitchEntityDescription(
-        key="edge_on_off",
+        key="is_edge",
         set_fn=lambda coordinator, value: setattr(
             coordinator.operation_settings, "is_edge", value
         ),
@@ -61,12 +70,20 @@ YUKA_CONFIG_SWITCH_ENTITIES: tuple[MammotionConfigSwitchEntityDescription, ...] 
 
 SWITCH_ENTITIES: tuple[MammotionSwitchEntityDescription, ...] = (
     MammotionSwitchEntityDescription(
-        key="blades_on_off",
+        key="blade_status",
         set_fn=lambda coordinator, value: coordinator.async_start_stop_blades(value),
     ),
     MammotionSwitchEntityDescription(
-        key="side_led_on_off",
+        key="side_led",
         set_fn=lambda coordinator, value: coordinator.async_set_sidelight(int(value)),
+    ),
+)
+
+UPDATE_SWITCH_ENTITIES: tuple[MammotionUpdateSwitchEntityDescription, ...] = (
+    MammotionUpdateSwitchEntityDescription(
+        key="schedule_updates",
+        is_on_func=lambda coordinator: coordinator.enabled,
+        set_fn=lambda coordinator, value: coordinator.set_scheduled_updates(value),
     ),
 )
 
@@ -136,6 +153,10 @@ async def async_setup_entry(
         config_entity = MammotionConfigSwitchEntity(coordinator, entity_description)
         entities.append(config_entity)
 
+    for entity_description in UPDATE_SWITCH_ENTITIES:
+        config_entity = MammotionUpdateSwitchEntity(coordinator, entity_description)
+        entities.append(config_entity)
+
     if DeviceType.is_yuka(coordinator.device_name):
         for entity_description in YUKA_CONFIG_SWITCH_ENTITIES:
             config_entity = MammotionConfigSwitchEntity(coordinator, entity_description)
@@ -172,6 +193,36 @@ class MammotionSwitchEntity(MammotionBaseEntity, SwitchEntity):
         """Update the entity state."""
 
 
+class MammotionUpdateSwitchEntity(MammotionBaseEntity, SwitchEntity, RestoreEntity):
+    entity_description: MammotionUpdateSwitchEntityDescription
+    _attr_has_entity_name = True
+
+    def __init__(
+        self,
+        coordinator: MammotionDataUpdateCoordinator,
+        entity_description: MammotionUpdateSwitchEntityDescription,
+    ) -> None:
+        super().__init__(coordinator, entity_description.key)
+        self.coordinator = coordinator
+        self.entity_description = entity_description
+        self._attr_translation_key = entity_description.key
+        self._attr_is_on = True  # Default state
+
+    @property
+    def is_on(self) -> bool:
+        return self.entity_description.is_on_func(self.coordinator)
+
+    async def async_turn_on(self, **kwargs: Any) -> None:
+        self._attr_is_on = True
+        self.entity_description.set_fn(self.coordinator, True)
+        self.async_write_ha_state()
+
+    async def async_turn_off(self, **kwargs: Any) -> None:
+        self._attr_is_on = False
+        self.entity_description.set_fn(self.coordinator, False)
+        self.async_write_ha_state()
+
+
 class MammotionConfigSwitchEntity(MammotionBaseEntity, SwitchEntity, RestoreEntity):
     entity_description: MammotionConfigSwitchEntityDescription
     _attr_has_entity_name = True
@@ -186,8 +237,13 @@ class MammotionConfigSwitchEntity(MammotionBaseEntity, SwitchEntity, RestoreEnti
         self.coordinator = coordinator
         self.entity_description = entity_description
         self._attr_translation_key = entity_description.key
-        # TODO grab defaults from operation_settings
-        self._attr_is_on = False  # Default state
+
+    @property
+    def is_on(self) -> bool:
+        """Return if settings is on or off."""
+        return getattr(
+            self.coordinator.operation_settings, self.entity_description.key, False
+        )
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         self._attr_is_on = True
