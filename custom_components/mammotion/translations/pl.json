@@ -147,7 +147,7 @@
       "is_edge": {
         "name": "Cięcie krawędzi"
       },
-      "rain_detection_on_off": {
+      "rain_tactics": {
         "name": "Wykrywanie deszczu wł/wył"
       },
       "side_led": {

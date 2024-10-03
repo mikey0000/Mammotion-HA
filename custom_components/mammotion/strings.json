@@ -94,7 +94,7 @@
         "name": "Dump Grass On/Off",
         "description": "Enable or disable grass dumping."
       },
-      "rain_detection_on_off": {
+      "rain_tactics": {
         "name": "Rain Detection On/Off",
         "description": "Turn rain detection on or off."
       },

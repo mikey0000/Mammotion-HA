@@ -149,7 +149,7 @@
       "is_edge": {
         "name": "Edge cutting"
       },
-      "rain_detection_on_off": {
+      "rain_tactics": {
         "name": "Rain detection On/Off"
       },
       "side_led": {

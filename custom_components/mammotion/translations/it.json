@@ -107,7 +107,7 @@
       "is_dump": {
         "name": "Scarico erba On/Off"
       },
-      "rain_detection_on_off": {
+      "rain_tactics": {
         "name": "Rilevamento pioggia On/Off"
       },
       "side_led": {

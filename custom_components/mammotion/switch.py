@@ -89,7 +89,7 @@ UPDATE_SWITCH_ENTITIES: tuple[MammotionUpdateSwitchEntityDescription, ...] = (
 
 CONFIG_SWITCH_ENTITIES: tuple[MammotionConfigSwitchEntityDescription, ...] = (
     MammotionConfigSwitchEntityDescription(
-        key="rain_detection_on_off",
+        key="rain_tactics",
         set_fn=lambda coordinator, value: setattr(
             coordinator.operation_settings, "rain_tactics", cast(value, int)
         ),

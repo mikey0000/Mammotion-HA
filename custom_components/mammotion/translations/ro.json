@@ -139,7 +139,7 @@
       "is_dump": {
         "name": "Descărcarea ierbii On/Off"
       },
-      "rain_detection_on_off": {
+      "rain_tactics": {
         "name": "Detectarea ploii activată/dezactivată"
       },
       "side_led": {

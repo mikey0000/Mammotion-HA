@@ -120,7 +120,7 @@
       "is_dump": {
         "name": "Gras dumpen aan/uit"
       },
-      "rain_detection_on_off": {
+      "rain_tactics": {
         "name": "Regendetectie Aan/Uit"
       },
       "side_led": {

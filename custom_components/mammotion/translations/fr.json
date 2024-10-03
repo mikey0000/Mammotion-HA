@@ -149,7 +149,7 @@
       "is_edge": {
         "name": "Coupe des bordures"
       },
-      "rain_detection_on_off": {
+      "rain_tactics": {
         "name": "Détection de pluie On/Off"
       },
       "side_led": {

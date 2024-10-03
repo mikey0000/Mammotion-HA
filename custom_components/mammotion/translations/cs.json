@@ -149,7 +149,7 @@
       "is_edge": {
         "name": "Řezání okrajů"
       },
-      "rain_detection_on_off": {
+      "rain_tactics": {
         "name": "Zapnutá/vypnutá detekce deště"
       },
       "side_led": {
