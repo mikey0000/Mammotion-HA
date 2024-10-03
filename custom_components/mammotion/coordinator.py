@@ -274,6 +274,8 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         if ble_device and device:
             device.ble().set_disconnect_strategy(not stay_connected_ble)
 
+        await self.async_restore_data()
+
         try:
             if preference is ConnectionPreference.WIFI and device.has_cloud():
                 self.store_cloud_credentials()
@@ -292,24 +294,18 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         except COMMAND_EXCEPTIONS as exc:
             raise ConfigEntryNotReady("Unable to setup Mammotion device") from exc
 
-        await self.async_restore_data()
-
     async def async_restore_data(self) -> None:
         """Restore saved data."""
         store = Store(self.hass, version=1, key=self.device_name)
         restored_data = await store.async_load()
         try:
             if restored_data:
-                if device_dict := restored_data.get("device"):
-                    restored_data["device"] = None
-                else:
-                    device_dict = LubaMsg().to_dict(casing=betterproto.Casing.SNAKE)
-
-                self.data = MowingDevice().from_dict(restored_data)
-                self.data.update_raw(device_dict)
+                device_dict = LubaMsg().to_dict(casing=betterproto.Casing.SNAKE)
+                mower_state = MowingDevice().from_dict(restored_data)
+                mower_state.update_raw(device_dict)
                 self.manager.get_device_by_name(
                     self.device_name
-                ).mower_state = self.data
+                ).mower_state = mower_state
         except InvalidFieldValue:
             """invalid"""
             self.data = MowingDevice()

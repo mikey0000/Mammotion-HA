@@ -79,7 +79,5 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unload_ok:
-        await hass.async_add_executor_job(
-            entry.runtime_data.manager.remove_device, entry.runtime_data.device_name
-        )
+        await entry.runtime_data.manager.remove_device(entry.runtime_data.device_name)
     return unload_ok
