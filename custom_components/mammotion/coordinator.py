@@ -440,6 +440,9 @@ class MammotionDataUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevice
                     operation_settings.is_dump = True
                     operation_settings.is_edge = False
 
+        if DeviceType.is_yuka(self.device_name):
+            operation_settings.blade_height = -10
+
         route_information = GenerateRouteInformation(
             one_hashs=operation_settings.areas,
             rain_tactics=operation_settings.rain_tactics,
