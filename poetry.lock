@@ -2144,17 +2144,6 @@ files = [
 ]
 
 [[package]]
-name = "nest-asyncio"
-version = "1.6.0"
-description = "Patch asyncio to allow nested event loops"
-optional = false
-python-versions = ">=3.5"
-files = [
-    {file = "nest_asyncio-1.6.0-py3-none-any.whl", hash = "sha256:87af6efd6b5e897c81050477ef65c62e2b2f35d51703cae01aff2905b1852e1c"},
-    {file = "nest_asyncio-1.6.0.tar.gz", hash = "sha256:6f172d5449aca15afd6c646851f4e31e02c598d553a667e38cafa997cfec55fe"},
-]
-
-[[package]]
 name = "nodeenv"
 version = "1.9.1"
 description = "Node.js virtual environment builder"
@@ -2697,13 +2686,13 @@ testutils = ["gitpython (>3)"]
 
 [[package]]
 name = "pymammotion"
-version = "0.2.56"
+version = "0.2.65"
 description = ""
 optional = false
 python-versions = "<3.13,>=3.10"
 files = [
-    {file = "pymammotion-0.2.56-py3-none-any.whl", hash = "sha256:273a1bdcc789d7b0cbc3d93a4dd8677f344eb84ad0d11aedb81b7c2a6533fe74"},
-    {file = "pymammotion-0.2.56.tar.gz", hash = "sha256:abf8129a51fdd9a4f15cc09daf2fc2fb3a296eab87c4ca9c18abc9fc04707cd4"},
+    {file = "pymammotion-0.2.65-py3-none-any.whl", hash = "sha256:735529e899c8d4df48525a961e7f2dfc5c7eb1078bdebb10ead70dbb3d19bc4f"},
+    {file = "pymammotion-0.2.65.tar.gz", hash = "sha256:8023bd93f759cc3a4bae1a63b8f887f55d1b5e2ea184266f82dd190bcd19e394"},
 ]
 
 [package.dependencies]
@@ -2719,8 +2708,7 @@ bleak = ">=0.21.0"
 bleak-retry-connector = ">=3.5.0,<4.0.0"
 jsonic = ">=1.0.0,<2.0.0"
 mashumaro = ">=3.13,<4.0"
-nest-asyncio = ">=1.6.0,<2.0.0"
-numpy = ">=1.26.4,<2.0.0"
+numpy = ">=1.26.0"
 orjson = ">=3.9.15,<4.0.0"
 paho-mqtt = ">=1.6.1,<2.0.0"
 protobuf = ">=4.23.1"
@@ -3667,4 +3655,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "~3.12.0"
-content-hash = "5cf95ec271b8bfb493ef0d6a415d5e20d38b1443753435ac2b2f3477e06656c1"
+content-hash = "7be14f11975ff04f186aee5ae9e8bce26cd4d4621ed2f98803dc288a59ed5faf"
