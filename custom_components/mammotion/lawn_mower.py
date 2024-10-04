@@ -20,6 +20,7 @@ from pymammotion.data.model.report_info import ReportData
 from pymammotion.proto import has_field
 from pymammotion.proto.luba_msg import RptDevStatus
 from pymammotion.utility.constant.device_constant import WorkMode
+from pymammotion.utility.device_type import DeviceType
 
 from . import MammotionConfigEntry
 from .const import COMMAND_EXCEPTIONS, DOMAIN, LOGGER
@@ -167,6 +168,8 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
             ]
             kwargs["areas"] = attributes
             operational_settings = OperationSettings.from_dict(kwargs)
+            if DeviceType.is_yuka(self.coordinator.device_name):
+                operational_settings.blade_height = -10
             LOGGER.debug(kwargs)
         else:
             operational_settings = self.coordinator.operation_settings
