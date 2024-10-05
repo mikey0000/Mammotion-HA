@@ -262,7 +262,7 @@
           "description": "Whether grass dumping is active. (Yuka)"
         },
         "is_edge": {
-          "name": "Is Edging",
+          "name": "Edge mowing",
           "description": "Whether edge mode is active. (Yuka)"
         },
         "collect_grass_frequency": {
@@ -290,12 +290,12 @@
           "description": "Bypass strategy for mowing."
         },
         "channel_mode": {
-          "name": "Channel Mode",
-          "description": "Channel mode (grid, single, double, or single2)."
+          "name": "Cutting Path Mode",
+          "description": "Path mode (grid, single, double, or single2)."
         },
         "channel_width": {
-          "name": "Channel Width",
-          "description": "Width of the mowing channel (in cm)."
+          "name": "Path Width",
+          "description": "Width of the mowing path (in cm)."
         },
         "rain_tactics": {
           "name": "Rain Detection",
@@ -311,11 +311,11 @@
         },
         "toward_included_angle": {
           "name": "Angle Relative to Grid",
-          "description": "When selecting grid change the second angle."
+          "description": "When selecting grid change the second angle (default is 90 degrees)."
         },
         "toward_mode": {
-          "name": "Direction Mode",
-          "description": "Angle mode."
+          "name": "Cutting Angle Mode",
+          "description": "Angle direction of mow."
         },
         "border_mode": {
           "name": "Perimeter Mowing Laps",
@@ -330,7 +330,7 @@
           "description": "Starting progress percentage."
         },
         "areas": {
-          "name": "Areas",
+          "name": "Area Selection",
           "description": "List of areas to mow (represented as integers)."
         }
       }

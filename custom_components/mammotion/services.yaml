@@ -93,13 +93,13 @@ start_mow:
         select:
           options:
             - value: 0
-              label: "Single Grid"
+              label: "Zigzag Path"
             - value: 1
-              label: "Double Grid"
+              label: "Chessboard Path"
             - value: 2
-              label: "Segment Grid"
+              label: "Adaptive Zigzag Path"
             - value: 3
-              label: "No Grid"
+              label: "Perimeter Only"
     channel_width:
       example: 25
       default: 25
