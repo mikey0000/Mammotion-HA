@@ -287,11 +287,11 @@
         },
         "ultra_wave": {
           "name": "Obstacle Detection",
-          "description": "Bypass strategy for mowing."
+          "description": "Obstacle Avoidance Mode."
         },
         "channel_mode": {
           "name": "Cutting Path Mode",
-          "description": "Path mode (grid, single, double, or single2)."
+          "description": "Cutting Path (zigzag, chessboard, adaptive zigzag, or perimeter only)."
         },
         "channel_width": {
           "name": "Path Width",
@@ -315,7 +315,7 @@
         },
         "toward_mode": {
           "name": "Cutting Angle Mode",
-          "description": "Angle direction of mow."
+          "description": "Anglular direction of mow."
         },
         "border_mode": {
           "name": "Perimeter Mowing Laps",
