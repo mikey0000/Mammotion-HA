@@ -26,7 +26,7 @@ class MammotionUpdateSwitchEntityDescription(SwitchEntityDescription):
     """Describes Mammotion switch entity."""
 
     key: str
-    set_fn: Callable[[MammotionDataUpdateCoordinator, bool], None]
+    set_fn: Callable[[MammotionDataUpdateCoordinator, bool], Awaitable[None]]
     is_on_func: Callable[[MammotionDataUpdateCoordinator], bool]
 
 
@@ -214,12 +214,12 @@ class MammotionUpdateSwitchEntity(MammotionBaseEntity, SwitchEntity, RestoreEnti
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         self._attr_is_on = True
-        self.entity_description.set_fn(self.coordinator, True)
+        await self.entity_description.set_fn(self.coordinator, True)
         self.async_write_ha_state()
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         self._attr_is_on = False
-        self.entity_description.set_fn(self.coordinator, False)
+        await self.entity_description.set_fn(self.coordinator, False)
         self.async_write_ha_state()
 
 

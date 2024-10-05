@@ -87,18 +87,18 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         self.update_failures = 0
         self.enabled = True
 
-    def set_scheduled_updates(self, enabled: bool) -> None:
+    async def set_scheduled_updates(self, enabled: bool) -> None:
         self.enabled = enabled
         device = self.manager.get_device_by_name(self.device_name)
         if self.enabled:
             if device.has_cloud():
-                device.cloud().start()
+                await device.cloud().start()
         else:
             if device.has_cloud():
-                device.cloud().stop()
+                await device.cloud().stop()
                 device.cloud().mqtt.disconnect()
             if device.has_ble():
-                device.ble().stop()
+                await device.ble().stop()
 
     async def async_login(self) -> None:
         """Login to cloud servers."""
