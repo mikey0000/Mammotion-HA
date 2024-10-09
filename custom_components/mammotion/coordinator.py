@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from dataclasses import asdict
 from datetime import timedelta
 from typing import TYPE_CHECKING, Any, cast
@@ -14,7 +15,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady, HomeAssistantError
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.storage import Store
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from mashumaro.exceptions import InvalidFieldValue
 from pymammotion import CloudIOTGateway
 from pymammotion.aliyun.cloud_gateway import (
@@ -497,33 +498,31 @@ class MammotionDataUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevice
         if model_id is not None or model_id != device_entry.model_id:
             device_registry.async_update_device(device_entry.id, model_id=model_id)
 
+    def clear_update_failures(self) -> None:
+        self.update_failures = 0
+
     async def _async_update_data(self) -> MowingDevice:
         """Get data from the device."""
 
         if not self.enabled:
             return self.data
 
-        if self.update_failures > 10:
+        device = self.manager.get_device_by_name(self.device_name)
+
+        if self.update_failures > 3 and device.preference is ConnectionPreference.WIFI:
             """Don't hammer the mammotion/ali servers"""
+            loop = asyncio.get_running_loop()
+            loop.call_later(600, self.clear_update_failures)
+
             return self.data
 
-        device = self.manager.get_device_by_name(self.device_name)
         await self.check_firmware_version()
 
-        if device.has_ble():
-            ble_device = bluetooth.async_ble_device_from_address(
-                self.hass, device.ble().get_address()
-            )
-
-            if not ble_device and device.cloud() is None:
-                self.update_failures += 1
-                raise UpdateFailed("Could not find device")
-
-            if ble_device and ble_device.name == device.name:
-                if device.ble() is not None:
-                    device.ble().update_device(ble_device)
-                else:
-                    device.add_ble(ble_device)
+        if device.has_ble() and device.preference is ConnectionPreference.BLUETOOTH:
+            if ble_device := bluetooth.async_ble_device_from_address(
+                self.hass, device.ble().get_address(), True
+            ):
+                device.ble().update_device(ble_device)
 
         if (
             len(device.mower_state.net.toapp_devinfo_resp.resp_ids) == 0
