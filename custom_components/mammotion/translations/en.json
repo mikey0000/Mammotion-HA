@@ -209,7 +209,7 @@
         }
       },
       "cutting_angle_mode": {
-        "name": "Cutting angle mode",
+        "name": "Cutting path angle mode",
         "state": {
           "relative_angle": "Relative angle",
           "absolute_angle": "Absolute angle",
@@ -228,7 +228,7 @@
         "name": "Working Speed"
       },
       "cutting_angle": {
-        "name": "Cutting Angle"
+        "name": "Cutting Path Angle"
       },
       "path_spacing": {
         "name": "Path Spacing"
@@ -237,7 +237,7 @@
         "name": "Dumping Frequency"
       },
       "toward_included_angle": {
-        "name": "Angle Relative to Grid"
+        "name": "Crossing Angle"
       }
     },
     "device_tracker": {
@@ -306,11 +306,11 @@
           "description": "Height of the blade."
         },
         "toward": {
-          "name": "Angle",
-          "description": "Direction angle for mowing."
+          "name": "Starting Path Angle",
+          "description": "Starting direction for mowing."
         },
         "toward_included_angle": {
-          "name": "Angle Relative to Grid",
+          "name": "Crossing Angle",
           "description": "When selecting grid change the second angle (default is 90 degrees)."
         },
         "toward_mode": {
