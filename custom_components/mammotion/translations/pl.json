@@ -187,7 +187,7 @@
           "four": "Cztery razy"
         }
       },
-      "border_mode": {
+      "mowing_laps": {
         "name": "Kolejność wykonania ścieżki",
         "state": {
           "border_first": "Najpierw obwód",

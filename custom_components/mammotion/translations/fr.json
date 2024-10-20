@@ -189,7 +189,7 @@
           "four": "Quatre"
         }
       },
-      "border_mode": {
+      "job_mode": {
         "name": "Ordre de tonte",
         "state": {
           "border_first": "Bordure d'abord",
@@ -311,7 +311,7 @@
           "name": "Mode de direction",
           "description": "Mode angle."
         },
-        "border_mode": {
+        "mowing_laps": {
           "name": "Mode Chien de Garde",
           "description": "Mode chien de garde (nombre de tours)."
         },

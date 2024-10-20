@@ -15,7 +15,7 @@ This integration allows you to control and monitor your Mammotion Luba, Luba 2 &
 - [ ] Scheduling
 - [ ] Mapping and zone management
 - [ ] Firmware updates
-- [ ] Automations
+- [x] Automations
 - [ ] More...
 
 ## Features ✨

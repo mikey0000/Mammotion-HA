@@ -120,7 +120,7 @@
         "name": "Obstacle Laps Mode",
         "description": "Select the obstacle laps mode for the mower."
       },
-      "border_mode": {
+      "mowing_laps": {
         "name": "Mow Order",
         "description": "Select the order in which the areas should be mowed."
       }
@@ -166,7 +166,7 @@
           "description": "Frequency to collect grass (in minutes)."
         },
         "job_mode": {
-          "name": "Job Mode",
+          "name": "Mow Order",
           "description": "Job mode for cutting."
         },
         "job_version": {
@@ -217,7 +217,7 @@
           "name": "Toward Mode",
           "description": "Toward mode."
         },
-        "border_mode": {
+        "mowing_laps": {
           "name": "Border Patrol Mode",
           "description": "Border patrol mode (number of laps)."
         },

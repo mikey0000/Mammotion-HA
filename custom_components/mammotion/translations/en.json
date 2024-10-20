@@ -192,7 +192,7 @@
           "four": "Four"
         }
       },
-      "border_mode": {
+      "job_mode": {
         "name": "Mow Order",
         "state": {
           "border_first": "Perimeter first",
@@ -317,7 +317,7 @@
           "name": "Cutting Angle Mode",
           "description": "Anglular direction of mow."
         },
-        "border_mode": {
+        "mowing_laps": {
           "name": "Perimeter Mowing Laps",
           "description": "Number of laps around the mowing area perimeter."
         },

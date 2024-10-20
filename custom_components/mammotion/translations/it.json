@@ -127,7 +127,7 @@
       "obstacle_laps": {
         "name": "Modalità aggiramento ostacoli"
       },
-      "border_mode": {
+      "mowing_laps": {
         "name": "Ordine di taglio"
       }
     },

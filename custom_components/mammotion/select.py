@@ -53,10 +53,10 @@ SELECT_ENTITIES: tuple[MammotionConfigSelectEntityDescription, ...] = (
         ),
     ),
     MammotionConfigSelectEntityDescription(
-        key="border_mode",
+        key="job_mode",
         options=[order.name for order in MowOrder],
         set_fn=lambda coordinator, value: setattr(
-            coordinator.operation_settings, "border_mode", MowOrder[value]
+            coordinator.operation_settings, "job_mode", MowOrder[value]
         ),
     ),
 )

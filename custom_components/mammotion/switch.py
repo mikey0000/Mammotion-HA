@@ -119,7 +119,11 @@ async def async_setup_entry(
                 existing_name: AreaHashNameList = next(
                     (area for area in area_name if str(area.hash) == str(area_id)), None
                 )
-                name = existing_name.name if existing_name else f"mowing area {area_id}"
+                name = (
+                    existing_name.name
+                    if (existing_name is None or existing_name != "")
+                    else f"Area {area_id}"
+                )
                 base_area_switch_entity = MammotionConfigAreaSwitchEntityDescription(
                     key=f"{area_id}",
                     area=area_id,
@@ -274,7 +278,7 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
         self.entity_description = entity_description
         self._attr_translation_key = entity_description.key
         # TODO this should not need to be cast.
-        self._attr_extra_state_attributes = {"hash": int(entity_description.area)}
+        self._attr_extra_state_attributes = {"hash": entity_description.area}
         # TODO grab defaults from operation_settings
         self._attr_is_on = False  # Default state
 

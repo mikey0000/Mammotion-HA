@@ -127,7 +127,7 @@ start_mow:
           min: 15
           max: 100
           step: 5
-          unit_of_measurement: "cm"
+          unit_of_measurement: "mm"
     toward:
       example: 0
       default: 0
@@ -159,7 +159,7 @@ start_mow:
             - value: 2
               label: "Random Angle"
       required: false
-    border_mode:
+    mowing_laps:
       example: 1
       default: 1
       selector:

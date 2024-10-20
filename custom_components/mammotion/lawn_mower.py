@@ -59,7 +59,7 @@ START_MOW_SCHEMA = {
         vol.Coerce(int), vol.Range(min=-180, max=180)
     ),
     vol.Optional("toward_mode", default=0): vol.In([0, 1, 2]),
-    vol.Optional("border_mode", default=1): vol.In([0, 1, 2, 3, 4]),
+    vol.Optional("mowing_laps", default=1): vol.In([0, 1, 2, 3, 4]),
     vol.Optional("obstacle_laps", default=1): vol.In([0, 1, 2, 3, 4]),
     vol.Optional("start_progress", default=0): vol.All(
         vol.Coerce(int), vol.Range(min=0, max=100)

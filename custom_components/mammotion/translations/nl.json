@@ -140,7 +140,7 @@
       "obstacle_laps": {
         "name": "Obstakel-lapsmodus"
       },
-      "border_mode": {
+      "mowing_laps": {
         "name": "Maai volgorde"
       }
     },

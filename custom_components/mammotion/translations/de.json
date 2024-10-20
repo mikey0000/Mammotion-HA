@@ -189,7 +189,7 @@
           "four": "Vier"
         }
       },
-      "border_mode": {
+      "job_mode": {
         "name": "Ausführungsreihenfolge des Pfades",
         "state": {
           "border_first": "Zuerst den Umfang",
@@ -311,7 +311,7 @@
           "name": "Wegwinkel Modus",
           "description": "Wähle den Modus für den Wegwinkel."
         },
-        "border_mode": {
+        "mowing_laps": {
           "name": "Patrouillenrunden für den seitlichen Rasenschnitt",
           "description": "Anzahl der Runden für den seitlichen Rasenschnitt."
         },
