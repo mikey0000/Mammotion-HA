@@ -189,7 +189,7 @@
           "four": "čtyři"
         }
       },
-      "mowing_laps": {
+      "job_mode": {
         "name": "Pořadí sečení",
         "state": {
           "border_first": "Hranice jako první",

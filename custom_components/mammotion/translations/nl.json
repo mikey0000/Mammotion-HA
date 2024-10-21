@@ -140,7 +140,7 @@
       "obstacle_laps": {
         "name": "Obstakel-lapsmodus"
       },
-      "mowing_laps": {
+      "job_mode": {
         "name": "Maai volgorde"
       }
     },
