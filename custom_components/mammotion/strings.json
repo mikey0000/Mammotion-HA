@@ -165,7 +165,7 @@
           "name": "Grass Collection Frequency",
           "description": "Frequency to collect grass (in minutes)."
         },
-        "job_mode": {
+        "border_mode": {
           "name": "Mow Order",
           "description": "Job mode for cutting."
         },

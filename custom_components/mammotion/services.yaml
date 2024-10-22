@@ -36,7 +36,7 @@ start_mow:
           min: 5
           max: 100
           unit_of_measurement: "m²"
-    job_mode:
+    border_mode:
       example: 0
       default: 1
       required: false

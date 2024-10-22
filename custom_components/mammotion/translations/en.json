@@ -192,7 +192,7 @@
           "four": "Four"
         }
       },
-      "job_mode": {
+      "border_mode": {
         "name": "Mow Order",
         "state": {
           "border_first": "Perimeter first",
@@ -269,7 +269,7 @@
           "name": "Grass Collection Frequency",
           "description": "Frequency to collect grass (in meters squared). (Yuka)"
         },
-        "job_mode": {
+        "border_mode": {
           "name": "Mow Order",
           "description": "Mowing path order (Perimeter first or grid first)."
         },

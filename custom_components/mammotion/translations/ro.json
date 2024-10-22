@@ -179,7 +179,7 @@
           "four": "patru"
         }
       },
-      "job_mode": {
+      "border_mode": {
         "name": "Ordinea de cosire",
         "state": {
           "border_first": "Întâi frontiera",

@@ -140,7 +140,7 @@
       "obstacle_laps": {
         "name": "Obstakel-lapsmodus"
       },
-      "job_mode": {
+      "border_mode": {
         "name": "Maai volgorde"
       }
     },

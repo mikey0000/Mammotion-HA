@@ -127,7 +127,7 @@
       "obstacle_laps": {
         "name": "Modalità aggiramento ostacoli"
       },
-      "job_mode": {
+      "border_mode": {
         "name": "Ordine di taglio"
       }
     },

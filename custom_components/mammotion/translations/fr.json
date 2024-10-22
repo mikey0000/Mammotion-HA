@@ -189,7 +189,7 @@
           "four": "Quatre"
         }
       },
-      "job_mode": {
+      "border_mode": {
         "name": "Ordre de tonte",
         "state": {
           "border_first": "Bordure d'abord",
@@ -263,7 +263,7 @@
           "name": "Fréquence de ramassage de l'herbe",
           "description": "Fréquence de ramassage de l'herbe (en mètres carrés). (Yuka)"
         },
-        "job_mode": {
+        "border_mode": {
           "name": "Ordre de tonte",
           "description": "Ordre du chemin de tonte (bordure d'abord ou grille d'abord)."
         },

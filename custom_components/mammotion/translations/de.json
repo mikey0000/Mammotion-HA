@@ -189,7 +189,7 @@
           "four": "Vier"
         }
       },
-      "job_mode": {
+      "border_mode": {
         "name": "Ausführungsreihenfolge des Pfades",
         "state": {
           "border_first": "Zuerst den Umfang",
@@ -263,7 +263,7 @@
           "name": "Intervall für das Entleeren",
           "description": "Intervall für das Entleeren beim Modus für Gras sammeln. (Quadratmeter). (Yuka)"
         },
-        "job_mode": {
+        "border_mode": {
           "name": "Ausführungsreihenfolge des Pfades",
           "description": "Abfolge bei der Ausführung des Pfades (Umfang zuerst oder Raster zuerst)."
         },

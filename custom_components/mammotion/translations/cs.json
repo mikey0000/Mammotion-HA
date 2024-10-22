@@ -189,7 +189,7 @@
           "four": "čtyři"
         }
       },
-      "job_mode": {
+      "border_mode": {
         "name": "Pořadí sečení",
         "state": {
           "border_first": "Hranice jako první",

@@ -37,7 +37,7 @@ START_MOW_SCHEMA = {
     vol.Optional("collect_grass_frequency", default=10): vol.All(
         vol.Coerce(int), vol.Range(min=5, max=100)
     ),
-    vol.Optional("job_mode", default=1): vol.In([0, 1]),
+    vol.Optional("border_mode", default=1): vol.In([0, 1]),
     vol.Optional("job_version", default=0): vol.Coerce(int),
     vol.Optional("job_id", default=0): vol.Coerce(int),
     vol.Optional("speed", default=0.3): vol.All(
