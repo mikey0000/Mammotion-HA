@@ -64,9 +64,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
     entry.runtime_data = mammotion_coordinator
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
-    # need to register service for triggering tasks
-    # hass.services.async_register(DOMAIN, SERVICE_START_tASK, async_start_mowing)
-
     return True
 
 

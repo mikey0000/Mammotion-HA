@@ -82,7 +82,7 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
             update_interval=update_interval,
         )
         self.device_name = None
-        assert self.config_entry.unique_id
+        assert config_entry.unique_id
         self.config_entry = config_entry
         self._operation_settings = OperationSettings()
         self.update_failures = 0
@@ -130,7 +130,7 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         except DeviceOfflineException:
             """Device is offline try bluetooth if we have it."""
             try:
-                if self.manager.get_device_by_name(self.device_name).ble():
+                if self.manager.get_device_by_name(self.device_name).has_ble():
                     await (
                         self.manager.get_device_by_name(self.device_name)
                         .ble()
@@ -432,14 +432,12 @@ class MammotionDataUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevice
 
     async def async_plan_route(self, operation_settings: OperationSettings) -> None:
         """Plan mow."""
-        operation_settings.is_dump = False
-        operation_settings.is_edge = True
+
         if has_field(self.data.sys.toapp_report_data.dev):
             dev = cast(RptDevStatus, self.data.sys.toapp_report_data.dev)
             if has_field(dev.collector_status):
-                if dev.collector_status.collector_installation_status != 0:
-                    operation_settings.is_dump = True
-                    operation_settings.is_edge = False
+                if dev.collector_status.collector_installation_status == 0:
+                    operation_settings.is_dump = False
 
         if DeviceType.is_yuka(self.device_name):
             operation_settings.blade_height = -10
@@ -452,16 +450,20 @@ class MammotionDataUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevice
             toward=operation_settings.toward,  # is just angle
             toward_included_angle=operation_settings.toward_included_angle
             if operation_settings.channel_mode == 1
-            else 0,  # angle relative to grid
+            else 0,  # crossing angle relative to grid
             toward_mode=operation_settings.toward_mode,
             blade_height=operation_settings.blade_height,
             channel_mode=operation_settings.channel_mode,  # single, double, segment or none
             channel_width=operation_settings.channel_width,
             job_mode=operation_settings.job_mode,  # taskMode grid or border first
-            edge_mode=operation_settings.mowing_laps,  # border laps
+            edge_mode=operation_settings.mowing_laps,  # perimeter laps
             path_order=create_path_order(operation_settings, self.device_name),
             obstacle_laps=operation_settings.obstacle_laps,
         )
+
+        if DeviceType.is_luba1(self.device_name):
+            route_information.toward_mode = 0
+            route_information.toward_included_angle = 0
 
         await self.async_send_command(
             "generate_route_information", generate_route_information=route_information

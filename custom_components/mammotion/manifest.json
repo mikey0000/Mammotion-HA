@@ -30,6 +30,6 @@
   ],
   "iot_class": "local_push",
   "requirements": [
-    "pymammotion==0.2.72"
+    "pymammotion==0.2.74"
   ]
 }

@@ -37,7 +37,7 @@ START_MOW_SCHEMA = {
     vol.Optional("collect_grass_frequency", default=10): vol.All(
         vol.Coerce(int), vol.Range(min=5, max=100)
     ),
-    vol.Optional("job_mode", default=0): vol.In([0, 1]),
+    vol.Optional("job_mode", default=1): vol.In([0, 1]),
     vol.Optional("job_version", default=0): vol.Coerce(int),
     vol.Optional("job_id", default=0): vol.Coerce(int),
     vol.Optional("speed", default=0.3): vol.All(
@@ -79,7 +79,7 @@ def get_entity_attribute(
     # Check if the entity exists and has attributes
     if entity and attribute_name in entity.attributes:
         # Return the specific attribute
-        return entity.attributes[attribute_name]
+        return entity.attributes.get(attribute_name, None)
     else:
         # Return None if the entity or attribute does not exist
         return None
@@ -162,10 +162,12 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
 
             attributes = [
                 # TODO this should not need to be cast.
-                int(get_entity_attribute(self.hass, entity_id, "hash"))
+                int(entity_hash)
                 for entity_id in entity_ids
-                if get_entity_attribute(self.hass, entity_id, "hash") is not None
+                if (entity_hash := get_entity_attribute(self.hass, entity_id, "hash"))
+                is not None
             ]
+
             kwargs["areas"] = attributes
             operational_settings = OperationSettings.from_dict(kwargs)
             if DeviceType.is_yuka(self.coordinator.device_name):
