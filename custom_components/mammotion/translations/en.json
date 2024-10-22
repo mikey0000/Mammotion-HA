@@ -196,7 +196,7 @@
         "name": "Mow Order",
         "state": {
           "border_first": "Perimeter first",
-          "grid_first": "Grid first"
+          "grid_first": "ZigZag / Chessboard first"
         }
       },
       "bypass_mode": {

@@ -38,15 +38,15 @@ start_mow:
           unit_of_measurement: "m²"
     border_mode:
       example: 0
-      default: 1
+      default: 0
       required: false
       selector:
         select:
           options:
             - value: 0
-              label: "Grid First"
+              label: "Perimeter First"
             - value: 1
-              label: "Border First"
+              label: "ZigZag/Chessboard First"
     job_version:
       example: 0
       default: 0
