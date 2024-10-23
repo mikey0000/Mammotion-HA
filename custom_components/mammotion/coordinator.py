@@ -67,6 +67,7 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
     """Mammotion DataUpdateCoordinator."""
 
     manager: Mammotion = None
+    device_name: str | None = None
 
     def __init__(
         self,
@@ -81,7 +82,6 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
             name=DOMAIN,
             update_interval=update_interval,
         )
-        self.device_name = None
         assert config_entry.unique_id
         self.config_entry = config_entry
         self._operation_settings = OperationSettings()
