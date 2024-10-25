@@ -10,7 +10,7 @@ from homeassistant.components.binary_sensor import (
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from pymammotion.proto.luba_msg import LubaMsg
+from pymammotion.data.model.device import MowingDevice
 
 from . import MammotionConfigEntry
 from .coordinator import MammotionDataUpdateCoordinator
@@ -23,7 +23,7 @@ class MammotionBinarySensorEntityDescription(
 ):
     """Describes Mammotion binary sensor entity."""
 
-    is_on_fn: Callable[[LubaMsg], bool | None]
+    is_on_fn: Callable[[MowingDevice], bool | None]
 
 
 BINARY_SENSORS: tuple[MammotionBinarySensorEntityDescription, ...] = (
