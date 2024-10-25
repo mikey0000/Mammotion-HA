@@ -20,12 +20,6 @@ from homeassistant.config_entries import (
 from homeassistant.const import CONF_ADDRESS, CONF_PASSWORD
 from homeassistant.core import callback
 from homeassistant.helpers import config_validation as cv
-from homeassistant.helpers.selector import (
-    SelectOptionDict,
-    SelectSelector,
-    SelectSelectorConfig,
-    SelectSelectorMode,
-)
 from pymammotion.aliyun.cloud_gateway import CloudIOTGateway
 from pymammotion.http.http import connect_http
 from pymammotion.mammotion.devices.mammotion import Mammotion
@@ -217,12 +211,11 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
     ) -> ConfigFlowResult:
         """Confirm device discovery."""
 
-        device_name = user_input.get(CONF_DEVICE_NAME)
         address = self._config.get(CONF_ADDRESS)
         name = self._discovered_devices.get(address)
         mammotion = Mammotion()
 
-        if user_input is not None and (device_name or name):
+        if user_input is not None:
             account = user_input.get(CONF_ACCOUNTNAME)
             password = user_input.get(CONF_PASSWORD)
 
@@ -236,77 +229,30 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                         ).cloud_client
                 except HTTPException as err:
                     return self.async_abort(reason=str(err))
-            mowing_devices = self._cloud_client.devices_by_account_response.data.data
-            if name:
-                found_device = [
-                    device for device in mowing_devices if device.deviceName == name
-                ]
-                if not found_device:
-                    return self.async_abort(reason="bluetooth_and_account_mismatch")
+            user_id = (
+                self._cloud_client.mammotion_http.login_info.userInformation.userId
+            )
 
-            if not name:
-                await self.async_set_unique_id(device_name, raise_on_progress=False)
-                self._abort_if_unique_id_configured()
+            await self.async_set_unique_id(user_id, raise_on_progress=False)
+            self._abort_if_unique_id_configured()
 
             return self.async_create_entry(
-                title=name or device_name,
+                title=user_id,
                 data={
                     CONF_ACCOUNTNAME: account,
                     CONF_PASSWORD: password,
-                    CONF_DEVICE_NAME: device_name or name,
+                    CONF_DEVICE_NAME: name,
                     CONF_USE_WIFI: user_input.get(CONF_USE_WIFI, True),
                     **self._config,
                 },
                 options={CONF_STAY_CONNECTED_BLUETOOTH: self._stay_connected},
             )
 
-        account = user_input.get(CONF_ACCOUNTNAME)
-        password = user_input.get(CONF_PASSWORD)
-        self._config = {
-            **self._config,
-            **user_input,
-        }
-        try:
-            if mammotion.mqtt_list.get(account) is None:
-                self._cloud_client = await Mammotion().login(account, password)
-            else:
-                self._cloud_client = mammotion.mqtt_list.get(account).cloud_client
-        except HTTPException as err:
-            return self.async_abort(reason=str(err))
-
-        mowing_devices = [
-            dev
-            for dev in self._cloud_client.devices_by_account_response.data.data
-            if (dev.productModel is None or dev.productModel != "ReferenceStation")
-        ]
-
-        if len(mowing_devices) == 0:
-            return self.async_abort(reason="no_devices_found_in_account")
-
-        machine_options = [
-            SelectOptionDict(
-                value=device.deviceName,
-                label=device.deviceName,
-            )
-            for device in mowing_devices
-        ]
-
-        machine_selection_schema = vol.Schema(
-            {
-                vol.Required(
-                    CONF_DEVICE_NAME, default=machine_options[0]["value"]
-                ): SelectSelector(
-                    SelectSelectorConfig(
-                        options=machine_options,
-                        mode=SelectSelectorMode.DROPDOWN,
-                    )
-                )
-            }
-        )
-
-        return self.async_show_form(
-            step_id="wifi_confirm", data_schema=machine_selection_schema
-        )
+        # mowing_devices = [
+        #     dev
+        #     for dev in self._cloud_client.devices_by_account_response.data.data
+        #     if (dev.productModel is None or dev.productModel != "ReferenceStation")
+        # ]
 
     @staticmethod
     @callback
