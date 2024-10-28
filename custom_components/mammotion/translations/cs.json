@@ -64,6 +64,9 @@
       "wifi_rssi": {
         "name": "WiFi RSSI"
       },
+      "connect_type": {
+        "name": "Připojení"
+      },
       "gps_stars": {
         "name": "Družice (Robot)"
       },
@@ -105,6 +108,15 @@
       },
       "work_area": {
         "name": "Pracovní oblast hash"
+      },
+      "maintenance_distance": {
+        "name": "Total mileage"
+      },
+      "maintenance_work_time": {
+        "name": "Task duration"
+      },
+      "maintenance_bat_cycles": {
+        "name": "Battery cycles"
       }
     },
     "button": {
@@ -157,6 +169,9 @@
       },
       "perimeter_first_on_off": {
         "name": "Nejprve obvod"
+      },
+      "schedule_updates": {
+        "name": "Zapnout/vypnout aktualizace"
       }
     },
     "select": {
@@ -232,10 +247,105 @@
       },
       "dumping_interval": {
         "name": "Frekvence vykládky"
+      },
+      "toward_included_angle": {
+        "name": "Úhel křížení"
       }
     },
     "device_tracker": {
       "name": "Sledování zařízení"
+    }
+  },
+  "services": {
+    "cancel_job": {
+      "name": "Zrušit aktuální úkol",
+      "description": "Zastaví sekačka a vymaže aktuální úkol."
+    },
+    "start_mow": {
+      "name": "Začít vypínat",
+      "description": "Zahájit sečení s vlastním nastavením.",
+      "fields": {
+        "is_mow": {
+          "name": "Je vážný",
+          "description": "Zda je sečení aktivní. (Yuka)"
+        },
+        "is_dump": {
+          "name": "Dumping",
+          "description": "Zda je aktivní travní dumping. (Yuka)"
+        },
+        "is_edge": {
+          "name": "sečení hrany",
+          "description": "Zda je režim hrany aktivní. (Yuka)"
+        },
+        "collect_grass_frequency": {
+          "name": "Frekvence sběru trávy",
+          "description": "Frekvence sběru trávy (v metrech čtverečních). (Yuka)"
+        },
+        "border_mode": {
+          "name": "Pořadí luku",
+          "description": "Pořadí cesty (nejprve Perimetr nebo mřížka)."
+        },
+        "job_version": {
+          "name": "Pracovní verze",
+          "description": "Verze zakázky."
+        },
+        "job_id": {
+          "name": "ID zakázky",
+          "description": "ID pracovní pozice."
+        },
+        "speed": {
+          "name": "Rychlost",
+          "description": "Rychlost vysávání."
+        },
+        "ultra_wave": {
+          "name": "Detekce překážek",
+          "description": "Režim vyhýbání se překážkám."
+        },
+        "channel_mode": {
+          "name": "Režim řezání cesty",
+          "description": "Cesta k řezání (pouze zigzag, šachovnice, adaptivní zigzag, nebo obvod)."
+        },
+        "channel_width": {
+          "name": "Šířka cesty",
+          "description": "Šířka cesty sečení (v cm)."
+        },
+        "rain_tactics": {
+          "name": "Detekce deště",
+          "description": "Detekce dešťů."
+        },
+        "blade_height": {
+          "name": "Výška lůžka",
+          "description": "Výška lopatky."
+        },
+        "toward": {
+          "name": "Úhel trasy",
+          "description": "Počáteční směr sečení."
+        },
+        "toward_included_angle": {
+          "name": "Úhel křížení",
+          "description": "Při výběru mřížky změnit druhý úhel (výchozí hodnota je 90 stupňů)."
+        },
+        "toward_mode": {
+          "name": "Režim řezání úhlu",
+          "description": "Anglický směr srsti."
+        },
+        "mowing_laps": {
+          "name": "Perimetry meals Mapy",
+          "description": "Počet okruhů kolem sekané oblasti."
+        },
+        "obstacle_laps": {
+          "name": "Neogo zóna vyplutí mezery",
+          "description": "Počet výplat kolem oblastí bez přechodu."
+        },
+        "start_progress": {
+          "name": "Počáteční postup",
+          "description": "Počátek procenta pokroku."
+        },
+        "areas": {
+          "name": "Výběr oblasti",
+          "description": "Seznam oblastí k setí (reprezentovaných jako celá čísla)."
+        }
+      }
     }
   },
   "exceptions": {
@@ -253,6 +363,9 @@
     },
     "dock_failed": {
       "message": "Nepodařilo se odeslat sekačku do nabíjecí stanice."
+    },
+    "dock_cancel_failed": {
+      "message": "Nepodařilo se zastavit návrat sekačky do doku."
     },
     "command_failed": {
       "message": "Nepodařilo se odeslat příkaz do sekačky."

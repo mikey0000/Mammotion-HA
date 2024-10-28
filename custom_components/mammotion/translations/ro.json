@@ -25,9 +25,10 @@
           "password": "Parola contului Mammotion"
         }
       },
-   "user": {
+      "user": {
         "data": {
-          "address": "Dispozitiv"
+          "address": "Dispozitiv",
+          "stay_connected_bluetooth": "Păstrează bluetooth conectat"
         },
         "description": "Selectați mașina de tuns iarba"
       },
@@ -62,6 +63,9 @@
       },
       "wifi_rssi": {
         "name": "WiFi RSSI"
+      },
+      "connect_type": {
+        "name": "Conexiune"
       },
       "gps_stars": {
         "name": "Sateliți (Robot)"
@@ -104,13 +108,22 @@
       },
       "work_area": {
         "name": "Zona de lucru tip de hașură"
+      },
+      "maintenance_distance": {
+        "name": "Total mileage"
+      },
+      "maintenance_work_time": {
+        "name": "Task duration"
+      },
+      "maintenance_bat_cycles": {
+        "name": "Battery cycles"
       }
     },
     "button": {
       "start_map_sync": {
         "name": "Sincronizați harta"
       },
-       "resync_rtk_dock": {
+      "resync_rtk_dock": {
         "name": "Sincronizați RTK și docul"
       },
       "release_from_dock": {
@@ -119,7 +132,7 @@
       "emergency_nudge_forward": {
         "name": "Un impuls de urgență înainte"
       },
-       "emergency_nudge_left": {
+      "emergency_nudge_left": {
         "name": "Un impuls de urgență la stânga"
       },
       "emergency_nudge_right": {
@@ -127,6 +140,12 @@
       },
       "emergency_nudge_back": {
         "name": "Un impuls de urgență înapoi"
+      },
+      "cancel_task": {
+        "name": "Anulează sarcina curentă"
+      },
+      "clear_all_mapdata": {
+        "name": "Curăță hărțile și numele zonelor"
       }
     },
     "switch": {
@@ -139,25 +158,31 @@
       "is_dump": {
         "name": "Descărcarea ierbii On/Off"
       },
+      "is_edge": {
+        "name": "Taie marginile"
+      },
       "rain_tactics": {
         "name": "Detectarea ploii activată/dezactivată"
       },
       "side_led": {
         "name": "LED lateral Pornit/Oprit"
       },
-       "perimeter_first_on_off": {
+      "perimeter_first_on_off": {
         "name": "Perimetrul întâi"
+      },
+      "schedule_updates": {
+        "name": "Pornește/Dezactivează actualizările"
       }
     },
     "select": {
-       "channel_mode": {
+      "channel_mode": {
         "name": "Modul de tăiere",
-         "state": {
-           "single_grid": "Grilă simplă",
-           "double_grid": "Grila de șah",
-           "segment_grid": "Grilă mixtă/segmentată",
-           "no_grid": "Fără grilă"
-         }
+        "state": {
+          "single_grid": "Grilă simplă",
+          "double_grid": "Grila de șah",
+          "segment_grid": "Grilă mixtă/segmentată",
+          "no_grid": "Fără grilă"
+        }
       },
       "mowing_laps": {
         "name": "Modul patrulă de graniță",
@@ -185,10 +210,27 @@
           "border_first": "Întâi frontiera",
           "grid_first": "Mai întâi grila"
         }
+      },
+      "bypass_mode": {
+        "name": "Modul de evitare a obstacolelor",
+        "state": {
+          "direct_touch": "Atingere directă",
+          "slow_touch": "Atingere lentă",
+          "less_touch": "Mai puțin atins",
+          "no_touch": "Nicio atingere"
+        }
+      },
+      "cutting_angle_mode": {
+        "name": "Modul unghiului căii tăiate",
+        "state": {
+          "relative_angle": "Unghi relativ",
+          "absolute_angle": "Unghiul absolut",
+          "random_angle": "Unghi aleatoriu"
+        }
       }
     },
     "number": {
-       "start_progress": {
+      "start_progress": {
         "name": "Progresul la start"
       },
       "blade_height": {
@@ -199,10 +241,111 @@
       },
       "cutting_angle": {
         "name": "Unghiul de tăiere"
+      },
+      "path_spacing": {
+        "name": "Spațiere traiectorie"
+      },
+      "dumping_interval": {
+        "name": "Frecvența de dumping"
+      },
+      "toward_included_angle": {
+        "name": "Unghiul de trecere"
       }
     },
     "device_tracker": {
       "name": "Monitorizarea dispozitivului"
+    }
+  },
+  "services": {
+    "cancel_job": {
+      "name": "Anulează sarcina curentă",
+      "description": "Oprește fumătorul și șterge sarcina curentă."
+    },
+    "start_mow": {
+      "name": "Pornește urcarea",
+      "description": "Porniți operația de montare cu setări personalizate.",
+      "fields": {
+        "is_mow": {
+          "name": "Se datorează",
+          "description": "Dacă este activă maternitatea. (Yuka)"
+        },
+        "is_dump": {
+          "name": "Fac Dumping",
+          "description": "Activitatea dumpingului pentru iarbă (Yuka)"
+        },
+        "is_edge": {
+          "name": "Mat de margine",
+          "description": "Dacă modul margine este activ. (Yuka)"
+        },
+        "collect_grass_frequency": {
+          "name": "Frecvență colectare iarbă",
+          "description": "Frecvența colectării de iarbă (în metri pătrați). (Yuka)"
+        },
+        "border_mode": {
+          "name": "Comanda Mow",
+          "description": "Ordinul căii de mormânt (primul sau grila întâi)."
+        },
+        "job_version": {
+          "name": "Versiune Job",
+          "description": "Versiunea postului."
+        },
+        "job_id": {
+          "name": "ID job",
+          "description": "ID Job"
+        },
+        "speed": {
+          "name": "Viteză",
+          "description": "Viteza mormântării."
+        },
+        "ultra_wave": {
+          "name": "Detectarea obstacolelor",
+          "description": "Modul de evitare a obstacolelor."
+        },
+        "channel_mode": {
+          "name": "Modul cale de tăiere",
+          "description": "Calea de tăiere (doar pentru zigzag, șescom, zigzag adaptiv sau perimetr)."
+        },
+        "channel_width": {
+          "name": "Lățime cale",
+          "description": "Lăţimea traiectoriei de umbră (în cm)."
+        },
+        "rain_tactics": {
+          "name": "Detectarea ploii",
+          "description": "Detectarea ploii."
+        },
+        "blade_height": {
+          "name": "Înălțime lamă",
+          "description": "Înălţimea lamei."
+        },
+        "toward": {
+          "name": "Unghiul de pornire a traiectoriei",
+          "description": "Direcţia de pornire pentru umăr."
+        },
+        "toward_included_angle": {
+          "name": "Unghiul de trecere",
+          "description": "La selectarea grilei schimbă al doilea unghi (implicit este de 90 de grade)."
+        },
+        "toward_mode": {
+          "name": "Mod unghi tăiat",
+          "description": "Direcţia glulară a muşchiului."
+        },
+        "mowing_laps": {
+          "name": "Perimetru Lapţi de portaj",
+          "description": "Numărul de robinete în jurul perimetrului zonei de umezire."
+        },
+        "obstacle_laps": {
+          "name": "Zonele fără urme",
+          "description": "Numărul de lacuri în jurul zonelor fără destinaţie."
+        },
+        "start_progress": {
+          "name": "Progres Start",
+          "description": "Progres de inceput procent."
+        },
+        "areas": {
+          "name": "Selecția zonei",
+          "description": "Lista zonelor care trebuie aruncate (reprezentate ca întregi)."
+        }
+      }
     }
   },
   "exceptions": {
@@ -220,6 +363,9 @@
     },
     "dock_failed": {
       "message": "Nu s-a reușit trimiterea cositoarei la doc."
+    },
+    "dock_cancel_failed": {
+      "message": "Nu a reușit să oprească revenirea la doc."
     },
     "command_failed": {
       "message": "Nu s-a reușit trimiterea comenzii către mașina de tuns iarba."
