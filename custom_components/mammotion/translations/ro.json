@@ -151,7 +151,7 @@
     },
     "select": {
        "channel_mode": {
-        "name": "Modul de tăiere"
+        "name": "Modul de tăiere",
          "state": {
            "single_grid": "Grilă simplă",
            "double_grid": "Grila de șah",
