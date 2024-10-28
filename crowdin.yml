@@ -1,5 +1,5 @@
-   project_id: "mammotion-ha"
-   api_token_env: CROWDIN_MAMMOTION_TOKEN
+   project_id: 731975
+   api_token_env: "CROWDIN_MAMMOTION_TOKEN"
    preserve_hierarchy: true
 
    files:

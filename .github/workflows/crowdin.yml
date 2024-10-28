@@ -40,4 +40,4 @@
              pull_request_labels: 'crowdin, i18n'
            env:
              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-             CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_MAMMOTION_TOKEN }}
+             CROWDIN_MAMMOTION_TOKEN: ${{ secrets.CROWDIN_MAMMOTION_TOKEN }}
