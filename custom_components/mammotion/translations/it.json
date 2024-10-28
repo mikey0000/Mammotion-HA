@@ -4,15 +4,19 @@
       "already_configured": "Il dispositivo è già configurato",
       "already_in_progress": "La configurazione è già in corso",
       "no_devices_found": "Impossibile trovare il dispositivo",
+      "no_devices_found_in_account": "Nessun dispositivo presente nel tuo account",
+      "bluetooth_and_account_mismatch": "Dispositivo Bluetooth non trovato nel tuo account",
       "no_longer_present": "Il dispositivo non è più presente",
       "not_supported": "Dispositivo non supportato",
-      "no_device_name": "È necessario il nome del dispositivo per procedere",
       "reconfigure_successful": "Riconfigurazione avvenuta con successo"
     },
     "flow_title": "Configura il tuo rasaerba Mammotion",
     "step": {
       "bluetooth_confirm": {
-        "description": "Configura {nome}"
+        "description": "Configura {nome}",
+        "data": {
+          "stay_connected_bluetooth": "Mantieni Bluetooth connesso"
+        }
       },
       "reconfigure": {
         "data": {
@@ -23,7 +27,8 @@
       },
       "user": {
         "data": {
-          "address": "Dispositivo"
+          "address": "Dispositivo",
+          "stay_connected_bluetooth": "Mantieni Bluetooth connesso"
         },
         "description": "Seleziona il tuo rasaerba"
       },
@@ -38,6 +43,16 @@
       }
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "title": "Aggiorna Configurazione",
+          "stay_connected_bluetooth": "Mantieni Bluetooth connesso"
+        }
+      }
+    }
+  },
   "entity": {
     "sensor": {
       "battery_percent": {
@@ -49,6 +64,9 @@
       "wifi_rssi": {
         "name": "WiFi RSSI"
       },
+      "connect_type": {
+        "name": "Connessione"
+      },
       "gps_stars": {
         "name": "Satelliti (Robot)"
       },
@@ -56,7 +74,7 @@
         "name": "Altezza lama"
       },
       "area": {
-        "name": "Area"
+        "name": "Zona"
       },
       "mowing_speed": {
         "name": "Velocità di taglio"
@@ -87,6 +105,18 @@
       },
       "activity_mode": {
         "name": "Modalità attività"
+      },
+      "work_area": {
+        "name": "Hash dell'area di lavoro"
+      },
+      "maintenance_distance": {
+        "name": "Total mileage"
+      },
+      "maintenance_work_time": {
+        "name": "Task duration"
+      },
+      "maintenance_bat_cycles": {
+        "name": "Battery cycles"
       }
     },
     "button": {
@@ -95,6 +125,27 @@
       },
       "resync_rtk_dock": {
         "name": "Sincronizza base e RTK"
+      },
+      "release_from_dock": {
+        "name": "Sblocca"
+      },
+      "emergency_nudge_forward": {
+        "name": "Nudge di emergenza in avanti"
+      },
+      "emergency_nudge_left": {
+        "name": "Nudge di emergenza a sinistra"
+      },
+      "emergency_nudge_right": {
+        "name": "Nudge di emergenza a destra"
+      },
+      "emergency_nudge_back": {
+        "name": "Ritorno di emergenza"
+      },
+      "cancel_task": {
+        "name": "Annulla l'attività corrente"
+      },
+      "clear_all_mapdata": {
+        "name": "Cancella nomi di mappe e aree"
       }
     },
     "switch": {
@@ -107,6 +158,9 @@
       "is_dump": {
         "name": "Scarico erba On/Off"
       },
+      "is_edge": {
+        "name": "Taglio dei bordi"
+      },
       "rain_tactics": {
         "name": "Rilevamento pioggia On/Off"
       },
@@ -115,20 +169,64 @@
       },
       "perimeter_first_on_off": {
         "name": "Taglio perimetro"
+      },
+      "schedule_updates": {
+        "name": "Attiva/Disattiva Aggiornamenti"
       }
     },
     "select": {
       "channel_mode": {
-        "name": "Modalità di taglio"
+        "name": "Modalità di taglio",
+        "state": {
+          "single_grid": "Percorso Zigzag",
+          "double_grid": "Percorso Scacchiera",
+          "segment_grid": "Percorso Adattivo A Zigzag",
+          "no_grid": "Solo Perimetro"
+        }
       },
       "mowing_laps": {
-        "name": "Modalità controllo bordi"
+        "name": "Modalità controllo bordi",
+        "state": {
+          "none": "Nessuno",
+          "one": "Uno",
+          "two": "Due",
+          "three": "Tre",
+          "four": "Quattro"
+        }
       },
       "obstacle_laps": {
-        "name": "Modalità aggiramento ostacoli"
+        "name": "Modalità aggiramento ostacoli",
+        "state": {
+          "none": "Nessuno",
+          "one": "Uno",
+          "two": "Due",
+          "three": "Tre",
+          "four": "Quattro"
+        }
       },
       "border_mode": {
-        "name": "Ordine di taglio"
+        "name": "Ordine di taglio",
+        "state": {
+          "border_first": "Perimetro prima",
+          "grid_first": "ZigZag / Scacchiera prima"
+        }
+      },
+      "bypass_mode": {
+        "name": "Modalità di prevenzione degli ostacoli",
+        "state": {
+          "direct_touch": "Tocco diretto",
+          "slow_touch": "Tocco lento",
+          "less_touch": "Meno tocco",
+          "no_touch": "Nessun Tocco"
+        }
+      },
+      "cutting_angle_mode": {
+        "name": "Modalità angolo di taglio tracciato",
+        "state": {
+          "relative_angle": "Angolo relativo",
+          "absolute_angle": "Angolo assoluto",
+          "random_angle": "Angolo casuale"
+        }
       }
     },
     "number": {
@@ -140,10 +238,114 @@
       },
       "working_speed": {
         "name": "Velocità di lavoro"
+      },
+      "cutting_angle": {
+        "name": "Angolo Tracciato Di Taglio"
+      },
+      "path_spacing": {
+        "name": "Spaziatura Percorso"
+      },
+      "dumping_interval": {
+        "name": "Frequenza Di Dumping"
+      },
+      "toward_included_angle": {
+        "name": "Angolo Di Attraversamento"
       }
     },
     "device_tracker": {
       "name": "Tracciamento del dispositivo"
+    }
+  },
+  "services": {
+    "cancel_job": {
+      "name": "Annulla l'attività corrente",
+      "description": "Ferma la falciatrice e cancella l'attività corrente."
+    },
+    "start_mow": {
+      "name": "Inizia Mowing",
+      "description": "Avvia l'operazione di falciatura con impostazioni personalizzate.",
+      "fields": {
+        "is_mow": {
+          "name": "Sta Mowing",
+          "description": "Se la falciatura è attiva. (Yuka)"
+        },
+        "is_dump": {
+          "name": "È Dumping",
+          "description": "Se il dumping dell'erba è attivo. (Yuka)"
+        },
+        "is_edge": {
+          "name": "Rasatura dei bordi",
+          "description": "Indica se la modalità bordo è attiva. (Yuka)"
+        },
+        "collect_grass_frequency": {
+          "name": "Frequenza Di Raccolta Erba",
+          "description": "Frequenza di raccolta dell'erba (in metri quadrati). (Yuka)"
+        },
+        "border_mode": {
+          "name": "Ordine Mow",
+          "description": "Ordine tracciato (prima perimetro o griglia)."
+        },
+        "job_version": {
+          "name": "Versione Job",
+          "description": "Versione lavoro."
+        },
+        "job_id": {
+          "name": "Id Lavoro",
+          "description": "Id Lavoro."
+        },
+        "speed": {
+          "name": "Velocità",
+          "description": "Velocità di falciatura."
+        },
+        "ultra_wave": {
+          "name": "Rilevamento Degli Ostacoli",
+          "description": "Modalità Evitamento Ostacoli."
+        },
+        "channel_mode": {
+          "name": "Modalità Tracciato Di Taglio",
+          "description": "Percorso di taglio (solo zigzag, scacchiera, zigzag adattivo o perimetro)."
+        },
+        "channel_width": {
+          "name": "Larghezza Tracciato",
+          "description": "Larghezza del percorso di falciatura (in cm)."
+        },
+        "rain_tactics": {
+          "name": "Rilevamento Pioggia",
+          "description": "Rilevamento pioggia."
+        },
+        "blade_height": {
+          "name": "Altezza Lama",
+          "description": "Altezza della lama."
+        },
+        "toward": {
+          "name": "Angolo Tracciato Iniziale",
+          "description": "Direzione di partenza per falciatura."
+        },
+        "toward_included_angle": {
+          "name": "Angolo Di Attraversamento",
+          "description": "Quando si seleziona la griglia cambiare il secondo angolo (predefinito è 90 gradi)."
+        },
+        "toward_mode": {
+          "name": "Modalità Angolo Di Taglio",
+          "description": "Direzione angolare del falcio."
+        },
+        "mowing_laps": {
+          "name": "Casse Di Perimetro",
+          "description": "Numero di giri attorno al perimetro dell'area di falciatura."
+        },
+        "obstacle_laps": {
+          "name": "Zona no-go Mowing Laps",
+          "description": "Numero di giri intorno alle zone No-go."
+        },
+        "start_progress": {
+          "name": "Avvia Progresso",
+          "description": "Inizio percentuale di progresso."
+        },
+        "areas": {
+          "name": "Selezione Area",
+          "description": "Elenco di aree da macinare (rappresentati come interi)."
+        }
+      }
     }
   },
   "exceptions": {
@@ -161,6 +363,9 @@
     },
     "dock_failed": {
       "message": "Impossibile inviare il rasaerba alla base."
+    },
+    "dock_cancel_failed": {
+      "message": "Impossibile interrompere il ritorno del falciatore al dock."
     },
     "command_failed": {
       "message": "Impossibile inviare il comando al rasaerba."

@@ -4,9 +4,10 @@
       "already_configured": "Het apparaat is al ingesteld",
       "already_in_progress": "De configuratie-flow is al in uitvoering",
       "no_devices_found": "Kon geen apparaten vinden",
+      "no_devices_found_in_account": "Er zijn geen apparaten in uw account",
+      "bluetooth_and_account_mismatch": "Bluetooth-apparaat niet gevonden in uw account",
       "no_longer_present": "Het apparaat is niet langer aanwezig",
       "not_supported": "Apparaat wordt niet ondersteund",
-      "no_device_name": "Apparaatnaam vereist om door te gaan",
       "reconfigure_successful": "instelling succesvol"
     },
     "flow_title": "Stel uw Mammotion gazonmachines in",
@@ -23,10 +24,11 @@
           "account_name": "Mammotion e-mailadres of accountnummer",
           "password": "Mammotion-accountwachtwoord"
         }
-	  },
+      },
       "user": {
         "data": {
-          "address": "Apparaat"
+          "address": "Apparaat",
+          "stay_connected_bluetooth": "Hou bluetooth verbonden"
         },
         "description": "Kies uw gazonmachines"
       },
@@ -36,8 +38,8 @@
           "account_name": "Mammotion e-mailadres of accountnummer",
           "password": "Mammotion-accountwachtwoord"
         },
-         "title": "Verbind met Wi-Fi",
-         "description": "Voer je Mammotion account e-mail of id en wachtwoord in"
+        "title": "Verbind met Wi-Fi",
+        "description": "Voer je Mammotion account e-mail of id en wachtwoord in"
       }
     }
   },
@@ -61,6 +63,9 @@
       },
       "wifi_rssi": {
         "name": "WiFi RSSI"
+      },
+      "connect_type": {
+        "name": "Verbindingsinstellingen"
       },
       "gps_stars": {
         "name": "Satellieten (Robot)"
@@ -100,14 +105,47 @@
       },
       "activity_mode": {
         "name": "Activiteitsmodus"
+      },
+      "work_area": {
+        "name": "Werkgebied hash"
+      },
+      "maintenance_distance": {
+        "name": "Total mileage"
+      },
+      "maintenance_work_time": {
+        "name": "Task duration"
+      },
+      "maintenance_bat_cycles": {
+        "name": "Battery cycles"
       }
     },
     "button": {
       "start_map_sync": {
         "name": "Synchroniseer kaarten"
       },
-       "resync_rtk_dock": {
+      "resync_rtk_dock": {
         "name": "Synchroniseer RTK en dok"
+      },
+      "release_from_dock": {
+        "name": "Loskoppelen"
+      },
+      "emergency_nudge_forward": {
+        "name": "Noodstok vooruit"
+      },
+      "emergency_nudge_left": {
+        "name": "Noodstok links"
+      },
+      "emergency_nudge_right": {
+        "name": "Noodstok rechts"
+      },
+      "emergency_nudge_back": {
+        "name": "Noodstok terug"
+      },
+      "cancel_task": {
+        "name": "Huidige taak annuleren"
+      },
+      "clear_all_mapdata": {
+        "name": "Kaart- en gebiednamen wissen"
       }
     },
     "switch": {
@@ -120,32 +158,79 @@
       "is_dump": {
         "name": "Gras dumpen aan/uit"
       },
+      "is_edge": {
+        "name": "Rand knippen"
+      },
       "rain_tactics": {
         "name": "Regendetectie Aan/Uit"
       },
       "side_led": {
         "name": "Zij-LED's aan/uit"
       },
-       "perimeter_first_on_off": {
+      "perimeter_first_on_off": {
         "name": "Perimeter Eerst"
+      },
+      "schedule_updates": {
+        "name": "Updates aan/uit zetten"
       }
     },
     "select": {
-       "channel_mode": {
-        "name": "Snijmodus"
+      "channel_mode": {
+        "name": "Snijmodus",
+        "state": {
+          "single_grid": "Zigzag pad",
+          "double_grid": "Chessboard pad",
+          "segment_grid": "Adaptive Zigzag pad",
+          "no_grid": "Alleen perimeter"
+        }
       },
       "mowing_laps": {
-        "name": "Randpatrolmodus"
+        "name": "Randpatrolmodus",
+        "state": {
+          "none": "geen",
+          "one": "Één",
+          "two": "Twee",
+          "three": "3",
+          "four": "Vier"
+        }
       },
       "obstacle_laps": {
-        "name": "Obstakel-lapsmodus"
+        "name": "Obstakel-lapsmodus",
+        "state": {
+          "none": "geen",
+          "one": "Één",
+          "two": "Twee",
+          "three": "3",
+          "four": "Vier"
+        }
       },
       "border_mode": {
-        "name": "Maai volgorde"
+        "name": "Maai volgorde",
+        "state": {
+          "border_first": "Perimeter eerst",
+          "grid_first": "ZigZag / Chessboard eerst"
+        }
+      },
+      "bypass_mode": {
+        "name": "Obstakels vermijdingsmodus",
+        "state": {
+          "direct_touch": "Directe aanraking",
+          "slow_touch": "Langzame aanraking",
+          "less_touch": "Minder aanraking",
+          "no_touch": "Geen aanraking"
+        }
+      },
+      "cutting_angle_mode": {
+        "name": "Pad hoek modus knippen",
+        "state": {
+          "relative_angle": "Relatieve hoek",
+          "absolute_angle": "Absolute hoek",
+          "random_angle": "Willekeurige hoek"
+        }
       }
     },
     "number": {
-       "start_progress": {
+      "start_progress": {
         "name": "Start voortgang"
       },
       "blade_height": {
@@ -153,10 +238,114 @@
       },
       "working_speed": {
         "name": "Werkende snelheid"
+      },
+      "cutting_angle": {
+        "name": "Snijden pad Hoek"
+      },
+      "path_spacing": {
+        "name": "Pad afstand"
+      },
+      "dumping_interval": {
+        "name": "Dumping frequentie"
+      },
+      "toward_included_angle": {
+        "name": "Kruisende Hoek"
       }
     },
     "device_tracker": {
       "name": "Apparaatvolgsysteem"
+    }
+  },
+  "services": {
+    "cancel_job": {
+      "name": "Huidige taak annuleren",
+      "description": "Stopt de mower en wis de huidige taak."
+    },
+    "start_mow": {
+      "name": "Start dromen",
+      "description": "Begin de moerbewerking met aangepaste instellingen.",
+      "fields": {
+        "is_mow": {
+          "name": "Is Maaien",
+          "description": "Of mowing actief is (Yuka)"
+        },
+        "is_dump": {
+          "name": "Dumping",
+          "description": "Of grasdumping actief is (Yuka)"
+        },
+        "is_edge": {
+          "name": "Rand mowing",
+          "description": "Of de randmodus actief is (Yuka)"
+        },
+        "collect_grass_frequency": {
+          "name": "Gras Collectie Frequentie",
+          "description": "Frequentie om gras te verzamelen (in meters vierkant). (Yuka)"
+        },
+        "border_mode": {
+          "name": "Maai bestelling",
+          "description": "Regeling van het traject afrekenen (Perimeter eerst of grid eerst)."
+        },
+        "job_version": {
+          "name": "Job versie",
+          "description": "Versie vacature"
+        },
+        "job_id": {
+          "name": "Taak ID",
+          "description": "Taak ID."
+        },
+        "speed": {
+          "name": "Snelheid",
+          "description": "Moeilijke snelheid."
+        },
+        "ultra_wave": {
+          "name": "Obstakels detectie",
+          "description": "Belemmering Vermijding Modus."
+        },
+        "channel_mode": {
+          "name": "Pad modus knippen",
+          "description": "Snijpad (zigzag, schaakbord, adaptieve zigzag, of omtrek alleen)."
+        },
+        "channel_width": {
+          "name": "Pad breedte",
+          "description": "Breedte van het mowing pad (in cm)."
+        },
+        "rain_tactics": {
+          "name": "Regen detectie",
+          "description": "Regen detectie."
+        },
+        "blade_height": {
+          "name": "Bladhoogte",
+          "description": "Hoogte van het zwaard."
+        },
+        "toward": {
+          "name": "Begin Pad Hoek",
+          "description": "Begin de richting voor moefen."
+        },
+        "toward_included_angle": {
+          "name": "Kruisende Hoek",
+          "description": "Bij het selecteren van het raster verander de tweede hoek (standaard is 90 graden)."
+        },
+        "toward_mode": {
+          "name": "Hoek modus knippen",
+          "description": "Grijpbare richting mow."
+        },
+        "mowing_laps": {
+          "name": "Perimeter Sluiders Laps",
+          "description": "Het aantal laps rond de muizenoppervlakte perimeter."
+        },
+        "obstacle_laps": {
+          "name": "Geen-go zone schouderlaps",
+          "description": "Aantal rondes rond No-go zones."
+        },
+        "start_progress": {
+          "name": "Begin Voortgang",
+          "description": "Begin voortgangspercentage."
+        },
+        "areas": {
+          "name": "Gebied Selectie",
+          "description": "Lijst van te rooien gebieden (weergegeven als geheel getal)."
+        }
+      }
     }
   },
   "exceptions": {
@@ -174,6 +363,9 @@
     },
     "dock_failed": {
       "message": "Kon de gazonmachines niet naar het dok sturen"
+    },
+    "dock_cancel_failed": {
+      "message": "Het is niet gelukt om te stoppen met het terugbrengen van de mawer naar de dock."
     },
     "command_failed": {
       "message": "Kon het opdracht niet verzenden naar de gazonmachines"

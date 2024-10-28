@@ -8,7 +8,6 @@
       "bluetooth_and_account_mismatch": "Na Twoim koncie nie znaleziono żadnego urządzenia Bluetooth",
       "no_longer_present": "Urządzenie nie jest już dostępne",
       "not_supported": "Urządzenie nie jest obsługiwane",
-
       "reconfigure_successful": "Ponowna konfiguracja zakończona powodzeniem"
     },
     "flow_title": "Skonfiguruj swoją kosiarkę Mammotion",
@@ -63,7 +62,10 @@
         "name": "BLE RSSI"
       },
       "wifi_rssi": {
-        "name": "WiFi RSSI"
+        "name": "RSSI WiFi"
+      },
+      "connect_type": {
+        "name": "Połączenie"
       },
       "gps_stars": {
         "name": "Satelity (Robot)"
@@ -103,16 +105,25 @@
       },
       "activity_mode": {
         "name": "Stan pracy"
-     },
+      },
       "work_area": {
         "name": "Obszar roboczy hash"
+      },
+      "maintenance_distance": {
+        "name": "Total mileage"
+      },
+      "maintenance_work_time": {
+        "name": "Task duration"
+      },
+      "maintenance_bat_cycles": {
+        "name": "Battery cycles"
       }
     },
     "button": {
       "start_map_sync": {
         "name": "Synchronizuj mapy"
       },
-       "resync_rtk_dock": {
+      "resync_rtk_dock": {
         "name": "Zsynchronizuj RTK i stację ładującą"
       },
       "release_from_dock": {
@@ -121,7 +132,7 @@
       "emergency_nudge_forward": {
         "name": "Awaryjne ruszenie do przodu"
       },
-       "emergency_nudge_left": {
+      "emergency_nudge_left": {
         "name": "Awaryjne ruszenie w lewo"
       },
       "emergency_nudge_right": {
@@ -132,6 +143,9 @@
       },
       "cancel_task": {
         "name": "Anuluj bieżące zadanie"
+      },
+      "clear_all_mapdata": {
+        "name": "Wyczyść mapy i nazwy obszarów"
       }
     },
     "switch": {
@@ -153,19 +167,22 @@
       "side_led": {
         "name": "Boczna dioda LED wł/wył"
       },
-       "perimeter_first_on_off": {
+      "perimeter_first_on_off": {
         "name": "Najpierw obwód"
+      },
+      "schedule_updates": {
+        "name": "Włącz/Wyłącz aktualizacje"
       }
     },
     "select": {
-       "channel_mode": {
+      "channel_mode": {
         "name": "Tryb cięcia",
         "state": {
-           "single_grid": "Pojedyncza siatka",
-           "double_grid": "Podwójna siatka",
-           "segment_grid": "Siatka mieszana/segmentowa",
-           "no_grid": "Brak siatki"
-         }
+          "single_grid": "Pojedyncza siatka",
+          "double_grid": "Podwójna siatka",
+          "segment_grid": "Siatka mieszana/segmentowa",
+          "no_grid": "Brak siatki"
+        }
       },
       "mowing_laps": {
         "name": "Koszenie obwodu",
@@ -213,7 +230,7 @@
       }
     },
     "number": {
-       "start_progress": {
+      "start_progress": {
         "name": "Rozpocznij koszenie przy x% postępie"
       },
       "blade_height": {
@@ -230,10 +247,105 @@
       },
       "dumping_interval": {
         "name": "Częstotliwość zrzutu"
+      },
+      "toward_included_angle": {
+        "name": "Kąt skrzyżowania"
       }
     },
     "device_tracker": {
       "name": "Śledzenie urządzenia"
+    }
+  },
+  "services": {
+    "cancel_job": {
+      "name": "Anuluj bieżące zadanie",
+      "description": "Zatrzymuje kosiarkę i usuwa bieżące zadanie."
+    },
+    "start_mow": {
+      "name": "Rozpocznij wysiewanie",
+      "description": "Rozpocznij operację kojenia z ustawieniami niestandardowymi.",
+      "fields": {
+        "is_mow": {
+          "name": "Jest siew",
+          "description": "Czy koszenie jest aktywne. (Yuka)"
+        },
+        "is_dump": {
+          "name": "Dumping",
+          "description": "Czy dumping trawy jest aktywny. (Yuka)"
+        },
+        "is_edge": {
+          "name": "Kosiarka krawędzi",
+          "description": "Czy tryb krawędzi jest aktywny. (Yuka)"
+        },
+        "collect_grass_frequency": {
+          "name": "Częstotliwość zbierania trawy",
+          "description": "Częstotliwość zbierania trawy (w metrach kwadratowych). (Yuka)"
+        },
+        "border_mode": {
+          "name": "Kolejność ruchów",
+          "description": "Kolejność ścieżki (najpierw Perimeter lub siatka)."
+        },
+        "job_version": {
+          "name": "Wersja zadania",
+          "description": "Wersja pracy."
+        },
+        "job_id": {
+          "name": "ID Zadania",
+          "description": "ID Zadania."
+        },
+        "speed": {
+          "name": "Prędkość",
+          "description": "Prędkość siewu."
+        },
+        "ultra_wave": {
+          "name": "Wykrywanie przeszkód",
+          "description": "Tryb unikania przeszkód"
+        },
+        "channel_mode": {
+          "name": "Tryb cięcia ścieżki",
+          "description": "Ścieżka cięcia (tylko zigzag, szachownica, adaptacyjny zigzag, lub obwódka)."
+        },
+        "channel_width": {
+          "name": "Szerokość ścieżki",
+          "description": "Szerokość toru kotwiczenia (w cm)."
+        },
+        "rain_tactics": {
+          "name": "Wykrywanie deszczu",
+          "description": "Wykrywanie deszczu."
+        },
+        "blade_height": {
+          "name": "Wysokość Ostrza",
+          "description": "Wysokość ostrza."
+        },
+        "toward": {
+          "name": "Kąt ścieżki startowej",
+          "description": "Kierunek początkowy dla koszenia."
+        },
+        "toward_included_angle": {
+          "name": "Kąt skrzyżowania",
+          "description": "Podczas wybierania siatki zmień drugi kąt (domyślnie 90 stopni)."
+        },
+        "toward_mode": {
+          "name": "Tryb cięcia kąta",
+          "description": "Kierunek kotwiczenia."
+        },
+        "mowing_laps": {
+          "name": "Lojanie Perimetru",
+          "description": "Liczba okrążeń wokół obwodu kości."
+        },
+        "obstacle_laps": {
+          "name": "Strefa No-go Mowing Laps",
+          "description": "Liczba okrążeń wokół stref bez zmian."
+        },
+        "start_progress": {
+          "name": "Rozpocznij postęp",
+          "description": "Początkowy procent postępu."
+        },
+        "areas": {
+          "name": "Wybór obszaru",
+          "description": "Wykaz obszarów do mow (reprezentowanych jako liczby całkowite)."
+        }
+      }
     }
   },
   "exceptions": {
@@ -251,6 +363,9 @@
     },
     "dock_failed": {
       "message": "Nie udało się wysłać kosiarki do stacji ładującej."
+    },
+    "dock_cancel_failed": {
+      "message": "Nie udało się zatrzymać powracania kosiarki do doku."
     },
     "command_failed": {
       "message": "Nie udało się wysłać polecenia do kosiarki."
