@@ -4,6 +4,8 @@
      push:
        paths:
          - 'custom_components/mammotion/translations/en.json'
+     schedule:
+       - cron: '0 0 * * *'  # Run daily
      workflow_dispatch: # This enables manual triggering
        inputs:
          upload_sources:
