@@ -86,6 +86,26 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         ),
     ),
     MammotionSensorEntityDescription(
+        key="maintenance_distance",
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.DISTANCE,
+        native_unit_of_measurement=UnitOfLength.KILOMETERS,
+        value_fn=lambda mower_data: mower_data.report_data.maintenance.mileage,
+    ),
+    MammotionSensorEntityDescription(
+        key="maintenance_work_time",
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.TIMESTAMP,
+        native_unit_of_measurement=UnitOfTime.SECONDS,
+        value_fn=lambda mower_data: mower_data.report_data.maintenance.work_time,
+    ),
+    MammotionSensorEntityDescription(
+        key="maintenance_bat_cycles",
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=None,
+        value_fn=lambda mower_data: mower_data.report_data.maintenance.bat_cycles,
+    ),
+    MammotionSensorEntityDescription(
         key="gps_stars",
         state_class=SensorStateClass.MEASUREMENT,
         device_class=None,

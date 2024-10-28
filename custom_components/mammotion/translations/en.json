@@ -108,6 +108,15 @@
       },
       "work_area": {
         "name": "Work area hash"
+      },
+      "maintenance_distance": {
+        "name": "Total mileage"
+      },
+      "maintenance_work_time": {
+        "name": "Task duration"
+      },
+      "maintenance_bat_cycles": {
+        "name": "Battery cycles"
       }
     },
     "button": {
