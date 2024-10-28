@@ -277,12 +277,12 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
 
         if self.device_name is not None:
             device = self.manager.get_device_by_name(self.device_name)
+        elif device_name := next(iter(self.manager.devices.devices.keys())):
+            self.device_name = device_name
+            device = self.manager.get_device_by_name(device_name)
         else:
-            device_names = self.manager.devices.devices.keys()
-            if len(device_names) == 0:
-                raise ConfigEntryNotReady("no_devices")
-            self.device_name = device_names[0]
-            device = self.manager.get_device_by_name(device_names[0])
+            raise ConfigEntryNotReady("no_devices")
+
         device.preference = preference
 
         if ble_device and device:
