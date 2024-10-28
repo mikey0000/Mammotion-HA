@@ -290,7 +290,7 @@
           "description": "Version des Jobs."
         },
         "job_id": {
-          "name": "Job-ID",
+          "name": "Job ID",
           "description": "ID des Jobs."
         },
         "speed": {
