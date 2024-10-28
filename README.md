@@ -71,6 +71,17 @@ If you encounter any issues with the Mammotion integration, please check the Hom
 - Ensure that your mower is connected to your home network and accessible from Home Assistant.
 - Restart Home Assistant and check if the issue persists.
 
+## Contributing to Translations
+
+We use Crowdin to manage our translations. If you'd like to contribute:
+
+1. Visit our [Crowdin project page](https://crowdin.com/project/mammotion-ha)
+2. Select the language you'd like to translate to
+3. Start translating!
+
+   Your contributions will be automatically submitted as pull requests to this repository.
+
+
 ## PyMammotion Library 📚
 
 This integration uses the [PyMammotion library](https://github.com/mikey0000/PyMammotion) to communicate with Mammotion mowers. PyMammotion provides a Python API for controlling and monitoring Mammotion robot mowers via MQTT, Cloud, and Bluetooth.

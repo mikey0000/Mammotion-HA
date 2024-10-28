@@ -23,7 +23,11 @@ from homeassistant.helpers.typing import StateType
 from homeassistant.util.unit_conversion import SpeedConverter
 from pymammotion.data.model.device import MowingDevice
 from pymammotion.data.model.enums import RTKStatus
-from pymammotion.utility.constant.device_constant import PosType, device_mode
+from pymammotion.utility.constant.device_constant import (
+    PosType,
+    device_connection,
+    device_mode,
+)
 from pymammotion.utility.device_type import DeviceType
 
 from . import MammotionConfigEntry
@@ -71,6 +75,15 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.SIGNAL_STRENGTH,
         native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
         value_fn=lambda mower_data: mower_data.report_data.connect.wifi_rssi,
+    ),
+    MammotionSensorEntityDescription(
+        key="connect_type",
+        device_class=SensorDeviceClass.ENUM,
+        native_unit_of_measurement=None,
+        value_fn=lambda mower_data: device_connection(
+            mower_data.report_data.connect.connect_type,
+            mower_data.report_data.connect.used_net,
+        ),
     ),
     MammotionSensorEntityDescription(
         key="gps_stars",

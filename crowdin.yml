@@ -1,0 +1,7 @@
+   project_id: "mammotion-ha"
+   api_token_env: CROWDIN_MAMMOTION_TOKEN
+   preserve_hierarchy: true
+
+   files:
+     - source: /custom_components/mammotion/translations/en.json
+       translation: /custom_components/mammotion/translations/%two_letters_code%.json

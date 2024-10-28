@@ -64,6 +64,9 @@
       "wifi_rssi": {
         "name": "WiFi RSSI"
       },
+      "connect_type": {
+        "name": "Connection"
+      },
       "gps_stars": {
         "name": "Satellites (Robot)"
       },
