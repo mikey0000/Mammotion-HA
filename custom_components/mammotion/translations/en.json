@@ -64,6 +64,9 @@
       "wifi_rssi": {
         "name": "WiFi RSSI"
       },
+      "connect_type": {
+        "name": "Connection"
+      },
       "gps_stars": {
         "name": "Satellites (Robot)"
       },
@@ -105,6 +108,15 @@
       },
       "work_area": {
         "name": "Work area hash"
+      },
+      "maintenance_distance": {
+        "name": "Total mileage"
+      },
+      "maintenance_work_time": {
+        "name": "Task duration"
+      },
+      "maintenance_bat_cycles": {
+        "name": "Battery cycles"
       }
     },
     "button": {

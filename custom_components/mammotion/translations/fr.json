@@ -64,6 +64,9 @@
       "wifi_rssi": {
         "name": "WiFi RSSI"
       },
+      "connect_type": {
+        "name": "Raccordement"
+      },
       "gps_stars": {
         "name": "Satellites (Robot)"
       },
@@ -104,14 +107,23 @@
         "name": "Mode activité"
       },
       "work_area": {
-        "name": "Work area hash"
+        "name": "Hachage de la zone de travail"
+      },
+      "maintenance_distance": {
+        "name": "Total mileage"
+      },
+      "maintenance_work_time": {
+        "name": "Task duration"
+      },
+      "maintenance_bat_cycles": {
+        "name": "Battery cycles"
       }
     },
     "button": {
       "start_map_sync": {
         "name": "Synchroniser les cartes"
       },
-       "resync_rtk_dock": {
+      "resync_rtk_dock": {
         "name": "Synchroniser RTK et base de charge"
       },
       "release_from_dock": {
@@ -155,8 +167,11 @@
       "side_led": {
         "name": "Voyants LED On/Off"
       },
-       "perimeter_first_on_off": {
+      "perimeter_first_on_off": {
         "name": "Bordure en premier"
+      },
+      "schedule_updates": {
+        "name": "Activer/Désactiver les mises à jour"
       }
     },
     "select": {
@@ -166,7 +181,7 @@
           "single_grid": "Grille unique",
           "double_grid": "Grille à damier",
           "segment_grid": "Grille mixte/segmentée",
-          "no_grid": "Pas de grille" 
+          "no_grid": "Pas de grille"
         }
       },
       "mowing_laps": {
@@ -232,6 +247,9 @@
       },
       "dumping_interval": {
         "name": "Fréquence de vidage"
+      },
+      "toward_included_angle": {
+        "name": "Angle de traversée"
       }
     },
     "device_tracker": {

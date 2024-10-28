@@ -130,12 +130,15 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         except DeviceOfflineException:
             """Device is offline try bluetooth if we have it."""
             try:
-                if self.manager.get_device_by_name(self.device_name).has_ble():
-                    await (
-                        self.manager.get_device_by_name(self.device_name)
-                        .ble()
-                        .queue_command(command, **kwargs)
-                    )
+                if device := self.manager.get_device_by_name(self.device_name):
+                    if device.has_ble():
+                        # if we don't do this it will stay connected and no longer update over wifi
+                        device.ble().set_disconnect_strategy(True)
+                        await (
+                            self.manager.get_device_by_name(self.device_name)
+                            .ble()
+                            .queue_command(command, **kwargs)
+                        )
             except COMMAND_EXCEPTIONS as exc:
                 raise HomeAssistantError(
                     translation_domain=DOMAIN, translation_key="command_failed"
@@ -383,36 +386,40 @@ class MammotionDataUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevice
 
     async def async_blade_height(self, height: int) -> int:
         """Set blade height."""
-        await self.async_send_command("set_blade_height", height=float(height))
+        await self.send_command_and_update("set_blade_height", height=float(height))
         return height
 
     async def async_leave_dock(self) -> None:
         """Leave dock."""
-        await self.async_send_command("leave_dock")
+        await self.send_command_and_update("leave_dock")
 
     async def async_cancel_task(self) -> None:
         """Cancel task."""
-        await self.async_send_command("cancel_job")
+        await self.send_command_and_update("cancel_job")
 
     async def async_move_forward(self, speed: float) -> None:
         """Move forward."""
-        await self.async_send_command("move_forward", linear=speed)
+        await self.send_command_and_update("move_forward", linear=speed)
 
     async def async_move_left(self, speed: float) -> None:
         """Move left."""
-        await self.async_send_command("move_left", angular=speed)
+        await self.send_command_and_update("move_left", angular=speed)
 
     async def async_move_right(self, speed: float) -> None:
         """Move right."""
-        await self.async_send_command("move_right", angular=speed)
+        await self.send_command_and_update("move_right", angular=speed)
 
     async def async_move_back(self, speed: float) -> None:
         """Move back."""
-        await self.async_send_command("move_back", linear=speed)
+        await self.send_command_and_update("move_back", linear=speed)
 
     async def async_rtk_dock_location(self) -> None:
         """RTK and dock location."""
         await self.async_send_command("allpowerfull_rw", id=5, rw=1, context=1)
+
+    async def send_command_and_update(self, command_str: str, **kwargs: Any) -> None:
+        await self.async_send_command(command_str, kwargs=kwargs)
+        await self.async_request_iot_sync()
 
     async def async_request_iot_sync(self, stop: bool = False) -> None:
         """Sync specific info from device."""
@@ -475,7 +482,7 @@ class MammotionDataUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevice
         data.map = HashList()
 
     async def check_firmware_version(self) -> None:
-        """Check if firmware version is udpated."""
+        """Check if firmware version is updated."""
         mower = self.manager.mower(self.device_name)
         device_registry = dr.async_get(self.hass)
         device_entry = device_registry.async_get_device(
