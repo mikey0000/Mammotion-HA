@@ -4,7 +4,6 @@
      push:
        paths:
          - 'custom_components/mammotion/translations/en.json'
-     pull_request:
      workflow_dispatch: # This enables manual triggering
        inputs:
          upload_sources:
