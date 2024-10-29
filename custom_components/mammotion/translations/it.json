@@ -110,13 +110,13 @@
         "name": "Hash dell'area di lavoro"
       },
       "maintenance_distance": {
-        "name": "Total mileage"
+        "name": "Chilometraggio totale"
       },
       "maintenance_work_time": {
-        "name": "Task duration"
+        "name": "Durata del compito"
       },
       "maintenance_bat_cycles": {
-        "name": "Battery cycles"
+        "name": "Cicli della batteria"
       }
     },
     "button": {
