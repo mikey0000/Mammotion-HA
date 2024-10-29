@@ -418,7 +418,7 @@ class MammotionDataUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevice
         await self.async_send_command("allpowerfull_rw", id=5, rw=1, context=1)
 
     async def send_command_and_update(self, command_str: str, **kwargs: Any) -> None:
-        await self.async_send_command(command_str, kwargs=kwargs)
+        await self.async_send_command(command_str, **kwargs)
         await self.async_request_iot_sync()
 
     async def async_request_iot_sync(self, stop: bool = False) -> None:
