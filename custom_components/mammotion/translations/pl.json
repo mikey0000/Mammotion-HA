@@ -110,13 +110,13 @@
         "name": "Obszar roboczy hash"
       },
       "maintenance_distance": {
-        "name": "Total mileage"
+        "name": "Całkowity przebieg"
       },
       "maintenance_work_time": {
-        "name": "Task duration"
+        "name": "Czas trwania zadania"
       },
       "maintenance_bat_cycles": {
-        "name": "Battery cycles"
+        "name": "Cykle baterii"
       }
     },
     "button": {

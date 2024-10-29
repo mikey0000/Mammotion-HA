@@ -110,13 +110,13 @@
         "name": "Zona de lucru tip de hașură"
       },
       "maintenance_distance": {
-        "name": "Total mileage"
+        "name": "Kilometraj total"
       },
       "maintenance_work_time": {
-        "name": "Task duration"
+        "name": "Durata sarcinii"
       },
       "maintenance_bat_cycles": {
-        "name": "Battery cycles"
+        "name": "Cicluri baterie"
       }
     },
     "button": {

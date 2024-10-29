@@ -110,13 +110,13 @@
         "name": "Hachage de la zone de travail"
       },
       "maintenance_distance": {
-        "name": "Total mileage"
+        "name": "Kilométrage total"
       },
       "maintenance_work_time": {
-        "name": "Task duration"
+        "name": "Durée de la tâche"
       },
       "maintenance_bat_cycles": {
-        "name": "Battery cycles"
+        "name": "Cycles de batterie"
       }
     },
     "button": {
