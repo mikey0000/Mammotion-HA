@@ -33,6 +33,8 @@ from pymammotion.data.model import GenerateRouteInformation, HashList
 from pymammotion.data.model.account import Credentials
 from pymammotion.data.model.device import MowingDevice
 from pymammotion.data.model.device_config import OperationSettings, create_path_order
+from pymammotion.http.http import MammotionHTTP
+from pymammotion.http.model.http import LoginResponseData, Response
 from pymammotion.mammotion.devices.mammotion import (
     ConnectionPreference,
     Mammotion,
@@ -50,6 +52,7 @@ from .const import (
     CONF_CONNECT_DATA,
     CONF_DEVICE_DATA,
     CONF_DEVICE_NAME,
+    CONF_MAMMOTION_DATA,
     CONF_REGION_DATA,
     CONF_SESSION_DATA,
     CONF_STAY_CONNECTED_BLUETOOTH,
@@ -164,6 +167,7 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
                 CONF_AEP_DATA: cloud_client.aep_response,
                 CONF_SESSION_DATA: cloud_client.session_by_authcode_response,
                 CONF_DEVICE_DATA: cloud_client.devices_by_account_response,
+                CONF_MAMMOTION_DATA: cloud_client.mammotion_http.response,
             }
             self.hass.config_entries.async_update_entry(
                 self.config_entry, data=config_updates
@@ -183,8 +187,9 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         session_data = self.config_entry.data.get(CONF_SESSION_DATA)
         device_data = self.config_entry.data.get(CONF_DEVICE_DATA)
         connect_data = self.config_entry.data.get(CONF_CONNECT_DATA)
+        mammotion_data = self.config_entry.data.get(CONF_MAMMOTION_DATA)
 
-        if all(
+        if any(
             data is None
             for data in [
                 auth_data,
@@ -193,6 +198,7 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
                 session_data,
                 device_data,
                 connect_data,
+                mammotion_data,
             ]
         ):
             return None
@@ -219,6 +225,11 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
             if isinstance(auth_data, dict)
             else auth_data,
         )
+
+        if isinstance(mammotion_data, dict):
+            mammotion_data = Response[LoginResponseData].from_dict(mammotion_data)
+
+        cloud_client.set_http(MammotionHTTP(response=mammotion_data))
 
         await self.hass.async_add_executor_job(cloud_client.check_or_refresh_session)
 
@@ -296,6 +307,8 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         try:
             if preference is ConnectionPreference.WIFI and device.has_cloud():
                 self.store_cloud_credentials()
+                if mqtt_client := self.manager.mqtt_list.get(account):
+                    device.mower_state.error_codes = await mqtt_client.cloud_client.mammotion_http.get_all_error_codes()
                 device.cloud().set_notification_callback(
                     self._async_update_notification
                 )
