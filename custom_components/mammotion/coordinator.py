@@ -118,15 +118,17 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         await self.manager.login_and_initiate_cloud(account, password, True)
         self.store_cloud_credentials()
 
-    async def async_send_command(self, command: str, **kwargs: Any) -> None:
+    async def async_send_command(self, command: str, **kwargs: Any) -> bool:
         """Send command."""
         try:
             await self.manager.send_command_with_args(
                 self.device_name, command, **kwargs
             )
+            return True
         except EXPIRED_CREDENTIAL_EXCEPTIONS:
             self.update_failures += 1
             await self.async_login()
+            return False
         except DeviceOfflineException:
             """Device is offline try bluetooth if we have it."""
             try:
@@ -139,6 +141,7 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
                             .ble()
                             .queue_command(command, **kwargs)
                         )
+                return True
             except COMMAND_EXCEPTIONS as exc:
                 raise HomeAssistantError(
                     translation_domain=DOMAIN, translation_key="command_failed"
@@ -437,7 +440,7 @@ class MammotionDataUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevice
             count=0,
         )
 
-    async def async_plan_route(self, operation_settings: OperationSettings) -> None:
+    async def async_plan_route(self, operation_settings: OperationSettings) -> bool:
         """Plan mow."""
 
         if has_field(self.data.sys.toapp_report_data.dev):
@@ -472,7 +475,7 @@ class MammotionDataUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevice
             route_information.toward_mode = 0
             route_information.toward_included_angle = 0
 
-        await self.async_send_command(
+        return await self.async_send_command(
             "generate_route_information", generate_route_information=route_information
         )
 
@@ -533,19 +536,13 @@ class MammotionDataUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevice
             ):
                 device.ble().update_device(ble_device)
 
-        if (
-            len(device.mower_state.net.toapp_devinfo_resp.resp_ids) == 0
-            or device.mower_state.net.toapp_wifi_iot_status.productkey is None
-        ):
+        if len(device.mower_state.net.toapp_devinfo_resp.resp_ids) == 0:
             await self.manager.start_sync(self.device_name, 0)
 
-        if not device.mower_state.sys.todev_time_ctrl_light:
+        if not has_field(device.mower_state.sys.todev_time_ctrl_light):
             await self.async_read_sidelight()
 
-        if (
-            not has_field(device.mower_state.sys.device_product_type_info)
-            or device.mower_state.mqtt_properties is None
-        ):
+        if not has_field(device.mower_state.sys.device_product_type_info):
             await self.async_send_command("get_device_product_model")
 
         if (

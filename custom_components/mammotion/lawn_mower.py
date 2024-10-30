@@ -198,11 +198,17 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
                     mode = self.rpt_dev_status.sys_status
                 if mode == WorkMode.MODE_PAUSE:
                     trans_key = "resume_failed"
-                    await self.coordinator.async_send_command("resume_execute_task")
+                    charge_state = self.rpt_dev_status.charge_state
+                    if charge_state != 0:
+                        await self.coordinator.async_send_command(
+                            "break_point_anywhere_continue"
+                        )
+                    else:
+                        await self.coordinator.async_send_command("resume_execute_task")
                 if mode == WorkMode.MODE_READY:
                     trans_key = "start_failed"
-                    await self.coordinator.async_plan_route(operational_settings)
-                    await self.coordinator.async_send_command("start_job")
+                    if await self.coordinator.async_plan_route(operational_settings):
+                        await self.coordinator.async_send_command("start_job")
 
             except COMMAND_EXCEPTIONS as exc:
                 raise HomeAssistantError(
