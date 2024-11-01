@@ -262,7 +262,7 @@
       "description": "Stopt de mower en wis de huidige taak."
     },
     "start_mow": {
-      "name": "Start dromen",
+      "name": "Start met maaien",
       "description": "Begin de moerbewerking met aangepaste instellingen.",
       "fields": {
         "is_mow": {
