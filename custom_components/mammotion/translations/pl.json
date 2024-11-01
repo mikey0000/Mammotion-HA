@@ -267,19 +267,19 @@
       "fields": {
         "is_mow": {
           "name": "Jest siew",
-          "description": "Czy koszenie jest aktywne. (Yuka)"
+          "description": "Whether mowing is active. (Yuka)."
         },
         "is_dump": {
           "name": "Dumping",
-          "description": "Czy dumping trawy jest aktywny. (Yuka)"
+          "description": "Whether grass dumping is active. (Yuka)."
         },
         "is_edge": {
           "name": "Kosiarka krawędzi",
-          "description": "Czy tryb krawędzi jest aktywny. (Yuka)"
+          "description": "Whether edge mode is active. (Yuka)."
         },
         "collect_grass_frequency": {
           "name": "Częstotliwość zbierania trawy",
-          "description": "Częstotliwość zbierania trawy (w metrach kwadratowych). (Yuka)"
+          "description": "Frequency to collect grass (in meters squared). (Yuka)."
         },
         "border_mode": {
           "name": "Kolejność ruchów",

@@ -267,19 +267,19 @@
       "fields": {
         "is_mow": {
           "name": "Est-ce que la tonte est active",
-          "description": "Si la tonte est active. (Yuka)"
+          "description": "Whether mowing is active. (Yuka)."
         },
         "is_dump": {
           "name": "Est-ce que le déversement est actif",
-          "description": "Si le déversement d'herbe est actif. (Yuka)"
+          "description": "Whether grass dumping is active. (Yuka)."
         },
         "is_edge": {
           "name": "Est-ce que le mode bordure est actif",
-          "description": "Si le mode bordure est actif. (Yuka)"
+          "description": "Whether edge mode is active. (Yuka)."
         },
         "collect_grass_frequency": {
           "name": "Fréquence de ramassage de l'herbe",
-          "description": "Fréquence de ramassage de l'herbe (en mètres carrés). (Yuka)"
+          "description": "Frequency to collect grass (in meters squared). (Yuka)."
         },
         "border_mode": {
           "name": "Ordre de tonte",

@@ -267,19 +267,19 @@
       "fields": {
         "is_mow": {
           "name": "Is Maaien",
-          "description": "Of mowing actief is (Yuka)"
+          "description": "Whether mowing is active. (Yuka)."
         },
         "is_dump": {
           "name": "Dumping",
-          "description": "Of grasdumping actief is (Yuka)"
+          "description": "Whether grass dumping is active. (Yuka)."
         },
         "is_edge": {
           "name": "Rand mowing",
-          "description": "Of de randmodus actief is (Yuka)"
+          "description": "Whether edge mode is active. (Yuka)."
         },
         "collect_grass_frequency": {
           "name": "Gras Collectie Frequentie",
-          "description": "Frequentie om gras te verzamelen (in meters vierkant). (Yuka)"
+          "description": "Frequency to collect grass (in meters squared). (Yuka)."
         },
         "border_mode": {
           "name": "Maai bestelling",

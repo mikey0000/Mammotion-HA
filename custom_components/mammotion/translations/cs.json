@@ -267,19 +267,19 @@
       "fields": {
         "is_mow": {
           "name": "Je vážný",
-          "description": "Zda je sečení aktivní. (Yuka)"
+          "description": "Whether mowing is active. (Yuka)."
         },
         "is_dump": {
           "name": "Dumping",
-          "description": "Zda je aktivní travní dumping. (Yuka)"
+          "description": "Whether grass dumping is active. (Yuka)."
         },
         "is_edge": {
           "name": "sečení hrany",
-          "description": "Zda je režim hrany aktivní. (Yuka)"
+          "description": "Whether edge mode is active. (Yuka)."
         },
         "collect_grass_frequency": {
           "name": "Frekvence sběru trávy",
-          "description": "Frekvence sběru trávy (v metrech čtverečních). (Yuka)"
+          "description": "Frequency to collect grass (in meters squared). (Yuka)."
         },
         "border_mode": {
           "name": "Pořadí luku",
