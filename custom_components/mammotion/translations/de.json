@@ -267,19 +267,19 @@
       "fields": {
         "is_mow": {
           "name": "Mähen",
-          "description": "Gibt an, ob Mähen aktiviert ist. (Yuka)"
+          "description": "Whether mowing is active. (Yuka)."
         },
         "is_dump": {
           "name": "Gras sammeln",
-          "description": "Gibt an, ob Gras sammeln aktiviert ist. (Yuka)"
+          "description": "Whether grass dumping is active. (Yuka)."
         },
         "is_edge": {
           "name": "Kanten schneiden",
-          "description": "Gibt an, ob der Modus zum Kanten schneiden aktiv ist. (Yuka)"
+          "description": "Whether edge mode is active. (Yuka)."
         },
         "collect_grass_frequency": {
           "name": "Intervall für das Entleeren",
-          "description": "Intervall für das Entleeren beim Modus für Gras sammeln. (Quadratmeter). (Yuka)"
+          "description": "Frequency to collect grass (in meters squared). (Yuka)."
         },
         "border_mode": {
           "name": "Ausführungsreihenfolge des Pfades",

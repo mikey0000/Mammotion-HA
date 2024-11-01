@@ -267,19 +267,19 @@
       "fields": {
         "is_mow": {
           "name": "Sta Mowing",
-          "description": "Se la falciatura è attiva. (Yuka)"
+          "description": "Whether mowing is active. (Yuka)."
         },
         "is_dump": {
           "name": "È Dumping",
-          "description": "Se il dumping dell'erba è attivo. (Yuka)"
+          "description": "Whether grass dumping is active. (Yuka)."
         },
         "is_edge": {
           "name": "Rasatura dei bordi",
-          "description": "Indica se la modalità bordo è attiva. (Yuka)"
+          "description": "Whether edge mode is active. (Yuka)."
         },
         "collect_grass_frequency": {
           "name": "Frequenza Di Raccolta Erba",
-          "description": "Frequenza di raccolta dell'erba (in metri quadrati). (Yuka)"
+          "description": "Frequency to collect grass (in meters squared). (Yuka)."
         },
         "border_mode": {
           "name": "Ordine Mow",

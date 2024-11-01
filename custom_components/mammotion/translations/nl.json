@@ -36,7 +36,7 @@
         "data": {
           "use_wifi": "Gebruik Wi-fi (haal het vinkje weg en verstuur om Bluetooth te gebruiken)",
           "account_name": "Mammotion e-mailadres of accountnummer",
-          "password": "Mammotion-accountwachtwoord"
+          "password": "Mammotion account wachtwoord"
         },
         "title": "Verbind met Wi-Fi",
         "description": "Voer je Mammotion account e-mail of id en wachtwoord in"
@@ -165,7 +165,7 @@
         "name": "Regendetectie Aan/Uit"
       },
       "side_led": {
-        "name": "Zij-LED's aan/uit"
+        "name": "Zij LED's aan/uit"
       },
       "perimeter_first_on_off": {
         "name": "Perimeter Eerst"
@@ -190,7 +190,7 @@
           "none": "geen",
           "one": "Één",
           "two": "Twee",
-          "three": "3",
+          "three": "Drie",
           "four": "Vier"
         }
       },
@@ -200,7 +200,7 @@
           "none": "geen",
           "one": "Één",
           "two": "Twee",
-          "three": "3",
+          "three": "Drie",
           "four": "Vier"
         }
       },
@@ -262,24 +262,24 @@
       "description": "Stopt de mower en wis de huidige taak."
     },
     "start_mow": {
-      "name": "Start dromen",
+      "name": "Start met maaien",
       "description": "Begin de moerbewerking met aangepaste instellingen.",
       "fields": {
         "is_mow": {
           "name": "Is Maaien",
-          "description": "Of mowing actief is (Yuka)"
+          "description": "Whether mowing is active. (Yuka)."
         },
         "is_dump": {
           "name": "Dumping",
-          "description": "Of grasdumping actief is (Yuka)"
+          "description": "Whether grass dumping is active. (Yuka)."
         },
         "is_edge": {
           "name": "Rand mowing",
-          "description": "Of de randmodus actief is (Yuka)"
+          "description": "Whether edge mode is active. (Yuka)."
         },
         "collect_grass_frequency": {
           "name": "Gras Collectie Frequentie",
-          "description": "Frequentie om gras te verzamelen (in meters vierkant). (Yuka)"
+          "description": "Frequency to collect grass (in meters squared). (Yuka)."
         },
         "border_mode": {
           "name": "Maai bestelling",

@@ -267,19 +267,19 @@
       "fields": {
         "is_mow": {
           "name": "Is Mowing",
-          "description": "Whether mowing is active. (Yuka)"
+          "description": "Whether mowing is active. (Yuka)."
         },
         "is_dump": {
           "name": "Is Dumping",
-          "description": "Whether grass dumping is active. (Yuka)"
+          "description": "Whether grass dumping is active. (Yuka)."
         },
         "is_edge": {
           "name": "Edge mowing",
-          "description": "Whether edge mode is active. (Yuka)"
+          "description": "Whether edge mode is active. (Yuka)."
         },
         "collect_grass_frequency": {
           "name": "Grass Collection Frequency",
-          "description": "Frequency to collect grass (in meters squared). (Yuka)"
+          "description": "Frequency to collect grass (in meters squared). (Yuka)."
         },
         "border_mode": {
           "name": "Mow Order",
