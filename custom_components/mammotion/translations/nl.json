@@ -36,7 +36,7 @@
         "data": {
           "use_wifi": "Gebruik Wi-fi (haal het vinkje weg en verstuur om Bluetooth te gebruiken)",
           "account_name": "Mammotion e-mailadres of accountnummer",
-          "password": "Mammotion-accountwachtwoord"
+          "password": "Mammotion account wachtwoord"
         },
         "title": "Verbind met Wi-Fi",
         "description": "Voer je Mammotion account e-mail of id en wachtwoord in"
@@ -165,7 +165,7 @@
         "name": "Regendetectie Aan/Uit"
       },
       "side_led": {
-        "name": "Zij-LED's aan/uit"
+        "name": "Zij LED's aan/uit"
       },
       "perimeter_first_on_off": {
         "name": "Perimeter Eerst"
@@ -190,7 +190,7 @@
           "none": "geen",
           "one": "Één",
           "two": "Twee",
-          "three": "3",
+          "three": "Drie",
           "four": "Vier"
         }
       },
@@ -200,7 +200,7 @@
           "none": "geen",
           "one": "Één",
           "two": "Twee",
-          "three": "3",
+          "three": "Drie",
           "four": "Vier"
         }
       },
