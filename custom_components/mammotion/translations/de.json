@@ -279,7 +279,7 @@
         },
         "collect_grass_frequency": {
           "name": "Intervall für das Entleeren",
-          "description": "Frequency to collect grass (in meters squared). (Yuka)."
+          "description": "Häufigkeit für das Auffangen von Gras (in Quadratmetern). (Yuka)."
         },
         "border_mode": {
           "name": "Ausführungsreihenfolge des Pfades",
