@@ -30,7 +30,7 @@ from .entity import MammotionBaseEntity
 class MammotionConfigNumberEntityDescription(NumberEntityDescription):
     """Describes Mammotion number entity."""
 
-    set_fn: Callable[[MammotionDataUpdateCoordinator, int], None]
+    set_fn: Callable[[MammotionDataUpdateCoordinator, float], None]
 
 
 NUMBER_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
@@ -84,9 +84,10 @@ YUKA_NUMBER_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
 LUBA_WORKING_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
     MammotionConfigNumberEntityDescription(
         key="blade_height",
-        step=5,
+        step=1,
         min_value=25,  # ToDo: To be dynamiclly set based on model (h\non H)
         max_value=70,  # ToDo: To be dynamiclly set based on model (h\non H)
+        mode=NumberMode.BOX,
         set_fn=lambda coordinator, value: setattr(
             coordinator.operation_settings, "blade_height", value
         ),
@@ -175,7 +176,8 @@ class MammotionConfigNumberEntity(MammotionBaseEntity, NumberEntity, RestoreEnti
         if self.entity_description.key == "toward_included_angle":
             self._attr_native_value = 90
 
-    async def async_set_native_value(self, value: float | int) -> None:
+    async def async_set_native_value(self, value: float) -> None:
+        """Set native value for number."""
         self._attr_native_value = value
         self.entity_description.set_fn(self.coordinator, value)
         self.async_write_ha_state()
@@ -190,6 +192,7 @@ class MammotionWorkingNumberEntity(MammotionConfigNumberEntity):
         entity_description: MammotionConfigNumberEntityDescription,
         limits: DeviceLimits,
     ) -> None:
+        """Init MammotionWorkingNumberEntity."""
         super().__init__(coordinator, entity_description)
 
         min_attr = f"{entity_description.key}_min"
@@ -213,7 +216,8 @@ class MammotionWorkingNumberEntity(MammotionConfigNumberEntity):
         """Return the maximum value."""
         return self._attr_native_max_value
 
-    async def async_set_native_value(self, value: float | int) -> None:
+    async def async_set_native_value(self, value: float) -> None:
+        """Set native value for number."""
         self._attr_native_value = value
         self.entity_description.set_fn(self.coordinator, value)
         self.async_write_ha_state()
