@@ -571,7 +571,9 @@ class MammotionDataUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevice
         LOGGER.debug("================= Debug Log =================")
         LOGGER.debug(
             "Mammotion device data: %s",
-            asdict(self.manager.get_device_by_name(self.device_name).mower_state),
+            asdict(
+                self.manager.get_device_by_name(self.device_name).mower_state.device
+            ),
         )
         LOGGER.debug("==================================")
 
