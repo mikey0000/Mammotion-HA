@@ -227,6 +227,13 @@
           "absolute_angle": "Absolute hoek",
           "random_angle": "Willekeurige hoek"
         }
+      },
+      "traversal_mode": {
+        "name": "Traversal Mode",
+        "state": {
+          "direct": "Direct",
+          "follow_perimeter": "Follow the perimeter"
+        }
       }
     },
     "number": {
@@ -235,6 +242,9 @@
       },
       "blade_height": {
         "name": "Mes hoogte"
+      },
+      "camera_brightness": {
+        "name": "Camera Brightness"
       },
       "working_speed": {
         "name": "Robot Snelheid"

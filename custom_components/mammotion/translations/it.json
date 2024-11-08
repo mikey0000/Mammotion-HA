@@ -227,6 +227,13 @@
           "absolute_angle": "Angolo assoluto",
           "random_angle": "Angolo casuale"
         }
+      },
+      "traversal_mode": {
+        "name": "Traversal Mode",
+        "state": {
+          "direct": "Direct",
+          "follow_perimeter": "Follow the perimeter"
+        }
       }
     },
     "number": {
@@ -235,6 +242,9 @@
       },
       "blade_height": {
         "name": "Altezza della lama"
+      },
+      "camera_brightness": {
+        "name": "Camera Brightness"
       },
       "working_speed": {
         "name": "Velocità di lavoro"
