@@ -227,6 +227,13 @@
           "absolute_angle": "Absolute angle",
           "random_angle": "Random angle"
         }
+      },
+      "traversal_mode": {
+        "name": "Traversal Mode",
+        "state": {
+          "direct": "Direct",
+          "follow_perimeter ": "Follow the perimeter"
+        }
       }
     },
     "number": {

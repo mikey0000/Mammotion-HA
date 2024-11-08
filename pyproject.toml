@@ -7,7 +7,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "~3.12.0"
-pymammotion = "0.2.98"
+pymammotion = "0.3.0"
 homeassistant = "^2024.9.0"
 autotyping = "^24.3.0"
 

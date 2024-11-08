@@ -171,6 +171,13 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         value_fn=lambda mower_data: (mower_data.report_data.rtk.co_view_stars >> 8)
         & 255,
     ),
+    # MammotionSensorEntityDescription(
+    #     key="vlsam_status",
+    #     state_class=SensorStateClass.MEASUREMENT,
+    #     device_class=None,
+    #     native_unit_of_measurement=None,
+    #     value_fn=lambda mower_data: (mower_data.report_data.dev.vslam_status & 65280) >> 8,
+    # ),
     MammotionSensorEntityDescription(
         key="activity_mode",
         state_class=None,
@@ -184,7 +191,7 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         native_unit_of_measurement=None,
         value_fn=lambda mower_data: str(
             RTKStatus.from_value(mower_data.report_data.rtk.status)
-        ),  # Note: This will not work for Luba2 & Yuka. Only for Luba1
+        ),
     ),
     MammotionSensorEntityDescription(
         key="position_type",
@@ -193,7 +200,7 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         native_unit_of_measurement=None,
         value_fn=lambda mower_data: str(
             PosType(mower_data.location.position_type).name
-        ),  # Note: This will not work for Luba2 & Yuka. Only for Luba1
+        ),
     ),
     MammotionSensorEntityDescription(
         key="work_area",

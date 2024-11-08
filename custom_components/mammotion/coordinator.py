@@ -400,6 +400,10 @@ class MammotionDataUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevice
             "read_and_set_sidelight", is_sidelight=False, operate=1
         )
 
+    async def set_traversal_mode(self, id: int) -> None:
+        """Set traversal mode."""
+        await self.async_send_command("traverse_mode", id=id)
+
     async def async_blade_height(self, height: int) -> int:
         """Set blade height."""
         await self.send_command_and_update("set_blade_height", height=float(height))
