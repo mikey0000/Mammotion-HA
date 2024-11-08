@@ -243,6 +243,9 @@
       "blade_height": {
         "name": "Blade Height"
       },
+      "camera_brightness": {
+        "name": "Camera Brightness"
+      },
       "working_speed": {
         "name": "Working Speed"
       },
