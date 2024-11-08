@@ -227,6 +227,13 @@
           "absolute_angle": "Angolo assoluto",
           "random_angle": "Angolo casuale"
         }
+      },
+      "traversal_mode": {
+        "name": "Traversal Mode",
+        "state": {
+          "direct": "Direct",
+          "follow_perimeter": "Follow the perimeter"
+        }
       }
     },
     "number": {
@@ -235,6 +242,9 @@
       },
       "blade_height": {
         "name": "Altezza della lama"
+      },
+      "camera_brightness": {
+        "name": "Camera Brightness"
       },
       "working_speed": {
         "name": "Velocità di lavoro"
@@ -267,19 +277,19 @@
       "fields": {
         "is_mow": {
           "name": "Sta Mowing",
-          "description": "Whether mowing is active. (Yuka)."
+          "description": "Se la falciatura è attiva. (Yuka)."
         },
         "is_dump": {
           "name": "È Dumping",
-          "description": "Whether grass dumping is active. (Yuka)."
+          "description": "Se lo scarico dell'erba è attivo. (Yuka)."
         },
         "is_edge": {
           "name": "Rasatura dei bordi",
-          "description": "Whether edge mode is active. (Yuka)."
+          "description": "Se la modalità bordo è attiva. (Yuka)."
         },
         "collect_grass_frequency": {
           "name": "Frequenza Di Raccolta Erba",
-          "description": "Frequency to collect grass (in meters squared). (Yuka)."
+          "description": "Frequenza di raccolta dell'erba (in metri quadrati). (Yuka)."
         },
         "border_mode": {
           "name": "Ordine Mow",

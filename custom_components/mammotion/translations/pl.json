@@ -227,6 +227,13 @@
           "absolute_angle": "Kąt bezwzględny",
           "random_angle": "Kąt losowy"
         }
+      },
+      "traversal_mode": {
+        "name": "Traversal Mode",
+        "state": {
+          "direct": "Direct",
+          "follow_perimeter": "Follow the perimeter"
+        }
       }
     },
     "number": {
@@ -235,6 +242,9 @@
       },
       "blade_height": {
         "name": "Wysokość cięcia"
+      },
+      "camera_brightness": {
+        "name": "Camera Brightness"
       },
       "working_speed": {
         "name": "Prędkość robocza"
@@ -267,19 +277,19 @@
       "fields": {
         "is_mow": {
           "name": "Jest siew",
-          "description": "Whether mowing is active. (Yuka)."
+          "description": "Czy koszenie jest aktywne. (Yuka)."
         },
         "is_dump": {
           "name": "Dumping",
-          "description": "Whether grass dumping is active. (Yuka)."
+          "description": "Czy opróżnianie trawy jest aktywne. (Yuka)."
         },
         "is_edge": {
           "name": "Kosiarka krawędzi",
-          "description": "Whether edge mode is active. (Yuka)."
+          "description": "Czy tryb krawędziowy jest aktywny. (Yuka)."
         },
         "collect_grass_frequency": {
           "name": "Częstotliwość zbierania trawy",
-          "description": "Frequency to collect grass (in meters squared). (Yuka)."
+          "description": "Częstotliwość zbierania trawy (w metrach kwadratowych). (Yuka)."
         },
         "border_mode": {
           "name": "Kolejność ruchów",
