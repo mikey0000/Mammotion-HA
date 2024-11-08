@@ -61,6 +61,9 @@
       "ble_rssi": {
         "name": "BLE RSSI"
       },
+      "camera_brightness": {
+        "name": "Camera Brightness"
+      },
       "wifi_rssi": {
         "name": "WiFi RSSI"
       },
@@ -242,9 +245,6 @@
       },
       "blade_height": {
         "name": "Blade Height"
-      },
-      "camera_brightness": {
-        "name": "Camera Brightness"
       },
       "working_speed": {
         "name": "Working Speed"

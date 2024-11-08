@@ -61,6 +61,9 @@
       "ble_rssi": {
         "name": "BLE RSSI"
       },
+      "camera_brightness": {
+        "name": "Jas kamery"
+      },
       "wifi_rssi": {
         "name": "WiFi RSSI"
       },
@@ -242,9 +245,6 @@
       },
       "blade_height": {
         "name": "Výška žacího ústrojí"
-      },
-      "camera_brightness": {
-        "name": "Jas kamery"
       },
       "working_speed": {
         "name": "Pracovní rychlost"
