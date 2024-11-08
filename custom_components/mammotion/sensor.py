@@ -25,6 +25,7 @@ from pymammotion.data.model.device import MowingDevice
 from pymammotion.data.model.enums import RTKStatus
 from pymammotion.utility.constant.device_constant import (
     PosType,
+    camera_brightness,
     device_connection,
     device_mode,
 )
@@ -51,6 +52,18 @@ LUBA_SENSOR_ONLY_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.DISTANCE,
         native_unit_of_measurement=UnitOfLength.MILLIMETERS,
         value_fn=lambda mower_data: mower_data.report_data.work.knife_height,
+    ),
+)
+
+LUBA_2_YUKA_ONLY_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
+    MammotionSensorEntityDescription(
+        key="camera_brightness",
+        state_class=None,
+        device_class=None,
+        native_unit_of_measurement=None,
+        value_fn=lambda mower_data: camera_brightness(
+            mower_data.report_data.work.vision_info.brightness
+        ),
     ),
 )
 
@@ -244,6 +257,12 @@ async def async_setup_entry(
             for description in LUBA_SENSOR_ONLY_TYPES
         )
 
+    if not DeviceType.is_luba1(coordinator.device_name):
+        async_add_entities(
+            MammotionSensorEntity(coordinator, description)
+            for description in LUBA_2_YUKA_ONLY_TYPES
+        )
+
     async_add_entities(
         MammotionSensorEntity(coordinator, description) for description in SENSOR_TYPES
     )
@@ -268,5 +287,4 @@ class MammotionSensorEntity(MammotionBaseEntity, SensorEntity):
     @property
     def native_value(self) -> StateType:
         """Return the state of the sensor."""
-        current_value = self.entity_description.value_fn(self.coordinator.data)
-        return current_value
+        return self.entity_description.value_fn(self.coordinator.data)
