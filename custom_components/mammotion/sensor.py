@@ -62,7 +62,7 @@ LUBA_2_YUKA_ONLY_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         device_class=None,
         native_unit_of_measurement=None,
         value_fn=lambda mower_data: camera_brightness(
-            mower_data.report_data.work.vision_info.brightness
+            mower_data.report_data.vision_info.brightness
         ),
     ),
 )
