@@ -267,19 +267,19 @@
       "fields": {
         "is_mow": {
           "name": "Se datorează",
-          "description": "Whether mowing is active. (Yuka)."
+          "description": "Dacă tunderea este activă. (Yuka)."
         },
         "is_dump": {
           "name": "Fac Dumping",
-          "description": "Whether grass dumping is active. (Yuka)."
+          "description": "Dacă descărcarea ierbii este activă. (Yuka)."
         },
         "is_edge": {
           "name": "Mat de margine",
-          "description": "Whether edge mode is active. (Yuka)."
+          "description": "Dacă modul de bordură este activ. (Yuka)."
         },
         "collect_grass_frequency": {
           "name": "Frecvență colectare iarbă",
-          "description": "Frequency to collect grass (in meters squared). (Yuka)."
+          "description": "Frecvența de colectare a ierbii (în metri pătrați). (Yuka)."
         },
         "border_mode": {
           "name": "Comanda Mow",
