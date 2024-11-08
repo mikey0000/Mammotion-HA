@@ -229,10 +229,10 @@
         }
       },
       "traversal_mode": {
-        "name": "Traversal Mode",
+        "name": "Durchlaufmodus",
         "state": {
-          "direct": "Direct",
-          "follow_perimeter": "Follow the perimeter"
+          "direct": "Direkt",
+          "follow_perimeter": "Umfang folgen"
         }
       }
     },
@@ -244,7 +244,7 @@
         "name": "Schnitthöhe"
       },
       "camera_brightness": {
-        "name": "Camera Brightness"
+        "name": "Kamerahelligkeit"
       },
       "working_speed": {
         "name": "Aufgabengeschwindigkeit"

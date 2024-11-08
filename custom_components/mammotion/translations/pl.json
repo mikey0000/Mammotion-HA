@@ -229,10 +229,10 @@
         }
       },
       "traversal_mode": {
-        "name": "Traversal Mode",
+        "name": "Tryb przejazdu",
         "state": {
-          "direct": "Direct",
-          "follow_perimeter": "Follow the perimeter"
+          "direct": "Bezpośredni",
+          "follow_perimeter": "Podążaj po obwodzie"
         }
       }
     },
@@ -244,7 +244,7 @@
         "name": "Wysokość cięcia"
       },
       "camera_brightness": {
-        "name": "Camera Brightness"
+        "name": "Jasność kamery"
       },
       "working_speed": {
         "name": "Prędkość robocza"
