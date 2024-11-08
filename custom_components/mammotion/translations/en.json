@@ -232,7 +232,7 @@
         "name": "Traversal Mode",
         "state": {
           "direct": "Direct",
-          "follow_perimeter ": "Follow the perimeter"
+          "follow_perimeter": "Follow the perimeter"
         }
       }
     },
