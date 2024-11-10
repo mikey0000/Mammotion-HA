@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Any
 import voluptuous as vol
 from aiohttp.web_exceptions import HTTPException
 from bleak.backends.device import BLEDevice
+from homeassistant import config_entries
 from homeassistant.components import bluetooth
 from homeassistant.components.bluetooth import (
     BluetoothServiceInfo,
@@ -19,7 +20,8 @@ from homeassistant.config_entries import (
 )
 from homeassistant.const import CONF_ADDRESS, CONF_PASSWORD
 from homeassistant.core import callback
-from homeassistant.helpers import config_validation as cv
+from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.helpers import config_validation as cv, device_registry as dr
 from pymammotion.aliyun.cloud_gateway import CloudIOTGateway
 from pymammotion.http.http import connect_http
 from pymammotion.mammotion.devices.mammotion import Mammotion
@@ -31,7 +33,7 @@ from .const import (
     CONF_USE_WIFI,
     DEVICE_SUPPORT,
     DOMAIN,
-    LOGGER,
+    LOGGER, CONF_ACCOUNT_ID, CONF_BLE_DEVICES,
 )
 
 
@@ -54,11 +56,6 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
         if discovery_info is None:
             return self.async_abort(reason="no_devices_found")
 
-        await self.async_set_unique_id(discovery_info.name)
-        self._abort_if_unique_id_configured(
-            updates={CONF_ADDRESS: discovery_info.address}
-        )
-
         device = bluetooth.async_ble_device_from_address(
             self.hass, discovery_info.address
         )
@@ -69,9 +66,65 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
         if device.name is None or not device.name.startswith(DEVICE_SUPPORT):
             return self.async_abort(reason="not_supported")
 
+        try:
+            # Look for account-based configurations
+            device_registry = dr.async_get(self.hass)
+            current_entries = self.hass.config_entries.async_entries(DOMAIN)
+
+            for entry in current_entries:
+                if not entry.data.get(CONF_ACCOUNT_ID):
+                    continue
+
+                account_id = entry.data[CONF_ACCOUNT_ID]
+                device_entries = dr.async_entries_for_config_entry(
+                    device_registry, entry.entry_id
+                )
+
+                for device in device_entries:
+                    # Check both MAC address and any other identifiers
+                    identifiers = {id[1] for id in device.identifiers}
+                    if device.name in identifiers:
+                        # Found matching device in account
+                        if entry.state == config_entries.ConfigEntryState.LOADED:
+                            # Update existing entry with BLE info
+                            ble_devices = entry.data.get(CONF_BLE_DEVICES, dict())
+
+                            ble_devices[device.name] = discovery_info.address
+
+                            self.hass.config_entries.async_update_entry(
+                                entry,
+                                data={
+                                    **entry.data,
+                                    CONF_BLE_DEVICES: ble_devices
+                                }
+                            )
+                            # reload the entry now we have a ble address
+                            self.hass.config_entries.async_schedule_reload(entry.entry_id)
+                            return self.async_abort(
+                                reason="already_configured_account",
+                                description_placeholders={
+                                    "account_id": account_id
+                                }
+                            )
+
+                        # Entry exists but not loaded
+                        return self.async_abort(
+                            reason="existing_account_not_loaded"
+                        )
+
+
+        except Exception as ex:
+            # _LOGGER.exception("Error checking for existing account")
+            raise ConfigEntryNotReady from ex
+
         self.context["title_placeholders"] = {"name": device.name}
 
         self._discovered_device = device
+
+        await self.async_set_unique_id(discovery_info.name)
+        self._abort_if_unique_id_configured(
+            updates={CONF_ADDRESS: discovery_info.address}
+        )
 
         return await self.async_step_bluetooth_confirm()
 
@@ -81,9 +134,9 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
         """Confirm discovery."""
 
         assert self._discovered_device
-
+        ble_devices: dict[str, str] = { self._discovered_device.name: self._discovered_device.address }
         self._config = {
-            CONF_ADDRESS: self._discovered_device.address,
+            CONF_BLE_DEVICES: ble_devices,
         }
 
         if user_input is not None:
@@ -114,9 +167,6 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                 name = self._discovered_devices.get(address)
                 if name is None:
                     return self.async_abort(reason="no_longer_present")
-
-                await self.async_set_unique_id(name, raise_on_progress=False)
-                self._abort_if_unique_id_configured()
 
                 self._config = {
                     CONF_ADDRESS: address,
@@ -180,7 +230,24 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
             except HTTPException as err:
                 return self.async_abort(reason=str(err))
 
-            return await self.async_step_wifi_confirm(user_input)
+            user_account = (
+                response.login_info.userInformation.userAccount
+            )
+
+            await self.async_set_unique_id(user_account, raise_on_progress=False)
+            self._abort_if_unique_id_configured()
+
+            return self.async_create_entry(
+                title=account,
+                data={
+                    CONF_ACCOUNTNAME: account,
+                    CONF_PASSWORD: password,
+                    CONF_ACCOUNT_ID: user_account,
+                    CONF_USE_WIFI: user_input.get(CONF_USE_WIFI, True),
+                    **self._config,
+                },
+                options={CONF_STAY_CONNECTED_BLUETOOTH: self._stay_connected},
+            )
 
         if user_input is not None and user_input.get(CONF_USE_WIFI) is False:
             return self.async_create_entry(
@@ -229,15 +296,15 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                         ).cloud_client
                 except HTTPException as err:
                     return self.async_abort(reason=str(err))
-            user_id = (
-                self._cloud_client.mammotion_http.login_info.userInformation.userId
+            user_account = (
+                self._cloud_client.mammotion_http.login_info.userInformation.userAccount
             )
 
-            await self.async_set_unique_id(user_id, raise_on_progress=False)
+            await self.async_set_unique_id(user_account, raise_on_progress=False)
             self._abort_if_unique_id_configured()
 
             return self.async_create_entry(
-                title=user_id,
+                title=account,
                 data={
                     CONF_ACCOUNTNAME: account,
                     CONF_PASSWORD: password,
