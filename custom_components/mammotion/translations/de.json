@@ -152,6 +152,9 @@
       }
     },
     "switch": {
+      "area": {
+        "name": "Bereich {name}"
+      },
       "blade_status": {
         "name": "Klingen An/Aus"
       },
