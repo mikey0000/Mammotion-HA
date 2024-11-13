@@ -121,7 +121,7 @@ async def async_setup_entry(
         new_areas = (set(areas) | set(area_name_hashes)) - added_areas
         if new_areas:
             for area_id in new_areas:
-                existing_name: AreaHashNameList = next(
+                existing_name: AreaHashNameList | None = next(
                     (area for area in area_name if str(area.hash) == str(area_id)), None
                 )
                 name = existing_name.name if existing_name else f"{area_id}"
