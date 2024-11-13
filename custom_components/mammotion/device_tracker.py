@@ -32,7 +32,6 @@ class MammotionTracker(MammotionBaseEntity, TrackerEntity, RestoreEntity):
 
     _attr_force_update = False
     _attr_translation_key = "device_tracker"
-    _attr_icon = "mdi:robot-mower"
 
     def __init__(self, coordinator: MammotionDataUpdateCoordinator) -> None:
         """Initialize the Tracker."""
