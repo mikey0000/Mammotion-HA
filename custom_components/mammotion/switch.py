@@ -303,6 +303,3 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
             int(self.entity_description.area),
         )
         self.async_write_ha_state()
-
-    async def async_update(self) -> None:
-        """Update the entity state."""
