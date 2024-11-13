@@ -42,6 +42,7 @@ from pymammotion.mammotion.devices.mammotion import (
 from pymammotion.proto import has_field
 from pymammotion.proto.luba_msg import LubaMsg
 from pymammotion.proto.mctrl_sys import RptAct, RptDevStatus, RptInfoType
+from pymammotion.utility.constant import WorkMode
 from pymammotion.utility.device_type import DeviceType
 
 from .const import (
@@ -175,8 +176,8 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
 
     async def _async_update_notification(self) -> None:
         """Update data from incoming messages."""
-        mower = self.manager.mower(self.device_name)
-        self.async_set_updated_data(mower)
+        # mower = self.manager.mower(self.device_name)
+        # self.async_set_updated_data(mower)
 
     async def check_and_restore_cloud(self) -> CloudIOTGateway | None:
         """Check and restore previous cloud connection."""
@@ -349,6 +350,10 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         await store.async_save(stored_data)
 
 
+DEFAULT_INTERVAL = timedelta(minutes=5)
+WORKING_INTERVAL = timedelta(seconds=5)
+
+
 class MammotionDataUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevice]):
     """Class to manage fetching mammotion data."""
 
@@ -357,7 +362,7 @@ class MammotionDataUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevice
         super().__init__(
             hass=hass,
             config_entry=config_entry,
-            update_interval=timedelta(minutes=1),
+            update_interval=DEFAULT_INTERVAL,
         )
 
     async def async_sync_maps(self) -> None:
@@ -584,6 +589,12 @@ class MammotionDataUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevice
         self.update_failures = 0
         data = self.manager.get_device_by_name(self.device_name).mower_state
         await self.async_save_data(data)
+
+        if data.report_data.dev.sys_status is WorkMode.MODE_WORKING:
+            self.update_interval = WORKING_INTERVAL
+        else:
+            self.update_interval = DEFAULT_INTERVAL
+
         return data
 
     @property
