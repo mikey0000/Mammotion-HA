@@ -152,6 +152,9 @@
       }
     },
     "switch": {
+      "area": {
+        "name": "Obszar {name}"
+      },
       "blade_status": {
         "name": "Ostrza wł/wył"
       },

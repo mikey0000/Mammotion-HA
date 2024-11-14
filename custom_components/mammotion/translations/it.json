@@ -152,6 +152,9 @@
       }
     },
     "switch": {
+      "area": {
+        "name": "Zona {name}"
+      },
       "blade_status": {
         "name": "Lame On/Off"
       },

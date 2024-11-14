@@ -1,5 +1,39 @@
 {
   "entity": {
+    "device_tracker": {
+      "device_tracker": {
+        "default": "mdi:map-marker-radius"
+      }
+    },
+    "button": {
+      "start_map_sync": {
+        "default": "mdi:map-clock"
+      },
+      "resync_rtk_dock": {
+        "default": "mdi:sync"
+      },
+      "release_from_dock": {
+        "default": "mdi:ray-start-arrow"
+      },
+      "emergency_nudge_forward": {
+        "default": "mdi:arrow-up"
+      },
+      "emergency_nudge_left": {
+        "default": "mdi:arrow-left"
+      },
+      "emergency_nudge_right": {
+        "default": "mdi:arrow-right"
+      },
+      "emergency_nudge_back": {
+        "default": "mdi:arrow-down"
+      },
+      "cancel_task": {
+        "default": "mdi:cancel"
+      },
+      "clear_all_mapdata": {
+        "default": "mdi:map-marker-remove"
+      }
+    },
     "sensor": {
       "gps_stars": {
         "default": "mdi:satellite-uplink"
@@ -21,6 +55,43 @@
       },
       "position_mode": {
         "default": "mdi:map-marker"
+      }
+    },
+    "switch": {
+      "area": {
+        "default": "mdi:texture-box"
+      },
+      "blade_status": {
+        "default": "mdi:saw-blade"
+      },
+      "is_mow": {
+        "default": "mdi:mower",
+        "state": {
+          "off": "mdi:mower",
+          "on": "mdi:mower-on"
+        }
+      },
+      "is_dump": {
+        "default": "mdi:dump-truck"
+      },
+      "is_edge": {
+        "default": "mdi:border-outside"
+      },
+      "rain_tactics": {
+        "default": "mdi:weather-rainy"
+      },
+      "side_led": {
+        "default": "mdi:led-off",
+        "state": {
+          "off": "mdi:led-off",
+          "on": "mdi:led-on"
+        }
+      },
+      "perimeter_first_on_off": {
+        "default": "mdi:dots-square"
+      },
+      "schedule_updates": {
+        "default": "mdi:update"
       }
     }
   }

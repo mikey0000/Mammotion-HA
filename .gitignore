@@ -1,6 +1,7 @@
 # pytest
 .pytest_cache
 .cache
+.venv
 
 # GITHUB Proposed Python stuff:
 *.py[cod]

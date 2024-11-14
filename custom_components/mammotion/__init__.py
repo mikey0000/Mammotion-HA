@@ -8,17 +8,8 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr
 
 from .const import (
-    CONF_ACCOUNTNAME,
-    CONF_AEP_DATA,
-    CONF_AUTH_DATA,
-    CONF_CONNECT_DATA,
-    CONF_DEVICE_DATA,
-    CONF_REGION_DATA,
     CONF_RETRY_COUNT,
-    CONF_SESSION_DATA,
-    CONF_USE_WIFI,
     DEFAULT_RETRY_COUNT,
-    DOMAIN,
 )
 from .coordinator import MammotionDataUpdateCoordinator
 
@@ -74,7 +65,7 @@ async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> Non
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
-    unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
-    if unload_ok:
+
+    if unload_ok:= await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
         await entry.runtime_data.manager.remove_device(entry.runtime_data.device_name)
     return unload_ok
