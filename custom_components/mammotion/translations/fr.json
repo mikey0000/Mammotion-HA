@@ -62,7 +62,7 @@
         "name": "BLE RSSI"
       },
       "camera_brightness": {
-        "name": "Luminosité de la caméra"
+        "name": "Camera Brightness"
       },
       "wifi_rssi": {
         "name": "WiFi RSSI"
@@ -153,7 +153,7 @@
     },
     "switch": {
       "area": {
-        "name": "Zone {name}"
+        "name": "Area {name}"
       },
       "blade_status": {
         "name": "Lames On/Off"
