@@ -62,7 +62,7 @@
         "name": "BLE RSSI"
       },
       "camera_brightness": {
-        "name": "Jasność kamery"
+        "name": "Camera Brightness"
       },
       "wifi_rssi": {
         "name": "RSSI WiFi"
