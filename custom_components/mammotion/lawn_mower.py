@@ -208,7 +208,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
                 if mode == WorkMode.MODE_READY:
                     trans_key = "start_failed"
                     if self.report_data.work.area >> 16 != 0:
-                        await self.coordinator.async_send_command("start_job")
+                        await self.coordinator.async_send_command("resume_execute_task")
                         return
                     if await self.coordinator.async_plan_route(operational_settings):
                         await self.coordinator.async_send_command("start_job")

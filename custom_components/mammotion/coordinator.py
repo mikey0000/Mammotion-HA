@@ -67,6 +67,11 @@ if TYPE_CHECKING:
     from . import MammotionConfigEntry
 
 
+MAINTENENCE_INTERVAL = timedelta(minutes=30)
+DEFAULT_INTERVAL = timedelta(minutes=1)
+WORKING_INTERVAL = timedelta(seconds=5)
+
+
 class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
     """Mammotion DataUpdateCoordinator."""
 
@@ -174,10 +179,13 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
                 self.config_entry, data=config_updates
             )
 
-    async def _async_update_notification(self) -> None:
+    async def _async_update_notification(self, res: tuple[str, Any | None]) -> None:
         """Update data from incoming messages."""
-        # mower = self.manager.mower(self.device_name)
-        # self.async_set_updated_data(mower)
+        if res[0] == "sys" and res[1] is not None:
+            sys_msg = betterproto.which_one_of(res[1], "SubSysMsg")
+            if sys_msg[0] == "toapp_report_data":
+                mower = self.manager.mower(self.device_name)
+                self.async_set_updated_data(mower)
 
     async def check_and_restore_cloud(self) -> CloudIOTGateway | None:
         """Check and restore previous cloud connection."""
@@ -348,10 +356,6 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         stored_data = asdict(data)
         stored_data["device"] = None
         await store.async_save(stored_data)
-
-
-DEFAULT_INTERVAL = timedelta(minutes=5)
-WORKING_INTERVAL = timedelta(seconds=5)
 
 
 class MammotionDataUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevice]):
@@ -573,8 +577,8 @@ class MammotionDataUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevice
         ):
             await self.manager.start_map_sync(self.device_name)
 
-        # if not device.has_queued_commands():
         await self.async_send_command("get_report_cfg")
+        await self.async_send_command("get_maintenance")
 
         LOGGER.debug("Updated Mammotion device %s", self.device_name)
         LOGGER.debug("================= Debug Log =================")
@@ -608,3 +612,27 @@ class MammotionDataUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevice
     #         await self.async_setup()
     #     except COMMAND_EXCEPTIONS as exc:
     #         raise UpdateFailed(f"Setting up Mammotion device failed: {exc}") from exc
+
+
+class MammotionMaintenenceUpdateCoordinator(
+    MammotionBaseUpdateCoordinator[MowingDevice]
+):
+    """Class to manage fetching mammotion data."""
+
+    def __init__(self, hass: HomeAssistant, config_entry: MammotionConfigEntry) -> None:
+        """Initialize global mammotion data updater."""
+        super().__init__(
+            hass=hass,
+            config_entry=config_entry,
+            update_interval=MAINTENENCE_INTERVAL,
+        )
+
+    async def _async_update_data(self) -> MowingDevice:
+        """Get data from the device."""
+
+        if not self.enabled:
+            return self.data
+
+        await self.async_send_command("get_maintenance")
+
+        return self.manager.get_device_by_name(self.device_name).mower_state.report_data
