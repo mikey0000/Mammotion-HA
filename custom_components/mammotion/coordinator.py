@@ -459,6 +459,9 @@ class MammotionDataUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevice
                 RptInfoType.RIT_DEV_STA,
                 RptInfoType.RIT_DEV_LOCAL,
                 RptInfoType.RIT_WORK,
+                RptInfoType.RIT_MAINTAIN,
+                RptInfoType.RIT_BASESTATION_INFO,
+                RptInfoType.RIT_FW_INFO,
             ],
             timeout=10000,
             period=3000,
@@ -578,7 +581,6 @@ class MammotionDataUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevice
             await self.manager.start_map_sync(self.device_name)
 
         await self.async_send_command("get_report_cfg")
-        await self.async_send_command("get_maintenance")
 
         LOGGER.debug("Updated Mammotion device %s", self.device_name)
         LOGGER.debug("================= Debug Log =================")
