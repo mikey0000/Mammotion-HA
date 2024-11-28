@@ -339,8 +339,10 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         restored_data = await store.async_load()
         try:
             if restored_data:
-                device_dict = LubaMsg().to_dict(casing=betterproto.Casing.SNAKE)
+                if restored_data.get("device"):
+                    del restored_data["device"]
                 mower_state = MowingDevice().from_dict(restored_data)
+                device_dict = LubaMsg().to_dict(casing=betterproto.Casing.SNAKE)
                 mower_state.update_raw(device_dict)
                 self.manager.get_device_by_name(
                     self.device_name
@@ -354,7 +356,7 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         """Get map data from the device."""
         store = Store(self.hass, version=1, key=self.device_name)
         stored_data = asdict(data)
-        stored_data["device"] = None
+        del stored_data["device"]
         await store.async_save(stored_data)
 
 
