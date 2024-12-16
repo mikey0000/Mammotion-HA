@@ -17,8 +17,7 @@
     }
   ],
   "codeowners": [
-    "@mikey0000",
-    "@jLynx"
+    "@mikey0000"
   ],
   "config_flow": true,
   "dependencies": [
