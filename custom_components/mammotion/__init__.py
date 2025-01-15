@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from aiohttp import ClientConnectorError
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_ADDRESS, CONF_MAC, Platform, CONF_PASSWORD
+from homeassistant.const import CONF_ADDRESS, CONF_MAC, CONF_PASSWORD, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import device_registry as dr
@@ -15,19 +15,38 @@ from pymammotion.aliyun.model.connect_response import ConnectResponse
 from pymammotion.aliyun.model.dev_by_account_response import ListingDevByAccountResponse
 from pymammotion.aliyun.model.login_by_oauth_response import LoginByOAuthResponse
 from pymammotion.aliyun.model.regions_response import RegionResponse
-from pymammotion.aliyun.model.session_by_authcode_response import SessionByAuthCodeResponse
+from pymammotion.aliyun.model.session_by_authcode_response import (
+    SessionByAuthCodeResponse,
+)
 from pymammotion.data.model.account import Credentials
+from pymammotion.data.model.report_info import Maintain
 from pymammotion.http.http import MammotionHTTP
 from pymammotion.http.model.http import LoginResponseData, Response
 from pymammotion.mammotion.devices.mammotion import Mammotion
 
 from .const import (
+    CONF_ACCOUNTNAME,
+    CONF_AEP_DATA,
+    CONF_AUTH_DATA,
+    CONF_CONNECT_DATA,
+    CONF_DEVICE_DATA,
+    CONF_DEVICE_NAME,
+    CONF_MAMMOTION_DATA,
+    CONF_REGION_DATA,
     CONF_RETRY_COUNT,
-    DEFAULT_RETRY_COUNT, CONF_DEVICE_NAME, CONF_ACCOUNTNAME, EXPIRED_CREDENTIAL_EXCEPTIONS, CONF_AUTH_DATA,
-    CONF_REGION_DATA, CONF_AEP_DATA, CONF_SESSION_DATA, CONF_DEVICE_DATA, CONF_CONNECT_DATA, CONF_MAMMOTION_DATA,
-    LOGGER, DOMAIN,
+    CONF_SESSION_DATA,
+    DEFAULT_RETRY_COUNT,
+    DOMAIN,
+    EXPIRED_CREDENTIAL_EXCEPTIONS,
+    LOGGER,
 )
-from .coordinator import MammotionDataUpdateCoordinator, MammotionMaintenanceUpdateCoordinator
+from .coordinator import (
+    MammotionDataUpdateCoordinator,
+    MammotionDeviceVersionUpdateCoordinator,
+    MammotionMaintenanceUpdateCoordinator,
+    MammotionReportUpdateCoordinator,
+)
+from .models import MammotionMowerData
 
 PLATFORMS: list[Platform] = [
     Platform.BINARY_SENSOR,
@@ -46,6 +65,9 @@ type MammotionConfigEntry = ConfigEntry[MammotionDataUpdateCoordinator]
 async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) -> bool:
     """Set up Mammotion Luba from a config entry."""
     assert entry.unique_id is not None
+
+    # if not entry.unique_id:
+    #     hass.config_entries.async_update_entry(entry, unique_id="some_uuid")
 
     if CONF_ADDRESS not in entry.data and CONF_MAC in entry.data:
         # Bleak uses addresses not mac addresses which are actually
@@ -69,6 +91,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
     account = entry.data.get(CONF_ACCOUNTNAME)
     password = entry.data.get(CONF_PASSWORD)
 
+    mammotion_devices = list[MammotionMowerData] = []
+
     if account and password:
         credentials = Credentials()
         credentials.email = account
@@ -78,9 +102,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
             if cloud_client is None:
                 await mammotion.login_and_initiate_cloud(account, password)
             else:
-                await mammotion.initiate_cloud_connection(
-                    account, cloud_client
-                )
+                await mammotion.initiate_cloud_connection(account, cloud_client)
         except ClientConnectorError as err:
             raise ConfigEntryNotReady(err)
         except EXPIRED_CREDENTIAL_EXCEPTIONS as exc:
@@ -88,12 +110,22 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
             await mammotion.login_and_initiate_cloud(account, password, True)
 
         if mqtt_client := mammotion.mqtt_list.get(account):
-            for device in mqtt_client.cloud_client.devices_by_account_response.data.data:
-                maintenance_coordinator = MammotionMaintenanceUpdateCoordinator(hass, entry, device)
+            for (
+                device
+            ) in mqtt_client.cloud_client.devices_by_account_response.data.data:
+                maintenance_coordinator = MammotionMaintenanceUpdateCoordinator(
+                    hass, entry, device
+                )
+                version_coordinator = MammotionDeviceVersionUpdateCoordinator(
+                    hass, entry, device
+                )
+                report_coordinator = MammotionReportUpdateCoordinator(
+                    hass, entry, device
+                )
                 # other coordinator
                 await maintenance_coordinator.async_config_entry_first_refresh()
-                maintenance_coordinator.data.
-                # other coordinator._schedule_refresh()
+                await version_coordinator.async_config_entry_first_refresh()
+                await report_coordinator.async_config_entry_first_refresh()
 
                 # maintenance_coordinator.
                 device_info = DeviceInfo(
@@ -102,78 +134,87 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                     serial_number=device.deviceName.split("-", 1)[-1],
                     model_id=device.productModel,
                     name=device.nickName,
-                    sw_version=swVersion,
                     model=device.productName,
                     suggested_area="Garden",
                 )
 
+                mammotion_devices.append(
+                    MammotionMowerData(
+                        name=device.deviceName,
+                        device=device_info,
+                        api=mammotion,
+                        maintenance_coordinator=maintenance_coordinator,
+                        report_coordinator=report_coordinator,
+                        version_coordinator=version_coordinator,
+                    )
+                )
 
-    mammotion_coordinator = MammotionDataUpdateCoordinator(hass, entry)
-    await mammotion_coordinator.async_setup()
+    # mammotion_coordinator = MammotionDataUpdateCoordinator(hass, entry)
+    # await mammotion_coordinator.async_setup()
 
     await mammotion_coordinator.async_config_entry_first_refresh()
-    entry.runtime_data = mammotion_coordinator
+    entry.runtime_data = MammotionDevices
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     return True
 
 
-async def check_and_restore_cloud(hass: HomeAssistant, entry: MammotionConfigEntry) -> CloudIOTGateway | None:
-        """Check and restore previous cloud connection."""
+async def check_and_restore_cloud(
+    hass: HomeAssistant, entry: MammotionConfigEntry
+) -> CloudIOTGateway | None:
+    """Check and restore previous cloud connection."""
 
-        auth_data = entry.data.get(CONF_AUTH_DATA)
-        region_data = entry.data.get(CONF_REGION_DATA)
-        aep_data = entry.data.get(CONF_AEP_DATA)
-        session_data = entry.data.get(CONF_SESSION_DATA)
-        device_data = entry.data.get(CONF_DEVICE_DATA)
-        connect_data = entry.data.get(CONF_CONNECT_DATA)
-        mammotion_data = entry.data.get(CONF_MAMMOTION_DATA)
+    auth_data = entry.data.get(CONF_AUTH_DATA)
+    region_data = entry.data.get(CONF_REGION_DATA)
+    aep_data = entry.data.get(CONF_AEP_DATA)
+    session_data = entry.data.get(CONF_SESSION_DATA)
+    device_data = entry.data.get(CONF_DEVICE_DATA)
+    connect_data = entry.data.get(CONF_CONNECT_DATA)
+    mammotion_data = entry.data.get(CONF_MAMMOTION_DATA)
 
-        if any(
-            data is None
-            for data in [
-                auth_data,
-                region_data,
-                aep_data,
-                session_data,
-                device_data,
-                connect_data,
-                mammotion_data,
-            ]
-        ):
-            return None
+    if any(
+        data is None
+        for data in [
+            auth_data,
+            region_data,
+            aep_data,
+            session_data,
+            device_data,
+            connect_data,
+            mammotion_data,
+        ]
+    ):
+        return None
 
-        cloud_client = CloudIOTGateway(
-            connect_response=ConnectResponse.from_dict(connect_data)
-            if isinstance(connect_data, dict)
-            else connect_data,
-            aep_response=AepResponse.from_dict(aep_data)
-            if isinstance(aep_data, dict)
-            else aep_data,
-            region_response=RegionResponse.from_dict(region_data)
-            if isinstance(region_data, dict)
-            else region_data,
-            session_by_authcode_response=SessionByAuthCodeResponse.from_dict(
-                session_data
-            )
-            if isinstance(session_data, dict)
-            else session_data,
-            dev_by_account=ListingDevByAccountResponse.from_dict(device_data)
-            if isinstance(device_data, dict)
-            else device_data,
-            login_by_oauth_response=LoginByOAuthResponse.from_dict(auth_data)
-            if isinstance(auth_data, dict)
-            else auth_data,
-        )
+    cloud_client = CloudIOTGateway(
+        connect_response=ConnectResponse.from_dict(connect_data)
+        if isinstance(connect_data, dict)
+        else connect_data,
+        aep_response=AepResponse.from_dict(aep_data)
+        if isinstance(aep_data, dict)
+        else aep_data,
+        region_response=RegionResponse.from_dict(region_data)
+        if isinstance(region_data, dict)
+        else region_data,
+        session_by_authcode_response=SessionByAuthCodeResponse.from_dict(session_data)
+        if isinstance(session_data, dict)
+        else session_data,
+        dev_by_account=ListingDevByAccountResponse.from_dict(device_data)
+        if isinstance(device_data, dict)
+        else device_data,
+        login_by_oauth_response=LoginByOAuthResponse.from_dict(auth_data)
+        if isinstance(auth_data, dict)
+        else auth_data,
+    )
 
-        if isinstance(mammotion_data, dict):
-            mammotion_data = Response[LoginResponseData].from_dict(mammotion_data)
+    if isinstance(mammotion_data, dict):
+        mammotion_data = Response[LoginResponseData].from_dict(mammotion_data)
 
-        cloud_client.set_http(MammotionHTTP(response=mammotion_data))
+    cloud_client.set_http(MammotionHTTP(response=mammotion_data))
 
-        await hass.async_add_executor_job(cloud_client.check_or_refresh_session)
+    await hass.async_add_executor_job(cloud_client.check_or_refresh_session)
 
-        return cloud_client
+    return cloud_client
 
 
 async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
