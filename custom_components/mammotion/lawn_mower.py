@@ -80,9 +80,8 @@ def get_entity_attribute(
     if entity and attribute_name in entity.attributes:
         # Return the specific attribute
         return entity.attributes.get(attribute_name, None)
-    else:
-        # Return None if the entity or attribute does not exist
-        return None
+    # Return None if the entity or attribute does not exist
+    return None
 
 
 async def async_setup_entry(

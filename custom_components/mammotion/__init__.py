@@ -19,10 +19,10 @@ from pymammotion.aliyun.model.session_by_authcode_response import (
     SessionByAuthCodeResponse,
 )
 from pymammotion.data.model.account import Credentials
-from pymammotion.data.model.report_info import Maintain
 from pymammotion.http.http import MammotionHTTP
 from pymammotion.http.model.http import LoginResponseData, Response
 from pymammotion.mammotion.devices.mammotion import Mammotion
+from pymammotion.utility.device_config import DeviceConfig
 
 from .const import (
     CONF_ACCOUNTNAME,
@@ -35,6 +35,7 @@ from .const import (
     CONF_REGION_DATA,
     CONF_RETRY_COUNT,
     CONF_SESSION_DATA,
+    CONF_STAY_CONNECTED_BLUETOOTH,
     DEFAULT_RETRY_COUNT,
     DOMAIN,
     EXPIRED_CREDENTIAL_EXCEPTIONS,
@@ -46,7 +47,7 @@ from .coordinator import (
     MammotionMaintenanceUpdateCoordinator,
     MammotionReportUpdateCoordinator,
 )
-from .models import MammotionMowerData
+from .models import MammotionDevices, MammotionMowerData
 
 PLATFORMS: list[Platform] = [
     Platform.BINARY_SENSOR,
@@ -59,7 +60,7 @@ PLATFORMS: list[Platform] = [
     Platform.SELECT,
 ]
 
-type MammotionConfigEntry = ConfigEntry[MammotionDataUpdateCoordinator]
+type MammotionConfigEntry = ConfigEntry[MammotionDevices]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) -> bool:
@@ -83,7 +84,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
     if not entry.options:
         hass.config_entries.async_update_entry(
             entry,
-            options={CONF_RETRY_COUNT: DEFAULT_RETRY_COUNT},
+            options={CONF_STAY_CONNECTED_BLUETOOTH: False},
         )
 
     device_name = entry.data.get(CONF_DEVICE_NAME)
@@ -91,7 +92,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
     account = entry.data.get(CONF_ACCOUNTNAME)
     password = entry.data.get(CONF_PASSWORD)
 
-    mammotion_devices = list[MammotionMowerData] = []
+    mammotion_devices: list[MammotionMowerData] = []
 
     if account and password:
         credentials = Credentials()
@@ -114,13 +115,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                 device
             ) in mqtt_client.cloud_client.devices_by_account_response.data.data:
                 maintenance_coordinator = MammotionMaintenanceUpdateCoordinator(
-                    hass, entry, device
+                    hass, entry, device, mammotion
                 )
                 version_coordinator = MammotionDeviceVersionUpdateCoordinator(
-                    hass, entry, device
+                    hass, entry, device, mammotion
                 )
                 report_coordinator = MammotionReportUpdateCoordinator(
-                    hass, entry, device
+                    hass, entry, device, mammotion
                 )
                 # other coordinator
                 await maintenance_coordinator.async_config_entry_first_refresh()
@@ -138,22 +139,30 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                     suggested_area="Garden",
                 )
 
+                device_config = DeviceConfig()
+                if (
+                    device_limits := device_config.get_working_parameters(
+                        device.productKey
+                    )
+                    is None
+                ):
+                    device_limits = device_config.get_working_parameters(
+                        version_coordinator.data.main_product_type
+                    )
+
                 mammotion_devices.append(
                     MammotionMowerData(
                         name=device.deviceName,
                         device=device_info,
+                        device_limits=device_limits,
                         api=mammotion,
                         maintenance_coordinator=maintenance_coordinator,
-                        report_coordinator=report_coordinator,
+                        reporting_coordinator=report_coordinator,
                         version_coordinator=version_coordinator,
                     )
                 )
 
-    # mammotion_coordinator = MammotionDataUpdateCoordinator(hass, entry)
-    # await mammotion_coordinator.async_setup()
-
-    await mammotion_coordinator.async_config_entry_first_refresh()
-    entry.runtime_data = MammotionDevices
+    entry.runtime_data = mammotion_devices
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     return True

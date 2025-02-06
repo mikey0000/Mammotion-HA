@@ -25,7 +25,7 @@ from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.device_registry import CONNECTION_BLUETOOTH, format_mac
 from pymammotion.aliyun.cloud_gateway import CloudIOTGateway
-from pymammotion.http.http import connect_http
+from pymammotion.http.http import MammotionHTTP
 from pymammotion.mammotion.devices.mammotion import Mammotion
 
 from .const import (
@@ -219,15 +219,16 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
         ):
             account = user_input.get(CONF_ACCOUNTNAME, "")
             password = user_input.get(CONF_PASSWORD, "")
+            mammotion_http = MammotionHTTP()
 
             try:
-                response = await connect_http(account, password)
-                if response.login_info is None:
-                    return self.async_abort(reason=str(response.msg))
+                await mammotion_http.login(account, password)
+                if mammotion_http.login_info is None:
+                    return self.async_abort(reason=str(mammotion_http.msg))
             except HTTPException as err:
                 return self.async_abort(reason=str(err))
 
-            user_account = response.login_info.userInformation.userAccount
+            user_account = mammotion_http.login_info.userInformation.userAccount
 
             await self.async_set_unique_id(user_account, raise_on_progress=False)
             self._abort_if_unique_id_configured()

@@ -10,9 +10,9 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.const import (
-    AREA_SQUARE_METERS,
     PERCENTAGE,
     SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
+    UnitOfArea,
     UnitOfLength,
     UnitOfSpeed,
     UnitOfTime,
@@ -128,7 +128,7 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         key="area",
         state_class=SensorStateClass.MEASUREMENT,
         device_class=None,
-        native_unit_of_measurement=AREA_SQUARE_METERS,
+        native_unit_of_measurement=UnitOfArea.SQUARE_METERS,
         value_fn=lambda mower_data: mower_data.report_data.work.area & 65535,
     ),
     MammotionSensorEntityDescription(
@@ -248,19 +248,20 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up sensor platform."""
-    coordinator = entry.runtime_data
+    mowers = entry.runtime_data
 
-    if not DeviceType.is_yuka(coordinator.device_name):
-        async_add_entities(
-            MammotionSensorEntity(coordinator, description)
-            for description in LUBA_SENSOR_ONLY_TYPES
-        )
+    for mower in mowers:
+        if not DeviceType.is_yuka(mower.device_name):
+            async_add_entities(
+                MammotionSensorEntity(coordinator, description)
+                for description in LUBA_SENSOR_ONLY_TYPES
+            )
 
-    if not DeviceType.is_luba1(coordinator.device_name):
-        async_add_entities(
-            MammotionSensorEntity(coordinator, description)
-            for description in LUBA_2_YUKA_ONLY_TYPES
-        )
+        if not DeviceType.is_luba1(coordinator.device_name):
+            async_add_entities(
+                MammotionSensorEntity(coordinator, description)
+                for description in LUBA_2_YUKA_ONLY_TYPES
+            )
 
     async_add_entities(
         MammotionSensorEntity(coordinator, description) for description in SENSOR_TYPES

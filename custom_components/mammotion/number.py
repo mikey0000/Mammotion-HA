@@ -1,5 +1,5 @@
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable
 
 from homeassistant.components.number import (
     NumberDeviceClass,
@@ -8,9 +8,9 @@ from homeassistant.components.number import (
     NumberMode,
 )
 from homeassistant.const import (
-    AREA_SQUARE_METERS,
     DEGREE,
     PERCENTAGE,
+    UnitOfArea,
     UnitOfLength,
     UnitOfSpeed,
 )
@@ -18,7 +18,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.restore_state import RestoreEntity
-from pymammotion.data.model.device_config import DeviceLimits
+from pymammotion.data.model.device_limits import DeviceLimits
 from pymammotion.utility.device_type import DeviceType
 
 from . import MammotionConfigEntry
@@ -74,7 +74,7 @@ YUKA_NUMBER_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
         max_value=100,
         step=1,
         mode=NumberMode.SLIDER,
-        native_unit_of_measurement=AREA_SQUARE_METERS,
+        native_unit_of_measurement=UnitOfArea.SQUARE_METERS,
         set_fn=lambda coordinator, value: setattr(
             coordinator.operation_settings, "collect_grass_frequency", value
         ),

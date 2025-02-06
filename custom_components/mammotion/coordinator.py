@@ -16,9 +16,7 @@ from homeassistant.exceptions import ConfigEntryNotReady, HomeAssistantError
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from pymammotion import CloudIOTGateway
-from pymammotion.aliyun.cloud_gateway import (
-    DeviceOfflineException,
-)
+from pymammotion.aliyun.cloud_gateway import DeviceOfflineException
 from pymammotion.aliyun.model.aep_response import AepResponse
 from pymammotion.aliyun.model.connect_response import ConnectResponse
 from pymammotion.aliyun.model.dev_by_account_response import (
@@ -37,10 +35,7 @@ from pymammotion.data.model.device_config import OperationSettings, create_path_
 from pymammotion.data.model.report_info import Maintain
 from pymammotion.http.http import MammotionHTTP
 from pymammotion.http.model.http import LoginResponseData, Response
-from pymammotion.mammotion.devices.mammotion import (
-    ConnectionPreference,
-    Mammotion,
-)
+from pymammotion.mammotion.devices.mammotion import ConnectionPreference, Mammotion
 from pymammotion.proto import has_field
 from pymammotion.proto.mctrl_sys import RptAct, RptDevStatus, RptInfoType
 from pymammotion.utility.constant import WorkMode
@@ -80,12 +75,14 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
 
     manager: Mammotion = None
     device: Device | None = None
+    updated_once: bool
 
     def __init__(
         self,
         hass: HomeAssistant,
         config_entry: MammotionConfigEntry,
         device: Device,
+        mammotion: Mammotion,
         update_interval: timedelta,
     ) -> None:
         """Initialize global mammotion data updater."""
@@ -99,9 +96,11 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         self.config_entry = config_entry
         self.device = device
         self.device_name = device.deviceName
+        self.manager = mammotion
         self._operation_settings = OperationSettings()
         self.update_failures = 0
         self.enabled = True
+        self.updated_once = False
 
     async def set_scheduled_updates(self, enabled: bool) -> None:
         self.enabled = enabled
@@ -156,7 +155,8 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
                             .ble()
                             .queue_command(command, **kwargs)
                         )
-                return True
+                        return True
+                    raise DeviceOfflineException()
             except COMMAND_EXCEPTIONS as exc:
                 raise HomeAssistantError(
                     translation_domain=DOMAIN, translation_key="command_failed"
@@ -390,13 +390,18 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
 
 class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevice]):
     def __init__(
-        self, hass: HomeAssistant, config_entry: MammotionConfigEntry, device: Device
+        self,
+        hass: HomeAssistant,
+        config_entry: MammotionConfigEntry,
+        device: Device,
+        mammotion: Mammotion,
     ) -> None:
         """Initialize global mammotion data updater."""
         super().__init__(
             hass=hass,
             config_entry=config_entry,
             device=device,
+            mammotion=mammotion,
             update_interval=REPORT_INTERVAL,
         )
 
@@ -423,8 +428,12 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
                 self.hass, device.ble().get_address(), True
             ):
                 device.ble().update_device(ble_device)
+        try:
+            await self.async_send_command("get_report_cfg")
 
-        await self.async_send_command("get_report_cfg")
+        except DeviceOfflineException:
+            """Device is offline try bluetooth if we have it."""
+            return self.data
 
         LOGGER.debug("Updated Mammotion device %s", self.device_name)
         LOGGER.debug("================= Debug Log =================")
@@ -444,6 +453,8 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
             self.update_interval = WORKING_INTERVAL
         else:
             self.update_interval = DEFAULT_INTERVAL
+
+        self.updated_once = True
 
         return data
 
@@ -680,13 +691,18 @@ class MammotionMaintenanceUpdateCoordinator(MammotionBaseUpdateCoordinator[Maint
     """Class to manage fetching mammotion data."""
 
     def __init__(
-        self, hass: HomeAssistant, config_entry: MammotionConfigEntry, device: Device
+        self,
+        hass: HomeAssistant,
+        config_entry: MammotionConfigEntry,
+        device: Device,
+        mammotion: Mammotion,
     ) -> None:
         """Initialize global mammotion data updater."""
         super().__init__(
             hass=hass,
             config_entry=config_entry,
             device=device,
+            mammotion=mammotion,
             update_interval=MAINTENENCE_INTERVAL,
         )
 
@@ -695,8 +711,14 @@ class MammotionMaintenanceUpdateCoordinator(MammotionBaseUpdateCoordinator[Maint
 
         if not self.enabled:
             return self.data
+        try:
+            await self.async_send_command("get_maintenance")
 
-        await self.async_send_command("get_maintenance")
+        except DeviceOfflineException:
+            """Device is offline try bluetooth if we have it."""
+            return self.data
+
+        self.updated_once = True
 
         return self.manager.get_device_by_name(
             self.device.deviceName
@@ -707,13 +729,18 @@ class MammotionDeviceVersionUpdateCoordinator(MammotionBaseUpdateCoordinator[Mai
     """Class to manage fetching mammotion data."""
 
     def __init__(
-        self, hass: HomeAssistant, config_entry: MammotionConfigEntry, device: Device
+        self,
+        hass: HomeAssistant,
+        config_entry: MammotionConfigEntry,
+        device: Device,
+        mammotion: Mammotion,
     ) -> None:
         """Initialize global mammotion data updater."""
         super().__init__(
             hass=hass,
             config_entry=config_entry,
             device=device,
+            mammotion=mammotion,
             update_interval=DEVICE_VERSION_INTERVAL,
         )
 
@@ -723,11 +750,17 @@ class MammotionDeviceVersionUpdateCoordinator(MammotionBaseUpdateCoordinator[Mai
         if not self.enabled:
             return self.data
 
-        await self.async_send_command("get_device_version_main")
-        await self.async_send_command("get_device_version_info")
+        try:
+            await self.async_send_command("get_device_version_main")
+            await self.async_send_command("get_device_version_info")
 
-        await self.check_firmware_version()
+            await self.check_firmware_version()
+        except DeviceOfflineException:
+            """Device is offline try bluetooth if we have it."""
+            return self.data
+
+        self.updated_once = True
 
         return self.manager.get_device_by_name(
             self.device.deviceName
-        ).mower_state.report_data.maintenance
+        ).mower_state.sys.device_product_type_info

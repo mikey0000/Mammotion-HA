@@ -124,7 +124,11 @@ async def async_setup_entry(
                 existing_name: AreaHashNameList | None = next(
                     (area for area in area_name if str(area.hash) == str(area_id)), None
                 )
-                name = existing_name.name if (existing_name and existing_name.name) else f"{area_id}"
+                name = (
+                    existing_name.name
+                    if (existing_name and existing_name.name)
+                    else f"{area_id}"
+                )
                 base_area_switch_entity = MammotionConfigAreaSwitchEntityDescription(
                     key=f"{area_id}",
                     translation_key="area",
