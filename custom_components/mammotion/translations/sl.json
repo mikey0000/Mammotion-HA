@@ -259,7 +259,7 @@
         "name": "Razmik poti"
       },
       "dumping_interval": {
-        "name": "Dumping Frequency"
+        "name": "Interval praznjenja"
       },
       "toward_included_angle": {
         "name": "Kot prečkanja"
@@ -288,18 +288,18 @@
         },
         "is_edge": {
           "name": "Košnja roba",
-          "description": "Whether edge mode is active. (Yuka)."
+          "description": "Navaja, ali je način rezanja robov aktiven. (Yuka)."
         },
         "collect_grass_frequency": {
-          "name": "Grass Collection Frequency",
-          "description": "Frequency to collect grass (in meters squared). (Yuka)."
+          "name": "Interval košnje",
+          "description": "Pogostost zbiranja trave (v kvadratnih metrih). (Yuka)."
         },
         "border_mode": {
-          "name": "Mow Order",
-          "description": "Mowing path order (Perimeter first or grid first)."
+          "name": "Vrstni red",
+          "description": "Vrstni red poti (obod ali cikcak prvo)."
         },
         "job_version": {
-          "name": "Job Version",
+          "name": "Job version",
           "description": "Job version."
         },
         "job_id": {
@@ -307,81 +307,81 @@
           "description": "Job ID."
         },
         "speed": {
-          "name": "Speed",
-          "description": "Mowing speed."
+          "name": "Hitrost",
+          "description": "Hitrost košnje."
         },
         "ultra_wave": {
-          "name": "Obstacle Detection",
-          "description": "Obstacle Avoidance Mode."
+          "name": "Način zaznavanja ovir",
+          "description": "Način izmikanja oviram."
         },
         "channel_mode": {
-          "name": "Cutting Path Mode",
-          "description": "Cutting Path (zigzag, chessboard, adaptive zigzag, or perimeter only)."
+          "name": "Način poti rezanja",
+          "description": "Način poti (cikcak, šahovnica, prilagodljiva cikcak pot, samo obod)."
         },
         "channel_width": {
-          "name": "Path Width",
-          "description": "Width of the mowing path (in cm)."
+          "name": "Razmik med potmi",
+          "description": "Razmik med potmi (v cm)."
         },
         "rain_tactics": {
-          "name": "Rain Detection",
-          "description": "Rain detection."
+          "name": "Zaznavanje dežja",
+          "description": "Zaznavanje dežja."
         },
         "blade_height": {
-          "name": "Blade Height",
-          "description": "Height of the blade."
+          "name": "Višina rezil",
+          "description": "Višina rezil."
         },
         "toward": {
-          "name": "Starting Path Angle",
-          "description": "Starting direction for mowing."
+          "name": "Kot rezalne poti",
+          "description": "Kot rezalne poti."
         },
         "toward_included_angle": {
-          "name": "Crossing Angle",
-          "description": "When selecting grid change the second angle (default is 90 degrees)."
+          "name": "Kot prehoda mreže",
+          "description": "Za spreminjanje kota mreže."
         },
         "toward_mode": {
-          "name": "Cutting Angle Mode",
-          "description": "Anglular direction of mow."
+          "name": "Kot rezalne poti",
+          "description": "Kot rezalne poti."
         },
         "mowing_laps": {
-          "name": "Perimeter Mowing Laps",
-          "description": "Number of laps around the mowing area perimeter."
+          "name": "Krogi košnje po obodu",
+          "description": "Krogi košnje po obodu."
         },
         "obstacle_laps": {
-          "name": "No-go zone Mowing Laps",
-          "description": "Number of laps around No-go zones."
+          "name": "Krogi košnje po robu prepovedanih con",
+          "description": "Krogi košnje po robu prepovedanih con."
         },
         "start_progress": {
-          "name": "Start Progress",
-          "description": "Starting progress percentage."
+          "name": "Začetek napredka",
+          "description": "Začetek napredka v odstotkih."
         },
         "areas": {
-          "name": "Area Selection",
-          "description": "List of areas to mow (represented as integers)."
+          "name": "Območje naloge",
+          "description": "Spisek območij."
         }
       }
     }
   },
   "exceptions": {
     "device_not_ready": {
-      "message": "Device is not ready."
+      "message": "Robot ni pripravljen."
     },
     "pause_failed": {
-      "message": "Failed to pause the mower."
+      "message": "Neuspešna zaustavitev košnje."
     },
     "resume_failed": {
-      "message": "Failed to resume the mower."
+      "message": "Neuspešno nadaljevanje košnje."
     },
     "start_failed": {
-      "message": "Failed to start the mower."
+      "message": "Neuspešen zagon košnje."
     },
     "dock_failed": {
-      "message": "Failed to send the mower to the dock."
+      "message": "Neuspešna vrnitev na polnilno postajo."
     },
     "dock_cancel_failed": {
-      "message": "Failed to stop the mower returning to the dock."
+      "message": "Neuspešna zaustavitev vračanja na polnilno postajo."
     },
     "command_failed": {
-      "message": "Failed to send command to the mower."
+      "message": "Ukaza ni bilo možno poslati."
     }
   }
 }
