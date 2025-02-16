@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from homeassistant.helpers.device_registry import DeviceInfo
+from pymammotion.aliyun.model.dev_by_account_response import Device
 from pymammotion.data.model.device_limits import DeviceLimits
 from pymammotion.mammotion.devices.mammotion import Mammotion
 
@@ -21,7 +21,7 @@ class MammotionMowerData:
     reporting_coordinator: MammotionReportUpdateCoordinator
     version_coordinator: MammotionDeviceVersionUpdateCoordinator
     device_limits: DeviceLimits
-    device: DeviceInfo
+    device: Device
 
 
 @dataclass

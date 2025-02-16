@@ -13,7 +13,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pymammotion.data.model.device import MowingDevice
 
 from . import MammotionConfigEntry
-from .coordinator import MammotionDataUpdateCoordinator
+from .coordinator import MammotionBaseUpdateCoordinator
 from .entity import MammotionBaseEntity
 
 
@@ -30,8 +30,7 @@ BINARY_SENSORS: tuple[MammotionBinarySensorEntityDescription, ...] = (
     MammotionBinarySensorEntityDescription(
         key="charging",
         device_class=BinarySensorDeviceClass.BATTERY_CHARGING,
-        is_on_fn=lambda mower_data: mower_data.sys.toapp_report_data.dev.charge_state
-        in (1, 2),
+        is_on_fn=lambda mower_data: mower_data.report_data.dev.charge_state in (1, 2),
     ),
 )
 
@@ -48,12 +47,13 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the Mammotion sensor entity."""
-    coordinator = entry.runtime_data
+    mammotion_devices = entry.runtime_data
 
-    async_add_entities(
-        MammotionBinarySensorEntity(coordinator, entity_description)
-        for entity_description in BINARY_SENSORS
-    )
+    for mower in mammotion_devices:
+        async_add_entities(
+            MammotionBinarySensorEntity(mower.reporting_coordinator, entity_description)
+            for entity_description in BINARY_SENSORS
+        )
 
 
 class MammotionBinarySensorEntity(MammotionBaseEntity, BinarySensorEntity):
@@ -63,7 +63,7 @@ class MammotionBinarySensorEntity(MammotionBaseEntity, BinarySensorEntity):
 
     def __init__(
         self,
-        coordinator: MammotionDataUpdateCoordinator,
+        coordinator: MammotionBaseUpdateCoordinator,
         entity_description: MammotionBinarySensorEntityDescription,
     ) -> None:
         """Initialize the binary sensor entity."""
