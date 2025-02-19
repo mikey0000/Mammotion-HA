@@ -37,6 +37,7 @@ from .const import (
     CONF_SESSION_DATA,
     CONF_STAY_CONNECTED_BLUETOOTH,
     DEFAULT_RETRY_COUNT,
+    DEVICE_SUPPORT,
     DOMAIN,
     EXPIRED_CREDENTIAL_EXCEPTIONS,
     LOGGER,
@@ -114,6 +115,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
             for (
                 device
             ) in mqtt_client.cloud_client.devices_by_account_response.data.data:
+                if not device.deviceName.startswith(DEVICE_SUPPORT):
+                    continue
                 maintenance_coordinator = MammotionMaintenanceUpdateCoordinator(
                     hass, entry, device, mammotion
                 )
