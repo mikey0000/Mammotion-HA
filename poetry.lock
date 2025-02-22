@@ -428,50 +428,6 @@ alibabacloud_tea_util = ">=0.3.8,<1.0.0"
 alibabacloud_url = ">=0.0.1,<1.0.0"
 
 [[package]]
-name = "aliyun-iot-linkkit"
-version = "1.2.13"
-description = "Aliyun IoT Linkkit SDK for Python"
-optional = false
-python-versions = "*"
-groups = ["main"]
-files = [
-    {file = "aliyun-iot-linkkit-1.2.13.tar.gz", hash = "sha256:e992703e3f665e0b5be2761a8c652c2e4402eaeedef05761ac86cb8a3195f251"},
-]
-
-[package.dependencies]
-crcmod = "*"
-paho-mqtt = "*"
-
-[[package]]
-name = "aliyun-python-sdk-core"
-version = "2.11.5"
-description = "The core module of Aliyun Python SDK."
-optional = false
-python-versions = "*"
-groups = ["main"]
-files = [
-    {file = "aliyun-python-sdk-core-2.11.5.tar.gz", hash = "sha256:577265c630c02207c692ca19958bd21665d56208306a834d0885e7770553975e"},
-]
-
-[package.dependencies]
-pycryptodome = ">=3.4.7"
-
-[[package]]
-name = "aliyun-python-sdk-iot"
-version = "8.59.0"
-description = "The iot module of Aliyun Python sdk."
-optional = false
-python-versions = "*"
-groups = ["main"]
-files = [
-    {file = "aliyun-python-sdk-iot-8.59.0.tar.gz", hash = "sha256:bf48d330ab58adb1015631d0a24a564a57090402d916cba8607abcc023fcc351"},
-    {file = "aliyun_python_sdk_iot-8.59.0-py2.py3-none-any.whl", hash = "sha256:d8d124547b44a35f30a7b32c01e25dc6d9bc28b7d571dcc3c6adf2b8cd2b8b09"},
-]
-
-[package.dependencies]
-aliyun-python-sdk-core = ">=2.11.5"
-
-[[package]]
 name = "anyio"
 version = "4.8.0"
 description = "High level compatibility layer for multiple asynchronous event loop implementations"
@@ -2517,17 +2473,18 @@ files = [
 
 [[package]]
 name = "paho-mqtt"
-version = "1.6.1"
+version = "2.1.0"
 description = "MQTT version 5.0/3.1.1 client class"
 optional = false
-python-versions = "*"
+python-versions = ">=3.7"
 groups = ["main"]
 files = [
-    {file = "paho-mqtt-1.6.1.tar.gz", hash = "sha256:2a8291c81623aec00372b5a85558a372c747cbca8e9934dfe218638b8eefc26f"},
+    {file = "paho_mqtt-2.1.0-py3-none-any.whl", hash = "sha256:6db9ba9b34ed5bc6b6e3812718c7e06e2fd7444540df2455d2c51bd58808feee"},
+    {file = "paho_mqtt-2.1.0.tar.gz", hash = "sha256:12d6e7511d4137555a3f6ea167ae846af2c7357b10bc6fa4f7c3968fc1723834"},
 ]
 
 [package.extras]
-proxy = ["PySocks"]
+proxy = ["pysocks"]
 
 [[package]]
 name = "pillow"
@@ -2947,48 +2904,6 @@ files = [
 ]
 
 [[package]]
-name = "pycryptodome"
-version = "3.21.0"
-description = "Cryptographic library for Python"
-optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,>=2.7"
-groups = ["main"]
-files = [
-    {file = "pycryptodome-3.21.0-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:dad9bf36eda068e89059d1f07408e397856be9511d7113ea4b586642a429a4fd"},
-    {file = "pycryptodome-3.21.0-cp27-cp27m-manylinux2010_i686.whl", hash = "sha256:a1752eca64c60852f38bb29e2c86fca30d7672c024128ef5d70cc15868fa10f4"},
-    {file = "pycryptodome-3.21.0-cp27-cp27m-manylinux2010_x86_64.whl", hash = "sha256:3ba4cc304eac4d4d458f508d4955a88ba25026890e8abff9b60404f76a62c55e"},
-    {file = "pycryptodome-3.21.0-cp27-cp27m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:7cb087b8612c8a1a14cf37dd754685be9a8d9869bed2ffaaceb04850a8aeef7e"},
-    {file = "pycryptodome-3.21.0-cp27-cp27m-musllinux_1_1_aarch64.whl", hash = "sha256:26412b21df30b2861424a6c6d5b1d8ca8107612a4cfa4d0183e71c5d200fb34a"},
-    {file = "pycryptodome-3.21.0-cp27-cp27m-win32.whl", hash = "sha256:cc2269ab4bce40b027b49663d61d816903a4bd90ad88cb99ed561aadb3888dd3"},
-    {file = "pycryptodome-3.21.0-cp27-cp27m-win_amd64.whl", hash = "sha256:0fa0a05a6a697ccbf2a12cec3d6d2650b50881899b845fac6e87416f8cb7e87d"},
-    {file = "pycryptodome-3.21.0-cp27-cp27mu-manylinux2010_i686.whl", hash = "sha256:6cce52e196a5f1d6797ff7946cdff2038d3b5f0aba4a43cb6bf46b575fd1b5bb"},
-    {file = "pycryptodome-3.21.0-cp27-cp27mu-manylinux2010_x86_64.whl", hash = "sha256:a915597ffccabe902e7090e199a7bf7a381c5506a747d5e9d27ba55197a2c568"},
-    {file = "pycryptodome-3.21.0-cp27-cp27mu-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:a4e74c522d630766b03a836c15bff77cb657c5fdf098abf8b1ada2aebc7d0819"},
-    {file = "pycryptodome-3.21.0-cp27-cp27mu-musllinux_1_1_aarch64.whl", hash = "sha256:a3804675283f4764a02db05f5191eb8fec2bb6ca34d466167fc78a5f05bbe6b3"},
-    {file = "pycryptodome-3.21.0-cp36-abi3-macosx_10_9_universal2.whl", hash = "sha256:2480ec2c72438430da9f601ebc12c518c093c13111a5c1644c82cdfc2e50b1e4"},
-    {file = "pycryptodome-3.21.0-cp36-abi3-macosx_10_9_x86_64.whl", hash = "sha256:de18954104667f565e2fbb4783b56667f30fb49c4d79b346f52a29cb198d5b6b"},
-    {file = "pycryptodome-3.21.0-cp36-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:2de4b7263a33947ff440412339cb72b28a5a4c769b5c1ca19e33dd6cd1dcec6e"},
-    {file = "pycryptodome-3.21.0-cp36-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:0714206d467fc911042d01ea3a1847c847bc10884cf674c82e12915cfe1649f8"},
-    {file = "pycryptodome-3.21.0-cp36-abi3-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:7d85c1b613121ed3dbaa5a97369b3b757909531a959d229406a75b912dd51dd1"},
-    {file = "pycryptodome-3.21.0-cp36-abi3-musllinux_1_1_aarch64.whl", hash = "sha256:8898a66425a57bcf15e25fc19c12490b87bd939800f39a03ea2de2aea5e3611a"},
-    {file = "pycryptodome-3.21.0-cp36-abi3-musllinux_1_2_i686.whl", hash = "sha256:932c905b71a56474bff8a9c014030bc3c882cee696b448af920399f730a650c2"},
-    {file = "pycryptodome-3.21.0-cp36-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:18caa8cfbc676eaaf28613637a89980ad2fd96e00c564135bf90bc3f0b34dd93"},
-    {file = "pycryptodome-3.21.0-cp36-abi3-win32.whl", hash = "sha256:280b67d20e33bb63171d55b1067f61fbd932e0b1ad976b3a184303a3dad22764"},
-    {file = "pycryptodome-3.21.0-cp36-abi3-win_amd64.whl", hash = "sha256:b7aa25fc0baa5b1d95b7633af4f5f1838467f1815442b22487426f94e0d66c53"},
-    {file = "pycryptodome-3.21.0-pp27-pypy_73-manylinux2010_x86_64.whl", hash = "sha256:2cb635b67011bc147c257e61ce864879ffe6d03342dc74b6045059dfbdedafca"},
-    {file = "pycryptodome-3.21.0-pp27-pypy_73-win32.whl", hash = "sha256:4c26a2f0dc15f81ea3afa3b0c87b87e501f235d332b7f27e2225ecb80c0b1cdd"},
-    {file = "pycryptodome-3.21.0-pp310-pypy310_pp73-macosx_10_15_x86_64.whl", hash = "sha256:d5ebe0763c982f069d3877832254f64974139f4f9655058452603ff559c482e8"},
-    {file = "pycryptodome-3.21.0-pp310-pypy310_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:7ee86cbde706be13f2dec5a42b52b1c1d1cbb90c8e405c68d0755134735c8dc6"},
-    {file = "pycryptodome-3.21.0-pp310-pypy310_pp73-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:0fd54003ec3ce4e0f16c484a10bc5d8b9bd77fa662a12b85779a2d2d85d67ee0"},
-    {file = "pycryptodome-3.21.0-pp310-pypy310_pp73-win_amd64.whl", hash = "sha256:5dfafca172933506773482b0e18f0cd766fd3920bd03ec85a283df90d8a17bc6"},
-    {file = "pycryptodome-3.21.0-pp39-pypy39_pp73-macosx_10_15_x86_64.whl", hash = "sha256:590ef0898a4b0a15485b05210b4a1c9de8806d3ad3d47f74ab1dc07c67a6827f"},
-    {file = "pycryptodome-3.21.0-pp39-pypy39_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:f35e442630bc4bc2e1878482d6f59ea22e280d7121d7adeaedba58c23ab6386b"},
-    {file = "pycryptodome-3.21.0-pp39-pypy39_pp73-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:ff99f952db3db2fbe98a0b355175f93ec334ba3d01bbde25ad3a5a33abc02b58"},
-    {file = "pycryptodome-3.21.0-pp39-pypy39_pp73-win_amd64.whl", hash = "sha256:8acd7d34af70ee63f9a849f957558e49a98f8f1634f86a59d2be62bb8e93f71c"},
-    {file = "pycryptodome-3.21.0.tar.gz", hash = "sha256:f7787e0d469bdae763b876174cf2e6c0f7be79808af26b1da96f1a64bcf47297"},
-]
-
-[[package]]
 name = "pyjwt"
 version = "2.10.1"
 description = "JSON Web Token implementation in Python"
@@ -3036,14 +2951,14 @@ testutils = ["gitpython (>3)"]
 
 [[package]]
 name = "pymammotion"
-version = "0.4.0a1"
+version = "0.4.0a5"
 description = ""
 optional = false
-python-versions = "<3.13,>=3.10"
+python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "pymammotion-0.4.0a1-py3-none-any.whl", hash = "sha256:925e704e142648ecd9d76273c64b2dbbec63643b2dcdf70366998e1843e06ff1"},
-    {file = "pymammotion-0.4.0a1.tar.gz", hash = "sha256:4365d1d974873d2dec3b66390ecc9f154f9d7a6389c9e74b049a4368f31fb496"},
+    {file = "pymammotion-0.4.0a5-py3-none-any.whl", hash = "sha256:7620ae70c929e7d0497681c23dd1fda0da5835ed2ed5028436c1b778c41993eb"},
+    {file = "pymammotion-0.4.0a5.tar.gz", hash = "sha256:bb62cde28f86f360ba8bd850e5b98ea52388a6cdd867880bdcc3d061e798b9c3"},
 ]
 
 [package.dependencies]
@@ -3051,18 +2966,17 @@ aiohttp = ">=3.9.1,<4.0.0"
 alibabacloud-apigateway-util = ">=0.0.2,<0.0.3"
 alibabacloud-iot-api-gateway = ">=0.0.4,<0.0.5"
 alicloud-gateway-iot = ">=1.0.0,<2.0.0"
-aliyun-iot-linkkit = ">=1.2.12,<2.0.0"
-aliyun-python-sdk-iot = ">=8.57.0,<9.0.0"
 async-timeout = ">=4.0.3,<5.0.0"
 betterproto = ">=1.2.5,<2.0.0"
 bleak = ">=0.21.0"
 bleak-retry-connector = ">=3.5.0,<4.0.0"
+crcmod = ">=1.7,<2.0"
 cryptography = ">=43.0.1"
 jsonic = ">=1.0.0,<2.0.0"
 mashumaro = ">=3.13,<4.0"
 numpy = ">=1.26.0"
 orjson = ">=3.9.15,<4.0.0"
-paho-mqtt = ">=1.6.1,<2.0.0"
+paho-mqtt = "2.1.0"
 protobuf = ">=4.23.1"
 py-jsonic = ">=0.0.2,<0.0.3"
 
@@ -4146,4 +4060,4 @@ propcache = ">=0.2.0"
 [metadata]
 lock-version = "2.1"
 python-versions = "~3.12.0"
-content-hash = "d018e73153b9b5432a365bdbe14a3029913802af09bec09eae4c3adef741a690"
+content-hash = "067e20a8d131dcbab0cb62efa03390f327e742d71a6581c311a848bd7abd1c6c"
