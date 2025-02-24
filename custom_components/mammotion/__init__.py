@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 from aiohttp import ClientConnectorError
+from homeassistant.components import bluetooth
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_ADDRESS, CONF_MAC, CONF_PASSWORD, Platform
+from homeassistant.const import CONF_ADDRESS, CONF_PASSWORD, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import device_registry as dr
@@ -43,9 +44,10 @@ from .const import (
     LOGGER,
 )
 from .coordinator import (
-    MammotionDataUpdateCoordinator,
+    MammotionBaseUpdateCoordinator,
     MammotionDeviceVersionUpdateCoordinator,
     MammotionMaintenanceUpdateCoordinator,
+    MammotionMapUpdateCoordinator,
     MammotionReportUpdateCoordinator,
 )
 from .models import MammotionDevices, MammotionMowerData
@@ -66,21 +68,6 @@ type MammotionConfigEntry = ConfigEntry[list[MammotionMowerData]]
 
 async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) -> bool:
     """Set up Mammotion Luba from a config entry."""
-    assert entry.unique_id is not None
-
-    # if not entry.unique_id:
-    #     hass.config_entries.async_update_entry(entry, unique_id="some_uuid")
-
-    if CONF_ADDRESS not in entry.data and CONF_MAC in entry.data:
-        # Bleak uses addresses not mac addresses which are actually
-        # UUIDs on some platforms (MacOS).
-        mac = entry.data[CONF_MAC]
-        if "-" not in mac:
-            mac = dr.format_mac(mac)
-        hass.config_entries.async_update_entry(
-            entry,
-            data={**entry.data, CONF_ADDRESS: mac},
-        )
 
     if not entry.options:
         hass.config_entries.async_update_entry(
@@ -89,9 +76,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
         )
 
     device_name = entry.data.get(CONF_DEVICE_NAME)
+    address = entry.data.get(CONF_ADDRESS)
     mammotion = Mammotion()
     account = entry.data.get(CONF_ACCOUNTNAME)
     password = entry.data.get(CONF_PASSWORD)
+
+    stay_connected_ble = entry.data.get(CONF_STAY_CONNECTED_BLUETOOTH, False)
 
     mammotion_devices: list[MammotionMowerData] = []
 
@@ -126,10 +116,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                 report_coordinator = MammotionReportUpdateCoordinator(
                     hass, entry, device, mammotion
                 )
+                map_coordinator = MammotionMapUpdateCoordinator(
+                    hass, entry, device, mammotion
+                )
                 # other coordinator
                 await maintenance_coordinator.async_config_entry_first_refresh()
                 await version_coordinator.async_config_entry_first_refresh()
                 await report_coordinator.async_config_entry_first_refresh()
+                await map_coordinator.async_config_entry_first_refresh()
 
                 device_config = DeviceConfig()
                 if (
@@ -147,6 +141,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                             version_coordinator.data.model_id
                         )
 
+                if address:
+                    device = mammotion.get_device_by_name(device.deviceName)
+                    ble_device = bluetooth.async_ble_device_from_address(hass, address)
+                    if ble_device:
+                        device.add_ble(ble_device)
+                        # set preferences and set disconnection strategy
+                        # device.ble().set_disconnect_strategy(not stay_connected_ble)
+
                 mammotion_devices.append(
                     MammotionMowerData(
                         name=device.deviceName,
@@ -156,6 +158,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                         maintenance_coordinator=maintenance_coordinator,
                         reporting_coordinator=report_coordinator,
                         version_coordinator=version_coordinator,
+                        map_coordinator=map_coordinator,
                     )
                 )
 
