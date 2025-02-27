@@ -1,15 +1,17 @@
 name: Release
 
 on:
-  workflow_dispatch:
   push:
-    branches:
-      - main
+    tags:
+      - 'v*'  # Trigger on version tags
 
 jobs:
   release:
     name: Create Release
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write  # Required for OIDC
+      contents: write  # Required for creating releases
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
