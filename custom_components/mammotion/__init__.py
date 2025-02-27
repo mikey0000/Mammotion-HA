@@ -122,6 +122,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                 map_coordinator = MammotionMapUpdateCoordinator(
                     hass, entry, device, mammotion
                 )
+                await report_coordinator.async_restore_data()
                 # other coordinator
                 await maintenance_coordinator.async_config_entry_first_refresh()
                 await version_coordinator.async_config_entry_first_refresh()
@@ -249,7 +250,6 @@ async def check_and_restore_cloud(
         cloud_client.set_http(mammotion_http)
 
     await hass.async_add_executor_job(cloud_client.check_or_refresh_session)
-    print("restore cloud")
     return cloud_client
 
 

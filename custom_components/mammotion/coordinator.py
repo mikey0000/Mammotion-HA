@@ -14,6 +14,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
+from mashumaro.exceptions import InvalidFieldValue
 from pymammotion.aliyun.cloud_gateway import (
     DeviceOfflineException,
     GatewayTimeoutException,
@@ -146,9 +147,11 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         if not self.manager.get_device_by_name(self.device_name).mower_state.online:
             return False
 
+        device = self.manager.get_device_by_name(self.device_name)
+
         try:
             await self.manager.send_command_with_args(
-                self.device.deviceName, command, **kwargs
+                self.device_name, command, **kwargs
             )
             self.update_failures = 0
             return True
@@ -166,17 +169,16 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         except DeviceOfflineException:
             """Device is offline try bluetooth if we have it."""
             try:
-                if device := self.manager.get_device_by_name(self.device_name):
-                    if device.has_ble():
-                        # if we don't do this it will stay connected and no longer update over wifi
-                        device.ble().set_disconnect_strategy(True)
-                        await (
-                            self.manager.get_device_by_name(self.device_name)
-                            .ble()
-                            .queue_command(command, **kwargs)
-                        )
-                        return True
-                    raise DeviceOfflineException()
+                if device.has_ble():
+                    # if we don't do this it will stay connected and no longer update over wifi
+                    device.ble().set_disconnect_strategy(True)
+                    await (
+                        self.manager.get_device_by_name(self.device_name)
+                        .ble()
+                        .queue_command(command, **kwargs)
+                    )
+                    return True
+                raise DeviceOfflineException()
             except COMMAND_EXCEPTIONS as exc:
                 raise HomeAssistantError(
                     translation_domain=DOMAIN, translation_key="command_failed"
@@ -192,7 +194,7 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         if device_entry is None:
             return
 
-        new_swversion = mower.mower_state.swversion
+        new_swversion = mower.device_firmwares.device_version
 
         if new_swversion is not None or new_swversion != device_entry.sw_version:
             device_registry.async_update_device(
@@ -482,15 +484,23 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
             """Device is offline try bluetooth if we have it."""
             device = self.manager.get_device_by_name(self.device_name)
             device.mower_state.online = False
+            # if device.has_ble():
+            #     device.preference = ConnectionPreference.BLUETOOTH
             data = device.mower_state
             return data
 
         LOGGER.debug("Updated Mammotion device %s", self.device_name)
         LOGGER.debug("================= Debug Log =================")
-        LOGGER.debug(
-            "Mammotion device data: %s",
-            asdict(self.manager.get_device_by_name(self.device_name).mower_state),
-        )
+        if device.preference is ConnectionPreference.BLUETOOTH:
+            LOGGER.debug(
+                "Mammotion device data: %s",
+                self.manager.get_device_by_name(self.device_name).ble()._raw_data,
+            )
+        if device.preference is ConnectionPreference.WIFI:
+            LOGGER.debug(
+                "Mammotion device data: %s",
+                self.manager.get_device_by_name(self.device_name).cloud()._raw_data,
+            )
         LOGGER.debug("==================================")
 
         self.update_failures = 0
@@ -591,6 +601,8 @@ class MammotionDeviceVersionUpdateCoordinator(
         try:
             await self.async_send_command("get_device_version_main")
             await self.async_send_command("get_device_version_info")
+            await self.async_send_command("get_device_base_info")
+            await self.async_send_command("get_device_product_model")
 
             await self.check_firmware_version()
         except DeviceOfflineException:

@@ -20,7 +20,7 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionBaseUpdateCoordinator]):
     @property
     def device_info(self) -> DeviceInfo:
         mower = self.coordinator.data
-        swversion = mower.mower_state.swversion
+        swversion = mower.device_firmwares.device_version
 
         product_key = mower.mower_state.product_key
         if product_key is None or product_key == "":
