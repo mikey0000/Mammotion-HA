@@ -22,7 +22,7 @@ from pymammotion.aliyun.model.session_by_authcode_response import (
 from pymammotion.data.model.account import Credentials
 from pymammotion.http.http import MammotionHTTP
 from pymammotion.http.model.http import LoginResponseData, Response
-from pymammotion.mammotion.devices.mammotion import Mammotion
+from pymammotion.mammotion.devices.mammotion import ConnectionPreference, Mammotion
 from pymammotion.utility.device_config import DeviceConfig
 
 from .const import (
@@ -37,6 +37,7 @@ from .const import (
     CONF_RETRY_COUNT,
     CONF_SESSION_DATA,
     CONF_STAY_CONNECTED_BLUETOOTH,
+    CONF_USE_WIFI,
     DEFAULT_RETRY_COUNT,
     DEVICE_SUPPORT,
     DOMAIN,
@@ -82,6 +83,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
     password = entry.data.get(CONF_PASSWORD)
 
     stay_connected_ble = entry.data.get(CONF_STAY_CONNECTED_BLUETOOTH, False)
+    use_wifi = entry.data.get(CONF_USE_WIFI, True)
 
     mammotion_devices: list[MammotionMowerData] = []
 
@@ -102,6 +104,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
             await mammotion.login_and_initiate_cloud(account, password, True)
 
         if mqtt_client := mammotion.mqtt_list.get(account):
+            store_cloud_credentials(hass, entry, mqtt_client.cloud_client)
             for (
                 device
             ) in mqtt_client.cloud_client.devices_by_account_response.data.data:
@@ -141,13 +144,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                             version_coordinator.data.model_id
                         )
 
+                mammotion_device = mammotion.get_device_by_name(device.deviceName)
                 if address:
-                    device = mammotion.get_device_by_name(device.deviceName)
                     ble_device = bluetooth.async_ble_device_from_address(hass, address)
                     if ble_device:
-                        device.add_ble(ble_device)
-                        # set preferences and set disconnection strategy
-                        # device.ble().set_disconnect_strategy(not stay_connected_ble)
+                        mammotion_device.add_ble(ble_device)
+                        mammotion_device.ble().set_disconnect_strategy(
+                            not stay_connected_ble
+                        )
+                if not use_wifi:
+                    mammotion_device.preference = ConnectionPreference.BLUETOOTH
+                    await mammotion_device.cloud().stop()
+                    mammotion_device.cloud().mqtt.disconnect() if mammotion_device.cloud().mqtt.is_connected() else None
 
                 mammotion_devices.append(
                     MammotionMowerData(
@@ -166,6 +174,23 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     return True
+
+
+def store_cloud_credentials(hass, config_entry, cloud_client: CloudIOTGateway) -> None:
+    """Store cloud credentials in config entry."""
+
+    if cloud_client is not None:
+        config_updates = {
+            **config_entry.data,
+            CONF_CONNECT_DATA: cloud_client.connect_response,
+            CONF_AUTH_DATA: cloud_client.login_by_oauth_response,
+            CONF_REGION_DATA: cloud_client.region_response,
+            CONF_AEP_DATA: cloud_client.aep_response,
+            CONF_SESSION_DATA: cloud_client.session_by_authcode_response,
+            CONF_DEVICE_DATA: cloud_client.devices_by_account_response,
+            CONF_MAMMOTION_DATA: cloud_client.mammotion_http.response,
+        }
+        hass.config_entries.async_update_entry(config_entry, data=config_updates)
 
 
 async def check_and_restore_cloud(
@@ -218,22 +243,27 @@ async def check_and_restore_cloud(
 
     if isinstance(mammotion_data, dict):
         mammotion_data = Response[LoginResponseData].from_dict(mammotion_data)
-
-    cloud_client.set_http(MammotionHTTP(response=mammotion_data))
+        mammotion_http = MammotionHTTP()
+        mammotion_http.response = mammotion_data
+        mammotion_http.login_info = mammotion_data.data
+        cloud_client.set_http(mammotion_http)
 
     await hass.async_add_executor_job(cloud_client.check_or_refresh_session)
-
+    print("restore cloud")
     return cloud_client
 
 
-async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
+async def _async_update_listener(
+    hass: HomeAssistant, entry: MammotionConfigEntry
+) -> None:
     """Handle options update."""
     await hass.config_entries.async_reload(entry.entry_id)
 
 
-async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+async def async_unload_entry(hass: HomeAssistant, entry: MammotionConfigEntry) -> bool:
     """Unload a config entry."""
 
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
-        await entry.runtime_data.manager.remove_device(entry.runtime_data.device_name)
+        for mower in entry.runtime_data:
+            await mower.api.remove_device(mower.name)
     return unload_ok

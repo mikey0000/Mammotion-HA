@@ -16,7 +16,6 @@ from homeassistant.config_entries import (
     ConfigFlow,
     ConfigFlowResult,
     OptionsFlow,
-    OptionsFlowWithConfigEntry,
 )
 from homeassistant.const import CONF_ADDRESS, CONF_PASSWORD
 from homeassistant.core import callback
@@ -92,6 +91,7 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
         }
         self._config = {
             CONF_BLE_DEVICES: ble_devices,
+            CONF_ADDRESS: self._discovered_device.address,
         }
 
         try:
@@ -264,12 +264,6 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
             vol.Optional(CONF_USE_WIFI, default=True): cv.boolean,
         }
 
-        if self._config.get(CONF_ADDRESS) is None:
-            schema = {
-                vol.Required(CONF_ACCOUNTNAME): vol.All(cv.string, vol.Strip),
-                vol.Required(CONF_PASSWORD): vol.All(cv.string, vol.Strip),
-            }
-
         return self.async_show_form(step_id="wifi", data_schema=vol.Schema(schema))
 
     async def async_step_wifi_confirm(
@@ -372,8 +366,14 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
         )
 
 
-class MammotionConfigFlowHandler(OptionsFlowWithConfigEntry):
+class MammotionConfigFlowHandler(OptionsFlow):
     """Handles options flow for the component."""
+
+    def __init__(self, config_entry: ConfigEntry) -> None:
+        """Initialize options flow."""
+        self.stay_connected_bluetooth = config_entry.options.get(
+            CONF_STAY_CONNECTED_BLUETOOTH, False
+        )
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
@@ -386,9 +386,7 @@ class MammotionConfigFlowHandler(OptionsFlowWithConfigEntry):
             {
                 vol.Optional(
                     CONF_STAY_CONNECTED_BLUETOOTH,
-                    default=self.config_entry.options.get(
-                        CONF_STAY_CONNECTED_BLUETOOTH, False
-                    ),
+                    default=self.stay_connected_bluetooth,
                 ): cv.boolean
             }
         )
