@@ -140,7 +140,7 @@
       }
     },
     "switch": {
-    "area": {
+      "area": {
         "name": "Area {name}"
       },
       "blade_status": {
