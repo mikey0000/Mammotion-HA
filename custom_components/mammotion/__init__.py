@@ -7,7 +7,7 @@ from homeassistant.components import bluetooth
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_ADDRESS, CONF_PASSWORD, Platform
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.exceptions import ConfigEntryError, ConfigEntryNotReady
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.device_registry import DeviceInfo
 from pymammotion import CloudIOTGateway
@@ -146,6 +146,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                         )
 
                 mammotion_device = mammotion.get_device_by_name(device.deviceName)
+                if mammotion_device is None:
+                    raise ConfigEntryError()
+
                 if address:
                     ble_device = bluetooth.async_ble_device_from_address(hass, address)
                     if ble_device:

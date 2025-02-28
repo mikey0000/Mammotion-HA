@@ -61,7 +61,7 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
     """Mammotion DataUpdateCoordinator."""
 
     manager: Mammotion = None
-    device: Device | None = None
+    device: Device = None
     updated_once: bool
 
     def __init__(

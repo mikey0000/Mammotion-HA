@@ -61,7 +61,7 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionBaseUpdateCoordinator]):
             model_id=model_id,
             name=device_name,
             sw_version=swversion,
-            model=self.coordinator.device.productModel,
+            model=self.coordinator.device.productModel or model_id,
             suggested_area="Garden",
         )
 

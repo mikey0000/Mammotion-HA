@@ -91,10 +91,7 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         key="connect_type",
         device_class=SensorDeviceClass.ENUM,
         native_unit_of_measurement=None,
-        value_fn=lambda mower_data: device_connection(
-            mower_data.report_data.connect.connect_type,
-            mower_data.report_data.connect.used_net,
-        ),
+        value_fn=lambda mower_data: device_connection(mower_data.report_data.connect),
     ),
     MammotionSensorEntityDescription(
         key="maintenance_distance",
