@@ -18,6 +18,25 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: latest
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Check package version matches tag
+        run: |
+          # Extract version from pyproject.toml
+          PACKAGE_VERSION=$(poetry version -s)
+          # Remove 'v' prefix from tag
+          TAG_VERSION=${GITHUB_REF#refs/tags/v}
+
+          if [ "$PACKAGE_VERSION" != "$TAG_VERSION" ]; then
+            echo "Package version ($PACKAGE_VERSION) does not match tag version ($TAG_VERSION)"
+            exit 1
+          fi
+
       - name: Get version from manifest.json
         id: get_version
         run: |
