@@ -98,19 +98,3 @@ jobs:
             **Full Changelog**: https://github.com/${{ github.repository }}/compare/${{ steps.get_previous_version.outputs.previous_version }}...v${{ steps.get_version.outputs.version }}
           draft: false
           prerelease: false
-
-      - name: Bump version
-        run: |
-          current_version=$(jq -r .version custom_components/mammotion/manifest.json)
-          IFS='.' read -ra version_parts <<< "$current_version"
-          ((version_parts[2]++))
-          new_version="${version_parts[0]}.${version_parts[1]}.${version_parts[2]}"
-          jq --arg version "$new_version" '.version = $version' custom_components/mammotion/manifest.json > custom_components/mammotion/manifest.json.tmp && mv custom_components/mammotion/manifest.json.tmp custom_components/mammotion/manifest.json
-
-      - name: Commit and push changes
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add custom_components/mammotion/manifest.json
-          git commit -m "Bump version to $(jq -r .version custom_components/mammotion/manifest.json)"
-          git push
