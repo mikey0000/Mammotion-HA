@@ -428,6 +428,21 @@ alibabacloud_tea_util = ">=0.3.8,<1.0.0"
 alibabacloud_url = ">=0.0.1,<1.0.0"
 
 [[package]]
+name = "aliyun-iot-linkkit"
+version = "1.2.13"
+description = "Aliyun IoT Linkkit SDK for Python"
+optional = false
+python-versions = "*"
+groups = ["main"]
+files = [
+    {file = "aliyun-iot-linkkit-1.2.13.tar.gz", hash = "sha256:e992703e3f665e0b5be2761a8c652c2e4402eaeedef05761ac86cb8a3195f251"},
+]
+
+[package.dependencies]
+crcmod = "*"
+paho-mqtt = "*"
+
+[[package]]
 name = "anyio"
 version = "4.8.0"
 description = "High level compatibility layer for multiple asynchronous event loop implementations"
@@ -2473,18 +2488,17 @@ files = [
 
 [[package]]
 name = "paho-mqtt"
-version = "2.1.0"
+version = "1.6.1"
 description = "MQTT version 5.0/3.1.1 client class"
 optional = false
-python-versions = ">=3.7"
+python-versions = "*"
 groups = ["main"]
 files = [
-    {file = "paho_mqtt-2.1.0-py3-none-any.whl", hash = "sha256:6db9ba9b34ed5bc6b6e3812718c7e06e2fd7444540df2455d2c51bd58808feee"},
-    {file = "paho_mqtt-2.1.0.tar.gz", hash = "sha256:12d6e7511d4137555a3f6ea167ae846af2c7357b10bc6fa4f7c3968fc1723834"},
+    {file = "paho-mqtt-1.6.1.tar.gz", hash = "sha256:2a8291c81623aec00372b5a85558a372c747cbca8e9934dfe218638b8eefc26f"},
 ]
 
 [package.extras]
-proxy = ["pysocks"]
+proxy = ["PySocks"]
 
 [[package]]
 name = "pillow"
@@ -2951,14 +2965,14 @@ testutils = ["gitpython (>3)"]
 
 [[package]]
 name = "pymammotion"
-version = "0.4.0b2"
+version = "0.4.0b3"
 description = ""
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "pymammotion-0.4.0b2-py3-none-any.whl", hash = "sha256:bbe52deb41353d78ce4a4a0551a28389ccc4b4aaca9eb6c33925343f671a27d2"},
-    {file = "pymammotion-0.4.0b2.tar.gz", hash = "sha256:8f482092e7c4a09c3735f87bad52c78f9c63682431d28c3af6c1009e62c23388"},
+    {file = "pymammotion-0.4.0b3-py3-none-any.whl", hash = "sha256:62e6b6d796e7f5ed3ff7381cf36cc98b5e67d38a763a190b1d46ba902ff71953"},
+    {file = "pymammotion-0.4.0b3.tar.gz", hash = "sha256:9a7bb77add31e11ea5f9559b9109b90f36a63b40b15bcb92e36ea70abdf780c8"},
 ]
 
 [package.dependencies]
@@ -2966,6 +2980,7 @@ aiohttp = ">=3.9.1,<4.0.0"
 alibabacloud-apigateway-util = ">=0.0.2,<0.0.3"
 alibabacloud-iot-api-gateway = ">=0.0.4,<0.0.5"
 alicloud-gateway-iot = ">=1.0.0,<2.0.0"
+aliyun-iot-linkkit = ">=1.2.12,<2.0.0"
 async-timeout = ">=4.0.3,<5.0.0"
 betterproto = ">=1.2.5,<2.0.0"
 bleak = ">=0.21.0"
@@ -2976,7 +2991,7 @@ jsonic = ">=1.0.0,<2.0.0"
 mashumaro = ">=3.13,<4.0"
 numpy = ">=1.26.0"
 orjson = ">=3.9.15,<4.0.0"
-paho-mqtt = ">=2.1.0,<3.0.0"
+paho-mqtt = ">=1.6.1,<2.0.0"
 protobuf = ">=4.23.1"
 py-jsonic = ">=0.0.2,<0.0.3"
 
@@ -4060,4 +4075,4 @@ propcache = ">=0.2.0"
 [metadata]
 lock-version = "2.1"
 python-versions = "~3.12.0"
-content-hash = "be6736e950babbf30cd6132dfcca0a15f2294340f8cea5ea7490ea154781bf89"
+content-hash = "0440e6176691989f203755a405a3d9486a171478228fc138749f02802b10b1cc"
