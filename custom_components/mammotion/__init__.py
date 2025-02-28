@@ -181,6 +181,10 @@ def store_cloud_credentials(hass, config_entry, cloud_client: CloudIOTGateway) -
     """Store cloud credentials in config entry."""
 
     if cloud_client is not None:
+        mammotion_data = config_entry.data.get(CONF_MAMMOTION_DATA)
+        if cloud_client.mammotion_http is not None:
+            mammotion_data = cloud_client.mammotion_http.response
+
         config_updates = {
             **config_entry.data,
             CONF_CONNECT_DATA: cloud_client.connect_response,
@@ -189,7 +193,7 @@ def store_cloud_credentials(hass, config_entry, cloud_client: CloudIOTGateway) -
             CONF_AEP_DATA: cloud_client.aep_response,
             CONF_SESSION_DATA: cloud_client.session_by_authcode_response,
             CONF_DEVICE_DATA: cloud_client.devices_by_account_response,
-            CONF_MAMMOTION_DATA: cloud_client.mammotion_http.response,
+            CONF_MAMMOTION_DATA: mammotion_data,
         }
         hass.config_entries.async_update_entry(config_entry, data=config_updates)
 
@@ -243,10 +247,10 @@ async def check_and_restore_cloud(
     )
 
     if isinstance(mammotion_data, dict):
-        mammotion_data = Response[LoginResponseData].from_dict(mammotion_data)
+        response = Response[LoginResponseData].from_dict(mammotion_data)
         mammotion_http = MammotionHTTP()
-        mammotion_http.response = mammotion_data
-        mammotion_http.login_info = mammotion_data.data
+        mammotion_http.response = response
+        mammotion_http.login_info = response.data
         cloud_client.set_http(mammotion_http)
 
     await hass.async_add_executor_job(cloud_client.check_or_refresh_session)
