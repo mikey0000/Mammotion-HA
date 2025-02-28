@@ -1,0 +1,387 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "Naprava je že kontinuirana",
+      "already_in_progress": "Konfiguracija poteka",
+      "no_devices_found": "Ne morem najti naprav",
+      "no_devices_found_in_account": "V vašem računu ni naprav",
+      "bluetooth_and_account_mismatch": "V vašem računu ni bluetooth naprav",
+      "no_longer_present": "Naprava ni več prisotna",
+      "not_supported": "Naprava ni podprta",
+      "reconfigure_successful": "Ponastavitev uspešna"
+    },
+    "flow_title": "Nastavite vašo Mammotion kosilnico",
+    "step": {
+      "bluetooth_confirm": {
+        "description": "Nastavitev {name}",
+        "data": {
+          "stay_connected_bluetooth": "Ohranite bluetooth povezavo"
+        }
+      },
+      "reconfigure": {
+        "data": {
+          "use_wifi": "Uporabi Wi-fi",
+          "account_name": "E-poštni naslov Mammotion ali številka računa",
+          "password": "Geslo Mammotion računa"
+        }
+      },
+      "user": {
+        "data": {
+          "address": "Naprava",
+          "stay_connected_bluetooth": "Ohranite bluetooth povezavo"
+        },
+        "description": "Izberite vašo kosilnico"
+      },
+      "wifi": {
+        "data": {
+          "use_wifi": "Uporabi Wi-fi (obkljukajte in pošljite za uporabo bluetooth)",
+          "account_name": "E-poštni naslov Mammotion ali številka računa",
+          "password": "Geslo Mammotion računa"
+        },
+        "title": "Poveži Wi-fi",
+        "description": "Vnesite e-poštni naslov Mammotion računa ali številko računa in geslo"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "title": "Posodobi nastavitev",
+          "stay_connected_bluetooth": "Ohrani bluetooth povezavo"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "battery_percent": {
+        "name": "Baterija"
+      },
+      "ble_rssi": {
+        "name": "BLE RSSI"
+      },
+      "camera_brightness": {
+        "name": "Osvetlitev kamere"
+      },
+      "wifi_rssi": {
+        "name": "Wifi RSSI"
+      },
+      "connect_type": {
+        "name": "Povezava"
+      },
+      "gps_stars": {
+        "name": "Sateliti (robot)"
+      },
+      "blade_height": {
+        "name": "Višina nožev"
+      },
+      "area": {
+        "name": "Področje"
+      },
+      "mowing_speed": {
+        "name": "Hitrost košnje"
+      },
+      "progress": {
+        "name": "Napredek"
+      },
+      "total_time": {
+        "name": "Skupni čas"
+      },
+      "elapsed_time": {
+        "name": "Pretečni čas"
+      },
+      "left_time": {
+        "name": "Preostali čas"
+      },
+      "l1_satellites": {
+        "name": "L1 sateliti (skupaj)"
+      },
+      "l2_satellites": {
+        "name": "L2 sateliti (skupaj)"
+      },
+      "position_mode": {
+        "name": "Položaj RTK postaje"
+      },
+      "position_type": {
+        "name": "Vrsta pozicioniranja"
+      },
+      "activity_mode": {
+        "name": "Vrsta dejavnosti"
+      },
+      "work_area": {
+        "name": "Hash področja dela"
+      },
+      "maintenance_distance": {
+        "name": "Skupno opravljena pot"
+      },
+      "maintenance_work_time": {
+        "name": "Trajanje naloge"
+      },
+      "maintenance_bat_cycles": {
+        "name": "Baterijski cikli"
+      }
+    },
+    "button": {
+      "start_map_sync": {
+        "name": "Sinhronizacija zemljevidov"
+      },
+      "resync_rtk_dock": {
+        "name": "Sinhronizacija položaja RTK in polnilne postaje"
+      },
+      "release_from_dock": {
+        "name": "Izvoz"
+      },
+      "emergency_nudge_forward": {
+        "name": "Pomik naprej (za rešitev položaja)"
+      },
+      "emergency_nudge_left": {
+        "name": "Pomik levo – za rešitev položaja"
+      },
+      "emergency_nudge_right": {
+        "name": "Pomik des"
+      },
+      "emergency_nudge_back": {
+        "name": "Pomik nazaj – za rešitev položaja"
+      },
+      "cancel_task": {
+        "name": "Prekini trenutno nalogo"
+      },
+      "clear_all_mapdata": {
+        "name": "Počisti zemljevide in imena področji"
+      }
+    },
+    "switch": {
+      "area": {
+        "name": "Področje {name}"
+      },
+      "blade_status": {
+        "name": "Noži"
+      },
+      "is_mow": {
+        "name": "Košnja"
+      },
+      "is_dump": {
+        "name": "Odlaganje listja"
+      },
+      "is_edge": {
+        "name": "Način obračanja"
+      },
+      "rain_tactics": {
+        "name": "Zaznavanje dežja"
+      },
+      "side_led": {
+        "name": "Stranska LED osvetlitev"
+      },
+      "perimeter_first_on_off": {
+        "name": "Prvo obod"
+      },
+      "schedule_updates": {
+        "name": "Samodejna nadgradnja"
+      }
+    },
+    "select": {
+      "channel_mode": {
+        "name": "Način poti",
+        "state": {
+          "single_grid": "Cikcak",
+          "double_grid": "Šahovnica",
+          "segment_grid": "Prilagodljiva cikcak pot",
+          "no_grid": "Samo obod"
+        }
+      },
+      "mowing_laps": {
+        "name": "Število krogov po obodu",
+        "state": {
+          "none": "Noben",
+          "one": "Eden",
+          "two": "Dva",
+          "three": "Tri",
+          "four": "Štiri"
+        }
+      },
+      "obstacle_laps": {
+        "name": "Število krogov po obodu prepovedanih območij",
+        "state": {
+          "none": "Noben",
+          "one": "Eden",
+          "two": "Dva",
+          "three": "Tri",
+          "four": "Štiri"
+        }
+      },
+      "border_mode": {
+        "name": "Vrstni red košnje",
+        "state": {
+          "border_first": "Najprej obod",
+          "grid_first": "Najprej področje"
+        }
+      },
+      "bypass_mode": {
+        "name": "Način izmikanja oviram",
+        "state": {
+          "direct_touch": "Polni dotik",
+          "slow_touch": "Počasni dotik",
+          "less_touch": "Manj dotika",
+          "no_touch": "Brez dotika"
+        }
+      },
+      "cutting_angle_mode": {
+        "name": "Način prečkanja poti",
+        "state": {
+          "relative_angle": "Relativni kot",
+          "absolute_angle": "Absolutni kot",
+          "random_angle": "Naključni kot"
+        }
+      },
+      "traversal_mode": {
+        "name": "Način vračanja",
+        "state": {
+          "direct": "Neposredno",
+          "follow_perimeter": "Sledi obodu"
+        }
+      }
+    },
+    "number": {
+      "start_progress": {
+        "name": "Napredek"
+      },
+      "blade_height": {
+        "name": "Višina nožev"
+      },
+      "working_speed": {
+        "name": "Hitrost košnje"
+      },
+      "cutting_angle": {
+        "name": "Kot prečkanja"
+      },
+      "path_spacing": {
+        "name": "Razmik poti"
+      },
+      "dumping_interval": {
+        "name": "Interval praznjenja"
+      },
+      "toward_included_angle": {
+        "name": "Kot prečkanja"
+      }
+    },
+    "device_tracker": {
+      "name": "Sledenje"
+    }
+  },
+  "services": {
+    "cancel_job": {
+      "name": "Prekini trenutno nalogo",
+      "description": "Ustavi kosilnico in prekine trenutno nalogo"
+    },
+    "start_mow": {
+      "name": "Prični košnjo",
+      "description": "Prični košnjo z dodatnimi nastavitvami",
+      "fields": {
+        "is_mow": {
+          "name": "Kosi",
+          "description": "Košnja aktivna. (Yuka)"
+        },
+        "is_dump": {
+          "name": "Pobiranje",
+          "description": "Pobiranje aktivno. (Yuka)"
+        },
+        "is_edge": {
+          "name": "Košnja roba",
+          "description": "Navaja, ali je način rezanja robov aktiven. (Yuka)."
+        },
+        "collect_grass_frequency": {
+          "name": "Interval košnje",
+          "description": "Pogostost zbiranja trave (v kvadratnih metrih). (Yuka)."
+        },
+        "border_mode": {
+          "name": "Vrstni red",
+          "description": "Vrstni red poti (obod ali cikcak prvo)."
+        },
+        "job_version": {
+          "name": "Job version",
+          "description": "Job version."
+        },
+        "job_id": {
+          "name": "Job ID",
+          "description": "Job ID."
+        },
+        "speed": {
+          "name": "Hitrost",
+          "description": "Hitrost košnje."
+        },
+        "ultra_wave": {
+          "name": "Način zaznavanja ovir",
+          "description": "Način izmikanja oviram."
+        },
+        "channel_mode": {
+          "name": "Način poti rezanja",
+          "description": "Način poti (cikcak, šahovnica, prilagodljiva cikcak pot, samo obod)."
+        },
+        "channel_width": {
+          "name": "Razmik med potmi",
+          "description": "Razmik med potmi (v cm)."
+        },
+        "rain_tactics": {
+          "name": "Zaznavanje dežja",
+          "description": "Zaznavanje dežja."
+        },
+        "blade_height": {
+          "name": "Višina rezil",
+          "description": "Višina rezil."
+        },
+        "toward": {
+          "name": "Kot rezalne poti",
+          "description": "Kot rezalne poti."
+        },
+        "toward_included_angle": {
+          "name": "Kot prehoda mreže",
+          "description": "Za spreminjanje kota mreže."
+        },
+        "toward_mode": {
+          "name": "Kot rezalne poti",
+          "description": "Kot rezalne poti."
+        },
+        "mowing_laps": {
+          "name": "Krogi košnje po obodu",
+          "description": "Krogi košnje po obodu."
+        },
+        "obstacle_laps": {
+          "name": "Krogi košnje po robu prepovedanih con",
+          "description": "Krogi košnje po robu prepovedanih con."
+        },
+        "start_progress": {
+          "name": "Začetek napredka",
+          "description": "Začetek napredka v odstotkih."
+        },
+        "areas": {
+          "name": "Območje naloge",
+          "description": "Spisek območij."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "device_not_ready": {
+      "message": "Robot ni pripravljen."
+    },
+    "pause_failed": {
+      "message": "Neuspešna zaustavitev košnje."
+    },
+    "resume_failed": {
+      "message": "Neuspešno nadaljevanje košnje."
+    },
+    "start_failed": {
+      "message": "Neuspešen zagon košnje."
+    },
+    "dock_failed": {
+      "message": "Neuspešna vrnitev na polnilno postajo."
+    },
+    "dock_cancel_failed": {
+      "message": "Neuspešna zaustavitev vračanja na polnilno postajo."
+    },
+    "command_failed": {
+      "message": "Ukaza ni bilo možno poslati."
+    }
+  }
+}
