@@ -136,13 +136,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                     )
                     is None
                 ):
-                    if version_coordinator.data.model_id == "":
+                    if version_coordinator.data.sub_model_id == "":
                         device_limits = device_config.get_best_default(
                             device.productKey
                         )
                     else:
                         device_limits = device_config.get_working_parameters(
-                            version_coordinator.data.model_id
+                            version_coordinator.data.sub_model_id
                         )
 
                 mammotion_device = mammotion.get_device_by_name(device.deviceName)
@@ -160,6 +160,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                     mammotion_device.preference = ConnectionPreference.BLUETOOTH
                     await mammotion_device.cloud().stop()
                     mammotion_device.cloud().mqtt.disconnect() if mammotion_device.cloud().mqtt.is_connected() else None
+                    mammotion_device.remove_cloud()
 
                 mammotion_devices.append(
                     MammotionMowerData(

@@ -63,6 +63,26 @@ LUBA_2_YUKA_ONLY_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
             mower_data.report_data.vision_info.brightness
         ),
     ),
+    MammotionSensorEntityDescription(
+        key="maintenance_distance",
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.DISTANCE,
+        native_unit_of_measurement=UnitOfLength.METERS,
+        value_fn=lambda mower_data: mower_data.report_data.maintenance.mileage,
+    ),
+    MammotionSensorEntityDescription(
+        key="maintenance_bat_cycles",
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=None,
+        value_fn=lambda mower_data: mower_data.report_data.maintenance.bat_cycles,
+    ),
+    MammotionSensorEntityDescription(
+        key="maintenance_work_time",
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.DURATION,
+        native_unit_of_measurement=UnitOfTime.SECONDS,
+        value_fn=lambda mower_data: mower_data.report_data.maintenance.work_time,
+    ),
 )
 
 SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
@@ -92,26 +112,6 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.ENUM,
         native_unit_of_measurement=None,
         value_fn=lambda mower_data: device_connection(mower_data.report_data.connect),
-    ),
-    MammotionSensorEntityDescription(
-        key="maintenance_distance",
-        state_class=SensorStateClass.MEASUREMENT,
-        device_class=SensorDeviceClass.DISTANCE,
-        native_unit_of_measurement=UnitOfLength.METERS,
-        value_fn=lambda mower_data: mower_data.report_data.maintenance.mileage,
-    ),
-    MammotionSensorEntityDescription(
-        key="maintenance_work_time",
-        state_class=SensorStateClass.MEASUREMENT,
-        device_class=SensorDeviceClass.DURATION,
-        native_unit_of_measurement=UnitOfTime.SECONDS,
-        value_fn=lambda mower_data: mower_data.report_data.maintenance.work_time,
-    ),
-    MammotionSensorEntityDescription(
-        key="maintenance_bat_cycles",
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=None,
-        value_fn=lambda mower_data: mower_data.report_data.maintenance.bat_cycles,
     ),
     MammotionSensorEntityDescription(
         key="gps_stars",

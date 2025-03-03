@@ -591,31 +591,44 @@ class MammotionDeviceVersionUpdateCoordinator(
             config_entry=config_entry,
             device=device,
             mammotion=mammotion,
-            update_interval=DEVICE_VERSION_INTERVAL,
+            update_interval=DEFAULT_INTERVAL,
         )
 
     async def _async_update_data(self):
         """Get data from the device."""
         await super()._async_update_data()
+        command_list = [
+            "get_device_version_main",
+            "get_device_version_info",
+            "get_device_base_info",
+            "get_device_product_model",
+        ]
+        for command in command_list:
+            try:
+                await self.async_send_command(command)
 
-        try:
-            await self.async_send_command("get_device_version_main")
-            await self.async_send_command("get_device_version_info")
-            await self.async_send_command("get_device_base_info")
-            await self.async_send_command("get_device_product_model")
-
-            await self.check_firmware_version()
-        except DeviceOfflineException:
-            """Device is offline try bluetooth if we have it."""
-            device = self.manager.get_device_by_name(self.device_name)
-            device.mower_state.online = False
-            data = device.mower_state.mower_state
-            return data
+            except DeviceOfflineException:
+                """Device is offline bluetooth has been attempted."""
+                device = self.manager.get_device_by_name(self.device_name)
+                device.mower_state.online = False
+                data = device.mower_state.mower_state
+                return data
 
         data = self.manager.get_device_by_name(self.device_name).mower_state.mower_state
+        await self.check_firmware_version()
+
+        if data.model_id:
+            self.update_interval = DEVICE_VERSION_INTERVAL
+
         self.updated_once = True
 
         return data
+
+    async def _async_setup(self) -> None:
+        try:
+            await self.async_send_command("get_device_product_model")
+        except DeviceOfflineException:
+            """Device is offline bluetooth has been attempted."""
 
 
 class MammotionMapUpdateCoordinator(MammotionBaseUpdateCoordinator[MowerInfo]):
