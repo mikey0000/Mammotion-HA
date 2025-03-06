@@ -70,12 +70,6 @@ type MammotionConfigEntry = ConfigEntry[list[MammotionMowerData]]
 async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) -> bool:
     """Set up Mammotion Luba from a config entry."""
 
-    if not entry.options:
-        hass.config_entries.async_update_entry(
-            entry,
-            options={CONF_STAY_CONNECTED_BLUETOOTH: False},
-        )
-
     device_name = entry.data.get(CONF_DEVICE_NAME)
     address = entry.data.get(CONF_ADDRESS)
     mammotion = Mammotion()
@@ -83,6 +77,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
     password = entry.data.get(CONF_PASSWORD)
 
     stay_connected_ble = entry.data.get(CONF_STAY_CONNECTED_BLUETOOTH, False)
+
+    if not entry.options:
+        hass.config_entries.async_update_entry(
+            entry,
+            options={CONF_STAY_CONNECTED_BLUETOOTH: stay_connected_ble},
+        )
+
+    stay_connected_ble = entry.options.get(CONF_STAY_CONNECTED_BLUETOOTH, False)
+
     use_wifi = entry.data.get(CONF_USE_WIFI, True)
 
     mammotion_devices: list[MammotionMowerData] = []
@@ -151,7 +154,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
 
                 if address:
                     ble_device = bluetooth.async_ble_device_from_address(hass, address)
-                    if ble_device:
+                    if ble_device and ble_device.name == device_name:
                         mammotion_device.add_ble(ble_device)
                         mammotion_device.ble().set_disconnect_strategy(
                             not stay_connected_ble
@@ -160,6 +163,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                     mammotion_device.preference = ConnectionPreference.BLUETOOTH
                     await mammotion_device.cloud().stop()
                     mammotion_device.cloud().mqtt.disconnect() if mammotion_device.cloud().mqtt.is_connected() else None
+                    # not entirely sure this is a good idea
                     mammotion_device.remove_cloud()
 
                 mammotion_devices.append(
@@ -251,10 +255,10 @@ async def check_and_restore_cloud(
     )
 
     if isinstance(mammotion_data, dict):
-        response = Response[LoginResponseData].from_dict(mammotion_data)
+        mammotion_data = Response[LoginResponseData].from_dict(mammotion_data)
         mammotion_http = MammotionHTTP()
-        mammotion_http.response = response
-        mammotion_http.login_info = response.data
+        mammotion_http.response = mammotion_data
+        mammotion_http.login_info = mammotion_data.data
         cloud_client.set_http(mammotion_http)
 
     await hass.async_add_executor_job(cloud_client.check_or_refresh_session)

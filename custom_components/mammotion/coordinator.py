@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import asyncio
-from dataclasses import asdict
 from datetime import timedelta
 from typing import TYPE_CHECKING, Any
 
@@ -60,8 +59,8 @@ MAP_INTERVAL = timedelta(minutes=30)
 class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
     """Mammotion DataUpdateCoordinator."""
 
-    manager: Mammotion = None
-    device: Device = None
+    manager: Mammotion | None = None
+    device: Device | None = None
     updated_once: bool
 
     def __init__(
@@ -335,7 +334,11 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
 
     async def async_rtk_dock_location(self) -> None:
         """RTK and dock location."""
-        await self.async_send_command("allpowerfull_rw", id=5, rw=1, context=1)
+        await self.async_send_command("allpowerfull_rw", rw_id=5, rw=1, context=1)
+
+    async def async_get_area_list(self) -> None:
+        """Mowing area List."""
+        await self.async_send_command("get_area_name_list", device_id=self.device.iotId)
 
     async def send_command_and_update(self, command_str: str, **kwargs: Any) -> None:
         await self.async_send_command(command_str, **kwargs)
@@ -429,8 +432,7 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
     async def async_save_data(self, data: MowingDevice) -> None:
         """Get map data from the device."""
         store = Store(self.hass, version=1, key=self.device_name)
-        stored_data = asdict(data)
-        await store.async_save(stored_data)
+        await store.async_save(data.to_dict())
 
     async def _async_update_data(self):
         device = self.manager.get_device_by_name(self.device_name)
@@ -484,8 +486,6 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
             """Device is offline try bluetooth if we have it."""
             device = self.manager.get_device_by_name(self.device_name)
             device.mower_state.online = False
-            # if device.has_ble():
-            #     device.preference = ConnectionPreference.BLUETOOTH
             data = device.mower_state
             return data
 
@@ -660,7 +660,7 @@ class MammotionMapUpdateCoordinator(MammotionBaseUpdateCoordinator[MowerInfo]):
         device = self.manager.get_device_by_name(self.device_name)
 
         try:
-            if (
+            if self.updated_once and (
                 len(device.mower_state.map.hashlist) == 0
                 or len(device.mower_state.map.missing_hashlist) > 0
             ):
@@ -685,6 +685,8 @@ class MammotionMapUpdateCoordinator(MammotionBaseUpdateCoordinator[MowerInfo]):
             return
         try:
             await self.async_rtk_dock_location()
+            if not DeviceType.is_luba1(self.device_name):
+                await self.async_get_area_list()
         except DeviceOfflineException:
             """Device is offline try bluetooth if we have it."""
             device.mower_state.online = False
