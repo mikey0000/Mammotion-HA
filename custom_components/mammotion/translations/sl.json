@@ -1,7 +1,7 @@
 {
   "config": {
     "abort": {
-      "already_configured": "Naprava je že kontinuirana",
+      "already_configured": "Naprava je že konfigurirana",
       "already_in_progress": "Konfiguracija poteka",
       "no_devices_found": "Ne morem najti naprav",
       "no_devices_found_in_account": "V vašem računu ni naprav",
@@ -133,13 +133,13 @@
         "name": "Izvoz"
       },
       "emergency_nudge_forward": {
-        "name": "Pomik naprej (za rešitev položaja)"
+        "name": "Pomik naprej – za rešitev položaja"
       },
       "emergency_nudge_left": {
         "name": "Pomik levo – za rešitev položaja"
       },
       "emergency_nudge_right": {
-        "name": "Pomik des"
+        "name": "Pomik desno – za rešitev položaja"
       },
       "emergency_nudge_back": {
         "name": "Pomik nazaj – za rešitev položaja"

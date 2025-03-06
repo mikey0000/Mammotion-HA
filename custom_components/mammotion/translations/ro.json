@@ -319,8 +319,8 @@
           "description": "Calea de tăiere (doar pentru zigzag, șescom, zigzag adaptiv sau perimetr)."
         },
         "channel_width": {
-          "name": "Lățime cale",
-          "description": "Lăţimea traiectoriei de umbră (în cm)."
+          "name": "Lățimea căii",
+          "description": "Lățimea căii de cosit (în cm)."
         },
         "rain_tactics": {
           "name": "Detectarea ploii",
@@ -378,7 +378,7 @@
       "message": "Nu s-a reușit trimiterea cositoarei la doc."
     },
     "dock_cancel_failed": {
-      "message": "Nu a reușit să oprească revenirea la doc."
+      "message": "Nu a reușit să oprească, când se întorcea la doc."
     },
     "command_failed": {
       "message": "Nu s-a reușit trimiterea comenzii către mașina de tuns iarba."
