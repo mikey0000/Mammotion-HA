@@ -1,5 +1,5 @@
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable
 
 from homeassistant.components.number import (
     NumberDeviceClass,
@@ -8,9 +8,9 @@ from homeassistant.components.number import (
     NumberMode,
 )
 from homeassistant.const import (
-    AREA_SQUARE_METERS,
     DEGREE,
     PERCENTAGE,
+    UnitOfArea,
     UnitOfLength,
     UnitOfSpeed,
 )
@@ -18,11 +18,11 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.restore_state import RestoreEntity
-from pymammotion.data.model.device_config import DeviceLimits
+from pymammotion.data.model.device_limits import DeviceLimits
 from pymammotion.utility.device_type import DeviceType
 
 from . import MammotionConfigEntry
-from .coordinator import MammotionDataUpdateCoordinator
+from .coordinator import MammotionBaseUpdateCoordinator
 from .entity import MammotionBaseEntity
 
 
@@ -30,7 +30,7 @@ from .entity import MammotionBaseEntity
 class MammotionConfigNumberEntityDescription(NumberEntityDescription):
     """Describes Mammotion number entity."""
 
-    set_fn: Callable[[MammotionDataUpdateCoordinator, float], None]
+    set_fn: Callable[[MammotionBaseUpdateCoordinator, float], None]
 
 
 NUMBER_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
@@ -74,7 +74,7 @@ YUKA_NUMBER_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
         max_value=100,
         step=1,
         mode=NumberMode.SLIDER,
-        native_unit_of_measurement=AREA_SQUARE_METERS,
+        native_unit_of_measurement=UnitOfArea.SQUARE_METERS,
         set_fn=lambda coordinator, value: setattr(
             coordinator.operation_settings, "collect_grass_frequency", value
         ),
@@ -85,8 +85,8 @@ LUBA_WORKING_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
     MammotionConfigNumberEntityDescription(
         key="blade_height",
         step=1,
-        min_value=25,  # ToDo: To be dynamiclly set based on model (h\non H)
-        max_value=70,  # ToDo: To be dynamiclly set based on model (h\non H)
+        min_value=25,
+        max_value=70,
         mode=NumberMode.BOX,
         set_fn=lambda coordinator, value: setattr(
             coordinator.operation_settings, "blade_height", value
@@ -127,31 +127,39 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the Mammotion number entities."""
-    coordinator = entry.runtime_data
-    limits = coordinator.manager.mower(coordinator.device_name).limits
+    mammotion_devices = entry.runtime_data
 
-    entities: list[MammotionConfigNumberEntity] = []
+    for mower in mammotion_devices:
+        limits = mower.device_limits
 
-    for entity_description in NUMBER_WORKING_ENTITIES:
-        entity = MammotionWorkingNumberEntity(coordinator, entity_description, limits)
-        entities.append(entity)
+        entities: list[MammotionConfigNumberEntity] = []
 
-    for entity_description in NUMBER_ENTITIES:
-        entity = MammotionConfigNumberEntity(coordinator, entity_description)
-        entities.append(entity)
-
-    if DeviceType.is_yuka(coordinator.device_name):
-        for entity_description in YUKA_NUMBER_ENTITIES:
-            entity = MammotionConfigNumberEntity(coordinator, entity_description)
-            entities.append(entity)
-    else:
-        for entity_description in LUBA_WORKING_ENTITIES:
+        for entity_description in NUMBER_WORKING_ENTITIES:
             entity = MammotionWorkingNumberEntity(
-                coordinator, entity_description, limits
+                mower.reporting_coordinator, entity_description, limits
             )
             entities.append(entity)
 
-    async_add_entities(entities)
+        for entity_description in NUMBER_ENTITIES:
+            entity = MammotionConfigNumberEntity(
+                mower.reporting_coordinator, entity_description
+            )
+            entities.append(entity)
+
+        if DeviceType.is_yuka(mower.device.deviceName):
+            for entity_description in YUKA_NUMBER_ENTITIES:
+                entity = MammotionConfigNumberEntity(
+                    mower.reporting_coordinator, entity_description
+                )
+                entities.append(entity)
+        else:
+            for entity_description in LUBA_WORKING_ENTITIES:
+                entity = MammotionWorkingNumberEntity(
+                    mower.reporting_coordinator, entity_description, limits
+                )
+                entities.append(entity)
+
+        async_add_entities(entities)
 
 
 class MammotionConfigNumberEntity(MammotionBaseEntity, NumberEntity, RestoreEntity):
@@ -161,7 +169,7 @@ class MammotionConfigNumberEntity(MammotionBaseEntity, NumberEntity, RestoreEnti
 
     def __init__(
         self,
-        coordinator: MammotionDataUpdateCoordinator,
+        coordinator: MammotionBaseUpdateCoordinator,
         entity_description: MammotionConfigNumberEntityDescription,
     ) -> None:
         super().__init__(coordinator, entity_description.key)
@@ -188,7 +196,7 @@ class MammotionWorkingNumberEntity(MammotionConfigNumberEntity):
 
     def __init__(
         self,
-        coordinator: MammotionDataUpdateCoordinator,
+        coordinator: MammotionBaseUpdateCoordinator,
         entity_description: MammotionConfigNumberEntityDescription,
         limits: DeviceLimits,
     ) -> None:

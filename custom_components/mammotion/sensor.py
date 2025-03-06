@@ -10,9 +10,9 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.const import (
-    AREA_SQUARE_METERS,
     PERCENTAGE,
     SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
+    UnitOfArea,
     UnitOfLength,
     UnitOfSpeed,
     UnitOfTime,
@@ -31,8 +31,7 @@ from pymammotion.utility.constant.device_constant import (
 )
 from pymammotion.utility.device_type import DeviceType
 
-from . import MammotionConfigEntry
-from .coordinator import MammotionDataUpdateCoordinator
+from . import MammotionConfigEntry, MammotionReportUpdateCoordinator
 from .entity import MammotionBaseEntity
 
 SPEED_UNITS = SpeedConverter.VALID_UNITS
@@ -64,6 +63,26 @@ LUBA_2_YUKA_ONLY_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
             mower_data.report_data.vision_info.brightness
         ),
     ),
+    MammotionSensorEntityDescription(
+        key="maintenance_distance",
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.DISTANCE,
+        native_unit_of_measurement=UnitOfLength.METERS,
+        value_fn=lambda mower_data: mower_data.report_data.maintenance.mileage,
+    ),
+    MammotionSensorEntityDescription(
+        key="maintenance_bat_cycles",
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=None,
+        value_fn=lambda mower_data: mower_data.report_data.maintenance.bat_cycles,
+    ),
+    MammotionSensorEntityDescription(
+        key="maintenance_work_time",
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.DURATION,
+        native_unit_of_measurement=UnitOfTime.SECONDS,
+        value_fn=lambda mower_data: mower_data.report_data.maintenance.work_time,
+    ),
 )
 
 SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
@@ -92,30 +111,7 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         key="connect_type",
         device_class=SensorDeviceClass.ENUM,
         native_unit_of_measurement=None,
-        value_fn=lambda mower_data: device_connection(
-            mower_data.report_data.connect.connect_type,
-            mower_data.report_data.connect.used_net,
-        ),
-    ),
-    MammotionSensorEntityDescription(
-        key="maintenance_distance",
-        state_class=SensorStateClass.MEASUREMENT,
-        device_class=SensorDeviceClass.DISTANCE,
-        native_unit_of_measurement=UnitOfLength.METERS,
-        value_fn=lambda mower_data: mower_data.report_data.maintenance.mileage,
-    ),
-    MammotionSensorEntityDescription(
-        key="maintenance_work_time",
-        state_class=SensorStateClass.MEASUREMENT,
-        device_class=SensorDeviceClass.DURATION,
-        native_unit_of_measurement=UnitOfTime.SECONDS,
-        value_fn=lambda mower_data: mower_data.report_data.maintenance.work_time,
-    ),
-    MammotionSensorEntityDescription(
-        key="maintenance_bat_cycles",
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=None,
-        value_fn=lambda mower_data: mower_data.report_data.maintenance.bat_cycles,
+        value_fn=lambda mower_data: device_connection(mower_data.report_data.connect),
     ),
     MammotionSensorEntityDescription(
         key="gps_stars",
@@ -128,7 +124,7 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         key="area",
         state_class=SensorStateClass.MEASUREMENT,
         device_class=None,
-        native_unit_of_measurement=AREA_SQUARE_METERS,
+        native_unit_of_measurement=UnitOfArea.SQUARE_METERS,
         value_fn=lambda mower_data: mower_data.report_data.work.area & 65535,
     ),
     MammotionSensorEntityDescription(
@@ -248,23 +244,25 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up sensor platform."""
-    coordinator = entry.runtime_data
+    mammotion_devices = entry.runtime_data
 
-    if not DeviceType.is_yuka(coordinator.device_name):
+    for mower in mammotion_devices:
+        if not DeviceType.is_yuka(mower.device.deviceName):
+            async_add_entities(
+                MammotionSensorEntity(mower.reporting_coordinator, description)
+                for description in LUBA_SENSOR_ONLY_TYPES
+            )
+
+        if not DeviceType.is_luba1(mower.device.deviceName):
+            async_add_entities(
+                MammotionSensorEntity(mower.reporting_coordinator, description)
+                for description in LUBA_2_YUKA_ONLY_TYPES
+            )
+
         async_add_entities(
-            MammotionSensorEntity(coordinator, description)
-            for description in LUBA_SENSOR_ONLY_TYPES
+            MammotionSensorEntity(mower.reporting_coordinator, description)
+            for description in SENSOR_TYPES
         )
-
-    if not DeviceType.is_luba1(coordinator.device_name):
-        async_add_entities(
-            MammotionSensorEntity(coordinator, description)
-            for description in LUBA_2_YUKA_ONLY_TYPES
-        )
-
-    async_add_entities(
-        MammotionSensorEntity(coordinator, description) for description in SENSOR_TYPES
-    )
 
 
 class MammotionSensorEntity(MammotionBaseEntity, SensorEntity):
@@ -275,13 +273,13 @@ class MammotionSensorEntity(MammotionBaseEntity, SensorEntity):
 
     def __init__(
         self,
-        coordinator: MammotionDataUpdateCoordinator,
-        description: MammotionSensorEntityDescription,
+        coordinator: MammotionReportUpdateCoordinator,
+        entity_description: MammotionSensorEntityDescription,
     ) -> None:
         """Set up MammotionSensor."""
-        super().__init__(coordinator, description.key)
-        self.entity_description = description
-        self._attr_translation_key = description.key
+        super().__init__(coordinator, entity_description.key)
+        self.entity_description = entity_description
+        self._attr_translation_key = entity_description.key
 
     @property
     def native_value(self) -> StateType:

@@ -1,20 +1,41 @@
 name: Release
 
 on:
-  workflow_dispatch:
   push:
-    branches:
-      - main
+    tags:
+      - 'v*'  # Trigger on version tags
 
 jobs:
   release:
     name: Create Release
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write  # Required for OIDC
+      contents: write  # Required for creating releases
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: latest
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Check package version matches tag
+        run: |
+          # Extract version from pyproject.toml
+          PACKAGE_VERSION=$(poetry version -s)
+          # Remove 'v' prefix from tag
+          TAG_VERSION=${GITHUB_REF#refs/tags/v}
+
+          if [ "$PACKAGE_VERSION" != "$TAG_VERSION" ]; then
+            echo "Package version ($PACKAGE_VERSION) does not match tag version ($TAG_VERSION)"
+            exit 1
+          fi
 
       - name: Get version from manifest.json
         id: get_version
@@ -77,19 +98,3 @@ jobs:
             **Full Changelog**: https://github.com/${{ github.repository }}/compare/${{ steps.get_previous_version.outputs.previous_version }}...v${{ steps.get_version.outputs.version }}
           draft: false
           prerelease: false
-
-      - name: Bump version
-        run: |
-          current_version=$(jq -r .version custom_components/mammotion/manifest.json)
-          IFS='.' read -ra version_parts <<< "$current_version"
-          ((version_parts[2]++))
-          new_version="${version_parts[0]}.${version_parts[1]}.${version_parts[2]}"
-          jq --arg version "$new_version" '.version = $version' custom_components/mammotion/manifest.json > custom_components/mammotion/manifest.json.tmp && mv custom_components/mammotion/manifest.json.tmp custom_components/mammotion/manifest.json
-
-      - name: Commit and push changes
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add custom_components/mammotion/manifest.json
-          git commit -m "Bump version to $(jq -r .version custom_components/mammotion/manifest.json)"
-          git push
