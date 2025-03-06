@@ -25,7 +25,7 @@ from pymammotion.data.model.device import MowerInfo, MowingDevice
 from pymammotion.data.model.device_config import OperationSettings, create_path_order
 from pymammotion.data.model.report_info import Maintain
 from pymammotion.mammotion.devices.mammotion import ConnectionPreference, Mammotion
-from pymammotion.proto.mctrl_sys import RptAct, RptInfoType
+from pymammotion.proto import RptAct, RptInfoType
 from pymammotion.utility.constant import WorkMode
 from pymammotion.utility.device_type import DeviceType
 
@@ -611,8 +611,7 @@ class MammotionDeviceVersionUpdateCoordinator(
                 """Device is offline bluetooth has been attempted."""
                 device = self.manager.get_device_by_name(self.device_name)
                 device.mower_state.online = False
-                data = device.mower_state.mower_state
-                return data
+                return device.mower_state.mower_state
 
         data = self.manager.get_device_by_name(self.device_name).mower_state.mower_state
         await self.check_firmware_version()
@@ -669,8 +668,7 @@ class MammotionMapUpdateCoordinator(MammotionBaseUpdateCoordinator[MowerInfo]):
         except DeviceOfflineException:
             """Device is offline try bluetooth if we have it."""
             device.mower_state.online = False
-            data = device.mower_state.mower_state
-            return data
+            return device.mower_state.mower_state
 
         data = self.manager.get_device_by_name(self.device_name).mower_state.mower_state
         self.updated_once = True
