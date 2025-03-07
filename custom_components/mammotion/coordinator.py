@@ -86,7 +86,6 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         self._operation_settings = OperationSettings()
         self.update_failures = 0
         self.enabled = True
-        self.updated_once = False
 
     async def set_scheduled_updates(self, enabled: bool) -> None:
         self.enabled = enabled
@@ -512,8 +511,6 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
         else:
             self.update_interval = DEFAULT_INTERVAL
 
-        self.updated_once = True
-
         return data
 
     async def _async_update_notification(self, res: tuple[str, Any | None]) -> None:
@@ -525,7 +522,11 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
                 self.async_set_updated_data(mower)
 
     async def _async_setup(self) -> None:
+        """Setup report coordinator."""
         device = self.manager.get_device_by_name(self.device_name)
+
+        if self.data is None:
+            self.data = device.mower_state
 
         if device.has_cloud():
             device.cloud().set_notification_callback(self._async_update_notification)
@@ -566,11 +567,15 @@ class MammotionMaintenanceUpdateCoordinator(MammotionBaseUpdateCoordinator[Maint
             data = device.mower_state
             return data
 
-        self.updated_once = True
-
         return self.manager.get_device_by_name(
             self.device.deviceName
         ).mower_state.report_data.maintenance
+
+    async def _async_setup(self) -> None:
+        """Setup maintenance coordinator."""
+        device = self.manager.get_device_by_name(self.device_name)
+        if self.data is None:
+            self.data = device.mower_state.report_data.maintenance
 
 
 class MammotionDeviceVersionUpdateCoordinator(
@@ -619,11 +624,13 @@ class MammotionDeviceVersionUpdateCoordinator(
         if data.model_id:
             self.update_interval = DEVICE_VERSION_INTERVAL
 
-        self.updated_once = True
-
         return data
 
     async def _async_setup(self) -> None:
+        device = self.manager.get_device_by_name(self.device_name)
+        if self.data is None:
+            self.data = device.mower_state.mower_state
+
         try:
             await self.async_send_command("get_device_product_model")
         except DeviceOfflineException:
@@ -659,7 +666,7 @@ class MammotionMapUpdateCoordinator(MammotionBaseUpdateCoordinator[MowerInfo]):
         device = self.manager.get_device_by_name(self.device_name)
 
         try:
-            if self.updated_once and (
+            if (
                 len(device.mower_state.map.hashlist) == 0
                 or len(device.mower_state.map.missing_hashlist) > 0
             ):
@@ -671,13 +678,14 @@ class MammotionMapUpdateCoordinator(MammotionBaseUpdateCoordinator[MowerInfo]):
             return device.mower_state.mower_state
 
         data = self.manager.get_device_by_name(self.device_name).mower_state.mower_state
-        self.updated_once = True
 
         return data
 
     async def _async_setup(self) -> None:
         """Setup coordinator with initial calls to get map data."""
         device = self.manager.get_device_by_name(self.device_name)
+        if self.data is None:
+            self.data = device.mower_state.mower_state
 
         if not self.enabled or not device.mower_state.online:
             return

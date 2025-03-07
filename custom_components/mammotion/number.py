@@ -203,16 +203,16 @@ class MammotionWorkingNumberEntity(MammotionConfigNumberEntity):
         """Init MammotionWorkingNumberEntity."""
         super().__init__(coordinator, entity_description)
 
-        min_attr = f"{entity_description.key}_min"
-        max_attr = f"{entity_description.key}_max"
-
-        if hasattr(limits, min_attr) and hasattr(limits, max_attr):
-            self._attr_native_min_value = getattr(limits, min_attr)
-            self._attr_native_max_value = getattr(limits, max_attr)
+        if hasattr(limits, entity_description.key):
+            self._attr_native_min_value = getattr(limits, entity_description.key).min
+            self._attr_native_max_value = getattr(limits, entity_description.key).max
         else:
             # Fallback to the values from entity_description
             self._attr_native_min_value = entity_description.min_value
             self._attr_native_max_value = entity_description.max_value
+
+        if self._attr_native_value < self._attr_native_min_value:
+            self._attr_native_value = self._attr_native_min_value
 
     @property
     def native_min_value(self) -> float:

@@ -130,23 +130,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                 await maintenance_coordinator.async_config_entry_first_refresh()
                 await version_coordinator.async_config_entry_first_refresh()
                 await report_coordinator.async_config_entry_first_refresh()
-                await map_coordinator.async_config_entry_first_refresh()
 
                 device_config = DeviceConfig()
-                if (
-                    device_limits := device_config.get_working_parameters(
+                device_limits = device_config.get_working_parameters(
+                    version_coordinator.data.sub_model_id
+                )
+                if device_limits is None:
+                    device_limits = device_config.get_working_parameters(
                         device.productKey
                     )
-                    is None
-                ):
-                    if version_coordinator.data.sub_model_id == "":
-                        device_limits = device_config.get_best_default(
-                            device.productKey
-                        )
-                    else:
-                        device_limits = device_config.get_working_parameters(
-                            version_coordinator.data.sub_model_id
-                        )
+
+                if device_limits is None:
+                    device_limits = device_config.get_best_default(device.productKey)
 
                 mammotion_device = mammotion.get_device_by_name(device.deviceName)
                 if mammotion_device is None:
@@ -178,6 +173,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                         map_coordinator=map_coordinator,
                     )
                 )
+                await map_coordinator.async_request_refresh()
 
     entry.runtime_data = mammotion_devices
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
