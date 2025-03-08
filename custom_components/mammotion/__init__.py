@@ -173,7 +173,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                         map_coordinator=map_coordinator,
                     )
                 )
-                await map_coordinator.async_request_refresh()
+                try:
+                    await map_coordinator.async_request_refresh()
+                except:
+                    """Do nothing for now."""
 
     entry.runtime_data = mammotion_devices
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
