@@ -85,12 +85,11 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         self.manager = mammotion
         self._operation_settings = OperationSettings()
         self.update_failures = 0
-        self.enabled = True
 
     async def set_scheduled_updates(self, enabled: bool) -> None:
-        self.enabled = enabled
         device = self.manager.get_device_by_name(self.device_name)
-        if self.enabled:
+        device.mower_state.enabled = enabled
+        if device.mower_state.enabled:
             if device.has_cloud():
                 await device.cloud().start()
         else:
@@ -433,10 +432,10 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         store = Store(self.hass, version=1, key=self.device_name)
         await store.async_save(data.to_dict())
 
-    async def _async_update_data(self):
+    async def _async_update_data(self) -> _DataT | None:
         device = self.manager.get_device_by_name(self.device_name)
 
-        if not self.enabled or not device.mower_state.online:
+        if not device.mower_state.enabled or not device.mower_state.online:
             return self.data
 
         if self.update_failures > 3 and device.preference is ConnectionPreference.WIFI:
@@ -469,7 +468,8 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
 
     async def _async_update_data(self) -> MowingDevice:
         """Get data from the device."""
-        await super()._async_update_data()
+        if data := await super()._async_update_data():
+            return data
 
         device = self.manager.get_device_by_name(self.device_name)
 
@@ -555,7 +555,8 @@ class MammotionMaintenanceUpdateCoordinator(MammotionBaseUpdateCoordinator[Maint
 
     async def _async_update_data(self) -> Maintain:
         """Get data from the device."""
-        await super()._async_update_data()
+        if data := await super()._async_update_data():
+            return data
 
         try:
             await self.async_send_command("get_maintenance")
@@ -603,7 +604,8 @@ class MammotionDeviceVersionUpdateCoordinator(
 
     async def _async_update_data(self):
         """Get data from the device."""
-        await super()._async_update_data()
+        if data := await super()._async_update_data():
+            return data
         command_list = [
             "get_device_version_main",
             "get_device_version_info",
@@ -666,7 +668,8 @@ class MammotionMapUpdateCoordinator(MammotionBaseUpdateCoordinator[MowerInfo]):
 
     async def _async_update_data(self):
         """Get data from the device."""
-        await super()._async_update_data()
+        if data := await super()._async_update_data():
+            return data
         device = self.manager.get_device_by_name(self.device_name)
 
         try:
@@ -693,7 +696,7 @@ class MammotionMapUpdateCoordinator(MammotionBaseUpdateCoordinator[MowerInfo]):
         if self.data is None:
             self.data = device.mower_state.mower_state
 
-        if not self.enabled or not device.mower_state.online:
+        if not device.mower_state.enabled or not device.mower_state.online:
             return
         try:
             await self.async_rtk_dock_location()
