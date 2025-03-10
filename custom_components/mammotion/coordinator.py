@@ -297,9 +297,9 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
             "read_and_set_sidelight", is_sidelight=False, operate=1
         )
 
-    async def set_traversal_mode(self, id: int) -> None:
+    async def set_traversal_mode(self, context: int) -> None:
         """Set traversal mode."""
-        await self.async_send_command("traverse_mode", id=id)
+        await self.async_send_command("traverse_mode", context=context)
 
     async def async_blade_height(self, height: int) -> int:
         """Set blade height."""
@@ -686,12 +686,10 @@ class MammotionMapUpdateCoordinator(MammotionBaseUpdateCoordinator[MowerInfo]):
         except GatewayTimeoutException:
             """Gateway is timing out again."""
 
-        data = self.manager.get_device_by_name(self.device_name).mower_state.mower_state
-
-        return data
+        return self.manager.get_device_by_name(self.device_name).mower_state.mower_state
 
     async def _async_setup(self) -> None:
-        """Setup coordinator with initial calls to get map data."""
+        """Setup coordinator with initial call to get map data."""
         device = self.manager.get_device_by_name(self.device_name)
         if self.data is None:
             self.data = device.mower_state.mower_state
