@@ -10,12 +10,12 @@
       "not_supported": "Appareil non pris en charge",
       "reconfigure_successful": "Reconfiguration réussie"
     },
-    "flow_title": "Configurez votre tondeuse à gazon Mammotion",
+    "flow_title": "Configurer votre tondeuse à gazon Mammotion",
     "step": {
       "bluetooth_confirm": {
         "description": "Configuration de {name}",
         "data": {
-          "stay_connected_bluetooth": "Gardez le Bluetooth connecté"
+          "stay_connected_bluetooth": "Garder le Bluetooth connecté"
         }
       },
       "reconfigure": {
@@ -28,7 +28,7 @@
       "user": {
         "data": {
           "address": "Appareil",
-          "stay_connected_bluetooth": "Gardez le Bluetooth connecté"
+          "stay_connected_bluetooth": "Garder le Bluetooth connecté"
         },
         "description": "Choisissez votre tondeuse"
       },
@@ -48,7 +48,7 @@
       "init": {
         "data": {
           "title": "Mettre à jour la configuration",
-          "stay_connected_bluetooth": "Gardez le Bluetooth connecté"
+          "stay_connected_bluetooth": "Garder le Bluetooth connecté"
         }
       }
     }
@@ -59,16 +59,16 @@
         "name": "Batterie"
       },
       "ble_rssi": {
-        "name": "BLE RSSI"
+        "name": "Signal Bluetooth"
       },
       "camera_brightness": {
         "name": "Luminosité de la caméra"
       },
       "wifi_rssi": {
-        "name": "WiFi RSSI"
+        "name": "Signal Wi-Fi"
       },
       "connect_type": {
-        "name": "Raccordement"
+        "name": "Connexion"
       },
       "gps_stars": {
         "name": "Satellites (Robot)"
@@ -83,7 +83,7 @@
         "name": "Vitesse de tonte"
       },
       "progress": {
-        "name": "Progrès"
+        "name": "Progression"
       },
       "total_time": {
         "name": "Temps total"
@@ -110,7 +110,7 @@
         "name": "Mode activité"
       },
       "work_area": {
-        "name": "Hachage de la zone de travail"
+        "name": "Zone de travail"
       },
       "maintenance_distance": {
         "name": "Kilométrage total"
@@ -127,10 +127,10 @@
         "name": "Synchroniser les cartes"
       },
       "resync_rtk_dock": {
-        "name": "Synchroniser RTK et base de charge"
+        "name": "Synchroniser RTK et base"
       },
       "release_from_dock": {
-        "name": "Détacher de la base"
+        "name": "Quitter la base"
       },
       "emergency_nudge_forward": {
         "name": "Mouvement d'urgence en avant"
@@ -156,28 +156,28 @@
         "name": "Zone {name}"
       },
       "blade_status": {
-        "name": "Lames On/Off"
+        "name": "Lames on/off"
       },
       "is_mow": {
-        "name": "Tonte On/Off"
+        "name": "Tonte on/off"
       },
       "is_dump": {
-        "name": "Déversement d'herbe On/Off"
+        "name": "Déversement d'herbe on/off"
       },
       "is_edge": {
         "name": "Coupe des bordures"
       },
       "rain_tactics": {
-        "name": "Détection de pluie On/Off"
+        "name": "Détection de la pluie on/off"
       },
       "side_led": {
-        "name": "Voyants LED On/Off"
+        "name": "LED latérales on/off"
       },
       "perimeter_first_on_off": {
         "name": "Bordure en premier"
       },
       "schedule_updates": {
-        "name": "Activer/Désactiver les mises à jour"
+        "name": "Activer/désactiver les mises à jour"
       }
     },
     "select": {
