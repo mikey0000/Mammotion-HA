@@ -250,6 +250,61 @@
       "name": "Device Tracking"
     }
   },
+  "selector": {
+    "border_modes": {
+      "options": {
+        "0": "Perimeter first",
+        "1": "ZigZag/chessboard first"
+      },
+      "ultra_waves": {
+        "options": {
+          "0": "Direct touch",
+          "1": "Slow touch",
+          "2": "Less touch",
+          "10": "No touch"
+        }
+      },
+      "channel_modes": {
+        "options": {
+          "0": "Zigzag path",
+          "1": "Chessboard path",
+          "2": "Adaptive zigzag path",
+          "3": "Perimeter only"
+        }
+      },
+      "rain_tactics": {
+        "options": {
+          "0": "Off",
+          "1": "On"
+        }
+      },
+      "toward_modes": {
+        "options": {
+          "0": "Relative angle",
+          "1": "Absolute angle",
+          "2": "Random angle"
+        }
+      },
+      "mowing_laps": {
+        "options": {
+          "0": "None",
+          "1": "One lap",
+          "2": "Two laps",
+          "3": "Three laps",
+          "4": "Foor laps"
+        }
+      },
+      "obstacle_laps": {
+        "options": {
+          "0": "None",
+          "1": "One lap",
+          "2": "Two laps",
+          "3": "Three laps",
+          "4": "Foor laps"
+        }
+      }
+    }
+  },
   "services": {
     "cancel_job": {
       "name": "Cancel current task",
