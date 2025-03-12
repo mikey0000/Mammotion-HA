@@ -42,7 +42,7 @@ start_mow:
       required: false
       selector:
         select:
-          translation_key: "border_modes"
+          translation_key: "border_mode"
           options:
             - 0
             - 1
@@ -74,7 +74,7 @@ start_mow:
       default: 2
       selector:
         select:
-          translation_key: "ultra_waves"
+          translation_key: "ultra_wave"
           options:
             - 0
             - 1
@@ -87,7 +87,7 @@ start_mow:
       required: false
       selector:
         select:
-          translation_key: "channel_modes"
+          translation_key: "channel_mode"
           options:
             - 0
             - 1
@@ -144,7 +144,7 @@ start_mow:
       default: 0
       selector:
         select:
-          translation_key: "toward_modes"
+          translation_key: "toward_mode"
           options:
             - 0
             - 1

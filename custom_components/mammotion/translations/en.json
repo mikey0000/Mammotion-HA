@@ -61,9 +61,6 @@
       "ble_rssi": {
         "name": "BLE RSSI"
       },
-      "camera_brightness": {
-        "name": "Camera Brightness"
-      },
       "wifi_rssi": {
         "name": "WiFi RSSI"
       },
@@ -111,15 +108,6 @@
       },
       "work_area": {
         "name": "Work area hash"
-      },
-      "maintenance_distance": {
-        "name": "Total mileage"
-      },
-      "maintenance_work_time": {
-        "name": "Task duration"
-      },
-      "maintenance_bat_cycles": {
-        "name": "Battery cycles"
       }
     },
     "button": {
@@ -233,13 +221,6 @@
           "absolute_angle": "Absolute angle",
           "random_angle": "Random angle"
         }
-      },
-      "traversal_mode": {
-        "name": "Traversal Mode",
-        "state": {
-          "direct": "Direct",
-          "follow_perimeter": "Follow the perimeter"
-        }
       }
     },
     "number": {
@@ -270,57 +251,57 @@
     }
   },
   "selector": {
-    "border_modes": {
+    "border_mode": {
       "options": {
         "0": "Perimeter first",
         "1": "ZigZag/chessboard first"
-      },
-      "ultra_waves": {
-        "options": {
-          "0": "Direct touch",
-          "1": "Slow touch",
-          "2": "Less touch",
-          "10": "No touch"
-        }
-      },
-      "channel_modes": {
-        "options": {
-          "0": "Zigzag path",
-          "1": "Chessboard path",
-          "2": "Adaptive zigzag path",
-          "3": "Perimeter only"
-        }
-      },
-      "rain_tactics": {
-        "options": {
-          "0": "Off",
-          "1": "On"
-        }
-      },
-      "toward_modes": {
-        "options": {
-          "0": "Relative angle",
-          "1": "Absolute angle",
-          "2": "Random angle"
-        }
-      },
-      "mowing_laps": {
-        "options": {
-          "0": "None",
-          "1": "One lap",
-          "2": "Two laps",
-          "3": "Three laps",
-          "4": "Four laps"
-        }
-      },
-      "obstacle_laps": {
-        "options": {
-          "0": "None",
-          "1": "One lap",
-          "2": "Two laps",
-          "3": "Three laps",
-          "4": "Four laps"
-        }
+      }
+    },
+    "ultra_wave": {
+      "options": {
+        "0": "Direct touch",
+        "1": "Slow touch",
+        "2": "Less touch",
+        "10": "No touch"
+      }
+    },
+    "channel_mode": {
+      "options": {
+        "0": "Zigzag path",
+        "1": "Chessboard path",
+        "2": "Adaptive zigzag path",
+        "3": "Perimeter only"
+      }
+    },
+    "rain_tactics": {
+      "options": {
+        "0": "Off",
+        "1": "On"
+      }
+    },
+    "toward_mode": {
+      "options": {
+        "0": "Relative angle",
+        "1": "Absolute angle",
+        "2": "Random angle"
+      }
+    },
+    "mowing_laps": {
+      "options": {
+        "0": "None",
+        "1": "One lap",
+        "2": "Two laps",
+        "3": "Three laps",
+        "4": "Four laps"
+      }
+    },
+    "obstacle_laps": {
+      "options": {
+        "0": "None",
+        "1": "One lap",
+        "2": "Two laps",
+        "3": "Three laps",
+        "4": "Four laps"
       }
     }
   },
@@ -335,19 +316,19 @@
       "fields": {
         "is_mow": {
           "name": "Is Mowing",
-          "description": "Whether mowing is active. (Yuka)."
+          "description": "Whether mowing is active. (Yuka)"
         },
         "is_dump": {
           "name": "Is Dumping",
-          "description": "Whether grass dumping is active. (Yuka)."
+          "description": "Whether grass dumping is active. (Yuka)"
         },
         "is_edge": {
           "name": "Edge mowing",
-          "description": "Whether edge mode is active. (Yuka)."
+          "description": "Whether edge mode is active. (Yuka)"
         },
         "collect_grass_frequency": {
           "name": "Grass Collection Frequency",
-          "description": "Frequency to collect grass (in meters squared). (Yuka)."
+          "description": "Frequency to collect grass (in meters squared). (Yuka)"
         },
         "border_mode": {
           "name": "Mow Order",
