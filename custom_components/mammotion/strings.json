@@ -291,7 +291,7 @@
           "1": "One lap",
           "2": "Two laps",
           "3": "Three laps",
-          "4": "Foor laps"
+          "4": "Four laps"
         }
       },
       "obstacle_laps": {
@@ -300,7 +300,7 @@
           "1": "One lap",
           "2": "Two laps",
           "3": "Three laps",
-          "4": "Foor laps"
+          "4": "Four laps"
         }
       }
     }
