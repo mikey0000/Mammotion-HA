@@ -20,7 +20,7 @@
       },
       "reconfigure": {
         "data": {
-          "use_wifi": "Nutze Wi-fi",
+          "use_wifi": "Verwende WLAN",
           "account_name": "Mammotion E-Mail oder Account Nummer",
           "password": "Mammotion Kennwort"
         }
@@ -34,7 +34,7 @@
       },
       "wifi": {
         "data": {
-          "use_wifi": "Nutze Wi-fi",
+          "use_wifi": "Wi-Fi verwenden (abwählen und senden, um Bluetooth zu nutzen)\n",
           "account_name": "Mammotion E-Mail oder Account Nummer",
           "password": "Mammotion Kennwort"
         },
