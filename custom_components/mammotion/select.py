@@ -45,7 +45,7 @@ ASYNC_SELECT_ENTITIES: tuple[MammotionAsyncConfigSelectEntityDescription, ...] =
         key="traversal_mode",
         options=[mode.name for mode in TraversalMode],
         set_fn=lambda coordinator, value: coordinator.set_traversal_mode(
-            TraversalMode[value]
+            TraversalMode[value].value
         ),
     ),
 )
@@ -56,28 +56,30 @@ SELECT_ENTITIES: tuple[MammotionConfigSelectEntityDescription, ...] = (
         key="channel_mode",
         options=[mode.name for mode in CuttingMode],
         set_fn=lambda coordinator, value: setattr(
-            coordinator.operation_settings, "channel_mode", CuttingMode[value]
+            coordinator.operation_settings, "channel_mode", CuttingMode[value].value
         ),
     ),
     MammotionConfigSelectEntityDescription(
         key="mowing_laps",
         options=[mode.name for mode in BorderPatrolMode],
         set_fn=lambda coordinator, value: setattr(
-            coordinator.operation_settings, "mowing_laps", BorderPatrolMode[value]
+            coordinator.operation_settings, "mowing_laps", BorderPatrolMode[value].value
         ),
     ),
     MammotionConfigSelectEntityDescription(
         key="obstacle_laps",
         options=[mode.name for mode in ObstacleLapsMode],
         set_fn=lambda coordinator, value: setattr(
-            coordinator.operation_settings, "obstacle_laps", ObstacleLapsMode[value]
+            coordinator.operation_settings,
+            "obstacle_laps",
+            ObstacleLapsMode[value].value,
         ),
     ),
     MammotionConfigSelectEntityDescription(
         key="border_mode",
         options=[order.name for order in MowOrder],
         set_fn=lambda coordinator, value: setattr(
-            coordinator.operation_settings, "border_mode", MowOrder[value]
+            coordinator.operation_settings, "border_mode", MowOrder[value].value
         ),
     ),
 )
@@ -91,7 +93,7 @@ LUBA1_SELECT_ENTITIES: tuple[MammotionConfigSelectEntityDescription, ...] = (
             if angle_type != PathAngleSetting.random_angle
         ],
         set_fn=lambda coordinator, value: setattr(
-            coordinator.operation_settings, "toward_mode", PathAngleSetting[value]
+            coordinator.operation_settings, "toward_mode", PathAngleSetting[value].value
         ),
     ),
     MammotionConfigSelectEntityDescription(
@@ -102,7 +104,7 @@ LUBA1_SELECT_ENTITIES: tuple[MammotionConfigSelectEntityDescription, ...] = (
             if strategy != BypassStrategy.no_touch
         ],
         set_fn=lambda coordinator, value: setattr(
-            coordinator.operation_settings, "ultra_wave", BypassStrategy[value]
+            coordinator.operation_settings, "ultra_wave", BypassStrategy[value].value
         ),
     ),
 )
@@ -112,14 +114,14 @@ LUBA_PRO_SELECT_ENTITIES: tuple[MammotionConfigSelectEntityDescription, ...] = (
         key="cutting_angle_mode",
         options=[angle_type.name for angle_type in PathAngleSetting],
         set_fn=lambda coordinator, value: setattr(
-            coordinator.operation_settings, "toward_mode", PathAngleSetting[value]
+            coordinator.operation_settings, "toward_mode", PathAngleSetting[value].value
         ),
     ),
     MammotionConfigSelectEntityDescription(
         key="bypass_mode",
         options=[strategy.name for strategy in BypassStrategy],
         set_fn=lambda coordinator, value: setattr(
-            coordinator.operation_settings, "ultra_wave", BypassStrategy[value]
+            coordinator.operation_settings, "ultra_wave", BypassStrategy[value].value
         ),
     ),
 )
