@@ -183,6 +183,7 @@ class MammotionConfigNumberEntity(MammotionBaseEntity, NumberEntity, RestoreEnti
             self._attr_native_value = 0
         if self.entity_description.key == "toward_included_angle":
             self._attr_native_value = 90
+        self.entity_description.set_fn(self.coordinator, self._attr_native_value)
 
     async def async_set_native_value(self, value: float) -> None:
         """Set native value for number."""
@@ -213,6 +214,7 @@ class MammotionWorkingNumberEntity(MammotionConfigNumberEntity):
 
         if self._attr_native_value < self._attr_native_min_value:
             self._attr_native_value = self._attr_native_min_value
+        self.entity_description.set_fn(self.coordinator, self._attr_native_value)
 
     @property
     def native_min_value(self) -> float:
