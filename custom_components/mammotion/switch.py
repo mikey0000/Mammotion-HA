@@ -189,13 +189,13 @@ async def async_setup_entry(
 
 
 class MammotionSwitchEntity(MammotionBaseEntity, SwitchEntity):
-    entity_description: MammotionSwitchEntityDescription
+    entity_description: MammotionAsyncSwitchEntityDescription
     _attr_has_entity_name = True
 
     def __init__(
         self,
         coordinator: MammotionBaseUpdateCoordinator,
-        entity_description: MammotionSwitchEntityDescription,
+        entity_description: MammotionAsyncSwitchEntityDescription,
     ) -> None:
         super().__init__(coordinator, entity_description.key)
         self.coordinator = coordinator
