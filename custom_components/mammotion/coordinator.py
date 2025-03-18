@@ -377,16 +377,16 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
             rain_tactics=operation_settings.rain_tactics,
             speed=operation_settings.speed,
             ultra_wave=operation_settings.ultra_wave,  # touch no touch etc
-            toward=operation_settings.toward,  # is just angle
-            toward_included_angle=operation_settings.toward_included_angle
+            toward=operation_settings.toward,  # is just angle (route angle)
+            toward_included_angle=operation_settings.toward_included_angle  # demond_angle
             if operation_settings.channel_mode == 1
             else 0,  # crossing angle relative to grid
             toward_mode=operation_settings.toward_mode,
             blade_height=operation_settings.blade_height,
-            channel_mode=operation_settings.channel_mode,  # single, double, segment or none
-            channel_width=operation_settings.channel_width,
+            channel_mode=operation_settings.channel_mode,  # single, double, segment or none (route mode)
+            channel_width=operation_settings.channel_width,  # path space
             job_mode=operation_settings.job_mode,  # taskMode grid or border first
-            edge_mode=operation_settings.mowing_laps,  # perimeter laps
+            edge_mode=operation_settings.mowing_laps,  # perimeter/mowing laps
             path_order=create_path_order(operation_settings, self.device_name),
             obstacle_laps=operation_settings.obstacle_laps,
         )
@@ -394,6 +394,12 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         if DeviceType.is_luba1(self.device_name):
             route_information.toward_mode = 0
             route_information.toward_included_angle = 0
+
+        if (
+            DeviceType.is_mini_or_x_series(self.device_name)
+            and route_information.toward_mode == 0
+        ):
+            route_information.toward = 0
 
         return await self.async_send_command(
             "generate_route_information", generate_route_information=route_information
