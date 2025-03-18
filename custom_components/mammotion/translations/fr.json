@@ -156,42 +156,42 @@
         "name": "Zone {name}"
       },
       "blade_status": {
-        "name": "Lames on/off"
+        "name": "Activation des lames"
       },
       "is_mow": {
-        "name": "Tonte on/off"
+        "name": "Tonte"
       },
       "is_dump": {
-        "name": "Déversement d'herbe on/off"
+        "name": "Ramassage de l'herbe"
       },
       "is_edge": {
         "name": "Coupe des bordures"
       },
       "rain_tactics": {
-        "name": "Détection de la pluie on/off"
+        "name": "Détection de la pluie"
       },
       "side_led": {
-        "name": "LED latérales on/off"
+        "name": "LED latérales"
       },
       "perimeter_first_on_off": {
-        "name": "Bordure en premier"
+        "name": "Bordure d'abord"
       },
       "schedule_updates": {
-        "name": "Activer/désactiver les mises à jour"
+        "name": "Mises à jour"
       }
     },
     "select": {
       "channel_mode": {
-        "name": "Mode de coupe",
+        "name": "Mode de trajectoire de tonte",
         "state": {
-          "single_grid": "Grille unique",
-          "double_grid": "Grille à damier",
-          "segment_grid": "Grille mixte/segmentée",
-          "no_grid": "Pas de grille"
+          "single_grid": "Trajectoire en zigzag",
+          "double_grid": "Trajectoire en quadrillage",
+          "segment_grid": "Trajectoire en zigzag adaptative",
+          "no_grid": "Périmètre uniquement"
         }
       },
       "mowing_laps": {
-        "name": "Mode Chien de Garde",
+        "name": "Tours de tonte du périmètre",
         "state": {
           "none": "Aucun",
           "one": "Un",
@@ -201,7 +201,7 @@
         }
       },
       "obstacle_laps": {
-        "name": "Mode contours d'obstacles",
+        "name": "Tours de tonte de zones interdites",
         "state": {
           "none": "Aucun",
           "one": "Un",
@@ -218,16 +218,16 @@
         }
       },
       "bypass_mode": {
-        "name": "Mode d'évitement d'obstacles",
+        "name": "Mode de détection d'obstacles",
         "state": {
           "direct_touch": "Toucher direct",
           "slow_touch": "Toucher lent",
           "less_touch": "Moins de contact",
-          "no_touch": "Mode sans collision"
+          "no_touch": "Pas de contact"
         }
       },
       "cutting_angle_mode": {
-        "name": "Mode angle de coupe",
+        "name": "Angle de trajectoire",
         "state": {
           "relative_angle": "Angle relatif",
           "absolute_angle": "Angle absolu",
@@ -256,7 +256,7 @@
         "name": "Angle de coupe"
       },
       "path_spacing": {
-        "name": "Espacement des chemins"
+        "name": "Espacement des trajectoires"
       },
       "dumping_interval": {
         "name": "Fréquence de vidage"
@@ -269,6 +269,61 @@
       "name": "Suivi de l'appareil"
     }
   },
+  "selector": {
+    "border_mode": {
+      "options": {
+        "0": "Perimeter first",
+        "1": "ZigZag/chessboard first"
+      }
+    },
+    "ultra_wave": {
+      "options": {
+        "0": "Direct touch",
+        "1": "Slow touch",
+        "2": "Less touch",
+        "10": "No touch"
+      }
+    },
+    "channel_mode": {
+      "options": {
+        "0": "Zigzag path",
+        "1": "Chessboard path",
+        "2": "Adaptive zigzag path",
+        "3": "Perimeter only"
+      }
+    },
+    "rain_tactics": {
+      "options": {
+        "0": "Off",
+        "1": "On"
+      }
+    },
+    "toward_mode": {
+      "options": {
+        "0": "Relative angle",
+        "1": "Absolute angle",
+        "2": "Random angle"
+      }
+    },
+    "mowing_laps": {
+      "options": {
+        "0": "None",
+        "1": "One lap",
+        "2": "Two laps",
+        "3": "Three laps",
+        "4": "Four laps"
+      }
+    },
+    "obstacle_laps": {
+      "options": {
+        "0": "None",
+        "1": "One lap",
+        "2": "Two laps",
+        "3": "Three laps",
+        "4": "Four laps"
+      }
+    }
+  },
   "services": {
     "cancel_job": {
       "name": "Annuler la tâche en cours",
@@ -279,15 +334,15 @@
       "description": "Démarrer l'opération de tonte avec des paramètres personnalisés.",
       "fields": {
         "is_mow": {
-          "name": "Est-ce que la tonte est active",
+          "name": "Tonte",
           "description": "Si la tonte est active. (Yuka)."
         },
         "is_dump": {
-          "name": "Est-ce que le déversement est actif",
-          "description": "Si le déversement d'herbe est actif. (Yuka)."
+          "name": "Ramassage de l'herbe",
+          "description": "Si le ramassage de l''herbe est actif. (Yuka)."
         },
         "is_edge": {
-          "name": "Est-ce que le mode bordure est actif",
+          "name": "Mode bordure",
           "description": "Si le mode bordure est actif. (Yuka)."
         },
         "collect_grass_frequency": {
@@ -299,12 +354,12 @@
           "description": "Ordre du chemin de tonte (bordure d'abord ou grille d'abord)."
         },
         "job_version": {
-          "name": "Version de travail",
-          "description": "Version de travail."
+          "name": "Version de la tâche",
+          "description": "Version de la tâche."
         },
         "job_id": {
-          "name": "Identifiant de travail",
-          "description": "Identifiant de travail."
+          "name": "Identifiant de la tâche",
+          "description": "Identifiant de la tâche."
         },
         "speed": {
           "name": "Vitesse",
@@ -316,26 +371,26 @@
         },
         "channel_mode": {
           "name": "Mode canal",
-          "description": "Mode canal (grille, simple, double ou simple2)."
+          "description": "Mode de trajectoire (quadrillage, zigzag, zigzag adaptatif ou périmètre seulement)."
         },
         "channel_width": {
-          "name": "Largeur du canal",
-          "description": "Largeur du canal de tonte (en cm)."
+          "name": "Espacement des trajectoires",
+          "description": "Espacement des trajectoires (en cm)."
         },
         "rain_tactics": {
-          "name": "Détection de pluie",
-          "description": "Détection de pluie."
+          "name": "Détection de la pluie",
+          "description": "Détection de la pluie."
         },
         "blade_height": {
-          "name": "Hauteur de la lame",
-          "description": "Hauteur de la lame."
+          "name": "Hauteur de coupe",
+          "description": "Hauteur de coupe."
         },
         "toward": {
           "name": "Angle",
           "description": "Angle de direction pour la tonte."
         },
         "toward_included_angle": {
-          "name": "Angle par rapport à la grille ?",
+          "name": "Angle par rapport à la grille",
           "description": "Lors de la sélection de la grille, modifiez le deuxième angle."
         },
         "toward_mode": {
@@ -343,16 +398,16 @@
           "description": "Mode angle."
         },
         "mowing_laps": {
-          "name": "Mode Chien de Garde",
-          "description": "Mode chien de garde (nombre de tours)."
+          "name": "Tours de tonte du périmètre",
+          "description": "Nombre de tours de tonte du périmètre."
         },
         "obstacle_laps": {
-          "name": "Tours d'obstacles",
-          "description": "Nombre de tours autour des obstacles."
+          "name": "Tours de tonte des zones interdites",
+          "description": "Nombre de tours de tonte des zones interdites."
         },
         "start_progress": {
           "name": "Démarrer à un pourcentage de progression",
-          "description": "Pourcentage de progression de départ."
+          "description": "Démarrer à un pourcentage de progression."
         },
         "areas": {
           "name": "Zones",
@@ -375,7 +430,7 @@
       "message": "Impossible de démarrer la tonte."
     },
     "dock_failed": {
-      "message": "Impossible d'envoyer la tondeuse à la base."
+      "message": "Impossible de renvoyer la tondeuse à la base."
     },
     "dock_cancel_failed": {
       "message": "Impossible d'empêcher la tondeuse de revenir à la base."
