@@ -24,7 +24,11 @@ from pymammotion.data.model import GenerateRouteInformation, HashList
 from pymammotion.data.model.device import MowerInfo, MowingDevice
 from pymammotion.data.model.device_config import OperationSettings, create_path_order
 from pymammotion.data.model.report_info import Maintain
-from pymammotion.mammotion.devices.mammotion import ConnectionPreference, Mammotion
+from pymammotion.mammotion.devices.mammotion import (
+    ConnectionPreference,
+    Mammotion,
+    MammotionMixedDeviceManager,
+)
 from pymammotion.proto import RptAct, RptInfoType
 from pymammotion.utility.constant import WorkMode
 from pymammotion.utility.device_type import DeviceType
@@ -48,7 +52,7 @@ if TYPE_CHECKING:
     from . import MammotionConfigEntry
 
 
-MAINTENENCE_INTERVAL = timedelta(minutes=60)
+MAINTENANCE_INTERVAL = timedelta(minutes=60)
 DEFAULT_INTERVAL = timedelta(minutes=1)
 WORKING_INTERVAL = timedelta(seconds=5)
 REPORT_INTERVAL = timedelta(minutes=1)
@@ -61,7 +65,6 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
 
     manager: Mammotion | None = None
     device: Device | None = None
-    updated_once: bool
 
     def __init__(
         self,
@@ -115,6 +118,14 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         password = self.config_entry.data.get(CONF_PASSWORD)
         await self.manager.login_and_initiate_cloud(account, password, True)
         self.store_cloud_credentials()
+
+    async def device_offline(self, device: MammotionMixedDeviceManager) -> None:
+        device.mower_state.online = False
+        if device.has_cloud():
+            await device.cloud().stop()
+
+        loop = asyncio.get_running_loop()
+        loop.call_later(900, self.clear_update_failures)
 
     def store_cloud_credentials(self) -> None:
         """Store cloud credentials in config entry."""
@@ -201,61 +212,6 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         if model_id := mower.mower_state.model_id:
             if model_id is not None or model_id != device_entry.model_id:
                 device_registry.async_update_device(device_entry.id, model_id=model_id)
-
-    # async def async_setup(self) -> None:
-    #     """Set coordinator up."""
-    #
-    #     preference = (
-    #         ConnectionPreference.WIFI
-    #         if self.config_entry.data.get(CONF_USE_WIFI, False)
-    #         else ConnectionPreference.BLUETOOTH
-    #     )
-    #     address = self.config_entry.data.get(CONF_ADDRESS)
-    #     stay_connected_ble = self.config_entry.options.get(
-    #         CONF_STAY_CONNECTED_BLUETOOTH, False
-    #     )
-    #
-    #
-    #
-    #             # address previous bugs
-    #     if address is None and preference == ConnectionPreference.BLUETOOTH:
-    #         preference = ConnectionPreference.WIFI
-    #
-    #     if address:
-    #         ble_device = bluetooth.async_ble_device_from_address(self.hass, address)
-    #         if not ble_device and credentials is None:
-    #             raise ConfigEntryNotReady(
-    #                 f"Could not find Mammotion lawn mower with address {address}"
-    #             )
-    #         if ble_device is not None:
-    #             self.device_name = ble_device.name or "Unknown"
-    #             self.manager.add_ble_device(ble_device, preference)
-    #
-    #
-    #     if ble_device and device:
-    #         device.ble().set_disconnect_strategy(not stay_connected_ble)
-    #
-    #     # await self.async_restore_data()
-    #
-    #     try:
-    #         if preference is ConnectionPreference.WIFI and device.has_cloud():
-    #             self.store_cloud_credentials()
-    #             if mqtt_client := self.manager.mqtt_list.get(account):
-    #                 device.mower_state.error_codes = await mqtt_client.cloud_client.mammotion_http.get_all_error_codes()
-    #             device.cloud().set_notification_callback(
-    #                 self._async_update_notification
-    #             )
-    #             await device.cloud().start_sync(0)
-    #         elif device.has_ble():
-    #             device.ble().set_notification_callback(self._async_update_notification)
-    #             await device.ble().start_sync(0)
-    #         else:
-    #             raise ConfigEntryNotReady(
-    #                 "No configuration available to setup Mammotion lawn mower"
-    #             )
-    #
-    #     except COMMAND_EXCEPTIONS as exc:
-    #         raise ConfigEntryNotReady("Unable to setup Mammotion device") from exc
 
     async def async_sync_maps(self) -> None:
         """Get map data from the device."""
@@ -395,6 +351,7 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
             route_information.toward_mode = 0
             route_information.toward_included_angle = 0
 
+        # not sure if this is artificial limit
         if (
             DeviceType.is_mini_or_x_series(self.device_name)
             and route_information.toward_mode == 0
@@ -412,6 +369,11 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
 
     def clear_update_failures(self) -> None:
         self.update_failures = 0
+        device = self.manager.get_device_by_name(self.device_name)
+        if not device.mower_state.online:
+            device.mower_state.online = True
+            if device.has_cloud() and device.cloud().stopped:
+                device.cloud().start()
 
     @property
     def operation_settings(self) -> OperationSettings:
@@ -490,7 +452,7 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
         except DeviceOfflineException:
             """Device is offline try bluetooth if we have it."""
             device = self.manager.get_device_by_name(self.device_name)
-            device.mower_state.online = False
+            await self.device_offline(device)
             data = device.mower_state
             return data
 
@@ -556,7 +518,7 @@ class MammotionMaintenanceUpdateCoordinator(MammotionBaseUpdateCoordinator[Maint
             config_entry=config_entry,
             device=device,
             mammotion=mammotion,
-            update_interval=MAINTENENCE_INTERVAL,
+            update_interval=MAINTENANCE_INTERVAL,
         )
 
     async def _async_update_data(self) -> Maintain:
@@ -570,7 +532,7 @@ class MammotionMaintenanceUpdateCoordinator(MammotionBaseUpdateCoordinator[Maint
         except DeviceOfflineException:
             """Device is offline try bluetooth if we have it."""
             device = self.manager.get_device_by_name(self.device_name)
-            device.mower_state.online = False
+            await self.device_offline(device)
             data = device.mower_state
             return data
         except GatewayTimeoutException:
@@ -625,7 +587,7 @@ class MammotionDeviceVersionUpdateCoordinator(
             except DeviceOfflineException:
                 """Device is offline bluetooth has been attempted."""
                 device = self.manager.get_device_by_name(self.device_name)
-                device.mower_state.online = False
+                await self.device_offline(device)
                 return device.mower_state.mower_state
             except GatewayTimeoutException:
                 """Gateway is timing out again."""
@@ -687,7 +649,7 @@ class MammotionMapUpdateCoordinator(MammotionBaseUpdateCoordinator[MowerInfo]):
 
         except DeviceOfflineException:
             """Device is offline try bluetooth if we have it."""
-            device.mower_state.online = False
+            await self.device_offline(device)
             return device.mower_state.mower_state
         except GatewayTimeoutException:
             """Gateway is timing out again."""
@@ -708,6 +670,6 @@ class MammotionMapUpdateCoordinator(MammotionBaseUpdateCoordinator[MowerInfo]):
                 await self.async_get_area_list()
         except DeviceOfflineException:
             """Device is offline try bluetooth if we have it."""
-            device.mower_state.online = False
+            await self.device_offline(device)
         except GatewayTimeoutException:
             """Gateway is timing out again."""

@@ -80,6 +80,7 @@ start_mow:
             - 1
             - 2
             - 10
+            - 11
       required: false
     channel_mode:
       example: 0

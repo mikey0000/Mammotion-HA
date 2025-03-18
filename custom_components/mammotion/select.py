@@ -8,7 +8,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.restore_state import RestoreEntity
 from pymammotion.data.model.mowing_modes import (
     BorderPatrolMode,
-    BypassStrategy,
+    DetectionStrategy,
     CuttingMode,
     MowOrder,
     ObstacleLapsMode,
@@ -100,11 +100,11 @@ LUBA1_SELECT_ENTITIES: tuple[MammotionConfigSelectEntityDescription, ...] = (
         key="bypass_mode",
         options=[
             strategy.name
-            for strategy in BypassStrategy
-            if strategy != BypassStrategy.no_touch
+            for strategy in DetectionStrategy
+            if strategy != DetectionStrategy.no_touch
         ],
         set_fn=lambda coordinator, value: setattr(
-            coordinator.operation_settings, "ultra_wave", BypassStrategy[value].value
+            coordinator.operation_settings, "ultra_wave", DetectionStrategy[value].value
         ),
     ),
 )
@@ -119,9 +119,9 @@ LUBA_PRO_SELECT_ENTITIES: tuple[MammotionConfigSelectEntityDescription, ...] = (
     ),
     MammotionConfigSelectEntityDescription(
         key="bypass_mode",
-        options=[strategy.name for strategy in BypassStrategy],
+        options=[strategy.name for strategy in DetectionStrategy],
         set_fn=lambda coordinator, value: setattr(
-            coordinator.operation_settings, "ultra_wave", BypassStrategy[value].value
+            coordinator.operation_settings, "ultra_wave", DetectionStrategy[value].value
         ),
     ),
 )
@@ -191,6 +191,7 @@ class MammotionConfigSelectEntity(MammotionBaseEntity, SelectEntity, RestoreEnti
         self._attr_translation_key = entity_description.key
         self._attr_options = entity_description.options
         self._attr_current_option = entity_description.options[0]
+        self.entity_description.set_fn(self.coordinator, self._attr_current_option)
 
     async def async_select_option(self, option: str) -> None:
         self._attr_current_option = option
