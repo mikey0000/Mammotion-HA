@@ -281,7 +281,8 @@
         "0": "Direct touch",
         "1": "Slow touch",
         "2": "Less touch",
-        "10": "No touch"
+        "10": "No touch",
+        "11": "Sensitive"
       }
     },
     "channel_mode": {
