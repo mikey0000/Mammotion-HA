@@ -108,6 +108,13 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         value_fn=lambda mower_data: mower_data.report_data.connect.wifi_rssi,
     ),
     MammotionSensorEntityDescription(
+        key="mnet_rssi",
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.SIGNAL_STRENGTH,
+        native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
+        value_fn=lambda mower_data: mower_data.report_data.connect.mnet_rssi,
+    ),
+    MammotionSensorEntityDescription(
         key="connect_type",
         device_class=SensorDeviceClass.ENUM,
         native_unit_of_measurement=None,

@@ -32,6 +32,7 @@ from pymammotion.mammotion.devices.mammotion import (
 from pymammotion.proto import RptAct, RptInfoType
 from pymammotion.utility.constant import WorkMode
 from pymammotion.utility.device_type import DeviceType
+from Tea.exceptions import UnretryableException
 
 from .const import (
     COMMAND_EXCEPTIONS,
@@ -174,7 +175,8 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
             if self.update_failures > 0:
                 await asyncio.sleep(1)
             await self.async_send_command(command, **kwargs)
-        except DeviceOfflineException:
+            # TODO update to NoConnectionException
+        except (DeviceOfflineException, UnretryableException):
             """Device is offline try bluetooth if we have it."""
             try:
                 if device.has_ble():

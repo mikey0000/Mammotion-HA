@@ -67,6 +67,9 @@
       "wifi_rssi": {
         "name": "Signal Wi-Fi"
       },
+      "mnet_rssi": {
+        "name": "Mobile RSSI"
+      },
       "connect_type": {
         "name": "Connexion"
       },

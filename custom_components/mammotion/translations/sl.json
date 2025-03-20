@@ -67,6 +67,9 @@
       "wifi_rssi": {
         "name": "Wifi RSSI"
       },
+      "mnet_rssi": {
+        "name": "Mobile RSSI"
+      },
       "connect_type": {
         "name": "Povezava"
       },

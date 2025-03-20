@@ -67,6 +67,9 @@
       "wifi_rssi": {
         "name": "WiFi RSSI"
       },
+      "mnet_rssi": {
+        "name": "Mobile RSSI"
+      },
       "connect_type": {
         "name": "Connection"
       },
@@ -223,7 +226,8 @@
           "direct_touch": "Direct touch",
           "slow_touch": "Slow touch",
           "less_touch": "Less touch",
-          "no_touch": "No Touch"
+          "no_touch": "No touch",
+          "sensitive": "Sensitive"
         }
       },
       "cutting_angle_mode": {
