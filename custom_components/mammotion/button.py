@@ -5,6 +5,7 @@ from dataclasses import dataclass
 
 from homeassistant.components.button import ButtonEntity, ButtonEntityDescription
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import MammotionConfigEntry
@@ -23,10 +24,12 @@ BUTTON_SENSORS: tuple[MammotionButtonSensorEntityDescription, ...] = (
     MammotionButtonSensorEntityDescription(
         key="start_map_sync",
         press_fn=lambda coordinator: coordinator.async_sync_maps(),
+        entity_category=EntityCategory.CONFIG,
     ),
     MammotionButtonSensorEntityDescription(
         key="resync_rtk_dock",
         press_fn=lambda coordinator: coordinator.async_rtk_dock_location(),
+        entity_category=EntityCategory.CONFIG,
     ),
     MammotionButtonSensorEntityDescription(
         key="release_from_dock",
@@ -35,18 +38,22 @@ BUTTON_SENSORS: tuple[MammotionButtonSensorEntityDescription, ...] = (
     MammotionButtonSensorEntityDescription(
         key="emergency_nudge_forward",
         press_fn=lambda coordinator: coordinator.async_move_forward(0.4),
+        entity_category=EntityCategory.CONFIG,
     ),
     MammotionButtonSensorEntityDescription(
         key="emergency_nudge_left",
         press_fn=lambda coordinator: coordinator.async_move_left(0.4),
+        entity_category=EntityCategory.CONFIG,
     ),
     MammotionButtonSensorEntityDescription(
         key="emergency_nudge_right",
         press_fn=lambda coordinator: coordinator.async_move_right(0.4),
+        entity_category=EntityCategory.CONFIG,
     ),
     MammotionButtonSensorEntityDescription(
         key="emergency_nudge_back",
         press_fn=lambda coordinator: coordinator.async_move_back(0.4),
+        entity_category=EntityCategory.CONFIG,
     ),
     MammotionButtonSensorEntityDescription(
         key="cancel_task",
@@ -55,6 +62,7 @@ BUTTON_SENSORS: tuple[MammotionButtonSensorEntityDescription, ...] = (
     MammotionButtonSensorEntityDescription(
         key="clear_all_mapdata",
         press_fn=lambda coordinator: coordinator.clear_all_maps(),
+        entity_category=EntityCategory.CONFIG,
     ),
 )
 

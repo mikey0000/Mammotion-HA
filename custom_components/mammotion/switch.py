@@ -220,6 +220,7 @@ class MammotionSwitchEntity(MammotionBaseEntity, SwitchEntity):
 class MammotionUpdateSwitchEntity(MammotionBaseEntity, SwitchEntity, RestoreEntity):
     entity_description: MammotionUpdateSwitchEntityDescription
     _attr_has_entity_name = True
+    _attr_entity_category = EntityCategory.CONFIG
 
     def __init__(
         self,
