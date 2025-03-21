@@ -226,7 +226,8 @@
           "direct_touch": "Directe aanraking",
           "slow_touch": "Langzame aanraking",
           "less_touch": "Minder aanraking",
-          "no_touch": "Geen aanraking"
+          "no_touch": "Zonder aanraking",
+          "sensitive": "Gevoelig"
         }
       },
       "cutting_angle_mode": {
@@ -275,17 +276,17 @@
   "selector": {
     "border_mode": {
       "options": {
-        "0": "Perimeter first",
-        "1": "ZigZag/chessboard first"
+        "0": "Omtrek eerst",
+        "1": "ZigZag/schaakbord eerst"
       }
     },
     "ultra_wave": {
       "options": {
-        "0": "Direct touch",
-        "1": "Slow touch",
-        "2": "Less touch",
-        "10": "No touch",
-        "11": "Sensitive"
+        "0": "Directe aanraking",
+        "1": "Langzame aanraking",
+        "2": "Minder aanraking",
+        "10": "Zonder aanraking",
+        "11": "Gevoelig"
       }
     },
     "channel_mode": {
@@ -312,19 +313,19 @@
     "mowing_laps": {
       "options": {
         "0": "None",
-        "1": "One lap",
-        "2": "Two laps",
-        "3": "Three laps",
-        "4": "Four laps"
+        "1": "1 ronde",
+        "2": "2 rondes",
+        "3": "3 rondes",
+        "4": "4 rondes"
       }
     },
     "obstacle_laps": {
       "options": {
         "0": "None",
-        "1": "One lap",
-        "2": "Two laps",
-        "3": "Three laps",
-        "4": "Four laps"
+        "1": "1 ronde",
+        "2": "2 rondes",
+        "3": "3 rondes",
+        "4": "4 rondes"
       }
     }
   },
