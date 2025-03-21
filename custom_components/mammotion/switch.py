@@ -81,6 +81,7 @@ SWITCH_ENTITIES: tuple[MammotionAsyncSwitchEntityDescription, ...] = (
     MammotionAsyncSwitchEntityDescription(
         key="side_led",
         set_fn=lambda coordinator, value: coordinator.async_set_sidelight(int(value)),
+        entity_category=EntityCategory.CONFIG,
     ),
 )
 
