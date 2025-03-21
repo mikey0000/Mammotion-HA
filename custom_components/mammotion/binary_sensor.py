@@ -9,6 +9,7 @@ from homeassistant.components.binary_sensor import (
     BinarySensorEntityDescription,
 )
 from homeassistant.core import HomeAssistant
+from homeassistant.const import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pymammotion.data.model.device import MowingDevice
 
@@ -31,6 +32,7 @@ BINARY_SENSORS: tuple[MammotionBinarySensorEntityDescription, ...] = (
         key="charging",
         device_class=BinarySensorDeviceClass.BATTERY_CHARGING,
         is_on_fn=lambda mower_data: mower_data.report_data.dev.charge_state in (1, 2),
+        entity_category=EntityCategory.DIAGNOSTIC,
     ),
 )
 
