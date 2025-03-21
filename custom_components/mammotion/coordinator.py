@@ -354,11 +354,11 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
             route_information.toward_included_angle = 0
 
         # not sure if this is artificial limit
-        if (
-            DeviceType.is_mini_or_x_series(self.device_name)
-            and route_information.toward_mode == 0
-        ):
-            route_information.toward = 0
+        # if (
+        #     DeviceType.is_mini_or_x_series(self.device_name)
+        #     and route_information.toward_mode == 0
+        # ):
+        #     route_information.toward = 0
 
         return await self.async_send_command(
             "generate_route_information", generate_route_information=route_information
@@ -369,13 +369,13 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         data = self.manager.get_device_by_name(self.device_name).mower_state
         data.map = HashList()
 
-    def clear_update_failures(self) -> None:
+    async def clear_update_failures(self) -> None:
         self.update_failures = 0
         device = self.manager.get_device_by_name(self.device_name)
         if not device.mower_state.online:
             device.mower_state.online = True
             if device.has_cloud() and device.cloud().stopped:
-                device.cloud().start()
+                await device.cloud().start()
 
     @property
     def operation_settings(self) -> OperationSettings:
