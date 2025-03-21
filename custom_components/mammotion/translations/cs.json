@@ -226,7 +226,8 @@
           "direct_touch": "Přímý dotek",
           "slow_touch": "Pomalý dotek",
           "less_touch": "Méně dotyků",
-          "no_touch": "Režim bez kolize"
+          "no_touch": "No touch",
+          "sensitive": "Sensitive"
         }
       },
       "cutting_angle_mode": {
@@ -293,7 +294,7 @@
         "0": "Zigzag path",
         "1": "Chessboard path",
         "2": "Adaptive zigzag path",
-        "3": "Perimeter only"
+        "3": "Pouze obvod"
       }
     },
     "rain_tactics": {
