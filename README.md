@@ -27,7 +27,8 @@ This integration allows you to control and monitor your Mammotion Luba, Luba 2 &
 - More features being added all the time!
 
 ## Prerequisites 📋
-
+> [!WARNING]
+> **Home Assistant Minimum Version 2025.3.0**
 - Home Assistant installed and running
 - Mower connected to your home network
 - (Optional)[Bluetooth proxy for Home Assistant](https://esphome.io/components/bluetooth_proxy.html)
