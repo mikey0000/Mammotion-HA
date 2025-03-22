@@ -226,7 +226,8 @@
           "direct_touch": "Polni dotik",
           "slow_touch": "Počasni dotik",
           "less_touch": "Manj dotika",
-          "no_touch": "Brez dotika"
+          "no_touch": "No touch",
+          "sensitive": "Sensitive"
         }
       },
       "cutting_angle_mode": {

@@ -226,7 +226,8 @@
           "direct_touch": "Bezpośredne dotknięcie",
           "slow_touch": "Wolne dotknięcie",
           "less_touch": "Mniej dotyku",
-          "no_touch": "Brak dotyku"
+          "no_touch": "No touch",
+          "sensitive": "Sensitive"
         }
       },
       "cutting_angle_mode": {
