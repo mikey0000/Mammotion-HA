@@ -52,7 +52,7 @@ ASYNC_SELECT_ENTITIES: tuple[MammotionAsyncConfigSelectEntityDescription, ...] =
     ),
     MammotionAsyncConfigSelectEntityDescription(
         key="turning_mode",
-        options=[mode.name for mode in TraversalMode],
+        options=[mode.name for mode in TurningMode],
         set_fn=lambda coordinator, value: coordinator.set_turning_mode(
             TurningMode[value].value
         ),
@@ -229,6 +229,7 @@ class MammotionAsyncConfigSelectEntity(
         self.entity_description = entity_description
         self._attr_translation_key = entity_description.key
         self._attr_options = entity_description.options
+        # TODO get this value from the mower
         self._attr_current_option = entity_description.options[0]
 
     async def async_select_option(self, option: str) -> None:
