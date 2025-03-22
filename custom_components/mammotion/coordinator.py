@@ -94,8 +94,7 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         device = self.manager.get_device_by_name(self.device_name)
         device.mower_state.enabled = enabled
         if device.mower_state.enabled:
-            if device.has_cloud():
-                await device.cloud().start()
+            await self.clear_update_failures()
         else:
             if device.has_cloud():
                 await device.cloud().stop()
