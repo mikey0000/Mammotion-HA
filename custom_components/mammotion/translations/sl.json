@@ -244,6 +244,13 @@
           "direct": "Neposredno",
           "follow_perimeter": "Sledi obodu"
         }
+      },
+      "turning_mode": {
+        "name": "Turnaround Mode",
+        "state": {
+          "multipoint": "Multipoint Turn",
+          "zero_turn": "Zero Turn"
+        }
       }
     },
     "number": {

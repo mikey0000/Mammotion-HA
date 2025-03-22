@@ -244,6 +244,13 @@
           "direct": "Direct",
           "follow_perimeter": "Volg de omtrek"
         }
+      },
+      "turning_mode": {
+        "name": "Turnaround Mode",
+        "state": {
+          "multipoint": "Multipoint Turn",
+          "zero_turn": "Zero Turn"
+        }
       }
     },
     "number": {

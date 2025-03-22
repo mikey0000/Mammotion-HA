@@ -244,6 +244,13 @@
           "direct": "Diretto",
           "follow_perimeter": "Segui il perimetro"
         }
+      },
+      "turning_mode": {
+        "name": "Turnaround Mode",
+        "state": {
+          "multipoint": "Multipoint Turn",
+          "zero_turn": "Zero Turn"
+        }
       }
     },
     "number": {

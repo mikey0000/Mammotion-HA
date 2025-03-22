@@ -13,7 +13,7 @@
     "flow_title": "Konfiguriere deinen Mammotion Mähroboter",
     "step": {
       "bluetooth_confirm": {
-        "description": "Installiere {name}",
+        "description": "Konfiguriere {name}",
         "data": {
           "stay_connected_bluetooth": "Bluetooth-Verbindung aufrechterhalten"
         }
@@ -68,7 +68,7 @@
         "name": "WiFi RSSI"
       },
       "mnet_rssi": {
-        "name": "Mobile RSSI"
+        "name": "Verbindungsqualität"
       },
       "connect_type": {
         "name": "Verbindung"
@@ -226,8 +226,8 @@
           "direct_touch": "Direkte Berührung",
           "slow_touch": "Langsame Berührung",
           "less_touch": "Weniger Berührung",
-          "no_touch": "No touch",
-          "sensitive": "Sensitive"
+          "no_touch": "Nicht berühren",
+          "sensitive": "Sensitiv"
         }
       },
       "cutting_angle_mode": {
@@ -243,6 +243,13 @@
         "state": {
           "direct": "Direkt",
           "follow_perimeter": "Umfang folgen"
+        }
+      },
+      "turning_mode": {
+        "name": "Turnaround Mode",
+        "state": {
+          "multipoint": "Multipoint Turn",
+          "zero_turn": "Zero Turn"
         }
       }
     },
@@ -276,56 +283,56 @@
   "selector": {
     "border_mode": {
       "options": {
-        "0": "Perimeter first",
-        "1": "ZigZag/chessboard first"
+        "0": "Rand zuerst",
+        "1": "Fläche zuerst"
       }
     },
     "ultra_wave": {
       "options": {
-        "0": "Direct touch",
-        "1": "Slow touch",
-        "2": "Less touch",
-        "10": "No touch",
-        "11": "Sensitive"
+        "0": "Direkte Berührung",
+        "1": "Langsame Berührung",
+        "2": "Wenig Berührung",
+        "10": "Nicht berühren",
+        "11": "Sensitiv"
       }
     },
     "channel_mode": {
       "options": {
-        "0": "Zigzag path",
-        "1": "Chessboard path",
-        "2": "Adaptive zigzag path",
-        "3": "Perimeter only"
+        "0": "Zigzag Muster",
+        "1": "Schachbrett Muster",
+        "2": "Adaptives Zigzag Muster",
+        "3": "Nur Umrandung"
       }
     },
     "rain_tactics": {
       "options": {
-        "0": "Off",
-        "1": "On"
+        "0": "Aus",
+        "1": "An"
       }
     },
     "toward_mode": {
       "options": {
-        "0": "Relative angle",
-        "1": "Absolute angle",
-        "2": "Random angle"
+        "0": "Relativer Winkel",
+        "1": "Absoluter Winkel",
+        "2": "Zufälliger Winkel"
       }
     },
     "mowing_laps": {
       "options": {
-        "0": "None",
-        "1": "One lap",
-        "2": "Two laps",
-        "3": "Three laps",
-        "4": "Four laps"
+        "0": "Keine",
+        "1": "Eine Runde",
+        "2": "Zwei Runden",
+        "3": "Drei Runden",
+        "4": "Vier Runden"
       }
     },
     "obstacle_laps": {
       "options": {
-        "0": "None",
-        "1": "One lap",
-        "2": "Two laps",
-        "3": "Three laps",
-        "4": "Four laps"
+        "0": "Keine",
+        "1": "Eine Runde",
+        "2": "Zwei Runden",
+        "3": "Drei Runden",
+        "4": "Vier Runden"
       }
     }
   },

@@ -244,6 +244,13 @@
           "direct": "Přímý",
           "follow_perimeter": "Sledovat obvod"
         }
+      },
+      "turning_mode": {
+        "name": "Turnaround Mode",
+        "state": {
+          "multipoint": "Multipoint Turn",
+          "zero_turn": "Zero Turn"
+        }
       }
     },
     "number": {
