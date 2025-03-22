@@ -258,6 +258,10 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         """Set traversal mode."""
         await self.async_send_command("traverse_mode", context=context)
 
+    async def set_turning_mode(self, context: int) -> None:
+        """Set turning mode."""
+        await self.async_send_command("turning_mode", context=context)
+
     async def async_blade_height(self, height: int) -> int:
         """Set blade height."""
         await self.send_command_and_update("set_blade_height", height=float(height))

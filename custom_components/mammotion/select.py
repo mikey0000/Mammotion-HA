@@ -1,5 +1,6 @@
 from collections.abc import Callable
 from dataclasses import dataclass
+from typing import Awaitable
 
 from homeassistant.components.select import SelectEntity, SelectEntityDescription
 from homeassistant.const import EntityCategory
@@ -8,12 +9,13 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.restore_state import RestoreEntity
 from pymammotion.data.model.mowing_modes import (
     BorderPatrolMode,
-    DetectionStrategy,
     CuttingMode,
+    DetectionStrategy,
     MowOrder,
     ObstacleLapsMode,
     PathAngleSetting,
     TraversalMode,
+    TurningMode,
 )
 from pymammotion.utility.device_type import DeviceType
 
@@ -37,7 +39,7 @@ class MammotionAsyncConfigSelectEntityDescription(MammotionBaseEntity, SelectEnt
 
     key: str
     options: list[str]
-    set_fn: Callable[[MammotionBaseUpdateCoordinator, str], None]
+    set_fn: Callable[[MammotionBaseUpdateCoordinator, str], Awaitable[None]]
 
 
 ASYNC_SELECT_ENTITIES: tuple[MammotionAsyncConfigSelectEntityDescription, ...] = (
@@ -46,6 +48,13 @@ ASYNC_SELECT_ENTITIES: tuple[MammotionAsyncConfigSelectEntityDescription, ...] =
         options=[mode.name for mode in TraversalMode],
         set_fn=lambda coordinator, value: coordinator.set_traversal_mode(
             TraversalMode[value].value
+        ),
+    ),
+    MammotionAsyncConfigSelectEntityDescription(
+        key="turning_mode",
+        options=[mode.name for mode in TraversalMode],
+        set_fn=lambda coordinator, value: coordinator.set_turning_mode(
+            TurningMode[value].value
         ),
     ),
 )
