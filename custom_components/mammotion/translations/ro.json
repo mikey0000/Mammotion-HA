@@ -226,7 +226,8 @@
           "direct_touch": "Atingere directă",
           "slow_touch": "Atingere lentă",
           "less_touch": "Mai puțin atins",
-          "no_touch": "Nicio atingere"
+          "no_touch": "No touch",
+          "sensitive": "Sensitive"
         }
       },
       "cutting_angle_mode": {
