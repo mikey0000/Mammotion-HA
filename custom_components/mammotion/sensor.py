@@ -80,6 +80,7 @@ LUBA_2_YUKA_ONLY_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         native_unit_of_measurement=None,
         value_fn=lambda mower_data: mower_data.report_data.maintenance.bat_cycles,
         entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
     ),
     MammotionSensorEntityDescription(
         key="maintenance_work_time",
@@ -138,6 +139,7 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         native_unit_of_measurement=None,
         value_fn=lambda mower_data: mower_data.report_data.rtk.gps_stars,
         entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
     ),
     MammotionSensorEntityDescription(
         key="area",
@@ -196,6 +198,7 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         value_fn=lambda mower_data: (mower_data.report_data.rtk.co_view_stars >> 0)
         & 255,
         entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
     ),
     MammotionSensorEntityDescription(
         key="l2_satellites",
@@ -205,6 +208,7 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         value_fn=lambda mower_data: (mower_data.report_data.rtk.co_view_stars >> 8)
         & 255,
         entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
     ),
     # MammotionSensorEntityDescription(
     #     key="vlsam_status",
@@ -219,6 +223,7 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.ENUM,
         value_fn=lambda mower_data: device_mode(mower_data.report_data.dev.sys_status),
         entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
     ),
     MammotionSensorEntityDescription(
         key="position_mode",
@@ -229,6 +234,7 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
             RTKStatus.from_value(mower_data.report_data.rtk.status)
         ),
         entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
     ),
     MammotionSensorEntityDescription(
         key="position_type",
@@ -247,6 +253,7 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         native_unit_of_measurement=None,
         value_fn=lambda mower_data: str(mower_data.location.work_zone or "Not working"),
         entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
     ),
     # MammotionSensorEntityDescription(
     #     key="lawn_mower_position",
