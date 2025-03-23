@@ -68,7 +68,7 @@
         "name": "WiFi RSSI"
       },
       "mnet_rssi": {
-        "name": "Mobile RSSI"
+        "name": "Kvalita mobilního signálu"
       },
       "connect_type": {
         "name": "Připojení"
@@ -226,8 +226,8 @@
           "direct_touch": "Přímý dotek",
           "slow_touch": "Pomalý dotek",
           "less_touch": "Méně dotyků",
-          "no_touch": "No touch",
-          "sensitive": "Sensitive"
+          "no_touch": "Režim bez kolize",
+          "sensitive": "Citlivý"
         }
       },
       "cutting_angle_mode": {
@@ -246,10 +246,10 @@
         }
       },
       "turning_mode": {
-        "name": "Turnaround Mode",
+        "name": "Režim otáčení",
         "state": {
-          "multipoint": "Multipoint Turn",
-          "zero_turn": "Zero Turn"
+          "multipoint": "Vícebodové otáčení",
+          "zero_turn": "Otáčení na místě"
         }
       }
     },
@@ -283,56 +283,56 @@
   "selector": {
     "border_mode": {
       "options": {
-        "0": "Perimeter first",
-        "1": "ZigZag/chessboard first"
+        "0": "Nejprve obvod",
+        "1": "Mřížka jako první"
       }
     },
     "ultra_wave": {
       "options": {
-        "0": "Direct touch",
-        "1": "Slow touch",
-        "2": "Less touch",
-        "10": "No touch",
-        "11": "Sensitive"
+        "0": "Přímý dotek",
+        "1": "Pomalý dotek",
+        "2": "Méně dotyků",
+        "10": "Režim bez kolize",
+        "11": "Citlivý"
       }
     },
     "channel_mode": {
       "options": {
-        "0": "Zigzag path",
-        "1": "Chessboard path",
-        "2": "Adaptive zigzag path",
+        "0": "Jednoduchá mřížka",
+        "1": "Šachovnicová mřížka",
+        "2": "Smíšená/segmentová mřížka",
         "3": "Pouze obvod"
       }
     },
     "rain_tactics": {
       "options": {
-        "0": "Off",
-        "1": "On"
+        "0": "Vypnuto",
+        "1": "Zapnuto"
       }
     },
     "toward_mode": {
       "options": {
-        "0": "Relative angle",
-        "1": "Absolute angle",
-        "2": "Random angle"
+        "0": "Relativní úhel",
+        "1": "Absolutní úhel",
+        "2": "Náhodný úhel"
       }
     },
     "mowing_laps": {
       "options": {
-        "0": "None",
-        "1": "One lap",
-        "2": "Two laps",
-        "3": "Three laps",
-        "4": "Four laps"
+        "0": "Žádné",
+        "1": "Jedno kolo",
+        "2": "Dvě kola",
+        "3": "Tři kola",
+        "4": "Čtyři kola"
       }
     },
     "obstacle_laps": {
       "options": {
-        "0": "None",
-        "1": "One lap",
-        "2": "Two laps",
-        "3": "Three laps",
-        "4": "Four laps"
+        "0": "Žádné",
+        "1": "Jedno kolo",
+        "2": "Dvě kola",
+        "3": "Tři kola",
+        "4": "Čtyři kola"
       }
     }
   },
