@@ -122,7 +122,8 @@
         "name": "Task duration"
       },
       "maintenance_bat_cycles": {
-        "name": "Battery cycles"
+        "name": "Battery cycles",
+        "unit_of_measurement": "cycles"
       }
     },
     "button": {
