@@ -68,7 +68,7 @@
         "name": "WiFi RSSI"
       },
       "mnet_rssi": {
-        "name": "Mobile RSSI"
+        "name": "Calitatea semnalului mobil"
       },
       "connect_type": {
         "name": "Conexiune"
@@ -226,8 +226,8 @@
           "direct_touch": "Atingere directă",
           "slow_touch": "Atingere lentă",
           "less_touch": "Mai puțin atins",
-          "no_touch": "No touch",
-          "sensitive": "Sensitive"
+          "no_touch": "Fără atingere",
+          "sensitive": "Sensibil"
         }
       },
       "cutting_angle_mode": {
@@ -246,10 +246,10 @@
         }
       },
       "turning_mode": {
-        "name": "Turnaround Mode",
+        "name": "Mod de întoarcere",
         "state": {
-          "multipoint": "Multipoint Turn",
-          "zero_turn": "Zero Turn"
+          "multipoint": "Întoarcere în mai multe puncte",
+          "zero_turn": "Întoarcere pe loc"
         }
       }
     },
@@ -283,56 +283,56 @@
   "selector": {
     "border_mode": {
       "options": {
-        "0": "Perimeter first",
-        "1": "ZigZag/chessboard first"
+        "0": "Perimetrul întâi",
+        "1": "Mai întâi grila"
       }
     },
     "ultra_wave": {
       "options": {
-        "0": "Direct touch",
-        "1": "Slow touch",
-        "2": "Less touch",
-        "10": "No touch",
-        "11": "Sensitive"
+        "0": "Atingere directă",
+        "1": "Atingere lentă",
+        "2": "Atingere redusă",
+        "10": "Fără atingere",
+        "11": "Sensibil"
       }
     },
     "channel_mode": {
       "options": {
-        "0": "Zigzag path",
-        "1": "Chessboard path",
-        "2": "Adaptive zigzag path",
-        "3": "Perimeter only"
+        "0": "Grilă simplă",
+        "1": "Grila de șah",
+        "2": "Grilă mixtă/segmentată",
+        "3": "Fără grilă"
       }
     },
     "rain_tactics": {
       "options": {
-        "0": "Off",
-        "1": "On"
+        "0": "Oprit",
+        "1": "Pornit"
       }
     },
     "toward_mode": {
       "options": {
-        "0": "Relative angle",
-        "1": "Absolute angle",
-        "2": "Random angle"
+        "0": "Unghi relativ",
+        "1": "Unghi absolut",
+        "2": "Unghi aleatoriu"
       }
     },
     "mowing_laps": {
       "options": {
-        "0": "None",
-        "1": "One lap",
-        "2": "Two laps",
-        "3": "Three laps",
-        "4": "Four laps"
+        "0": "Niciuna",
+        "1": "O tură",
+        "2": "Două ture",
+        "3": "Trei ture",
+        "4": "Patru ture"
       }
     },
     "obstacle_laps": {
       "options": {
-        "0": "None",
-        "1": "One lap",
-        "2": "Two laps",
-        "3": "Three laps",
-        "4": "Four laps"
+        "0": "Niciuna",
+        "1": "O tură",
+        "2": "Două ture",
+        "3": "Trei ture",
+        "4": "Patru ture"
       }
     }
   },

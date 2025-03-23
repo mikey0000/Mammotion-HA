@@ -68,7 +68,7 @@
         "name": "Signal Wi-Fi"
       },
       "mnet_rssi": {
-        "name": "Mobile RSSI"
+        "name": "Qualité de la connexion mobile"
       },
       "connect_type": {
         "name": "Connexion"
@@ -226,8 +226,8 @@
           "direct_touch": "Toucher direct",
           "slow_touch": "Toucher lent",
           "less_touch": "Moins de contact",
-          "no_touch": "No touch",
-          "sensitive": "Sensitive"
+          "no_touch": "Pas de contact",
+          "sensitive": "Sensible"
         }
       },
       "cutting_angle_mode": {
@@ -246,10 +246,10 @@
         }
       },
       "turning_mode": {
-        "name": "Turnaround Mode",
+        "name": "Mode de demi-tour",
         "state": {
-          "multipoint": "Multipoint Turn",
-          "zero_turn": "Zero Turn"
+          "multipoint": "Virage multipoint",
+          "zero_turn": "Virage sur place"
         }
       }
     },
@@ -283,56 +283,56 @@
   "selector": {
     "border_mode": {
       "options": {
-        "0": "Perimeter first",
-        "1": "ZigZag/chessboard first"
+        "0": "Bordure d'abord",
+        "1": "Grille d'abord"
       }
     },
     "ultra_wave": {
       "options": {
-        "0": "Direct touch",
-        "1": "Slow touch",
-        "2": "Less touch",
-        "10": "No touch",
-        "11": "Sensitive"
+        "0": "Toucher direct",
+        "1": "Toucher lent",
+        "2": "Moins de contact",
+        "10": "Pas de contact",
+        "11": "Sensible"
       }
     },
     "channel_mode": {
       "options": {
-        "0": "Zigzag path",
-        "1": "Chessboard path",
-        "2": "Adaptive zigzag path",
-        "3": "Perimeter only"
+        "0": "Trajectoire en zigzag",
+        "1": "Trajectoire en quadrillage",
+        "2": "Trajectoire en zigzag adaptative",
+        "3": "Périmètre uniquement"
       }
     },
     "rain_tactics": {
       "options": {
-        "0": "Off",
-        "1": "On"
+        "0": "Désactivé",
+        "1": "Activé"
       }
     },
     "toward_mode": {
       "options": {
-        "0": "Relative angle",
-        "1": "Absolute angle",
-        "2": "Random angle"
+        "0": "Angle relatif",
+        "1": "Angle absolu",
+        "2": "Angle aléatoire"
       }
     },
     "mowing_laps": {
       "options": {
-        "0": "None",
-        "1": "One lap",
-        "2": "Two laps",
-        "3": "Three laps",
-        "4": "Four laps"
+        "0": "Aucun",
+        "1": "Un tour",
+        "2": "Deux tours",
+        "3": "Trois tours",
+        "4": "Quatre tours"
       }
     },
     "obstacle_laps": {
       "options": {
-        "0": "None",
-        "1": "One lap",
-        "2": "Two laps",
-        "3": "Three laps",
-        "4": "Four laps"
+        "0": "Aucun",
+        "1": "Un tour",
+        "2": "Deux tours",
+        "3": "Trois tours",
+        "4": "Quatre tours"
       }
     }
   },

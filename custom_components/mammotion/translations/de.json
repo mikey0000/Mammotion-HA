@@ -246,10 +246,10 @@
         }
       },
       "turning_mode": {
-        "name": "Turnaround Mode",
+        "name": "Wendemodus",
         "state": {
-          "multipoint": "Multipoint Turn",
-          "zero_turn": "Zero Turn"
+          "multipoint": "Mehrpunkt-Wendung",
+          "zero_turn": "Nullwendung"
         }
       }
     },

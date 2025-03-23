@@ -68,7 +68,7 @@
         "name": "RSSI WiFi"
       },
       "mnet_rssi": {
-        "name": "Mobile RSSI"
+        "name": "Jakość połączenia mobilnego"
       },
       "connect_type": {
         "name": "Połączenie"
@@ -226,8 +226,8 @@
           "direct_touch": "Bezpośredne dotknięcie",
           "slow_touch": "Wolne dotknięcie",
           "less_touch": "Mniej dotyku",
-          "no_touch": "No touch",
-          "sensitive": "Sensitive"
+          "no_touch": "Brak dotyku",
+          "sensitive": "Czułe"
         }
       },
       "cutting_angle_mode": {
@@ -246,10 +246,10 @@
         }
       },
       "turning_mode": {
-        "name": "Turnaround Mode",
+        "name": "Tryb zawracania",
         "state": {
-          "multipoint": "Multipoint Turn",
-          "zero_turn": "Zero Turn"
+          "multipoint": "Zawracanie wielopunktowe",
+          "zero_turn": "Zawracanie w miejscu"
         }
       }
     },
@@ -283,56 +283,56 @@
   "selector": {
     "border_mode": {
       "options": {
-        "0": "Perimeter first",
-        "1": "ZigZag/chessboard first"
+        "0": "Najpierw obwód",
+        "1": "Najpierw siatka"
       }
     },
     "ultra_wave": {
       "options": {
-        "0": "Direct touch",
-        "1": "Slow touch",
-        "2": "Less touch",
-        "10": "No touch",
-        "11": "Sensitive"
+        "0": "Bezpośrednie dotknięcie",
+        "1": "Wolne dotknięcie",
+        "2": "Mniej dotyku",
+        "10": "Brak dotyku",
+        "11": "Czułe"
       }
     },
     "channel_mode": {
       "options": {
-        "0": "Zigzag path",
-        "1": "Chessboard path",
-        "2": "Adaptive zigzag path",
-        "3": "Perimeter only"
+        "0": "Pojedyncza siatka",
+        "1": "Podwójna siatka",
+        "2": "Siatka mieszana/segmentowa",
+        "3": "Brak siatki"
       }
     },
     "rain_tactics": {
       "options": {
-        "0": "Off",
-        "1": "On"
+        "0": "Wyłączone",
+        "1": "Włączone"
       }
     },
     "toward_mode": {
       "options": {
-        "0": "Relative angle",
-        "1": "Absolute angle",
-        "2": "Random angle"
+        "0": "Kąt względny",
+        "1": "Kąt bezwzględny",
+        "2": "Kąt losowy"
       }
     },
     "mowing_laps": {
       "options": {
-        "0": "None",
-        "1": "One lap",
-        "2": "Two laps",
-        "3": "Three laps",
-        "4": "Four laps"
+        "0": "Nie koś",
+        "1": "Jeden raz",
+        "2": "Dwa razy",
+        "3": "Trzy razy",
+        "4": "Cztery razy"
       }
     },
     "obstacle_laps": {
       "options": {
-        "0": "None",
-        "1": "One lap",
-        "2": "Two laps",
-        "3": "Three laps",
-        "4": "Four laps"
+        "0": "Nie koś",
+        "1": "Jeden raz",
+        "2": "Dwa razy",
+        "3": "Trzy razy",
+        "4": "Cztery razy"
       }
     }
   },

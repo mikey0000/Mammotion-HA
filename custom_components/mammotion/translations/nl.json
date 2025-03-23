@@ -68,7 +68,7 @@
         "name": "WiFi RSSI"
       },
       "mnet_rssi": {
-        "name": "Mobile RSSI"
+        "name": "Mobiel RSSI"
       },
       "connect_type": {
         "name": "Verbindingsinstellingen"
@@ -246,10 +246,10 @@
         }
       },
       "turning_mode": {
-        "name": "Turnaround Mode",
+        "name": "Draaimodus",
         "state": {
-          "multipoint": "Multipoint Turn",
-          "zero_turn": "Zero Turn"
+          "multipoint": "Meerpunts draai",
+          "zero_turn": "Nulpunts draai"
         }
       }
     },
@@ -298,28 +298,28 @@
     },
     "channel_mode": {
       "options": {
-        "0": "Zigzag path",
-        "1": "Chessboard path",
-        "2": "Adaptive zigzag path",
-        "3": "Perimeter only"
+        "0": "Zigzag pad",
+        "1": "Schaakbord pad",
+        "2": "Aangepast Zigzag pad",
+        "3": "Alleen perimeter modus"
       }
     },
     "rain_tactics": {
       "options": {
-        "0": "Off",
-        "1": "On"
+        "0": "Uit",
+        "1": "Aan"
       }
     },
     "toward_mode": {
       "options": {
-        "0": "Relative angle",
-        "1": "Absolute angle",
-        "2": "Random angle"
+        "0": "Relatieve hoek",
+        "1": "Absolute hoek",
+        "2": "Willekeurige hoek"
       }
     },
     "mowing_laps": {
       "options": {
-        "0": "None",
+        "0": "Geen",
         "1": "1 ronde",
         "2": "2 rondes",
         "3": "3 rondes",
@@ -328,7 +328,7 @@
     },
     "obstacle_laps": {
       "options": {
-        "0": "None",
+        "0": "Geen",
         "1": "1 ronde",
         "2": "2 rondes",
         "3": "3 rondes",

@@ -68,7 +68,7 @@
         "name": "Wifi RSSI"
       },
       "mnet_rssi": {
-        "name": "Mobile RSSI"
+        "name": "Mobilni RSSI"
       },
       "connect_type": {
         "name": "Povezava"
@@ -226,8 +226,8 @@
           "direct_touch": "Polni dotik",
           "slow_touch": "Počasni dotik",
           "less_touch": "Manj dotika",
-          "no_touch": "No touch",
-          "sensitive": "Sensitive"
+          "no_touch": "Brez dotika",
+          "sensitive": "Občutljivo"
         }
       },
       "cutting_angle_mode": {
@@ -246,10 +246,10 @@
         }
       },
       "turning_mode": {
-        "name": "Turnaround Mode",
+        "name": "Način obračanja",
         "state": {
-          "multipoint": "Multipoint Turn",
-          "zero_turn": "Zero Turn"
+          "multipoint": "Obrat v več točkah",
+          "zero_turn": "Obrat na mestu"
         }
       }
     },
@@ -283,56 +283,56 @@
   "selector": {
     "border_mode": {
       "options": {
-        "0": "Perimeter first",
-        "1": "ZigZag/chessboard first"
+        "0": "Najprej obod",
+        "1": "Najprej področje"
       }
     },
     "ultra_wave": {
       "options": {
-        "0": "Direct touch",
-        "1": "Slow touch",
-        "2": "Less touch",
-        "10": "No touch",
-        "11": "Sensitive"
+        "0": "Polni dotik",
+        "1": "Počasni dotik",
+        "2": "Manj dotika",
+        "10": "Brez dotika",
+        "11": "Občutljivo"
       }
     },
     "channel_mode": {
       "options": {
-        "0": "Zigzag path",
-        "1": "Chessboard path",
-        "2": "Adaptive zigzag path",
-        "3": "Perimeter only"
+        "0": "Cikcak",
+        "1": "Šahovnica",
+        "2": "Prilagodljiva cikcak pot",
+        "3": "Samo obod"
       }
     },
     "rain_tactics": {
       "options": {
-        "0": "Off",
-        "1": "On"
+        "0": "Izklop",
+        "1": "Vklop"
       }
     },
     "toward_mode": {
       "options": {
-        "0": "Relative angle",
-        "1": "Absolute angle",
-        "2": "Random angle"
+        "0": "Relativni kot",
+        "1": "Absolutni kot",
+        "2": "Naključni kot"
       }
     },
     "mowing_laps": {
       "options": {
-        "0": "None",
-        "1": "One lap",
-        "2": "Two laps",
-        "3": "Three laps",
-        "4": "Four laps"
+        "0": "Noben",
+        "1": "En krog",
+        "2": "Dva kroga",
+        "3": "Trije krogi",
+        "4": "Štirje krogi"
       }
     },
     "obstacle_laps": {
       "options": {
-        "0": "None",
-        "1": "One lap",
-        "2": "Two laps",
-        "3": "Three laps",
-        "4": "Four laps"
+        "0": "Noben",
+        "1": "En krog",
+        "2": "Dva kroga",
+        "3": "Trije krogi",
+        "4": "Štirje krogi"
       }
     }
   },
