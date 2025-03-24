@@ -171,10 +171,10 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
             self.update_failures += 1
             await self.async_login()
             return False
-        except GatewayTimeoutException:
+        except GatewayTimeoutException as ex:
             self.update_failures += 1
             if self.update_failures > 5:
-                raise GatewayTimeoutException()
+                raise GatewayTimeoutException(ex.args[0], self.device.iotId)
             if self.update_failures > 0:
                 await asyncio.sleep(1)
             await self.async_send_command(command, **kwargs)
