@@ -18,6 +18,7 @@ from mashumaro.exceptions import InvalidFieldValue
 from pymammotion.aliyun.cloud_gateway import (
     DeviceOfflineException,
     GatewayTimeoutException,
+    NoConnectionException,
 )
 from pymammotion.aliyun.model.dev_by_account_response import Device
 from pymammotion.data.model import GenerateRouteInformation, HashList
@@ -32,7 +33,6 @@ from pymammotion.mammotion.devices.mammotion import (
 from pymammotion.proto import RptAct, RptInfoType
 from pymammotion.utility.constant import WorkMode
 from pymammotion.utility.device_type import DeviceType
-from Tea.exceptions import UnretryableException
 
 from .const import (
     COMMAND_EXCEPTIONS,
@@ -94,7 +94,11 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         device = self.manager.get_device_by_name(self.device_name)
         device.mower_state.enabled = enabled
         if device.mower_state.enabled:
-            await self.clear_update_failures()
+            self.update_failures = 0
+            if not device.mower_state.online:
+                device.mower_state.online = True
+            if device.has_cloud() and device.cloud().stopped:
+                await device.cloud().start()
         else:
             if device.has_cloud():
                 await device.cloud().stop()
@@ -174,8 +178,7 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
             if self.update_failures > 0:
                 await asyncio.sleep(1)
             await self.async_send_command(command, **kwargs)
-            # TODO update to NoConnectionException
-        except (DeviceOfflineException, UnretryableException):
+        except (DeviceOfflineException, NoConnectionException) as ex:
             """Device is offline try bluetooth if we have it."""
             try:
                 if device.has_ble():
@@ -187,7 +190,7 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
                         .queue_command(command, **kwargs)
                     )
                     return True
-                raise DeviceOfflineException()
+                raise DeviceOfflineException(ex.args[0], self.device.iotId)
             except COMMAND_EXCEPTIONS as exc:
                 raise HomeAssistantError(
                     translation_domain=DOMAIN, translation_key="command_failed"
@@ -377,8 +380,8 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         device = self.manager.get_device_by_name(self.device_name)
         if not device.mower_state.online:
             device.mower_state.online = True
-            if device.has_cloud() and device.cloud().stopped:
-                await device.cloud().start()
+        if device.has_cloud() and device.cloud().stopped:
+            await device.cloud().start()
 
     @property
     def operation_settings(self) -> OperationSettings:
@@ -454,12 +457,13 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
         try:
             await self.async_send_command("get_report_cfg")
 
-        except DeviceOfflineException:
+        except DeviceOfflineException as ex:
             """Device is offline try bluetooth if we have it."""
-            device = self.manager.get_device_by_name(self.device_name)
-            await self.device_offline(device)
-            data = device.mower_state
-            return data
+            if ex.iot_id == self.device.iotId:
+                device = self.manager.get_device_by_name(self.device_name)
+                await self.device_offline(device)
+                data = device.mower_state
+                return data
 
         LOGGER.debug("Updated Mammotion device %s", self.device_name)
         LOGGER.debug("================= Debug Log =================")
@@ -534,12 +538,13 @@ class MammotionMaintenanceUpdateCoordinator(MammotionBaseUpdateCoordinator[Maint
         try:
             await self.async_send_command("get_maintenance")
 
-        except DeviceOfflineException:
+        except DeviceOfflineException as ex:
             """Device is offline try bluetooth if we have it."""
-            device = self.manager.get_device_by_name(self.device_name)
-            await self.device_offline(device)
-            data = device.mower_state
-            return data
+            if ex.iot_id == self.device.iotId:
+                device = self.manager.get_device_by_name(self.device_name)
+                await self.device_offline(device)
+                data = device.mower_state
+                return data
         except GatewayTimeoutException:
             """Gateway is timing out again."""
 
@@ -589,11 +594,12 @@ class MammotionDeviceVersionUpdateCoordinator(
             try:
                 await self.async_send_command(command)
 
-            except DeviceOfflineException:
+            except DeviceOfflineException as ex:
                 """Device is offline bluetooth has been attempted."""
-                device = self.manager.get_device_by_name(self.device_name)
-                await self.device_offline(device)
-                return device.mower_state.mower_state
+                if ex.iot_id == self.device.iotId:
+                    device = self.manager.get_device_by_name(self.device_name)
+                    await self.device_offline(device)
+                    return device.mower_state.mower_state
             except GatewayTimeoutException:
                 """Gateway is timing out again."""
 
@@ -652,10 +658,11 @@ class MammotionMapUpdateCoordinator(MammotionBaseUpdateCoordinator[MowerInfo]):
             ):
                 await self.manager.start_map_sync(self.device_name)
 
-        except DeviceOfflineException:
+        except DeviceOfflineException as ex:
             """Device is offline try bluetooth if we have it."""
-            await self.device_offline(device)
-            return device.mower_state.mower_state
+            if ex.iot_id == self.device.iotId:
+                await self.device_offline(device)
+                return device.mower_state.mower_state
         except GatewayTimeoutException:
             """Gateway is timing out again."""
 
@@ -673,8 +680,9 @@ class MammotionMapUpdateCoordinator(MammotionBaseUpdateCoordinator[MowerInfo]):
             await self.async_rtk_dock_location()
             if not DeviceType.is_luba1(self.device_name):
                 await self.async_get_area_list()
-        except DeviceOfflineException:
+        except DeviceOfflineException as ex:
             """Device is offline try bluetooth if we have it."""
-            await self.device_offline(device)
+            if ex.iot_id == self.device.iotId:
+                await self.device_offline(device)
         except GatewayTimeoutException:
             """Gateway is timing out again."""
