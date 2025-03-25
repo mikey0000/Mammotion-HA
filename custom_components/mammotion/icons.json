@@ -55,6 +55,24 @@
       },
       "position_mode": {
         "default": "mdi:map-marker"
+      },
+      "connect_type": {
+        "default": "mdi:wifi"
+      },
+      "maintenance_bat_cycles": {
+        "default": "mdi:battery-clock"
+      },
+      "camera_brightness": {
+        "default": "mdi:brightness-5"
+      },
+      "work_area": {
+        "default": "mdi:identifier"
+      },
+      "activity_mode": {
+        "default": "mdi:information-outline"
+      },
+      "position_type": {
+        "default": "mdi:land-plots-marker"
       }
     },
     "select": {
@@ -99,6 +117,13 @@
       },
       "cutting_angle_mode": {
         "default": "mdi:angle-acute"
+      },
+      "traversal_mode": {
+        "default": "mdi:selection-ellipse-arrow-inside",
+        "state": {
+          "direct": "mdi:selection-ellipse-arrow-inside",
+          "follow_perimeter": "mdi:select-arrow-down"
+        }
       }
     },
     "number": {
