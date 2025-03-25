@@ -68,7 +68,7 @@
         "name": "WiFi RSSI"
       },
       "mnet_rssi": {
-        "name": "Verbindungsqualität"
+        "name": "Mobilfunk RSSI"
       },
       "connect_type": {
         "name": "Verbindung"
@@ -122,7 +122,8 @@
         "name": "Aufgabendauer"
       },
       "maintenance_bat_cycles": {
-        "name": "Batteriezyklen"
+        "name": "Batteriezyklen",
+        "unit_of_measurement": "cycles"
       }
     },
     "button": {

@@ -122,7 +122,8 @@
         "name": "Doba trvání úkolu"
       },
       "maintenance_bat_cycles": {
-        "name": "Cykly baterie"
+        "name": "Cykly baterie",
+        "unit_of_measurement": "cycles"
       }
     },
     "button": {

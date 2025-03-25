@@ -122,7 +122,8 @@
         "name": "Durata sarcinii"
       },
       "maintenance_bat_cycles": {
-        "name": "Cicluri baterie"
+        "name": "Cicluri baterie",
+        "unit_of_measurement": "cycles"
       }
     },
     "button": {

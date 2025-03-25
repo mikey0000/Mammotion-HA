@@ -122,7 +122,8 @@
         "name": "Taakduur"
       },
       "maintenance_bat_cycles": {
-        "name": "Batterijcycli"
+        "name": "Batterijcycli",
+        "unit_of_measurement": "cycles"
       }
     },
     "button": {
