@@ -68,7 +68,7 @@
         "name": "Signal Wi-Fi"
       },
       "mnet_rssi": {
-        "name": "Qualité de la connexion mobile"
+        "name": "Signal Réseau mobile"
       },
       "connect_type": {
         "name": "Connexion"
@@ -122,7 +122,8 @@
         "name": "Durée de la tâche"
       },
       "maintenance_bat_cycles": {
-        "name": "Cycles de batterie"
+        "name": "Cycles de batterie",
+        "unit_of_measurement": "cycles"
       }
     },
     "button": {

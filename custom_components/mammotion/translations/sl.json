@@ -122,7 +122,8 @@
         "name": "Trajanje naloge"
       },
       "maintenance_bat_cycles": {
-        "name": "Baterijski cikli"
+        "name": "Baterijski cikli",
+        "unit_of_measurement": "cycles"
       }
     },
     "button": {

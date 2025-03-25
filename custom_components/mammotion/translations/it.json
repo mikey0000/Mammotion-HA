@@ -122,7 +122,8 @@
         "name": "Durata del compito"
       },
       "maintenance_bat_cycles": {
-        "name": "Cicli della batteria"
+        "name": "Cicli della batteria",
+        "unit_of_measurement": "cycles"
       }
     },
     "button": {
