@@ -2,17 +2,22 @@
 
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
+from functools import partial
 from typing import Any
 
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import EntityCategory
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.restore_state import RestoreEntity
 from pymammotion.data.model.hash_list import AreaHashNameList
 from pymammotion.utility.device_type import DeviceType
 
 from . import MammotionConfigEntry
-from .coordinator import MammotionBaseUpdateCoordinator
+from .coordinator import (
+    MammotionBaseUpdateCoordinator,
+    MammotionReportUpdateCoordinator,
+)
 from .entity import MammotionBaseEntity
 
 
@@ -111,61 +116,19 @@ async def async_setup_entry(
     mammotion_devices = entry.runtime_data
 
     for mower in mammotion_devices:
-        added_areas: set[str] = set()
+        added_areas: set[int] = set()
         # TODO create maps coordinator
         coordinator = mower.reporting_coordinator
 
-        @callback
-        def add_entities() -> None:
-            """Handle addition of mowing areas."""
-            if coordinator.data is None:
-                return
+        update_areas = partial(
+            async_add_area_entities,
+            coordinator,
+            added_areas,
+            async_add_entities,
+        )
 
-            switch_entities: list[MammotionConfigAreaSwitchEntity] = []
-            areas = list(map(str, coordinator.data.map.area.keys()))
-            area_name_hashes = [
-                f"{area.hash}" for area in coordinator.data.map.area_name
-            ]
-            area_name = coordinator.data.map.area_name
-            new_areas = (set(areas) | set(area_name_hashes)) - added_areas
-            if new_areas:
-                for area_id in new_areas:
-                    existing_name: AreaHashNameList | None = next(
-                        (area for area in area_name if str(area.hash) == str(area_id)),
-                        None,
-                    )
-                    name = (
-                        existing_name.name
-                        if (existing_name and existing_name.name)
-                        else f"{area_id}"
-                    )
-                    base_area_switch_entity = (
-                        MammotionConfigAreaSwitchEntityDescription(
-                            key=f"{area_id}",
-                            translation_key="area",
-                            translation_placeholders={"name": name},
-                            area=area_id,
-                            name=f"{name}",
-                            set_fn=lambda coord, bool_val, value: (
-                                coord.operation_settings.areas.append(value)
-                                if bool_val
-                                else coord.operation_settings.areas.remove(value)
-                            ),
-                        )
-                    )
-                    switch_entities.append(
-                        MammotionConfigAreaSwitchEntity(
-                            coordinator,
-                            base_area_switch_entity,
-                        )
-                    )
-                    added_areas.add(area_id)
-
-            if switch_entities:
-                async_add_entities(switch_entities)
-
-        add_entities()
-        coordinator.async_add_listener(add_entities)
+        update_areas()
+        coordinator.async_add_listener(update_areas)
 
         entities = []
         for entity_description in SWITCH_ENTITIES:
@@ -322,3 +285,54 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
             int(self.entity_description.area),
         )
         self.async_write_ha_state()
+
+
+@callback
+def async_add_area_entities(
+    coordinator: MammotionReportUpdateCoordinator,
+    added_areas: set[int],
+    async_add_entities: AddEntitiesCallback,
+) -> None:
+    """Handle addition of mowing areas."""
+
+    if coordinator.data is None:
+        return
+
+    switch_entities: list[MammotionConfigAreaSwitchEntity] = []
+    areas = list(map(int, coordinator.data.map.area.keys()))
+    area_name_hashes = [area.hash for area in coordinator.data.map.area_name]
+    area_name = coordinator.data.map.area_name
+    new_areas = (set(areas) | set(area_name_hashes)) - added_areas
+    if new_areas:
+        for area_id in new_areas:
+            existing_name: AreaHashNameList | None = next(
+                (area for area in area_name if str(area.hash) == str(area_id)),
+                None,
+            )
+            name = (
+                existing_name.name
+                if (existing_name and existing_name.name)
+                else f"{area_id}"
+            )
+            base_area_switch_entity = MammotionConfigAreaSwitchEntityDescription(
+                key=f"{area_id}",
+                translation_key="area",
+                translation_placeholders={"name": name},
+                area=area_id,
+                name=f"{name}",
+                set_fn=lambda coord, bool_val, value: (
+                    coord.operation_settings.areas.append(value)
+                    if bool_val
+                    else coord.operation_settings.areas.remove(value)
+                ),
+            )
+            switch_entities.append(
+                MammotionConfigAreaSwitchEntity(
+                    coordinator,
+                    base_area_switch_entity,
+                )
+            )
+            added_areas.add(area_id)
+
+    if switch_entities:
+        async_add_entities(switch_entities)

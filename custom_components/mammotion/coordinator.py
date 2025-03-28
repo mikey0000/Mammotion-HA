@@ -47,6 +47,7 @@ from .const import (
     DOMAIN,
     EXPIRED_CREDENTIAL_EXCEPTIONS,
     LOGGER,
+    NO_REQUEST_MODES,
 )
 
 if TYPE_CHECKING:
@@ -412,6 +413,10 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         device = self.manager.get_device_by_name(self.device_name)
 
         if not device.mower_state.enabled or not device.mower_state.online:
+            return self.data
+
+        # don't query the mower while users are doing map changes or its updating.
+        if device.mower_state.report_data.dev.sys_status in NO_REQUEST_MODES:
             return self.data
 
         if self.update_failures > 3 and device.preference is ConnectionPreference.WIFI:
