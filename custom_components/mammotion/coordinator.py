@@ -177,7 +177,7 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
             if self.update_failures > 5:
                 raise GatewayTimeoutException(ex.args[0], self.device.iotId)
             if self.update_failures > 0:
-                await asyncio.sleep(1)
+                await asyncio.sleep(2)
             await self.async_send_command(command, **kwargs)
         except (DeviceOfflineException, NoConnectionException) as ex:
             """Device is offline try bluetooth if we have it."""
@@ -419,10 +419,10 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         if device.mower_state.report_data.dev.sys_status in NO_REQUEST_MODES:
             return self.data
 
-        if self.update_failures > 3 and device.preference is ConnectionPreference.WIFI:
+        if self.update_failures > 5 and device.preference is ConnectionPreference.WIFI:
             """Don't hammer the mammotion/ali servers"""
             loop = asyncio.get_running_loop()
-            loop.call_later(600, self.clear_update_failures)
+            loop.call_later(60, self.clear_update_failures)
 
             return self.data
 
