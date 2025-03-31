@@ -99,6 +99,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
             if cloud_client is None:
                 await mammotion.login_and_initiate_cloud(account, password)
             else:
+                # sometimes mammotion_data is missing....
+                if cloud_client.mammotion_http is None:
+                    mammotion_http = MammotionHTTP()
+                    await mammotion_http.login(account, password)
+                    cloud_client.set_http(mammotion_http)
                 await mammotion.initiate_cloud_connection(account, cloud_client)
         except ClientConnectorError as err:
             raise ConfigEntryNotReady(err)
