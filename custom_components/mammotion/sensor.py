@@ -45,6 +45,13 @@ class MammotionSensorEntityDescription(SensorEntityDescription):
     value_fn: Callable[[MowingDevice], StateType]
 
 
+@dataclass(frozen=True, kw_only=True)
+class MammotionWorkSensorEntityDescription(SensorEntityDescription):
+    """Describes Mammotion sensor entity."""
+
+    value_fn: Callable[[MammotionReportUpdateCoordinator, MowingDevice], StateType]
+
+
 LUBA_SENSOR_ONLY_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
     MammotionSensorEntityDescription(
         key="blade_height",
@@ -240,14 +247,6 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         ),
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
-    MammotionSensorEntityDescription(
-        key="work_area",
-        state_class=None,
-        device_class=SensorDeviceClass.ENUM,
-        native_unit_of_measurement=None,
-        value_fn=lambda mower_data: str(mower_data.location.work_zone or "Not working"),
-        entity_category=EntityCategory.DIAGNOSTIC,
-    ),
     # MammotionSensorEntityDescription(
     #     key="lawn_mower_position",
     #     state_class=None,
@@ -260,12 +259,22 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
     # - Signal quality (Robot)
     # - Signal quality (Ref. Station)
     # - LoRa number
-    # - Multi-point turn
-    # - Transverse mode
     # - WiFi status
-    # - Side LED
-    # - Possibly more I forgot about
     # 'real_pos_x': -142511, 'real_pos_y': -20548, 'real_toward': 50915, (robot position)
+)
+
+WORK_SENSOR_TYPES: tuple[MammotionWorkSensorEntityDescription, ...] = (
+    MammotionWorkSensorEntityDescription(
+        key="work_area",
+        state_class=None,
+        device_class=SensorDeviceClass.ENUM,
+        native_unit_of_measurement=None,
+        value_fn=lambda coordinator, mower_data: str(
+            coordinator.get_area_entity_name(mower_data.location.work_zone)
+            or "Not working"
+        ),
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
 )
 
 
@@ -294,6 +303,10 @@ async def async_setup_entry(
             MammotionSensorEntity(mower.reporting_coordinator, description)
             for description in SENSOR_TYPES
         )
+        async_add_entities(
+            MammotionWorkSensorEntity(mower.reporting_coordinator, description)
+            for description in WORK_SENSOR_TYPES
+        )
 
 
 class MammotionSensorEntity(MammotionBaseEntity, SensorEntity):
@@ -316,3 +329,25 @@ class MammotionSensorEntity(MammotionBaseEntity, SensorEntity):
     def native_value(self) -> StateType:
         """Return the state of the sensor."""
         return self.entity_description.value_fn(self.coordinator.data)
+
+
+class MammotionWorkSensorEntity(MammotionBaseEntity, SensorEntity):
+    """Defining the Mammotion Sensor."""
+
+    entity_description: MammotionWorkSensorEntityDescription
+    _attr_has_entity_name = True
+
+    def __init__(
+        self,
+        coordinator: MammotionReportUpdateCoordinator,
+        entity_description: MammotionWorkSensorEntityDescription,
+    ) -> None:
+        """Set up MammotionSensor."""
+        super().__init__(coordinator, entity_description.key)
+        self.entity_description = entity_description
+        self._attr_translation_key = entity_description.key
+
+    @property
+    def native_value(self) -> StateType:
+        """Return the state of the sensor."""
+        return self.entity_description.value_fn(self.coordinator, self.coordinator.data)

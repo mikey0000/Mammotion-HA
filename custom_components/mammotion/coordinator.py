@@ -426,6 +426,33 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
 
             return self.data
 
+    async def find_entity_by_attribute_in_registry(
+        self, attribute_name, attribute_value
+    ):
+        """Find an entity using the entity registry based on attributes."""
+        entity_registry = await self.hass.helpers.entity_registry.async_get_registry()
+
+        for entity_id, entity_entry in entity_registry.entities.items():
+            entity_state = self.hass.states.get(entity_id)
+            if (
+                entity_state
+                and entity_state.attributes.get(attribute_name) == attribute_value
+            ):
+                return entity_id, entity_entry
+
+        return None, None
+
+    def get_area_entity_name(self, area_hash: int) -> str:
+        """Get string name of area hash."""
+        try:
+            area = next(
+                item for item in self.data.map.area_name if item.hash == area_hash
+            )
+            print(area)
+            return area.name if area.name != "" else f"area {area_hash}"
+        except StopIteration:
+            return None
+
 
 class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevice]):
     def __init__(

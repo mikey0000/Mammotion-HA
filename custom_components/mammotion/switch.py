@@ -5,15 +5,17 @@ from dataclasses import dataclass
 from functools import partial
 from typing import Any
 
+from homeassistant.components.switch import DOMAIN as SWITCH_DOMAIN
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.restore_state import RestoreEntity
 from pymammotion.data.model.hash_list import AreaHashNameList
 from pymammotion.utility.device_type import DeviceType
 
-from . import MammotionConfigEntry
+from . import DOMAIN, MammotionConfigEntry
 from .coordinator import (
     MammotionBaseUpdateCoordinator,
     MammotionReportUpdateCoordinator,
@@ -53,7 +55,7 @@ class MammotionConfigSwitchEntityDescription(MammotionSwitchEntityDescription):
 class MammotionConfigAreaSwitchEntityDescription(MammotionSwitchEntityDescription):
     """Describes the Areas  entities."""
 
-    area: str
+    area: int
     set_fn: Callable[[MammotionBaseUpdateCoordinator, bool, int], None]
 
 
@@ -261,18 +263,17 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
         super().__init__(coordinator, entity_description.key)
         self.coordinator = coordinator
         self.entity_description = entity_description
-        # TODO this should not need to be cast.
         self._attr_extra_state_attributes = {"hash": entity_description.area}
-        # TODO grab defaults from operation_settings
-        self._attr_is_on = False  # Default state
+        self._attr_is_on = self._attr_is_on = (
+            entity_description.area in self.coordinator.operation_settings.areas
+        )  # Default state
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         self._attr_is_on = True
         self.entity_description.set_fn(
-            # TODO this should not need to be cast.
             self.coordinator,
             True,
-            int(self.entity_description.area),
+            self.entity_description.area,
         )
         self.async_write_ha_state()
 
@@ -282,7 +283,7 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
             # TODO this should not need to be cast.
             self.coordinator,
             False,
-            int(self.entity_description.area),
+            self.entity_description.area,
         )
         self.async_write_ha_state()
 
@@ -334,5 +335,24 @@ def async_add_area_entities(
             )
             added_areas.add(area_id)
 
+    old_areas = set(area_name_hashes) - added_areas
+    if old_areas:
+        async_remove_entities(coordinator, old_areas)
+        for area in old_areas:
+            added_areas.remove(area)
     if switch_entities:
         async_add_entities(switch_entities)
+
+
+def async_remove_entities(
+    coordinator: MammotionBaseUpdateCoordinator,
+    old_areas: set[int],
+) -> None:
+    """Remove area switch sensors from Home Assistant."""
+    registry = er.async_get(coordinator.hass)
+    for area in old_areas:
+        entity_id = registry.async_get_entity_id(
+            SWITCH_DOMAIN, DOMAIN, f"{coordinator.device_name}_{area}"
+        )
+        if entity_id:
+            registry.async_remove(entity_id)

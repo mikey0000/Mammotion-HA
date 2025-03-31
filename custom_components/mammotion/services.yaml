@@ -100,7 +100,7 @@ start_mow:
       required: false
       selector:
         number:
-          min: 20
+          min: 5
           max: 35
     rain_tactics:
       example: 1
