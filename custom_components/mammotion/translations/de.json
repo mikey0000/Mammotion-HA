@@ -62,16 +62,16 @@
         "name": "BLE RSSI"
       },
       "camera_brightness": {
-        "name": "Kamerahelligkeit"
+        "name": "Kamera Helligkeit"
       },
       "wifi_rssi": {
-        "name": "WiFi RSSI"
+        "name": "WLAN RSSI"
       },
       "mnet_rssi": {
         "name": "Mobilfunk RSSI"
       },
       "connect_type": {
-        "name": "Verbindung"
+        "name": "Verbindungsart"
       },
       "gps_stars": {
         "name": "Satelliten (Roboter)"
@@ -123,7 +123,7 @@
       },
       "maintenance_bat_cycles": {
         "name": "Batteriezyklen",
-        "unit_of_measurement": "cycles"
+        "unit_of_measurement": "Zyklen"
       }
     },
     "button": {
@@ -205,7 +205,7 @@
         }
       },
       "obstacle_laps": {
-        "name": "Mähen von No-Go-Zonen",
+        "name": "Patrouillenrunden für Mähen von No-Go-Zonen",
         "state": {
           "none": "Keine",
           "one": "Eine",
@@ -227,7 +227,7 @@
           "direct_touch": "Direkte Berührung",
           "slow_touch": "Langsame Berührung",
           "less_touch": "Weniger Berührung",
-          "no_touch": "Nicht berühren",
+          "no_touch": "Keine Berührung",
           "sensitive": "Sensitiv"
         }
       },
@@ -240,10 +240,10 @@
         }
       },
       "traversal_mode": {
-        "name": "Durchlaufmodus",
+        "name": "Aufladungsmodus",
         "state": {
           "direct": "Direkt",
-          "follow_perimeter": "Umfang folgen"
+          "follow_perimeter": "Dem Umfang folgen"
         }
       },
       "turning_mode": {
@@ -274,17 +274,17 @@
         "name": "Intervall für das Entleeren"
       },
       "toward_included_angle": {
-        "name": "Kreuzwinkel"
+        "name": "Kreuzungswinkel"
       }
     },
     "device_tracker": {
-      "name": "Geräteverfolgung"
+      "name": "Geräte Standort"
     }
   },
   "selector": {
     "border_mode": {
       "options": {
-        "0": "Rand zuerst",
+        "0": "Umfang zuerst",
         "1": "Fläche zuerst"
       }
     },
@@ -293,7 +293,7 @@
         "0": "Direkte Berührung",
         "1": "Langsame Berührung",
         "2": "Wenig Berührung",
-        "10": "Nicht berühren",
+        "10": "Keine Berührung",
         "11": "Sensitiv"
       }
     },
@@ -302,13 +302,13 @@
         "0": "Zigzag Muster",
         "1": "Schachbrett Muster",
         "2": "Adaptives Zigzag Muster",
-        "3": "Nur Umrandung"
+        "3": "Nur Umfang"
       }
     },
     "rain_tactics": {
       "options": {
         "0": "Aus",
-        "1": "An"
+        "1": "Ein"
       }
     },
     "toward_mode": {
@@ -364,7 +364,7 @@
         },
         "border_mode": {
           "name": "Ausführungsreihenfolge des Pfades",
-          "description": "Abfolge bei der Ausführung des Pfades (Umfang zuerst oder Raster zuerst)."
+          "description": "Pfadreihenfolge fürs Mähen (zuerst Perimeter oder Raster)."
         },
         "job_version": {
           "name": "Job Version",
@@ -391,7 +391,7 @@
           "description": "Wähle den Wegabstand (in cm)."
         },
         "rain_tactics": {
-          "name": "Erkennung von Regen",
+          "name": "Regenerkennung",
           "description": "Stoppt das Mähen, wenn Regen erkannt wird."
         },
         "blade_height": {
