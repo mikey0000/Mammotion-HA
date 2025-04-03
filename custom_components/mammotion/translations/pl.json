@@ -13,7 +13,7 @@
     "flow_title": "Skonfiguruj swoją kosiarkę Mammotion",
     "step": {
       "bluetooth_confirm": {
-        "description": "Konfiguracja {name}",
+        "description": "Skonfiguruj {name}",
         "data": {
           "stay_connected_bluetooth": "Utrzymuj połączenie Bluetooth"
         }
@@ -123,7 +123,7 @@
       },
       "maintenance_bat_cycles": {
         "name": "Cykle baterii",
-        "unit_of_measurement": "cycles"
+        "unit_of_measurement": "cykle"
       }
     },
     "button": {
