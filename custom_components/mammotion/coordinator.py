@@ -686,7 +686,7 @@ class MammotionMapUpdateCoordinator(MammotionBaseUpdateCoordinator[MowerInfo]):
         try:
             if (
                 len(device.mower_state.map.hashlist) == 0
-                or len(device.mower_state.map.missing_hashlist) > 0
+                or len(device.mower_state.map.missing_hashlist()) > 0
             ):
                 await self.manager.start_map_sync(self.device_name)
 
