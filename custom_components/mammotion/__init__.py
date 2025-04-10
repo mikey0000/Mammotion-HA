@@ -24,6 +24,7 @@ from pymammotion.http.http import MammotionHTTP
 from pymammotion.http.model.http import LoginResponseData, Response
 from pymammotion.mammotion.devices.mammotion import ConnectionPreference, Mammotion
 from pymammotion.utility.device_config import DeviceConfig
+from Tea.exceptions import UnretryableException
 
 from .const import (
     CONF_ACCOUNTNAME,
@@ -110,6 +111,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
         except EXPIRED_CREDENTIAL_EXCEPTIONS as exc:
             LOGGER.debug(exc)
             await mammotion.login_and_initiate_cloud(account, password, True)
+        except UnretryableException as err:
+            raise ConfigEntryError(err)
 
         if mqtt_client := mammotion.mqtt_list.get(account):
             store_cloud_credentials(hass, entry, mqtt_client.cloud_client)

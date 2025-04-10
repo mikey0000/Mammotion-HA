@@ -254,6 +254,7 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                 data={
                     CONF_ADDRESS: self._discovered_device.address,
                     CONF_USE_WIFI: user_input.get(CONF_USE_WIFI),
+                    **self._config,
                 },
                 options={CONF_STAY_CONNECTED_BLUETOOTH: self._stay_connected},
             )

@@ -426,6 +426,12 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
 
             return self.data
 
+        if device.has_ble() and device.preference is ConnectionPreference.BLUETOOTH:
+            if ble_device := bluetooth.async_ble_device_from_address(
+                self.hass, device.ble().get_address(), True
+            ):
+                device.ble().update_device(ble_device)
+
     async def find_entity_by_attribute_in_registry(
         self, attribute_name, attribute_value
     ):
@@ -481,11 +487,6 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
 
         device = self.manager.get_device_by_name(self.device_name)
 
-        if device.has_ble() and device.preference is ConnectionPreference.BLUETOOTH:
-            if ble_device := bluetooth.async_ble_device_from_address(
-                self.hass, device.ble().get_address(), True
-            ):
-                device.ble().update_device(ble_device)
         try:
             await self.async_send_command("get_report_cfg")
 
