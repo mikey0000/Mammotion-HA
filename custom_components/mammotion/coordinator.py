@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING, Any
 
 import betterproto
 from homeassistant.components import bluetooth
-from homeassistant.const import CONF_PASSWORD
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import device_registry as dr
@@ -107,21 +106,10 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
             if device.has_ble():
                 await device.ble().stop()
 
-    async def async_login(self) -> None:
+    async def async_refresh_login(self) -> None:
         """Login to cloud servers."""
-        if (
-            self.manager.get_device_by_name(self.device_name)
-            and self.manager.get_device_by_name(self.device_name).has_cloud()
-        ):
-            await self.hass.async_add_executor_job(
-                self.manager.get_device_by_name(self.device_name)
-                .cloud()
-                .mqtt.disconnect
-            )
-
         account = self.config_entry.data.get(CONF_ACCOUNTNAME)
-        password = self.config_entry.data.get(CONF_PASSWORD)
-        await self.manager.login_and_initiate_cloud(account, password, True)
+        await self.manager.refresh_login(account)
         self.store_cloud_credentials()
 
     async def device_offline(self, device: MammotionMixedDeviceManager) -> None:
@@ -170,7 +158,9 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
             return True
         except EXPIRED_CREDENTIAL_EXCEPTIONS:
             self.update_failures += 1
-            await self.async_login()
+            await self.async_refresh_login()
+            if self.update_failures < 5:
+                await self.async_send_command(command, **kwargs)
             return False
         except GatewayTimeoutException as ex:
             self.update_failures += 1
@@ -220,7 +210,13 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
 
     async def async_sync_maps(self) -> None:
         """Get map data from the device."""
-        await self.manager.start_map_sync(self.device_name)
+        try:
+            await self.manager.start_map_sync(self.device_name)
+        except EXPIRED_CREDENTIAL_EXCEPTIONS:
+            self.update_failures += 1
+            await self.async_refresh_login()
+            if self.update_failures < 5:
+                await self.async_sync_maps()
 
     async def async_start_stop_blades(self, start_stop: bool) -> None:
         """Start stop blades."""
@@ -318,7 +314,7 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
                 RptInfoType.RIT_WORK,
                 RptInfoType.RIT_MAINTAIN,
                 RptInfoType.RIT_BASESTATION_INFO,
-                RptInfoType.RIT_FW_INFO,
+                RptInfoType.RIT_VIO,
             ],
             timeout=10000,
             period=3000,
@@ -476,9 +472,6 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
             mammotion=mammotion,
             update_interval=REPORT_INTERVAL,
         )
-
-    def clear_update_failures(self) -> None:
-        self.update_failures = 0
 
     async def _async_update_data(self) -> MowingDevice:
         """Get data from the device."""

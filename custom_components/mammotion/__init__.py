@@ -268,7 +268,7 @@ async def check_and_restore_cloud(
         mammotion_http.login_info = mammotion_data.data
         cloud_client.set_http(mammotion_http)
 
-    await hass.async_add_executor_job(cloud_client.check_or_refresh_session)
+    await cloud_client.check_or_refresh_session()
     return cloud_client
 
 
