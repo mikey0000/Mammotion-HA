@@ -175,12 +175,9 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
                 await self.async_send_command(command, **kwargs)
             return False
         except GatewayTimeoutException as ex:
-            self.update_failures += 1
-            if self.update_failures > 5:
-                raise GatewayTimeoutException(ex.args[0], self.device.iotId)
-            if self.update_failures > 0:
-                await asyncio.sleep(2)
-            await self.async_send_command(command, **kwargs)
+            LOGGER.error(f"Gateway timeout exception: {ex.iot_id}")
+            self.update_failures = 0
+            return False
         except (DeviceOfflineException, NoConnectionException) as ex:
             """Device is offline try bluetooth if we have it."""
             try:
