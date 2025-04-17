@@ -1,0 +1,455 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "Enheten är redan konfigurerad",
+      "already_in_progress": "Konfigurationsflödet pågår redan",
+      "no_devices_found": "Kunde inte hitta enheter",
+      "no_devices_found_in_account": "Inga enheter finns på ditt konto",
+      "bluetooth_and_account_mismatch": "Bluetooth-enheten hittades inte i ditt konto",
+      "no_longer_present": "Enheten finns inte längre",
+      "not_supported": "Enheten stöds inte",
+      "reconfigure_successful": "Omkonfigurering lyckades"
+    },
+    "flow_title": "Konfigurera din Mammotion gräsklippare",
+    "step": {
+      "bluetooth_confirm": {
+        "description": "Konfiguration {name}",
+        "data": {
+          "stay_connected_bluetooth": "Håll Bluetooth ansluten"
+        }
+      },
+      "reconfigure": {
+        "data": {
+          "use_wifi": "Använd Wi-Fi",
+          "account_name": "Mammotion e-post eller kontonummer",
+          "password": "Mammotion kontots lösenord"
+        }
+      },
+      "user": {
+        "data": {
+          "address": "Enhet",
+          "stay_connected_bluetooth": "Håll Bluetooth ansluten"
+        },
+        "description": "Välj din gräsklippare"
+      },
+      "wifi": {
+        "data": {
+          "use_wifi": "Använd Wi-Fi (avmarkera och skicka för att använda bluetooth)",
+          "account_name": "Mammotion e-post eller kontonummer",
+          "password": "Mammotion kontots lösenord"
+        },
+        "title": "Anslut till Wi-Fi",
+        "description": "Ange ditt Mammotion kontos e-postadress eller id och lösenord"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "title": "Uppdatera konfiguration",
+          "stay_connected_bluetooth": "Håll Bluetooth ansluten"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "battery_percent": {
+        "name": "Batteri"
+      },
+      "ble_rssi": {
+        "name": "BLE RSSI"
+      },
+      "camera_brightness": {
+        "name": "Kamera ljusstyrka"
+      },
+      "wifi_rssi": {
+        "name": "WiFi RSSI"
+      },
+      "mnet_rssi": {
+        "name": "Mobil RSSI"
+      },
+      "connect_type": {
+        "name": "Anslutning"
+      },
+      "gps_stars": {
+        "name": "Satelliter (Robot)"
+      },
+      "blade_height": {
+        "name": "Bladhöjd"
+      },
+      "area": {
+        "name": "Område"
+      },
+      "mowing_speed": {
+        "name": "Klipphastighet"
+      },
+      "progress": {
+        "name": "Förlopp"
+      },
+      "total_time": {
+        "name": "Total tid"
+      },
+      "elapsed_time": {
+        "name": "Förfluten tid"
+      },
+      "left_time": {
+        "name": "Tid kvar"
+      },
+      "l1_satellites": {
+        "name": "L1 Satelliter (Co-Viewing)"
+      },
+      "l2_satellites": {
+        "name": "L2 Satelliter (medtittande)"
+      },
+      "position_mode": {
+        "name": "RTK position"
+      },
+      "position_type": {
+        "name": "Typ av enhet"
+      },
+      "activity_mode": {
+        "name": "Aktivitetsläge"
+      },
+      "work_area": {
+        "name": "Arbetsyta"
+      },
+      "maintenance_distance": {
+        "name": "Total körsträcka"
+      },
+      "maintenance_work_time": {
+        "name": "Uppgiftens varaktighet"
+      },
+      "maintenance_bat_cycles": {
+        "name": "Batteri cykler",
+        "unit_of_measurement": "cykler"
+      }
+    },
+    "button": {
+      "start_map_sync": {
+        "name": "Synkronisera kartor"
+      },
+      "resync_rtk_dock": {
+        "name": "Synkronisera RTK och docka"
+      },
+      "release_from_dock": {
+        "name": "Avdocka"
+      },
+      "emergency_nudge_forward": {
+        "name": "Nödknuff framåt"
+      },
+      "emergency_nudge_left": {
+        "name": "Nödknuff vänster"
+      },
+      "emergency_nudge_right": {
+        "name": "Nödknuff höger"
+      },
+      "emergency_nudge_back": {
+        "name": "Nödknuffa tillbaka"
+      },
+      "cancel_task": {
+        "name": "Avbryt nuvarande uppgift"
+      },
+      "clear_all_mapdata": {
+        "name": "Rensa kartor och områdesnamn"
+      }
+    },
+    "switch": {
+      "area": {
+        "name": "Område {name}"
+      },
+      "blade_status": {
+        "name": "Blad på/av"
+      },
+      "is_mow": {
+        "name": "Klippning på/av"
+      },
+      "is_dump": {
+        "name": "Dumpa gräs på/av"
+      },
+      "is_edge": {
+        "name": "Kant klippning"
+      },
+      "rain_tactics": {
+        "name": "Regndetektering På/Av"
+      },
+      "side_led": {
+        "name": "Sid-LED på/av"
+      },
+      "perimeter_first_on_off": {
+        "name": "Omkrets först"
+      },
+      "schedule_updates": {
+        "name": "Slå på uppdateringar/Av"
+      }
+    },
+    "select": {
+      "channel_mode": {
+        "name": "Klippvägsläge",
+        "state": {
+          "single_grid": "Sicksackväg",
+          "double_grid": "Schackbräde",
+          "segment_grid": "Adaptiv sicksack",
+          "no_grid": "Enbart omkrets"
+        }
+      },
+      "mowing_laps": {
+        "name": "Perimeter Klippning Varv",
+        "state": {
+          "none": "Ingen",
+          "one": "En",
+          "two": "Två",
+          "three": "Tre",
+          "four": "Fyra"
+        }
+      },
+      "obstacle_laps": {
+        "name": "No-go Zone Klippning Varv",
+        "state": {
+          "none": "Ingen",
+          "one": "En",
+          "two": "Två",
+          "three": "Tre",
+          "four": "Fyra"
+        }
+      },
+      "border_mode": {
+        "name": "Klippordning",
+        "state": {
+          "border_first": "Omkrets först",
+          "grid_first": "ZigZag / Schackbräda först"
+        }
+      },
+      "bypass_mode": {
+        "name": "Hinder undvikande läge",
+        "state": {
+          "direct_touch": "Direkt beröring",
+          "slow_touch": "Långsam touch",
+          "less_touch": "Mindre tryck",
+          "no_touch": "Ingen beröring",
+          "sensitive": "Känslig"
+        }
+      },
+      "cutting_angle_mode": {
+        "name": "Klippväg vinkel läge",
+        "state": {
+          "relative_angle": "Relativ vinkel",
+          "absolute_angle": "Absolut vinkel",
+          "random_angle": "Slumpmässig vinkel"
+        }
+      },
+      "traversal_mode": {
+        "name": "Traverseringsläge",
+        "state": {
+          "direct": "Direkt",
+          "follow_perimeter": "Följ omkretsen"
+        }
+      },
+      "turning_mode": {
+        "name": "Vändningsläge",
+        "state": {
+          "multipoint": "Multipunkt sväng",
+          "zero_turn": "Noll sväng"
+        }
+      }
+    },
+    "number": {
+      "start_progress": {
+        "name": "Starta framsteg"
+      },
+      "blade_height": {
+        "name": "Bladens höjd"
+      },
+      "working_speed": {
+        "name": "Arbetshastighet"
+      },
+      "cutting_angle": {
+        "name": "Skärande sökväg vinkel"
+      },
+      "path_spacing": {
+        "name": "Mellanrum för sökväg"
+      },
+      "dumping_interval": {
+        "name": "Tömningsfrekvens"
+      },
+      "toward_included_angle": {
+        "name": "Korsningsvinkel"
+      }
+    },
+    "device_tracker": {
+      "name": "Spårning av enhet"
+    }
+  },
+  "selector": {
+    "border_mode": {
+      "options": {
+        "0": "Omkrets först",
+        "1": "Sack/schackbräde först"
+      }
+    },
+    "ultra_wave": {
+      "options": {
+        "0": "Direkt beröring",
+        "1": "Långsam touch",
+        "2": "Mindre tryck",
+        "10": "Ingen beröring",
+        "11": "Känslig"
+      }
+    },
+    "channel_mode": {
+      "options": {
+        "0": "Sicksackväg",
+        "1": "Schackmönstrad väg",
+        "2": "Adaptiv sicksackväg",
+        "3": "Endast omkrets"
+      }
+    },
+    "rain_tactics": {
+      "options": {
+        "0": "Av",
+        "1": "På"
+      }
+    },
+    "toward_mode": {
+      "options": {
+        "0": "Relativ vinkel",
+        "1": "Absolut vinkel",
+        "2": "Slumpmässig vinkel"
+      }
+    },
+    "mowing_laps": {
+      "options": {
+        "0": "Ingen",
+        "1": "Ett varv",
+        "2": "Två varv",
+        "3": "Tre varv",
+        "4": "Fyra varv"
+      }
+    },
+    "obstacle_laps": {
+      "options": {
+        "0": "Ingen",
+        "1": "Ett varv",
+        "2": "Två varv",
+        "3": "Tre varv",
+        "4": "Fyra varv"
+      }
+    }
+  },
+  "services": {
+    "cancel_job": {
+      "name": "Avbryt nuvarande uppgift",
+      "description": "Stoppar gräsklipparen och rensar den aktuella uppgiften."
+    },
+    "start_mow": {
+      "name": "Börja klippa",
+      "description": "Starta klippningen med anpassade inställningar.",
+      "fields": {
+        "is_mow": {
+          "name": "Klipper",
+          "description": "Om klippning är aktiv. (Yuka)."
+        },
+        "is_dump": {
+          "name": "Dumpar",
+          "description": "Om gräs dumpning är aktiv. (Yuka)."
+        },
+        "is_edge": {
+          "name": "Kant klippning",
+          "description": "Om kantläge är aktivt. (Yuka)."
+        },
+        "collect_grass_frequency": {
+          "name": "Frekvens för gräsuppsamling",
+          "description": "Frekvens för att samla gräs (i meter kvadrat). (Yuka)."
+        },
+        "border_mode": {
+          "name": "Klippordning",
+          "description": "Klippordning (Kantlinje först eller rutnät först)."
+        },
+        "job_version": {
+          "name": "Jobbversion",
+          "description": "Jobbversion."
+        },
+        "job_id": {
+          "name": "Jobb-ID",
+          "description": "Jobb-ID."
+        },
+        "speed": {
+          "name": "Hastighet",
+          "description": "Klipphastighet."
+        },
+        "ultra_wave": {
+          "name": "Hinderdetektering",
+          "description": "Läge för hinderundvikning."
+        },
+        "channel_mode": {
+          "name": "Klippvägsläge",
+          "description": "Klippväg (sicksack, schackmönster, adaptiv sicksack eller endast omkrets)."
+        },
+        "channel_width": {
+          "name": "Spårbredd",
+          "description": "Bredd på klippspåret (i cm)."
+        },
+        "rain_tactics": {
+          "name": "Regndetektering",
+          "description": "Regndetektering."
+        },
+        "blade_height": {
+          "name": "Bladens höjd",
+          "description": "Höjd på bladet."
+        },
+        "toward": {
+          "name": "Startvinkel på vägen",
+          "description": "Startriktning för klippning."
+        },
+        "toward_included_angle": {
+          "name": "Korsningsvinkel",
+          "description": "När du väljer rutnät ändra den andra vinkeln (standard är 90 grader)."
+        },
+        "toward_mode": {
+          "name": "Klippvinkelläge",
+          "description": "Riktningen för gräsklippningen."
+        },
+        "mowing_laps": {
+          "name": "Perimeter Klippning Varv",
+          "description": "Antal varv runt klippområdet omkrets."
+        },
+        "obstacle_laps": {
+          "name": "Förbjudna zoner klippningsvarv",
+          "description": "Antal varv runt förbjudna zoner."
+        },
+        "start_progress": {
+          "name": "Starta framsteg",
+          "description": "Startar förloppsprocent."
+        },
+        "areas": {
+          "name": "Områdesval",
+          "description": "Lista över områden att klippa (representeras som heltal)."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "device_not_ready": {
+      "message": "Enheten är inte färdig."
+    },
+    "pause_failed": {
+      "message": "Det gick inte att pausa gräsklipparen."
+    },
+    "resume_failed": {
+      "message": "Det gick inte att återuppta gräsklipparen."
+    },
+    "start_failed": {
+      "message": "Det gick inte att starta gräsklipparen."
+    },
+    "dock_failed": {
+      "message": "Det gick inte att skicka gräsklipparen till dockan."
+    },
+    "dock_cancel_failed": {
+      "message": "Det gick inte att stoppa gräsklipparen tillbaka till dockan."
+    },
+    "command_failed": {
+      "message": "Det gick inte att skicka kommandot till gräsklipparen."
+    }
+  }
+}
