@@ -130,7 +130,7 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
             await device.cloud().stop()
 
         loop = asyncio.get_running_loop()
-        loop.call_later(900, self.clear_update_failures)
+        loop.call_later(900, lambda: asyncio.create_task(self.clear_update_failures()))
 
     def store_cloud_credentials(self) -> None:
         """Store cloud credentials in config entry."""
@@ -427,7 +427,9 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         if self.update_failures > 5 and device.preference is ConnectionPreference.WIFI:
             """Don't hammer the mammotion/ali servers"""
             loop = asyncio.get_running_loop()
-            loop.call_later(60, self.clear_update_failures)
+            loop.call_later(
+                60, lambda: asyncio.create_task(self.clear_update_failures())
+            )
 
             return self.data
 
