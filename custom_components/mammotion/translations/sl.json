@@ -123,7 +123,7 @@
       },
       "maintenance_bat_cycles": {
         "name": "Baterijski cikli",
-        "unit_of_measurement": "cycles"
+        "unit_of_measurement": "Cikli polnjenja baterije"
       }
     },
     "button": {
