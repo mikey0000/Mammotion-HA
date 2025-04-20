@@ -1,4 +1,4 @@
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 
 from homeassistant.components.number import (
@@ -31,6 +31,10 @@ class MammotionConfigNumberEntityDescription(NumberEntityDescription):
     """Describes Mammotion number entity."""
 
     set_fn: Callable[[MammotionBaseUpdateCoordinator, float], None]
+    get_fn: Callable[[MammotionBaseUpdateCoordinator], float | None] = None
+    update_fn: Callable[
+        [MammotionBaseUpdateCoordinator, float], None | Awaitable[None]
+    ] = None
 
 
 NUMBER_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
@@ -91,6 +95,8 @@ LUBA_WORKING_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
         set_fn=lambda coordinator, value: setattr(
             coordinator.operation_settings, "blade_height", value
         ),
+        get_fn=lambda coordinator: coordinator.data.report_data.work.knife_height,
+        update_fn=lambda coordinator, value: coordinator.async_blade_height(int(value)),
     ),
 )
 
@@ -226,8 +232,21 @@ class MammotionWorkingNumberEntity(MammotionConfigNumberEntity):
         """Return the maximum value."""
         return self._attr_native_max_value
 
+    @property
+    def native_value(self) -> float | None:
+        """Return the current value if get_fn is defined."""
+        if self.entity_description.get_fn is not None:
+            return self.entity_description.get_fn(self.coordinator)
+        return self._attr_native_value
+
     async def async_set_native_value(self, value: float) -> None:
-        """Set native value for number."""
+        """Set native value for number and call update_fn if defined."""
         self._attr_native_value = value
         self.entity_description.set_fn(self.coordinator, value)
+
+        if self.entity_description.update_fn is not None:
+            result = self.entity_description.update_fn(self.coordinator, value)
+            if result is not None and hasattr(result, "__await__"):
+                await result
+
         self.async_write_ha_state()

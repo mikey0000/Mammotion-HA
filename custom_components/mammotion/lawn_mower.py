@@ -175,6 +175,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
         # check if job in progress
         #
         mode = self.rpt_dev_status.sys_status
+        breakpoint_info = self.report_data.work.bp_info
         if mode is None:
             raise HomeAssistantError(
                 translation_domain=DOMAIN, translation_key="device_not_ready"
@@ -194,16 +195,12 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
                     mode = self.rpt_dev_status.sys_status
                 if mode == WorkMode.MODE_PAUSE:
                     trans_key = "resume_failed"
-                    charge_state = self.rpt_dev_status.charge_state
-                    if charge_state != 0:
-                        await self.coordinator.async_send_command(
-                            "break_point_anywhere_continue"
-                        )
-                    else:
+                    if breakpoint_info == 1:
                         await self.coordinator.async_send_command("resume_execute_task")
+
                 if mode == WorkMode.MODE_READY:
                     trans_key = "start_failed"
-                    if self.report_data.work.area >> 16 != 0:
+                    if breakpoint_info == 1:
                         await self.coordinator.async_send_command("resume_execute_task")
                         return
                     if await self.coordinator.async_plan_route(operational_settings):
