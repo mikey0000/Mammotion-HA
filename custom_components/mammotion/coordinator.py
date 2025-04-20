@@ -121,7 +121,7 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
 
         account = self.config_entry.data.get(CONF_ACCOUNTNAME)
         password = self.config_entry.data.get(CONF_PASSWORD)
-        await self.manager.login_and_initiate_cloud(account, password, True)
+        await self.manager.refresh_login(account, password)
         self.store_cloud_credentials()
 
     async def device_offline(self, device: MammotionMixedDeviceManager) -> None:
@@ -273,7 +273,7 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
 
     async def async_blade_height(self, height: int) -> int:
         """Set blade height."""
-        await self.send_command_and_update("set_blade_height", height=float(height))
+        await self.async_send_command("set_blade_height", height=height)
         return height
 
     async def async_leave_dock(self) -> None:
