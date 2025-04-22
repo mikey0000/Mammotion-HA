@@ -34,7 +34,7 @@
       },
       "wifi": {
         "data": {
-          "use_wifi": "Använd Wi-Fi (avmarkera och skicka för att använda bluetooth)",
+          "use_wifi": "Använd Wi-Fi (avmarkera och skicka för att använda Bluetooth)",
           "account_name": "Mammotion e-post eller kontonummer",
           "password": "Mammotion kontots lösenord"
         },
@@ -98,10 +98,10 @@
         "name": "Tid kvar"
       },
       "l1_satellites": {
-        "name": "L1 Satelliter (Co-Viewing)"
+        "name": "L1 Satelliter (samvisning)"
       },
       "l2_satellites": {
-        "name": "L2 Satelliter (medtittande)"
+        "name": "L2 Satelliter (samvisning)"
       },
       "position_mode": {
         "name": "RTK position"
@@ -122,7 +122,7 @@
         "name": "Uppgiftens varaktighet"
       },
       "maintenance_bat_cycles": {
-        "name": "Batteri cykler",
+        "name": "Battericykler",
         "unit_of_measurement": "cykler"
       }
     },
@@ -146,7 +146,7 @@
         "name": "Nödknuff höger"
       },
       "emergency_nudge_back": {
-        "name": "Nödknuffa tillbaka"
+        "name": "Nödknuffa bakåt"
       },
       "cancel_task": {
         "name": "Avbryt nuvarande uppgift"
@@ -169,19 +169,19 @@
         "name": "Dumpa gräs på/av"
       },
       "is_edge": {
-        "name": "Kant klippning"
+        "name": "Kantklippning"
       },
       "rain_tactics": {
-        "name": "Regndetektering På/Av"
+        "name": "Regndetektering på/av"
       },
       "side_led": {
-        "name": "Sid-LED på/av"
+        "name": "Sido-LED på/av"
       },
       "perimeter_first_on_off": {
         "name": "Omkrets först"
       },
       "schedule_updates": {
-        "name": "Slå på uppdateringar/Av"
+        "name": "Slå på/av uppdateringar"
       }
     },
     "select": {
@@ -195,20 +195,20 @@
         }
       },
       "mowing_laps": {
-        "name": "Perimeter Klippning Varv",
+        "name": "Klippvarv omkrets",
         "state": {
           "none": "Ingen",
-          "one": "En",
+          "one": "Ett",
           "two": "Två",
           "three": "Tre",
           "four": "Fyra"
         }
       },
       "obstacle_laps": {
-        "name": "No-go Zone Klippning Varv",
+        "name": "Klippvarv No-go Zone",
         "state": {
           "none": "Ingen",
-          "one": "En",
+          "one": "Ett",
           "two": "Två",
           "three": "Tre",
           "four": "Fyra"
@@ -218,16 +218,16 @@
         "name": "Klippordning",
         "state": {
           "border_first": "Omkrets först",
-          "grid_first": "ZigZag / Schackbräda först"
+          "grid_first": "Sicksack / Schackbräda först"
         }
       },
       "bypass_mode": {
-        "name": "Hinder undvikande läge",
+        "name": "Läge för hinderundvikning",
         "state": {
-          "direct_touch": "Direkt beröring",
-          "slow_touch": "Långsam touch",
-          "less_touch": "Mindre tryck",
-          "no_touch": "Ingen beröring",
+          "direct_touch": "Direkt kontakt",
+          "slow_touch": "Långsam kontakt",
+          "less_touch": "Mindre kontakt",
+          "no_touch": "Ingen kontakt",
           "sensitive": "Känslig"
         }
       },
@@ -240,7 +240,7 @@
         }
       },
       "traversal_mode": {
-        "name": "Traverseringsläge",
+        "name": "Förflyttningsläge",
         "state": {
           "direct": "Direkt",
           "follow_perimeter": "Följ omkretsen"
@@ -250,13 +250,13 @@
         "name": "Vändningsläge",
         "state": {
           "multipoint": "Multipunkt sväng",
-          "zero_turn": "Noll sväng"
+          "zero_turn": "Punkt sväng"
         }
       }
     },
     "number": {
       "start_progress": {
-        "name": "Starta framsteg"
+        "name": "Starta uppgift"
       },
       "blade_height": {
         "name": "Bladens höjd"
@@ -265,10 +265,10 @@
         "name": "Arbetshastighet"
       },
       "cutting_angle": {
-        "name": "Skärande sökväg vinkel"
+        "name": "Klippvägsvinkel"
       },
       "path_spacing": {
-        "name": "Mellanrum för sökväg"
+        "name": "Spåravstånd"
       },
       "dumping_interval": {
         "name": "Tömningsfrekvens"
@@ -285,15 +285,15 @@
     "border_mode": {
       "options": {
         "0": "Omkrets först",
-        "1": "Sack/schackbräde först"
+        "1": "Sicksack/schackbräde först"
       }
     },
     "ultra_wave": {
       "options": {
-        "0": "Direkt beröring",
-        "1": "Långsam touch",
-        "2": "Mindre tryck",
-        "10": "Ingen beröring",
+        "0": "Direkt kontakt",
+        "1": "Långsam kontakt",
+        "2": "Mindre kontakt",
+        "10": "Ingen kontakt",
         "11": "Känslig"
       }
     },
@@ -352,19 +352,19 @@
         },
         "is_dump": {
           "name": "Dumpar",
-          "description": "Om gräs dumpning är aktiv. (Yuka)."
+          "description": "Om gräsdumpning är aktiv. (Yuka)."
         },
         "is_edge": {
-          "name": "Kant klippning",
+          "name": "Kantklippning",
           "description": "Om kantläge är aktivt. (Yuka)."
         },
         "collect_grass_frequency": {
           "name": "Frekvens för gräsuppsamling",
-          "description": "Frekvens för att samla gräs (i meter kvadrat). (Yuka)."
+          "description": "Frekvens för gräsuppsamling (i kvadratmeter). (Yuka)."
         },
         "border_mode": {
           "name": "Klippordning",
-          "description": "Klippordning (Kantlinje först eller rutnät först)."
+          "description": "Klippordning (Omkrets först eller rutnät först)."
         },
         "job_version": {
           "name": "Jobbversion",
@@ -411,15 +411,15 @@
           "description": "Riktningen för gräsklippningen."
         },
         "mowing_laps": {
-          "name": "Perimeter Klippning Varv",
-          "description": "Antal varv runt klippområdet omkrets."
+          "name": "Klippningsvarv omkrets",
+          "description": "Antal varv runt klippområdets omkrets."
         },
         "obstacle_laps": {
-          "name": "Förbjudna zoner klippningsvarv",
-          "description": "Antal varv runt förbjudna zoner."
+          "name": "Klippningsvarv No-go zone",
+          "description": "Antal varv runt förbjudna (No-go) zoner."
         },
         "start_progress": {
-          "name": "Starta framsteg",
+          "name": "Starta uppgift",
           "description": "Startar förloppsprocent."
         },
         "areas": {
@@ -446,7 +446,7 @@
       "message": "Det gick inte att skicka gräsklipparen till dockan."
     },
     "dock_cancel_failed": {
-      "message": "Det gick inte att stoppa gräsklipparen tillbaka till dockan."
+      "message": "Det gick inte att stoppa gräsklipparen att återvända till dockan."
     },
     "command_failed": {
       "message": "Det gick inte att skicka kommandot till gräsklipparen."
