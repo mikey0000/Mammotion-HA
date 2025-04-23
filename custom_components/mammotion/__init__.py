@@ -85,8 +85,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
             options={CONF_STAY_CONNECTED_BLUETOOTH: stay_connected_ble},
         )
 
-    stay_connected_ble = entry.options.get(CONF_STAY_CONNECTED_BLUETOOTH, False)
-
     use_wifi = entry.data.get(CONF_USE_WIFI, True)
 
     mammotion_devices: list[MammotionMowerData] = []
