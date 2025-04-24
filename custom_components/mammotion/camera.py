@@ -170,7 +170,6 @@ async def async_setup_platform_services(hass: HomeAssistant, entry: MammotionCon
 
     def _get_mower_by_entity_id(entity_id: str):
         for mower in entry.runtime_data:
-            if mower.reporting_coordinator.entity_id == entity_id:
                 return mower
         return None
 
