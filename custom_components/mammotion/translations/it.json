@@ -13,7 +13,7 @@
     "flow_title": "Configura il tuo rasaerba Mammotion",
     "step": {
       "bluetooth_confirm": {
-        "description": "Configura {nome}",
+        "description": "Configura {name}",
         "data": {
           "stay_connected_bluetooth": "Mantieni Bluetooth connesso"
         }
