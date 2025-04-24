@@ -66,6 +66,8 @@ async def async_setup_entry(
                     _LOGGER.error("Nessun dato di streaming disponibile per %s", mower.device.deviceName)
             except Exception as e:
                 _LOGGER.error("Errore nella configurazione della camera: %s", e)
+                
+    await async_setup_platform_services(hass, entry)
 
 
 class MammotionWebRTCCamera(MammotionBaseEntity, Camera):
@@ -84,6 +86,9 @@ class MammotionWebRTCCamera(MammotionBaseEntity, Camera):
         self.entity_description = entity_description
         self._attr_translation_key = entity_description.key
         self._stream_data: StreamSubscriptionResponse | None = None
+
+        self.access_tokens = []
+        self._webrtc_provider = None      # Evita crash su async_refresh_providers()
 
     @property
     def frontend_stream_type(self) -> StreamType | None:
@@ -153,3 +158,38 @@ class MammotionWebRTCCamera(MammotionBaseEntity, Camera):
         
         # Informa il frontend che deve usare l'SDK Agora
         send_message('{"type":"error","error":"Usa l\'SDK Agora per questa telecamera","useAgoraSDK":true}', session_id)
+
+
+#Global
+async def async_setup_platform_services(hass: HomeAssistant, entry: MammotionConfigEntry) -> None:
+    """Registra i servizi personalizzati per lo streaming."""
+
+    def _get_mower_by_entity_id(entity_id: str):
+        for mower in entry.runtime_data:
+            if mower.reporting_coordinator.entity_id == entity_id:
+                return mower
+        return None
+
+    async def handle_refresh_stream(call):
+        entity_id = call.data["entity_id"]
+        mower = _get_mower_by_entity_id(entity_id)
+        if mower:
+            stream_data = await mower.api.get_stream_subscription(mower.device.deviceName)
+            mower.reporting_coordinator.set_stream_data(stream_data)
+            mower.reporting_coordinator.async_update_listeners()
+
+    async def handle_start_video(call):
+        entity_id = call.data["entity_id"]
+        mower = _get_mower_by_entity_id(entity_id)
+        if mower:
+            await mower.api.device_agora_join_channel_with_position(1)
+
+    async def handle_stop_video(call):
+        entity_id = call.data["entity_id"]
+        mower = _get_mower_by_entity_id(entity_id)
+        if mower:
+            await mower.api.device_agora_join_channel_with_position(0)
+
+    hass.services.async_register("mammotion", "refresh_stream", handle_refresh_stream)
+    hass.services.async_register("mammotion", "start_video", handle_start_video)
+    hass.services.async_register("mammotion", "stop_video", handle_stop_video)

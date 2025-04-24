@@ -90,6 +90,15 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         self.manager = mammotion
         self._operation_settings = OperationSettings()
         self.update_failures = 0
+        self._stream_data: Any = None  # Stream data [Agora]
+
+    def set_stream_data(self, stream_data: Any) -> None:
+        """Imposta i dati dello stream per l'accesso dalla camera."""
+        self._stream_data = stream_data
+
+    def get_stream_data(self) -> Any:
+        """Restituisce i dati dello stream."""
+        return self._stream_data
 
     async def set_scheduled_updates(self, enabled: bool) -> None:
         device = self.manager.get_device_by_name(self.device_name)
