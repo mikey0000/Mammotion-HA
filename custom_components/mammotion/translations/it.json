@@ -10,10 +10,10 @@
       "not_supported": "Dispositivo non supportato",
       "reconfigure_successful": "Riconfigurazione avvenuta con successo"
     },
-    "flow_title": "Configura il tuo rasaerba Mammotion",
+    "flow_title": "Configura il tuo tagliaerba Mammotion",
     "step": {
       "bluetooth_confirm": {
-        "description": "Configura {nome}",
+        "description": "Configura {name}",
         "data": {
           "stay_connected_bluetooth": "Mantieni Bluetooth connesso"
         }
@@ -30,7 +30,7 @@
           "address": "Dispositivo",
           "stay_connected_bluetooth": "Mantieni Bluetooth connesso"
         },
-        "description": "Seleziona il tuo rasaerba"
+        "description": "Seleziona il tuo tagliaerba"
       },
       "wifi": {
         "data": {
@@ -68,7 +68,7 @@
         "name": "WiFi RSSI"
       },
       "mnet_rssi": {
-        "name": "RSSI mobile"
+        "name": "RSSI SIM"
       },
       "connect_type": {
         "name": "Connessione"
@@ -86,7 +86,7 @@
         "name": "Velocità di taglio"
       },
       "progress": {
-        "name": "Avanzamento"
+        "name": "Progresso"
       },
       "total_time": {
         "name": "Tempo totale"
@@ -113,7 +113,7 @@
         "name": "Modalità attività"
       },
       "work_area": {
-        "name": "Dell'area di lavoro"
+        "name": "Area di lavoro"
       },
       "maintenance_distance": {
         "name": "Chilometraggio totale"
@@ -123,7 +123,7 @@
       },
       "maintenance_bat_cycles": {
         "name": "Cicli della batteria",
-        "unit_of_measurement": "cycles"
+        "unit_of_measurement": "Cicli batteria"
       }
     },
     "button": {
@@ -134,19 +134,19 @@
         "name": "Sincronizza base e RTK"
       },
       "release_from_dock": {
-        "name": "Sblocca"
+        "name": "Esci dalla base"
       },
       "emergency_nudge_forward": {
-        "name": "Nudge di emergenza in avanti"
+        "name": "Muovi avanti"
       },
       "emergency_nudge_left": {
-        "name": "Nudge di emergenza a sinistra"
+        "name": "Muovi a sinistra"
       },
       "emergency_nudge_right": {
-        "name": "Nudge di emergenza a destra"
+        "name": "Muovi a destra"
       },
       "emergency_nudge_back": {
-        "name": "Ritorno di emergenza"
+        "name": "Muovi indietro"
       },
       "cancel_task": {
         "name": "Annulla l'attività corrente"
@@ -195,7 +195,7 @@
         }
       },
       "mowing_laps": {
-        "name": "Modalità controllo bordi",
+        "name": "Numeri di giri perimetrali",
         "state": {
           "none": "Nessuno",
           "one": "Uno",
@@ -205,7 +205,7 @@
         }
       },
       "obstacle_laps": {
-        "name": "Modalità aggiramento ostacoli",
+        "name": "Numeri di giri zone No-go",
         "state": {
           "none": "Nessuno",
           "one": "Uno",
@@ -217,7 +217,7 @@
       "border_mode": {
         "name": "Ordine di taglio",
         "state": {
-          "border_first": "Perimetro prima",
+          "border_first": "Taglia prima il perimetro",
           "grid_first": "ZigZag / Scacchiera prima"
         }
       },
@@ -271,7 +271,7 @@
         "name": "Spaziatura Percorso"
       },
       "dumping_interval": {
-        "name": "Frequenza Di Dumping"
+        "name": "Frequenza scarico erba"
       },
       "toward_included_angle": {
         "name": "Angolo Di Attraversamento"
@@ -284,7 +284,7 @@
   "selector": {
     "border_mode": {
       "options": {
-        "0": "Taglio perimetro",
+        "0": "Prima il perimetro",
         "1": "ZigZag/scacchiera prima"
       }
     },
@@ -343,15 +343,15 @@
       "description": "Ferma la falciatrice e cancella l'attività corrente."
     },
     "start_mow": {
-      "name": "Inizia Mowing",
-      "description": "Avvia l'operazione di falciatura con impostazioni personalizzate.",
+      "name": "Inizia a tagliare",
+      "description": "Avvia l'operazione di taglio con impostazioni personalizzate.",
       "fields": {
         "is_mow": {
-          "name": "Sta Mowing",
+          "name": "Sta tagliando",
           "description": "Se la falciatura è attiva. (Yuka)."
         },
         "is_dump": {
-          "name": "È Dumping",
+          "name": "Sta scaricando l'erba",
           "description": "Se lo scarico dell'erba è attivo. (Yuka)."
         },
         "is_edge": {
@@ -363,7 +363,7 @@
           "description": "Frequenza di raccolta dell'erba (in metri quadrati). (Yuka)."
         },
         "border_mode": {
-          "name": "Ordine Mow",
+          "name": "Ordine di taglio",
           "description": "Ordine tracciato (prima perimetro o griglia)."
         },
         "job_version": {
@@ -411,11 +411,11 @@
           "description": "Direzione angolare del falcio."
         },
         "mowing_laps": {
-          "name": "Casse Di Perimetro",
+          "name": "Numero di giri sul perimetro",
           "description": "Numero di giri attorno al perimetro dell'area di falciatura."
         },
         "obstacle_laps": {
-          "name": "Zona no-go Mowing Laps",
+          "name": "Numero di giri sulle zone No-go",
           "description": "Numero di giri intorno alle zone No-go."
         },
         "start_progress": {
@@ -424,7 +424,7 @@
         },
         "areas": {
           "name": "Selezione Area",
-          "description": "Elenco di aree da macinare (rappresentati come interi)."
+          "description": "Elenco di aree da tagliare(rappresentati come interi)."
         }
       }
     }
