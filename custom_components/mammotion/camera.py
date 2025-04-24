@@ -112,32 +112,14 @@ class MammotionWebRTCCamera(MammotionBaseEntity, Camera):
                 return {}
         
         if not self._stream_data:
-            return {}
-            
-        # Prepara la lista delle telecamere con i loro token
-        cameras = []
-        for idx, camera in enumerate(self._stream_data.cameras):
-            side = "left" if idx == 0 else "right" if idx == 1 else "rear"
-            cameras.append({
-                "side": side,
-                "token": camera.token
-            })
-            
-        side = self.coordinator.selected_camera_side or "left"
-        camera_index = 0
-        if side == "right" and len(self._stream_data.cameras) > 1:
-            camera_index = 1
-        elif side == "rear" and len(self._stream_data.cameras) > 2:
-            camera_index = 2
+            return {}            
             
         # Restituisci tutti i dati necessari per l'SDK Agora
         return {
-            "app_id": self._stream_data.appid,
-            "channel_name": self._stream_data.channelName,
-            "uid": self._stream_data.uid,
-            "token": self._stream_data.cameras[camera_index].token if len(self._stream_data.cameras) > camera_index else "",
-            "selected_side": side,
-            "cameras": cameras
+            "app_id": self._stream_data.data.appid,
+            "channel_name": self._stream_data.data.channelName,
+            "uid": self._stream_data.data.uid,
+            "token": self._stream_data.data.token,
         }
 
     async def async_camera_image(
@@ -177,7 +159,7 @@ async def async_setup_platform_services(hass: HomeAssistant, entry: MammotionCon
         entity_id = call.data["entity_id"]
         mower = _get_mower_by_entity_id(entity_id)
         if mower:
-            stream_data = await mower.api.get_stream_subscription(mower.device.deviceName)
+            stream_data = await mower.get_stream_subscription(mower.device.deviceName)
             mower.reporting_coordinator.set_stream_data(stream_data)
             mower.reporting_coordinator.async_update_listeners()
 
@@ -185,7 +167,7 @@ async def async_setup_platform_services(hass: HomeAssistant, entry: MammotionCon
         entity_id = call.data["entity_id"]
         mower = _get_mower_by_entity_id(entity_id)
         if mower:
-            await mower.api.device_agora_join_channel_with_position(1)
+            await mower.device_agora_join_channel_with_position(1)
 
     async def handle_stop_video(call):
         entity_id = call.data["entity_id"]
