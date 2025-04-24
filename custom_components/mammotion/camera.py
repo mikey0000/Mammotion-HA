@@ -90,6 +90,7 @@ class MammotionWebRTCCamera(MammotionBaseEntity, Camera):
         self.access_tokens = []
         self._webrtc_provider = None      # Evita crash su async_refresh_providers()
         self._legacy_webrtc_provider = None
+        self._supports_native_sync_webrtc = False
 
     @property
     def frontend_stream_type(self) -> StreamType | None:
