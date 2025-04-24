@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
@@ -22,6 +23,8 @@ from pymammotion.utility.device_type import DeviceType
 from . import MammotionConfigEntry
 from .coordinator import MammotionBaseUpdateCoordinator
 from .entity import MammotionBaseEntity
+
+_LOGGER = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -46,15 +49,23 @@ async def async_setup_entry(
 ) -> None:
     """Set up the Mammotion camera entities."""
     mowers = entry.runtime_data
+    
     for mower in mowers:
         if not DeviceType.is_luba1(mower.device.deviceName):
-            print("CAMERA API THING: ")
-            api = await mower.api.get_stream_subscription(mower.device.deviceName)
-            print(api)
-            # async_add_entities(
-            #     MammotionWebRTCCamera(mower.reporting_coordinator, entity_description)
-            #     for entity_description in CAMERAS
-            # )
+            _LOGGER.debug("Configurazione camera per %s", mower.device.deviceName)
+            try:
+                # Ottieni i dati di streaming
+                stream_data = await mower.api.get_stream_subscription(mower.device.deviceName)
+                if stream_data:
+                    _LOGGER.debug("Dati di streaming ricevuti: %s", stream_data)
+                    async_add_entities(
+                        MammotionWebRTCCamera(mower.reporting_coordinator, entity_description)
+                        for entity_description in CAMERAS
+                    )
+                else:
+                    _LOGGER.error("Nessun dato di streaming disponibile per %s", mower.device.deviceName)
+            except Exception as e:
+                _LOGGER.error("Errore nella configurazione della camera: %s", e)
 
 
 class MammotionWebRTCCamera(MammotionBaseEntity, Camera):
@@ -83,12 +94,41 @@ class MammotionWebRTCCamera(MammotionBaseEntity, Camera):
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return entity specific state attributes."""
         if self._stream_data is None:
+            try:
+                self._stream_data = self.coordinator.manager.get_stream_subscription_sync(
+                    self.coordinator.device_name
+                )
+            except Exception as e:
+                _LOGGER.error("Errore nel recupero dei dati di streaming: %s", e)
+                return {}
+        
+        if not self._stream_data:
             return {}
-
+            
+        # Prepara la lista delle telecamere con i loro token
+        cameras = []
+        for idx, camera in enumerate(self._stream_data.cameras):
+            side = "left" if idx == 0 else "right" if idx == 1 else "rear"
+            cameras.append({
+                "side": side,
+                "token": camera.token
+            })
+            
+        side = self.coordinator.selected_camera_side or "left"
+        camera_index = 0
+        if side == "right" and len(self._stream_data.cameras) > 1:
+            camera_index = 1
+        elif side == "rear" and len(self._stream_data.cameras) > 2:
+            camera_index = 2
+            
+        # Restituisci tutti i dati necessari per l'SDK Agora
         return {
             "app_id": self._stream_data.appid,
             "channel_name": self._stream_data.channelName,
             "uid": self._stream_data.uid,
+            "token": self._stream_data.cameras[camera_index].token if len(self._stream_data.cameras) > camera_index else "",
+            "selected_side": side,
+            "cameras": cameras
         }
 
     async def async_camera_image(
@@ -101,4 +141,15 @@ class MammotionWebRTCCamera(MammotionBaseEntity, Camera):
     async def async_handle_async_webrtc_offer(
         self, offer_sdp: str, session_id: str, send_message: WebRTCSendMessage
     ) -> None:
-        """Return the source of the stream."""
+        """Gestisce l'offerta WebRTC dal browser.
+        
+        Questa funzione è richiesta dall'interfaccia di Home Assistant,
+        ma non verrà effettivamente utilizzata poiché useremo l'SDK Agora.
+        """
+        _LOGGER.warning(
+            "L'offerta WebRTC nativa di Home Assistant è stata ricevuta, "
+            "ma verrà ignorata poiché utilizziamo l'SDK Agora direttamente nel frontend."
+        )
+        
+        # Informa il frontend che deve usare l'SDK Agora
+        send_message('{"type":"error","error":"Usa l\'SDK Agora per questa telecamera","useAgoraSDK":true}', session_id)

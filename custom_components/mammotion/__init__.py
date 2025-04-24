@@ -10,6 +10,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryError, ConfigEntryNotReady
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.components.http import HomeAssistantView
 from pymammotion import CloudIOTGateway
 from pymammotion.aliyun.model.aep_response import AepResponse
 from pymammotion.aliyun.model.connect_response import ConnectResponse
@@ -188,6 +189,20 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
 
     entry.runtime_data = mammotion_devices
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+
+    
+    # Registra il percorso per i file statici necessari per WebRTC
+    if hasattr(hass, "http"):
+        hass.http.register_static_path(
+            "/mammotion_webrtc",
+            hass.config.path("custom_components/mammotion/www"),
+            cache_headers=False
+        )
+
+    # Assicurati che la cartella www esista
+    import os
+    www_dir = hass.config.path("custom_components/mammotion/www")
+    os.makedirs(www_dir, exist_ok=True)
 
     return True
 
