@@ -193,14 +193,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
     
     # Registra il percorso per i file statici necessari per WebRTC
     if hasattr(hass, "http"):
-        from homeassistant.components.http.static import StaticPathConfig
-        await hass.http.async_register_static_paths([
-            StaticPathConfig(
-                url_path="/mammotion_webrtc",
-                path=hass.config.path("custom_components/mammotion/www"),
-                cache_headers=False
-            )
-        ])
+        # Usa il metodo diretto invece di importare StaticPathConfig
+        hass.http.register_static_path(
+            "/mammotion_webrtc",
+            hass.config.path("custom_components/mammotion/www"),
+            cache_headers=False
+        )
 
     # Assicurati che la cartella www esista
     import os
