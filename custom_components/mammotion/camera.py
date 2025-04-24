@@ -101,7 +101,7 @@ class MammotionWebRTCCamera(MammotionBaseEntity, Camera):
         """Return entity specific state attributes."""
         if self._stream_data is None:
             try:
-                self._stream_data = self.coordinator.manager.get_stream_subscription_sync(
+                self._stream_data = self.coordinator.manager.get_stream_subscription(
                     self.coordinator.device_name
                 )
             except Exception as e:
