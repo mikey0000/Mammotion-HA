@@ -15,7 +15,7 @@
       "bluetooth_confirm": {
         "description": "Configura {name}",
         "data": {
-          "stay_connected_bluetooth": "Mantieni Bluetooth connesso"
+          "stay_connected_bluetooth": "Mantieni il Bluetooth connesso"
         }
       },
       "reconfigure": {
