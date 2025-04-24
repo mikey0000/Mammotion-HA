@@ -6,6 +6,7 @@ import logging
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
+import secrets
 
 from homeassistant.components.camera import (
     Camera,
@@ -87,7 +88,7 @@ class MammotionWebRTCCamera(MammotionBaseEntity, Camera):
         self._attr_translation_key = entity_description.key
         self._stream_data: StreamSubscriptionResponse | None = None
 
-        self.access_tokens = []
+        self.access_tokens = [secrets.token_hex(16)]
         self._webrtc_provider = None      # Evita crash su async_refresh_providers()
         self._legacy_webrtc_provider = None
         self._supports_native_sync_webrtc = False
