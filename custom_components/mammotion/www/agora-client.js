@@ -86,7 +86,7 @@ class CameraAgoraCard extends HTMLElement {
           }
         });
         
-        await client.join(attr.app_id, attr.channel_name, attr.token, parseInt(attr.uid));
+        await client.join(attr.appId, attr.channelName, attr.token, parseInt(attr.uid));
         this._client = client;
       } catch (error) {
         console.error("Errore inizializzazione Agora:", error);
