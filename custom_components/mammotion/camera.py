@@ -166,13 +166,13 @@ async def async_setup_platform_services(hass: HomeAssistant, entry: MammotionCon
         entity_id = call.data["entity_id"]
         mower : MammotionMowerData = _get_mower_by_entity_id(entity_id)
         if mower:
-            await mower.api.send_command_with_args("device_agora_join_channel_with_position", 1)
+            await mower.api.send_command_with_args("device_agora_join_channel_with_position", enter_state=1)
 
     async def handle_stop_video(call):
         entity_id = call.data["entity_id"]
         mower: MammotionMowerData = _get_mower_by_entity_id(entity_id)
         if mower:
-            await mower.api.send_command_with_args("device_agora_join_channel_with_position", 0)
+            await mower.api.send_command_with_args("device_agora_join_channel_with_position", enter_state=0)
 
     hass.services.async_register("mammotion", "refresh_stream", handle_refresh_stream)
     hass.services.async_register("mammotion", "start_video", handle_start_video)
