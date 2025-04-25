@@ -34,7 +34,7 @@
       },
       "wifi": {
         "data": {
-          "use_wifi": "Wi-Fi verwenden (abwählen und senden, um Bluetooth zu nutzen)\n",
+          "use_wifi": "Wi-Fi verwenden (abwählen und senden, um Bluetooth zu nutzen)",
           "account_name": "Mammotion E-Mail oder Account Nummer",
           "password": "Mammotion Kennwort"
         },
