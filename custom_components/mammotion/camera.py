@@ -113,10 +113,10 @@ class MammotionWebRTCCamera(MammotionBaseEntity, Camera):
             
         # Restituisci tutti i dati necessari per l'SDK Agora
         return {
-            "app_id": self._stream_data.data.appid,
-            "channel_name": self._stream_data.data.channelName,
-            "uid": self._stream_data.data.uid,
-            "token": self._stream_data.data.token,
+            "appId": self._stream_data.data["appid"],
+            "channelName": self._stream_data.data["channelName"],
+            "uid": self._stream_data.data["uid"],
+            "token": self._stream_data.data["token"],
         }
 
     async def async_camera_image(
