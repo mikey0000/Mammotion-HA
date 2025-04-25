@@ -104,14 +104,8 @@ class MammotionWebRTCCamera(MammotionBaseEntity, Camera):
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return entity specific state attributes."""
-
-        try:
-            self._stream_data = self.coordinator.manager.get_stream_subscription(
-                self.coordinator.device_name
-            )
-        except Exception as e:
-            _LOGGER.error("Errore nel recupero dei dati di streaming: %s", e)
-            return {}
+        
+        self._stream_data = self.reporting_coordinator.get_stream_data()
         
         if not self._stream_data:
             return {}            
