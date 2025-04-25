@@ -156,7 +156,7 @@ async def async_setup_platform_services(hass: HomeAssistant, entry: MammotionCon
         mower: MammotionMowerData = _get_mower_by_entity_id(entity_id)
         if mower:
             stream_data = await mower.reporting_coordinator.manager.get_stream_subscription(mower.device.deviceName)
-            
+            _LOGGER.debug("Dati di streaming refresh : %s", stream_data)
         
             mower.reporting_coordinator.set_stream_data(stream_data)
             mower.reporting_coordinator.async_update_listeners()
