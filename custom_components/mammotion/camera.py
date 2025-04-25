@@ -86,6 +86,7 @@ class MammotionWebRTCCamera(MammotionBaseEntity, Camera):
     ) -> None:
         """Initialize the WebRTC camera entity."""
         super().__init__(coordinator, entity_description.key)
+        self.coordinator = coordinator
         self.entity_description = entity_description
         self._attr_translation_key = entity_description.key
         self._stream_data: StreamSubscriptionResponse | None = None
@@ -105,7 +106,7 @@ class MammotionWebRTCCamera(MammotionBaseEntity, Camera):
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return entity specific state attributes."""
         
-        self._stream_data = self.reporting_coordinator.get_stream_data()
+        self._stream_data = self.coordinator.get_stream_data()
         
         if not self._stream_data:
             return {}            
@@ -155,7 +156,7 @@ async def async_setup_platform_services(hass: HomeAssistant, entry: MammotionCon
         entity_id = call.data["entity_id"]
         mower: MammotionMowerData = _get_mower_by_entity_id(entity_id)
         if mower:
-            stream_data = await mower.reporting_coordinator.manager.get_stream_subscription(mower.device.deviceName)
+            stream_data = await mower.api.get_stream_subscription(mower.device.deviceName)
             _LOGGER.debug("Dati di streaming refresh : %s", stream_data)
         
             mower.reporting_coordinator.set_stream_data(stream_data)
