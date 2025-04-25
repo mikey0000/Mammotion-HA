@@ -104,14 +104,14 @@ class MammotionWebRTCCamera(MammotionBaseEntity, Camera):
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return entity specific state attributes."""
-        if self._stream_data is None:
-            try:
-                self._stream_data = self.coordinator.manager.get_stream_subscription(
-                    self.coordinator.device_name
-                )
-            except Exception as e:
-                _LOGGER.error("Errore nel recupero dei dati di streaming: %s", e)
-                return {}
+
+        try:
+            self._stream_data = self.coordinator.manager.get_stream_subscription(
+                self.coordinator.device_name
+            )
+        except Exception as e:
+            _LOGGER.error("Errore nel recupero dei dati di streaming: %s", e)
+            return {}
         
         if not self._stream_data:
             return {}            
@@ -158,12 +158,13 @@ async def async_setup_platform_services(hass: HomeAssistant, entry: MammotionCon
         return None
 
     async def handle_refresh_stream(call):
-        entity_id = call.data["entity_id"]
-        mower: MammotionMowerData = _get_mower_by_entity_id(entity_id)
-        if mower:
-            stream_data = await mower.api.get_stream_subscription(mower.device.deviceName)
-            mower.reporting_coordinator.set_stream_data(stream_data)
-            mower.reporting_coordinator.async_update_listeners()
+        pass
+        #entity_id = call.data["entity_id"]
+        #mower: MammotionMowerData = _get_mower_by_entity_id(entity_id)
+        #if mower:
+         #   stream_data = await mower.api.get_stream_subscription(mower.device.deviceName)
+         #   mower.reporting_coordinator.set_stream_data(stream_data)
+         #   mower.reporting_coordinator.async_update_listeners()
 
     async def handle_start_video(call):
         entity_id = call.data["entity_id"]
