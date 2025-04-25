@@ -119,7 +119,7 @@ class CameraAgoraCard extends HTMLElement {
       if (!window.AgoraRTC) {
         return new Promise((resolve, reject) => {
           const script = document.createElement('script');
-          script.src = './AgoraRTC_N.js'; // Assicurati che questo percorso sia corretto
+          script.src = 'https://download.agora.io/sdk/release/AgoraRTC_N.js';
           script.onload = resolve;
           script.onerror = () => reject(new Error("Impossibile caricare l'SDK di Agora"));
           document.head.appendChild(script);
