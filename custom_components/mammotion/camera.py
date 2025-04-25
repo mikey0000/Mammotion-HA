@@ -25,6 +25,8 @@ from . import MammotionConfigEntry
 from .coordinator import MammotionBaseUpdateCoordinator
 from .entity import MammotionBaseEntity
 
+from .models import MammotionDevices, MammotionMowerData
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -157,23 +159,23 @@ async def async_setup_platform_services(hass: HomeAssistant, entry: MammotionCon
 
     async def handle_refresh_stream(call):
         entity_id = call.data["entity_id"]
-        mower = _get_mower_by_entity_id(entity_id)
+        mower: MammotionMowerData = _get_mower_by_entity_id(entity_id)
         if mower:
-            stream_data = await mower.get_stream_subscription(mower.device.deviceName)
+            stream_data = await mower.api.get_stream_subscription(mower.device.deviceName)
             mower.reporting_coordinator.set_stream_data(stream_data)
             mower.reporting_coordinator.async_update_listeners()
 
     async def handle_start_video(call):
         entity_id = call.data["entity_id"]
-        mower = _get_mower_by_entity_id(entity_id)
+        mower : MammotionMowerData = _get_mower_by_entity_id(entity_id)
         if mower:
-            await mower.device_agora_join_channel_with_position(1)
+            await mower.api.send_command_with_args("device_agora_join_channel_with_position", 1)
 
     async def handle_stop_video(call):
         entity_id = call.data["entity_id"]
-        mower = _get_mower_by_entity_id(entity_id)
+        mower: MammotionMowerData = _get_mower_by_entity_id(entity_id)
         if mower:
-            await mower.api.device_agora_join_channel_with_position(0)
+            await mower.api.send_command_with_args("device_agora_join_channel_with_position", 0)
 
     hass.services.async_register("mammotion", "refresh_stream", handle_refresh_stream)
     hass.services.async_register("mammotion", "start_video", handle_start_video)
