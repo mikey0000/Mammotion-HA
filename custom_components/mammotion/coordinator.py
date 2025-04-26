@@ -99,6 +99,16 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
     def get_stream_data(self) -> Any:
         """Restituisce i dati dello stream."""
         return self._stream_data
+    
+    async def start_streaming_agora(self) -> None:
+        device = self.manager.get_device_by_name(self.device_name)
+        if device.has_cloud() and device.cloud().stopped == False:
+            await self.async_send_command("device_agora_join_channel_with_position", enter_state=1)
+
+    async def stop_streaming_agora(self) -> None:
+        device = self.manager.get_device_by_name(self.device_name)
+        if device.has_cloud() and device.cloud().stopped == False:
+            await self.async_send_command("device_agora_join_channel_with_position", enter_state=0)
 
     async def set_scheduled_updates(self, enabled: bool) -> None:
         device = self.manager.get_device_by_name(self.device_name)
