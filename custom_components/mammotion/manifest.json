@@ -29,6 +29,7 @@
   ],
   "iot_class": "local_push",
   "requirements": [
-    "pymammotion==0.4.28"
+    "pymammotion==0.4.28",
+    "aiohttp>=3.11.18,<4.0.0"
   ]
 }
