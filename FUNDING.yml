@@ -12,4 +12,4 @@ lfx_crowdfunding: # Replace with a single LFX Crowdfunding project-name e.g., cl
 polar: # Replace with a single Polar username
 buy_me_a_coffee: # Replace with a single Buy Me a Coffee username
 thanks_dev: # Replace with a single thanks.dev username
-custom: ['https://www.amazon.com/stores/page/245E17E9-009C-435A-A2B8-6443745937BB?tag=homeassistant-mammotion-20', 'https://mammotion.com/?ref=denimjackrabbit'] # Replace with up to 4 custom sponsorship URLs e.g., ['link1', 'link2']
+custom: ['https://amzn.to/4cOLULU', 'https://mammotion.com/?ref=denimjackrabbit'] # Replace with up to 4 custom sponsorship URLs e.g., ['link1', 'link2']
