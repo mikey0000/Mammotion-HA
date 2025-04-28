@@ -286,27 +286,30 @@ async def async_setup_entry(
     """Set up sensor platform."""
     mammotion_devices = entry.runtime_data
 
+    entities = []
     for mower in mammotion_devices:
         if not DeviceType.is_yuka(mower.device.deviceName):
-            async_add_entities(
+            entities.append(
                 MammotionSensorEntity(mower.reporting_coordinator, description)
                 for description in LUBA_SENSOR_ONLY_TYPES
             )
 
-        if not DeviceType.is_luba1(mower.device.deviceName):
-            async_add_entities(
+        if not DeviceType.is_luba_pro(mower.device.deviceName):
+            entities.append(
                 MammotionSensorEntity(mower.reporting_coordinator, description)
                 for description in LUBA_2_YUKA_ONLY_TYPES
             )
 
-        async_add_entities(
+        entities.append(
             MammotionSensorEntity(mower.reporting_coordinator, description)
             for description in SENSOR_TYPES
         )
-        async_add_entities(
+        entities.append(
             MammotionWorkSensorEntity(mower.reporting_coordinator, description)
             for description in WORK_SENSOR_TYPES
         )
+
+    async_add_entities(entities)
 
 
 class MammotionSensorEntity(MammotionBaseEntity, SensorEntity):

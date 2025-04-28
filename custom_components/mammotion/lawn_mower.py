@@ -89,8 +89,11 @@ async def async_setup_entry(
     """Set up the Luba config entry."""
     mammotion_devices = entry.runtime_data
 
+    entities = []
     for mower in mammotion_devices:
-        async_add_entities([MammotionLawnMowerEntity(mower.reporting_coordinator)])
+        entities.append(MammotionLawnMowerEntity(mower.reporting_coordinator))
+
+    async_add_entities(entities)
 
     platform = entity_platform.async_get_current_platform()
 
