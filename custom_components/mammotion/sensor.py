@@ -289,22 +289,22 @@ async def async_setup_entry(
     entities = []
     for mower in mammotion_devices:
         if not DeviceType.is_yuka(mower.device.deviceName):
-            entities.append(
+            entities.extend(
                 MammotionSensorEntity(mower.reporting_coordinator, description)
                 for description in LUBA_SENSOR_ONLY_TYPES
             )
 
         if not DeviceType.is_luba_pro(mower.device.deviceName):
-            entities.append(
+            entities.extend(
                 MammotionSensorEntity(mower.reporting_coordinator, description)
                 for description in LUBA_2_YUKA_ONLY_TYPES
             )
 
-        entities.append(
+        entities.extend(
             MammotionSensorEntity(mower.reporting_coordinator, description)
             for description in SENSOR_TYPES
         )
-        entities.append(
+        entities.extend(
             MammotionWorkSensorEntity(mower.reporting_coordinator, description)
             for description in WORK_SENSOR_TYPES
         )
