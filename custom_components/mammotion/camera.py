@@ -57,10 +57,10 @@ async def async_setup_entry(
         if not DeviceType.is_luba1(mower.device.deviceName):
             _LOGGER.debug("Config camera for %s", mower.device.deviceName)
             try:
-                # Ottieni i dati di streaming
+                # Try to get stream data
                 stream_data = await mower.api.get_stream_subscription(mower.device.deviceName)
                 if stream_data:
-                    _LOGGER.debug("Dati di streaming ricevuti: %s", stream_data)
+                    _LOGGER.debug("Received stream data: %s", stream_data)
                     async_add_entities(
                         MammotionWebRTCCamera(mower.reporting_coordinator, entity_description)
                         for entity_description in CAMERAS
@@ -92,7 +92,7 @@ class MammotionWebRTCCamera(MammotionBaseEntity, Camera):
         self._stream_data: StreamSubscriptionResponse | None = None
 
         self.access_tokens = [secrets.token_hex(16)]
-        self._webrtc_provider = None      # Evita crash su async_refresh_providers()
+        self._webrtc_provider = None      # Avoid crash on async_refresh_providers()
         self._legacy_webrtc_provider = None
         self._supports_native_sync_webrtc = False
         self._supports_native_async_webrtc = False
@@ -111,12 +111,12 @@ class MammotionWebRTCCamera(MammotionBaseEntity, Camera):
         if not self._stream_data:
             return {}            
             
-        # Restituisci tutti i dati necessari per l'SDK Agora
+        # Return all the data needed for the Agora SDK
         return {
-            "appId": self._stream_data.data["appid"],
-            "channelName": self._stream_data.data["channelName"],
-            "uid": self._stream_data.data["uid"],
-            "token": self._stream_data.data["token"],
+            "appId": self._stream_data.data.get("appid", ""),
+            "channelName": self._stream_data.data.get("channelName", ""),
+            "uid": self._stream_data.data.get("uid", ""),
+            "token": self._stream_data.data.get("token" , ""),
         }
 
     async def async_camera_image(
@@ -129,23 +129,23 @@ class MammotionWebRTCCamera(MammotionBaseEntity, Camera):
     async def async_handle_async_webrtc_offer(
         self, offer_sdp: str, session_id: str, send_message: WebRTCSendMessage
     ) -> None:
-        """Gestisce l'offerta WebRTC dal browser.
+        """Handles the WebRTC offer from the browser.
         
-        Questa funzione è richiesta dall'interfaccia di Home Assistant,
-        ma non verrà effettivamente utilizzata poiché useremo l'SDK Agora.
+        This function is required by the Home Assistant interface,
+        but it will not actually be used because we are using the Agora SDK.
         """
         _LOGGER.warning(
-            "L'offerta WebRTC nativa di Home Assistant è stata ricevuta, "
-            "ma verrà ignorata poiché utilizziamo l'SDK Agora direttamente nel frontend."
+            "A native WebRTC offer from Home Assistant was received, "
+            "but it will be ignored because we are using the Agora SDK directly in the frontend."
         )
         
-        # Informa il frontend che deve usare l'SDK Agora
-        send_message('{"type":"error","error":"Usa l\'SDK Agora per questa telecamera","useAgoraSDK":true}', session_id)
+        # Informs the frontend that it must use the Agora SDK
+        send_message('{"type":"error","error":"Use the Agora SDK for this camera","useAgoraSDK":true}', session_id)
 
 
 #Global
 async def async_setup_platform_services(hass: HomeAssistant, entry: MammotionConfigEntry) -> None:
-    """Registra i servizi personalizzati per lo streaming."""
+    """Register custom services for streaming."""
 
     def _get_mower_by_entity_id(entity_id: str):
         for mower in entry.runtime_data:
@@ -157,7 +157,7 @@ async def async_setup_platform_services(hass: HomeAssistant, entry: MammotionCon
         mower: MammotionMowerData = _get_mower_by_entity_id(entity_id)
         if mower:
             stream_data = await mower.api.get_stream_subscription(mower.device.deviceName)
-            _LOGGER.debug("Dati di streaming refresh : %s", stream_data)
+            _LOGGER.debug("Refresh stream data : %s", stream_data)
         
             mower.reporting_coordinator.set_stream_data(stream_data)
             mower.reporting_coordinator.async_update_listeners()

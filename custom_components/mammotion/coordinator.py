@@ -93,22 +93,20 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         self._stream_data: Any = None  # Stream data [Agora]
 
     def set_stream_data(self, stream_data: Any) -> None:
-        """Imposta i dati dello stream per l'accesso dalla camera."""
+        """Set stream data"""
         self._stream_data = stream_data
 
     def get_stream_data(self) -> Any:
-        """Restituisce i dati dello stream."""
+        """Return stream data"""
         return self._stream_data
     
     async def start_streaming_agora(self) -> None:
-        device = self.manager.get_device_by_name(self.device_name)
-        if device.has_cloud() and device.cloud().stopped == False:
-            await self.async_send_command("device_agora_join_channel_with_position", enter_state=1)
+        """Start stream command"""
+        await self.async_send_command("device_agora_join_channel_with_position", enter_state=1)
 
     async def stop_streaming_agora(self) -> None:
-        device = self.manager.get_device_by_name(self.device_name)
-        if device.has_cloud() and device.cloud().stopped == False:
-            await self.async_send_command("device_agora_join_channel_with_position", enter_state=0)
+        """End stream command"""
+        await self.async_send_command("device_agora_join_channel_with_position", enter_state=0)
 
     async def set_scheduled_updates(self, enabled: bool) -> None:
         device = self.manager.get_device_by_name(self.device_name)

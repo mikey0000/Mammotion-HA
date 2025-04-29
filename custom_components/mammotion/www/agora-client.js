@@ -291,14 +291,9 @@ class CameraAgoraCard extends HTMLElement {
     
     this._connectionCheckInterval = setInterval(async () => {
       if (this._isPlaying && this._client && !this._isConnecting) {
-        //await this._client.setClientRole('audience');
-        //console.log("Reset role");
         const state = this._client.connectionState;
         if (state !== 'CONNECTED') {
           this._showLoading("Connection unstable...");
-        }
-        if (this._hass && this._entityId) {
-          //await this._hass.callService('mammotion', 'start_video', { entity_id: this._entityId });
         }
       }
     }, 5000);
