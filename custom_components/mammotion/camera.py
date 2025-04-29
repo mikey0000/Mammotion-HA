@@ -55,7 +55,7 @@ async def async_setup_entry(
     
     for mower in mowers:
         if not DeviceType.is_luba1(mower.device.deviceName):
-            _LOGGER.debug("Configurazione camera per %s", mower.device.deviceName)
+            _LOGGER.debug("Config camera for %s", mower.device.deviceName)
             try:
                 # Ottieni i dati di streaming
                 stream_data = await mower.api.get_stream_subscription(mower.device.deviceName)
@@ -66,9 +66,9 @@ async def async_setup_entry(
                         for entity_description in CAMERAS
                     )
                 else:
-                    _LOGGER.error("Nessun dato di streaming disponibile per %s", mower.device.deviceName)
+                    _LOGGER.error("No Agora data for %s", mower.device.deviceName)
             except Exception as e:
-                _LOGGER.error("Errore nella configurazione della camera: %s", e)
+                _LOGGER.error("Error on config camera for: %s", e)
                 
     await async_setup_platform_services(hass, entry)
 
