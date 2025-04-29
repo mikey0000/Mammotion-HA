@@ -210,7 +210,8 @@ class CameraAgoraCard extends HTMLElement {
         mode: 'live',
         codec: 'vp8',
         disableLog: false,
-        enableLogUpload: false  // Disable log upload
+        enableLogUpload: false,  // Disable log upload
+        role: "host",
       };
       
       // Create Agora client
@@ -227,6 +228,9 @@ class CameraAgoraCard extends HTMLElement {
           this._hideLoading();
           user.videoTrack.play(videoContainer);
         }
+        if (mediaType === "audio") {
+          user.audioTrack.play();
+        }
       });
       
       // Register error handlers
@@ -240,10 +244,14 @@ class CameraAgoraCard extends HTMLElement {
           this._showLoading("Connecting...");
         }
       });
-      
-      client.setClientRole("audience", {
-          level: 2
+
+      client.on("user-unpublished", (user, mediaType) => {
+        if (mediaType === "video") {
+          this._showLoading("Video stream ended.");
+        }
       });
+      
+      client.setClientRole("host");
       
       console.log("App ID: " + attr.appId);
       console.log("App Channel: " + attr.channelName);
@@ -281,11 +289,16 @@ class CameraAgoraCard extends HTMLElement {
       clearInterval(this._connectionCheckInterval);
     }
     
-    this._connectionCheckInterval = setInterval(() => {
+    this._connectionCheckInterval = setInterval(async () => {
       if (this._isPlaying && this._client && !this._isConnecting) {
+        //await this._client.setClientRole('audience');
+        //console.log("Reset role");
         const state = this._client.connectionState;
         if (state !== 'CONNECTED') {
           this._showLoading("Connection unstable...");
+        }
+        if (this._hass && this._entityId) {
+          //await this._hass.callService('mammotion', 'start_video', { entity_id: this._entityId });
         }
       }
     }, 5000);
