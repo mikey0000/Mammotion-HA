@@ -96,7 +96,6 @@ LUBA_WORKING_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
             coordinator.operation_settings, "blade_height", value
         ),
         get_fn=lambda coordinator: coordinator.data.report_data.work.knife_height,
-        update_fn=lambda coordinator, value: coordinator.async_blade_height(int(value)),
     ),
 )
 
@@ -232,12 +231,12 @@ class MammotionWorkingNumberEntity(MammotionConfigNumberEntity):
         """Return the maximum value."""
         return self._attr_native_max_value
 
-    @property
-    def native_value(self) -> float | None:
-        """Return the current value if get_fn is defined."""
-        if self.entity_description.get_fn is not None:
-            return self.entity_description.get_fn(self.coordinator)
-        return self._attr_native_value
+    # @property
+    # def native_value(self) -> float | None:
+    #     """Return the current value if get_fn is defined."""
+    #     if self.entity_description.get_fn is not None:
+    #         return self.entity_description.get_fn(self.coordinator)
+    #     return self._attr_native_value
 
     async def async_set_native_value(self, value: float) -> None:
         """Set native value for number and call update_fn if defined."""
