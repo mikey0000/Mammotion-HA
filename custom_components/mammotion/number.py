@@ -217,9 +217,14 @@ class MammotionWorkingNumberEntity(MammotionConfigNumberEntity):
             self._attr_native_min_value = entity_description.min_value
             self._attr_native_max_value = entity_description.max_value
 
+        if self.entity_description.get_fn is not None:
+            self._attr_native_value = self.entity_description.get_fn(self.coordinator)
+
         if self._attr_native_value < self._attr_native_min_value:
             self._attr_native_value = self._attr_native_min_value
+
         self.entity_description.set_fn(self.coordinator, self._attr_native_value)
+
 
     @property
     def native_min_value(self) -> float:
@@ -241,7 +246,7 @@ class MammotionWorkingNumberEntity(MammotionConfigNumberEntity):
     async def async_set_native_value(self, value: float) -> None:
         """Set native value for number and call update_fn if defined."""
         self._attr_native_value = value
-        self.entity_description.set_fn(self.coordinator, value)
+        self.entity_description.set_fn(self.coordinator, int(value))
 
         if self.entity_description.update_fn is not None:
             result = self.entity_description.update_fn(self.coordinator, value)
