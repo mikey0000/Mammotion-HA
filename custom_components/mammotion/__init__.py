@@ -208,7 +208,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
     return True
 
 
-def store_cloud_credentials(hass, config_entry, cloud_client: CloudIOTGateway) -> None:
+def store_cloud_credentials(
+    hass: HomeAssistant,
+    config_entry: MammotionConfigEntry,
+    cloud_client: CloudIOTGateway,
+) -> None:
     """Store cloud credentials in config entry."""
 
     if cloud_client is not None:

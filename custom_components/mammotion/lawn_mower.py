@@ -89,8 +89,11 @@ async def async_setup_entry(
     """Set up the Luba config entry."""
     mammotion_devices = entry.runtime_data
 
+    entities = []
     for mower in mammotion_devices:
-        async_add_entities([MammotionLawnMowerEntity(mower.reporting_coordinator)])
+        entities.append(MammotionLawnMowerEntity(mower.reporting_coordinator))
+
+    async_add_entities(entities)
 
     platform = entity_platform.async_get_current_platform()
 
@@ -195,12 +198,12 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
                     mode = self.rpt_dev_status.sys_status
                 if mode == WorkMode.MODE_PAUSE:
                     trans_key = "resume_failed"
-                    if breakpoint_info == 1:
+                    if breakpoint_info != 0:
                         await self.coordinator.async_send_command("resume_execute_task")
 
                 if mode == WorkMode.MODE_READY:
                     trans_key = "start_failed"
-                    if breakpoint_info == 1:
+                    if breakpoint_info != 0:
                         await self.coordinator.async_send_command("resume_execute_task")
                         return
                     if await self.coordinator.async_plan_route(operational_settings):

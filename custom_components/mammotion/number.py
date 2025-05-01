@@ -96,7 +96,6 @@ LUBA_WORKING_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
             coordinator.operation_settings, "blade_height", value
         ),
         get_fn=lambda coordinator: coordinator.data.report_data.work.knife_height,
-        update_fn=lambda coordinator, value: coordinator.async_blade_height(int(value)),
     ),
 )
 
@@ -218,9 +217,14 @@ class MammotionWorkingNumberEntity(MammotionConfigNumberEntity):
             self._attr_native_min_value = entity_description.min_value
             self._attr_native_max_value = entity_description.max_value
 
+        if self.entity_description.get_fn is not None:
+            self._attr_native_value = self.entity_description.get_fn(self.coordinator)
+
         if self._attr_native_value < self._attr_native_min_value:
             self._attr_native_value = self._attr_native_min_value
+
         self.entity_description.set_fn(self.coordinator, self._attr_native_value)
+
 
     @property
     def native_min_value(self) -> float:
@@ -232,17 +236,17 @@ class MammotionWorkingNumberEntity(MammotionConfigNumberEntity):
         """Return the maximum value."""
         return self._attr_native_max_value
 
-    @property
-    def native_value(self) -> float | None:
-        """Return the current value if get_fn is defined."""
-        if self.entity_description.get_fn is not None:
-            return self.entity_description.get_fn(self.coordinator)
-        return self._attr_native_value
+    # @property
+    # def native_value(self) -> float | None:
+    #     """Return the current value if get_fn is defined."""
+    #     if self.entity_description.get_fn is not None:
+    #         return self.entity_description.get_fn(self.coordinator)
+    #     return self._attr_native_value
 
     async def async_set_native_value(self, value: float) -> None:
         """Set native value for number and call update_fn if defined."""
         self._attr_native_value = value
-        self.entity_description.set_fn(self.coordinator, value)
+        self.entity_description.set_fn(self.coordinator, int(value))
 
         if self.entity_description.update_fn is not None:
             result = self.entity_description.update_fn(self.coordinator, value)

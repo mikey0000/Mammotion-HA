@@ -91,8 +91,9 @@ If the problem continues, please file an issue on the GitHub repository for furt
 
 ## Support me
 <a href='https://ko-fi.com/DenimJackRabbit' target='_blank'><img height='46' style='border:0px;height:46px;' src='https://az743702.vo.msecnd.net/cdn/kofi3.png?v=0' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
-
-[Buy a Mammotion Lawn mower(Referral Link)](https://mammotion.com/?ref=denimjackrabbit)
+### Referral Links
+[Buy a Mammotion Lawn mower (Amazon)](https://amzn.to/4cOLULU)
+[Buy a Mammotion Lawn mower(Mammotion)](https://mammotion.com/?ref=denimjackrabbit)
 
 ## Credits 👥
 

@@ -303,19 +303,19 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
 
     async def async_move_forward(self, speed: float) -> None:
         """Move forward."""
-        await self.send_command_and_update("move_forward", linear=speed)
+        await self.async_send_command("move_forward", linear=speed)
 
     async def async_move_left(self, speed: float) -> None:
         """Move left."""
-        await self.send_command_and_update("move_left", angular=speed)
+        await self.async_send_command("move_left", angular=speed)
 
     async def async_move_right(self, speed: float) -> None:
         """Move right."""
-        await self.send_command_and_update("move_right", angular=speed)
+        await self.async_send_command("move_right", angular=speed)
 
     async def async_move_back(self, speed: float) -> None:
         """Move back."""
-        await self.send_command_and_update("move_back", linear=speed)
+        await self.async_send_command("move_back", linear=speed)
 
     async def async_rtk_dock_location(self) -> None:
         """RTK and dock location."""
@@ -709,6 +709,7 @@ class MammotionMapUpdateCoordinator(MammotionBaseUpdateCoordinator[MowerInfo]):
             if (
                 len(device.mower_state.map.hashlist) == 0
                 or len(device.mower_state.map.missing_hashlist()) > 0
+                or len(device.mower_state.map.plan) == 0
             ):
                 await self.manager.start_map_sync(self.device_name)
 
