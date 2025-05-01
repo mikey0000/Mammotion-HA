@@ -294,7 +294,7 @@ async def async_setup_entry(
                 for description in LUBA_SENSOR_ONLY_TYPES
             )
 
-        if not DeviceType.is_luba_pro(mower.device.deviceName):
+        if DeviceType.is_luba_pro(mower.device.deviceName):
             entities.extend(
                 MammotionSensorEntity(mower.reporting_coordinator, description)
                 for description in LUBA_2_YUKA_ONLY_TYPES
