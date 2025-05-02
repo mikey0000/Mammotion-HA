@@ -21,6 +21,7 @@ from pymammotion.aliyun.cloud_gateway import (
     NoConnectionException,
 )
 from pymammotion.aliyun.model.dev_by_account_response import Device
+from pymammotion.aliyun.model.stream_subscription_response import StreamSubscriptionResponse
 from pymammotion.data.model import GenerateRouteInformation, HashList
 from pymammotion.data.model.device import MowerInfo, MowingDevice
 from pymammotion.data.model.device_config import OperationSettings, create_path_order
@@ -90,7 +91,7 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         self.manager = mammotion
         self._operation_settings = OperationSettings()
         self.update_failures = 0
-        self._stream_data: Any = None  # Stream data [Agora]
+        self._stream_data: StreamSubscriptionResponse | None = None  # Stream data [Agora]
 
     def set_stream_data(self, stream_data: Any) -> None:
         """Set stream data"""
@@ -100,11 +101,11 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         """Return stream data"""
         return self._stream_data
     
-    async def start_streaming_agora(self) -> None:
+    async def join_webrtc_channel(self) -> None:
         """Start stream command"""
         await self.async_send_command("device_agora_join_channel_with_position", enter_state=1)
 
-    async def stop_streaming_agora(self) -> None:
+    async def leave_webrtc_channel(self) -> None:
         """End stream command"""
         await self.async_send_command("device_agora_join_channel_with_position", enter_state=0)
 
