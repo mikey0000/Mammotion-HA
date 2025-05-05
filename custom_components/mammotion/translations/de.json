@@ -130,6 +130,9 @@
       "start_map_sync": {
         "name": "Synchronisiere Karte"
       },
+      "join_webrtc": {
+        "name": "Start camera on mower"
+      },
       "resync_rtk_dock": {
         "name": "Synchronisiere RTK und Ladestation"
       },

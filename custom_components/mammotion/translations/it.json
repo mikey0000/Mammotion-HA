@@ -15,7 +15,7 @@
       "bluetooth_confirm": {
         "description": "Configura {name}",
         "data": {
-          "stay_connected_bluetooth": "Mantieni il Bluetooth connesso"
+          "stay_connected_bluetooth": "Mantieni Bluetooth connesso"
         }
       },
       "reconfigure": {
@@ -129,6 +129,9 @@
     "button": {
       "start_map_sync": {
         "name": "Sincronizza mappe"
+      },
+      "join_webrtc": {
+        "name": "Start camera on mower"
       },
       "resync_rtk_dock": {
         "name": "Sincronizza base e RTK"
