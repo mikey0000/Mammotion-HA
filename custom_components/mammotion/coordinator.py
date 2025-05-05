@@ -21,7 +21,9 @@ from pymammotion.aliyun.cloud_gateway import (
     NoConnectionException,
 )
 from pymammotion.aliyun.model.dev_by_account_response import Device
-from pymammotion.aliyun.model.stream_subscription_response import StreamSubscriptionResponse
+from pymammotion.aliyun.model.stream_subscription_response import (
+    StreamSubscriptionResponse,
+)
 from pymammotion.data.model import GenerateRouteInformation, HashList
 from pymammotion.data.model.device import MowerInfo, MowingDevice
 from pymammotion.data.model.device_config import OperationSettings, create_path_order
@@ -91,7 +93,9 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         self.manager = mammotion
         self._operation_settings = OperationSettings()
         self.update_failures = 0
-        self._stream_data: StreamSubscriptionResponse | None = None  # Stream data [Agora]
+        self._stream_data: StreamSubscriptionResponse | None = (
+            None  # Stream data [Agora]
+        )
 
     def set_stream_data(self, stream_data: Any) -> None:
         """Set stream data"""
@@ -100,14 +104,18 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
     def get_stream_data(self) -> Any:
         """Return stream data"""
         return self._stream_data
-    
+
     async def join_webrtc_channel(self) -> None:
         """Start stream command"""
-        await self.async_send_command("device_agora_join_channel_with_position", enter_state=1)
+        await self.async_send_command(
+            "device_agora_join_channel_with_position", enter_state=1
+        )
 
     async def leave_webrtc_channel(self) -> None:
         """End stream command"""
-        await self.async_send_command("device_agora_join_channel_with_position", enter_state=0)
+        await self.async_send_command(
+            "device_agora_join_channel_with_position", enter_state=0
+        )
 
     async def set_scheduled_updates(self, enabled: bool) -> None:
         device = self.manager.get_device_by_name(self.device_name)
@@ -394,6 +402,10 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
             "generate_route_information", generate_route_information=route_information
         )
 
+    async def start_task(self, plan_id: int) -> None:
+        """Start task."""
+        await self.async_send_command("single_schedule", plan_id=plan_id)
+
     async def clear_all_maps(self) -> None:
         """Clear all map data stored."""
         data = self.manager.get_device_by_name(self.device_name).mower_state
@@ -456,6 +468,9 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
                 self.hass, device.ble().get_address(), True
             ):
                 device.ble().update_device(ble_device)
+                return None
+            return None
+        return None
 
     async def find_entity_by_attribute_in_registry(
         self, attribute_name, attribute_value
@@ -479,7 +494,6 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
             area = next(
                 item for item in self.data.map.area_name if item.hash == area_hash
             )
-            print(area)
             return area.name if area.name != "" else f"area {area_hash}"
         except StopIteration:
             return None

@@ -4,13 +4,13 @@ from __future__ import annotations
 
 from aiohttp import ClientConnectorError
 from homeassistant.components import bluetooth
+from homeassistant.components.http import HomeAssistantView, StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_ADDRESS, CONF_PASSWORD, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryError, ConfigEntryNotReady
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.device_registry import DeviceInfo
-from homeassistant.components.http import HomeAssistantView
 from pymammotion import CloudIOTGateway
 from pymammotion.aliyun.model.aep_response import AepResponse
 from pymammotion.aliyun.model.connect_response import ConnectResponse
@@ -64,7 +64,7 @@ PLATFORMS: list[Platform] = [
     Platform.SWITCH,
     Platform.NUMBER,
     Platform.SELECT,
-    Platform.CAMERA,
+    # Platform.CAMERA,
 ]
 
 type MammotionConfigEntry = ConfigEntry[list[MammotionMowerData]]
@@ -160,7 +160,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                 if address:
                     ble_device = bluetooth.async_ble_device_from_address(hass, address)
                     if ble_device and ble_device.name == device_name:
-                        mammotion_device.add_ble(ble_device)
+                        mammotion_device.add_ble(device, ble_device)
                         mammotion_device.ble().set_disconnect_strategy(
                             not stay_connected_ble
                         )
@@ -188,20 +188,31 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                 except:
                     """Do nothing for now."""
 
+    # if not any(mammotion.get_device_by_name(mammotion_device.device.deviceName).preference == ConnectionPreference.WIFI for mammotion_device in mammotion_devices):
+    #     for mammotion_device in mammotion_devices:
+    #         mower = mammotion.get_device_by_name(mammotion_device.device.deviceName)
+    #         await mower.cloud().stop()
+    #         mower.cloud().mqtt.disconnect() if mower.cloud().mqtt.is_connected() else None
+    #         mower.remove_cloud()
+
     entry.runtime_data = mammotion_devices
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
-    
     # Record the path to the static files needed for WebRTC
     if hasattr(hass, "http"):
-        hass.http.register_static_path(
-            "/mammotion_webrtc",
-            hass.config.path("custom_components/mammotion/www"),
-            cache_headers=False
+        await hass.http.async_register_static_paths(
+            [
+                StaticPathConfig(
+                    "/mammotion_webrtc",
+                    hass.config.path("custom_components/mammotion/www"),
+                    cache_headers=False,
+                )
+            ]
         )
 
     # Make sure the 'www' folder exists
     import os
+
     www_dir = hass.config.path("custom_components/mammotion/www")
     os.makedirs(www_dir, exist_ok=True)
 

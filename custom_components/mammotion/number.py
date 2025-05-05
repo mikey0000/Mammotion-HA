@@ -3,9 +3,9 @@ from dataclasses import dataclass
 
 from homeassistant.components.number import (
     NumberDeviceClass,
-    NumberEntity,
     NumberEntityDescription,
     NumberMode,
+    RestoreNumber,
 )
 from homeassistant.const import (
     DEGREE,
@@ -17,7 +17,6 @@ from homeassistant.const import (
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.restore_state import RestoreEntity
 from pymammotion.data.model.device_limits import DeviceLimits
 from pymammotion.utility.device_type import DeviceType
 
@@ -93,7 +92,7 @@ LUBA_WORKING_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
         max_value=70,
         mode=NumberMode.BOX,
         set_fn=lambda coordinator, value: setattr(
-            coordinator.operation_settings, "blade_height", value
+            coordinator.operation_settings, "blade_height", int(value)
         ),
         get_fn=lambda coordinator: coordinator.data.report_data.work.knife_height,
     ),
@@ -167,7 +166,7 @@ async def async_setup_entry(
         async_add_entities(entities)
 
 
-class MammotionConfigNumberEntity(MammotionBaseEntity, NumberEntity, RestoreEntity):
+class MammotionConfigNumberEntity(MammotionBaseEntity, RestoreNumber):
     entity_description: MammotionConfigNumberEntityDescription
     _attr_has_entity_name = True
     _attr_entity_category = EntityCategory.CONFIG
@@ -191,10 +190,18 @@ class MammotionConfigNumberEntity(MammotionBaseEntity, NumberEntity, RestoreEnti
         self.entity_description.set_fn(self.coordinator, self._attr_native_value)
 
     async def async_set_native_value(self, value: float) -> None:
-        """Set native value for number."""
+        """Sets native value for number."""
         self._attr_native_value = value
         self.entity_description.set_fn(self.coordinator, value)
         self.async_write_ha_state()
+
+    async def async_added_to_hass(self) -> None:
+        await super().async_added_to_hass()
+        last_number_data = await self.async_get_last_number_data()
+        if (last_number_data is not None) and (
+            last_number_data.native_value is not None
+        ):
+            await self.async_set_native_value(last_number_data.native_value)
 
 
 class MammotionWorkingNumberEntity(MammotionConfigNumberEntity):
@@ -225,7 +232,6 @@ class MammotionWorkingNumberEntity(MammotionConfigNumberEntity):
 
         self.entity_description.set_fn(self.coordinator, self._attr_native_value)
 
-
     @property
     def native_min_value(self) -> float:
         """Return the minimum value."""
@@ -246,7 +252,7 @@ class MammotionWorkingNumberEntity(MammotionConfigNumberEntity):
     async def async_set_native_value(self, value: float) -> None:
         """Set native value for number and call update_fn if defined."""
         self._attr_native_value = value
-        self.entity_description.set_fn(self.coordinator, int(value))
+        self.entity_description.set_fn(self.coordinator, value)
 
         if self.entity_description.update_fn is not None:
             result = self.entity_description.update_fn(self.coordinator, value)
