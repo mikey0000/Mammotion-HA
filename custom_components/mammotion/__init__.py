@@ -64,7 +64,7 @@ PLATFORMS: list[Platform] = [
     Platform.SWITCH,
     Platform.NUMBER,
     Platform.SELECT,
-    # Platform.CAMERA,
+    Platform.CAMERA,
 ]
 
 type MammotionConfigEntry = ConfigEntry[list[MammotionMowerData]]
