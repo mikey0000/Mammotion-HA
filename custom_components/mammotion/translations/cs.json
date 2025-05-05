@@ -8,14 +8,14 @@
       "bluetooth_and_account_mismatch": "V účtu nebylo nalezeno zařízení Bluetooth",
       "no_longer_present": "Zařízení již není k dispozici",
       "not_supported": "Zařízení není podporováno",
-      "reconfigure_successful": "Znovu nastavení bylo úspěšné"
+      "reconfigure_successful": "Rekonfigurace úspěšná"
     },
     "flow_title": "Nastavení sekačky Mammotion",
     "step": {
       "bluetooth_confirm": {
         "description": "Nastavení {name}",
         "data": {
-          "stay_connected_bluetooth": "Udržujte připojení Bluetooth"
+          "stay_connected_bluetooth": "Udržovat připojení Bluetooth"
         }
       },
       "reconfigure": {
@@ -28,7 +28,7 @@
       "user": {
         "data": {
           "address": "Zařízení",
-          "stay_connected_bluetooth": "Udržujte připojení Bluetooth"
+          "stay_connected_bluetooth": "Udržovat připojení Bluetooth"
         },
         "description": "Vyberte si svou sekačku"
       },
@@ -48,7 +48,7 @@
       "init": {
         "data": {
           "title": "Aktualizovat konfiguraci",
-          "stay_connected_bluetooth": "Udržujte připojení Bluetooth"
+          "stay_connected_bluetooth": "Udržovat připojení Bluetooth"
         }
       }
     }
@@ -130,11 +130,14 @@
       "start_map_sync": {
         "name": "Synchronizace mapy"
       },
+      "join_webrtc": {
+        "name": "Start camera on mower"
+      },
       "resync_rtk_dock": {
         "name": "Synchronizace RTK a dokovací stanice"
       },
       "release_from_dock": {
-        "name": "Odpojení z doku"
+        "name": "Uvolnění z doku"
       },
       "emergency_nudge_forward": {
         "name": "Nouzové postrčení vpřed"
@@ -166,13 +169,13 @@
         "name": "Zapnutí a vypnutí sekání"
       },
       "is_dump": {
-        "name": "Zapnutí/vypnutí výsypu trávy"
+        "name": "Zapnutí/vypnutí vysypávání trávy"
       },
       "is_edge": {
         "name": "Řezání okrajů"
       },
       "rain_tactics": {
-        "name": "Zapnutá/vypnutá detekce deště"
+        "name": "Zapnutí/vypnutí detekce deště"
       },
       "side_led": {
         "name": "Zapnutí/vypnutí boční LED"
@@ -195,7 +198,7 @@
         }
       },
       "mowing_laps": {
-        "name": "Režim hraniční hlídky",
+        "name": "Sekání po obvodu",
         "state": {
           "none": "Žádné",
           "one": "jeden",
@@ -205,12 +208,12 @@
         }
       },
       "obstacle_laps": {
-        "name": "Režim Překážkové úseky",
+        "name": "Sekání v no-go zóně",
         "state": {
           "none": "Žádné",
-          "one": "jeden",
+          "one": "Jeden",
           "two": "dvě",
-          "three": "tři",
+          "three": "Tři",
           "four": "čtyři"
         }
       },
@@ -227,7 +230,7 @@
           "direct_touch": "Přímý dotek",
           "slow_touch": "Pomalý dotek",
           "less_touch": "Méně dotyků",
-          "no_touch": "Režim bez kolize",
+          "no_touch": "Bez dotyku",
           "sensitive": "Citlivý"
         }
       },
@@ -256,10 +259,10 @@
     },
     "number": {
       "start_progress": {
-        "name": "Pokrok na startu"
+        "name": "Pokrok zahájení"
       },
       "blade_height": {
-        "name": "Výška žacího ústrojí"
+        "name": "Výška nožů"
       },
       "working_speed": {
         "name": "Pracovní rychlost"
@@ -285,15 +288,15 @@
     "border_mode": {
       "options": {
         "0": "Nejprve obvod",
-        "1": "Mřížka jako první"
+        "1": "Zig-zag/šachovnice jako první"
       }
     },
     "ultra_wave": {
       "options": {
         "0": "Přímý dotek",
         "1": "Pomalý dotek",
-        "2": "Méně dotyků",
-        "10": "Režim bez kolize",
+        "2": "Méně dotyku",
+        "10": "Bez dotyku",
         "11": "Citlivý"
       }
     },
@@ -301,7 +304,7 @@
       "options": {
         "0": "Jednoduchá mřížka",
         "1": "Šachovnicová mřížka",
-        "2": "Smíšená/segmentová mřížka",
+        "2": "Adaptivní jednoduchá mřížka",
         "3": "Pouze obvod"
       }
     },
@@ -343,19 +346,19 @@
       "description": "Zastaví sekačka a vymaže aktuální úkol."
     },
     "start_mow": {
-      "name": "Začít vypínat",
+      "name": "Začít sekat",
       "description": "Zahájit sečení s vlastním nastavením.",
       "fields": {
         "is_mow": {
-          "name": "Je vážný",
+          "name": "Sekání",
           "description": "Zda je sekání aktivní. (Yuka)."
         },
         "is_dump": {
-          "name": "Dumping",
+          "name": "Vysypávání",
           "description": "Zda je vyhazování trávy aktivní. (Yuka)."
         },
         "is_edge": {
-          "name": "sečení hrany",
+          "name": "Sekání okrajů",
           "description": "Zda je aktivní režim okrajů. (Yuka)."
         },
         "collect_grass_frequency": {
@@ -363,68 +366,68 @@
           "description": "Frekvence sběru trávy (v metrech čtverečních). (Yuka)."
         },
         "border_mode": {
-          "name": "Pořadí luku",
-          "description": "Pořadí cesty (nejprve Perimetr nebo mřížka)."
+          "name": "Pořadí sečení",
+          "description": "Pořadí trasy cesty (nejprve obvod nebo mřížka)."
         },
         "job_version": {
-          "name": "Pracovní verze",
-          "description": "Verze zakázky."
+          "name": "Verze úlohy",
+          "description": "Verze úlohy."
         },
         "job_id": {
-          "name": "ID zakázky",
-          "description": "ID pracovní pozice."
+          "name": "ID úlohy",
+          "description": "ID úlohy."
         },
         "speed": {
           "name": "Rychlost",
-          "description": "Rychlost vysávání."
+          "description": "Rychlost sekání."
         },
         "ultra_wave": {
           "name": "Detekce překážek",
           "description": "Režim vyhýbání se překážkám."
         },
         "channel_mode": {
-          "name": "Režim řezání cesty",
-          "description": "Cesta k řezání (pouze zigzag, šachovnice, adaptivní zigzag, nebo obvod)."
+          "name": "Režim dráhy cesty",
+          "description": "Dráha cesty (pouze zig-zag, šachovnice, adaptivní zig-zag, nebo obvod)."
         },
         "channel_width": {
-          "name": "Šířka cesty",
-          "description": "Šířka cesty sečení (v cm)."
+          "name": "Šířka dráhy",
+          "description": "Šířka dráhy sečení (v cm)."
         },
         "rain_tactics": {
           "name": "Detekce deště",
-          "description": "Detekce dešťů."
+          "description": "Detekce deště."
         },
         "blade_height": {
-          "name": "Výška lůžka",
-          "description": "Výška lopatky."
+          "name": "Výška nožů",
+          "description": "Výška nožů."
         },
         "toward": {
-          "name": "Úhel trasy",
+          "name": "Úhel cesty",
           "description": "Počáteční směr sečení."
         },
         "toward_included_angle": {
           "name": "Úhel křížení",
-          "description": "Při výběru mřížky změnit druhý úhel (výchozí hodnota je 90 stupňů)."
+          "description": "Při výběru mřížky změnit druhý úhel (výchozí hodnota je 90°)."
         },
         "toward_mode": {
           "name": "Režim řezání úhlu",
-          "description": "Anglický směr srsti."
+          "description": "Úhlový směr sekání."
         },
         "mowing_laps": {
-          "name": "Perimetry meals Mapy",
-          "description": "Počet okruhů kolem sekané oblasti."
+          "name": "Obvodové sečení",
+          "description": "Počet okruhů po obvodu sečené plochy"
         },
         "obstacle_laps": {
-          "name": "Neogo zóna vyplutí mezery",
-          "description": "Počet výplat kolem oblastí bez přechodu."
+          "name": "No-go zóna sekání",
+          "description": "Počet okruhů kolem no-go zón."
         },
         "start_progress": {
-          "name": "Počáteční postup",
-          "description": "Počátek procenta pokroku."
+          "name": "Pokrok při zahájení",
+          "description": "Procento při zahájení"
         },
         "areas": {
           "name": "Výběr oblasti",
-          "description": "Seznam oblastí k setí (reprezentovaných jako celá čísla)."
+          "description": "Seznam oblastí k sečení (reprezentovaný jako celá čísla)."
         }
       }
     }
@@ -434,22 +437,22 @@
       "message": "Sekačka není připravena."
     },
     "pause_failed": {
-      "message": "Sekačku se nepodařilo pozastavit."
+      "message": "Sekačku se nepodařilo zastavit."
     },
     "resume_failed": {
       "message": "Nepodařilo se obnovit činnost sekačky."
     },
     "start_failed": {
-      "message": "Sekačku se nepodařilo nastartovat."
+      "message": "Sekačku se nepodařilo spustit."
     },
     "dock_failed": {
-      "message": "Nepodařilo se odeslat sekačku do nabíjecí stanice."
+      "message": "Nepodařilo se odeslat sekačku do doku."
     },
     "dock_cancel_failed": {
-      "message": "Nepodařilo se zastavit návrat sekačky do doku."
+      "message": "Nepodařilo se zastavit sekačku při návratu do doku."
     },
     "command_failed": {
-      "message": "Nepodařilo se odeslat příkaz do sekačky."
+      "message": "Nepodařilo se odeslat příkaz sekačce."
     }
   }
 }

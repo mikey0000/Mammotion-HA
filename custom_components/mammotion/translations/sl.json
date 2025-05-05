@@ -130,6 +130,9 @@
       "start_map_sync": {
         "name": "Sinhronizacija zemljevidov"
       },
+      "join_webrtc": {
+        "name": "Start camera on mower"
+      },
       "resync_rtk_dock": {
         "name": "Sinhronizacija položaja RTK in polnilne postaje"
       },
