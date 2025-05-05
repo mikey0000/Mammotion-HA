@@ -7,6 +7,7 @@ from typing import Any
 
 from homeassistant.components.switch import DOMAIN as SWITCH_DOMAIN
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
+from homeassistant.const import STATE_ON
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity import EntityCategory
@@ -280,12 +281,17 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
     async def async_turn_off(self, **kwargs: Any) -> None:
         self._attr_is_on = False
         self.entity_description.set_fn(
-            # TODO this should not need to be cast.
             self.coordinator,
             False,
             self.entity_description.area,
         )
         self.async_write_ha_state()
+
+    async def async_added_to_hass(self) -> None:
+        """Call when entity about to be added to hass."""
+        last_state = await self.async_get_last_state()
+        if last_state and last_state.state == STATE_ON:
+            await self.async_turn_on()
 
 
 @callback

@@ -207,6 +207,16 @@ class MammotionConfigSelectEntity(MammotionBaseEntity, SelectEntity, RestoreEnti
         self.entity_description.set_fn(self.coordinator, option)
         self.async_write_ha_state()
 
+    async def async_added_to_hass(self) -> None:
+        """Restore last state."""
+        await super().async_added_to_hass()
+        if (state := await self.async_get_last_state()) is not None:
+            if state.state in self.entity_description.options:
+                self._attr_current_option = state.state
+                self.entity_description.set_fn(
+                    self.coordinator, self._attr_current_option
+                )
+
 
 # Define the select entity class with entity_category: config
 class MammotionAsyncConfigSelectEntity(
@@ -236,3 +246,10 @@ class MammotionAsyncConfigSelectEntity(
         self._attr_current_option = option
         await self.entity_description.set_fn(self.coordinator, option)
         self.async_write_ha_state()
+
+    async def async_added_to_hass(self) -> None:
+        """Restore last state."""
+        await super().async_added_to_hass()
+        if (state := await self.async_get_last_state()) is not None:
+            if state.state in self.entity_description.options:
+                self._attr_current_option = state.state
