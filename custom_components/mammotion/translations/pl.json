@@ -237,9 +237,9 @@
       "cutting_angle_mode": {
         "name": "Kąt cięcia siatki",
         "state": {
-          "relative_angle": "Kąt względny",
-          "absolute_angle": "Kąt bezwzględny",
-          "random_angle": "Kąt losowy"
+          "relative_angle": "Optimal",
+          "absolute_angle": "North",
+          "random_angle": "Random"
         }
       },
       "traversal_mode": {
@@ -252,36 +252,36 @@
       "turning_mode": {
         "name": "Tryb zawracania",
         "state": {
-          "multipoint": "Zawracanie wielopunktowe",
-          "zero_turn": "Zawracanie w miejscu"
+          "multipoint": "Multipoint turn",
+          "zero_turn": "Zero turn"
         }
       }
     },
     "number": {
       "start_progress": {
-        "name": "Rozpocznij koszenie przy x% postępie"
+        "name": "Start progress"
       },
       "blade_height": {
-        "name": "Wysokość cięcia"
+        "name": "Blade height"
       },
       "working_speed": {
-        "name": "Prędkość robocza"
+        "name": "Working speed"
       },
       "cutting_angle": {
-        "name": "Kąt cięcia"
+        "name": "Cutting path angle"
       },
       "path_spacing": {
-        "name": "Odległość między ścieżkami"
+        "name": "Path spacing"
       },
       "dumping_interval": {
-        "name": "Częstotliwość zrzutu"
+        "name": "Dumping frequency"
       },
       "toward_included_angle": {
-        "name": "Kąt skrzyżowania"
+        "name": "Crossing angle"
       }
     },
     "device_tracker": {
-      "name": "Śledzenie urządzenia"
+      "name": "Device tracking"
     }
   },
   "selector": {
@@ -316,9 +316,9 @@
     },
     "toward_mode": {
       "options": {
-        "0": "Kąt względny",
-        "1": "Kąt bezwzględny",
-        "2": "Kąt losowy"
+        "0": "Optimal",
+        "1": "North",
+        "2": "Random"
       }
     },
     "mowing_laps": {
@@ -346,15 +346,15 @@
       "description": "Zatrzymuje kosiarkę i usuwa bieżące zadanie."
     },
     "start_mow": {
-      "name": "Rozpocznij wysiewanie",
+      "name": "Start mowing",
       "description": "Rozpocznij operację kojenia z ustawieniami niestandardowymi.",
       "fields": {
         "is_mow": {
-          "name": "Jest siew",
+          "name": "Is mowing",
           "description": "Czy koszenie jest aktywne. (Yuka)."
         },
         "is_dump": {
-          "name": "Dumping",
+          "name": "Is dumping",
           "description": "Czy opróżnianie trawy jest aktywne. (Yuka)."
         },
         "is_edge": {
@@ -362,15 +362,15 @@
           "description": "Czy tryb krawędziowy jest aktywny. (Yuka)."
         },
         "collect_grass_frequency": {
-          "name": "Częstotliwość zbierania trawy",
+          "name": "Grass collection frequency",
           "description": "Częstotliwość zbierania trawy (w metrach kwadratowych). (Yuka)."
         },
         "border_mode": {
-          "name": "Kolejność ruchów",
+          "name": "Mow order",
           "description": "Kolejność ścieżki (najpierw Perimeter lub siatka)."
         },
         "job_version": {
-          "name": "Wersja zadania",
+          "name": "Job version",
           "description": "Wersja pracy."
         },
         "job_id": {
@@ -382,51 +382,51 @@
           "description": "Prędkość siewu."
         },
         "ultra_wave": {
-          "name": "Wykrywanie przeszkód",
-          "description": "Tryb unikania przeszkód"
+          "name": "Obstacle detection",
+          "description": "Obstacle avoidance mode."
         },
         "channel_mode": {
           "name": "Tryb cięcia ścieżki",
           "description": "Ścieżka cięcia (tylko zigzag, szachownica, adaptacyjny zigzag, lub obwódka)."
         },
         "channel_width": {
-          "name": "Szerokość ścieżki",
+          "name": "Path width",
           "description": "Szerokość toru kotwiczenia (w cm)."
         },
         "rain_tactics": {
-          "name": "Wykrywanie deszczu",
+          "name": "Rain detection",
           "description": "Wykrywanie deszczu."
         },
         "blade_height": {
-          "name": "Wysokość Ostrza",
+          "name": "Blade height",
           "description": "Wysokość ostrza."
         },
         "toward": {
-          "name": "Kąt ścieżki startowej",
+          "name": "Starting path angle",
           "description": "Kierunek początkowy dla koszenia."
         },
         "toward_included_angle": {
-          "name": "Kąt skrzyżowania",
+          "name": "Crossing angle",
           "description": "Podczas wybierania siatki zmień drugi kąt (domyślnie 90 stopni)."
         },
         "toward_mode": {
-          "name": "Tryb cięcia kąta",
+          "name": "Cutting angle mode",
           "description": "Kierunek kotwiczenia."
         },
         "mowing_laps": {
-          "name": "Lojanie Perimetru",
+          "name": "Perimeter mowing laps",
           "description": "Liczba okrążeń wokół obwodu kości."
         },
         "obstacle_laps": {
-          "name": "Strefa No-go Mowing Laps",
-          "description": "Liczba okrążeń wokół stref bez zmian."
+          "name": "No-go zone mowing laps",
+          "description": "Number of laps around no-go zones."
         },
         "start_progress": {
-          "name": "Rozpocznij postęp",
+          "name": "Start progress",
           "description": "Początkowy procent postępu."
         },
         "areas": {
-          "name": "Wybór obszaru",
+          "name": "Area selection",
           "description": "Wykaz obszarów do mow (reprezentowanych jako liczby całkowite)."
         }
       }

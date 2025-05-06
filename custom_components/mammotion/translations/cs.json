@@ -237,9 +237,9 @@
       "cutting_angle_mode": {
         "name": "Režim řezného úhlu",
         "state": {
-          "relative_angle": "Relativní úhel",
-          "absolute_angle": "Absolutní úhel",
-          "random_angle": "Náhodný úhel"
+          "relative_angle": "Optimal",
+          "absolute_angle": "North",
+          "random_angle": "Random"
         }
       },
       "traversal_mode": {
@@ -252,36 +252,36 @@
       "turning_mode": {
         "name": "Režim otáčení",
         "state": {
-          "multipoint": "Vícebodové otáčení",
-          "zero_turn": "Otáčení na místě"
+          "multipoint": "Multipoint turn",
+          "zero_turn": "Zero turn"
         }
       }
     },
     "number": {
       "start_progress": {
-        "name": "Pokrok zahájení"
+        "name": "Start progress"
       },
       "blade_height": {
-        "name": "Výška nožů"
+        "name": "Blade height"
       },
       "working_speed": {
-        "name": "Pracovní rychlost"
+        "name": "Working speed"
       },
       "cutting_angle": {
-        "name": "Úhel sečení"
+        "name": "Cutting path angle"
       },
       "path_spacing": {
-        "name": "Rozestupy cest"
+        "name": "Path spacing"
       },
       "dumping_interval": {
-        "name": "Frekvence vykládky"
+        "name": "Dumping frequency"
       },
       "toward_included_angle": {
-        "name": "Úhel křížení"
+        "name": "Crossing angle"
       }
     },
     "device_tracker": {
-      "name": "Sledování zařízení"
+      "name": "Device tracking"
     }
   },
   "selector": {
@@ -316,9 +316,9 @@
     },
     "toward_mode": {
       "options": {
-        "0": "Relativní úhel",
-        "1": "Absolutní úhel",
-        "2": "Náhodný úhel"
+        "0": "Optimal",
+        "1": "North",
+        "2": "Random"
       }
     },
     "mowing_laps": {
@@ -346,15 +346,15 @@
       "description": "Zastaví sekačka a vymaže aktuální úkol."
     },
     "start_mow": {
-      "name": "Začít sekat",
+      "name": "Start mowing",
       "description": "Zahájit sečení s vlastním nastavením.",
       "fields": {
         "is_mow": {
-          "name": "Sekání",
+          "name": "Is mowing",
           "description": "Zda je sekání aktivní. (Yuka)."
         },
         "is_dump": {
-          "name": "Vysypávání",
+          "name": "Is dumping",
           "description": "Zda je vyhazování trávy aktivní. (Yuka)."
         },
         "is_edge": {
@@ -362,15 +362,15 @@
           "description": "Zda je aktivní režim okrajů. (Yuka)."
         },
         "collect_grass_frequency": {
-          "name": "Frekvence sběru trávy",
+          "name": "Grass collection frequency",
           "description": "Frekvence sběru trávy (v metrech čtverečních). (Yuka)."
         },
         "border_mode": {
-          "name": "Pořadí sečení",
+          "name": "Mow order",
           "description": "Pořadí trasy cesty (nejprve obvod nebo mřížka)."
         },
         "job_version": {
-          "name": "Verze úlohy",
+          "name": "Job version",
           "description": "Verze úlohy."
         },
         "job_id": {
@@ -382,51 +382,51 @@
           "description": "Rychlost sekání."
         },
         "ultra_wave": {
-          "name": "Detekce překážek",
-          "description": "Režim vyhýbání se překážkám."
+          "name": "Obstacle detection",
+          "description": "Obstacle avoidance mode."
         },
         "channel_mode": {
           "name": "Režim dráhy cesty",
           "description": "Dráha cesty (pouze zig-zag, šachovnice, adaptivní zig-zag, nebo obvod)."
         },
         "channel_width": {
-          "name": "Šířka dráhy",
+          "name": "Path width",
           "description": "Šířka dráhy sečení (v cm)."
         },
         "rain_tactics": {
-          "name": "Detekce deště",
+          "name": "Rain detection",
           "description": "Detekce deště."
         },
         "blade_height": {
-          "name": "Výška nožů",
+          "name": "Blade height",
           "description": "Výška nožů."
         },
         "toward": {
-          "name": "Úhel cesty",
+          "name": "Starting path angle",
           "description": "Počáteční směr sečení."
         },
         "toward_included_angle": {
-          "name": "Úhel křížení",
+          "name": "Crossing angle",
           "description": "Při výběru mřížky změnit druhý úhel (výchozí hodnota je 90°)."
         },
         "toward_mode": {
-          "name": "Režim řezání úhlu",
+          "name": "Cutting angle mode",
           "description": "Úhlový směr sekání."
         },
         "mowing_laps": {
-          "name": "Obvodové sečení",
+          "name": "Perimeter mowing laps",
           "description": "Počet okruhů po obvodu sečené plochy"
         },
         "obstacle_laps": {
-          "name": "No-go zóna sekání",
-          "description": "Počet okruhů kolem no-go zón."
+          "name": "No-go zone mowing laps",
+          "description": "Number of laps around no-go zones."
         },
         "start_progress": {
-          "name": "Pokrok při zahájení",
+          "name": "Start progress",
           "description": "Procento při zahájení"
         },
         "areas": {
-          "name": "Výběr oblasti",
+          "name": "Area selection",
           "description": "Seznam oblastí k sečení (reprezentovaný jako celá čísla)."
         }
       }

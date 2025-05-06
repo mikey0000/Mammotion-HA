@@ -237,9 +237,9 @@
       "cutting_angle_mode": {
         "name": "Klippväg vinkel läge",
         "state": {
-          "relative_angle": "Relativ vinkel",
-          "absolute_angle": "Absolut vinkel",
-          "random_angle": "Slumpmässig vinkel"
+          "relative_angle": "Optimal",
+          "absolute_angle": "North",
+          "random_angle": "Random"
         }
       },
       "traversal_mode": {
@@ -252,36 +252,36 @@
       "turning_mode": {
         "name": "Vändningsläge",
         "state": {
-          "multipoint": "Multipunkt sväng",
-          "zero_turn": "Punkt sväng"
+          "multipoint": "Multipoint turn",
+          "zero_turn": "Zero turn"
         }
       }
     },
     "number": {
       "start_progress": {
-        "name": "Starta uppgift"
+        "name": "Start progress"
       },
       "blade_height": {
-        "name": "Bladens höjd"
+        "name": "Blade height"
       },
       "working_speed": {
-        "name": "Arbetshastighet"
+        "name": "Working speed"
       },
       "cutting_angle": {
-        "name": "Klippvägsvinkel"
+        "name": "Cutting path angle"
       },
       "path_spacing": {
-        "name": "Spåravstånd"
+        "name": "Path spacing"
       },
       "dumping_interval": {
-        "name": "Tömningsfrekvens"
+        "name": "Dumping frequency"
       },
       "toward_included_angle": {
-        "name": "Korsningsvinkel"
+        "name": "Crossing angle"
       }
     },
     "device_tracker": {
-      "name": "Spårning av enhet"
+      "name": "Device tracking"
     }
   },
   "selector": {
@@ -316,9 +316,9 @@
     },
     "toward_mode": {
       "options": {
-        "0": "Relativ vinkel",
-        "1": "Absolut vinkel",
-        "2": "Slumpmässig vinkel"
+        "0": "Optimal",
+        "1": "North",
+        "2": "Random"
       }
     },
     "mowing_laps": {
@@ -346,15 +346,15 @@
       "description": "Stoppar gräsklipparen och rensar den aktuella uppgiften."
     },
     "start_mow": {
-      "name": "Börja klippa",
+      "name": "Start mowing",
       "description": "Starta klippningen med anpassade inställningar.",
       "fields": {
         "is_mow": {
-          "name": "Klipper",
+          "name": "Is mowing",
           "description": "Om klippning är aktiv. (Yuka)."
         },
         "is_dump": {
-          "name": "Dumpar",
+          "name": "Is dumping",
           "description": "Om gräsdumpning är aktiv. (Yuka)."
         },
         "is_edge": {
@@ -362,15 +362,15 @@
           "description": "Om kantläge är aktivt. (Yuka)."
         },
         "collect_grass_frequency": {
-          "name": "Frekvens för gräsuppsamling",
+          "name": "Grass collection frequency",
           "description": "Frekvens för gräsuppsamling (i kvadratmeter). (Yuka)."
         },
         "border_mode": {
-          "name": "Klippordning",
+          "name": "Mow order",
           "description": "Klippordning (Omkrets först eller rutnät först)."
         },
         "job_version": {
-          "name": "Jobbversion",
+          "name": "Job version",
           "description": "Jobbversion."
         },
         "job_id": {
@@ -382,51 +382,51 @@
           "description": "Klipphastighet."
         },
         "ultra_wave": {
-          "name": "Hinderdetektering",
-          "description": "Läge för hinderundvikning."
+          "name": "Obstacle detection",
+          "description": "Obstacle avoidance mode."
         },
         "channel_mode": {
           "name": "Klippvägsläge",
           "description": "Klippväg (sicksack, schackmönster, adaptiv sicksack eller endast omkrets)."
         },
         "channel_width": {
-          "name": "Spårbredd",
+          "name": "Path width",
           "description": "Bredd på klippspåret (i cm)."
         },
         "rain_tactics": {
-          "name": "Regndetektering",
+          "name": "Rain detection",
           "description": "Regndetektering."
         },
         "blade_height": {
-          "name": "Bladens höjd",
+          "name": "Blade height",
           "description": "Höjd på bladet."
         },
         "toward": {
-          "name": "Startvinkel på vägen",
+          "name": "Starting path angle",
           "description": "Startriktning för klippning."
         },
         "toward_included_angle": {
-          "name": "Korsningsvinkel",
+          "name": "Crossing angle",
           "description": "När du väljer rutnät ändra den andra vinkeln (standard är 90 grader)."
         },
         "toward_mode": {
-          "name": "Klippvinkelläge",
+          "name": "Cutting angle mode",
           "description": "Riktningen för gräsklippningen."
         },
         "mowing_laps": {
-          "name": "Klippningsvarv omkrets",
+          "name": "Perimeter mowing laps",
           "description": "Antal varv runt klippområdets omkrets."
         },
         "obstacle_laps": {
-          "name": "Klippningsvarv No-go zone",
-          "description": "Antal varv runt förbjudna (No-go) zoner."
+          "name": "No-go zone mowing laps",
+          "description": "Number of laps around no-go zones."
         },
         "start_progress": {
-          "name": "Starta uppgift",
+          "name": "Start progress",
           "description": "Startar förloppsprocent."
         },
         "areas": {
-          "name": "Områdesval",
+          "name": "Area selection",
           "description": "Lista över områden att klippa (representeras som heltal)."
         }
       }

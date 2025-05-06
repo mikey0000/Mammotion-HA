@@ -237,9 +237,9 @@
       "cutting_angle_mode": {
         "name": "Modalità angolo di taglio tracciato",
         "state": {
-          "relative_angle": "Angolo relativo",
-          "absolute_angle": "Angolo assoluto",
-          "random_angle": "Angolo casuale"
+          "relative_angle": "Optimal",
+          "absolute_angle": "North",
+          "random_angle": "Random"
         }
       },
       "traversal_mode": {
@@ -252,36 +252,36 @@
       "turning_mode": {
         "name": "Modalità di svolta",
         "state": {
-          "multipoint": "Svolta multipunto",
-          "zero_turn": "Svolta zero"
+          "multipoint": "Multipoint turn",
+          "zero_turn": "Zero turn"
         }
       }
     },
     "number": {
       "start_progress": {
-        "name": "Avanzamento iniziale"
+        "name": "Start progress"
       },
       "blade_height": {
-        "name": "Altezza della lama"
+        "name": "Blade height"
       },
       "working_speed": {
-        "name": "Velocità di lavoro"
+        "name": "Working speed"
       },
       "cutting_angle": {
-        "name": "Angolo Tracciato Di Taglio"
+        "name": "Cutting path angle"
       },
       "path_spacing": {
-        "name": "Spaziatura Percorso"
+        "name": "Path spacing"
       },
       "dumping_interval": {
-        "name": "Frequenza scarico erba"
+        "name": "Dumping frequency"
       },
       "toward_included_angle": {
-        "name": "Angolo Di Attraversamento"
+        "name": "Crossing angle"
       }
     },
     "device_tracker": {
-      "name": "Tracciamento del dispositivo"
+      "name": "Device tracking"
     }
   },
   "selector": {
@@ -316,9 +316,9 @@
     },
     "toward_mode": {
       "options": {
-        "0": "Angolo relativo",
-        "1": "Angolo assoluto",
-        "2": "Angolo casuale"
+        "0": "Optimal",
+        "1": "North",
+        "2": "Random"
       }
     },
     "mowing_laps": {
@@ -346,15 +346,15 @@
       "description": "Ferma la falciatrice e cancella l'attività corrente."
     },
     "start_mow": {
-      "name": "Inizia a tagliare",
+      "name": "Start mowing",
       "description": "Avvia l'operazione di taglio con impostazioni personalizzate.",
       "fields": {
         "is_mow": {
-          "name": "Sta tagliando",
+          "name": "Is mowing",
           "description": "Se la falciatura è attiva. (Yuka)."
         },
         "is_dump": {
-          "name": "Sta scaricando l'erba",
+          "name": "Is dumping",
           "description": "Se lo scarico dell'erba è attivo. (Yuka)."
         },
         "is_edge": {
@@ -362,15 +362,15 @@
           "description": "Se la modalità bordo è attiva. (Yuka)."
         },
         "collect_grass_frequency": {
-          "name": "Frequenza Di Raccolta Erba",
+          "name": "Grass collection frequency",
           "description": "Frequenza di raccolta dell'erba (in metri quadrati). (Yuka)."
         },
         "border_mode": {
-          "name": "Ordine di taglio",
+          "name": "Mow order",
           "description": "Ordine tracciato (prima perimetro o griglia)."
         },
         "job_version": {
-          "name": "Versione Job",
+          "name": "Job version",
           "description": "Versione lavoro."
         },
         "job_id": {
@@ -382,51 +382,51 @@
           "description": "Velocità di falciatura."
         },
         "ultra_wave": {
-          "name": "Rilevamento Degli Ostacoli",
-          "description": "Modalità Evitamento Ostacoli."
+          "name": "Obstacle detection",
+          "description": "Obstacle avoidance mode."
         },
         "channel_mode": {
           "name": "Modalità Tracciato Di Taglio",
           "description": "Percorso di taglio (solo zigzag, scacchiera, zigzag adattivo o perimetro)."
         },
         "channel_width": {
-          "name": "Larghezza Tracciato",
+          "name": "Path width",
           "description": "Larghezza del percorso di falciatura (in cm)."
         },
         "rain_tactics": {
-          "name": "Rilevamento Pioggia",
+          "name": "Rain detection",
           "description": "Rilevamento pioggia."
         },
         "blade_height": {
-          "name": "Altezza Lama",
+          "name": "Blade height",
           "description": "Altezza della lama."
         },
         "toward": {
-          "name": "Angolo Tracciato Iniziale",
+          "name": "Starting path angle",
           "description": "Direzione di partenza per falciatura."
         },
         "toward_included_angle": {
-          "name": "Angolo Di Attraversamento",
+          "name": "Crossing angle",
           "description": "Quando si seleziona la griglia cambiare il secondo angolo (predefinito è 90 gradi)."
         },
         "toward_mode": {
-          "name": "Modalità Angolo Di Taglio",
+          "name": "Cutting angle mode",
           "description": "Direzione angolare del falcio."
         },
         "mowing_laps": {
-          "name": "Numero di giri sul perimetro",
+          "name": "Perimeter mowing laps",
           "description": "Numero di giri attorno al perimetro dell'area di falciatura."
         },
         "obstacle_laps": {
-          "name": "Numero di giri sulle zone No-go",
-          "description": "Numero di giri intorno alle zone No-go."
+          "name": "No-go zone mowing laps",
+          "description": "Number of laps around no-go zones."
         },
         "start_progress": {
-          "name": "Avvia Progresso",
+          "name": "Start progress",
           "description": "Inizio percentuale di progresso."
         },
         "areas": {
-          "name": "Selezione Area",
+          "name": "Area selection",
           "description": "Elenco di aree da tagliare(rappresentati come interi)."
         }
       }

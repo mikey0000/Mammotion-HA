@@ -237,9 +237,9 @@
       "cutting_angle_mode": {
         "name": "Angle de trajectoire",
         "state": {
-          "relative_angle": "Angle relatif",
-          "absolute_angle": "Angle absolu",
-          "random_angle": "Angle aléatoire"
+          "relative_angle": "Optimal",
+          "absolute_angle": "North",
+          "random_angle": "Random"
         }
       },
       "traversal_mode": {
@@ -252,36 +252,36 @@
       "turning_mode": {
         "name": "Mode de demi-tour",
         "state": {
-          "multipoint": "Virage multipoint",
-          "zero_turn": "Virage sur place"
+          "multipoint": "Multipoint turn",
+          "zero_turn": "Zero turn"
         }
       }
     },
     "number": {
       "start_progress": {
-        "name": "Départ de la progression"
+        "name": "Start progress"
       },
       "blade_height": {
-        "name": "Hauteur des lames"
+        "name": "Blade height"
       },
       "working_speed": {
-        "name": "Vitesse de fonctionnement"
+        "name": "Working speed"
       },
       "cutting_angle": {
-        "name": "Angle de coupe"
+        "name": "Cutting path angle"
       },
       "path_spacing": {
-        "name": "Espacement des trajectoires"
+        "name": "Path spacing"
       },
       "dumping_interval": {
-        "name": "Fréquence de vidage"
+        "name": "Dumping frequency"
       },
       "toward_included_angle": {
-        "name": "Angle de traversée"
+        "name": "Crossing angle"
       }
     },
     "device_tracker": {
-      "name": "Suivi de l'appareil"
+      "name": "Device tracking"
     }
   },
   "selector": {
@@ -316,9 +316,9 @@
     },
     "toward_mode": {
       "options": {
-        "0": "Angle relatif",
-        "1": "Angle absolu",
-        "2": "Angle aléatoire"
+        "0": "Optimal",
+        "1": "North",
+        "2": "Random"
       }
     },
     "mowing_laps": {
@@ -346,15 +346,15 @@
       "description": "Arrête la tondeuse et efface la tâche en cours."
     },
     "start_mow": {
-      "name": "Commencer à tondre",
+      "name": "Start mowing",
       "description": "Démarrer l'opération de tonte avec des paramètres personnalisés.",
       "fields": {
         "is_mow": {
-          "name": "Tonte",
+          "name": "Is mowing",
           "description": "Si la tonte est active. (Yuka)."
         },
         "is_dump": {
-          "name": "Ramassage de l'herbe",
+          "name": "Is dumping",
           "description": "Si le ramassage de l''herbe est actif. (Yuka)."
         },
         "is_edge": {
@@ -362,15 +362,15 @@
           "description": "Si le mode bordure est actif. (Yuka)."
         },
         "collect_grass_frequency": {
-          "name": "Fréquence de ramassage de l'herbe",
+          "name": "Grass collection frequency",
           "description": "Fréquence de ramassage de l'herbe (en mètres carrés). (Yuka)."
         },
         "border_mode": {
-          "name": "Ordre de tonte",
+          "name": "Mow order",
           "description": "Ordre du chemin de tonte (bordure d'abord ou grille d'abord)."
         },
         "job_version": {
-          "name": "Version de la tâche",
+          "name": "Job version",
           "description": "Version de la tâche."
         },
         "job_id": {
@@ -382,51 +382,51 @@
           "description": "Vitesse de tonte."
         },
         "ultra_wave": {
-          "name": "Détection d'obstacles",
-          "description": "Stratégie de contournement pour la tonte."
+          "name": "Obstacle detection",
+          "description": "Obstacle avoidance mode."
         },
         "channel_mode": {
           "name": "Mode canal",
           "description": "Mode de trajectoire (quadrillage, zigzag, zigzag adaptatif ou périmètre seulement)."
         },
         "channel_width": {
-          "name": "Espacement des trajectoires",
+          "name": "Path width",
           "description": "Espacement des trajectoires (en cm)."
         },
         "rain_tactics": {
-          "name": "Détection de la pluie",
+          "name": "Rain detection",
           "description": "Détection de la pluie."
         },
         "blade_height": {
-          "name": "Hauteur de coupe",
+          "name": "Blade height",
           "description": "Hauteur de coupe."
         },
         "toward": {
-          "name": "Angle",
+          "name": "Starting path angle",
           "description": "Angle de direction pour la tonte."
         },
         "toward_included_angle": {
-          "name": "Angle par rapport à la grille",
+          "name": "Crossing angle",
           "description": "Lors de la sélection de la grille, modifiez le deuxième angle."
         },
         "toward_mode": {
-          "name": "Mode de direction",
+          "name": "Cutting angle mode",
           "description": "Mode angle."
         },
         "mowing_laps": {
-          "name": "Tours de tonte du périmètre",
+          "name": "Perimeter mowing laps",
           "description": "Nombre de tours de tonte du périmètre."
         },
         "obstacle_laps": {
-          "name": "Tours de tonte des zones interdites",
-          "description": "Nombre de tours de tonte des zones interdites."
+          "name": "No-go zone mowing laps",
+          "description": "Number of laps around no-go zones."
         },
         "start_progress": {
-          "name": "Démarrer à un pourcentage de progression",
+          "name": "Start progress",
           "description": "Démarrer à un pourcentage de progression."
         },
         "areas": {
-          "name": "Zones",
+          "name": "Area selection",
           "description": "Liste des zones à tondre (représentées sous forme d'entiers)."
         }
       }

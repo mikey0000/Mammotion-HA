@@ -237,9 +237,9 @@
       "cutting_angle_mode": {
         "name": "Wegwinkel Modus",
         "state": {
-          "relative_angle": "Relativer Winkel",
-          "absolute_angle": "Absoluter Winkel",
-          "random_angle": "Zufälliger Winkel"
+          "relative_angle": "Optimal",
+          "absolute_angle": "North",
+          "random_angle": "Random"
         }
       },
       "traversal_mode": {
@@ -252,36 +252,36 @@
       "turning_mode": {
         "name": "Wendemodus",
         "state": {
-          "multipoint": "Mehrpunkt-Wendung",
-          "zero_turn": "Nullwendung"
+          "multipoint": "Multipoint turn",
+          "zero_turn": "Zero turn"
         }
       }
     },
     "number": {
       "start_progress": {
-        "name": "Fortschritt beim Start"
+        "name": "Start progress"
       },
       "blade_height": {
-        "name": "Schnitthöhe"
+        "name": "Blade height"
       },
       "working_speed": {
-        "name": "Aufgabengeschwindigkeit"
+        "name": "Working speed"
       },
       "cutting_angle": {
-        "name": "Wegwinkel"
+        "name": "Cutting path angle"
       },
       "path_spacing": {
-        "name": "Wegabstand"
+        "name": "Path spacing"
       },
       "dumping_interval": {
-        "name": "Intervall für das Entleeren"
+        "name": "Dumping frequency"
       },
       "toward_included_angle": {
-        "name": "Kreuzungswinkel"
+        "name": "Crossing angle"
       }
     },
     "device_tracker": {
-      "name": "Geräte Standort"
+      "name": "Device tracking"
     }
   },
   "selector": {
@@ -316,9 +316,9 @@
     },
     "toward_mode": {
       "options": {
-        "0": "Relativer Winkel",
-        "1": "Absoluter Winkel",
-        "2": "Zufälliger Winkel"
+        "0": "Optimal",
+        "1": "North",
+        "2": "Random"
       }
     },
     "mowing_laps": {
@@ -346,15 +346,15 @@
       "description": "Stoppt den Mähroboter und bereinigt die aktuelle Aufgabe."
     },
     "start_mow": {
-      "name": "Starte Mähvorgang",
+      "name": "Start mowing",
       "description": "Startet einen Mähvorgang mit individuellen Einstellungen.",
       "fields": {
         "is_mow": {
-          "name": "Mähen",
+          "name": "Is mowing",
           "description": "Gibt an, ob Mähen aktiviert ist. (Yuka)."
         },
         "is_dump": {
-          "name": "Gras sammeln",
+          "name": "Is dumping",
           "description": "Gibt an, ob Gras sammeln aktiviert ist. (Yuka)."
         },
         "is_edge": {
@@ -362,15 +362,15 @@
           "description": "Gibt an, ob der Modus zum Kanten schneiden aktiv ist. (Yuka)."
         },
         "collect_grass_frequency": {
-          "name": "Intervall für das Entleeren",
+          "name": "Grass collection frequency",
           "description": "Häufigkeit für das Auffangen von Gras (in Quadratmetern). (Yuka)."
         },
         "border_mode": {
-          "name": "Ausführungsreihenfolge des Pfades",
+          "name": "Mow order",
           "description": "Pfadreihenfolge fürs Mähen (zuerst Perimeter oder Raster)."
         },
         "job_version": {
-          "name": "Job Version",
+          "name": "Job version",
           "description": "Version des Jobs."
         },
         "job_id": {
@@ -382,51 +382,51 @@
           "description": "Geschwindigkeit beim Mähen."
         },
         "ultra_wave": {
-          "name": "Modus der Hinderniserkennung",
-          "description": "Bypass Strategie / Modus der Hinderniserkennung beim Mähen."
+          "name": "Obstacle detection",
+          "description": "Obstacle avoidance mode."
         },
         "channel_mode": {
           "name": "Navigationsmodus",
           "description": "Raster für die Navigation (Einzel, Doppel, Segment oder kein Raster)."
         },
         "channel_width": {
-          "name": "Wegabstand",
+          "name": "Path width",
           "description": "Wähle den Wegabstand (in cm)."
         },
         "rain_tactics": {
-          "name": "Regenerkennung",
+          "name": "Rain detection",
           "description": "Stoppt das Mähen, wenn Regen erkannt wird."
         },
         "blade_height": {
-          "name": "Schnitthöhe",
+          "name": "Blade height",
           "description": "Gewünschte Schnitthöhe."
         },
         "toward": {
-          "name": "Wegwinkel",
+          "name": "Starting path angle",
           "description": "Wegwinkel für das Mähen."
         },
         "toward_included_angle": {
-          "name": "Wegwinkel im Verhältnis zum Raster",
+          "name": "Crossing angle",
           "description": "Ändern des zweiten Winkels bei Auswahl eines Rasters."
         },
         "toward_mode": {
-          "name": "Wegwinkel Modus",
+          "name": "Cutting angle mode",
           "description": "Wähle den Modus für den Wegwinkel."
         },
         "mowing_laps": {
-          "name": "Patrouillenrunden für den seitlichen Rasenschnitt",
+          "name": "Perimeter mowing laps",
           "description": "Anzahl der Runden für den seitlichen Rasenschnitt."
         },
         "obstacle_laps": {
-          "name": "Mähen von No-Go-Zonen",
-          "description": "Anzahl der Runden rund um Hindernisse."
+          "name": "No-go zone mowing laps",
+          "description": "Number of laps around no-go zones."
         },
         "start_progress": {
-          "name": "Fortschritt beim Start",
+          "name": "Start progress",
           "description": "Fortschritt beim Start in Prozent."
         },
         "areas": {
-          "name": "Bereiche",
+          "name": "Area selection",
           "description": "Auswahl der zu mähenden Bereiche."
         }
       }
