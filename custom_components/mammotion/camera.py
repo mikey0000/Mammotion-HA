@@ -105,6 +105,7 @@ class MammotionWebRTCCamera(MammotionBaseEntity, Camera):
         self._legacy_webrtc_provider = None
         self._supports_native_sync_webrtc = False
         self._supports_native_async_webrtc = False
+        self.content_type = "image/jpeg"  # Add required attribute for MJPEG streaming
 
     @property
     def frontend_stream_type(self) -> StreamType | None:
