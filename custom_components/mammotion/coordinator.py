@@ -528,7 +528,15 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
         device = self.manager.get_device_by_name(self.device_name)
 
         try:
+            # Ensure we get the most up-to-date configuration from the device
             await self.async_send_command("get_report_cfg")
+            
+            # Get blade height and other working parameters
+            if not DeviceType.is_luba1(self.device_name):
+                try:
+                    await self.async_send_command("get_blade_height")
+                except Exception as e:
+                    LOGGER.debug("Failed to get blade height: %s", e)
 
         except DeviceOfflineException as ex:
             """Device is offline try bluetooth if we have it."""

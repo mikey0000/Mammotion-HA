@@ -95,6 +95,7 @@ LUBA_WORKING_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
             coordinator.operation_settings, "blade_height", int(value)
         ),
         get_fn=lambda coordinator: coordinator.data.report_data.work.knife_height,
+        update_fn=lambda coordinator, value: coordinator.async_blade_height(int(value)),
     ),
 )
 
@@ -190,9 +191,20 @@ class MammotionConfigNumberEntity(MammotionBaseEntity, RestoreNumber):
         self.entity_description.set_fn(self.coordinator, self._attr_native_value)
 
     async def async_set_native_value(self, value: float) -> None:
-        """Sets native value for number."""
+        """Set native value for number and call update_fn if defined."""
         self._attr_native_value = value
         self.entity_description.set_fn(self.coordinator, value)
+        
+        if self.entity_description.update_fn is not None:
+            result = self.entity_description.update_fn(self.coordinator, value)
+            if result is not None and hasattr(result, "__await__"):
+                await result
+        # If this is blade height and no update_fn is defined, directly set it on the device
+        elif self.entity_description.key == "blade_height":
+            await self.coordinator.async_blade_height(int(value))
+            # Request an update to refresh the UI with the actual value
+            await self.coordinator.async_request_iot_sync()
+        
         self.async_write_ha_state()
 
     async def async_added_to_hass(self) -> None:
@@ -242,21 +254,13 @@ class MammotionWorkingNumberEntity(MammotionConfigNumberEntity):
         """Return the maximum value."""
         return self._attr_native_max_value
 
-    # @property
-    # def native_value(self) -> float | None:
-    #     """Return the current value if get_fn is defined."""
-    #     if self.entity_description.get_fn is not None:
-    #         return self.entity_description.get_fn(self.coordinator)
-    #     return self._attr_native_value
-
-    async def async_set_native_value(self, value: float) -> None:
-        """Set native value for number and call update_fn if defined."""
-        self._attr_native_value = value
-        self.entity_description.set_fn(self.coordinator, value)
-
-        if self.entity_description.update_fn is not None:
-            result = self.entity_description.update_fn(self.coordinator, value)
-            if result is not None and hasattr(result, "__await__"):
-                await result
-
-        self.async_write_ha_state()
+    @property
+    def native_value(self) -> float | None:
+        """Return the current value if get_fn is defined."""
+        if self.entity_description.get_fn is not None:
+            value = self.entity_description.get_fn(self.coordinator)
+            # If value is within range, update the operation settings too
+            if value is not None and self._attr_native_min_value <= value <= self._attr_native_max_value:
+                self.entity_description.set_fn(self.coordinator, value)
+                return value
+        return self._attr_native_value
