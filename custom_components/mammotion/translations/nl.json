@@ -237,9 +237,9 @@
       "cutting_angle_mode": {
         "name": "Maai-hoek modus",
         "state": {
-          "relative_angle": "Relatieve hoek",
-          "absolute_angle": "Absolute hoek",
-          "random_angle": "Willekeurige hoek"
+          "relative_angle": "Optimal",
+          "absolute_angle": "North",
+          "random_angle": "Random"
         }
       },
       "traversal_mode": {
@@ -252,36 +252,36 @@
       "turning_mode": {
         "name": "Draaimodus",
         "state": {
-          "multipoint": "Meerpunts draai",
-          "zero_turn": "Nulpunts draai"
+          "multipoint": "Multipoint turn",
+          "zero_turn": "Zero turn"
         }
       }
     },
     "number": {
       "start_progress": {
-        "name": "Start voortgang"
+        "name": "Start progress"
       },
       "blade_height": {
-        "name": "Mes hoogte"
+        "name": "Blade height"
       },
       "working_speed": {
-        "name": "Robot Snelheid"
+        "name": "Working speed"
       },
       "cutting_angle": {
-        "name": "Hoek van maaien"
+        "name": "Cutting path angle"
       },
       "path_spacing": {
-        "name": "Afstand tussen paden"
+        "name": "Path spacing"
       },
       "dumping_interval": {
-        "name": "Dump frequentie"
+        "name": "Dumping frequency"
       },
       "toward_included_angle": {
-        "name": "Kruisende Hoek"
+        "name": "Crossing angle"
       }
     },
     "device_tracker": {
-      "name": "Apparaat volgen"
+      "name": "Device tracking"
     }
   },
   "selector": {
@@ -316,9 +316,9 @@
     },
     "toward_mode": {
       "options": {
-        "0": "Relatieve hoek",
-        "1": "Absolute hoek",
-        "2": "Willekeurige hoek"
+        "0": "Optimal",
+        "1": "North",
+        "2": "Random"
       }
     },
     "mowing_laps": {
@@ -346,15 +346,15 @@
       "description": "Stopt beide de robot en huidige taak."
     },
     "start_mow": {
-      "name": "Start met maaien",
+      "name": "Start mowing",
       "description": "Begin met maaien met aangepaste instellingen.",
       "fields": {
         "is_mow": {
-          "name": "Is aan het maaien",
+          "name": "Is mowing",
           "description": "Of maaien actief is. (Yuka)."
         },
         "is_dump": {
-          "name": "Dumpen",
+          "name": "Is dumping",
           "description": "Of gras dumpen actief is. (Yuka)."
         },
         "is_edge": {
@@ -362,15 +362,15 @@
           "description": "Of randmodus actief is. (Yuka)."
         },
         "collect_grass_frequency": {
-          "name": "Gras Collectie Frequentie",
+          "name": "Grass collection frequency",
           "description": "Frequentie om gras te verzamelen (in vierkante meters). (Yuka)."
         },
         "border_mode": {
-          "name": "Maai volgorde",
+          "name": "Mow order",
           "description": "Maai volgorde (rand eerst of gazon eerst)."
         },
         "job_version": {
-          "name": "Taak versie",
+          "name": "Job version",
           "description": "Taak versie"
         },
         "job_id": {
@@ -382,51 +382,51 @@
           "description": "Maai Snelheid"
         },
         "ultra_wave": {
-          "name": "Obstakels Detectie",
-          "description": "Obstakel Vermijding Modus."
+          "name": "Obstacle detection",
+          "description": "Obstacle avoidance mode."
         },
         "channel_mode": {
           "name": "Pad-knip mode",
           "description": "Snijpad (zigzag, schaakbord, adaptieve zigzag, of alleen de rand)."
         },
         "channel_width": {
-          "name": "Pad breedte",
+          "name": "Path width",
           "description": "Breedte van de paden (in cm)."
         },
         "rain_tactics": {
-          "name": "Regen detectie",
+          "name": "Rain detection",
           "description": "Regen detectie."
         },
         "blade_height": {
-          "name": "Mes hoogte",
+          "name": "Blade height",
           "description": "Hoogte van de messen."
         },
         "toward": {
-          "name": "Begin hoek",
+          "name": "Starting path angle",
           "description": "Aanvankelijke richting voor maaien"
         },
         "toward_included_angle": {
-          "name": "Kruisende Hoek",
+          "name": "Crossing angle",
           "description": "Bij het selecteren van het raster verander de tweede hoek (standaard is 90 graden)."
         },
         "toward_mode": {
-          "name": "Hoek modus knippen",
+          "name": "Cutting angle mode",
           "description": "Grijpbare richting maaien."
         },
         "mowing_laps": {
-          "name": "Hoeveelheid de rand maaien",
+          "name": "Perimeter mowing laps",
           "description": "Het aantal rondes rond de rand"
         },
         "obstacle_laps": {
-          "name": "Het aantal rondes rond verboden zones",
-          "description": "Het aantal rondes rond verboden zones."
+          "name": "No-go zone mowing laps",
+          "description": "Number of laps around no-go zones."
         },
         "start_progress": {
-          "name": "Begin Voortgang",
+          "name": "Start progress",
           "description": "Begin voortgangspercentage."
         },
         "areas": {
-          "name": "Gebied Selectie",
+          "name": "Area selection",
           "description": "Lijst van te maaien gebieden (weergegeven als geheel getal)."
         }
       }

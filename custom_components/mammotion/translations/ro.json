@@ -237,9 +237,9 @@
       "cutting_angle_mode": {
         "name": "Modul unghiului căii tăiate",
         "state": {
-          "relative_angle": "Unghi relativ",
-          "absolute_angle": "Unghiul absolut",
-          "random_angle": "Unghi aleatoriu"
+          "relative_angle": "Optimal",
+          "absolute_angle": "North",
+          "random_angle": "Random"
         }
       },
       "traversal_mode": {
@@ -252,36 +252,36 @@
       "turning_mode": {
         "name": "Mod de întoarcere",
         "state": {
-          "multipoint": "Întoarcere în mai multe puncte",
-          "zero_turn": "Întoarcere pe loc"
+          "multipoint": "Multipoint turn",
+          "zero_turn": "Zero turn"
         }
       }
     },
     "number": {
       "start_progress": {
-        "name": "Progresul la start"
+        "name": "Start progress"
       },
       "blade_height": {
-        "name": "Înălțimea lamelor"
+        "name": "Blade height"
       },
       "working_speed": {
-        "name": "Viteza de lucru"
+        "name": "Working speed"
       },
       "cutting_angle": {
-        "name": "Unghiul de tăiere"
+        "name": "Cutting path angle"
       },
       "path_spacing": {
-        "name": "Spațiere traiectorie"
+        "name": "Path spacing"
       },
       "dumping_interval": {
-        "name": "Frecvența de dumping"
+        "name": "Dumping frequency"
       },
       "toward_included_angle": {
-        "name": "Unghiul de trecere"
+        "name": "Crossing angle"
       }
     },
     "device_tracker": {
-      "name": "Monitorizarea dispozitivului"
+      "name": "Device tracking"
     }
   },
   "selector": {
@@ -316,9 +316,9 @@
     },
     "toward_mode": {
       "options": {
-        "0": "Unghi relativ",
-        "1": "Unghi absolut",
-        "2": "Unghi aleatoriu"
+        "0": "Optimal",
+        "1": "North",
+        "2": "Random"
       }
     },
     "mowing_laps": {
@@ -346,15 +346,15 @@
       "description": "Oprește fumătorul și șterge sarcina curentă."
     },
     "start_mow": {
-      "name": "Pornește urcarea",
+      "name": "Start mowing",
       "description": "Porniți operația de montare cu setări personalizate.",
       "fields": {
         "is_mow": {
-          "name": "Se datorează",
+          "name": "Is mowing",
           "description": "Dacă tunderea este activă. (Yuka)."
         },
         "is_dump": {
-          "name": "Fac Dumping",
+          "name": "Is dumping",
           "description": "Dacă descărcarea ierbii este activă. (Yuka)."
         },
         "is_edge": {
@@ -362,15 +362,15 @@
           "description": "Dacă modul de bordură este activ. (Yuka)."
         },
         "collect_grass_frequency": {
-          "name": "Frecvență colectare iarbă",
+          "name": "Grass collection frequency",
           "description": "Frecvența de colectare a ierbii (în metri pătrați). (Yuka)."
         },
         "border_mode": {
-          "name": "Comanda Mow",
+          "name": "Mow order",
           "description": "Ordinul căii de mormânt (primul sau grila întâi)."
         },
         "job_version": {
-          "name": "Versiune Job",
+          "name": "Job version",
           "description": "Versiunea postului."
         },
         "job_id": {
@@ -382,51 +382,51 @@
           "description": "Viteza mormântării."
         },
         "ultra_wave": {
-          "name": "Detectarea obstacolelor",
-          "description": "Modul de evitare a obstacolelor."
+          "name": "Obstacle detection",
+          "description": "Obstacle avoidance mode."
         },
         "channel_mode": {
           "name": "Modul cale de tăiere",
           "description": "Calea de tăiere (doar pentru zigzag, șescom, zigzag adaptiv sau perimetr)."
         },
         "channel_width": {
-          "name": "Lățimea căii",
+          "name": "Path width",
           "description": "Lățimea căii de cosit (în cm)."
         },
         "rain_tactics": {
-          "name": "Detectarea ploii",
+          "name": "Rain detection",
           "description": "Detectarea ploii."
         },
         "blade_height": {
-          "name": "Înălțime lamă",
+          "name": "Blade height",
           "description": "Înălţimea lamei."
         },
         "toward": {
-          "name": "Unghiul de pornire a traiectoriei",
+          "name": "Starting path angle",
           "description": "Direcţia de pornire pentru umăr."
         },
         "toward_included_angle": {
-          "name": "Unghiul de trecere",
+          "name": "Crossing angle",
           "description": "La selectarea grilei schimbă al doilea unghi (implicit este de 90 de grade)."
         },
         "toward_mode": {
-          "name": "Mod unghi tăiat",
+          "name": "Cutting angle mode",
           "description": "Direcţia glulară a muşchiului."
         },
         "mowing_laps": {
-          "name": "Perimetru Lapţi de portaj",
+          "name": "Perimeter mowing laps",
           "description": "Numărul de robinete în jurul perimetrului zonei de umezire."
         },
         "obstacle_laps": {
-          "name": "Zonele fără urme",
-          "description": "Numărul de lacuri în jurul zonelor fără destinaţie."
+          "name": "No-go zone mowing laps",
+          "description": "Number of laps around no-go zones."
         },
         "start_progress": {
-          "name": "Progres Start",
+          "name": "Start progress",
           "description": "Progres de inceput procent."
         },
         "areas": {
-          "name": "Selecția zonei",
+          "name": "Area selection",
           "description": "Lista zonelor care trebuie aruncate (reprezentate ca întregi)."
         }
       }
