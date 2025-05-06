@@ -296,7 +296,7 @@ async def check_and_restore_cloud(
         mammotion_data = Response[LoginResponseData].from_dict(mammotion_data)
         mammotion_http = MammotionHTTP()
         mammotion_http.response = mammotion_data
-        mammotion_http.login_info = mammotion_data.data
+        mammotion_http.login_info = LoginResponseData.from_dict(mammotion_data.data)
         cloud_client.set_http(mammotion_http)
 
     await cloud_client.check_or_refresh_session()

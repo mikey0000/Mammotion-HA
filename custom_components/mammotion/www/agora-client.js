@@ -202,10 +202,10 @@ class CameraAgoraCard extends HTMLElement {
       // Update tokens and start streaming
       await this._hass.callService('mammotion', 'refresh_stream', { entity_id: entityId });
       await this._hass.callService('mammotion', 'start_video', { entity_id: entityId });
-      
-      const attr = this._hass.states[entityId].attributes;
+      const { response } = await this._hass.callService('mammotion', 'get_tokens', { entity_id: entityId, return_response: true }, {}, true, true);
+
       const videoContainer = this.shadowRoot.getElementById('agora-video');
-      
+
       const clientConfig = {
         mode: 'live',
         codec: 'vp8',
@@ -213,14 +213,14 @@ class CameraAgoraCard extends HTMLElement {
         enableLogUpload: false,  // Disable log upload
         role: "host",
       };
-      
+
       // Create Agora client
       if (this._client) {
         await this._client.leave();
       }
-      
+
       const client = window.AgoraRTC.createClient(clientConfig);
-      
+
       client.on('user-published', async (user, mediaType) => {
         await client.subscribe(user, mediaType);
         if (mediaType === 'video') {
@@ -232,7 +232,7 @@ class CameraAgoraCard extends HTMLElement {
           user.audioTrack.play();
         }
       });
-      
+
       // Register error handlers
       client.on('connection-state-change', (state) => {
         console.log(`Agora connection state: ${state}`);
@@ -250,14 +250,14 @@ class CameraAgoraCard extends HTMLElement {
           this._showLoading("Video stream ended.");
         }
       });
-      
+
       client.setClientRole("host");
-      
-      console.log("App ID: " + attr.appId);
-      console.log("App Channel: " + attr.channelName);
-      console.log("App Token: " + attr.token);
-      console.log("App UID: " + attr.uid);
-      
+
+      console.log("App ID: " + response.appId);
+      console.log("App Channel: " + response.channelName);
+      console.log("App Token: " + response.token);
+      console.log("App UID: " + response.uid);
+
       // Set timeout for connection
       const connectionTimeout = setTimeout(() => {
         if (!this._isPlaying) {
@@ -265,8 +265,8 @@ class CameraAgoraCard extends HTMLElement {
           this._isConnecting = false;
         }
       }, 20000);
-      
-      await client.join(attr.appId, attr.channelName, attr.token, parseInt(attr.uid));
+
+      await client.join(response.appId, response.channelName, response.token, parseInt(response.uid));
       clearTimeout(connectionTimeout);
       
       this._client = client;

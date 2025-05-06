@@ -21,13 +21,13 @@ from pymammotion.aliyun.cloud_gateway import (
     NoConnectionException,
 )
 from pymammotion.aliyun.model.dev_by_account_response import Device
-from pymammotion.aliyun.model.stream_subscription_response import (
-    StreamSubscriptionResponse,
-)
 from pymammotion.data.model import GenerateRouteInformation, HashList
 from pymammotion.data.model.device import MowerInfo, MowingDevice
 from pymammotion.data.model.device_config import OperationSettings, create_path_order
 from pymammotion.data.model.report_info import Maintain
+from pymammotion.http.model.camera_stream import (
+    StreamSubscriptionResponse,
+)
 from pymammotion.mammotion.devices.mammotion import (
     ConnectionPreference,
     Mammotion,
@@ -107,15 +107,19 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
 
     async def join_webrtc_channel(self) -> None:
         """Start stream command"""
-        await self.async_send_command(
-            "device_agora_join_channel_with_position", enter_state=1
-        )
+        device = self.manager.get_device_by_name(self.device_name)
+        if device.cloud:
+            await device.cloud().queue_command(
+                "device_agora_join_channel_with_position", enter_state=1
+            )
 
     async def leave_webrtc_channel(self) -> None:
         """End stream command"""
-        await self.async_send_command(
-            "device_agora_join_channel_with_position", enter_state=0
-        )
+        device = self.manager.get_device_by_name(self.device_name)
+        if device.cloud:
+            await device.cloud().queue_command(
+                "device_agora_join_channel_with_position", enter_state=0
+            )
 
     async def set_scheduled_updates(self, enabled: bool) -> None:
         device = self.manager.get_device_by_name(self.device_name)

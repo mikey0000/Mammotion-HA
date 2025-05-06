@@ -224,9 +224,9 @@
       "cutting_angle_mode": {
         "name": "Cutting path angle mode",
         "state": {
-          "relative_angle": "Relative angle",
-          "absolute_angle": "Absolute angle",
-          "random_angle": "Random angle"
+          "relative_angle": "Optimal",
+          "absolute_angle": "North",
+          "random_angle": "Random"
         }
       }
     },
@@ -289,9 +289,9 @@
     },
     "toward_mode": {
       "options": {
-        "0": "Relative angle",
-        "1": "Absolute angle",
-        "2": "Random angle"
+        "0": "Optimal",
+        "1": "North",
+        "2": "Random"
       }
     },
     "mowing_laps": {
