@@ -20,7 +20,11 @@ body:
       options:
         - Luba 1
         - Luba 2
+        - Luba 2x
+        - Luba mini
         - Yuka
+        - Yuka 2
+        - Yuka mini
   - type: input
     id: intergration_version
     validations:
