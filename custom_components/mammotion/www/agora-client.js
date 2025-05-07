@@ -5,6 +5,16 @@ class CameraAgoraCard extends HTMLElement {
   _client = null;
   _isPlaying = false;
   _isConnecting = false;
+  _connectionCheckInterval = null;
+  
+  // Add camera tracking variables as class properties
+  _remoteUsers = [];
+  _currentVideoIndex = 0;
+  _cameras = {
+    1: "Left Camera",  
+    2: "Right Camera",
+    3: "Rear Camera"
+  };
 
   // Required method for Home Assistant cards
   setConfig(config) {
@@ -82,6 +92,12 @@ class CameraAgoraCard extends HTMLElement {
         align-items: center;
         color: white;
       }
+      .camera-label {
+        font-family: Arial, sans-serif;
+        z-index: 10;
+        user-select: none;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      }
     `;
     
     const card = document.createElement('ha-card');
@@ -103,6 +119,9 @@ class CameraAgoraCard extends HTMLElement {
           <button id="fullscreen-button" class="control-button">
             <svg viewBox="0 0 24 24"><path d="M5,5H10V7H7V10H5V5M19,5V10H17V7H14V5H19M5,19V14H7V17H10V19H5M19,19H14V17H17V14H19V19Z" /></svg>
           </button>
+          <button id="switch-video-button" class="control-button" style="display: none;">
+            <svg viewBox="0 0 24 24"><path d="M19,8L15,12H18C18,15.31 15.31,18 12,18C11,18 10.03,17.75 9.2,17.3L7.74,18.76C8.97,19.54 10.43,20 12,20C16.42,20 20,16.42 20,12H23L19,8M6,12C6,8.69 8.69,6 12,6C13,6 13.97,6.25 14.8,6.7L16.26,5.24C15.03,4.46 13.57,4 12,4C7.58,4 4,7.58 4,12H1L5,16L9,12H6Z" /></svg>
+          </button>
         </div>
       </div>
     `;
@@ -116,6 +135,7 @@ class CameraAgoraCard extends HTMLElement {
     this.shadowRoot.getElementById('play-button').addEventListener('click', () => this._playVideo());
     this.shadowRoot.getElementById('pause-button').addEventListener('click', () => this._stopVideo());
     this.shadowRoot.getElementById('fullscreen-button').addEventListener('click', () => this._toggleFullscreen());
+    this.shadowRoot.getElementById('switch-video-button').addEventListener('click', () => this._switchCamera());
   }
 
   // Method called when Home Assistant updates the state
@@ -198,13 +218,17 @@ class CameraAgoraCard extends HTMLElement {
     
     try {
       const entityId = this._config.entity;
-      
+      const switchVideoButton = this.shadowRoot.getElementById('switch-video-button');
+      const videoContainer = this.shadowRoot.getElementById('agora-video');
+
+      // Recover preferred camera (if exists)
+      const savedCameraUid = localStorage.getItem('preferredMammotionCameraUid');
+      let preferredCameraIndex = null;
+
       // Update tokens and start streaming
       await this._hass.callService('mammotion', 'refresh_stream', { entity_id: entityId });
       await this._hass.callService('mammotion', 'start_video', { entity_id: entityId });
       const { response } = await this._hass.callService('mammotion', 'get_tokens', { entity_id: entityId, return_response: true }, {}, true, true);
-
-      const videoContainer = this.shadowRoot.getElementById('agora-video');
 
       const clientConfig = {
         mode: 'live',
@@ -226,7 +250,30 @@ class CameraAgoraCard extends HTMLElement {
         if (mediaType === 'video') {
           // Hide loading when video starts playing
           this._hideLoading();
-          user.videoTrack.play(videoContainer);
+
+          // Add user to array if not already present
+          if (!this._remoteUsers.some(u => u.uid === user.uid)) {
+            this._remoteUsers.push(user);
+            
+            // If this is the saved preferred camera, set index
+            if (savedCameraUid && user.uid.toString() === savedCameraUid) {
+              preferredCameraIndex = this._remoteUsers.length - 1;
+            }
+          }
+          
+          // Show switch button if more than one video
+          if (this._remoteUsers.length > 1) {
+            switchVideoButton.style.display = 'block';
+          }
+          
+          // Set to preferred camera if found
+          if (preferredCameraIndex !== null) {
+            this._currentVideoIndex = preferredCameraIndex;
+            preferredCameraIndex = null; // Reset after use
+          }
+          
+          // Display current video
+          this._showCurrentVideo();
         }
         if (mediaType === "audio") {
           user.audioTrack.play();
@@ -246,8 +293,30 @@ class CameraAgoraCard extends HTMLElement {
       });
 
       client.on("user-unpublished", (user, mediaType) => {
-        if (mediaType === "video") {
-          this._showLoading("Video stream ended.");
+        if (mediaType === 'video') {
+          // Remove user from array
+          const index = this._remoteUsers.findIndex(u => u.uid === user.uid);
+          if (index > -1) {
+            this._remoteUsers.splice(index, 1);
+          }
+          
+          // Update current index if needed
+          if (this._currentVideoIndex >= this._remoteUsers.length && this._remoteUsers.length > 0) {
+            this._currentVideoIndex = 0;
+          }
+          
+          // Hide switch button if only one video
+          if (this._remoteUsers.length <= 1) {
+            switchVideoButton.style.display = 'none';
+          }
+
+          if (this._remoteUsers.length <= 0) {
+            this._showLoading("Video stream end");
+            return;
+          }
+            
+          // Display current video
+          this._showCurrentVideo();
         }
       });
 
@@ -282,6 +351,57 @@ class CameraAgoraCard extends HTMLElement {
       this._showLoading(`Connection error. Click play to retry.`);
     }
   }
+
+  // Switch camera
+  _switchCamera() {
+    this._currentVideoIndex = (this._currentVideoIndex + 1) % this._remoteUsers.length;
+    this._showCurrentVideo();
+  }
+
+  // Function to display only the current video
+  _showCurrentVideo() {
+    const videoContainer = this.shadowRoot.getElementById('agora-video');
+    const loadingElement = this.shadowRoot.getElementById('loading');
+    
+    // Clear container (but keep loading overlay)
+    videoContainer.innerHTML = '';
+    videoContainer.appendChild(loadingElement);
+    
+    // If there are users with video
+    if (this._remoteUsers.length > 0) {
+      const currentUser = this._remoteUsers[this._currentVideoIndex];
+      
+      // Create div for current video
+      const userVideoDiv = document.createElement('div');
+      userVideoDiv.id = `user-${currentUser.uid}`;
+      userVideoDiv.style.width = '100%';
+      userVideoDiv.style.height = '100%';
+      videoContainer.appendChild(userVideoDiv);
+      
+      // Create camera name label
+      const cameraLabel = document.createElement('div');
+      cameraLabel.className = 'camera-label';
+      cameraLabel.textContent = this._cameras[currentUser.uid] || `Camera ${currentUser.uid}`;
+      cameraLabel.style.position = 'absolute';
+      cameraLabel.style.bottom = '10px';
+      cameraLabel.style.right = '10px';
+      cameraLabel.style.background = 'rgba(0, 0, 0, 0.6)';
+      cameraLabel.style.color = 'white';
+      cameraLabel.style.padding = '4px 8px';
+      cameraLabel.style.borderRadius = '4px';
+      cameraLabel.style.fontSize = '12px';
+      videoContainer.appendChild(cameraLabel);
+      
+      // Save current camera preference
+      localStorage.setItem('preferredMammotionCameraUid', currentUser.uid.toString());
+      
+      // Play the video
+      currentUser.videoTrack.play(userVideoDiv);
+    } else {
+      // If no videos, show loading
+      this._showLoading("Loading...");
+    }
+  }
   
   // Start periodic connection check
   _startConnectionCheck() {
@@ -308,12 +428,44 @@ class CameraAgoraCard extends HTMLElement {
         clearInterval(this._connectionCheckInterval);
       }
       
+      // Clean up video tracks for each remote user before leaving
+      if (this._remoteUsers.length > 0) {
+        for (const user of this._remoteUsers) {
+          if (user.videoTrack) {
+            user.videoTrack.stop();
+            user.videoTrack.close();
+          }
+          if (user.audioTrack) {
+            user.audioTrack.stop();
+            user.audioTrack.close();
+          }
+        }
+      }
+      
+      // Clear remote users array
+      this._remoteUsers = [];
+      
+      // Reset switch button
+      const switchVideoButton = this.shadowRoot.getElementById('switch-video-button');
+      if (switchVideoButton) {
+        switchVideoButton.style.display = 'none';
+      }
+      
       if (this._client) {
         await this._client.leave();
+        this._client = null;
       }
       
       this._isPlaying = false;
       this._isConnecting = false;
+      
+      // Clean up video container
+      const videoContainer = this.shadowRoot.getElementById('agora-video');
+      const loadingElement = this.shadowRoot.getElementById('loading');
+      if (videoContainer && loadingElement) {
+        videoContainer.innerHTML = '';
+        videoContainer.appendChild(loadingElement);
+      }
       
       if (this._hass && this._config && this._config.entity) {
         await this._hass.callService('mammotion', 'stop_video', { entity_id: this._config.entity });
