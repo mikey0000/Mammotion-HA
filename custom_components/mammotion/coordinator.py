@@ -133,7 +133,8 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         else:
             if device.has_cloud():
                 await device.cloud().stop()
-                device.cloud().mqtt.disconnect()
+                if device.cloud().mqtt.is_connected():
+                    device.cloud().mqtt.disconnect()
             if device.has_ble():
                 await device.ble().stop()
 
@@ -452,6 +453,8 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         device = self.manager.get_device_by_name(self.device_name)
 
         if not device.mower_state.enabled or not device.mower_state.online:
+            if not device.mower_state.enabled and device.cloud().mqtt.is_connected():
+                device.cloud().mqtt.disconnect()
             return self.data
 
         # don't query the mower while users are doing map changes or its updating.
