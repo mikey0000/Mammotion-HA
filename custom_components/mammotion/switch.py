@@ -146,8 +146,8 @@ async def async_setup_entry(
             config_entity = MammotionUpdateSwitchEntity(coordinator, entity_description)
             entities.append(config_entity)
 
-        if DeviceType.is_yuka(coordinator.device_name) and not DeviceType.is_yuka_mini(
-            coordinator.device_name
+        if DeviceType.is_yuka(mower.device.deviceName) and not DeviceType.is_yuka_mini(
+            mower.device.deviceName
         ):
             for entity_description in YUKA_CONFIG_SWITCH_ENTITIES:
                 config_entity = MammotionConfigSwitchEntity(
