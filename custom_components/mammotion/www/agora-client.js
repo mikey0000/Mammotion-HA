@@ -21,7 +21,12 @@ class CameraAgoraCard extends HTMLElement {
     if (!config.entity) {
       throw new Error("You need to specify an entity");
     }
-    this._config = config;
+
+    //Define custom parameters
+    this._config = {
+      ...config,
+      autostart: config.autostart !== undefined ? config.autostart : false
+    };
     
     // Prepare shadow DOM container
     this.attachShadow({ mode: 'open' });
@@ -173,8 +178,14 @@ class CameraAgoraCard extends HTMLElement {
         return;
       }
       
-      // Start playback immediately
-      this._playVideo();
+      if(this._config.autostart)
+      {
+        // Start playback immediately
+        this._playVideo();
+      }
+      else
+        this._showLoading("Press play to start video stream");
+      
     } catch (error) {
       console.error("Error initializing Agora:", error);
       this._showError(`Error: ${error.message}`);
