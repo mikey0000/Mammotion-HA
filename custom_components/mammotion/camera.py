@@ -185,12 +185,7 @@ async def async_setup_platform_services(
             if not stream_data or stream_data.data is None:
                 return {}
             # Return all the data needed for the Agora SDK
-            return {
-                "appId": stream_data.data.get("appid", ""),
-                "channelName": stream_data.data.get("channelName", ""),
-                "uid": stream_data.data.get("uid", ""),
-                "token": stream_data.data.get("token", ""),
-            }
+            return stream_data.data
         return {}
 
     hass.services.async_register("mammotion", "refresh_stream", handle_refresh_stream)
