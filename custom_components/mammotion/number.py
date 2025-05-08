@@ -152,13 +152,15 @@ async def async_setup_entry(
             )
             entities.append(entity)
 
-        if DeviceType.is_yuka(mower.device.deviceName):
+        if DeviceType.is_yuka(mower.device.deviceName) and not DeviceType.is_yuka_mini(
+            mower.device.deviceName
+        ):
             for entity_description in YUKA_NUMBER_ENTITIES:
                 entity = MammotionConfigNumberEntity(
                     mower.reporting_coordinator, entity_description
                 )
                 entities.append(entity)
-        else:
+        if not DeviceType.is_yuka(mower.device.deviceName):
             for entity_description in LUBA_WORKING_ENTITIES:
                 entity = MammotionWorkingNumberEntity(
                     mower.reporting_coordinator, entity_description, limits

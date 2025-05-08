@@ -131,7 +131,7 @@
         "name": "Synchronizace mapy"
       },
       "join_webrtc": {
-        "name": "Start camera on mower"
+        "name": "Spustit kameru"
       },
       "resync_rtk_dock": {
         "name": "Synchronizace RTK a dokovací stanice"
