@@ -322,7 +322,7 @@ class CameraAgoraCard extends HTMLElement {
 
       client.setClientRole("host");
 
-      console.log("App ID: " + response.appId);
+      console.log("App ID: " + response.appid);
       console.log("App Channel: " + response.channelName);
       console.log("App Token: " + response.token);
       console.log("App UID: " + response.uid);
@@ -335,7 +335,7 @@ class CameraAgoraCard extends HTMLElement {
         }
       }, 20000);
 
-      await client.join(response.appId, response.channelName, response.token, parseInt(response.uid));
+      await client.join(response.appid, response.channelName, response.token, parseInt(response.uid));
       clearTimeout(connectionTimeout);
       
       this._client = client;
