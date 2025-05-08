@@ -1,9 +1,6 @@
-import logging
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Awaitable
-
-_LOGGER = logging.getLogger(__name__)
 
 from homeassistant.components.select import SelectEntity, SelectEntityDescription
 from homeassistant.const import EntityCategory
@@ -253,8 +250,8 @@ class MammotionConfigSelectEntity(MammotionBaseEntity, SelectEntity, RestoreEnti
                     option = self.entity_description.value_map[value]
                     if option in self.entity_description.options:
                         self._attr_current_option = option
-            except Exception as e:
-                _LOGGER.debug("Error retrieving value from device: %s", e)
+            except (AttributeError, KeyError, TypeError):
+                pass
 
     @property
     def current_option(self) -> str:
@@ -317,8 +314,8 @@ class MammotionAsyncConfigSelectEntity(
                     option = self.entity_description.value_map[value]
                     if option in self.entity_description.options:
                         self._attr_current_option = option
-            except Exception as e:
-                _LOGGER.debug("Error retrieving value from device: %s", e)
+            except (AttributeError, KeyError, TypeError):
+                pass
 
     @property
     def current_option(self) -> str:

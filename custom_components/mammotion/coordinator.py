@@ -304,16 +304,8 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
 
     async def async_blade_height(self, height: int) -> int:
         """Set blade height."""
-        # Check if device is online before sending command
-        if self.device_is_online():
-            await self.async_send_command("set_blade_height", height=height)
+        await self.async_send_command("set_blade_height", height=height)
         return height
-        
-    def device_is_online(self) -> bool:
-        """Check if the device is online before sending commands."""
-        if hasattr(self, 'data') and self.data is not None:
-            return getattr(self.data, 'online', False)
-        return False
 
     async def async_leave_dock(self) -> None:
         """Leave dock."""
