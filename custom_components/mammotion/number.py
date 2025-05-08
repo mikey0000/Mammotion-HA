@@ -1,3 +1,4 @@
+import asyncio
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 
@@ -196,8 +197,10 @@ class MammotionConfigNumberEntity(MammotionBaseEntity, RestoreNumber):
         self.entity_description.set_fn(self.coordinator, value)
         
         if self.entity_description.update_fn is not None:
+            # Always store the result in case it's a coroutine
             result = self.entity_description.update_fn(self.coordinator, value)
-            if result is not None and hasattr(result, "__await__"):
+            # Check if it's awaitable
+            if asyncio.iscoroutine(result):
                 await result
         # If this is blade height and no update_fn is defined, directly set it on the device
         elif self.entity_description.key == "blade_height":
