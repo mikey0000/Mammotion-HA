@@ -187,6 +187,98 @@ async def async_setup_platform_services(
             # Return all the data needed for the Agora SDK
             return stream_data.data
         return {}
+    
+    async def handle_move_forward(call) -> None:
+        entity_id = call.data["entity_id"]
+    
+        # Check if speed parameter exists and validate it
+        speed = 0.4  # Default speed
+        if "speed" in call.data:
+            try:
+                speed_value = float(call.data["speed"])
+                if 0.1 <= speed_value <= 1:
+                    speed = speed_value
+                else:
+                    _LOGGER.warning(
+                        f"Invalid speed value for {entity_id}: {speed_value}. Must be between 0 and 1. Using default."
+                    )
+            except (ValueError, TypeError):
+                _LOGGER.warning(
+                    f"Invalid speed format for {entity_id}: {call.data['speed']}. Must be a number. Using default."
+                )
+        
+        mower: MammotionMowerData = _get_mower_by_entity_id(entity_id)
+        if mower:
+            await mower.reporting_coordinator.async_move_forward(speed=speed)
+    
+    async def handle_move_left(call) -> None:
+        entity_id = call.data["entity_id"]
+    
+        # Check if speed parameter exists and validate it
+        speed = 0.4  # Default speed
+        if "speed" in call.data:
+            try:
+                speed_value = float(call.data["speed"])
+                if 0.1 <= speed_value <= 1:
+                    speed = speed_value
+                else:
+                    _LOGGER.warning(
+                        f"Invalid speed value for {entity_id}: {speed_value}. Must be between 0 and 1. Using default."
+                    )
+            except (ValueError, TypeError):
+                _LOGGER.warning(
+                    f"Invalid speed format for {entity_id}: {call.data['speed']}. Must be a number. Using default."
+                )
+        
+        mower: MammotionMowerData = _get_mower_by_entity_id(entity_id)
+        if mower:
+            await mower.reporting_coordinator.async_move_left(speed=speed)
+
+    async def handle_move_right(call) -> None:
+        entity_id = call.data["entity_id"]
+    
+        # Check if speed parameter exists and validate it
+        speed = 0.4  # Default speed
+        if "speed" in call.data:
+            try:
+                speed_value = float(call.data["speed"])
+                if 0.1 <= speed_value <= 1:
+                    speed = speed_value
+                else:
+                    _LOGGER.warning(
+                        f"Invalid speed value for {entity_id}: {speed_value}. Must be between 0 and 1. Using default."
+                    )
+            except (ValueError, TypeError):
+                _LOGGER.warning(
+                    f"Invalid speed format for {entity_id}: {call.data['speed']}. Must be a number. Using default."
+                )
+        
+        mower: MammotionMowerData = _get_mower_by_entity_id(entity_id)
+        if mower:
+            await mower.reporting_coordinator.async_move_right(speed=speed)
+    
+    async def handle_move_backward(call) -> None:
+        entity_id = call.data["entity_id"]
+    
+        # Check if speed parameter exists and validate it
+        speed = 0.4  # Default speed
+        if "speed" in call.data:
+            try:
+                speed_value = float(call.data["speed"])
+                if 0.1 <= speed_value <= 1:
+                    speed = speed_value
+                else:
+                    _LOGGER.warning(
+                        f"Invalid speed value for {entity_id}: {speed_value}. Must be between 0 and 1. Using default."
+                    )
+            except (ValueError, TypeError):
+                _LOGGER.warning(
+                    f"Invalid speed format for {entity_id}: {call.data['speed']}. Must be a number. Using default."
+                )
+        
+        mower: MammotionMowerData = _get_mower_by_entity_id(entity_id)
+        if mower:
+            await mower.reporting_coordinator.async_move_back(speed=speed)
 
     hass.services.async_register("mammotion", "refresh_stream", handle_refresh_stream)
     hass.services.async_register("mammotion", "start_video", handle_start_video)
@@ -197,3 +289,7 @@ async def async_setup_platform_services(
         handle_get_tokens,
         supports_response=SupportsResponse.ONLY,
     )
+    hass.services.async_register("mammotion", "move_forward", handle_move_forward)
+    hass.services.async_register("mammotion", "move_left", handle_move_left)
+    hass.services.async_register("mammotion", "move_right", handle_move_right)
+    hass.services.async_register("mammotion", "move_backward", handle_move_backward)
