@@ -31,15 +31,19 @@ class MammotionConfigSelectEntityDescription(SelectEntityDescription):
     key: str
     options: list[str]
     set_fn: Callable[[MammotionBaseUpdateCoordinator, str], None]
+    get_fn: Callable[[MammotionBaseUpdateCoordinator], int | None] = None
+    value_map: dict[int, str] = None
 
 
 @dataclass(frozen=True, kw_only=True)
-class MammotionAsyncConfigSelectEntityDescription(MammotionBaseEntity, SelectEntity):
+class MammotionAsyncConfigSelectEntityDescription(SelectEntityDescription):
     """Describes Mammotion select entity with async functionality."""
 
     key: str
     options: list[str]
     set_fn: Callable[[MammotionBaseUpdateCoordinator, str], Awaitable[None]]
+    get_fn: Callable[[MammotionBaseUpdateCoordinator], int | None] = None
+    value_map: dict[int, str] = None
 
 
 ASYNC_SELECT_ENTITIES: tuple[MammotionAsyncConfigSelectEntityDescription, ...] = (
@@ -49,6 +53,8 @@ ASYNC_SELECT_ENTITIES: tuple[MammotionAsyncConfigSelectEntityDescription, ...] =
         set_fn=lambda coordinator, value: coordinator.set_traversal_mode(
             TraversalMode[value].value
         ),
+        get_fn=lambda coordinator: coordinator.data.report_data.work.traversal_mode,
+        value_map={mode.value: mode.name for mode in TraversalMode},
     ),
     MammotionAsyncConfigSelectEntityDescription(
         key="turning_mode",
@@ -56,6 +62,8 @@ ASYNC_SELECT_ENTITIES: tuple[MammotionAsyncConfigSelectEntityDescription, ...] =
         set_fn=lambda coordinator, value: coordinator.set_turning_mode(
             TurningMode[value].value
         ),
+        get_fn=lambda coordinator: coordinator.data.report_data.work.turning_mode,
+        value_map={mode.value: mode.name for mode in TurningMode},
     ),
 )
 
@@ -67,6 +75,8 @@ SELECT_ENTITIES: tuple[MammotionConfigSelectEntityDescription, ...] = (
         set_fn=lambda coordinator, value: setattr(
             coordinator.operation_settings, "channel_mode", CuttingMode[value].value
         ),
+        get_fn=lambda coordinator: coordinator.data.report_data.work.plan.route.channel_mode,
+        value_map={mode.value: mode.name for mode in CuttingMode},
     ),
     MammotionConfigSelectEntityDescription(
         key="mowing_laps",
@@ -74,6 +84,8 @@ SELECT_ENTITIES: tuple[MammotionConfigSelectEntityDescription, ...] = (
         set_fn=lambda coordinator, value: setattr(
             coordinator.operation_settings, "mowing_laps", BorderPatrolMode[value].value
         ),
+        get_fn=lambda coordinator: coordinator.data.report_data.work.plan.route.edge_mode,
+        value_map={mode.value: mode.name for mode in BorderPatrolMode},
     ),
     MammotionConfigSelectEntityDescription(
         key="obstacle_laps",
@@ -83,6 +95,8 @@ SELECT_ENTITIES: tuple[MammotionConfigSelectEntityDescription, ...] = (
             "obstacle_laps",
             ObstacleLapsMode[value].value,
         ),
+        get_fn=lambda coordinator: coordinator.data.report_data.work.plan.route.obstacle_laps,
+        value_map={mode.value: mode.name for mode in ObstacleLapsMode},
     ),
     MammotionConfigSelectEntityDescription(
         key="border_mode",
@@ -90,6 +104,8 @@ SELECT_ENTITIES: tuple[MammotionConfigSelectEntityDescription, ...] = (
         set_fn=lambda coordinator, value: setattr(
             coordinator.operation_settings, "border_mode", MowOrder[value].value
         ),
+        get_fn=lambda coordinator: coordinator.data.report_data.work.plan.route.job_mode,
+        value_map={order.value: order.name for order in MowOrder},
     ),
 )
 
@@ -104,6 +120,12 @@ LUBA1_SELECT_ENTITIES: tuple[MammotionConfigSelectEntityDescription, ...] = (
         set_fn=lambda coordinator, value: setattr(
             coordinator.operation_settings, "toward_mode", PathAngleSetting[value].value
         ),
+        get_fn=lambda coordinator: coordinator.data.report_data.work.plan.route.toward_mode,
+        value_map={
+            angle_type.value: angle_type.name
+            for angle_type in PathAngleSetting
+            if angle_type != PathAngleSetting.random_angle
+        },
     ),
     MammotionConfigSelectEntityDescription(
         key="bypass_mode",
@@ -115,6 +137,12 @@ LUBA1_SELECT_ENTITIES: tuple[MammotionConfigSelectEntityDescription, ...] = (
         set_fn=lambda coordinator, value: setattr(
             coordinator.operation_settings, "ultra_wave", DetectionStrategy[value].value
         ),
+        get_fn=lambda coordinator: coordinator.data.report_data.work.plan.route.ultra_wave,
+        value_map={
+            strategy.value: strategy.name
+            for strategy in DetectionStrategy
+            if strategy != DetectionStrategy.no_touch
+        },
     ),
 )
 
@@ -125,6 +153,8 @@ LUBA_PRO_SELECT_ENTITIES: tuple[MammotionConfigSelectEntityDescription, ...] = (
         set_fn=lambda coordinator, value: setattr(
             coordinator.operation_settings, "toward_mode", PathAngleSetting[value].value
         ),
+        get_fn=lambda coordinator: coordinator.data.report_data.work.plan.route.toward_mode,
+        value_map={angle_type.value: angle_type.name for angle_type in PathAngleSetting},
     ),
     MammotionConfigSelectEntityDescription(
         key="bypass_mode",
@@ -132,6 +162,8 @@ LUBA_PRO_SELECT_ENTITIES: tuple[MammotionConfigSelectEntityDescription, ...] = (
         set_fn=lambda coordinator, value: setattr(
             coordinator.operation_settings, "ultra_wave", DetectionStrategy[value].value
         ),
+        get_fn=lambda coordinator: coordinator.data.report_data.work.plan.route.ultra_wave,
+        value_map={strategy.value: strategy.name for strategy in DetectionStrategy},
     ),
 )
 
@@ -200,7 +232,32 @@ class MammotionConfigSelectEntity(MammotionBaseEntity, SelectEntity, RestoreEnti
         self._attr_translation_key = entity_description.key
         self._attr_options = entity_description.options
         self._attr_current_option = entity_description.options[0]
+        
+        # Try to get the actual value from the device if available
+        self._update_current_option_from_device()
         self.entity_description.set_fn(self.coordinator, self._attr_current_option)
+
+    def _update_current_option_from_device(self) -> None:
+        """Update current option from device data if available."""
+        if (
+            self.entity_description.get_fn is not None 
+            and self.entity_description.value_map is not None
+            and self.coordinator.data is not None
+        ):
+            try:
+                value = self.entity_description.get_fn(self.coordinator)
+                if value is not None and value in self.entity_description.value_map:
+                    option = self.entity_description.value_map[value]
+                    if option in self.entity_description.options:
+                        self._attr_current_option = option
+            except (AttributeError, KeyError, TypeError):
+                pass
+
+    @property
+    def current_option(self) -> str:
+        """Return the current selected option."""
+        self._update_current_option_from_device()
+        return self._attr_current_option
 
     async def async_select_option(self, option: str) -> None:
         self._attr_current_option = option
@@ -239,8 +296,32 @@ class MammotionAsyncConfigSelectEntity(
         self.entity_description = entity_description
         self._attr_translation_key = entity_description.key
         self._attr_options = entity_description.options
-        # TODO get this value from the mower
         self._attr_current_option = entity_description.options[0]
+        
+        # Try to get the actual value from the device if available
+        self._update_current_option_from_device()
+
+    def _update_current_option_from_device(self) -> None:
+        """Update current option from device data if available."""
+        if (
+            self.entity_description.get_fn is not None 
+            and self.entity_description.value_map is not None
+            and self.coordinator.data is not None
+        ):
+            try:
+                value = self.entity_description.get_fn(self.coordinator)
+                if value is not None and value in self.entity_description.value_map:
+                    option = self.entity_description.value_map[value]
+                    if option in self.entity_description.options:
+                        self._attr_current_option = option
+            except (AttributeError, KeyError, TypeError):
+                pass
+
+    @property
+    def current_option(self) -> str:
+        """Return the current selected option."""
+        self._update_current_option_from_device()
+        return self._attr_current_option
 
     async def async_select_option(self, option: str) -> None:
         self._attr_current_option = option
