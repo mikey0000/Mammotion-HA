@@ -1,7 +1,7 @@
 {
   "config": {
     "abort": {
-      "already_configured": "Naprava je že konfigurirana",
+      "already_configured": "Naprava je že nastavljena",
       "already_in_progress": "Konfiguracija poteka",
       "no_devices_found": "Ne morem najti naprav",
       "no_devices_found_in_account": "V vašem računu ni naprav",
@@ -131,7 +131,7 @@
         "name": "Sinhronizacija zemljevidov"
       },
       "join_webrtc": {
-        "name": "Start camera on mower"
+        "name": "Vklopi kamero na kosilnici"
       },
       "resync_rtk_dock": {
         "name": "Sinhronizacija položaja RTK in polnilne postaje"
@@ -235,7 +235,7 @@
         }
       },
       "cutting_angle_mode": {
-        "name": "Način prečkanja poti",
+        "name": "Način poti rezanja",
         "state": {
           "relative_angle": "Relativni kot",
           "absolute_angle": "Absolutni kot",
@@ -268,7 +268,7 @@
         "name": "Hitrost košnje"
       },
       "cutting_angle": {
-        "name": "Kot prečkanja"
+        "name": "Kot poti rezanja"
       },
       "path_spacing": {
         "name": "Razmik poti"
