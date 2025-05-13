@@ -1,0 +1,458 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "Enheden er allerede konfigureret",
+      "already_in_progress": "Konfigurationsforløbet er allerede i gang",
+      "no_devices_found": "Kunne ikke finde enheder",
+      "no_devices_found_in_account": "Ingen enheder er tilknyttet din konto",
+      "bluetooth_and_account_mismatch": "Bluetooth-enhed blev ikke fundet på din konto",
+      "no_longer_present": "Enheden er ikke længere til stede",
+      "not_supported": "Enheden understøttes ikke",
+      "reconfigure_successful": "Omkonfiguration lykkedes"
+    },
+    "flow_title": "Konfigurer din Mammotion robotplæneklipper",
+    "step": {
+      "bluetooth_confirm": {
+        "description": "Opsætning af {name}",
+        "data": {
+          "stay_connected_bluetooth": "Hold Bluetooth-forbindelsen"
+        }
+      },
+      "reconfigure": {
+        "data": {
+          "use_wifi": "Brug Wi-fi",
+          "account_name": "Mammotion e-mail eller kontonummer",
+          "password": "Mammotion adgangskode"
+        }
+      },
+      "user": {
+        "data": {
+          "address": "Enhed",
+          "stay_connected_bluetooth": "Hold Bluetooth-forbindelsen"
+        },
+        "description": "Vælg din plæneklipper"
+      },
+      "wifi": {
+        "data": {
+          "use_wifi": "Brug Wi-Fi (fjern markeringen, for at bruge Bluetooth)",
+          "account_name": "Mammotion e-mail eller kontonummer",
+          "password": "Mammotion adgangskode"
+        },
+        "title": "Opret forbindelse til Wi-Fi",
+        "description": "Indtast din Mammotion e-mail eller -id og adgangskode"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "title": "Opdater konfiguration",
+          "stay_connected_bluetooth": "Hold Bluetooth-forbindelsen"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "battery_percent": {
+        "name": "Batteri"
+      },
+      "ble_rssi": {
+        "name": "BLE RSSI"
+      },
+      "camera_brightness": {
+        "name": "Kamera lysstyrke"
+      },
+      "wifi_rssi": {
+        "name": "WiFi RSSI"
+      },
+      "mnet_rssi": {
+        "name": "Mobile RSSI"
+      },
+      "connect_type": {
+        "name": "Forbindelse"
+      },
+      "gps_stars": {
+        "name": "Satellitter (Robot)"
+      },
+      "blade_height": {
+        "name": "Klinge højde"
+      },
+      "area": {
+        "name": "Område"
+      },
+      "mowing_speed": {
+        "name": "Klippehastighed"
+      },
+      "progress": {
+        "name": "Fremskridt"
+      },
+      "total_time": {
+        "name": "Total tid"
+      },
+      "elapsed_time": {
+        "name": "Forløbet tid"
+      },
+      "left_time": {
+        "name": "Tid tilbage"
+      },
+      "l1_satellites": {
+        "name": "L1-satellitter (Samtidig visning)"
+      },
+      "l2_satellites": {
+        "name": "L2-satellitter (Samtidig visning)"
+      },
+      "position_mode": {
+        "name": "RTK position"
+      },
+      "position_type": {
+        "name": "Enhedspositionstype"
+      },
+      "activity_mode": {
+        "name": "Aktivitetstilstand"
+      },
+      "work_area": {
+        "name": "Arbejdsområde"
+      },
+      "maintenance_distance": {
+        "name": "Samlet kilometertal"
+      },
+      "maintenance_work_time": {
+        "name": "Opgavens varighed"
+      },
+      "maintenance_bat_cycles": {
+        "name": "Battericyklusser",
+        "unit_of_measurement": "Cyklusser"
+      }
+    },
+    "button": {
+      "start_map_sync": {
+        "name": "Synkroniser kort"
+      },
+      "join_webrtc": {
+        "name": "Start kameraet på plæneklipperen"
+      },
+      "resync_rtk_dock": {
+        "name": "Synkroniser RTK og ladestation"
+      },
+      "release_from_dock": {
+        "name": "Fradokke"
+      },
+      "emergency_nudge_forward": {
+        "name": "Nødskub fremad"
+      },
+      "emergency_nudge_left": {
+        "name": "Nødskub til venstre"
+      },
+      "emergency_nudge_right": {
+        "name": "Nødskub til højre"
+      },
+      "emergency_nudge_back": {
+        "name": "Nødskub bagud"
+      },
+      "cancel_task": {
+        "name": "Annuller nuværende opgave"
+      },
+      "clear_all_mapdata": {
+        "name": "Ryd kort og områdenavne"
+      }
+    },
+    "switch": {
+      "area": {
+        "name": "Område {name}"
+      },
+      "blade_status": {
+        "name": "Klinger til/fra"
+      },
+      "is_mow": {
+        "name": "Klipning til/fra"
+      },
+      "is_dump": {
+        "name": "Tøm græs til/fra"
+      },
+      "is_edge": {
+        "name": "Kantklipning"
+      },
+      "rain_tactics": {
+        "name": "Regnregistrering til/fra"
+      },
+      "side_led": {
+        "name": "Side LED til/fra"
+      },
+      "perimeter_first_on_off": {
+        "name": "Kantklippning først"
+      },
+      "schedule_updates": {
+        "name": "Slå opdateringer til/fra"
+      }
+    },
+    "select": {
+      "channel_mode": {
+        "name": "Klippebanetilstand",
+        "state": {
+          "single_grid": "Zigzag bane",
+          "double_grid": "Skakbræts bane",
+          "segment_grid": "Adaptiv Zigzag bane",
+          "no_grid": "Kun kantklippning"
+        }
+      },
+      "mowing_laps": {
+        "name": "Omgange af kantklippning",
+        "state": {
+          "none": "Ingen",
+          "one": "En",
+          "two": "To",
+          "three": "Tre",
+          "four": "Fire"
+        }
+      },
+      "obstacle_laps": {
+        "name": "No-go Zone Klipning Omgange",
+        "state": {
+          "none": "Ingen",
+          "one": "En",
+          "two": "To",
+          "three": "Tre",
+          "four": "Fire"
+        }
+      },
+      "border_mode": {
+        "name": "Klipningsrækkefølge",
+        "state": {
+          "border_first": "Kantklippning først",
+          "grid_first": "Zigzag / skakbræt først"
+        }
+      },
+      "bypass_mode": {
+        "name": "Forhindringsundgåelsestilstand",
+        "state": {
+          "direct_touch": "Direkte berøring",
+          "slow_touch": "Langsom berøring",
+          "less_touch": "Mindre berøring",
+          "no_touch": "Ingen berøring",
+          "sensitive": "Følsom"
+        }
+      },
+      "cutting_angle_mode": {
+        "name": "Klippebanevinkel tilstand",
+        "state": {
+          "relative_angle": "Optimal",
+          "absolute_angle": "Nord",
+          "random_angle": "Tilfældig"
+        }
+      },
+      "traversal_mode": {
+        "name": "Gennemgangstilstand",
+        "state": {
+          "direct": "Direkte",
+          "follow_perimeter": "Følg kanten"
+        }
+      },
+      "turning_mode": {
+        "name": "Vende-tilstand",
+        "state": {
+          "multipoint": "Multipunkt vending",
+          "zero_turn": "Nul vending"
+        }
+      }
+    },
+    "number": {
+      "start_progress": {
+        "name": "Start forløb på"
+      },
+      "blade_height": {
+        "name": "Klinge højde"
+      },
+      "working_speed": {
+        "name": "Arbejdshastighed"
+      },
+      "cutting_angle": {
+        "name": "Klippebanevinkel"
+      },
+      "path_spacing": {
+        "name": "Baneafstand"
+      },
+      "dumping_interval": {
+        "name": "Tømningsfrekvens"
+      },
+      "toward_included_angle": {
+        "name": "Krydsningsvinkel"
+      }
+    },
+    "device_tracker": {
+      "name": "Enhedssporing"
+    }
+  },
+  "selector": {
+    "border_mode": {
+      "options": {
+        "0": "Kantklippning først",
+        "1": "Zigzag / skakbræt først"
+      }
+    },
+    "ultra_wave": {
+      "options": {
+        "0": "Direkte berøring",
+        "1": "Langsom berøring",
+        "2": "Mindre berøring",
+        "10": "Ingen berøring",
+        "11": "Følsom"
+      }
+    },
+    "channel_mode": {
+      "options": {
+        "0": "Zigzag bane",
+        "1": "Skakbræts bane",
+        "2": "Adaptiv Zigzag bane",
+        "3": "Kun kantklippning"
+      }
+    },
+    "rain_tactics": {
+      "options": {
+        "0": "Fra",
+        "1": "Til"
+      }
+    },
+    "toward_mode": {
+      "options": {
+        "0": "Optimal",
+        "1": "Nord",
+        "2": "Tilfældig"
+      }
+    },
+    "mowing_laps": {
+      "options": {
+        "0": "Ingen",
+        "1": "En omgang",
+        "2": "To omgange",
+        "3": "Tre omgange",
+        "4": "Fire omgange"
+      }
+    },
+    "obstacle_laps": {
+      "options": {
+        "0": "Ingen",
+        "1": "En omgang",
+        "2": "To omgange",
+        "3": "Tre omgange",
+        "4": "Fire omgange"
+      }
+    }
+  },
+  "services": {
+    "cancel_job": {
+      "name": "Annuller nuværende opgave",
+      "description": "Stopper plæneklipperen og rydder den nuværende opgave."
+    },
+    "start_mow": {
+      "name": "Start klipning",
+      "description": "Start klippeoperationen med tilpassede indstillinger.",
+      "fields": {
+        "is_mow": {
+          "name": "Klipper",
+          "description": "Om klipning er aktiv. (Yuka)."
+        },
+        "is_dump": {
+          "name": "Tømmer",
+          "description": "Om græs tømming er aktiv. (Yuka)."
+        },
+        "is_edge": {
+          "name": "Kantklipning",
+          "description": "Om kantklipning er aktiv. (Yuka)."
+        },
+        "collect_grass_frequency": {
+          "name": "Hyppigheden af ​​græsopsamling",
+          "description": "Hyppigheden af ​​græsopsamling (i kvadratmeter). (Yuka)."
+        },
+        "border_mode": {
+          "name": "Klipningsrækkefølge",
+          "description": "Klippebane rækkefølge (Kant først eller gitter først)."
+        },
+        "job_version": {
+          "name": "Opgaveversion",
+          "description": "Opgaveversion."
+        },
+        "job_id": {
+          "name": "Opgave ID",
+          "description": "Opgave ID."
+        },
+        "speed": {
+          "name": "Hastighed",
+          "description": "Klippehastighed."
+        },
+        "ultra_wave": {
+          "name": "Forhindringsregistrering",
+          "description": "Forhindringsundgåelsestilstand."
+        },
+        "channel_mode": {
+          "name": "Klippebanetilstand",
+          "description": "Klippebane (zigzag, skakbræt, adaptiv zigzag eller kun kant)."
+        },
+        "channel_width": {
+          "name": "Banebredde",
+          "description": "Bredde på klippebanen (i cm)."
+        },
+        "rain_tactics": {
+          "name": "Regnregistrering ",
+          "description": "Regnregistrering."
+        },
+        "blade_height": {
+          "name": "Klinge højde",
+          "description": "Højde på Klinge."
+        },
+        "toward": {
+          "name": "Startbanevinkel",
+          "description": "Startretning for klipning."
+        },
+        "toward_included_angle": {
+          "name": "Krydsningsvinkel",
+          "description": "Når du vælger gitter, ændre den anden vinkel (standard er 90 grader)."
+        },
+        "toward_mode": {
+          "name": "Klippevinkeltilstand",
+          "description": "Vinkelretning for klipning."
+        },
+        "mowing_laps": {
+          "name": "Omgange af kantklippning",
+          "description": "Antal omgange rundt om klippeområdets kant."
+        },
+        "obstacle_laps": {
+          "name": "No-go Zone Klipning Omgange",
+          "description": "Antal omgange rundt om No-go Zones."
+        },
+        "start_progress": {
+          "name": "Start forløb på",
+          "description": "Start forløb procent."
+        },
+        "areas": {
+          "name": "Områdevalg",
+          "description": "Liste over områder, der skal klippes (repræsenteret som heltal)."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "device_not_ready": {
+      "message": "Enheden er ikke klar."
+    },
+    "pause_failed": {
+      "message": "Kunne ikke sætte plæneklipperen på pause."
+    },
+    "resume_failed": {
+      "message": "Kunne ikke genoptage plæneklipperen."
+    },
+    "start_failed": {
+      "message": "Kunne ikke starte plæneklipperen."
+    },
+    "dock_failed": {
+      "message": "Kunne ikke sende plæneklipperen til ladestationen."
+    },
+    "dock_cancel_failed": {
+      "message": "Kunne ikke stoppe plæneklipperen fra at vende tilbage til ladestationen."
+    },
+    "command_failed": {
+      "message": "Kunne ikke sende kommando til plæneklipperen."
+    }
+  }
+}

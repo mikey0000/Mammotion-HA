@@ -4,8 +4,8 @@
       "already_configured": "Zařízení je již nakonfigurováno",
       "already_in_progress": "Konfigurační proces již probíhá",
       "no_devices_found": "Nelze najít zařízení",
-      "no_devices_found_in_account": "V účtu nejsou žádná zařízení",
-      "bluetooth_and_account_mismatch": "V účtu nebylo nalezeno zařízení Bluetooth",
+      "no_devices_found_in_account": "Ve vašem účtu nejsou žádná zařízení",
+      "bluetooth_and_account_mismatch": "Zařízení Bluetooth nebylo ve vašem účtu nalezeno",
       "no_longer_present": "Zařízení již není k dispozici",
       "not_supported": "Zařízení není podporováno",
       "reconfigure_successful": "Rekonfigurace úspěšná"
@@ -22,7 +22,7 @@
         "data": {
           "use_wifi": "Použít Wi-Fi",
           "account_name": "Mammotion e-mail nebo číslo účtu",
-          "password": "Heslo k účtu Mammotion"
+          "password": "Mammotion heslo k účtu"
         }
       },
       "user": {
@@ -68,13 +68,13 @@
         "name": "WiFi RSSI"
       },
       "mnet_rssi": {
-        "name": "Kvalita mobilního signálu"
+        "name": "Mobilní signál RSSI"
       },
       "connect_type": {
         "name": "Připojení"
       },
       "gps_stars": {
-        "name": "Družice (Robot)"
+        "name": "Satelity (Robot)"
       },
       "blade_height": {
         "name": "Výška nože"
@@ -107,7 +107,7 @@
         "name": "Poloha RTK"
       },
       "position_type": {
-        "name": "Druh polohování zařízení"
+        "name": "Typ pozice zařízení"
       },
       "activity_mode": {
         "name": "Režim činnosti"
@@ -134,10 +134,10 @@
         "name": "Spustit kameru"
       },
       "resync_rtk_dock": {
-        "name": "Synchronizace RTK a dokovací stanice"
+        "name": "Synchronizovat RTK a dok"
       },
       "release_from_dock": {
-        "name": "Uvolnění z doku"
+        "name": "Odpojit z doku"
       },
       "emergency_nudge_forward": {
         "name": "Nouzové postrčení vpřed"
@@ -178,7 +178,7 @@
         "name": "Zapnutí/vypnutí detekce deště"
       },
       "side_led": {
-        "name": "Zapnutí/vypnutí boční LED"
+        "name": "Zapnout/vypnout boční světla"
       },
       "perimeter_first_on_off": {
         "name": "Nejprve obvod"
@@ -208,9 +208,9 @@
         }
       },
       "obstacle_laps": {
-        "name": "Sekání v no-go zóně",
+        "name": "Počet sečení obvodů no-go zóny",
         "state": {
-          "none": "Žádné",
+          "none": "Žádný",
           "one": "Jeden",
           "two": "dvě",
           "three": "Tři",
@@ -220,7 +220,7 @@
       "border_mode": {
         "name": "Pořadí sečení",
         "state": {
-          "border_first": "Hranice jako první",
+          "border_first": "Nejprve obvod",
           "grid_first": "Mřížka jako první"
         }
       },
@@ -243,10 +243,10 @@
         }
       },
       "traversal_mode": {
-        "name": "Režim průchodu",
+        "name": "Způsob otačení",
         "state": {
           "direct": "Přímý",
-          "follow_perimeter": "Sledovat obvod"
+          "follow_perimeter": "Podél hranice"
         }
       },
       "turning_mode": {
@@ -259,7 +259,7 @@
     },
     "number": {
       "start_progress": {
-        "name": "Pokrok zahájení"
+        "name": "Pokrok při zahájení"
       },
       "blade_height": {
         "name": "Výška nožů"
@@ -271,7 +271,7 @@
         "name": "Úhel sečení"
       },
       "path_spacing": {
-        "name": "Rozestupy cest"
+        "name": "Rozteč cest"
       },
       "dumping_interval": {
         "name": "Frekvence vykládky"
@@ -346,11 +346,11 @@
       "description": "Zastaví sekačka a vymaže aktuální úkol."
     },
     "start_mow": {
-      "name": "Začít sekat",
+      "name": "Začít sečení",
       "description": "Zahájit sečení s vlastním nastavením.",
       "fields": {
         "is_mow": {
-          "name": "Sekání",
+          "name": "Sečení",
           "description": "Zda je sekání aktivní. (Yuka)."
         },
         "is_dump": {
@@ -358,7 +358,7 @@
           "description": "Zda je vyhazování trávy aktivní. (Yuka)."
         },
         "is_edge": {
-          "name": "Sekání okrajů",
+          "name": "Sečení obvodu",
           "description": "Zda je aktivní režim okrajů. (Yuka)."
         },
         "collect_grass_frequency": {
@@ -366,7 +366,7 @@
           "description": "Frekvence sběru trávy (v metrech čtverečních). (Yuka)."
         },
         "border_mode": {
-          "name": "Pořadí sečení",
+          "name": "Pořadí trasy sečení",
           "description": "Pořadí trasy cesty (nejprve obvod nebo mřížka)."
         },
         "job_version": {
@@ -410,15 +410,15 @@
           "description": "Při výběru mřížky změnit druhý úhel (výchozí hodnota je 90°)."
         },
         "toward_mode": {
-          "name": "Režim řezání úhlu",
-          "description": "Úhlový směr sekání."
+          "name": "Režim sečení",
+          "description": "Úhlový směr sečení."
         },
         "mowing_laps": {
           "name": "Obvodové sečení",
-          "description": "Počet okruhů po obvodu sečené plochy"
+          "description": "Počet sečení obvodů."
         },
         "obstacle_laps": {
-          "name": "No-go zóna sekání",
+          "name": "Sečení no-go zón",
           "description": "Počet okruhů kolem no-go zón."
         },
         "start_progress": {
