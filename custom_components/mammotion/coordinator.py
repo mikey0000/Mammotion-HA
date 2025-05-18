@@ -114,29 +114,14 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
     async def join_webrtc_channel(self) -> None:
         """Start stream command"""
         device = self.manager.get_device_by_name(self.device_name)
-        if device.cloud:
-            # .send_cloud_command(iot_id, command)
-            await device.cloud().queue_command(
-                "device_agora_join_channel_with_position", enter_state=1
-            )
-        else:
-            command = self.commands.device_agora_join_channel_with_position(
-                enter_state=1
-            )
-            await device.cloud_client.send_cloud_command(device.iot_id, command)
+        command = self.commands.device_agora_join_channel_with_position(enter_state=1)
+        await device.cloud_client.send_cloud_command(device.iot_id, command)
 
     async def leave_webrtc_channel(self) -> None:
         """End stream command"""
         device = self.manager.get_device_by_name(self.device_name)
-        if device.cloud:
-            await device.cloud().queue_command(
-                "device_agora_join_channel_with_position", enter_state=0
-            )
-        else:
-            command = self.commands.device_agora_join_channel_with_position(
-                enter_state=0
-            )
-            await device.cloud_client.send_cloud_command(device.iot_id, command)
+        command = self.commands.device_agora_join_channel_with_position(enter_state=0)
+        await device.cloud_client.send_cloud_command(device.iot_id, command)
 
     async def set_scheduled_updates(self, enabled: bool) -> None:
         device = self.manager.get_device_by_name(self.device_name)
