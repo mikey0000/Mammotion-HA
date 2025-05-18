@@ -72,11 +72,6 @@ BUTTON_SENSORS: tuple[MammotionButtonSensorEntityDescription, ...] = (
         press_fn=lambda coordinator: coordinator.async_cancel_task(),
     ),
     MammotionButtonSensorEntityDescription(
-        key="clear_all_mapdata",
-        press_fn=lambda coordinator: coordinator.clear_all_maps(),
-        entity_category=EntityCategory.CONFIG,
-    ),
-    MammotionButtonSensorEntityDescription(
         key="join_webrtc",
         press_fn=lambda coordinator: coordinator.join_webrtc_channel(),
         entity_category=EntityCategory.CONFIG,

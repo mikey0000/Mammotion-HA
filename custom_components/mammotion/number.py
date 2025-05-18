@@ -38,6 +38,30 @@ class MammotionConfigNumberEntityDescription(NumberEntityDescription):
 
 NUMBER_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
     MammotionConfigNumberEntityDescription(
+        key="rtk_latitude",
+        native_unit_of_measurement=DEGREE,
+        step=0.00000000001,
+        min_value=-90,
+        max_value=90,
+        mode=NumberMode.BOX,
+        get_fn=lambda coordinator: coordinator.data.location.RTK.latitude,
+        set_fn=lambda coordinator, value: setattr(
+            coordinator.data.location.RTK, "latitude", value
+        ),
+    ),
+    MammotionConfigNumberEntityDescription(
+        key="rtk_longitude",
+        native_unit_of_measurement=DEGREE,
+        step=0.00000000001,
+        min_value=-180,
+        max_value=180,
+        mode=NumberMode.BOX,
+        get_fn=lambda coordinator: coordinator.data.location.RTK.longitude,
+        set_fn=lambda coordinator, value: setattr(
+            coordinator.data.location.RTK, "longitude", value
+        ),
+    ),
+    MammotionConfigNumberEntityDescription(
         key="start_progress",
         min_value=0,
         max_value=100,
@@ -181,15 +205,23 @@ class MammotionConfigNumberEntity(MammotionBaseEntity, RestoreNumber):
         super().__init__(coordinator, entity_description.key)
         self.entity_description = entity_description
         self._attr_translation_key = entity_description.key
-        self._attr_native_min_value = entity_description.min_value
-        self._attr_native_max_value = entity_description.max_value
-        self._attr_native_step = entity_description.step
-        self._attr_native_value = self._attr_native_min_value  # Default value
+        if hasattr(entity_description, "min_value"):
+            self._attr_native_min_value = entity_description.min_value
+            self._attr_native_value = (
+                self._attr_native_min_value
+            )  # possible default value
+        if hasattr(entity_description, "max_value"):
+            self._attr_native_max_value = entity_description.max_value
+        if hasattr(entity_description, "step"):
+            self._attr_native_step = entity_description.step
         if self.entity_description.native_unit_of_measurement == DEGREE:
             self._attr_native_value = 0
         if self.entity_description.key == "toward_included_angle":
             self._attr_native_value = 90
-        self.entity_description.set_fn(self.coordinator, self._attr_native_value)
+        if self.entity_description.get_fn is not None:
+            self._attr_native_value = self.entity_description.get_fn(self.coordinator)
+        else:
+            self.entity_description.set_fn(self.coordinator, self._attr_native_value)
 
     async def async_set_native_value(self, value: float) -> None:
         """Sets native value for number."""

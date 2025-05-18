@@ -271,6 +271,19 @@ async def check_and_restore_cloud(
     ):
         return None
 
+    mammotion_response_data = (
+        Response[LoginResponseData].from_dict(mammotion_data)
+        if isinstance(mammotion_data, dict)
+        else mammotion_data
+    )
+    mammotion_http = MammotionHTTP()
+    mammotion_http.response = mammotion_response_data
+    mammotion_http.login_info = (
+        LoginResponseData.from_dict(mammotion_response_data.data)
+        if isinstance(mammotion_response_data.data, dict)
+        else mammotion_response_data.data
+    )
+
     cloud_client = CloudIOTGateway(
         connect_response=ConnectResponse.from_dict(connect_data)
         if isinstance(connect_data, dict)
@@ -290,14 +303,8 @@ async def check_and_restore_cloud(
         login_by_oauth_response=LoginByOAuthResponse.from_dict(auth_data)
         if isinstance(auth_data, dict)
         else auth_data,
+        mammotion_http=mammotion_http,
     )
-
-    if isinstance(mammotion_data, dict):
-        mammotion_data = Response[LoginResponseData].from_dict(mammotion_data)
-        mammotion_http = MammotionHTTP()
-        mammotion_http.response = mammotion_data
-        mammotion_http.login_info = LoginResponseData.from_dict(mammotion_data.data)
-        cloud_client.set_http(mammotion_http)
 
     await cloud_client.check_or_refresh_session()
     return cloud_client

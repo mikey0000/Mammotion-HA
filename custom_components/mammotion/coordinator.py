@@ -28,6 +28,7 @@ from pymammotion.data.model.report_info import Maintain
 from pymammotion.http.model.camera_stream import (
     StreamSubscriptionResponse,
 )
+from pymammotion.mammotion.commands.mammotion_command import MammotionCommand
 from pymammotion.mammotion.devices.mammotion import (
     ConnectionPreference,
     Mammotion,
@@ -68,9 +69,6 @@ MAP_INTERVAL = timedelta(minutes=30)
 class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
     """Mammotion DataUpdateCoordinator."""
 
-    manager: Mammotion | None = None
-    device: Device | None = None
-
     def __init__(
         self,
         hass: HomeAssistant,
@@ -88,13 +86,21 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         )
         assert config_entry.unique_id
         self.config_entry = config_entry
-        self.device = device
+        self.device: Device = device
         self.device_name = device.deviceName
-        self.manager = mammotion
+        self.manager: Mammotion = mammotion
         self._operation_settings = OperationSettings()
         self.update_failures = 0
         self._stream_data: StreamSubscriptionResponse | None = (
             None  # Stream data [Agora]
+        )
+        self.commands = MammotionCommand(
+            device.deviceName,
+            int(
+                config_entry.data[CONF_MAMMOTION_DATA].data["userInformation"][
+                    "userAccount"
+                ]
+            ),
         )
 
     def set_stream_data(self, stream_data: Any) -> None:
@@ -109,9 +115,15 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         """Start stream command"""
         device = self.manager.get_device_by_name(self.device_name)
         if device.cloud:
+            # .send_cloud_command(iot_id, command)
             await device.cloud().queue_command(
                 "device_agora_join_channel_with_position", enter_state=1
             )
+        else:
+            command = self.commands.device_agora_join_channel_with_position(
+                enter_state=1
+            )
+            await device.cloud_client.send_cloud_command(device.iot_id, command)
 
     async def leave_webrtc_channel(self) -> None:
         """End stream command"""
@@ -120,6 +132,11 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
             await device.cloud().queue_command(
                 "device_agora_join_channel_with_position", enter_state=0
             )
+        else:
+            command = self.commands.device_agora_join_channel_with_position(
+                enter_state=0
+            )
+            await device.cloud_client.send_cloud_command(device.iot_id, command)
 
     async def set_scheduled_updates(self, enabled: bool) -> None:
         device = self.manager.get_device_by_name(self.device_name)
@@ -251,6 +268,7 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
     async def async_sync_maps(self) -> None:
         """Get map data from the device."""
         try:
+            self.clear_all_maps()
             await self.manager.start_map_sync(self.device_name)
         except EXPIRED_CREDENTIAL_EXCEPTIONS:
             self.update_failures += 1
@@ -411,7 +429,7 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         """Start task."""
         await self.async_send_command("single_schedule", plan_id=plan_id)
 
-    async def clear_all_maps(self) -> None:
+    def clear_all_maps(self) -> None:
         """Clear all map data stored."""
         data = self.manager.get_device_by_name(self.device_name).mower_state
         data.map = HashList()
@@ -544,22 +562,28 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
         LOGGER.debug("Updated Mammotion device %s", self.device_name)
         LOGGER.debug("================= Debug Log =================")
         if device.preference is ConnectionPreference.BLUETOOTH:
-            LOGGER.debug(
-                "Mammotion device data: %s",
-                self.manager.get_device_by_name(self.device_name).ble()._raw_data,
-            )
+            if device.ble:
+                LOGGER.debug(
+                    "Mammotion device data: %s",
+                    device.ble()._raw_data,
+                )
         if device.preference is ConnectionPreference.WIFI:
-            LOGGER.debug(
-                "Mammotion device data: %s",
-                self.manager.get_device_by_name(self.device_name).cloud()._raw_data,
-            )
+            if device.cloud:
+                LOGGER.debug(
+                    "Mammotion device data: %s",
+                    device.cloud()._raw_data,
+                )
         LOGGER.debug("==================================")
 
         self.update_failures = 0
         data = self.manager.get_device_by_name(self.device_name).mower_state
         await self.async_save_data(data)
 
-        if data.report_data.dev.sys_status is WorkMode.MODE_WORKING:
+        if data.report_data.dev.sys_status in (
+            WorkMode.MODE_WORKING,
+            WorkMode.MODE_RETURNING,
+            WorkMode.MODE_PAUSE,
+        ):
             self.update_interval = WORKING_INTERVAL
         else:
             self.update_interval = DEFAULT_INTERVAL
@@ -728,6 +752,12 @@ class MammotionMapUpdateCoordinator(MammotionBaseUpdateCoordinator[MowerInfo]):
         device = self.manager.get_device_by_name(self.device_name)
 
         try:
+            if (
+                device.mower_state.location.RTK.latitude == 0
+                or device.mower_state.location.dock.latitude == 0
+            ):
+                await self.async_rtk_dock_location()
+
             if (
                 len(device.mower_state.map.hashlist) == 0
                 or len(device.mower_state.map.missing_hashlist()) > 0

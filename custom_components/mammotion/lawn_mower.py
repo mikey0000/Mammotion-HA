@@ -200,11 +200,16 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
                     trans_key = "resume_failed"
                     if breakpoint_info != 0:
                         await self.coordinator.async_send_command("resume_execute_task")
-
+                        await self.coordinator.async_send_command(
+                            "query_generate_route_information"
+                        )
                 if mode == WorkMode.MODE_READY:
                     trans_key = "start_failed"
                     if breakpoint_info != 0:
                         await self.coordinator.async_send_command("resume_execute_task")
+                        await self.coordinator.async_send_command(
+                            "query_generate_route_information"
+                        )
                         return
                     if await self.coordinator.async_plan_route(operational_settings):
                         await self.coordinator.async_send_command("start_job")

@@ -83,10 +83,6 @@ YUKA_CONFIG_SWITCH_ENTITIES: tuple[MammotionConfigSwitchEntityDescription, ...] 
 
 SWITCH_ENTITIES: tuple[MammotionAsyncSwitchEntityDescription, ...] = (
     MammotionAsyncSwitchEntityDescription(
-        key="blade_status",
-        set_fn=lambda coordinator, value: coordinator.async_start_stop_blades(value),
-    ),
-    MammotionAsyncSwitchEntityDescription(
         key="side_led",
         set_fn=lambda coordinator, value: coordinator.async_set_sidelight(int(value)),
         entity_category=EntityCategory.CONFIG,
