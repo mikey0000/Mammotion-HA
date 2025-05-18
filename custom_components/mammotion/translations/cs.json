@@ -184,7 +184,7 @@
         "name": "Nejprve obvod"
       },
       "schedule_updates": {
-        "name": "Zapnout/vypnout aktualizace"
+        "name": "Turn Updates On/Off"
       }
     },
     "select": {
@@ -278,6 +278,12 @@
       },
       "toward_included_angle": {
         "name": "Úhel křížení"
+      },
+      "rtk_latitude": {
+        "name": "RTK latitude"
+      },
+      "rtk_longitude": {
+        "name": "RTK longitude"
       }
     },
     "device_tracker": {

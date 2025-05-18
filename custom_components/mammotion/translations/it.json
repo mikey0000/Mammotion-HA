@@ -184,7 +184,7 @@
         "name": "Taglio perimetro"
       },
       "schedule_updates": {
-        "name": "Attiva/Disattiva Aggiornamenti"
+        "name": "Turn Updates On/Off"
       }
     },
     "select": {
@@ -278,6 +278,12 @@
       },
       "toward_included_angle": {
         "name": "Angolo Di Attraversamento"
+      },
+      "rtk_latitude": {
+        "name": "RTK latitude"
+      },
+      "rtk_longitude": {
+        "name": "RTK longitude"
       }
     },
     "device_tracker": {

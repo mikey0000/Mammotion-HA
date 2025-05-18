@@ -184,7 +184,7 @@
         "name": "Zuerst den Umfang"
       },
       "schedule_updates": {
-        "name": "Updates ein/aus"
+        "name": "Turn Updates On/Off"
       }
     },
     "select": {
@@ -278,6 +278,12 @@
       },
       "toward_included_angle": {
         "name": "Kreuzungswinkel"
+      },
+      "rtk_latitude": {
+        "name": "RTK latitude"
+      },
+      "rtk_longitude": {
+        "name": "RTK longitude"
       }
     },
     "device_tracker": {

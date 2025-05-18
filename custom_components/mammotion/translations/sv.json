@@ -184,7 +184,7 @@
         "name": "Omkrets först"
       },
       "schedule_updates": {
-        "name": "Slå på/av uppdateringar"
+        "name": "Turn Updates On/Off"
       }
     },
     "select": {
@@ -278,6 +278,12 @@
       },
       "toward_included_angle": {
         "name": "Korsningsvinkel"
+      },
+      "rtk_latitude": {
+        "name": "RTK latitude"
+      },
+      "rtk_longitude": {
+        "name": "RTK longitude"
       }
     },
     "device_tracker": {

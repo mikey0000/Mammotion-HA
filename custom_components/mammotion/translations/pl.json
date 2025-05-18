@@ -184,7 +184,7 @@
         "name": "Najpierw obwód"
       },
       "schedule_updates": {
-        "name": "Włącz/Wyłącz aktualizacje"
+        "name": "Turn Updates On/Off"
       }
     },
     "select": {
@@ -278,6 +278,12 @@
       },
       "toward_included_angle": {
         "name": "Kąt skrzyżowania"
+      },
+      "rtk_latitude": {
+        "name": "RTK latitude"
+      },
+      "rtk_longitude": {
+        "name": "RTK longitude"
       }
     },
     "device_tracker": {

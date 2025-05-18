@@ -184,7 +184,7 @@
         "name": "Kantklippning først"
       },
       "schedule_updates": {
-        "name": "Slå opdateringer til/fra"
+        "name": "Turn Updates On/Off"
       }
     },
     "select": {
@@ -278,6 +278,12 @@
       },
       "toward_included_angle": {
         "name": "Krydsningsvinkel"
+      },
+      "rtk_latitude": {
+        "name": "RTK latitude"
+      },
+      "rtk_longitude": {
+        "name": "RTK longitude"
       }
     },
     "device_tracker": {

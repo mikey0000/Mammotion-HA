@@ -184,7 +184,7 @@
         "name": "Prvo obod"
       },
       "schedule_updates": {
-        "name": "Samodejna nadgradnja"
+        "name": "Turn Updates On/Off"
       }
     },
     "select": {
@@ -278,6 +278,12 @@
       },
       "toward_included_angle": {
         "name": "Kot prečkanja"
+      },
+      "rtk_latitude": {
+        "name": "RTK latitude"
+      },
+      "rtk_longitude": {
+        "name": "RTK longitude"
       }
     },
     "device_tracker": {
