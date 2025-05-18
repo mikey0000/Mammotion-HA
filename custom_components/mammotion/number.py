@@ -1,3 +1,4 @@
+import math
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 
@@ -44,9 +45,11 @@ NUMBER_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
         min_value=-90,
         max_value=90,
         mode=NumberMode.BOX,
-        get_fn=lambda coordinator: coordinator.data.location.RTK.latitude,
+        get_fn=lambda coordinator: coordinator.data.location.RTK.latitude
+        * 180.0
+        / math.pi,
         set_fn=lambda coordinator, value: setattr(
-            coordinator.data.location.RTK, "latitude", value
+            coordinator.data.location.RTK, "latitude", value * math.pi / 180.0
         ),
     ),
     MammotionConfigNumberEntityDescription(
@@ -56,9 +59,11 @@ NUMBER_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
         min_value=-180,
         max_value=180,
         mode=NumberMode.BOX,
-        get_fn=lambda coordinator: coordinator.data.location.RTK.longitude,
+        get_fn=lambda coordinator: coordinator.data.location.RTK.longitude
+        * 180.0
+        / math.pi,
         set_fn=lambda coordinator, value: setattr(
-            coordinator.data.location.RTK, "longitude", value
+            coordinator.data.location.RTK, "longitude", value * math.pi / 180.0
         ),
     ),
     MammotionConfigNumberEntityDescription(
@@ -235,6 +240,14 @@ class MammotionConfigNumberEntity(MammotionBaseEntity, RestoreNumber):
         if (last_number_data is not None) and (
             last_number_data.native_value is not None
         ):
+            stored_value = self.entity_description.get_fn(self.coordinator)
+            if (
+                self.entity_description.key == "rtk_longitude"
+                or self.entity_description.key == "rtk_latitude"
+            ):
+                if stored_value == last_number_data.native_value:
+                    await self.async_set_native_value(stored_value * 180.0 / math.pi)
+                    return
             await self.async_set_native_value(last_number_data.native_value)
 
 
