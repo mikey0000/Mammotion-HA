@@ -893,7 +893,9 @@ class CameraAgoraCard extends HTMLElement {
       
       // Force mouseup event simulation to ensure any pressed buttons are released
       document.dispatchEvent(new MouseEvent('mouseup'));
-      document.dispatchEvent(new TouchEvent('touchend'));
+      if (window.TouchEvent) {
+        document.dispatchEvent(new TouchEvent('touchend'));
+      }
       
       // Wait a small amount of time before allowing movement again
       setTimeout(() => {
