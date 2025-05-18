@@ -184,7 +184,7 @@
         "name": "Nejprve obvod"
       },
       "schedule_updates": {
-        "name": "Turn Updates On/Off"
+        "name": "Zapnout/vypnout aktualizace"
       }
     },
     "select": {

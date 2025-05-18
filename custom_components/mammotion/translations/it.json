@@ -184,7 +184,7 @@
         "name": "Taglio perimetro"
       },
       "schedule_updates": {
-        "name": "Turn Updates On/Off"
+        "name": "Attiva/Disattiva Aggiornamenti"
       }
     },
     "select": {

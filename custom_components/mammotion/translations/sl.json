@@ -184,7 +184,7 @@
         "name": "Prvo obod"
       },
       "schedule_updates": {
-        "name": "Turn Updates On/Off"
+        "name": "Samodejna nadgradnja"
       }
     },
     "select": {
