@@ -15,6 +15,15 @@ class CameraAgoraCard extends HTMLElement {
     2: "Right Camera",
     3: "Rear Camera"
   };
+  
+  // Add joystick control properties
+  _disclaimerShown = false;
+  _moveIntervals = {
+    up: null,
+    down: null,
+    left: null,
+    right: null
+  };
 
   // Required method for Home Assistant cards
   setConfig(config) {
@@ -25,7 +34,9 @@ class CameraAgoraCard extends HTMLElement {
     //Define custom parameters
     this._config = {
       ...config,
-      autostart: config.autostart !== undefined ? config.autostart : false
+      autostart: config.autostart !== undefined ? config.autostart : false,
+      enableJoystick: config.enableJoystick !== undefined ? config.enableJoystick : false,
+      speed: config.speed !== undefined ? parseFloat(config.speed) : 0.4
     };
     
     // Prepare shadow DOM container
@@ -103,6 +114,85 @@ class CameraAgoraCard extends HTMLElement {
         user-select: none;
         box-shadow: 0 1px 3px rgba(0,0,0,0.3);
       }
+      /* Joystick CSS */
+      .joystick-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 5;
+        pointer-events: none; /* Allows clicks to pass through to underlying elements */
+        opacity: 0; /* Initially hidden */
+        transition: opacity 0.3s;
+      }
+      .joystick-overlay.visible {
+        opacity: 1;
+      }
+      .joystick-button {
+        position: absolute;
+        width: 40px;
+        height: 40px;
+        background: rgba(60, 60, 60, 0.6);
+        border: none;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        pointer-events: auto; /* Makes button clickable */
+        transition: background 0.2s;
+        box-shadow: none;
+      }
+      .joystick-button:active {
+        background: rgba(80, 80, 80, 0.7);
+      }
+      .joystick-up {
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      .joystick-down {
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      .joystick-left {
+        left: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+      .joystick-right {
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+      .disclaimer-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 10;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        text-align: center;
+        box-sizing: border-box;
+        padding: 10px;
+      }
+      .disclaimer-button {
+        margin-top: 15px;
+        padding: 8px 16px;
+        background: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
     `;
     
     const card = document.createElement('ha-card');
@@ -156,7 +246,12 @@ class CameraAgoraCard extends HTMLElement {
 
   // Standard configuration for the editor
   static getStubConfig() {
-    return { entity: "" };
+    return { 
+      entity: "",
+      autostart: false,
+      enableJoystick: false,
+      speed: 0.4 
+    };
   }
 
   // Initialize Agora streaming
@@ -176,6 +271,11 @@ class CameraAgoraCard extends HTMLElement {
       if (!window.AgoraRTC) {
         this._showError("Agora SDK not loaded correctly");
         return;
+      }
+      
+      // Setup joystick overlay if enabled
+      if (this._config.enableJoystick) {
+        this._setupJoystickOverlay();
       }
       
       if(this._config.autostart)
@@ -226,6 +326,11 @@ class CameraAgoraCard extends HTMLElement {
     
     this._isConnecting = true;
     this._showLoading("Connecting to video stream...");
+    
+    // Ensure joystick overlay is setup if enabled
+    if (this._config.enableJoystick) {
+      this._setupJoystickOverlay();
+    }
     
     try {
       const entityId = this._config.entity;
@@ -298,8 +403,15 @@ class CameraAgoraCard extends HTMLElement {
           this._isPlaying = false;
           this._hideLoading();
           this._showLoading("Connection lost. Click play to reconnect.");
+          this._toggleJoystickVisibility(false);
+          
+          // Stop any active movement commands when connection is lost
+          Object.keys(this._moveIntervals).forEach(dir => {
+            this._stopContinuousMove(dir);
+          });
         } else if (state === 'CONNECTING') {
           this._showLoading("Connecting...");
+          this._toggleJoystickVisibility(false);
         }
       });
 
@@ -323,6 +435,7 @@ class CameraAgoraCard extends HTMLElement {
 
           if (this._remoteUsers.length <= 0) {
             this._showLoading("Video stream end");
+            this._toggleJoystickVisibility(false);
             return;
           }
             
@@ -343,6 +456,7 @@ class CameraAgoraCard extends HTMLElement {
         if (!this._isPlaying) {
           this._showLoading("Connection timeout. Click play to retry.");
           this._isConnecting = false;
+          this._toggleJoystickVisibility(false);
         }
       }, 20000);
 
@@ -353,6 +467,11 @@ class CameraAgoraCard extends HTMLElement {
       this._isPlaying = true;
       this._isConnecting = false;
       
+      // Show joystick controls if enabled
+      if (this._config.enableJoystick) {
+        this._toggleJoystickVisibility(true);
+      }
+      
       // Set a reconnection check
       this._startConnectionCheck();
       
@@ -360,6 +479,7 @@ class CameraAgoraCard extends HTMLElement {
       console.error("Error starting video:", error);
       this._isConnecting = false;
       this._showLoading(`Connection error. Click play to retry.`);
+      this._toggleJoystickVisibility(false);
     }
   }
 
@@ -373,10 +493,32 @@ class CameraAgoraCard extends HTMLElement {
   _showCurrentVideo() {
     const videoContainer = this.shadowRoot.getElementById('agora-video');
     const loadingElement = this.shadowRoot.getElementById('loading');
+    const joystickOverlay = this.shadowRoot.getElementById('joystick-overlay');
     
-    // Clear container (but keep loading overlay)
+    // Store joystick overlay before clearing container
+    if (joystickOverlay) {
+      videoContainer.removeChild(joystickOverlay);
+    }
+    
+    // Clear container (but keep loading overlay if it exists)
+    if (loadingElement) {
+      videoContainer.removeChild(loadingElement);
+    }
+    
     videoContainer.innerHTML = '';
-    videoContainer.appendChild(loadingElement);
+    
+    // Restore overlays
+    if (loadingElement) {
+      videoContainer.appendChild(loadingElement);
+    }
+    
+    if (this._config.enableJoystick && joystickOverlay) {
+      videoContainer.appendChild(joystickOverlay);
+      this._toggleJoystickVisibility(this._isPlaying);
+    } else if (this._config.enableJoystick) {
+      // If joystick overlay was missing, recreate it
+      this._setupJoystickOverlay();
+    }
     
     // If there are users with video
     if (this._remoteUsers.length > 0) {
@@ -414,7 +556,8 @@ class CameraAgoraCard extends HTMLElement {
     }
   }
   
-  // Start periodic connection check
+  
+  // Add safety interval to check and stop any continuous movements if video is not playing
   _startConnectionCheck() {
     if (this._connectionCheckInterval) {
       clearInterval(this._connectionCheckInterval);
@@ -425,9 +568,20 @@ class CameraAgoraCard extends HTMLElement {
         const state = this._client.connectionState;
         if (state !== 'CONNECTED') {
           this._showLoading("Connection unstable...");
+          this._toggleJoystickVisibility(false);
+          
+          // Stop any movement when connection is unstable
+          Object.keys(this._moveIntervals).forEach(dir => {
+            this._stopContinuousMove(dir);
+          });
         }
+      } else {
+        // If not playing, ensure all movements are stopped
+        Object.keys(this._moveIntervals).forEach(dir => {
+          this._stopContinuousMove(dir);
+        });
       }
-    }, 5000);
+    }, 2000); // Check every 2 seconds
   }
   
   // Stop video
@@ -438,6 +592,11 @@ class CameraAgoraCard extends HTMLElement {
       if (this._connectionCheckInterval) {
         clearInterval(this._connectionCheckInterval);
       }
+      
+      // Stop all continuous movement commands
+      Object.keys(this._moveIntervals).forEach(dir => {
+        this._stopContinuousMove(dir);
+      });
       
       // Clean up video tracks for each remote user before leaving
       if (this._remoteUsers.length > 0) {
@@ -470,16 +629,34 @@ class CameraAgoraCard extends HTMLElement {
       this._isPlaying = false;
       this._isConnecting = false;
       
-      // Clean up video container
+      // Hide joystick controls
+      this._toggleJoystickVisibility(false);
+      
+      // Save references to important elements
       const videoContainer = this.shadowRoot.getElementById('agora-video');
       const loadingElement = this.shadowRoot.getElementById('loading');
-      if (videoContainer && loadingElement) {
-        videoContainer.innerHTML = '';
-        videoContainer.appendChild(loadingElement);
-      }
+      const joystickOverlay = this.shadowRoot.getElementById('joystick-overlay');
+      
+      // Create a temporary container for the elements we want to preserve
+      const tempContainer = document.createElement('div');
+      if (loadingElement) tempContainer.appendChild(loadingElement.cloneNode(true));
+      if (joystickOverlay) tempContainer.appendChild(joystickOverlay.cloneNode(true));
+      
+      // Clean up video container
+      videoContainer.innerHTML = '';
+      
+      // Restore the preserved elements
+      Array.from(tempContainer.children).forEach(el => {
+        videoContainer.appendChild(el);
+      });
       
       if (this._hass && this._config && this._config.entity) {
         await this._hass.callService('mammotion', 'stop_video', { entity_id: this._config.entity });
+      }
+      
+      // Reinitialize event listeners for joystick after DOM manipulation
+      if (this._config.enableJoystick) {
+        this._setupJoystickControls();
       }
       
       // Show video stopped message
@@ -502,11 +679,57 @@ class CameraAgoraCard extends HTMLElement {
     }
   }
 
-  // Cleanup when card is removed
+  // Setup global event handlers for safety
+  constructor() {
+    super();
+    
+    // Add global event handlers to stop movements if mouseup/touchend happens outside the component
+    this._boundGlobalMouseUp = this._globalMouseUp.bind(this);
+    this._boundGlobalTouchEnd = this._globalTouchEnd.bind(this);
+    
+    document.addEventListener('mouseup', this._boundGlobalMouseUp);
+    document.addEventListener('touchend', this._boundGlobalTouchEnd);
+  }
+  
+  // Global mouseup handler (safety)
+  _globalMouseUp(e) {
+    if (this._isPlaying) {
+      // Check if any move intervals are active and stop them
+      Object.keys(this._moveIntervals).forEach(dir => {
+        if (this._moveIntervals[dir]) {
+          this._stopContinuousMove(dir);
+        }
+      });
+    }
+  }
+  
+  // Global touchend handler (safety)
+  _globalTouchEnd(e) {
+    if (this._isPlaying) {
+      // Check if any move intervals are active and stop them
+      Object.keys(this._moveIntervals).forEach(dir => {
+        if (this._moveIntervals[dir]) {
+          this._stopContinuousMove(dir);
+        }
+      });
+    }
+  }
+  
+  // Remove global listeners when disconnected
   disconnectedCallback() {
     if (this._connectionCheckInterval) {
       clearInterval(this._connectionCheckInterval);
     }
+    
+    // Remove global event listeners
+    document.removeEventListener('mouseup', this._boundGlobalMouseUp);
+    document.removeEventListener('touchend', this._boundGlobalTouchEnd);
+    
+    // Stop all continuous movement
+    Object.keys(this._moveIntervals).forEach(dir => {
+      this._stopContinuousMove(dir);
+    });
+    
     this._stopVideo();
   }
 
@@ -528,6 +751,285 @@ class CameraAgoraCard extends HTMLElement {
         script.onerror = () => reject(new Error("Unable to load Agora SDK"));
         document.head.appendChild(script);
       });
+    }
+  }
+  
+  // Set up joystick controls
+  _setupJoystickControls() {
+    if (!this._config.enableJoystick) return;
+    
+    // Add event listeners for joystick buttons
+    const directions = ['up', 'down', 'left', 'right'];
+    
+    directions.forEach(dir => {
+      const button = this.shadowRoot.getElementById(`joystick-${dir}`);
+      if (button) {
+        // Remove any existing event listeners to prevent duplicates
+        const newButton = button.cloneNode(true);
+        button.parentNode.replaceChild(newButton, button);
+        
+        // For single clicks
+        newButton.addEventListener('click', (e) => {
+          e.stopPropagation();
+          this._handleJoystickPress(dir);
+        });
+        
+        // For continuous press
+        newButton.addEventListener('mousedown', (e) => {
+          e.stopPropagation();
+          this._startContinuousMove(dir);
+        });
+        newButton.addEventListener('mouseup', (e) => {
+          e.stopPropagation();
+          this._stopContinuousMove(dir);
+        });
+        newButton.addEventListener('mouseleave', (e) => {
+          e.stopPropagation();
+          this._stopContinuousMove(dir);
+        });
+        
+        // Touch support for mobile devices
+        newButton.addEventListener('touchstart', (e) => {
+          e.preventDefault(); // Prevents scrolling
+          e.stopPropagation();
+          this._startContinuousMove(dir);
+        });
+        newButton.addEventListener('touchend', (e) => {
+          e.stopPropagation();
+          this._stopContinuousMove(dir);
+        });
+      }
+    });
+  }
+  
+  // Create joystick overlay if needed
+  _setupJoystickOverlay() {
+    if (!this._config.enableJoystick) return;
+    
+    const videoContainer = this.shadowRoot.getElementById('agora-video');
+    const existingOverlay = this.shadowRoot.getElementById('joystick-overlay');
+    
+    if (!existingOverlay) {
+      const joystickOverlay = document.createElement('div');
+      joystickOverlay.id = 'joystick-overlay';
+      joystickOverlay.className = 'joystick-overlay';
+      joystickOverlay.innerHTML = `
+        <button id="joystick-up" class="joystick-button joystick-up">
+          <svg viewBox="0 0 24 24" width="24" height="24"><path fill="white" d="M7.41,15.41L12,10.83L16.59,15.41L18,14L12,8L6,14L7.41,15.41Z" /></svg>
+        </button>
+        <button id="joystick-down" class="joystick-button joystick-down">
+          <svg viewBox="0 0 24 24" width="24" height="24"><path fill="white" d="M7.41,8.59L12,13.17L16.59,8.59L18,10L12,16L6,10L7.41,8.59Z" /></svg>
+        </button>
+        <button id="joystick-left" class="joystick-button joystick-left">
+          <svg viewBox="0 0 24 24" width="24" height="24"><path fill="white" d="M15.41,16.59L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.59Z" /></svg>
+        </button>
+        <button id="joystick-right" class="joystick-button joystick-right">
+          <svg viewBox="0 0 24 24" width="24" height="24"><path fill="white" d="M8.59,16.59L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.59Z" /></svg>
+        </button>
+      `;
+      
+      videoContainer.appendChild(joystickOverlay);
+      
+      // Setup event listeners
+      this._setupJoystickControls();
+    }
+  }
+  
+  // Toggle joystick visibility based on playback state
+  _toggleJoystickVisibility(show) {
+    if (!this._config.enableJoystick) return;
+    
+    const joystickOverlay = this.shadowRoot.getElementById('joystick-overlay');
+    if (joystickOverlay) {
+      if (show) {
+        joystickOverlay.classList.add('visible');
+      } else {
+        joystickOverlay.classList.remove('visible');
+      }
+    }
+  }
+  
+  // Handle joystick button press
+  _handleJoystickPress(direction) {
+    if (!this._disclaimerShown) {
+      this._showMoveDisclaimer(() => {
+        this._disclaimerShown = true;
+        this._sendMoveCommand(direction);
+      });
+    } else {
+      this._sendMoveCommand(direction);
+    }
+  }
+  
+  // Show disclaimer before first movement
+  _showMoveDisclaimer(onAccept) {
+    const videoContainer = this.shadowRoot.getElementById('agora-video');
+    
+    // Create disclaimer overlay
+    const disclaimerOverlay = document.createElement('div');
+    disclaimerOverlay.className = 'disclaimer-overlay';
+    disclaimerOverlay.innerHTML = `
+      <h3>Warning!</h3>
+      <p>By pressing these controls, the robot will physically move.</p>
+      <p>Please be aware that the video feed may not be in real time.</p>
+      <p>Make sure the area around the robot is clear and safe.</p>
+      <button id="disclaimer-accept" class="disclaimer-button">I understand, proceed</button>
+    `;
+    
+    videoContainer.appendChild(disclaimerOverlay);
+    
+    // Add event listener to accept button
+    const acceptButton = disclaimerOverlay.querySelector('#disclaimer-accept');
+    acceptButton.addEventListener('click', (e) => {
+      e.stopPropagation(); // Prevent click from propagating
+      
+      // Stop any active movements before removing the disclaimer
+      Object.keys(this._moveIntervals).forEach(dir => {
+        this._stopContinuousMove(dir);
+      });
+      
+      // Remove the disclaimer after stopping movements
+      videoContainer.removeChild(disclaimerOverlay);
+      
+      // Force mouseup event simulation to ensure any pressed buttons are released
+      document.dispatchEvent(new MouseEvent('mouseup'));
+      if (window.TouchEvent) {
+        document.dispatchEvent(new TouchEvent('touchend'));
+      }
+      
+      // Wait a small amount of time before allowing movement again
+      setTimeout(() => {
+        if (onAccept) onAccept();
+      }, 100);
+    });
+  }
+  
+  // Start continuous movement
+  _startContinuousMove(direction) {
+    // Don't start if video is not playing
+    if (!this._isPlaying) {
+      console.log("Cannot start movement - video not playing");
+      return;
+    }
+    
+    // First send command immediately
+    if (!this._disclaimerShown) {
+      this._showMoveDisclaimer(() => {
+        this._disclaimerShown = true;
+        // Make sure mouseup events are processed first
+        setTimeout(() => {
+          // Check if the button is still pressed (should not be after disclaimer)
+          if (this._isMouseStillDown()) {
+            this._sendMoveCommand(direction);
+            
+            // Start continuous sending after confirmation
+            if (this._isPlaying) {
+              // First clear any existing interval to be safe
+              this._stopContinuousMove(direction);
+              
+              // Add safety timeout (max 10 seconds of continuous movement)
+              this._moveIntervals[direction] = setInterval(() => {
+                if (!this._isPlaying) {
+                  this._stopContinuousMove(direction);
+                  return;
+                }
+                this._sendMoveCommand(direction);
+              }, 500); // Send command every 500ms
+              
+              // Set a safety timeout - max 10 seconds of movement
+              setTimeout(() => {
+                this._stopContinuousMove(direction);
+              }, 10000);
+            }
+          }
+        }, 200);
+      });
+    } else {
+      this._sendMoveCommand(direction);
+      
+      // Start continuous sending
+      if (this._isPlaying) {
+        // First clear any existing interval to be safe
+        this._stopContinuousMove(direction);
+        
+        this._moveIntervals[direction] = setInterval(() => {
+          if (!this._isPlaying) {
+            this._stopContinuousMove(direction);
+            return;
+          }
+          this._sendMoveCommand(direction);
+        }, 500); // Send command every 500ms
+        
+        // Set a safety timeout - max 10 seconds of movement
+        setTimeout(() => {
+          this._stopContinuousMove(direction);
+        }, 10000);
+      }
+    }
+  }
+  
+  // Check if mouse button is still being pressed
+  _isMouseStillDown() {
+    // This is a simple way to check, we assume mouse is not down if method is called after disclaimer
+    return false;
+  }
+  
+  // Stop continuous movement
+  _stopContinuousMove(direction) {
+    if (this._moveIntervals[direction]) {
+      clearInterval(this._moveIntervals[direction]);
+      this._moveIntervals[direction] = null;
+    }
+  }
+  
+  // Send movement command to Home Assistant
+  _sendMoveCommand(direction) {
+    if (!this._hass || !this._config) {
+      this._stopContinuousMove(direction);
+      return;
+    }
+    
+    if (!this._isPlaying) {
+      console.log("Stopping movement command because video is not playing");
+      this._stopContinuousMove(direction);
+      return;
+    }
+    
+    const entityId = this._config.entity;
+    const speed = this._config.speed;
+    
+    // Define service and action based on direction
+    let service = 'mammotion';
+    let action = '';
+    
+    switch (direction) {
+      case 'up':
+        action = 'move_forward';
+        break;
+      case 'down':
+        action = 'move_backward';
+        break;
+      case 'left':
+        action = 'move_left';
+        break;
+      case 'right':
+        action = 'move_right';
+        break;
+    }
+    
+    // Send command to Home Assistant
+    if (action) {
+      try {
+        this._hass.callService(service, action, { 
+          entity_id: entityId, 
+          speed: speed 
+        });
+        console.log(`Sending ${action} command to ${entityId} with speed ${speed}`);
+      } catch (error) {
+        console.error(`Error sending ${action} command:`, error);
+        // Stop continuous movement on error
+        this._stopContinuousMove(direction);
+      }
     }
   }
 }
