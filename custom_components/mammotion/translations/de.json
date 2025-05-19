@@ -124,6 +124,12 @@
       "maintenance_bat_cycles": {
         "name": "Batteriezyklen",
         "unit_of_measurement": "Zyklen"
+      },
+      "rtk_latitude": {
+        "name": "RTK latitude"
+      },
+      "rtk_longitude": {
+        "name": "RTK longitude"
       }
     },
     "button": {
@@ -175,7 +181,10 @@
         "name": "Kanten schneiden"
       },
       "rain_tactics": {
-        "name": "Regenerkennung"
+        "name": "Rain detection (during mow) On/Off"
+      },
+      "rain_detection": {
+        "name": "Rain detection (Mower) On/Off"
       },
       "side_led": {
         "name": "Seitenlicht"
@@ -184,7 +193,7 @@
         "name": "Zuerst den Umfang"
       },
       "schedule_updates": {
-        "name": "Updates ein/aus"
+        "name": "Turn Updates On/Off"
       }
     },
     "select": {
@@ -278,12 +287,6 @@
       },
       "toward_included_angle": {
         "name": "Kreuzungswinkel"
-      },
-      "rtk_latitude": {
-        "name": "RTK latitude"
-      },
-      "rtk_longitude": {
-        "name": "RTK longitude"
       }
     },
     "device_tracker": {
