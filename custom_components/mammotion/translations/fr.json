@@ -124,6 +124,12 @@
       "maintenance_bat_cycles": {
         "name": "Cycles de batterie",
         "unit_of_measurement": "cycles"
+      },
+      "rtk_latitude": {
+        "name": "RTK latitude"
+      },
+      "rtk_longitude": {
+        "name": "RTK longitude"
       }
     },
     "button": {
@@ -175,7 +181,10 @@
         "name": "Coupe des bordures"
       },
       "rain_tactics": {
-        "name": "Détection de la pluie"
+        "name": "Rain detection (during mow) On/Off"
+      },
+      "rain_detection": {
+        "name": "Rain detection (Mower) On/Off"
       },
       "side_led": {
         "name": "LED latérales"
@@ -184,7 +193,7 @@
         "name": "Bordure d'abord"
       },
       "schedule_updates": {
-        "name": "Mises à jour"
+        "name": "Turn Updates On/Off"
       }
     },
     "select": {
@@ -278,12 +287,6 @@
       },
       "toward_included_angle": {
         "name": "Angle de traversée"
-      },
-      "rtk_latitude": {
-        "name": "RTK latitude"
-      },
-      "rtk_longitude": {
-        "name": "RTK longitude"
       }
     },
     "device_tracker": {

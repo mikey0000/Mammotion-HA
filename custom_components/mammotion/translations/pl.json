@@ -124,6 +124,12 @@
       "maintenance_bat_cycles": {
         "name": "Cykle baterii",
         "unit_of_measurement": "cykle"
+      },
+      "rtk_latitude": {
+        "name": "RTK latitude"
+      },
+      "rtk_longitude": {
+        "name": "RTK longitude"
       }
     },
     "button": {
@@ -175,7 +181,10 @@
         "name": "Cięcie krawędzi"
       },
       "rain_tactics": {
-        "name": "Wykrywanie deszczu wł/wył"
+        "name": "Rain detection (during mow) On/Off"
+      },
+      "rain_detection": {
+        "name": "Rain detection (Mower) On/Off"
       },
       "side_led": {
         "name": "Boczna dioda LED wł/wył"
@@ -184,7 +193,7 @@
         "name": "Najpierw obwód"
       },
       "schedule_updates": {
-        "name": "Włącz/Wyłącz aktualizacje"
+        "name": "Turn Updates On/Off"
       }
     },
     "select": {
@@ -278,12 +287,6 @@
       },
       "toward_included_angle": {
         "name": "Kąt skrzyżowania"
-      },
-      "rtk_latitude": {
-        "name": "RTK latitude"
-      },
-      "rtk_longitude": {
-        "name": "RTK longitude"
       }
     },
     "device_tracker": {

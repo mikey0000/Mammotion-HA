@@ -124,6 +124,12 @@
       "maintenance_bat_cycles": {
         "name": "Batterijcycli",
         "unit_of_measurement": "cycles"
+      },
+      "rtk_latitude": {
+        "name": "RTK latitude"
+      },
+      "rtk_longitude": {
+        "name": "RTK longitude"
       }
     },
     "button": {
@@ -175,7 +181,10 @@
         "name": "Rand maaien"
       },
       "rain_tactics": {
-        "name": "Regendetectie Aan/Uit"
+        "name": "Rain detection (during mow) On/Off"
+      },
+      "rain_detection": {
+        "name": "Rain detection (Mower) On/Off"
       },
       "side_led": {
         "name": "Zijkant LED's aan/uit"
@@ -184,7 +193,7 @@
         "name": "Rand Eerst"
       },
       "schedule_updates": {
-        "name": "Updates aan/uit zetten"
+        "name": "Turn Updates On/Off"
       }
     },
     "select": {
@@ -278,12 +287,6 @@
       },
       "toward_included_angle": {
         "name": "Kruisende Hoek"
-      },
-      "rtk_latitude": {
-        "name": "RTK latitude"
-      },
-      "rtk_longitude": {
-        "name": "RTK longitude"
       }
     },
     "device_tracker": {

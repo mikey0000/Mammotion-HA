@@ -124,6 +124,12 @@
       "maintenance_bat_cycles": {
         "name": "Cykly baterie",
         "unit_of_measurement": "cyklů"
+      },
+      "rtk_latitude": {
+        "name": "RTK latitude"
+      },
+      "rtk_longitude": {
+        "name": "RTK longitude"
       }
     },
     "button": {
@@ -175,16 +181,19 @@
         "name": "Řezání okrajů"
       },
       "rain_tactics": {
-        "name": "Zapnutí/vypnutí detekce deště"
+        "name": "Rain detection (during mow) On/Off"
+      },
+      "rain_detection": {
+        "name": "Rain detection (Mower) On/Off"
       },
       "side_led": {
-        "name": "Zapnout/vypnout boční světla"
+        "name": "Boční světla"
       },
       "perimeter_first_on_off": {
         "name": "Nejprve obvod"
       },
       "schedule_updates": {
-        "name": "Zapnout/vypnout aktualizace"
+        "name": "Turn Updates On/Off"
       }
     },
     "select": {
@@ -278,12 +287,6 @@
       },
       "toward_included_angle": {
         "name": "Úhel křížení"
-      },
-      "rtk_latitude": {
-        "name": "RTK latitude"
-      },
-      "rtk_longitude": {
-        "name": "RTK longitude"
       }
     },
     "device_tracker": {

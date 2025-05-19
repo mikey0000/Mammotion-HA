@@ -124,6 +124,12 @@
       "maintenance_bat_cycles": {
         "name": "Baterijski cikli",
         "unit_of_measurement": "Cikli polnjenja baterije"
+      },
+      "rtk_latitude": {
+        "name": "RTK latitude"
+      },
+      "rtk_longitude": {
+        "name": "RTK longitude"
       }
     },
     "button": {
@@ -175,7 +181,10 @@
         "name": "Način obračanja"
       },
       "rain_tactics": {
-        "name": "Zaznavanje dežja"
+        "name": "Rain detection (during mow) On/Off"
+      },
+      "rain_detection": {
+        "name": "Rain detection (Mower) On/Off"
       },
       "side_led": {
         "name": "Stranska LED osvetlitev"
@@ -184,7 +193,7 @@
         "name": "Prvo obod"
       },
       "schedule_updates": {
-        "name": "Samodejna nadgradnja"
+        "name": "Turn Updates On/Off"
       }
     },
     "select": {
@@ -278,12 +287,6 @@
       },
       "toward_included_angle": {
         "name": "Kot prečkanja"
-      },
-      "rtk_latitude": {
-        "name": "RTK latitude"
-      },
-      "rtk_longitude": {
-        "name": "RTK longitude"
       }
     },
     "device_tracker": {
