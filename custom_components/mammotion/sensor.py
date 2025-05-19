@@ -252,17 +252,13 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
     MammotionSensorEntityDescription(
         key="rtk_latitude",
         native_unit_of_measurement=DEGREE,
-        value_fn=lambda coordinator: coordinator.data.location.RTK.latitude
-        * 180.0
-        / math.pi,
+        value_fn=lambda mower_data: mower_data.location.RTK.latitude * 180.0 / math.pi,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     MammotionSensorEntityDescription(
         key="rtk_longitude",
         native_unit_of_measurement=DEGREE,
-        value_fn=lambda coordinator: coordinator.data.location.RTK.longitude
-        * 180.0
-        / math.pi,
+        value_fn=lambda mower_data: mower_data.location.RTK.longitude * 180.0 / math.pi,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     # MammotionSensorEntityDescription(
