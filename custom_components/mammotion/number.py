@@ -1,5 +1,4 @@
-import math
-from collections.abc import Awaitable, Callable
+from collections.abc import Callable
 from dataclasses import dataclass
 
 from homeassistant.components.number import (
@@ -32,40 +31,9 @@ class MammotionConfigNumberEntityDescription(NumberEntityDescription):
 
     set_fn: Callable[[MammotionBaseUpdateCoordinator, float], None]
     get_fn: Callable[[MammotionBaseUpdateCoordinator], float | None] = None
-    update_fn: Callable[
-        [MammotionBaseUpdateCoordinator, float], None | Awaitable[None]
-    ] = None
 
 
 NUMBER_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
-    MammotionConfigNumberEntityDescription(
-        key="rtk_latitude",
-        native_unit_of_measurement=DEGREE,
-        step=0.00000000001,
-        min_value=-90,
-        max_value=90,
-        mode=NumberMode.BOX,
-        get_fn=lambda coordinator: coordinator.data.location.RTK.latitude
-        * 180.0
-        / math.pi,
-        set_fn=lambda coordinator, value: setattr(
-            coordinator.data.location.RTK, "latitude", value * math.pi / 180.0
-        ),
-    ),
-    MammotionConfigNumberEntityDescription(
-        key="rtk_longitude",
-        native_unit_of_measurement=DEGREE,
-        step=0.00000000001,
-        min_value=-180,
-        max_value=180,
-        mode=NumberMode.BOX,
-        get_fn=lambda coordinator: coordinator.data.location.RTK.longitude
-        * 180.0
-        / math.pi,
-        set_fn=lambda coordinator, value: setattr(
-            coordinator.data.location.RTK, "longitude", value * math.pi / 180.0
-        ),
-    ),
     MammotionConfigNumberEntityDescription(
         key="start_progress",
         min_value=0,
@@ -240,15 +208,8 @@ class MammotionConfigNumberEntity(MammotionBaseEntity, RestoreNumber):
         if (last_number_data is not None) and (
             last_number_data.native_value is not None
         ):
-            stored_value = self.entity_description.get_fn(self.coordinator)
-            if (
-                self.entity_description.key == "rtk_longitude"
-                or self.entity_description.key == "rtk_latitude"
-            ):
-                if stored_value == last_number_data.native_value:
-                    await self.async_set_native_value(stored_value * 180.0 / math.pi)
-                    return
             await self.async_set_native_value(last_number_data.native_value)
+            self.entity_description.set_fn(self.coordinator, self._attr_native_value)
 
 
 class MammotionWorkingNumberEntity(MammotionConfigNumberEntity):
@@ -300,10 +261,4 @@ class MammotionWorkingNumberEntity(MammotionConfigNumberEntity):
         """Set native value for number and call update_fn if defined."""
         self._attr_native_value = value
         self.entity_description.set_fn(self.coordinator, value)
-
-        if self.entity_description.update_fn is not None:
-            result = self.entity_description.update_fn(self.coordinator, value)
-            if result is not None and hasattr(result, "__await__"):
-                await result
-
         self.async_write_ha_state()

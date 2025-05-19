@@ -111,6 +111,12 @@
       },
       "work_area": {
         "name": "Work area"
+      },
+      "rtk_latitude": {
+        "name": "RTK latitude"
+      },
+      "rtk_longitude": {
+        "name": "RTK longitude"
       }
     },
     "button": {
@@ -162,7 +168,10 @@
         "name": "Edge cutting"
       },
       "rain_tactics": {
-        "name": "Rain detection on/off"
+        "name": "Rain detection (during mow) on/off"
+      },
+      "rain_detection": {
+        "name": "Rain detection (mower) On/Off"
       },
       "side_led": {
         "name": "Side LED on/off"
@@ -251,12 +260,6 @@
       },
       "toward_included_angle": {
         "name": "Crossing angle"
-      },
-      "rtk_latitude": {
-        "name": "RTK latitude"
-      },
-      "rtk_longitude": {
-        "name": "RTK longitude"
       }
     },
     "device_tracker": {

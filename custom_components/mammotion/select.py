@@ -39,6 +39,7 @@ class MammotionAsyncConfigSelectEntityDescription(MammotionBaseEntity, SelectEnt
 
     key: str
     options: list[str]
+    get_fn: Callable[[MammotionBaseUpdateCoordinator], int | None]
     set_fn: Callable[[MammotionBaseUpdateCoordinator, str], Awaitable[None]]
 
 
@@ -46,6 +47,7 @@ ASYNC_SELECT_ENTITIES: tuple[MammotionAsyncConfigSelectEntityDescription, ...] =
     MammotionAsyncConfigSelectEntityDescription(
         key="traversal_mode",
         options=[mode.name for mode in TraversalMode],
+        get_fn=lambda coordinator: coordinator.data.mower_state.traversal_mode,
         set_fn=lambda coordinator, value: coordinator.set_traversal_mode(
             TraversalMode[value].value
         ),
@@ -53,6 +55,7 @@ ASYNC_SELECT_ENTITIES: tuple[MammotionAsyncConfigSelectEntityDescription, ...] =
     MammotionAsyncConfigSelectEntityDescription(
         key="turning_mode",
         options=[mode.name for mode in TurningMode],
+        get_fn=lambda coordinator: coordinator.data.mower_state.turning_mode,
         set_fn=lambda coordinator, value: coordinator.set_turning_mode(
             TurningMode[value].value
         ),
@@ -239,8 +242,12 @@ class MammotionAsyncConfigSelectEntity(
         self.entity_description = entity_description
         self._attr_translation_key = entity_description.key
         self._attr_options = entity_description.options
-        # TODO get this value from the mower
-        self._attr_current_option = entity_description.options[0]
+        if entity_description.get_fn:
+            self._attr_current_option = self._attr_options[
+                entity_description.get_fn(self.coordinator)
+            ]
+        else:
+            self._attr_current_option = self._attr_options[0]
 
     async def async_select_option(self, option: str) -> None:
         self._attr_current_option = option
@@ -253,3 +260,10 @@ class MammotionAsyncConfigSelectEntity(
         if (state := await self.async_get_last_state()) is not None:
             if state.state in self.entity_description.options:
                 self._attr_current_option = state.state
+
+    async def async_update(self) -> None:
+        if self.entity_description.get_fn:
+            self._attr_current_option = self._attr_options[
+                self.entity_description.get_fn(self.coordinator)
+            ]
+        self.async_write_ha_state()

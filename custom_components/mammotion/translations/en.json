@@ -175,7 +175,10 @@
         "name": "Edge cutting"
       },
       "rain_tactics": {
-        "name": "Rain detection On/Off"
+        "name": "Rain detection (during mow) On/Off"
+      },
+      "rain_detection": {
+        "name": "Rain detection (Mower) On/Off"
       },
       "side_led": {
         "name": "Side LED on/off"

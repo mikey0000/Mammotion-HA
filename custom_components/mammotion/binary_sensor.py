@@ -8,8 +8,8 @@ from homeassistant.components.binary_sensor import (
     BinarySensorEntity,
     BinarySensorEntityDescription,
 )
-from homeassistant.core import HomeAssistant
 from homeassistant.const import EntityCategory
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pymammotion.data.model.device import MowingDevice
 
@@ -35,12 +35,6 @@ BINARY_SENSORS: tuple[MammotionBinarySensorEntityDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
 )
-
-"""
-TODO:
-read_and_set_sidelight(true, 1) is read
-read_and_set_sidelight(bool, 0) is write
-"""
 
 
 async def async_setup_entry(

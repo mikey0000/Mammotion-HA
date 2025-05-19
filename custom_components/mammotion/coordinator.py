@@ -285,11 +285,18 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
                 max_run_speed=1.2,
             )
 
+    async def async_set_rain_detection(self, on_off: bool) -> None:
+        """Set rain detection."""
+        await self.async_send_command(
+            "allpowerfull_rw", rw_id=3, context=int(on_off), rw=1
+        )
+
     async def async_set_sidelight(self, on_off: int) -> None:
         """Set Sidelight."""
         await self.async_send_command(
             "read_and_set_sidelight", is_sidelight=bool(on_off), operate=0
         )
+        await self.async_read_sidelight()
 
     async def async_read_sidelight(self) -> None:
         """Set Sidelight."""

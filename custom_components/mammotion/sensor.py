@@ -1,5 +1,6 @@
 """Creates the sensor entities for the mower."""
 
+import math
 from collections.abc import Callable
 from dataclasses import dataclass
 
@@ -10,6 +11,7 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.const import (
+    DEGREE,
     PERCENTAGE,
     SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
     UnitOfArea,
@@ -245,6 +247,22 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         value_fn=lambda mower_data: str(
             PosType(mower_data.location.position_type).name
         ),
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    MammotionSensorEntityDescription(
+        key="rtk_latitude",
+        native_unit_of_measurement=DEGREE,
+        value_fn=lambda coordinator: coordinator.data.location.RTK.latitude
+        * 180.0
+        / math.pi,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    MammotionSensorEntityDescription(
+        key="rtk_longitude",
+        native_unit_of_measurement=DEGREE,
+        value_fn=lambda coordinator: coordinator.data.location.RTK.longitude
+        * 180.0
+        / math.pi,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     # MammotionSensorEntityDescription(
