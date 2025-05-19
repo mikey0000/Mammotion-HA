@@ -124,6 +124,12 @@
       "maintenance_bat_cycles": {
         "name": "Battery cycles",
         "unit_of_measurement": "cycles"
+      },
+       "rtk_latitude": {
+        "name": "RTK latitude"
+      },
+      "rtk_longitude": {
+        "name": "RTK longitude"
       }
     },
     "button": {
@@ -281,12 +287,6 @@
       },
       "toward_included_angle": {
         "name": "Crossing angle"
-      },
-      "rtk_latitude": {
-        "name": "RTK latitude"
-      },
-      "rtk_longitude": {
-        "name": "RTK longitude"
       }
     },
     "device_tracker": {
