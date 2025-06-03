@@ -126,10 +126,10 @@
         "unit_of_measurement": "Zyklen"
       },
       "rtk_latitude": {
-        "name": "RTK latitude"
+        "name": "RTK Breitengrad"
       },
       "rtk_longitude": {
-        "name": "RTK longitude"
+        "name": "RTK Längengrad"
       }
     },
     "button": {
@@ -137,7 +137,7 @@
         "name": "Synchronisiere Karte"
       },
       "join_webrtc": {
-        "name": "Start camera on mower"
+        "name": "Kamera des Rasenmähers starten"
       },
       "resync_rtk_dock": {
         "name": "Synchronisiere RTK und Ladestation"
@@ -181,10 +181,10 @@
         "name": "Kanten schneiden"
       },
       "rain_tactics": {
-        "name": "Rain detection (during mow) On/Off"
+        "name": "Regenerkennung (beim Mähen) Ein/Aus"
       },
       "rain_detection": {
-        "name": "Rain detection (Mower) On/Off"
+        "name": "Regenerkennung (Mäher) Ein/Aus"
       },
       "side_led": {
         "name": "Seitenlicht"
@@ -193,7 +193,7 @@
         "name": "Zuerst den Umfang"
       },
       "schedule_updates": {
-        "name": "Turn Updates On/Off"
+        "name": "Updates ein-/ausschalten"
       }
     },
     "select": {
