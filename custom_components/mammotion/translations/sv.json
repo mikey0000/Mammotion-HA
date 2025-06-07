@@ -10,7 +10,7 @@
       "not_supported": "Enheten stöds inte",
       "reconfigure_successful": "Omkonfigurering lyckades"
     },
-    "flow_title": "Konfigurera din Mammotion gräsklippare",
+    "flow_title": "Konfigurera din Mammotion-gräsklippare",
     "step": {
       "bluetooth_confirm": {
         "description": "Konfiguration {name}",
@@ -126,10 +126,10 @@
         "unit_of_measurement": "cykler"
       },
       "rtk_latitude": {
-        "name": "RTK latitude"
+        "name": "RTK latitud"
       },
       "rtk_longitude": {
-        "name": "RTK longitude"
+        "name": "RTK longitud"
       }
     },
     "button": {
@@ -137,7 +137,7 @@
         "name": "Synkronisera kartor"
       },
       "join_webrtc": {
-        "name": "Start camera on mower"
+        "name": "Starta kameran på gräsklipparen"
       },
       "resync_rtk_dock": {
         "name": "Synkronisera RTK och docka"
@@ -166,7 +166,7 @@
     },
     "switch": {
       "area": {
-        "name": "Område {name}"
+        "name": "Område {namn}"
       },
       "blade_status": {
         "name": "Blad på/av"
@@ -181,10 +181,10 @@
         "name": "Kantklippning"
       },
       "rain_tactics": {
-        "name": "Rain detection (during mow) On/Off"
+        "name": "Regndetektering (under klippning) på/av"
       },
       "rain_detection": {
-        "name": "Rain detection (Mower) On/Off"
+        "name": "Regndetektering på/av"
       },
       "side_led": {
         "name": "Sido-LED på/av"
@@ -193,7 +193,7 @@
         "name": "Omkrets först"
       },
       "schedule_updates": {
-        "name": "Turn Updates On/Off"
+        "name": "Slå på/av uppdateringar"
       }
     },
     "select": {
@@ -246,16 +246,16 @@
       "cutting_angle_mode": {
         "name": "Klippväg vinkel läge",
         "state": {
-          "relative_angle": "Relativ vinkel",
-          "absolute_angle": "Absolut vinkel",
-          "random_angle": "Slumpmässig vinkel"
+          "relative_angle": "Optimal",
+          "absolute_angle": "Norr",
+          "random_angle": "Slumpmässig"
         }
       },
       "traversal_mode": {
         "name": "Förflyttningsläge",
         "state": {
           "direct": "Direkt",
-          "follow_perimeter": "Följ omkretsen"
+          "follow_perimeter": "Följ omkrets"
         }
       },
       "turning_mode": {
@@ -325,9 +325,9 @@
     },
     "toward_mode": {
       "options": {
-        "0": "Relativ vinkel",
-        "1": "Absolut vinkel",
-        "2": "Slumpmässig vinkel"
+        "0": "Optimal",
+        "1": "Norr",
+        "2": "Slumpmässig"
       }
     },
     "mowing_laps": {
@@ -363,8 +363,8 @@
           "description": "Om klippning är aktiv. (Yuka)."
         },
         "is_dump": {
-          "name": "Dumpar",
-          "description": "Om gräsdumpning är aktiv. (Yuka)."
+          "name": "tömmer",
+          "description": "Om tömning är aktiv. (Yuka)"
         },
         "is_edge": {
           "name": "Kantklippning",
