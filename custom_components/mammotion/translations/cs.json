@@ -273,6 +273,9 @@
       "blade_height": {
         "name": "Výška nožů"
       },
+      "blade_height_inches": {
+        "name": "Výška čepele (palce)"
+      },
       "working_speed": {
         "name": "Pracovní rychlost"
       },

@@ -273,6 +273,9 @@
       "blade_height": {
         "name": "Višina nožev"
       },
+      "blade_height_inches": {
+        "name": "Višina rezila (palci)"
+      },
       "working_speed": {
         "name": "Hitrost košnje"
       },

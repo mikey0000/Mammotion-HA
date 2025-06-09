@@ -84,6 +84,7 @@ YUKA_NUMBER_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
 LUBA_WORKING_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
     MammotionConfigNumberEntityDescription(
         key="blade_height",
+        native_unit_of_measurement=UnitOfLength.MILLIMETERS,
         step=1,
         min_value=25,
         max_value=70,
@@ -92,6 +93,22 @@ LUBA_WORKING_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
             coordinator.operation_settings, "blade_height", int(value)
         ),
         get_fn=lambda coordinator: coordinator.data.report_data.work.knife_height,
+    ),
+    MammotionConfigNumberEntityDescription(
+        key="blade_height_inches",
+        native_unit_of_measurement=UnitOfLength.INCHES,
+        step=0.1,
+        min_value=1.0,
+        max_value=2.8,
+        mode=NumberMode.BOX,
+        set_fn=lambda coordinator, value: setattr(
+            coordinator.operation_settings, "blade_height", round(value * 25.4)
+        ),
+        get_fn=lambda coordinator: round(
+            coordinator.data.report_data.work.knife_height / 25.4, 1
+        )
+        if coordinator.data.report_data.work.knife_height
+        else None,
     ),
 )
 

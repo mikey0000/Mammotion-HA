@@ -92,6 +92,13 @@ SWITCH_ENTITIES: tuple[MammotionAsyncSwitchEntityDescription, ...] = (
     ),
 )
 
+LUBA_1_SWITCH_ENTITIES: tuple[MammotionAsyncSwitchEntityDescription, ...] = (
+    MammotionAsyncSwitchEntityDescription(
+        key="blade_status",
+        set_fn=lambda coordinator, value: coordinator.async_start_stop_blades(value),
+    ),
+)
+
 UPDATE_SWITCH_ENTITIES: tuple[MammotionAsyncSwitchEntityDescription, ...] = (
     MammotionAsyncSwitchEntityDescription(
         key="schedule_updates",
@@ -153,6 +160,10 @@ async def async_setup_entry(
                     coordinator, entity_description
                 )
                 entities.append(config_entity)
+        if DeviceType.is_luba1(mower.device.deviceName):
+            for entity_description in LUBA_1_SWITCH_ENTITIES:
+                entity = MammotionSwitchEntity(coordinator, entity_description)
+                entities.append(entity)
         async_add_entities(entities)
 
 

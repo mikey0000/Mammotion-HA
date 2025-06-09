@@ -273,6 +273,9 @@
       "blade_height": {
         "name": "Blade height"
       },
+      "blade_height_inches": {
+        "name": "Blade height (inches)"
+      },
       "working_speed": {
         "name": "Working speed"
       },

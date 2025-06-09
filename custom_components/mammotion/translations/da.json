@@ -273,6 +273,9 @@
       "blade_height": {
         "name": "Klinge højde"
       },
+      "blade_height_inches": {
+        "name": "Bladhøjde (tommer)"
+      },
       "working_speed": {
         "name": "Arbejdshastighed"
       },
