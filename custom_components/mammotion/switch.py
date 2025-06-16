@@ -16,7 +16,8 @@ from homeassistant.helpers.restore_state import RestoreEntity
 from pymammotion.data.model.hash_list import AreaHashNameList
 from pymammotion.utility.device_type import DeviceType
 
-from . import DOMAIN, MammotionConfigEntry
+from . import MammotionConfigEntry
+from .const import DOMAIN
 from .coordinator import (
     MammotionBaseUpdateCoordinator,
     MammotionReportUpdateCoordinator,

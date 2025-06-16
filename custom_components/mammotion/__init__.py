@@ -69,7 +69,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
     """Set up Mammotion Luba from a config entry."""
 
     device_name = entry.data.get(CONF_DEVICE_NAME)
-    addresses = entry.data.get(CONF_BLE_DEVICES)
+    addresses = entry.data.get(CONF_BLE_DEVICES, {})
     mammotion = Mammotion()
     account = entry.data.get(CONF_ACCOUNTNAME)
     password = entry.data.get(CONF_PASSWORD)
@@ -153,8 +153,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                 if mammotion_device is None:
                     raise ConfigEntryError()
 
-                if device_ble_address := addresses.get(mammotion_device.name):
-                    mammotion_device.mower_state.ble_mac = device_ble_address
+                if device_ble_address := addresses.get(device.deviceName, None):
+                    mammotion_device.mower_state.mower_state.ble_mac = (
+                        device_ble_address
+                    )
                     ble_device = bluetooth.async_ble_device_from_address(
                         hass, device_ble_address
                     )

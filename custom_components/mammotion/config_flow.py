@@ -50,6 +50,36 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
         self._discovered_device: BLEDevice | None = None
         self._discovered_devices: dict[str, str] = {}
 
+    async def check_and_update_bluetooth_device(self, device: BLEDevice) -> ConfigEntry:
+        device_registry = dr.async_get(self.hass)
+        current_entries = self.hass.config_entries.async_entries(DOMAIN)
+
+        for entry in current_entries:
+            if not entry.data.get(CONF_ACCOUNT_ID):
+                continue
+
+            device_entries = dr.async_entries_for_config_entry(
+                device_registry, entry.entry_id
+            )
+
+            for device_entry in device_entries:
+                # Check both MAC address and any other identifiers
+                identifiers = {device_id[1] for device_id in device_entry.identifiers}
+                if device.name in identifiers:
+                    await self.async_set_unique_id(entry.data.get(CONF_ACCOUNT_ID))
+                    # # Update existing entry with BLE info
+                    formatted_ble = format_mac(self._discovered_device.address)
+
+                    device_registry.async_update_device(
+                        device_entry.id,
+                        merge_connections={(CONNECTION_BLUETOOTH, formatted_ble)},
+                    )
+                    if entry.state == config_entries.ConfigEntryState.LOADED:
+                        # reload the entry now we have a ble address
+                        self.hass.config_entries.async_schedule_reload(entry.entry_id)
+                    return entry
+        return None
+
     async def async_step_bluetooth(
         self, discovery_info: BluetoothServiceInfo | None = None
     ) -> ConfigFlowResult:
@@ -72,42 +102,14 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
 
         self._discovered_device = device
 
-        device_registry = dr.async_get(self.hass)
-        current_entries = self.hass.config_entries.async_entries(DOMAIN)
-
-        for entry in current_entries:
-            if not entry.data.get(CONF_ACCOUNT_ID):
-                continue
-
-            device_entries = dr.async_entries_for_config_entry(
-                device_registry, entry.entry_id
-            )
-
-            for device_entry in device_entries:
-                # Check both MAC address and any other identifiers
-                identifiers = {device_id[1] for device_id in device_entry.identifiers}
-                if device.name in identifiers:
-                    await self.async_set_unique_id(entry.data.get(CONF_ACCOUNT_ID))
-
-                    if entry.state == config_entries.ConfigEntryState.LOADED:
-                        # # Update existing entry with BLE info
-
-                        formatted_ble = format_mac(self._discovered_device.address)
-
-                        device_registry.async_update_device(
-                            device_entry.id,
-                            merge_connections={(CONNECTION_BLUETOOTH, formatted_ble)},
-                        )
-                        # reload the entry now we have a ble address
-                        self.hass.config_entries.async_schedule_reload(entry.entry_id)
-
-                    ble_devices: dict[str, str] = {
-                        self._discovered_device.name: self._discovered_device.address,
-                        **entry.data.get(CONF_BLE_DEVICES, {}),
-                    }
-                    self._abort_if_unique_id_configured(
-                        updates={CONF_BLE_DEVICES: ble_devices}
-                    )
+        if entry := await self.check_and_update_bluetooth_device(device):
+            ble_devices = {
+                self._discovered_device.name: format_mac(
+                    self._discovered_device.address
+                ),
+                **entry.data.get(CONF_BLE_DEVICES, None),
+            }
+            self._abort_if_unique_id_configured(updates={CONF_BLE_DEVICES: ble_devices})
 
         return await self.async_step_bluetooth_confirm()
 
@@ -117,8 +119,20 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
         """Confirm discovery."""
 
         assert self._discovered_device
+
+        if entry := await self.check_and_update_bluetooth_device(
+            self._discovered_device
+        ):
+            ble_devices = {
+                self._discovered_device.name: format_mac(
+                    self._discovered_device.address
+                ),
+                **entry.data.get(CONF_BLE_DEVICES, None),
+            }
+            self._abort_if_unique_id_configured(updates={CONF_BLE_DEVICES: ble_devices})
+
         ble_devices: dict[str, str] = {
-            self._discovered_device.name: self._discovered_device.address
+            self._discovered_device.name: format_mac(self._discovered_device.address)
         }
         self._config = {
             CONF_BLE_DEVICES: ble_devices,

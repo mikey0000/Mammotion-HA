@@ -53,7 +53,8 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionBaseUpdateCoordinator]):
                     format_mac(mixed_device.ble().ble_device.address),
                 )
             )
-        if mixed_device.mower_state.mower_state.wifi_mac:
+
+        if mixed_device.mower_state.mower_state.wifi_mac != "":
             connections.add(
                 (
                     CONNECTION_NETWORK_MAC,
@@ -61,7 +62,7 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionBaseUpdateCoordinator]):
                 )
             )
 
-        if mixed_device.mower_state.mower_state.ble_mac:
+        if mixed_device.mower_state.mower_state.ble_mac != "":
             connections.add(
                 (
                     CONNECTION_BLUETOOTH,
