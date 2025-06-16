@@ -1,6 +1,11 @@
 """Base class for entities."""
 
-from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.helpers.device_registry import (
+    CONNECTION_BLUETOOTH,
+    CONNECTION_NETWORK_MAC,
+    DeviceInfo,
+    format_mac,
+)
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import CONF_RETRY_COUNT, DEFAULT_RETRY_COUNT, DOMAIN
@@ -21,6 +26,9 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionBaseUpdateCoordinator]):
     def device_info(self) -> DeviceInfo:
         mower = self.coordinator.data
         swversion = mower.device_firmwares.device_version
+        mixed_device = self.coordinator.manager.device_manager.get_device(
+            self.coordinator.device_name
+        )
 
         model_id = None
         if mower is not None:
@@ -36,6 +44,31 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionBaseUpdateCoordinator]):
             else self.coordinator.device.nickName
         )
 
+        connections: set[tuple[str, str]] = set()
+
+        if mixed_device.ble():
+            connections.add(
+                (
+                    CONNECTION_BLUETOOTH,
+                    format_mac(mixed_device.ble().ble_device.address),
+                )
+            )
+        if mixed_device.mower_state.mower_state.wifi_mac:
+            connections.add(
+                (
+                    CONNECTION_NETWORK_MAC,
+                    format_mac(mixed_device.mower_state.mower_state.wifi_mac),
+                )
+            )
+
+        if mixed_device.mower_state.mower_state.ble_mac:
+            connections.add(
+                (
+                    CONNECTION_BLUETOOTH,
+                    format_mac(mixed_device.mower_state.mower_state.ble_mac),
+                )
+            )
+
         return DeviceInfo(
             identifiers={(DOMAIN, self.coordinator.device.deviceName)},
             manufacturer="Mammotion",
@@ -45,6 +78,7 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionBaseUpdateCoordinator]):
             sw_version=swversion,
             model=self.coordinator.device.productModel or model_id,
             suggested_area="Garden",
+            connections=connections,
         )
 
     @property

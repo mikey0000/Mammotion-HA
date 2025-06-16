@@ -4,13 +4,11 @@ from __future__ import annotations
 
 from aiohttp import ClientConnectorError
 from homeassistant.components import bluetooth
-from homeassistant.components.http import HomeAssistantView, StaticPathConfig
+from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_ADDRESS, CONF_PASSWORD, Platform
+from homeassistant.const import CONF_PASSWORD, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryError, ConfigEntryNotReady
-from homeassistant.helpers import device_registry as dr
-from homeassistant.helpers.device_registry import DeviceInfo
 from pymammotion import CloudIOTGateway
 from pymammotion.aliyun.model.aep_response import AepResponse
 from pymammotion.aliyun.model.connect_response import ConnectResponse
@@ -31,29 +29,26 @@ from .const import (
     CONF_ACCOUNTNAME,
     CONF_AEP_DATA,
     CONF_AUTH_DATA,
+    CONF_BLE_DEVICES,
     CONF_CONNECT_DATA,
     CONF_DEVICE_DATA,
     CONF_DEVICE_NAME,
     CONF_MAMMOTION_DATA,
     CONF_REGION_DATA,
-    CONF_RETRY_COUNT,
     CONF_SESSION_DATA,
     CONF_STAY_CONNECTED_BLUETOOTH,
     CONF_USE_WIFI,
-    DEFAULT_RETRY_COUNT,
     DEVICE_SUPPORT,
-    DOMAIN,
     EXPIRED_CREDENTIAL_EXCEPTIONS,
     LOGGER,
 )
 from .coordinator import (
-    MammotionBaseUpdateCoordinator,
     MammotionDeviceVersionUpdateCoordinator,
     MammotionMaintenanceUpdateCoordinator,
     MammotionMapUpdateCoordinator,
     MammotionReportUpdateCoordinator,
 )
-from .models import MammotionDevices, MammotionMowerData
+from .models import MammotionMowerData
 
 PLATFORMS: list[Platform] = [
     Platform.BINARY_SENSOR,
@@ -74,7 +69,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
     """Set up Mammotion Luba from a config entry."""
 
     device_name = entry.data.get(CONF_DEVICE_NAME)
-    address = entry.data.get(CONF_ADDRESS)
+    addresses = entry.data.get(CONF_BLE_DEVICES)
     mammotion = Mammotion()
     account = entry.data.get(CONF_ACCOUNTNAME)
     password = entry.data.get(CONF_PASSWORD)
@@ -135,6 +130,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                 map_coordinator = MammotionMapUpdateCoordinator(
                     hass, entry, device, mammotion
                 )
+                # sometimes device is not there when restoring data
                 await report_coordinator.async_restore_data()
                 # other coordinator
                 await maintenance_coordinator.async_config_entry_first_refresh()
@@ -157,8 +153,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                 if mammotion_device is None:
                     raise ConfigEntryError()
 
-                if address:
-                    ble_device = bluetooth.async_ble_device_from_address(hass, address)
+                if device_ble_address := addresses.get(mammotion_device.name):
+                    mammotion_device.mower_state.ble_mac = device_ble_address
+                    ble_device = bluetooth.async_ble_device_from_address(
+                        hass, device_ble_address
+                    )
                     if ble_device and ble_device.name == device_name:
                         mammotion_device.add_ble(device, ble_device)
                         mammotion_device.ble().set_disconnect_strategy(
