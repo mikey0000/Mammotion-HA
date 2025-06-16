@@ -466,35 +466,54 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         await store.async_save(data.to_dict())
 
     async def _async_update_data(self) -> _DataT | None:
-        device = self.manager.get_device_by_name(self.device_name)
-
-        if not device.mower_state.enabled or not device.mower_state.online:
-            if not device.mower_state.enabled and device.cloud().mqtt.is_connected():
-                device.cloud().mqtt.disconnect()
-            return self.get_coordinator_data(device)
-
-        # don't query the mower while users are doing map changes or its updating.
-        if device.mower_state.report_data.dev.sys_status in NO_REQUEST_MODES:
-            # loop = asyncio.get_running_loop()
-            # loop.call_later(
-            #     300, lambda: asyncio.create_task(self.async_send_command("get_report_cfg"))
-            # )
-            return self.get_coordinator_data(device)
-
-        if self.update_failures > 5 and device.preference is ConnectionPreference.WIFI:
-            """Don't hammer the mammotion/ali servers"""
-            loop = asyncio.get_running_loop()
-            loop.call_later(
-                60, lambda: asyncio.create_task(self.clear_update_failures())
-            )
-
-            return self.get_coordinator_data(device)
-
-        if device.has_ble() and device.preference is ConnectionPreference.BLUETOOTH:
-            if ble_device := bluetooth.async_ble_device_from_address(
-                self.hass, device.ble().get_address(), True
+        if device := self.manager.get_device_by_name(self.device_name):
+            if not device.mower_state.enabled or (
+                not device.mower_state.online
+                and device.preference is ConnectionPreference.WIFI
             ):
-                device.ble().update_device(ble_device)
+                if (
+                    not device.mower_state.enabled
+                    and device.cloud().mqtt.is_connected()
+                ):
+                    device.cloud().mqtt.disconnect()
+                if not device.mower_state.enabled and device.ble():
+                    if device.ble()._client.is_connected():
+                        device.ble()._client.disconnect()
+                return self.get_coordinator_data(device)
+
+            if (
+                device.mower_state.mower_state.ble_mac
+                and device.preference is ConnectionPreference.BLUETOOTH
+            ):
+                if ble_device := bluetooth.async_ble_device_from_address(
+                    self.hass, device.mower_state.mower_state.ble_mac, True
+                ):
+                    device.ble().update_device(ble_device)
+
+            # don't query the mower while users are doing map changes or its updating.
+            if device.mower_state.report_data.dev.sys_status in NO_REQUEST_MODES:
+                # MQTT we are likely to get an update, BLE we are not
+                if device.preference is ConnectionPreference.BLUETOOTH:
+                    loop = asyncio.get_running_loop()
+                    loop.call_later(
+                        300,
+                        lambda: asyncio.create_task(
+                            self.async_send_command("get_report_cfg")
+                        ),
+                    )
+                return self.get_coordinator_data(device)
+
+            if (
+                self.update_failures > 5
+                and device.preference is ConnectionPreference.WIFI
+            ):
+                """Don't hammer the mammotion/ali servers"""
+                loop = asyncio.get_running_loop()
+                loop.call_later(
+                    60, lambda: asyncio.create_task(self.clear_update_failures())
+                )
+
+                return self.get_coordinator_data(device)
                 return None
             return None
         return None
@@ -554,12 +573,16 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
         device = self.manager.get_device_by_name(self.device_name)
 
         try:
-            last_sent_time = (
-                device.cloud().command_sent_time
-                if device.cloud()
-                else device.ble().command_sent_time
-            )
-            if self.update_interval and last_sent_time < time.time() - self.update_interval.seconds:
+            last_sent_time = 0
+            if device.cloud():
+                last_sent_time = device.cloud().command_sent_time
+            elif device.ble():
+                last_sent_time = device.ble().command_sent_time
+
+            if (
+                self.update_interval
+                and last_sent_time < time.time() - self.update_interval.seconds
+            ):
                 await self.async_send_command("get_report_cfg")
 
         except DeviceOfflineException as ex:
@@ -572,13 +595,13 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
         LOGGER.debug("Updated Mammotion device %s", self.device_name)
         LOGGER.debug("================= Debug Log =================")
         if device.preference is ConnectionPreference.BLUETOOTH:
-            if device.ble:
+            if device.ble():
                 LOGGER.debug(
                     "Mammotion device data: %s",
                     device.ble()._raw_data,
                 )
         if device.preference is ConnectionPreference.WIFI:
-            if device.cloud:
+            if device.cloud():
                 LOGGER.debug(
                     "Mammotion device data: %s",
                     device.cloud()._raw_data,

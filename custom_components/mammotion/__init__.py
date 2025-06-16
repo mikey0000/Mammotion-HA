@@ -68,7 +68,6 @@ type MammotionConfigEntry = ConfigEntry[list[MammotionMowerData]]
 async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) -> bool:
     """Set up Mammotion Luba from a config entry."""
 
-    device_name = entry.data.get(CONF_DEVICE_NAME)
     addresses = entry.data.get(CONF_BLE_DEVICES, {})
     mammotion = Mammotion()
     account = entry.data.get(CONF_ACCOUNTNAME)
@@ -160,11 +159,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                     ble_device = bluetooth.async_ble_device_from_address(
                         hass, device_ble_address
                     )
-                    if ble_device and ble_device.name == device_name:
+                    if ble_device:
                         mammotion_device.add_ble(device, ble_device)
                         mammotion_device.ble().set_disconnect_strategy(
                             not stay_connected_ble
                         )
+
                 if not use_wifi:
                     mammotion_device.preference = ConnectionPreference.BLUETOOTH
                     await mammotion_device.cloud().stop()
