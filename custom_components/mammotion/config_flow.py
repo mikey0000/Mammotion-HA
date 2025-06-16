@@ -17,7 +17,7 @@ from homeassistant.config_entries import (
     ConfigFlowResult,
     OptionsFlow,
 )
-from homeassistant.const import CONF_ADDRESS, CONF_PASSWORD
+from homeassistant.const import CONF_PASSWORD
 from homeassistant.core import callback
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry as dr
@@ -51,6 +51,7 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
         self._discovered_devices: dict[str, str] = {}
 
     async def check_and_update_bluetooth_device(self, device: BLEDevice) -> ConfigEntry:
+        """Check if the device is already configured and update ble mac if needed."""
         device_registry = dr.async_get(self.hass)
         current_entries = self.hass.config_entries.async_entries(DOMAIN)
 
@@ -256,9 +257,6 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any]
     ) -> ConfigFlowResult:
         """Confirm device discovery."""
-
-        address = self._config.get(CONF_ADDRESS)
-        name = self._discovered_devices.get(address)
         mammotion = Mammotion()
 
         if user_input is not None:
@@ -287,7 +285,6 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                 data={
                     CONF_ACCOUNTNAME: account,
                     CONF_PASSWORD: password,
-                    CONF_DEVICE_NAME: name,
                     CONF_USE_WIFI: user_input.get(CONF_USE_WIFI, True),
                     **self._config,
                 },
@@ -334,16 +331,6 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                 CONF_USE_WIFI, default=entry.data.get(CONF_USE_WIFI, True)
             ): cv.boolean,
         }
-
-        if user_input is not None and entry.data.get(CONF_ADDRESS) is None:
-            schema = {
-                vol.Required(
-                    CONF_ACCOUNTNAME, default=entry.data.get(CONF_ACCOUNTNAME)
-                ): vol.All(cv.string, vol.Strip),
-                vol.Required(
-                    CONF_PASSWORD, default=entry.data.get(CONF_PASSWORD)
-                ): vol.All(cv.string, vol.Strip),
-            }
 
         return self.async_show_form(
             step_id="reconfigure",
