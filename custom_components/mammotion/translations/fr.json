@@ -126,10 +126,10 @@
         "unit_of_measurement": "cycles"
       },
       "rtk_latitude": {
-        "name": "RTK latitude"
+        "name": "RKT Base de la tondeuse Latitude"
       },
       "rtk_longitude": {
-        "name": "RTK longitude"
+        "name": "RKT Base de la tondeuse Longitude"
       }
     },
     "button": {
@@ -137,7 +137,7 @@
         "name": "Synchroniser les cartes"
       },
       "join_webrtc": {
-        "name": "Start camera on mower"
+        "name": "Activer la caméra durant la tonte"
       },
       "resync_rtk_dock": {
         "name": "Synchroniser RTK et base"
@@ -181,10 +181,10 @@
         "name": "Coupe des bordures"
       },
       "rain_tactics": {
-        "name": "Rain detection (during mow) On/Off"
+        "name": "Détection de pluie (Durant la tonte) Activer/ Désactiver"
       },
       "rain_detection": {
-        "name": "Rain detection (Mower) On/Off"
+        "name": "Détection de pluie (Tonte) Activer/ Désactiver"
       },
       "side_led": {
         "name": "LED latérales"
@@ -193,7 +193,7 @@
         "name": "Bordure d'abord"
       },
       "schedule_updates": {
-        "name": "Turn Updates On/Off"
+        "name": "Activer les mises à jour Activer/ Désactiver"
       }
     },
     "select": {
@@ -274,7 +274,7 @@
         "name": "Hauteur des lames"
       },
       "blade_height_inches": {
-        "name": "Hauteur des lames (pouces)"
+        "name": "Hauteur des lames (en pouces)"
       },
       "working_speed": {
         "name": "Vitesse de fonctionnement"
