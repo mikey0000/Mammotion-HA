@@ -160,7 +160,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                         hass, device_ble_address
                     )
                     if ble_device:
-                        mammotion_device.add_ble(device, ble_device)
+                        mammotion_device.add_ble(ble_device)
                         mammotion_device.ble().set_disconnect_strategy(
                             not stay_connected_ble
                         )

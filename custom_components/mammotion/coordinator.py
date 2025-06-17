@@ -482,13 +482,16 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
                 return self.get_coordinator_data(device)
 
             if (
-                device.mower_state.mower_state.ble_mac
+                device.mower_state.mower_state.ble_mac != ""
                 and device.preference is ConnectionPreference.BLUETOOTH
             ):
                 if ble_device := bluetooth.async_ble_device_from_address(
                     self.hass, device.mower_state.mower_state.ble_mac, True
                 ):
-                    device.ble().update_device(ble_device)
+                    if not device.has_ble():
+                        device.add_ble(ble_device)
+                    else:
+                        device.ble().update_device(ble_device)
 
             # don't query the mower while users are doing map changes or its updating.
             if device.mower_state.report_data.dev.sys_status in NO_REQUEST_MODES:
