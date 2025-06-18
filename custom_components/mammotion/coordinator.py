@@ -486,7 +486,7 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
                 and device.preference is ConnectionPreference.BLUETOOTH
             ):
                 if ble_device := bluetooth.async_ble_device_from_address(
-                    self.hass, device.mower_state.mower_state.ble_mac, True
+                    self.hass, device.mower_state.mower_state.ble_mac.upper(), True
                 ):
                     if not device.has_ble():
                         device.add_ble(ble_device)
@@ -574,6 +574,9 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
             return data
 
         device = self.manager.get_device_by_name(self.device_name)
+        if device is None:
+            LOGGER.debug("device not found")
+            return data
 
         try:
             last_sent_time = 0

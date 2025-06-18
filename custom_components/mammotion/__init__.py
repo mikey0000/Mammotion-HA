@@ -157,7 +157,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                         device_ble_address
                     )
                     ble_device = bluetooth.async_ble_device_from_address(
-                        hass, device_ble_address
+                        hass, device_ble_address.upper(), True
                     )
                     if ble_device:
                         mammotion_device.add_ble(ble_device)
