@@ -84,7 +84,21 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
     async def async_step_bluetooth(
         self, discovery_info: BluetoothServiceInfo | None = None
     ) -> ConfigFlowResult:
-        """Handle the bluetooth discovery step."""
+        """Handle the bluetooth discovery step.
+        
+        This function processes the discovery of a Bluetooth device. It logs the
+        discovery information, checks if the device is valid, and aborts the flow if
+        the device is not supported or no longer present. If the device is valid, it
+        updates the context with the device's name, stores the discovered device, and
+        checks for existing configuration entries to prevent duplicates. Finally, it
+        proceeds to the next step in the configuration flow.
+        
+        Args:
+            discovery_info: Information about the discovered Bluetooth device.
+        
+        Returns:
+            A ConfigFlowResult indicating the outcome of the bluetooth discovery step.
+        """
         LOGGER.debug("Discovered bluetooth device: %s", discovery_info)
         if discovery_info is None:
             return self.async_abort(reason="no_devices_found")
@@ -117,8 +131,8 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
     async def async_step_bluetooth_confirm(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Confirm discovery."""
 
+        """Confirm Bluetooth device discovery and proceed to next step."""
         assert self._discovered_device
 
         if entry := await self.check_and_update_bluetooth_device(
@@ -159,8 +173,20 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Handle the user step to pick discovered device."""
 
+        """Handle the user step to pick discovered device.
+        
+        This function processes user input and discovery information to determine the
+        next step in the configuration flow. If user input is provided, it updates the
+        stay connected setting and proceeds to the WiFi configuration step. If no user
+        input is provided, it collects current device addresses and filters discovered
+        devices based on certain criteria. If no valid devices are found, it skips
+        directly to the WiFi configuration step. Otherwise, it displays a form for
+        further configuration.
+        
+        Args:
+            user_input (dict[str, Any] | None): User-provided input data or None if no input is given.
+        """
         if user_input is not None:
             self._stay_connected = user_input.get(CONF_STAY_CONNECTED_BLUETOOTH, False)
 
@@ -199,7 +225,16 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
     async def async_step_wifi(
         self, user_input: dict[str, Any] | None
     ) -> ConfigFlowResult:
-        """Handle the user step for Wi-Fi control."""
+        """Handle the user step for Wi-Fi control.
+        
+        This function processes user input to configure Wi-Fi settings. It checks if
+        the user has provided account details or chosen to use Wi-Fi. If so, it
+        attempts to log in using the MammotionHTTP class and sets up the unique ID for
+        the device. If login fails or the device is already configured with a different
+        unique ID, it aborts the configuration. If the user chooses not to use Wi-Fi,
+        it creates an entry without Wi-Fi settings. If no user input is provided, it
+        displays a form requesting the necessary information.
+        """
         if user_input is not None and (
             user_input.get(CONF_ACCOUNTNAME) is not None
             or user_input.get(CONF_USE_WIFI) is True
