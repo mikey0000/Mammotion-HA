@@ -10,7 +10,7 @@
       "not_supported": "Zařízení není podporováno",
       "reconfigure_successful": "Rekonfigurace úspěšná"
     },
-    "flow_title": "Nastavení sekačky Mammotion",
+    "flow_title": "{name}",
     "step": {
       "bluetooth_confirm": {
         "description": "Nastavení {name}",

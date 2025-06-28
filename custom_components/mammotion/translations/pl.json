@@ -10,7 +10,7 @@
       "not_supported": "Urządzenie nie jest obsługiwane",
       "reconfigure_successful": "Ponowna konfiguracja zakończona powodzeniem"
     },
-    "flow_title": "Skonfiguruj swoją kosiarkę Mammotion",
+    "flow_title": "{name}",
     "step": {
       "bluetooth_confirm": {
         "description": "Skonfiguruj {name}",

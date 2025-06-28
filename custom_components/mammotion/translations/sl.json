@@ -10,7 +10,7 @@
       "not_supported": "Naprava ni podprta",
       "reconfigure_successful": "Ponastavitev uspešna"
     },
-    "flow_title": "Nastavite vašo Mammotion kosilnico",
+    "flow_title": "{name}",
     "step": {
       "bluetooth_confirm": {
         "description": "Nastavitev {name}",

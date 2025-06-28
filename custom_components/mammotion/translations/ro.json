@@ -10,7 +10,7 @@
       "not_supported": "Dispozitivul nu este suportat",
       "reconfigure_successful": "Reconfigurare reușită"
     },
-    "flow_title": "Configurați mașina de tuns iarba Mammotion",
+    "flow_title": "{name}",
     "step": {
       "bluetooth_confirm": {
         "description": "Configurație{name}",

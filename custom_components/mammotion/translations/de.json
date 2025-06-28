@@ -10,7 +10,7 @@
       "not_supported": "Das Gerät wird nicht unterstützt",
       "reconfigure_successful": "Die Neukonfiguration war erfolgreich"
     },
-    "flow_title": "Konfiguriere deinen Mammotion Mähroboter",
+    "flow_title": "{name}",
     "step": {
       "bluetooth_confirm": {
         "description": "Konfiguriere {name}",

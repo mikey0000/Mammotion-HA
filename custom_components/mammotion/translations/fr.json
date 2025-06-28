@@ -10,7 +10,7 @@
       "not_supported": "Appareil non pris en charge",
       "reconfigure_successful": "Reconfiguration réussie"
     },
-    "flow_title": "Configurez votre tondeuse Mammotion",
+    "flow_title": "{name}",
     "step": {
       "bluetooth_confirm": {
         "description": "Configuration de {name}",

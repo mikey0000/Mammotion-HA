@@ -10,7 +10,7 @@
       "not_supported": "Enheden understøttes ikke",
       "reconfigure_successful": "Omkonfiguration lykkedes"
     },
-    "flow_title": "Konfigurer din Mammotion robotplæneklipper",
+    "flow_title": "{name}",
     "step": {
       "bluetooth_confirm": {
         "description": "Opsætning af {name}",

@@ -89,6 +89,9 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
         if discovery_info is None:
             return self.async_abort(reason="no_devices_found")
 
+        await self.async_set_unique_id(format_mac(discovery_info.address))
+        self._abort_if_unique_id_configured()
+
         device = bluetooth.async_ble_device_from_address(
             self.hass, discovery_info.address
         )

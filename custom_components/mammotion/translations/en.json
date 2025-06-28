@@ -10,7 +10,7 @@
       "not_supported": "Device not supported",
       "reconfigure_successful": "Re-configure successful"
     },
-    "flow_title": "Configure your Mammotion lawn mower",
+    "flow_title": "{name}",
     "step": {
       "bluetooth_confirm": {
         "description": "Setup {name}",

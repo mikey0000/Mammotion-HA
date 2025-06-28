@@ -10,7 +10,7 @@
       "not_supported": "Dispositivo non supportato",
       "reconfigure_successful": "Riconfigurazione avvenuta con successo"
     },
-    "flow_title": "Configura il tuo tagliaerba Mammotion",
+    "flow_title": "{name}",
     "step": {
       "bluetooth_confirm": {
         "description": "Configura {name}",

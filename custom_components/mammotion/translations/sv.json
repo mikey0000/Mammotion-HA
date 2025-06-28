@@ -10,7 +10,7 @@
       "not_supported": "Enheten stöds inte",
       "reconfigure_successful": "Omkonfigurering lyckades"
     },
-    "flow_title": "Konfigurera din Mammotion-gräsklippare",
+    "flow_title": "{name}",
     "step": {
       "bluetooth_confirm": {
         "description": "Konfiguration {name}",
