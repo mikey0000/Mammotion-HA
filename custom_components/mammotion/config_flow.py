@@ -117,7 +117,7 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                 self._discovered_device.name: format_mac(
                     self._discovered_device.address
                 ),
-                **entry.data.get(CONF_BLE_DEVICES, None),
+                **entry.data.get(CONF_BLE_DEVICES, {}),
             }
             self._abort_if_unique_id_configured(updates={CONF_BLE_DEVICES: ble_devices})
 
