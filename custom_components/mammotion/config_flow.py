@@ -71,13 +71,19 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                     # # Update existing entry with BLE info
                     formatted_ble = format_mac(self._discovered_device.address)
 
-                    device_registry.async_update_device(
-                        device_entry.id,
-                        merge_connections={(CONNECTION_BLUETOOTH, formatted_ble)},
-                    )
-                    if entry.state == config_entries.ConfigEntryState.LOADED:
-                        # reload the entry now we have a ble address
-                        self.hass.config_entries.async_schedule_reload(entry.entry_id)
+                    if (
+                        CONNECTION_BLUETOOTH,
+                        formatted_ble,
+                    ) not in device_entry.connections:
+                        device_registry.async_update_device(
+                            device_entry.id,
+                            merge_connections={(CONNECTION_BLUETOOTH, formatted_ble)},
+                        )
+                        if entry.state == config_entries.ConfigEntryState.LOADED:
+                            # reload the entry now we have a ble address
+                            self.hass.config_entries.async_schedule_reload(
+                                entry.entry_id
+                            )
                     return entry
         return None
 
