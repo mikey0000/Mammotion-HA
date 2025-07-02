@@ -148,16 +148,6 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
 
     async def async_refresh_login(self) -> None:
         """Login to cloud servers."""
-        if (
-            self.manager.get_device_by_name(self.device_name)
-            and self.manager.get_device_by_name(self.device_name).has_cloud()
-        ):
-            await self.hass.async_add_executor_job(
-                self.manager.get_device_by_name(self.device_name)
-                .cloud()
-                .mqtt.disconnect
-            )
-
         account = self.config_entry.data.get(CONF_ACCOUNTNAME)
         password = self.config_entry.data.get(CONF_PASSWORD)
         await self.manager.refresh_login(account, password)
