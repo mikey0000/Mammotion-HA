@@ -147,7 +147,7 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
                 await device.ble().stop()
 
     async def async_refresh_login(self) -> None:
-        """Login to cloud servers."""
+        """Refreshes login credentials asynchronously."""
         account = self.config_entry.data.get(CONF_ACCOUNTNAME)
         password = self.config_entry.data.get(CONF_PASSWORD)
         await self.manager.refresh_login(account, password)
