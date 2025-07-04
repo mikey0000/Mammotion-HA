@@ -62,7 +62,7 @@ jobs:
         run: |
           {
             echo 'changelog<<EOF'
-            echo $(git log --pretty=format:"- %h - @%an: %s" ${{ steps.get_previous_version.outputs.previous_version }}..${{ github.ref_name }} | sed 's|%0A|\n|g')
+            echo $(git log --pretty=format:"- %h - %an: %s" ${{ steps.get_previous_version.outputs.previous_version }}..${{ github.ref_name }} | sed 's|%0A|\n|g' | sed 's|%0D|\r|g')
             echo EOF
           } >> "$GITHUB_OUTPUT"
 
