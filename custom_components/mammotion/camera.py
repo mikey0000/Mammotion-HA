@@ -185,12 +185,12 @@ async def async_setup_platform_services(
             if not stream_data or stream_data.data is None:
                 return {}
             # Return all the data needed for the Agora SDK
-            return stream_data.data
+            return stream_data.data.to_dict()
         return {}
-    
+
     async def handle_move_forward(call) -> None:
         entity_id = call.data["entity_id"]
-    
+
         # Check if speed parameter exists and validate it
         speed = 0.4  # Default speed
         if "speed" in call.data:
@@ -206,14 +206,14 @@ async def async_setup_platform_services(
                 _LOGGER.warning(
                     f"Invalid speed format for {entity_id}: {call.data['speed']}. Must be a number. Using default."
                 )
-        
+
         mower: MammotionMowerData = _get_mower_by_entity_id(entity_id)
         if mower:
             await mower.reporting_coordinator.async_move_forward(speed=speed)
-    
+
     async def handle_move_left(call) -> None:
         entity_id = call.data["entity_id"]
-    
+
         # Check if speed parameter exists and validate it
         speed = 0.4  # Default speed
         if "speed" in call.data:
@@ -229,14 +229,14 @@ async def async_setup_platform_services(
                 _LOGGER.warning(
                     f"Invalid speed format for {entity_id}: {call.data['speed']}. Must be a number. Using default."
                 )
-        
+
         mower: MammotionMowerData = _get_mower_by_entity_id(entity_id)
         if mower:
             await mower.reporting_coordinator.async_move_left(speed=speed)
 
     async def handle_move_right(call) -> None:
         entity_id = call.data["entity_id"]
-    
+
         # Check if speed parameter exists and validate it
         speed = 0.4  # Default speed
         if "speed" in call.data:
@@ -252,14 +252,14 @@ async def async_setup_platform_services(
                 _LOGGER.warning(
                     f"Invalid speed format for {entity_id}: {call.data['speed']}. Must be a number. Using default."
                 )
-        
+
         mower: MammotionMowerData = _get_mower_by_entity_id(entity_id)
         if mower:
             await mower.reporting_coordinator.async_move_right(speed=speed)
-    
+
     async def handle_move_backward(call) -> None:
         entity_id = call.data["entity_id"]
-    
+
         # Check if speed parameter exists and validate it
         speed = 0.4  # Default speed
         if "speed" in call.data:
@@ -275,7 +275,7 @@ async def async_setup_platform_services(
                 _LOGGER.warning(
                     f"Invalid speed format for {entity_id}: {call.data['speed']}. Must be a number. Using default."
                 )
-        
+
         mower: MammotionMowerData = _get_mower_by_entity_id(entity_id)
         if mower:
             await mower.reporting_coordinator.async_move_back(speed=speed)

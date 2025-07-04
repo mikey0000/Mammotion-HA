@@ -30,6 +30,7 @@ from pymammotion.data.model.report_info import Maintain
 from pymammotion.http.model.camera_stream import (
     StreamSubscriptionResponse,
 )
+from pymammotion.http.model.http import Response
 from pymammotion.mammotion.commands.mammotion_command import MammotionCommand
 from pymammotion.mammotion.devices.mammotion import (
     ConnectionPreference,
@@ -93,7 +94,7 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         self.manager: Mammotion = mammotion
         self._operation_settings = OperationSettings()
         self.update_failures = 0
-        self._stream_data: StreamSubscriptionResponse | None = (
+        self._stream_data: Response[StreamSubscriptionResponse] | None = (
             None  # Stream data [Agora]
         )
         self.commands = MammotionCommand(
@@ -109,11 +110,13 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
     def get_coordinator_data(self, device: MammotionMixedDeviceManager) -> _DataT:
         """Get coordinator data."""
 
-    def set_stream_data(self, stream_data: Any) -> None:
+    def set_stream_data(
+        self, stream_data: Response[StreamSubscriptionResponse]
+    ) -> None:
         """Set stream data"""
         self._stream_data = stream_data
 
-    def get_stream_data(self) -> Any:
+    def get_stream_data(self) -> Response[StreamSubscriptionResponse]:
         """Return stream data."""
         return self._stream_data
 
