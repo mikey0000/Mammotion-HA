@@ -274,7 +274,7 @@
         "name": "Wysokość cięcia"
       },
       "blade_height_inches": {
-        "name": "Wysokość ostrza (cale)"
+        "name": "Blade height (inches)"
       },
       "working_speed": {
         "name": "Prędkość robocza"
