@@ -181,10 +181,10 @@
         "name": "Kanten schneiden"
       },
       "rain_tactics": {
-        "name": "Regenerkennung (beim Mähen) Ein/Aus"
+        "name": "Regenerkennung (beim Mähen)"
       },
       "rain_detection": {
-        "name": "Regenerkennung (Mäher) Ein/Aus"
+        "name": "Regenerkennung (Roboter)"
       },
       "side_led": {
         "name": "Seitenlicht"
