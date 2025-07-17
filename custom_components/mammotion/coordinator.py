@@ -30,7 +30,7 @@ from pymammotion.data.model.report_info import Maintain
 from pymammotion.http.model.camera_stream import (
     StreamSubscriptionResponse,
 )
-from pymammotion.http.model.http import Response
+from pymammotion.http.model.http import CheckDeviceVersion, Response
 from pymammotion.mammotion.commands.mammotion_command import MammotionCommand
 from pymammotion.mammotion.devices.mammotion import (
     ConnectionPreference,
@@ -248,6 +248,10 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         if model_id := mower.mower_state.model_id:
             if model_id is not None or model_id != device_entry.model_id:
                 device_registry.async_update_device(device_entry.id, model_id=model_id)
+
+    async def update_firmware(self, version: str) -> None:
+        device = self.manager.get_device_by_name(self.device_name)
+        await device.mammotion_http.start_ota_upgrade(device.iot_id, version)
 
     async def async_sync_maps(self) -> None:
         """Get map data from the device."""
@@ -696,7 +700,7 @@ class MammotionMaintenanceUpdateCoordinator(MammotionBaseUpdateCoordinator[Maint
 
 
 class MammotionDeviceVersionUpdateCoordinator(
-    MammotionBaseUpdateCoordinator[MowerInfo]
+    MammotionBaseUpdateCoordinator[MowingDevice]
 ):
     """Class to manage fetching mammotion data."""
 
@@ -716,13 +720,14 @@ class MammotionDeviceVersionUpdateCoordinator(
             update_interval=DEFAULT_INTERVAL,
         )
 
-    def get_coordinator_data(self, device: MammotionMixedDeviceManager) -> MowerInfo:
-        return device.mower_state.mower_state
+    def get_coordinator_data(self, device: MammotionMixedDeviceManager) -> MowingDevice:
+        return device.mower_state
 
     async def _async_update_data(self):
         """Get data from the device."""
         if data := await super()._async_update_data():
             return data
+        device = self.manager.get_device_by_name(self.device_name)
         command_list = [
             "get_device_version_main",
             "get_device_version_info",
@@ -736,16 +741,21 @@ class MammotionDeviceVersionUpdateCoordinator(
             except DeviceOfflineException as ex:
                 """Device is offline bluetooth has been attempted."""
                 if ex.iot_id == self.device.iotId:
-                    device = self.manager.get_device_by_name(self.device_name)
                     await self.device_offline(device)
                     return device.mower_state.mower_state
             except GatewayTimeoutException:
                 """Gateway is timing out again."""
 
-        data = self.manager.get_device_by_name(self.device_name).mower_state.mower_state
+        data = self.manager.get_device_by_name(self.device_name).mower_state
         await self.check_firmware_version()
 
-        if data.model_id != "":
+        ota_info = await device.mammotion_http.get_device_ota_firmware([device.iot_id])
+        for info in ota_info.data:
+            check_version = CheckDeviceVersion.from_dict(info)
+            if check_version.device_id is device.iot_id:
+                device.mower_state.update_check = ota_info
+
+        if data.mower_state.model_id != "":
             self.update_interval = DEVICE_VERSION_INTERVAL
 
         return data
@@ -760,6 +770,7 @@ class MammotionDeviceVersionUpdateCoordinator(
                 await self.async_send_command("get_device_product_model")
             if device.mower_state.mower_state.wifi_mac == "":
                 await self.async_send_command("get_device_network_info")
+
         except DeviceOfflineException:
             """Device is offline bluetooth has been attempted."""
 
