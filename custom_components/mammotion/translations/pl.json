@@ -20,7 +20,7 @@
       },
       "reconfigure": {
         "data": {
-          "use_wifi": "Użyj Wi-Fi",
+          "use_wifi": "Use Wi-fi",
           "account_name": "E-mail lub numer konta Mammotion",
           "password": "Hasło do konta Mammotion"
         }
@@ -34,7 +34,7 @@
       },
       "wifi": {
         "data": {
-          "use_wifi": "Użyj Wi-Fi",
+          "use_wifi": "Use Wi-fi (un-tick and submit to use bluetooth)",
           "account_name": "E-mail lub numer konta Mammotion",
           "password": "Hasło do konta Mammotion"
         },
@@ -65,7 +65,7 @@
         "name": "Jasność kamery"
       },
       "wifi_rssi": {
-        "name": "RSSI WiFi"
+        "name": "WiFi RSSI"
       },
       "mnet_rssi": {
         "name": "Jakość połączenia mobilnego"
@@ -274,7 +274,7 @@
         "name": "Wysokość cięcia"
       },
       "blade_height_inches": {
-        "name": "Wysokość ostrza (cale)"
+        "name": "Blade height (inches)"
       },
       "working_speed": {
         "name": "Prędkość robocza"

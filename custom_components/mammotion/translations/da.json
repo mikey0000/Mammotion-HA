@@ -20,7 +20,7 @@
       },
       "reconfigure": {
         "data": {
-          "use_wifi": "Brug Wi-fi",
+          "use_wifi": "Use Wi-fi",
           "account_name": "Mammotion e-mail eller kontonummer",
           "password": "Mammotion adgangskode"
         }
@@ -34,7 +34,7 @@
       },
       "wifi": {
         "data": {
-          "use_wifi": "Brug Wi-Fi (fjern markeringen, for at bruge Bluetooth)",
+          "use_wifi": "Use Wi-fi (un-tick and submit to use bluetooth)",
           "account_name": "Mammotion e-mail eller kontonummer",
           "password": "Mammotion adgangskode"
         },
@@ -274,7 +274,7 @@
         "name": "Klinge højde"
       },
       "blade_height_inches": {
-        "name": "Bladhøjde (tommer)"
+        "name": "Blade height (inches)"
       },
       "working_speed": {
         "name": "Arbejdshastighed"

@@ -20,7 +20,7 @@
       },
       "reconfigure": {
         "data": {
-          "use_wifi": "Uporabi Wi-fi",
+          "use_wifi": "Use Wi-fi",
           "account_name": "E-poštni naslov Mammotion ali številka računa",
           "password": "Geslo Mammotion računa"
         }
@@ -34,7 +34,7 @@
       },
       "wifi": {
         "data": {
-          "use_wifi": "Uporabi Wi-fi (obkljukajte in pošljite za uporabo bluetooth)",
+          "use_wifi": "Use Wi-fi (un-tick and submit to use bluetooth)",
           "account_name": "E-poštni naslov Mammotion ali številka računa",
           "password": "Geslo Mammotion računa"
         },
@@ -65,7 +65,7 @@
         "name": "Osvetlitev kamere"
       },
       "wifi_rssi": {
-        "name": "Wifi RSSI"
+        "name": "WiFi RSSI"
       },
       "mnet_rssi": {
         "name": "Mobilni RSSI"
@@ -274,7 +274,7 @@
         "name": "Višina nožev"
       },
       "blade_height_inches": {
-        "name": "Višina rezila (palci)"
+        "name": "Blade height (inches)"
       },
       "working_speed": {
         "name": "Hitrost košnje"

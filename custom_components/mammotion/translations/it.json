@@ -20,7 +20,7 @@
       },
       "reconfigure": {
         "data": {
-          "use_wifi": "Usa Wi-Fi",
+          "use_wifi": "Use Wi-fi",
           "account_name": "Email o numero di conto Mammotion",
           "password": "Password dell'account Mammotion"
         }
@@ -34,7 +34,7 @@
       },
       "wifi": {
         "data": {
-          "use_wifi": "Usa Wi-Fi (deseleziona e invia per utilizzare il Bluetooth)",
+          "use_wifi": "Use Wi-fi (un-tick and submit to use bluetooth)",
           "account_name": "Email o numero di conto Mammotion",
           "password": "Password dell'account Mammotion"
         },
@@ -129,7 +129,7 @@
         "name": "RTK latitude"
       },
       "rtk_longitude": {
-        "name": "RTK longitude"
+        "name": "Longitudine RTK"
       }
     },
     "button": {
@@ -274,7 +274,7 @@
         "name": "Altezza della lama"
       },
       "blade_height_inches": {
-        "name": "Altezza lama (pollici)"
+        "name": "Blade height (inches)"
       },
       "working_speed": {
         "name": "Velocità di lavoro"

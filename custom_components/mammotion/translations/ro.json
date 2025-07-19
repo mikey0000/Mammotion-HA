@@ -20,7 +20,7 @@
       },
       "reconfigure": {
         "data": {
-          "use_wifi": "Folosește Wi-Fi",
+          "use_wifi": "Use Wi-fi",
           "account_name": "Email sau număr de cont Mammotion",
           "password": "Parola contului Mammotion"
         }
@@ -34,7 +34,7 @@
       },
       "wifi": {
         "data": {
-          "use_wifi": "Folosește Wi-Fi (debifează și trimite pentru a folosi Bluetooth)",
+          "use_wifi": "Use Wi-fi (un-tick and submit to use bluetooth)",
           "account_name": "Email sau număr de cont Mammotion",
           "password": "Parola contului Mammotion"
         },
@@ -274,7 +274,7 @@
         "name": "Înălțimea lamelor"
       },
       "blade_height_inches": {
-        "name": "Înălțimea lamei (inch)"
+        "name": "Blade height (inches)"
       },
       "working_speed": {
         "name": "Viteza de lucru"
