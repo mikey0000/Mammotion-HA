@@ -65,7 +65,7 @@
         "name": "Luminosité de la caméra"
       },
       "wifi_rssi": {
-        "name": "Signal Wi-Fi"
+        "name": "Wi-Fi RSSI"
       },
       "mnet_rssi": {
         "name": "Signal Réseau mobile"

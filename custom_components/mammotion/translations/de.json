@@ -20,7 +20,7 @@
       },
       "reconfigure": {
         "data": {
-          "use_wifi": "Verwende WLAN",
+          "use_wifi": "Verwende Wi-Fi",
           "account_name": "Mammotion E-Mail oder Account Nummer",
           "password": "Mammotion Kennwort"
         }
@@ -38,7 +38,7 @@
           "account_name": "Mammotion E-Mail oder Account Nummer",
           "password": "Mammotion Kennwort"
         },
-        "title": "Mit WLAN verbinden",
+        "title": "Mit Wi-Fi verbinden",
         "description": "Geben Sie Ihre Mammotion E-Mail oder ID und das Passwort ein"
       }
     }
@@ -65,7 +65,7 @@
         "name": "Kamera Helligkeit"
       },
       "wifi_rssi": {
-        "name": "WLAN RSSI"
+        "name": "Wi-Fi RSSI"
       },
       "mnet_rssi": {
         "name": "Mobilfunk RSSI"
@@ -181,10 +181,10 @@
         "name": "Kanten schneiden"
       },
       "rain_tactics": {
-        "name": "Regenerkennung (beim Mähen) Ein/Aus"
+        "name": "Regenerkennung (beim Mähen)"
       },
       "rain_detection": {
-        "name": "Regenerkennung (Mäher) Ein/Aus"
+        "name": "Regenerkennung (Roboter)"
       },
       "side_led": {
         "name": "Seitenlicht"

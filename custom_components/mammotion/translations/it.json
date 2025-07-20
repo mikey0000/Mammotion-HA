@@ -129,7 +129,7 @@
         "name": "RTK latitude"
       },
       "rtk_longitude": {
-        "name": "RTK longitude"
+        "name": "Longitudine RTK"
       }
     },
     "button": {

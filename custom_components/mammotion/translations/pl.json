@@ -65,7 +65,7 @@
         "name": "Jasność kamery"
       },
       "wifi_rssi": {
-        "name": "RSSI WiFi"
+        "name": "Wi-Fi RSSI"
       },
       "mnet_rssi": {
         "name": "Jakość połączenia mobilnego"

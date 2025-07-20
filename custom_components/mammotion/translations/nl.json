@@ -2,13 +2,13 @@
   "config": {
     "abort": {
       "already_configured": "Het apparaat is al ingesteld",
-      "already_in_progress": "De configuratie-flow is al in uitvoering",
+      "already_in_progress": "De configuratieflow is al in uitvoering",
       "no_devices_found": "Kon geen apparaten vinden",
-      "no_devices_found_in_account": "Er zijn geen apparaten in uw account verbonden.",
+      "no_devices_found_in_account": "Er zijn geen apparaten aan uw account verbonden",
       "bluetooth_and_account_mismatch": "Bluetooth-apparaat niet gevonden in uw account",
       "no_longer_present": "Het apparaat is niet langer aanwezig",
       "not_supported": "Apparaat wordt niet ondersteund",
-      "reconfigure_successful": "Opnieuw instellen gelukt!"
+      "reconfigure_successful": "Opnieuw instellen gelukt"
     },
     "flow_title": "{name}",
     "step": {
@@ -77,10 +77,10 @@
         "name": "Satellieten (Robot)"
       },
       "blade_height": {
-        "name": "Mes hoogte"
+        "name": "Maaihoogte"
       },
       "area": {
-        "name": "Zones"
+        "name": "Zone"
       },
       "mowing_speed": {
         "name": "Maai snelheid"
@@ -95,19 +95,19 @@
         "name": "Verstreken tijd"
       },
       "left_time": {
-        "name": "Tijd nog tegaan"
+        "name": "Tijd nog te gaan"
       },
       "l1_satellites": {
-        "name": "L1 Satellieten (Co-Weergave)"
+        "name": "L1 Satellieten (Samen kijkend)"
       },
       "l2_satellites": {
-        "name": "L2 Satellieten (Co-Weergave)"
+        "name": "L2 Satellieten (Samen kijkend)"
       },
       "position_mode": {
         "name": "RTK positie"
       },
       "position_type": {
-        "name": "Apparaatpositie type"
+        "name": "Apparaatpositietype"
       },
       "activity_mode": {
         "name": "Activiteitsmodus"
@@ -126,10 +126,10 @@
         "unit_of_measurement": "cycles"
       },
       "rtk_latitude": {
-        "name": "RTK latitude"
+        "name": "RTK breedtegraad"
       },
       "rtk_longitude": {
-        "name": "RTK longitude"
+        "name": "RTK lengtegraad"
       }
     },
     "button": {
@@ -274,7 +274,7 @@
         "name": "Mes hoogte"
       },
       "blade_height_inches": {
-        "name": "Bladhoogte (inches)"
+        "name": "Maaihoogte (inches)"
       },
       "working_speed": {
         "name": "Robot Snelheid"
@@ -286,10 +286,10 @@
         "name": "Afstand tussen paden"
       },
       "dumping_interval": {
-        "name": "Dump frequentie"
+        "name": "Dumpfrequentie"
       },
       "toward_included_angle": {
-        "name": "Kruisende Hoek"
+        "name": "Kruishoek"
       }
     },
     "device_tracker": {
@@ -336,19 +336,19 @@
     "mowing_laps": {
       "options": {
         "0": "Geen",
-        "1": "1 ronde",
-        "2": "2 rondes",
-        "3": "3 rondes",
-        "4": "4 rondes"
+        "1": "Eén ronde",
+        "2": "Twee ronden",
+        "3": "Drie ronden",
+        "4": "Vier ronden"
       }
     },
     "obstacle_laps": {
       "options": {
         "0": "Geen",
-        "1": "1 ronde",
-        "2": "2 rondes",
-        "3": "3 rondes",
-        "4": "4 rondes"
+        "1": "Eén ronde",
+        "2": "Twee ronden",
+        "3": "Drie ronden",
+        "4": "Vier ronden"
       }
     }
   },
@@ -366,7 +366,7 @@
           "description": "Of maaien actief is. (Yuka)."
         },
         "is_dump": {
-          "name": "Dumpen",
+          "name": "Bezig met dumpen",
           "description": "Of gras dumpen actief is. (Yuka)."
         },
         "is_edge": {
@@ -378,12 +378,12 @@
           "description": "Frequentie om gras te verzamelen (in vierkante meters). (Yuka)."
         },
         "border_mode": {
-          "name": "Maai volgorde",
-          "description": "Maai volgorde (rand eerst of gazon eerst)."
+          "name": "Maaivolgorde",
+          "description": "Maaivolgorde (rand eerst of gazon eerst)."
         },
         "job_version": {
           "name": "Taak versie",
-          "description": "Taak versie"
+          "description": "Taak versie."
         },
         "job_id": {
           "name": "Taak ID",
@@ -391,7 +391,7 @@
         },
         "speed": {
           "name": "Snelheid",
-          "description": "Maai Snelheid"
+          "description": "Maaisnelheid."
         },
         "ultra_wave": {
           "name": "Obstakels Detectie",
@@ -406,15 +406,15 @@
           "description": "Breedte van de paden (in cm)."
         },
         "rain_tactics": {
-          "name": "Regen detectie",
-          "description": "Regen detectie."
+          "name": "Regendetectie",
+          "description": "Regendetectie."
         },
         "blade_height": {
-          "name": "Mes hoogte",
+          "name": "Meshoogte",
           "description": "Hoogte van de messen."
         },
         "toward": {
-          "name": "Begin hoek",
+          "name": "Beginhoek",
           "description": "Aanvankelijke richting voor maaien"
         },
         "toward_included_angle": {
@@ -427,18 +427,18 @@
         },
         "mowing_laps": {
           "name": "Hoeveelheid de rand maaien",
-          "description": "Het aantal rondes rond de rand"
+          "description": "Het aantal ronden rond de rand."
         },
         "obstacle_laps": {
-          "name": "Het aantal rondes rond verboden zones",
-          "description": "Het aantal rondes rond verboden zones."
+          "name": "Het aantal ronden rond verboden zones",
+          "description": "Het aantal ronden rond verboden zones."
         },
         "start_progress": {
           "name": "Begin Voortgang",
           "description": "Begin voortgangspercentage."
         },
         "areas": {
-          "name": "Gebied Selectie",
+          "name": "Gebiedselectie",
           "description": "Lijst van te maaien gebieden (weergegeven als geheel getal)."
         }
       }
@@ -452,19 +452,19 @@
       "message": "Kon de robot niet pauzeren."
     },
     "resume_failed": {
-      "message": "Kon de robot  niet hervatten."
+      "message": "Kon de robot niet hervatten."
     },
     "start_failed": {
-      "message": "Kon de robot  niet starten."
+      "message": "Kon de robot niet starten."
     },
     "dock_failed": {
-      "message": "Kon de robot  niet naar het dok sturen."
+      "message": "Kon de robot niet naar het dok sturen."
     },
     "dock_cancel_failed": {
       "message": "Het is niet gelukt om te stoppen met het terugbrengen van de robot  naar het laadstation."
     },
     "command_failed": {
-      "message": "Kon het opdracht niet verzenden naar de robot."
+      "message": "Kon de opdracht niet verzenden naar de robot."
     }
   }
 }

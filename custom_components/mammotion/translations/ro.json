@@ -65,7 +65,7 @@
         "name": "Luminozitatea camerei"
       },
       "wifi_rssi": {
-        "name": "WiFi RSSI"
+        "name": "Wi-Fi RSSI"
       },
       "mnet_rssi": {
         "name": "Calitatea semnalului mobil"
