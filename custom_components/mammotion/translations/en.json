@@ -20,7 +20,7 @@
       },
       "reconfigure": {
         "data": {
-          "use_wifi": "Use Wi-fi",
+          "use_wifi": "Use Wi-Fi",
           "account_name": "Mammotion email or account number",
           "password": "Mammotion account password"
         }
@@ -34,7 +34,7 @@
       },
       "wifi": {
         "data": {
-          "use_wifi": "Use Wi-fi (un-tick and submit to use bluetooth)",
+          "use_wifi": "Use Wi-Fi (un-tick and submit to use bluetooth)",
           "account_name": "Mammotion email or account number",
           "password": "Mammotion account password"
         },
@@ -65,7 +65,7 @@
         "name": "Camera Brightness"
       },
       "wifi_rssi": {
-        "name": "WiFi RSSI"
+        "name": "Wi-Fi RSSI"
       },
       "mnet_rssi": {
         "name": "Mobile RSSI"
@@ -125,7 +125,7 @@
         "name": "Battery cycles",
         "unit_of_measurement": "cycles"
       },
-       "rtk_latitude": {
+      "rtk_latitude": {
         "name": "RTK latitude"
       },
       "rtk_longitude": {
@@ -246,9 +246,9 @@
       "cutting_angle_mode": {
         "name": "Cutting path angle mode",
         "state": {
-          "relative_angle": "Optimal",
-          "absolute_angle": "North",
-          "random_angle": "Random"
+          "relative_angle": "Optimal angle",
+          "absolute_angle": "North angle",
+          "random_angle": "Random angle"
         }
       },
       "traversal_mode": {
@@ -328,9 +328,9 @@
     },
     "toward_mode": {
       "options": {
-        "0": "Optimal",
-        "1": "North",
-        "2": "Random"
+        "0": "Optimal angle",
+        "1": "North angle",
+        "2": "Random angle"
       }
     },
     "mowing_laps": {
