@@ -250,7 +250,7 @@
           "absolute_angle": "Absolutní úhel (sever)",
           "random_angle": "Náhodný úhel"
         }
-    },
+      },
       "traversal_mode": {
         "name": "Způsob otačení",
         "state": {

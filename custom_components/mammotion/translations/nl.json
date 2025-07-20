@@ -104,7 +104,7 @@
         "name": "L2 Satellieten (Samen kijkend)"
       },
       "position_mode": {
-        "name": "RTK positie"
+        "name": "RTK-positie"
       },
       "position_type": {
         "name": "Apparaatpositietype"
@@ -415,7 +415,7 @@
         },
         "toward": {
           "name": "Beginhoek",
-          "description": "Aanvankelijke richting voor maaien"
+          "description": "Aanvankelijke richting voor maaien."
         },
         "toward_included_angle": {
           "name": "Kruisende Hoek",
