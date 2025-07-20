@@ -20,7 +20,7 @@
       },
       "reconfigure": {
         "data": {
-          "use_wifi": "Usa Wi-Fi",
+          "use_wifi": "Use Wi-fi",
           "account_name": "Email o numero di conto Mammotion",
           "password": "Password dell'account Mammotion"
         }
@@ -34,7 +34,7 @@
       },
       "wifi": {
         "data": {
-          "use_wifi": "Usa Wi-Fi (deseleziona e invia per utilizzare il Bluetooth)",
+          "use_wifi": "Use Wi-fi (un-tick and submit to use bluetooth)",
           "account_name": "Email o numero di conto Mammotion",
           "password": "Password dell'account Mammotion"
         },
@@ -129,7 +129,7 @@
         "name": "RTK latitude"
       },
       "rtk_longitude": {
-        "name": "RTK longitude"
+        "name": "Longitudine RTK"
       }
     },
     "button": {
@@ -246,9 +246,9 @@
       "cutting_angle_mode": {
         "name": "Modalità angolo di taglio tracciato",
         "state": {
-          "relative_angle": "Angolo relativo",
-          "absolute_angle": "Angolo assoluto",
-          "random_angle": "Angolo casuale"
+          "relative_angle": "Optimal",
+          "absolute_angle": "North",
+          "random_angle": "Random"
         }
       },
       "traversal_mode": {
@@ -328,9 +328,9 @@
     },
     "toward_mode": {
       "options": {
-        "0": "Angolo relativo",
-        "1": "Angolo assoluto",
-        "2": "Angolo casuale"
+        "0": "Optimal",
+        "1": "North",
+        "2": "Random"
       }
     },
     "mowing_laps": {

@@ -3,7 +3,7 @@
     "abort": {
       "already_configured": "Zařízení je již nakonfigurováno",
       "already_in_progress": "Konfigurační proces již probíhá",
-      "no_devices_found": "Nelze najít zařízení",
+      "no_devices_found": "Zařízení se nepodařilo najít",
       "no_devices_found_in_account": "Ve vašem účtu nejsou žádná zařízení",
       "bluetooth_and_account_mismatch": "Zařízení Bluetooth nebylo ve vašem účtu nalezeno",
       "no_longer_present": "Zařízení již není k dispozici",
@@ -20,7 +20,7 @@
       },
       "reconfigure": {
         "data": {
-          "use_wifi": "Použít Wi-Fi",
+          "use_wifi": "Use Wi-fi",
           "account_name": "Mammotion e-mail nebo číslo účtu",
           "password": "Mammotion heslo k účtu"
         }
@@ -34,7 +34,7 @@
       },
       "wifi": {
         "data": {
-          "use_wifi": "Použít Wi-Fi (odškrtněte a odešlete pro použití Bluetooth)",
+          "use_wifi": "Use Wi-fi (un-tick and submit to use bluetooth)",
           "account_name": "Mammotion e-mail nebo číslo účtu",
           "password": "Heslo k účtu Mammotion"
         },
@@ -86,7 +86,7 @@
         "name": "Rychlost sečení"
       },
       "progress": {
-        "name": "Pokrok"
+        "name": "Postup"
       },
       "total_time": {
         "name": "Celkový čas"
@@ -126,10 +126,10 @@
         "unit_of_measurement": "cyklů"
       },
       "rtk_latitude": {
-        "name": "RTK latitude"
+        "name": "RTK zeměpisná šířka"
       },
       "rtk_longitude": {
-        "name": "RTK longitude"
+        "name": "RTK zeměpisná délka"
       }
     },
     "button": {
@@ -169,22 +169,22 @@
         "name": "Oblast {name}"
       },
       "blade_status": {
-        "name": "Zapnutí/vypnutí nožů"
+        "name": "Zapnutí/Vypnutí nožů"
       },
       "is_mow": {
-        "name": "Zapnutí a vypnutí sekání"
+        "name": "Zapnutí/Vypnutí sekání"
       },
       "is_dump": {
-        "name": "Zapnutí/vypnutí vysypávání trávy"
+        "name": "Zapnutí/Vypnutí vysypávání trávy"
       },
       "is_edge": {
         "name": "Řezání okrajů"
       },
       "rain_tactics": {
-        "name": "Rain detection (during mow) On/Off"
+        "name": "Detekce deště (během sečení) Zap/Vyp"
       },
       "rain_detection": {
-        "name": "Rain detection (Mower) On/Off"
+        "name": "Detekce deště (sekačky) Zap/Vyp"
       },
       "side_led": {
         "name": "Boční světla"
@@ -193,7 +193,7 @@
         "name": "Nejprve obvod"
       },
       "schedule_updates": {
-        "name": "Turn Updates On/Off"
+        "name": "Zapnout/Vypnout aktualizace"
       }
     },
     "select": {
@@ -207,23 +207,23 @@
         }
       },
       "mowing_laps": {
-        "name": "Sekání po obvodu",
+        "name": "Počet sečení obvodu",
         "state": {
           "none": "Žádné",
-          "one": "jeden",
-          "two": "dvě",
-          "three": "tři",
-          "four": "čtyři"
+          "one": "Jednou",
+          "two": "Dvakrát",
+          "three": "Třikrát",
+          "four": "Čtyřikrát"
         }
       },
       "obstacle_laps": {
-        "name": "Počet sečení obvodů no-go zóny",
+        "name": "Počet sečení obvodů no-go zón",
         "state": {
           "none": "Žádný",
-          "one": "Jeden",
-          "two": "dvě",
-          "three": "Tři",
-          "four": "čtyři"
+          "one": "Jednou",
+          "two": "Dvakrát",
+          "three": "Třikrát",
+          "four": "Čtyřikrát"
         }
       },
       "border_mode": {
@@ -244,11 +244,11 @@
         }
       },
       "cutting_angle_mode": {
-        "name": "Režim řezného úhlu",
+        "name": "Úhel sečení",
         "state": {
-          "relative_angle": "Relativní úhel",
-          "absolute_angle": "Absolutní úhel",
-          "random_angle": "Náhodný úhel"
+          "relative_angle": "Optimal",
+          "absolute_angle": "North",
+          "random_angle": "Random"
         }
       },
       "traversal_mode": {
@@ -274,7 +274,7 @@
         "name": "Výška nožů"
       },
       "blade_height_inches": {
-        "name": "Výška čepele (palce)"
+        "name": "Výška nožů (palce)"
       },
       "working_speed": {
         "name": "Pracovní rychlost"
@@ -328,9 +328,9 @@
     },
     "toward_mode": {
       "options": {
-        "0": "Relativní úhel",
-        "1": "Absolutní úhel",
-        "2": "Náhodný úhel"
+        "0": "Optimal",
+        "1": "North",
+        "2": "Random"
       }
     },
     "mowing_laps": {

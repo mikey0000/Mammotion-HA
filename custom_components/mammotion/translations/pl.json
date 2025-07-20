@@ -20,7 +20,7 @@
       },
       "reconfigure": {
         "data": {
-          "use_wifi": "Użyj Wi-Fi",
+          "use_wifi": "Use Wi-fi",
           "account_name": "E-mail lub numer konta Mammotion",
           "password": "Hasło do konta Mammotion"
         }
@@ -34,7 +34,7 @@
       },
       "wifi": {
         "data": {
-          "use_wifi": "Użyj Wi-Fi",
+          "use_wifi": "Use Wi-fi (un-tick and submit to use bluetooth)",
           "account_name": "E-mail lub numer konta Mammotion",
           "password": "Hasło do konta Mammotion"
         },
@@ -65,7 +65,7 @@
         "name": "Jasność kamery"
       },
       "wifi_rssi": {
-        "name": "RSSI WiFi"
+        "name": "WiFi RSSI"
       },
       "mnet_rssi": {
         "name": "Jakość połączenia mobilnego"
@@ -246,9 +246,9 @@
       "cutting_angle_mode": {
         "name": "Kąt cięcia siatki",
         "state": {
-          "relative_angle": "Kąt względny",
-          "absolute_angle": "Kąt bezwzględny",
-          "random_angle": "Kąt losowy"
+          "relative_angle": "Optimal",
+          "absolute_angle": "North",
+          "random_angle": "Random"
         }
       },
       "traversal_mode": {
@@ -328,9 +328,9 @@
     },
     "toward_mode": {
       "options": {
-        "0": "Kąt względny",
-        "1": "Kąt bezwzględny",
-        "2": "Kąt losowy"
+        "0": "Optimal",
+        "1": "North",
+        "2": "Random"
       }
     },
     "mowing_laps": {

@@ -20,7 +20,7 @@
       },
       "reconfigure": {
         "data": {
-          "use_wifi": "Brug Wi-fi",
+          "use_wifi": "Use Wi-fi",
           "account_name": "Mammotion e-mail eller kontonummer",
           "password": "Mammotion adgangskode"
         }
@@ -34,7 +34,7 @@
       },
       "wifi": {
         "data": {
-          "use_wifi": "Brug Wi-Fi (fjern markeringen, for at bruge Bluetooth)",
+          "use_wifi": "Use Wi-fi (un-tick and submit to use bluetooth)",
           "account_name": "Mammotion e-mail eller kontonummer",
           "password": "Mammotion adgangskode"
         },
@@ -247,8 +247,8 @@
         "name": "Klippebanevinkel tilstand",
         "state": {
           "relative_angle": "Optimal",
-          "absolute_angle": "Nord",
-          "random_angle": "Tilfældig"
+          "absolute_angle": "North",
+          "random_angle": "Random"
         }
       },
       "traversal_mode": {
@@ -329,8 +329,8 @@
     "toward_mode": {
       "options": {
         "0": "Optimal",
-        "1": "Nord",
-        "2": "Tilfældig"
+        "1": "North",
+        "2": "Random"
       }
     },
     "mowing_laps": {
