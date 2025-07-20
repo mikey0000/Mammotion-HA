@@ -20,7 +20,7 @@
       },
       "reconfigure": {
         "data": {
-          "use_wifi": "Použít Wi-Fi",
+          "use_wifi": "Use Wi-fi",
           "account_name": "Mammotion e-mail nebo číslo účtu",
           "password": "Mammotion heslo k účtu"
         }
@@ -34,7 +34,7 @@
       },
       "wifi": {
         "data": {
-          "use_wifi": "Použít Wi-Fi (odškrtněte a odešlete pro použití Bluetooth)",
+          "use_wifi": "Use Wi-fi (un-tick and submit to use bluetooth)",
           "account_name": "Mammotion e-mail nebo číslo účtu",
           "password": "Heslo k účtu Mammotion"
         },
@@ -246,11 +246,11 @@
       "cutting_angle_mode": {
         "name": "Úhel sečení",
         "state": {
-          "relative_angle": "Relativní úhel (optimální)",
-          "absolute_angle": "Absolutní úhel (sever)",
-          "random_angle": "Náhodný úhel"
+          "relative_angle": "Optimal",
+          "absolute_angle": "North",
+          "random_angle": "Random"
         }
-    },
+      },
       "traversal_mode": {
         "name": "Způsob otačení",
         "state": {
@@ -328,9 +328,9 @@
     },
     "toward_mode": {
       "options": {
-        "0": "Relativní úhel",
-        "1": "Absolutní úhel",
-        "2": "Náhodný úhel"
+        "0": "Optimal",
+        "1": "North",
+        "2": "Random"
       }
     },
     "mowing_laps": {

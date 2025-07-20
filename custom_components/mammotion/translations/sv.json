@@ -20,7 +20,7 @@
       },
       "reconfigure": {
         "data": {
-          "use_wifi": "Använd Wi-Fi",
+          "use_wifi": "Use Wi-fi",
           "account_name": "Mammotion e-post eller kontonummer",
           "password": "Mammotion kontots lösenord"
         }
@@ -34,7 +34,7 @@
       },
       "wifi": {
         "data": {
-          "use_wifi": "Använd Wi-Fi (avmarkera och skicka för att använda Bluetooth)",
+          "use_wifi": "Use Wi-fi (un-tick and submit to use bluetooth)",
           "account_name": "Mammotion e-post eller kontonummer",
           "password": "Mammotion kontots lösenord"
         },
@@ -247,8 +247,8 @@
         "name": "Klippväg vinkel läge",
         "state": {
           "relative_angle": "Optimal",
-          "absolute_angle": "Norr",
-          "random_angle": "Slumpmässig"
+          "absolute_angle": "North",
+          "random_angle": "Random"
         }
       },
       "traversal_mode": {
@@ -329,8 +329,8 @@
     "toward_mode": {
       "options": {
         "0": "Optimal",
-        "1": "Norr",
-        "2": "Slumpmässig"
+        "1": "North",
+        "2": "Random"
       }
     },
     "mowing_laps": {

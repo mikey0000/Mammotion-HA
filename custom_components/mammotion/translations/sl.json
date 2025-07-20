@@ -20,7 +20,7 @@
       },
       "reconfigure": {
         "data": {
-          "use_wifi": "Uporabi Wi-fi",
+          "use_wifi": "Use Wi-fi",
           "account_name": "E-poštni naslov Mammotion ali številka računa",
           "password": "Geslo Mammotion računa"
         }
@@ -34,7 +34,7 @@
       },
       "wifi": {
         "data": {
-          "use_wifi": "Uporabi Wi-fi (obkljukajte in pošljite za uporabo bluetooth)",
+          "use_wifi": "Use Wi-fi (un-tick and submit to use bluetooth)",
           "account_name": "E-poštni naslov Mammotion ali številka računa",
           "password": "Geslo Mammotion računa"
         },
@@ -65,7 +65,7 @@
         "name": "Osvetlitev kamere"
       },
       "wifi_rssi": {
-        "name": "Wifi RSSI"
+        "name": "WiFi RSSI"
       },
       "mnet_rssi": {
         "name": "Mobilni RSSI"
@@ -246,9 +246,9 @@
       "cutting_angle_mode": {
         "name": "Način poti rezanja",
         "state": {
-          "relative_angle": "Relativni kot",
-          "absolute_angle": "Absolutni kot",
-          "random_angle": "Naključni kot"
+          "relative_angle": "Optimal",
+          "absolute_angle": "North",
+          "random_angle": "Random"
         }
       },
       "traversal_mode": {
@@ -328,9 +328,9 @@
     },
     "toward_mode": {
       "options": {
-        "0": "Relativni kot",
-        "1": "Absolutni kot",
-        "2": "Naključni kot"
+        "0": "Optimal",
+        "1": "North",
+        "2": "Random"
       }
     },
     "mowing_laps": {

@@ -20,7 +20,7 @@
       },
       "reconfigure": {
         "data": {
-          "use_wifi": "Gebruik Wi-fi",
+          "use_wifi": "Use Wi-fi",
           "account_name": "Mammotion e-mailadres of accountnummer",
           "password": "Mammotion-accountwachtwoord"
         }
@@ -34,7 +34,7 @@
       },
       "wifi": {
         "data": {
-          "use_wifi": "Gebruik Wi-fi (haal het vinkje weg en klik \"ga verder\" om Bluetooth te gebruiken)",
+          "use_wifi": "Use Wi-fi (un-tick and submit to use bluetooth)",
           "account_name": "Mammotion e-mailadres of accountnummer",
           "password": "Mammotion account wachtwoord"
         },
@@ -104,7 +104,7 @@
         "name": "L2 Satellieten (Samen kijkend)"
       },
       "position_mode": {
-        "name": "RTK positie"
+        "name": "RTK-positie"
       },
       "position_type": {
         "name": "Apparaatpositietype"
@@ -246,9 +246,9 @@
       "cutting_angle_mode": {
         "name": "Maai-hoek modus",
         "state": {
-          "relative_angle": "Relatieve hoek",
-          "absolute_angle": "Absolute hoek",
-          "random_angle": "Willekeurige hoek"
+          "relative_angle": "Optimal",
+          "absolute_angle": "North",
+          "random_angle": "Random"
         }
       },
       "traversal_mode": {
@@ -328,9 +328,9 @@
     },
     "toward_mode": {
       "options": {
-        "0": "Relatieve hoek",
-        "1": "Absolute hoek",
-        "2": "Willekeurige hoek"
+        "0": "Optimal",
+        "1": "North",
+        "2": "Random"
       }
     },
     "mowing_laps": {
@@ -415,7 +415,7 @@
         },
         "toward": {
           "name": "Beginhoek",
-          "description": "Aanvankelijke richting voor maaien"
+          "description": "Aanvankelijke richting voor maaien."
         },
         "toward_included_angle": {
           "name": "Kruisende Hoek",

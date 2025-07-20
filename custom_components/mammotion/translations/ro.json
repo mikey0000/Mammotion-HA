@@ -20,7 +20,7 @@
       },
       "reconfigure": {
         "data": {
-          "use_wifi": "Folosește Wi-Fi",
+          "use_wifi": "Use Wi-fi",
           "account_name": "Email sau număr de cont Mammotion",
           "password": "Parola contului Mammotion"
         }
@@ -34,7 +34,7 @@
       },
       "wifi": {
         "data": {
-          "use_wifi": "Folosește Wi-Fi (debifează și trimite pentru a folosi Bluetooth)",
+          "use_wifi": "Use Wi-fi (un-tick and submit to use bluetooth)",
           "account_name": "Email sau număr de cont Mammotion",
           "password": "Parola contului Mammotion"
         },
@@ -65,7 +65,7 @@
         "name": "Luminozitatea camerei"
       },
       "wifi_rssi": {
-        "name": "Wi-Fi RSSI"
+        "name": "WiFi RSSI"
       },
       "mnet_rssi": {
         "name": "Calitatea semnalului mobil"
@@ -246,9 +246,9 @@
       "cutting_angle_mode": {
         "name": "Modul unghiului căii tăiate",
         "state": {
-          "relative_angle": "Unghi relativ",
-          "absolute_angle": "Unghiul absolut",
-          "random_angle": "Unghi aleatoriu"
+          "relative_angle": "Optimal",
+          "absolute_angle": "North",
+          "random_angle": "Random"
         }
       },
       "traversal_mode": {
@@ -328,9 +328,9 @@
     },
     "toward_mode": {
       "options": {
-        "0": "Unghi relativ",
-        "1": "Unghi absolut",
-        "2": "Unghi aleatoriu"
+        "0": "Optimal",
+        "1": "North",
+        "2": "Random"
       }
     },
     "mowing_laps": {

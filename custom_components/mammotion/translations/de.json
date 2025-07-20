@@ -20,7 +20,7 @@
       },
       "reconfigure": {
         "data": {
-          "use_wifi": "Verwende Wi-Fi",
+          "use_wifi": "Use Wi-fi",
           "account_name": "Mammotion E-Mail oder Account Nummer",
           "password": "Mammotion Kennwort"
         }
@@ -34,11 +34,11 @@
       },
       "wifi": {
         "data": {
-          "use_wifi": "Wi-Fi verwenden (abwählen und senden, um Bluetooth zu nutzen)",
+          "use_wifi": "Use Wi-fi (un-tick and submit to use bluetooth)",
           "account_name": "Mammotion E-Mail oder Account Nummer",
           "password": "Mammotion Kennwort"
         },
-        "title": "Mit Wi-Fi verbinden",
+        "title": "Mit WLAN verbinden",
         "description": "Geben Sie Ihre Mammotion E-Mail oder ID und das Passwort ein"
       }
     }
@@ -65,7 +65,7 @@
         "name": "Kamera Helligkeit"
       },
       "wifi_rssi": {
-        "name": "Wi-Fi RSSI"
+        "name": "WiFi RSSI"
       },
       "mnet_rssi": {
         "name": "Mobilfunk RSSI"
@@ -246,9 +246,9 @@
       "cutting_angle_mode": {
         "name": "Wegwinkel Modus",
         "state": {
-          "relative_angle": "Relativer Winkel",
-          "absolute_angle": "Absoluter Winkel",
-          "random_angle": "Zufälliger Winkel"
+          "relative_angle": "Optimal",
+          "absolute_angle": "North",
+          "random_angle": "Random"
         }
       },
       "traversal_mode": {
@@ -328,9 +328,9 @@
     },
     "toward_mode": {
       "options": {
-        "0": "Relativer Winkel",
-        "1": "Absoluter Winkel",
-        "2": "Zufälliger Winkel"
+        "0": "Optimal",
+        "1": "North",
+        "2": "Random"
       }
     },
     "mowing_laps": {
