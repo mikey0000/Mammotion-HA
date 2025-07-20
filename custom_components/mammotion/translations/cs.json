@@ -181,10 +181,10 @@
         "name": "Řezání okrajů"
       },
       "rain_tactics": {
-        "name": "Rain detection (during mow) On/Off"
+        "name": "Detekce deště (během sečení) Zap/Vyp"
       },
       "rain_detection": {
-        "name": "Rain detection (Mower) On/Off"
+        "name": "Detekce deště (sekačky) Zap/Vyp"
       },
       "side_led": {
         "name": "Boční světla"

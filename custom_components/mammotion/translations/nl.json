@@ -394,7 +394,7 @@
           "description": "Maaisnelheid."
         },
         "ultra_wave": {
-          "name": "Obstakels Detectie",
+          "name": "Obstakeldetectie",
           "description": "Obstakel Vermijding Modus."
         },
         "channel_mode": {
@@ -461,7 +461,7 @@
       "message": "Kon de robot niet naar het dok sturen."
     },
     "dock_cancel_failed": {
-      "message": "Het is niet gelukt om te stoppen met het terugbrengen van de robot  naar het laadstation."
+      "message": "Het is niet gelukt om te stoppen met het terugbrengen van de robot naar het laadstation."
     },
     "command_failed": {
       "message": "Kon de opdracht niet verzenden naar de robot."

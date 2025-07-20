@@ -17,7 +17,7 @@
          upload_translations:
            description: 'Upload translations to Crowdin'
            required: true
-           default: 'true'
+           default: 'false'
          download_translations:
            description: 'Download translations from Crowdin'
            required: true
@@ -34,9 +34,9 @@
          - name: crowdin action
            uses: crowdin/github-action@v2
            with:
-             upload_sources: true
-             upload_translations: false
-             download_translations: true
+             upload_sources:  ${{ inputs.upload_sources }}
+             upload_translations: ${{ inputs.upload_translations }}
+             download_translations: ${{ inputs.download_translations }}
              localization_branch_name: l10n_crowdin_translations
              create_pull_request: true
              pull_request_title: 'New Crowdin translations'
