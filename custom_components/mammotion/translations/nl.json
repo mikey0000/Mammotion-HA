@@ -415,7 +415,7 @@
         },
         "toward": {
           "name": "Beginhoek",
-          "description": "Aanvankelijke richting voor maaien"
+          "description": "Aanvankelijke richting voor maaien."
         },
         "toward_included_angle": {
           "name": "Kruisende Hoek",
