@@ -66,8 +66,27 @@ type MammotionConfigEntry = ConfigEntry[list[MammotionMowerData]]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) -> bool:
-    """Set up Mammotion Luba from a config entry."""
 
+    """Set up Mammotion Luba from a config entry.
+    
+    This function handles the setup of Mammotion devices based on the provided
+    configuration entry. It initializes necessary credentials, establishes
+    connections to cloud services, and sets up various coordinators for device
+    management. The function also ensures that the correct connection preferences
+    are applied and handles potential exceptions that may arise during the setup
+    process.
+    
+    Args:
+        hass (HomeAssistant): The Home Assistant instance.
+        entry (MammotionConfigEntry): The configuration entry for Mammotion Luba.
+    
+    Returns:
+        bool: True if the setup is successful, False otherwise.
+    
+    Raises:
+        ConfigEntryNotReady: If a connection error occurs while logging in to the cloud.
+        ConfigEntryError: If any unretryable errors occur during device initialization or data retrieval.
+    """
     addresses = entry.data.get(CONF_BLE_DEVICES, {})
     mammotion = Mammotion()
     account = entry.data.get(CONF_ACCOUNTNAME)
