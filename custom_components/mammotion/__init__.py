@@ -21,6 +21,7 @@ from pymammotion.aliyun.model.session_by_authcode_response import (
 from pymammotion.data.model.account import Credentials
 from pymammotion.http.http import MammotionHTTP
 from pymammotion.http.model.http import LoginResponseData, Response
+from pymammotion.http.model.response_factory import response_factory
 from pymammotion.mammotion.devices.mammotion import ConnectionPreference, Mammotion
 from pymammotion.utility.device_config import DeviceConfig
 from Tea.exceptions import UnretryableException
@@ -60,6 +61,7 @@ PLATFORMS: list[Platform] = [
     Platform.NUMBER,
     Platform.SELECT,
     Platform.CAMERA,
+    Platform.UPDATE,
 ]
 
 type MammotionConfigEntry = ConfigEntry[list[MammotionMowerData]]
@@ -117,6 +119,22 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
             ) in mqtt_client.cloud_client.devices_by_account_response.data.data:
                 if not device.deviceName.startswith(DEVICE_SUPPORT):
                     continue
+
+                mammotion_device = mammotion.get_or_create_device_by_name(
+                    device, mqtt_client
+                )
+
+                if device_ble_address := addresses.get(device.deviceName, None):
+                    mammotion_device.state.mower_state.ble_mac = device_ble_address
+                    ble_device = bluetooth.async_ble_device_from_address(
+                        hass, device_ble_address.upper(), True
+                    )
+                    if ble_device:
+                        mammotion_device.add_ble(ble_device)
+                        mammotion_device.ble().set_disconnect_strategy(
+                            not stay_connected_ble
+                        )
+
                 maintenance_coordinator = MammotionMaintenanceUpdateCoordinator(
                     hass, entry, device, mammotion
                 )
@@ -138,7 +156,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
 
                 device_config = DeviceConfig()
                 device_limits = device_config.get_working_parameters(
-                    version_coordinator.data.sub_model_id
+                    version_coordinator.data.mower_state.sub_model_id
                 )
                 if device_limits is None:
                     device_limits = device_config.get_working_parameters(
@@ -147,23 +165,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
 
                 if device_limits is None:
                     device_limits = device_config.get_best_default(device.productKey)
-
-                mammotion_device = mammotion.get_device_by_name(device.deviceName)
-                if mammotion_device is None:
-                    raise ConfigEntryError()
-
-                if device_ble_address := addresses.get(device.deviceName, None):
-                    mammotion_device.mower_state.mower_state.ble_mac = (
-                        device_ble_address
-                    )
-                    ble_device = bluetooth.async_ble_device_from_address(
-                        hass, device_ble_address.upper(), True
-                    )
-                    if ble_device:
-                        mammotion_device.add_ble(ble_device)
-                        mammotion_device.ble().set_disconnect_strategy(
-                            not stay_connected_ble
-                        )
 
                 if not use_wifi:
                     mammotion_device.preference = ConnectionPreference.BLUETOOTH
@@ -273,7 +274,7 @@ async def check_and_restore_cloud(
         return None
 
     mammotion_response_data = (
-        Response[LoginResponseData].from_dict(mammotion_data)
+        response_factory(Response[LoginResponseData], mammotion_data)
         if isinstance(mammotion_data, dict)
         else mammotion_data
     )

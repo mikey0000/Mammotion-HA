@@ -182,7 +182,7 @@ class MammotionSwitchEntity(MammotionBaseEntity, SwitchEntity, RestoreEntity):
         self.coordinator = coordinator
         self.entity_description = entity_description
         self._attr_translation_key = entity_description.key
-        if entity_description.is_on_func:
+        if callable(entity_description.is_on_func):
             self._attr_is_on = entity_description.is_on_func(self.coordinator)
         else:
             self._attr_is_on = False  # Default state
@@ -199,7 +199,7 @@ class MammotionSwitchEntity(MammotionBaseEntity, SwitchEntity, RestoreEntity):
 
     async def async_update(self) -> None:
         """Update the entity state."""
-        if self.entity_description.is_on_func:
+        if callable(self.entity_description.is_on_func):
             self._attr_is_on = self.entity_description.is_on_func(self.coordinator)
             self.async_write_ha_state()
 
@@ -243,7 +243,7 @@ class MammotionUpdateSwitchEntity(MammotionBaseEntity, SwitchEntity, RestoreEnti
 
     async def async_update(self) -> None:
         """Update the entity state."""
-        if self.entity_description.is_on_func:
+        if callable(self.entity_description.is_on_func):
             self._attr_is_on = self.entity_description.is_on_func(self.coordinator)
             self.async_write_ha_state()
 
@@ -305,7 +305,7 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
         self.coordinator = coordinator
         self.entity_description = entity_description
         self._attr_extra_state_attributes = {"hash": entity_description.area}
-        self._attr_is_on = self._attr_is_on = (
+        self._attr_is_on = (
             entity_description.area in self.coordinator.operation_settings.areas
         )  # Default state
 

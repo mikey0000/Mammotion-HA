@@ -242,7 +242,7 @@ class MammotionAsyncConfigSelectEntity(
         self.entity_description = entity_description
         self._attr_translation_key = entity_description.key
         self._attr_options = entity_description.options
-        if entity_description.get_fn:
+        if callable(entity_description.get_fn):
             self._attr_current_option = self._attr_options[
                 entity_description.get_fn(self.coordinator)
             ]
@@ -262,7 +262,7 @@ class MammotionAsyncConfigSelectEntity(
                 self._attr_current_option = state.state
 
     async def async_update(self) -> None:
-        if self.entity_description.get_fn:
+        if callable(self.entity_description.get_fn):
             self._attr_current_option = self._attr_options[
                 self.entity_description.get_fn(self.coordinator)
             ]
