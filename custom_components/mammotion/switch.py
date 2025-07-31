@@ -339,8 +339,19 @@ def async_add_area_entities(
     added_areas: set[int],
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Handle addition of mowing areas."""
 
+    """Handle the addition of mowing areas.
+    
+    This function processes new and old areas to update entities accordingly. It
+    checks if there are any new areas that need to be added as entities and removes
+    any obsolete ones. It constructs switch entities for new areas and updates the
+    coordinator's operation settings based on the entity state.
+    
+    Args:
+        coordinator (MammotionReportUpdateCoordinator): The coordinator object managing data updates.
+        added_areas (set[int]): A set of area IDs that have already been added as entities.
+        async_add_entities (AddEntitiesCallback): A callback function to add new entities asynchronously.
+    """
     if coordinator.data is None:
         return
 
