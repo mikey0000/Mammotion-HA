@@ -339,8 +339,18 @@ def async_add_area_entities(
     added_areas: set[int],
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Handle addition of mowing areas."""
 
+    """Handle addition of mowing areas.
+    
+    This function processes newly added areas by creating corresponding switch
+    entities and adding them to Home Assistant. It also handles removal of any
+    areas that are no longer present in the coordinator data.
+    
+    Args:
+        coordinator (MammotionReportUpdateCoordinator): The coordinator object managing report updates.
+        added_areas (set[int]): A set of area IDs that have already been added.
+        async_add_entities (AddEntitiesCallback): A callback function to add entities to Home Assistant.
+    """
     if coordinator.data is None:
         return
 
