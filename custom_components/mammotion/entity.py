@@ -34,7 +34,10 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionBaseUpdateCoordinator]):
         if mower is not None:
             if mower.mower_state.model_id != "":
                 model_id = mower.mower_state.model_id
-            if mower.mqtt_properties is not None:
+            if (
+                mower.mqtt_properties is not None
+                and mower.mqtt_properties.params.items.extMod is not None
+            ):
                 model_id = mower.mqtt_properties.params.items.extMod.value
 
         nick_name = self.coordinator.device.nickName
