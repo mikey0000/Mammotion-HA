@@ -3246,14 +3246,14 @@ testutils = ["gitpython (>3)"]
 
 [[package]]
 name = "pymammotion"
-version = "0.4.56"
+version = "0.5.0"
 description = ""
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "pymammotion-0.4.56-py3-none-any.whl", hash = "sha256:ad129b3a328a3e753b5dedc18518d50887796a605736aab92c4b49c974b7f41c"},
-    {file = "pymammotion-0.4.56.tar.gz", hash = "sha256:62bfb36f97ef0c9fb310f6c6fc8dce8e4b837064772db1c78dd5d76e73e7092e"},
+    {file = "pymammotion-0.5.0-py3-none-any.whl", hash = "sha256:d5d05c8c79bfc6687a86069c1f4b0d467d50ee38f26d0aa3d0732e1c37d95143"},
+    {file = "pymammotion-0.5.0.tar.gz", hash = "sha256:4f8ac8ac89de3a1caba664bbf7e9fb773526070ad13cfed5c882d757e01a8301"},
 ]
 
 [package.dependencies]
@@ -3264,7 +3264,7 @@ alicloud-gateway-iot = ">=1.0.0,<2.0.0"
 async-timeout = ">=4.0.3,<5.0.0"
 betterproto = ">=1.2.5,<2.0.0"
 bleak = ">=0.21.0"
-bleak-retry-connector = ">=3.5.0,<4.0.0"
+bleak-retry-connector = ">=3.5.0"
 crcmod = ">=1.7,<2.0"
 cryptography = ">=43.0.1"
 jsonic = ">=1.0.0,<2.0.0"
@@ -4528,4 +4528,4 @@ ifaddr = ">=0.1.7"
 [metadata]
 lock-version = "2.1"
 python-versions = "~3.13.0"
-content-hash = "1be1c6036917025db3c7a1951585edd4218787b83f460c35c5994787eee516a6"
+content-hash = "acc35f77600ad5edc9ea32e1e798225dc8bfb652c7878079864d70b4514c7052"

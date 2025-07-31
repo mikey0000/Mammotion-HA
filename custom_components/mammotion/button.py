@@ -76,6 +76,8 @@ BUTTON_SENSORS: tuple[MammotionButtonSensorEntityDescription, ...] = (
         press_fn=lambda coordinator: coordinator.join_webrtc_channel(),
         entity_category=EntityCategory.CONFIG,
     ),
+    # TODO add delete and set charging station
+    # delete_charge_point
 )
 
 

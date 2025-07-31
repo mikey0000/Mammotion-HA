@@ -2,14 +2,18 @@ import logging
 from dataclasses import dataclass
 from typing import Any
 
-from homeassistant.components.update import UpdateEntity, UpdateDeviceClass, UpdateEntityFeature, \
-    UpdateEntityDescription
+from homeassistant.components.update import (
+    UpdateDeviceClass,
+    UpdateEntity,
+    UpdateEntityDescription,
+    UpdateEntityFeature,
+)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
-from custom_components.mammotion.coordinator import MammotionBaseUpdateCoordinator
-from custom_components.mammotion.entity import MammotionBaseEntity
+from .coordinator import MammotionBaseUpdateCoordinator
+from .entity import MammotionBaseEntity
 
 LOGGER = logging.getLogger(__name__)
 
@@ -17,11 +21,14 @@ LOGGER = logging.getLogger(__name__)
 @dataclass(frozen=True, kw_only=True)
 class MammotionUpdateEntityDescription(UpdateEntityDescription):
     """Describes Mammotion switch entity."""
+
     key: str
+
 
 MammotionUpdate = MammotionUpdateEntityDescription(
     key="update",
 )
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -32,7 +39,7 @@ async def async_setup_entry(
     mammotion_devices = entry.runtime_data
     entities = []
     for mower in mammotion_devices:
-        entity = MammotionUpdateEntity(mower.update_coordinator, MammotionUpdate)
+        entity = MammotionUpdateEntity(mower.version_coordinator, MammotionUpdate)
         entities.append(entity)
 
     async_add_entities(entities)
@@ -40,10 +47,13 @@ async def async_setup_entry(
 
 class MammotionUpdateEntity(MammotionBaseEntity, UpdateEntity):
     """Update entity for a Netgear device."""
+
     entity_description: MammotionUpdateEntityDescription
 
     _attr_device_class = UpdateDeviceClass.FIRMWARE
-    _attr_supported_features = UpdateEntityFeature.INSTALL
+    _attr_supported_features = (
+        UpdateEntityFeature.INSTALL | UpdateEntityFeature.RELEASE_NOTES
+    )
     _attr_has_entity_name = True
 
     def __init__(
@@ -61,34 +71,57 @@ class MammotionUpdateEntity(MammotionBaseEntity, UpdateEntity):
     def installed_version(self) -> str | None:
         """Version currently in use."""
         if self.coordinator.data is not None:
-            return self.coordinator.data.mower_state.update_check
+            return self.coordinator.data.device_firmwares.device_version
         return None
 
     @property
     def latest_version(self) -> str | None:
         """Latest version available for install."""
-        if self.coordinator.data is not None:
-            new_version = self.coordinator.data.get("NewVersion")
-            if new_version is not None and not new_version.startswith(
-                self.installed_version
-            ):
-                return new_version
+        if (
+            self.coordinator.data.update_check.upgradeable
+            and self.coordinator.data.update_check.product_version_info_vo is not None
+        ):
+            new_version = self.coordinator.data.update_check.product_version_info_vo
+            return new_version.release_version
         return self.installed_version
 
     @property
     def release_summary(self) -> str | None:
         """Release summary."""
-        if self.coordinator.data is not None:
-            self.coordinator.data.update_check.firmware_lastest_versions
-            return .
+        if self.coordinator.data.update_check.product_version_info_vo is not None:
+            return (
+                self.coordinator.data.update_check.product_version_info_vo.release_note
+            )
+        return None
+
+    def release_notes(self) -> str | None:
+        if self.coordinator.data.update_check.product_version_info_vo is not None:
+            return (
+                self.coordinator.data.update_check.product_version_info_vo.release_note
+            )
+        return None
+
+    @property
+    def in_progress(self) -> bool:
+        """Update installation in progress."""
+        return self.coordinator.data.update_check.isupgrading
+
+    @property
+    def progress(self) -> int | None:
+        """Update installation progress."""
+        if self.coordinator.data.update_check.isupgrading:
+            return self.coordinator.data.update_check.progress
         return None
 
     async def async_install(
-            self, version: str | None, backup: bool, **kwargs: Any
+        self, version: str | None, backup: bool, **kwargs: Any
     ) -> None:
         """Install the latest firmware version."""
-        await self.coordinator.update_firmware(version)
-
+        if version is None:
+            version = self.latest_version
+        if version:
+            await self.coordinator.update_firmware(version)
+        await self.coordinator.async_refresh()
 
     @callback
     def async_update_device(self) -> None:

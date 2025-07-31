@@ -111,6 +111,11 @@ class MammotionWebRTCCamera(MammotionBaseEntity, Camera):
         """Return the type of stream supported by this camera."""
         return StreamType.WEB_RTC
 
+    @property
+    def content_type(self) -> str:
+        """Return the content type of the camera image."""
+        return "image/jpeg"
+
     async def async_camera_image(
         self, width: int | None = None, height: int | None = None
     ) -> bytes | None:
