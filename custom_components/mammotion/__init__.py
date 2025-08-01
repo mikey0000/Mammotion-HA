@@ -9,6 +9,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryError, ConfigEntryNotReady
+from homeassistant.helpers.device_registry import DeviceEntry
 from pymammotion import CloudIOTGateway
 from pymammotion.aliyun.model.aep_response import AepResponse
 from pymammotion.aliyun.model.connect_response import ConnectResponse
@@ -40,6 +41,7 @@ from .const import (
     CONF_STAY_CONNECTED_BLUETOOTH,
     CONF_USE_WIFI,
     DEVICE_SUPPORT,
+    DOMAIN,
     EXPIRED_CREDENTIAL_EXCEPTIONS,
     LOGGER,
 )
@@ -329,3 +331,20 @@ async def async_unload_entry(hass: HomeAssistant, entry: MammotionConfigEntry) -
             except TimeoutError:
                 """Do nothing as this sometimes occurs with disconnecting BLE."""
     return unload_ok
+
+
+async def async_remove_config_entry_device(
+    hass: HomeAssistant, config_entry: ConfigEntry, device_entry: DeviceEntry
+) -> bool:
+    """Remove a config entry from a device."""
+    mower_name = (
+        next(
+            identifier[1]
+            for identifier in device_entry.identifiers
+            if identifier[0] == DOMAIN
+        ),
+    )
+    mower = next(
+        (mower for mower in config_entry.runtime_data if mower.name == mower_name), None
+    )
+    return not bool(mower)
