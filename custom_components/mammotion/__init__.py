@@ -347,4 +347,5 @@ async def async_remove_config_entry_device(
     mower = next(
         (mower for mower in config_entry.runtime_data if mower.name == mower_name), None
     )
+
     return not bool(mower)

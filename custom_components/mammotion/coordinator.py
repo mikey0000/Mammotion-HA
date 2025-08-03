@@ -28,7 +28,7 @@ from pymammotion.data.model import GenerateRouteInformation, HashList
 from pymammotion.data.model.device import MowerInfo, MowingDevice
 from pymammotion.data.model.device_config import OperationSettings, create_path_order
 from pymammotion.data.model.report_info import Maintain
-from pymammotion.data.mqtt.properties import ThingPropertiesMessage
+from pymammotion.data.mqtt.properties import OTAProgressItems, ThingPropertiesMessage
 from pymammotion.data.mqtt.status import ThingStatusMessage
 from pymammotion.http.model.camera_stream import (
     StreamSubscriptionResponse,
@@ -746,6 +746,7 @@ class MammotionDeviceVersionUpdateCoordinator(
     ) -> None:
         """Update data from incoming properties messages."""
         if ota_progress := properties.params.items.otaProgress:
+            ota_progress.value = OTAProgressItems.from_dict(ota_progress.value)
             self.data.update_check.progress = ota_progress.value.progress
             self.data.update_check.isupgrading = True
             if ota_progress.value.progress == 100:
