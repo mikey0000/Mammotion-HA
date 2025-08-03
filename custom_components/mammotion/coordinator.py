@@ -744,7 +744,7 @@ class MammotionDeviceVersionUpdateCoordinator(
     async def _async_update_properties(
         self, properties: ThingPropertiesMessage
     ) -> None:
-        """Update data from incoming properties messages."""
+        """Update device data from incoming properties messages."""
         if ota_progress := properties.params.items.otaProgress:
             ota_progress.value = OTAProgressItems.from_dict(ota_progress.value)
             self.data.update_check.progress = ota_progress.value.progress
