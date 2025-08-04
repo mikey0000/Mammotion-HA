@@ -807,9 +807,10 @@ class MammotionDeviceVersionUpdateCoordinator(
             ota_info = await device.mammotion_http.get_device_ota_firmware(
                 [device.iot_id]
             )
-            for check_version in ota_info.data:
-                if check_version.device_id == device.iot_id:
-                    device.state.update_check = check_version
+            If ota_info is not None:
+           		for check_version in ota_info.data:
+               		if check_version.device_id == device.iot_id:
+                   		device.state.update_check = check_version
 
         except DeviceOfflineException:
             """Device is offline bluetooth has been attempted."""
