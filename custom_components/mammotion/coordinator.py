@@ -807,7 +807,7 @@ class MammotionDeviceVersionUpdateCoordinator(
             ota_info = await device.mammotion_http.get_device_ota_firmware(
                 [device.iot_id]
             )
-            If ota_info is not None:
+            if ota_info is not None:
            		for check_version in ota_info.data:
                		if check_version.device_id == device.iot_id:
                    		device.state.update_check = check_version
