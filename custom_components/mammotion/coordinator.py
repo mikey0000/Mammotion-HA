@@ -792,7 +792,15 @@ class MammotionDeviceVersionUpdateCoordinator(
         return data
 
     async def _async_setup(self) -> None:
-        """Setup device version coordinator."""
+        """Sets up the device version coordinator.
+        
+        This method initializes the setup by calling the superclass's `_async_setup`
+        method, retrieves the device by name, and updates its state if necessary. It
+        then checks for missing model ID and Wi-Fi MAC information, sends corresponding
+        commands if needed, and fetches OTA firmware information to update the device
+        state accordingly. If a `DeviceOfflineException` is raised, it indicates that
+        the device is offline.
+        """
         await super()._async_setup()
         device = self.manager.get_device_by_name(self.device_name)
         if self.data is None:
