@@ -125,13 +125,13 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         """Start stream command."""
         device = self.manager.get_device_by_name(self.device_name)
         command = self.commands.device_agora_join_channel_with_position(enter_state=1)
-        await device.cloud_client.send_cloud_command(device.iot_id, command)
+        await self.async_send_cloud_command(device.iot_id, command)
 
     async def leave_webrtc_channel(self) -> None:
         """End stream command."""
         device = self.manager.get_device_by_name(self.device_name)
         command = self.commands.device_agora_join_channel_with_position(enter_state=0)
-        await device.cloud_client.send_cloud_command(device.iot_id, command)
+        await self.async_send_cloud_command(device.iot_id, command)
 
     async def set_scheduled_updates(self, enabled: bool) -> None:
         device = self.manager.get_device_by_name(self.device_name)
@@ -233,6 +233,38 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
                 raise HomeAssistantError(
                     translation_domain=DOMAIN, translation_key="command_failed"
                 ) from exc
+
+    async def async_send_cloud_command(
+        self, iot_id: str, command: bytes
+    ) -> bool | None:
+        """Send command."""
+        if not self.manager.get_device_by_name(self.device_name).state.online:
+            return False
+
+        device = self.manager.get_device_by_name(self.device_name)
+
+        try:
+            await device.cloud_client.send_cloud_command(iot_id, command)
+            self.update_failures = 0
+            return True
+        except FailedRequestException:
+            self.update_failures += 1
+            if self.update_failures < 5:
+                return await self.async_send_cloud_command(device.iot_id, command)
+            return False
+        except EXPIRED_CREDENTIAL_EXCEPTIONS:
+            self.update_failures += 1
+            await self.async_refresh_login()
+            if self.update_failures < 5:
+                return await self.async_send_cloud_command(device.iot_id, command)
+            return False
+        except GatewayTimeoutException as ex:
+            LOGGER.error(f"Gateway timeout exception: {ex.iot_id}")
+            self.update_failures = 0
+            return False
+        except (DeviceOfflineException, NoConnectionException) as ex:
+            """Device is offline try bluetooth if we have it."""
+            LOGGER.error(f"Device offline: {ex.iot_id}")
 
     async def check_firmware_version(self) -> None:
         """Check if firmware version is updated."""
@@ -782,9 +814,10 @@ class MammotionDeviceVersionUpdateCoordinator(
         await self.check_firmware_version()
 
         ota_info = await device.mammotion_http.get_device_ota_firmware([device.iot_id])
-        for check_version in ota_info.data:
-            if check_version.device_id == device.iot_id:
-                device.state.update_check = check_version
+        if check_versions := ota_info.data:
+            for check_version in check_versions:
+                if check_version.device_id == device.iot_id:
+                    device.state.update_check = check_version
 
         if data.mower_state.model_id != "":
             self.update_interval = DEVICE_VERSION_INTERVAL
