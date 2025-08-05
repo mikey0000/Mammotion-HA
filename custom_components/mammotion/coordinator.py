@@ -237,7 +237,23 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
     async def async_send_cloud_command(
         self, iot_id: str, command: bytes
     ) -> bool | None:
-        """Send command."""
+        """Attempts to send a cloud command to a specified IoT device.
+        
+        This function checks if the device is online. If it is, it sends the command
+        via the cloud client. It handles exceptions such as `FailedRequestException`,
+        expired credentials, gateway timeout, and device offline scenarios. The
+        function retries sending the command up to 5 times in case of transient
+        failures, except for gateway timeouts which reset the retry counter.
+        
+        Args:
+            iot_id (str): The ID of the IoT device.
+            command (bytes): The command to be sent to the device.
+        
+        Returns:
+            bool | None: True if the command is successfully sent, False if it fails after
+                retries,
+                or None if the device is offline and no Bluetooth connection is available.
+        """
         if not self.manager.get_device_by_name(self.device_name).state.online:
             return False
 
@@ -267,7 +283,15 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
             LOGGER.error(f"Device offline: {ex.iot_id}")
 
     async def check_firmware_version(self) -> None:
-        """Check if firmware version is updated."""
+        """Checks if the firmware version of a mower device is updated and updates the
+        device registry accordingly.
+        
+        This function retrieves the mower device from the manager, fetches the current
+        firmware version, and compares it with the stored version in the device
+        registry. If there's a mismatch, it updates the device registry with the new
+        firmware version. Additionally, it checks for model ID changes and updates the
+        device registry if necessary.
+        """
         mower = self.manager.mower(self.device_name)
         device_registry = dr.async_get(self.hass)
         device_entry = device_registry.async_get_device(
@@ -788,7 +812,18 @@ class MammotionDeviceVersionUpdateCoordinator(
             self.async_set_updated_data(self.data)
 
     async def _async_update_data(self):
-        """Get data from the device."""
+        """Update data asynchronously from a device.
+        
+        This function first attempts to retrieve data using a superclass method. If no
+        data is obtained, it proceeds to fetch specific information from the device
+        using a list of commands. It handles exceptions for offline devices and gateway
+        timeouts. After collecting all necessary data, it checks for firmware updates
+        and updates the device's state accordingly. Finally, it sets an update interval
+        if certain conditions are met.
+        
+        Returns:
+            Any: The updated device data or the current state of the device.
+        """
         if data := await super()._async_update_data():
             return data
         device = self.manager.get_device_by_name(self.device_name)
