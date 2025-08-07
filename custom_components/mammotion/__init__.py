@@ -336,7 +336,12 @@ async def async_unload_entry(hass: HomeAssistant, entry: MammotionConfigEntry) -
 async def async_remove_config_entry_device(
     hass: HomeAssistant, config_entry: ConfigEntry, device_entry: DeviceEntry
 ) -> bool:
-    """Remove a config entry from a device."""
+    """Remove a configuration entry from a device.
+    
+    This function identifies the mower associated with the given device entry and
+    removes it from the configuration entry's runtime data. It returns True if the
+    removal is successful (i.e., the mower was found), otherwise False.
+    """
     mower_name = (
         next(
             identifier[1]
