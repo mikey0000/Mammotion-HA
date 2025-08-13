@@ -206,11 +206,15 @@ async def async_setup_platform_services(
                     speed = speed_value
                 else:
                     _LOGGER.warning(
-                        f"Invalid speed value for {entity_id}: {speed_value}. Must be between 0 and 1. Using default."
+                        f"Invalid speed value for %s: %s. Must be between 0 and 1. Using default.",
+                        entity_id,
+                        speed_value
                     )
             except (ValueError, TypeError):
                 _LOGGER.warning(
-                    f"Invalid speed format for {entity_id}: {raw_speed}. Must be a number. Using default."
+                    f"Invalid speed format for %s: %s. Must be a number. Using default.",
+                        entity_id,
+                        raw_speed
                 )
 
         mower: MammotionMowerData = _get_mower_by_entity_id(entity_id)
@@ -230,11 +234,15 @@ async def async_setup_platform_services(
                     speed = speed_value
                 else:
                     _LOGGER.warning(
-                        f"Invalid speed value for {entity_id}: {speed_value}. Must be between 0 and 1. Using default."
+                        f"Invalid speed value for %s: %s. Must be between 0 and 1. Using default.",
+                        entity_id,
+                        speed_value
                     )
             except (ValueError, TypeError):
                 _LOGGER.warning(
-                    f"Invalid speed format for {entity_id}: {raw_speed}. Must be a number. Using default."
+                    f"Invalid speed format for %s: %s. Must be a number. Using default.",
+                        entity_id,
+                        raw_speed
                 )
 
         mower: MammotionMowerData = _get_mower_by_entity_id(entity_id)
@@ -254,11 +262,15 @@ async def async_setup_platform_services(
                     speed = speed_value
                 else:
                     _LOGGER.warning(
-                        f"Invalid speed value for {entity_id}: {speed_value}. Must be between 0 and 1. Using default."
+                        f"Invalid speed value for %s: %s. Must be between 0 and 1. Using default.",
+                        entity_id,
+                        speed_value
                     )
             except (ValueError, TypeError):
                 _LOGGER.warning(
-                    f"Invalid speed format for {entity_id}: {raw_speed}. Must be a number. Using default."
+                    f"Invalid speed format for %s: %s. Must be a number. Using default.",
+                        entity_id,
+                        raw_speed
                 )
 
         mower: MammotionMowerData = _get_mower_by_entity_id(entity_id)
@@ -278,11 +290,15 @@ async def async_setup_platform_services(
                     speed = speed_value
                 else:
                     _LOGGER.warning(
-                        f"Invalid speed value for {entity_id}: {speed_value}. Must be between 0 and 1. Using default."
+                        f"Invalid speed value for %s: %s. Must be between 0 and 1. Using default.",
+                        entity_id,
+                        speed_value
                     )
             except (ValueError, TypeError):
                 _LOGGER.warning(
-                    f"Invalid speed format for {entity_id}: {raw_speed}. Must be a number. Using default."
+                    f"Invalid speed format for %s: %s. Must be a number. Using default.",
+                        entity_id,
+                        raw_speed
                 )
 
         mower: MammotionMowerData = _get_mower_by_entity_id(entity_id)
