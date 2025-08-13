@@ -1,4 +1,4 @@
-"""Config flow for Mammotion Lawn Mower."""
+"""Config flow for Mammotion"""
 
 from typing import TYPE_CHECKING, Any
 
