@@ -37,15 +37,15 @@ start_mow:
           max: 100
           unit_of_measurement: "m²"
     border_mode:
-      example: 0
-      default: 0
+      example: "0"
+      default: "0"
       required: false
       selector:
         select:
           translation_key: "border_mode"
           options:
-            - 0
-            - 1
+            - "0"
+            - "1"
     job_version:
       example: 0
       default: 0
@@ -70,30 +70,30 @@ start_mow:
           mode: box
           unit_of_measurement: "m/s"
     ultra_wave:
-      example: 2
-      default: 2
+      example: "2"
+      default: "2"
       selector:
         select:
           translation_key: "ultra_wave"
           options:
-            - 0
-            - 1
-            - 2
-            - 10
-            - 11
+            - "0"
+            - "1"
+            - "2"
+            - "10"
+            - "11"
       required: false
     channel_mode:
-      example: 0
-      default: 0
+      example: "0"
+      default: "0"
       required: false
       selector:
         select:
           translation_key: "channel_mode"
           options:
-            - 0
-            - 1
-            - 2
-            - 3
+            - "0"
+            - "1"
+            - "2"
+            - "3"
     channel_width:
       example: 25
       default: 25
@@ -103,15 +103,15 @@ start_mow:
           min: 5
           max: 35
     rain_tactics:
-      example: 1
-      default: 1
+      example: "1"
+      default: "1"
       required: false
       selector:
         select:
           translation_key: "rain_tactics"
           options:
-            - 0
-            - 1
+            - "0"
+            - "1"
     blade_height:
       example: 0
       default: 25
@@ -141,41 +141,41 @@ start_mow:
           max: 180
           unit_of_measurement: degrees
     toward_mode:
-      example: 0
-      default: 0
+      example: "0"
+      default: "0"
       selector:
         select:
           translation_key: "toward_mode"
           options:
-            - 0
-            - 1
-            - 2
+            - "0"
+            - "1"
+            - "2"
       required: false
     mowing_laps:
-      example: 1
-      default: 1
+      example: "1"
+      default: "1"
       selector:
         select:
           translation_key: "mowing_laps"
           options:
-            - 0
-            - 1
-            - 2
-            - 3
-            - 4
+            - "0"
+            - "1"
+            - "2"
+            - "3"
+            - "4"
       required: false
     obstacle_laps:
-      example: 1
-      default: 1
+      example: "1"
+      default: "1"
       selector:
         select:
           translation_key: "obstacle_laps"
           options:
-            - 0
-            - 1
-            - 2
-            - 3
-            - 4
+            - "0"
+            - "1"
+            - "2"
+            - "3"
+            - "4"
       required: false
     start_progress:
       example: 0
