@@ -116,9 +116,7 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
     def get_coordinator_data(self, device: MammotionMixedDeviceManager) -> _DataT:
         """Get coordinator data."""
 
-    def set_stream_data(
-        self, stream_data: Response[StreamSubscriptionResponse]
-    ) -> None:
+    def set_stream_data(self, stream_data: Response[StreamSubscriptionResponse]) -> None:
         """Set stream data"""
         self._stream_data = stream_data
 
