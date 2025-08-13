@@ -1,4 +1,4 @@
-"""Constants for the Mammotion Luba integration."""
+"""Constants for the Mammotion Lawn Mower integration."""
 
 import logging
 from datetime import timedelta
