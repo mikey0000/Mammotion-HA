@@ -28,8 +28,10 @@ This integration allows you to control and monitor Mammotion products, e.g robot
 - More features being added all the time!
 
 ## Prerequisites 📋
+
 > [!WARNING]
 > **Home Assistant Minimum Version 2025.3.0**
+
 - A second account with your mower/s shared to it for using Wi-Fi (If you use your primary accouunt it will log you out of your mobile app)
 - (Optional)[Bluetooth proxy for Home Assistant](https://esphome.io/components/bluetooth_proxy.html)
 
@@ -53,6 +55,7 @@ This integration is not available in the default HACS store. You will need to ad
 ## Usage 🎮
 
 ### Getting Started
+
 See the wiki for how to [get started](https://github.com/mikey0000/Mammotion-HA/wiki/Getting-Started)
 
 Once the integration is set up, you can control and monitor your Mammotion mower using Home Assistant. 🎉
@@ -75,7 +78,6 @@ We use Crowdin to manage our translations. If you'd like to contribute:
 
 Your contributions will be automatically submitted as pull requests to this repository.
 
-
 ## PyMammotion Library 📚
 
 This integration uses the [PyMammotion library](https://github.com/mikey0000/PyMammotion) to communicate with Mammotion mowers. PyMammotion provides a Python API for controlling and monitoring Mammotion robot mowers via MQTT, Cloud, and Bluetooth.
@@ -83,8 +85,11 @@ This integration uses the [PyMammotion library](https://github.com/mikey0000/PyM
 If the problem continues, please file an issue on the GitHub repository for further assistance. 🙏
 
 ## Support me
+
 <a href='https://ko-fi.com/DenimJackRabbit' target='_blank'><img height='46' style='border:0px;height:46px;' src='https://az743702.vo.msecnd.net/cdn/kofi3.png?v=0' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
+
 ### Referral Links
+
 [Buy a Mammotion Lawn Mower (Amazon)](https://amzn.to/4cOLULU)
 [Buy a Mammotion Lawn Mower (Mammotion)](https://mammotion.com/?ref=denimjackrabbit)
 
