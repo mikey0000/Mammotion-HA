@@ -1,47 +1,47 @@
-   name: Crowdin Action
+name: Crowdin Action
 
-   on:
-     push:
-       paths:
-         - 'custom_components/mammotion/translations/en.json'
-       tags-ignore:
-         - 'v*'
-     schedule:
-       - cron: '0 0 * * *'  # Run daily
-     workflow_dispatch: # This enables manual triggering
-       inputs:
-         upload_sources:
-           description: 'Upload sources to Crowdin'
-           required: true
-           default: 'true'
-         upload_translations:
-           description: 'Upload translations to Crowdin'
-           required: true
-           default: 'false'
-         download_translations:
-           description: 'Download translations from Crowdin'
-           required: true
-           default: 'true'
+on:
+  push:
+    paths:
+      - "custom_components/mammotion/translations/en.json"
+    tags-ignore:
+      - "v*"
+  schedule:
+    - cron: "0 0 * * *" # Run daily
+  workflow_dispatch: # This enables manual triggering
+    inputs:
+      upload_sources:
+        description: "Upload sources to Crowdin"
+        required: true
+        default: "true"
+      upload_translations:
+        description: "Upload translations to Crowdin"
+        required: true
+        default: "false"
+      download_translations:
+        description: "Download translations from Crowdin"
+        required: true
+        default: "true"
 
-   jobs:
-     synchronize-with-crowdin:
-       runs-on: ubuntu-latest
+jobs:
+  synchronize-with-crowdin:
+    runs-on: ubuntu-latest
 
-       steps:
-         - name: Checkout
-           uses: actions/checkout@v2
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
 
-         - name: crowdin action
-           uses: crowdin/github-action@v2
-           with:
-             upload_sources:  ${{ inputs.upload_sources }}
-             upload_translations: ${{ inputs.upload_translations }}
-             download_translations: ${{ inputs.download_translations }}
-             localization_branch_name: l10n_crowdin_translations
-             create_pull_request: true
-             pull_request_title: 'New Crowdin translations'
-             pull_request_body: 'New Crowdin pull request with translations'
-             pull_request_labels: 'crowdin, i18n'
-           env:
-             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-             CROWDIN_MAMMOTION_TOKEN: ${{ secrets.CROWDIN_MAMMOTION_TOKEN }}
+      - name: crowdin action
+        uses: crowdin/github-action@v2
+        with:
+          upload_sources: ${{ inputs.upload_sources }}
+          upload_translations: ${{ inputs.upload_translations }}
+          download_translations: ${{ inputs.download_translations }}
+          localization_branch_name: l10n_crowdin_translations
+          create_pull_request: true
+          pull_request_title: "New Crowdin translations"
+          pull_request_body: "New Crowdin pull request with translations"
+          pull_request_labels: "crowdin, i18n"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CROWDIN_MAMMOTION_TOKEN: ${{ secrets.CROWDIN_MAMMOTION_TOKEN }}
