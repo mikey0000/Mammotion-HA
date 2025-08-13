@@ -808,6 +808,7 @@ class MammotionDeviceVersionUpdateCoordinator(
         )
 
     def get_coordinator_data(self, device: MammotionMixedDeviceManager) -> MowingDevice:
+        """Get coordinator data."""
         return device.state
 
     async def _async_update_properties(
@@ -906,6 +907,7 @@ class MammotionMapUpdateCoordinator(MammotionBaseUpdateCoordinator[MowerInfo]):
         )
 
     def get_coordinator_data(self, device: MammotionMixedDeviceManager) -> MowerInfo:
+        """Get coordinator data."""
         return device.state.mower_state
 
     def _map_callback(self) -> None:
@@ -985,6 +987,7 @@ class MammotionDeviceErrorUpdateCoordinator(
         )
 
     def get_coordinator_data(self, device: MammotionMixedDeviceManager) -> MowingDevice:
+        """Get coordinator data."""
         return device.state
 
     async def _async_update_event_message(self, event: ThingEventMessage) -> None:
