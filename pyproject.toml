@@ -12,19 +12,15 @@ pymammotion = "0.5.9"
 homeassistant = "^2025.3.0"
 autotyping = "^24.3.0"
 
-
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.7.1"
 pylint = "^3.2.2"
 ruff = "^0.4.6"
 mypy = "^1.10.0"
 
-
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
-
-
 
 [tool.pylint.MAIN]
 py-version = "3.12"
@@ -325,7 +321,6 @@ runtime-typing = false
 [tool.pylint.CODE_STYLE]
 max-line-length-suggestions = 72
 
-
 [tool.ruff]
 required-version = ">=0.4.3"
 
@@ -388,7 +383,6 @@ select = [
     "S317", # suspicious-xml-sax-usage
     "S318", # suspicious-xml-mini-dom-usage
     "S319", # suspicious-xml-pull-dom-usage
-    "S320", # suspicious-xmle-tree-usage
     "S601", # paramiko-call
     "S602", # subprocess-popen-with-shell-equals-true
     "S604", # call-with-shell-equals-true
