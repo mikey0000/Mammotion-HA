@@ -121,7 +121,7 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
     def set_stream_data(
         self, stream_data: Response[StreamSubscriptionResponse]
     ) -> None:
-        """Set stream data"""
+        """Set stream data."""
         self._stream_data = stream_data
 
     def get_stream_data(self) -> Response[StreamSubscriptionResponse]:
