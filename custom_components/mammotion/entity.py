@@ -24,6 +24,19 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionBaseUpdateCoordinator]):
 
     @property
     def device_info(self) -> DeviceInfo:
+        """Retrieve device information.
+        
+        This property constructs a DeviceInfo object by gathering various details from
+        the mower's state and coordinator. It retrieves the device firmware version,
+        model ID, nickname, and connection details such as BLE and Wi-Fi MAC addresses.
+        The function ensures that all retrieved data is formatted correctly and handles
+        cases where certain information might be missing or empty.
+        
+        Returns:
+            DeviceInfo: A DeviceInfo object containing the device's identifiers, manufacturer, serial
+                number, model ID, name, software version, model, suggested area, and
+                connections.
+        """
         mower = self.coordinator.manager.get_device_by_name(
             self.coordinator.device_name
         )
