@@ -786,6 +786,7 @@ class MammotionMaintenanceUpdateCoordinator(MammotionBaseUpdateCoordinator[Maint
         )
 
     def get_coordinator_data(self, device: MammotionMixedDeviceManager) -> Maintain:
+        """Get coordinator data."""
         return device.state.report_data.maintenance
 
     async def _async_update_data(self) -> Maintain:
