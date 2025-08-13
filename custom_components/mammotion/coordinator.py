@@ -400,6 +400,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         await self.async_send_command("get_area_name_list", device_id=self.device.iotId)
 
     async def send_command_and_update(self, command_str: str, **kwargs: Any) -> None:
+        """Send command and update."""
         await self.async_send_command(command_str, **kwargs)
         await self.async_request_iot_sync()
 
@@ -477,6 +478,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         data.map = HashList()
 
     async def clear_update_failures(self) -> None:
+        """Clear update failures."""
         self.update_failures = 0
         device = self.manager.get_device_by_name(self.device_name)
         if not device.state.online:
