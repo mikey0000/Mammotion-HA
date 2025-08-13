@@ -270,6 +270,7 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         except (DeviceOfflineException, NoConnectionException) as ex:
             """Device is offline try bluetooth if we have it."""
             LOGGER.error(f"Device offline: {ex.iot_id}")
+        return False
 
     async def check_firmware_version(self) -> None:
         """Check if firmware version is updated."""
@@ -420,7 +421,9 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
             count=0,
         )
 
-    async def async_plan_route(self, operation_settings: OperationSettings) -> bool:
+    async def async_plan_route(
+        self, operation_settings: OperationSettings
+    ) -> bool | None:
         """Plan mow."""
 
         if self.data.report_data.dev:
@@ -982,10 +985,10 @@ class MammotionDeviceErrorUpdateCoordinator(
 
     async def _async_update_event_message(self, event: ThingEventMessage) -> None:
         if event.params.identifier == "device_warning_code_event":
-            event: DeviceNotificationEventParams = event.params
+            event_params: DeviceNotificationEventParams = event.params
             # '[{"c":-2801,"ct":1,"ft":1731493734000},{"c":-1008,"ct":1,"ft":1731493734000}]'
             try:
-                warning_event = json.loads(event.value.data)
+                warning_event = json.loads(event_params.value.data)
                 LOGGER.debug("warning event %s", warning_event)
                 await self._async_update_data()
                 if mower := self.manager.mower(self.device_name):

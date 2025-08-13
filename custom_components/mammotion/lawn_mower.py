@@ -34,14 +34,18 @@ START_MOW_SCHEMA = {
     vol.Optional("collect_grass_frequency", default=10): vol.All(
         vol.Coerce(int), vol.Range(min=5, max=100)
     ),
-    vol.Optional("border_mode", default=1): vol.In([0, 1]),
+    vol.Optional("border_mode", default=1): vol.All(vol.Coerce(int), vol.In([0, 1])),
     vol.Optional("job_version", default=0): vol.Coerce(int),
     vol.Optional("job_id", default=0): vol.Coerce(int),
     vol.Optional("speed", default=0.3): vol.All(
         vol.Coerce(float), vol.Range(min=0.2, max=1.2)
     ),
-    vol.Optional("ultra_wave", default=2): vol.In([0, 1, 2, 10, 11]),
-    vol.Optional("channel_mode", default=0): vol.In([0, 1, 2, 3]),
+    vol.Optional("ultra_wave", default=2): vol.All(
+        vol.Coerce(int), vol.In([0, 1, 2, 10, 11])
+    ),
+    vol.Optional("channel_mode", default=0): vol.All(
+        vol.Coerce(int), vol.In([0, 1, 2, 3])
+    ),
     vol.Optional("channel_width", default=25): vol.All(
         vol.Coerce(int), vol.Range(min=5, max=35)
     ),
@@ -55,9 +59,13 @@ START_MOW_SCHEMA = {
     vol.Optional("toward_included_angle", default=0): vol.All(
         vol.Coerce(int), vol.Range(min=-180, max=180)
     ),
-    vol.Optional("toward_mode", default=0): vol.In([0, 1, 2]),
-    vol.Optional("mowing_laps", default=1): vol.In([0, 1, 2, 3, 4]),
-    vol.Optional("obstacle_laps", default=1): vol.In([0, 1, 2, 3, 4]),
+    vol.Optional("toward_mode", default=0): vol.All(vol.Coerce(int), vol.In([0, 1, 2])),
+    vol.Optional("mowing_laps", default=1): vol.All(
+        vol.Coerce(int), vol.In([0, 1, 2, 3, 4])
+    ),
+    vol.Optional("obstacle_laps", default=1): vol.All(
+        vol.Coerce(int), vol.In([0, 1, 2, 3, 4])
+    ),
     vol.Optional("start_progress", default=0): vol.All(
         vol.Coerce(int), vol.Range(min=0, max=100)
     ),
