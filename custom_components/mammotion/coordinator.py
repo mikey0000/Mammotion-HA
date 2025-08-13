@@ -669,6 +669,7 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
         )
 
     def get_coordinator_data(self, device: MammotionMixedDeviceManager) -> MowingDevice:
+        """Get coordinator data."""
         return device.state
 
     async def _async_update_data(self) -> MowingDevice:
