@@ -1,4 +1,4 @@
-"""Luba lawn mowers."""
+""" Mammotion Lawn Mower."""
 
 from __future__ import annotations
 
@@ -86,7 +86,7 @@ async def async_setup_entry(
     entry: MammotionConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up the Luba config entry."""
+    """Set up the Mammotion Lawn Mower config entry."""
     mammotion_devices = entry.runtime_data
 
     entities = []
@@ -105,7 +105,7 @@ async def async_setup_entry(
 
 
 class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
-    """Representation of a Mammotion lawn mower."""
+    """Representation of a Mammotion Lawn Mower."""
 
     _attr_supported_features = (
         LawnMowerEntityFeature.DOCK
@@ -114,7 +114,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
     )
 
     def __init__(self, coordinator: MammotionReportUpdateCoordinator) -> None:
-        """Initialize the lawn mower."""
+        """Initialize the Lawn Mower."""
         super().__init__(coordinator, "mower")
         self._attr_name = None  # main feature of device
 

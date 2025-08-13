@@ -1,4 +1,4 @@
-"""The Mammotion Luba integration."""
+"""The Mammotion Lawn Mower integration."""
 
 from __future__ import annotations
 
@@ -71,7 +71,7 @@ type MammotionConfigEntry = ConfigEntry[list[MammotionMowerData]]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) -> bool:
-    """Set up Mammotion Luba from a config entry."""
+    """Set up Mammotion Lawn Mower from a config entry."""
 
     addresses = entry.data.get(CONF_BLE_DEVICES, {})
     mammotion = Mammotion()
