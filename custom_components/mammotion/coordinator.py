@@ -296,6 +296,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
                     )
 
     async def update_firmware(self, version: str) -> None:
+        """Update firmware."""
         device = self.manager.get_device_by_name(self.device_name)
         await device.mammotion_http.start_ota_upgrade(device.iot_id, version)
 
@@ -636,6 +637,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
 
 
 class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevice]):
+    """MammotionReportUpdateCoordinator."""
     def __init__(
         self,
         hass: HomeAssistant,
@@ -653,6 +655,7 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
         )
 
     def get_coordinator_data(self, device: MammotionMixedDeviceManager) -> MowingDevice:
+        """Get coordinator data."""
         return device.state
 
     async def _async_update_data(self) -> MowingDevice:
