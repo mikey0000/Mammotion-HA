@@ -198,18 +198,23 @@ async def async_setup_platform_services(
 
         # Check if speed parameter exists and validate it
         speed = 0.4  # Default speed
-        if "speed" in call.data:
+        raw_speed = call.data["speed"]
+        if raw_speed is not None:
             try:
-                speed_value = float(call.data["speed"])
+                speed_value = float(raw_speed)
                 if 0.1 <= speed_value <= 1:
                     speed = speed_value
                 else:
                     _LOGGER.warning(
-                        f"Invalid speed value for {entity_id}: {speed_value}. Must be between 0 and 1. Using default."
+                        "Invalid speed value for %s: %s. Must be between 0 and 1. Using default.",
+                        entity_id,
+                        speed_value,
                     )
             except (ValueError, TypeError):
                 _LOGGER.warning(
-                    f"Invalid speed format for {entity_id}: {call.data['speed']}. Must be a number. Using default."
+                    "Invalid speed format for %s: %s. Must be a number. Using default.",
+                    entity_id,
+                    raw_speed,
                 )
 
         mower: MammotionMowerData = _get_mower_by_entity_id(entity_id)
@@ -221,18 +226,23 @@ async def async_setup_platform_services(
 
         # Check if speed parameter exists and validate it
         speed = 0.4  # Default speed
-        if "speed" in call.data:
+        raw_speed = call.data["speed"]
+        if raw_speed is not None:
             try:
-                speed_value = float(call.data["speed"])
+                speed_value = float(raw_speed)
                 if 0.1 <= speed_value <= 1:
                     speed = speed_value
                 else:
                     _LOGGER.warning(
-                        f"Invalid speed value for {entity_id}: {speed_value}. Must be between 0 and 1. Using default."
+                        "Invalid speed value for %s: %s. Must be between 0 and 1. Using default.",
+                        entity_id,
+                        speed_value,
                     )
             except (ValueError, TypeError):
                 _LOGGER.warning(
-                    f"Invalid speed format for {entity_id}: {call.data['speed']}. Must be a number. Using default."
+                    "Invalid speed format for %s: %s. Must be a number. Using default.",
+                    entity_id,
+                    raw_speed,
                 )
 
         mower: MammotionMowerData = _get_mower_by_entity_id(entity_id)
@@ -244,18 +254,23 @@ async def async_setup_platform_services(
 
         # Check if speed parameter exists and validate it
         speed = 0.4  # Default speed
-        if "speed" in call.data:
+        raw_speed = call.data["speed"]
+        if raw_speed is not None:
             try:
-                speed_value = float(call.data["speed"])
+                speed_value = float(raw_speed)
                 if 0.1 <= speed_value <= 1:
                     speed = speed_value
                 else:
                     _LOGGER.warning(
-                        f"Invalid speed value for {entity_id}: {speed_value}. Must be between 0 and 1. Using default."
+                        "Invalid speed value for %s: %s. Must be between 0 and 1. Using default.",
+                        entity_id,
+                        speed_value,
                     )
             except (ValueError, TypeError):
                 _LOGGER.warning(
-                    f"Invalid speed format for {entity_id}: {call.data['speed']}. Must be a number. Using default."
+                    "Invalid speed format for %s: %s. Must be a number. Using default.",
+                    entity_id,
+                    raw_speed,
                 )
 
         mower: MammotionMowerData = _get_mower_by_entity_id(entity_id)
@@ -267,18 +282,23 @@ async def async_setup_platform_services(
 
         # Check if speed parameter exists and validate it
         speed = 0.4  # Default speed
-        if "speed" in call.data:
+        raw_speed = call.data["speed"]
+        if raw_speed is not None:
             try:
-                speed_value = float(call.data["speed"])
+                speed_value = float(raw_speed)
                 if 0.1 <= speed_value <= 1:
                     speed = speed_value
                 else:
                     _LOGGER.warning(
-                        f"Invalid speed value for {entity_id}: {speed_value}. Must be between 0 and 1. Using default."
+                        "Invalid speed value for %s: %s. Must be between 0 and 1. Using default.",
+                        entity_id,
+                        speed_value,
                     )
             except (ValueError, TypeError):
                 _LOGGER.warning(
-                    f"Invalid speed format for {entity_id}: {call.data['speed']}. Must be a number. Using default."
+                    "Invalid speed format for %s: %s. Must be a number. Using default.",
+                    entity_id,
+                    raw_speed,
                 )
 
         mower: MammotionMowerData = _get_mower_by_entity_id(entity_id)

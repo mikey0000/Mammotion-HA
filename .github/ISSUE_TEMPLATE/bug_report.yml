@@ -1,5 +1,5 @@
-name: Report an issue with the Mammotion Intergration
-description: Report an issue with the Mammotion Intergration.
+name: Report an issue with the Mammotion Integration
+description: Report an issue with the Mammotion Integration.
 body:
   - type: textarea
     validations:
@@ -26,11 +26,11 @@ body:
         - Yuka 2
         - Yuka mini
   - type: input
-    id: intergration_version
+    id: integration_version
     validations:
       required: true
     attributes:
-      label: What version of the Mammotion intergration are you using?
+      label: What version of the Mammotion integration are you using?
       placeholder: 4280d63, unsure
   - type: input
     id: ha_version
@@ -43,4 +43,3 @@ body:
         Can be found in: [Settings ⇒ System ⇒ Repairs ⇒ Three Dots in Upper Right ⇒ System information](https://my.home-assistant.io/redirect/system_health/).
 
         [![Open your Home Assistant instance and show the system information.](https://my.home-assistant.io/badges/system_health.svg)](https://my.home-assistant.io/redirect/system_health/)
-

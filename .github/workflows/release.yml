@@ -3,15 +3,15 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'  # Trigger on version tags
+      - "v*" # Trigger on version tags
 
 jobs:
   release:
     name: Create Release
     runs-on: ubuntu-latest
     permissions:
-      id-token: write  # Required for OIDC
-      contents: write  # Required for creating releases
+      id-token: write # Required for OIDC
+      contents: write # Required for creating releases
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

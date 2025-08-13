@@ -1,7 +1,7 @@
-   project_id: 731975
-   api_token_env: "CROWDIN_MAMMOTION_TOKEN"
-   preserve_hierarchy: true
+project_id: 731975
+api_token_env: "CROWDIN_MAMMOTION_TOKEN"
+preserve_hierarchy: true
 
-   files:
-     - source: /custom_components/mammotion/translations/en.json
-       translation: /custom_components/mammotion/translations/%two_letters_code%.json
+files:
+  - source: /custom_components/mammotion/translations/en.json
+    translation: /custom_components/mammotion/translations/%two_letters_code%.json

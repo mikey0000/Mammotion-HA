@@ -257,8 +257,9 @@ class MammotionWorkingNumberEntity(MammotionConfigNumberEntity):
         if self.entity_description.get_fn is not None:
             self._attr_native_value = self.entity_description.get_fn(self.coordinator)
 
-        if self._attr_native_value < self._attr_native_min_value:
-            self._attr_native_value = self._attr_native_min_value
+        self._attr_native_value = max(
+            self._attr_native_value, self._attr_native_min_value
+        )
 
         self.entity_description.set_fn(self.coordinator, self._attr_native_value)
 
