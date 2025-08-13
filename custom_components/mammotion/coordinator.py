@@ -77,7 +77,7 @@ DEVICE_VERSION_INTERVAL = timedelta(days=1)
 MAP_INTERVAL = timedelta(minutes=30)
 
 
-class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
+class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
     """Mammotion DataUpdateCoordinator."""
 
     def __init__(
@@ -115,7 +115,7 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         )
 
     @abstractmethod
-    def get_coordinator_data(self, device: MammotionMixedDeviceManager) -> _DataT:
+    def get_coordinator_data(self, device: MammotionMixedDeviceManager) -> DataT:
         """Get coordinator data."""
 
     def set_stream_data(
@@ -529,7 +529,7 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         store = Store(self.hass, version=1, minor_version=2, key=self.device_name)
         await store.async_save(data.to_dict())
 
-    async def _async_update_data(self) -> _DataT | None:
+    async def _async_update_data(self) -> DataT | None:
         """Update data from the device."""
         if device := self.manager.get_device_by_name(self.device_name):
             if not device.state.enabled or (
