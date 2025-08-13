@@ -1,4 +1,4 @@
-""" Mammotion Lawn Mower."""
+"""Mammotion Lawn Mower."""
 
 from __future__ import annotations
 
