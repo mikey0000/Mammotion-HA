@@ -1,3 +1,5 @@
+"""Config for Mammotion Lawn Mower."""
+
 from typing import Any
 
 from homeassistant.helpers.storage import Store
