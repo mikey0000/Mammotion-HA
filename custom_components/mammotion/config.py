@@ -1,4 +1,4 @@
-"""Config for Mammotion Lawn Mower."""
+"""Config for Mammotion."""
 
 from typing import Any
 

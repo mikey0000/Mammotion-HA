@@ -1,4 +1,4 @@
-"""Constants for the Mammotion Lawn Mower integration."""
+"""Constants for the Mammotion integration."""
 
 import logging
 from typing import Final
