@@ -34,7 +34,11 @@ from pymammotion.utility.constant.device_constant import (
 )
 from pymammotion.utility.device_type import DeviceType
 
-from . import MammotionConfigEntry, MammotionReportUpdateCoordinator
+from . import (
+    MammotionConfigEntry,
+    MammotionDeviceErrorUpdateCoordinator,
+    MammotionReportUpdateCoordinator,
+)
 from .entity import MammotionBaseEntity
 
 SPEED_UNITS = SpeedConverter.VALID_UNITS
@@ -52,6 +56,13 @@ class MammotionWorkSensorEntityDescription(SensorEntityDescription):
     """Describes Mammotion sensor entity."""
 
     value_fn: Callable[[MammotionReportUpdateCoordinator, MowingDevice], StateType]
+
+
+@dataclass(frozen=True, kw_only=True)
+class MammotionErrorSensorEntityDescription(SensorEntityDescription):
+    """Describes Mammotion sensor entity."""
+
+    value_fn: Callable[[MammotionDeviceErrorUpdateCoordinator, MowingDevice], StateType]
 
 
 LUBA_SENSOR_ONLY_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
@@ -86,7 +97,6 @@ LUBA_2_YUKA_ONLY_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
     MammotionSensorEntityDescription(
         key="maintenance_bat_cycles",
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=None,
         value_fn=lambda mower_data: mower_data.report_data.maintenance.bat_cycles,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
@@ -277,6 +287,31 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
     # 'real_pos_x': -142511, 'real_pos_y': -20548, 'real_toward': 50915, (robot position)
 )
 
+SENSOR_ERROR_TYPES: tuple[MammotionErrorSensorEntityDescription, ...] = (
+    MammotionErrorSensorEntityDescription(
+        key="error_1_time",
+        device_class=SensorDeviceClass.TIMESTAMP,
+        value_fn=lambda coordinator, mower_data: coordinator.get_error_time(1),
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    MammotionErrorSensorEntityDescription(
+        key="error_1_message",
+        state_class=None,
+        native_unit_of_measurement=None,
+        device_class=None,
+        value_fn=lambda coordinator, mower_data: coordinator.get_error_message(1),
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    MammotionErrorSensorEntityDescription(
+        key="error_1_code",
+        state_class=None,
+        native_unit_of_measurement=None,
+        device_class=None,
+        value_fn=lambda coordinator, mower_data: coordinator.get_error_code(1),
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+)
+
 WORK_SENSOR_TYPES: tuple[MammotionWorkSensorEntityDescription, ...] = (
     MammotionWorkSensorEntityDescription(
         key="work_area",
@@ -323,6 +358,11 @@ async def async_setup_entry(
             for description in WORK_SENSOR_TYPES
         )
 
+        entities.extend(
+            MammotionErrorSensorEntity(mower.error_coordinator, description)
+            for description in SENSOR_ERROR_TYPES
+        )
+
     async_add_entities(entities)
 
 
@@ -346,6 +386,28 @@ class MammotionSensorEntity(MammotionBaseEntity, SensorEntity):
     def native_value(self) -> StateType:
         """Return the state of the sensor."""
         return self.entity_description.value_fn(self.coordinator.data)
+
+
+class MammotionErrorSensorEntity(MammotionBaseEntity, SensorEntity):
+    """Defining the Mammotion Error Sensor."""
+
+    entity_description: MammotionErrorSensorEntityDescription
+    _attr_has_entity_name = True
+
+    def __init__(
+        self,
+        coordinator: MammotionDeviceErrorUpdateCoordinator,
+        entity_description: MammotionErrorSensorEntityDescription,
+    ) -> None:
+        """Set up MammotionSensor."""
+        super().__init__(coordinator, entity_description.key)
+        self.entity_description = entity_description
+        self._attr_translation_key = entity_description.key
+
+    @property
+    def native_value(self) -> StateType:
+        """Return the state of the sensor."""
+        return self.entity_description.value_fn(self.coordinator, self.coordinator.data)
 
 
 class MammotionWorkSensorEntity(MammotionBaseEntity, SensorEntity):

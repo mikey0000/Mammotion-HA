@@ -24,21 +24,20 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionBaseUpdateCoordinator]):
 
     @property
     def device_info(self) -> DeviceInfo:
-        mower = self.coordinator.data
-        swversion = mower.device_firmwares.device_version
-        mixed_device = self.coordinator.manager.device_manager.get_device(
+        mower = self.coordinator.manager.get_device_by_name(
             self.coordinator.device_name
         )
+        swversion = mower.state.device_firmwares.device_version
 
         model_id = None
         if mower is not None:
-            if mower.mower_state.model_id != "":
-                model_id = mower.mower_state.model_id
+            if mower.state.mower_state.model_id != "":
+                model_id = mower.state.mower_state.model_id
             if (
-                mower.mqtt_properties is not None
-                and mower.mqtt_properties.params.items.extMod is not None
+                mower.state.mqtt_properties is not None
+                and mower.state.mqtt_properties.params.items.extMod is not None
             ):
-                model_id = mower.mqtt_properties.params.items.extMod.value
+                model_id = mower.state.mqtt_properties.params.items.extMod.value
 
         nick_name = self.coordinator.device.nickName
         device_name = (
@@ -49,27 +48,27 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionBaseUpdateCoordinator]):
 
         connections: set[tuple[str, str]] = set()
 
-        if mixed_device.ble():
+        if mower.ble():
             connections.add(
                 (
                     CONNECTION_BLUETOOTH,
-                    format_mac(mixed_device.ble().ble_device.address),
+                    format_mac(mower.ble().ble_device.address),
                 )
             )
 
-        if mixed_device.state.mower_state.wifi_mac != "":
+        if mower.state.mower_state.wifi_mac != "":
             connections.add(
                 (
                     CONNECTION_NETWORK_MAC,
-                    format_mac(mixed_device.state.mower_state.wifi_mac),
+                    format_mac(mower.state.mower_state.wifi_mac),
                 )
             )
 
-        if mixed_device.state.mower_state.ble_mac != "":
+        if mower.state.mower_state.ble_mac != "":
             connections.add(
                 (
                     CONNECTION_BLUETOOTH,
-                    format_mac(mixed_device.state.mower_state.ble_mac),
+                    format_mac(mower.state.mower_state.ble_mac),
                 )
             )
 

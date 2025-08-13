@@ -46,6 +46,7 @@ from .const import (
     LOGGER,
 )
 from .coordinator import (
+    MammotionDeviceErrorUpdateCoordinator,
     MammotionDeviceVersionUpdateCoordinator,
     MammotionMaintenanceUpdateCoordinator,
     MammotionMapUpdateCoordinator,
@@ -149,12 +150,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                 map_coordinator = MammotionMapUpdateCoordinator(
                     hass, entry, device, mammotion
                 )
+                error_coordinator = MammotionDeviceErrorUpdateCoordinator(
+                    hass, entry, device, mammotion
+                )
                 # sometimes device is not there when restoring data
                 await report_coordinator.async_restore_data()
                 # other coordinator
                 await maintenance_coordinator.async_config_entry_first_refresh()
                 await version_coordinator.async_config_entry_first_refresh()
                 await report_coordinator.async_config_entry_first_refresh()
+                await error_coordinator.async_config_entry_first_refresh()
 
                 device_config = DeviceConfig()
                 device_limits = device_config.get_working_parameters(
@@ -185,6 +190,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                         reporting_coordinator=report_coordinator,
                         version_coordinator=version_coordinator,
                         map_coordinator=map_coordinator,
+                        error_coordinator=error_coordinator,
                     )
                 )
                 try:

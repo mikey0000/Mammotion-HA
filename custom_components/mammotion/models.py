@@ -5,6 +5,7 @@ from pymammotion.data.model.device_limits import DeviceLimits
 from pymammotion.mammotion.devices.mammotion import Mammotion
 
 from .coordinator import (
+    MammotionDeviceErrorUpdateCoordinator,
     MammotionDeviceVersionUpdateCoordinator,
     MammotionMaintenanceUpdateCoordinator,
     MammotionMapUpdateCoordinator,
@@ -22,6 +23,7 @@ class MammotionMowerData:
     reporting_coordinator: MammotionReportUpdateCoordinator
     version_coordinator: MammotionDeviceVersionUpdateCoordinator
     map_coordinator: MammotionMapUpdateCoordinator
+    error_coordinator: MammotionDeviceErrorUpdateCoordinator
     device_limits: DeviceLimits
     device: Device
 
