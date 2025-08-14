@@ -16,7 +16,19 @@ class MammotionConfigStore(Store):
     async def _async_migrate_func(
         self, old_major_version: int, old_minor_version: int, old_data: dict[str, Any]
     ) -> dict[str, Any]:
-        """Migrate configuration to the new version."""
+        """Migrate configuration to the new version.
+        
+        This function updates the configuration data by restructuring error-related
+        fields if the old major and minor versions are less than 2. It creates a new
+        "errors" dictionary within `old_data` and transfers existing error-related
+        fields ("error_codes", "err_code_list", "err_code_list_time") to this new
+        structure, then deletes the original fields.
+        
+        Args:
+            old_major_version (int): The major version of the old configuration.
+            old_minor_version (int): The minor version of the old configuration.
+            old_data (dict[str, Any]): The configuration data to be migrated.
+        """
         if old_major_version < 2 and old_minor_version < 2:
             old_data["errors"] = {
                 "error_codes": {},
