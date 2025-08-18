@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "Mammotion-HA"
-version = "0.3.1"
-description = "Mammotion integration for HACS"
+version = "0.3.2"
+description = "Mammotion lawn mower integration for HACS"
 authors = ["Michael Arthur <michael@jumblesoft.co.nz>", "jLynx <@jlynx>"]
 readme = "README.md"
 package-mode = false

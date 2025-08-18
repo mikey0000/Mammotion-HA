@@ -49,7 +49,7 @@ START_MOW_SCHEMA = {
     vol.Optional("channel_width", default=25): vol.All(
         vol.Coerce(int), vol.Range(min=5, max=35)
     ),
-    vol.Optional("rain_tactics", default=1): vol.In([0, 1]),
+    vol.Optional("rain_tactics", default=1): vol.All(vol.Coerce(int), vol.In([0, 1])),
     vol.Optional("blade_height", default=25): vol.All(
         vol.Coerce(int), vol.Range(min=15, max=100)
     ),
