@@ -166,7 +166,7 @@
     },
     "switch": {
       "area": {
-        "name": "Område {namn}"
+        "name": "Område {name}"
       },
       "blade_status": {
         "name": "Blad på/av"
