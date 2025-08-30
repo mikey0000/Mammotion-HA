@@ -1,4 +1,4 @@
-"""Config flow for Mammotion Luba."""
+"""Config flow for Mammotion"""
 
 from typing import TYPE_CHECKING, Any
 

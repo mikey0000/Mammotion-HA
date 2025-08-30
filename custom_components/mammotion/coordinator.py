@@ -77,7 +77,7 @@ DEVICE_VERSION_INTERVAL = timedelta(days=1)
 MAP_INTERVAL = timedelta(minutes=30)
 
 
-class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
+class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
     """Mammotion DataUpdateCoordinator."""
 
     def __init__(
@@ -115,13 +115,13 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         )
 
     @abstractmethod
-    def get_coordinator_data(self, device: MammotionMixedDeviceManager) -> _DataT:
+    def get_coordinator_data(self, device: MammotionMixedDeviceManager) -> DataT:
         """Get coordinator data."""
 
     def set_stream_data(
         self, stream_data: Response[StreamSubscriptionResponse]
     ) -> None:
-        """Set stream data"""
+        """Set stream data."""
         self._stream_data = stream_data
 
     def get_stream_data(self) -> Response[StreamSubscriptionResponse]:
@@ -529,7 +529,7 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         store = Store(self.hass, version=1, minor_version=2, key=self.device_name)
         await store.async_save(data.to_dict())
 
-    async def _async_update_data(self) -> _DataT | None:
+    async def _async_update_data(self) -> DataT | None:
         """Update data from the device."""
         if device := self.manager.get_device_by_name(self.device_name):
             if not device.state.enabled or (
@@ -652,6 +652,7 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
 
 class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevice]):
     """Mammotion report update coordinator."""
+
     def __init__(
         self,
         hass: HomeAssistant,
@@ -669,6 +670,7 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
         )
 
     def get_coordinator_data(self, device: MammotionMixedDeviceManager) -> MowingDevice:
+        """Get coordinator data."""
         return device.state
 
     async def _async_update_data(self) -> MowingDevice:
@@ -785,6 +787,7 @@ class MammotionMaintenanceUpdateCoordinator(MammotionBaseUpdateCoordinator[Maint
         )
 
     def get_coordinator_data(self, device: MammotionMixedDeviceManager) -> Maintain:
+        """Get coordinator data."""
         return device.state.report_data.maintenance
 
     async def _async_update_data(self) -> Maintain:
@@ -838,6 +841,7 @@ class MammotionDeviceVersionUpdateCoordinator(
         )
 
     def get_coordinator_data(self, device: MammotionMixedDeviceManager) -> MowingDevice:
+        """Get coordinator data."""
         return device.state
 
     async def _async_update_properties(
@@ -936,6 +940,7 @@ class MammotionMapUpdateCoordinator(MammotionBaseUpdateCoordinator[MowerInfo]):
         )
 
     def get_coordinator_data(self, device: MammotionMixedDeviceManager) -> MowerInfo:
+        """Get coordinator data."""
         return device.state.mower_state
 
     def _map_callback(self) -> None:
@@ -1015,6 +1020,7 @@ class MammotionDeviceErrorUpdateCoordinator(
         )
 
     def get_coordinator_data(self, device: MammotionMixedDeviceManager) -> MowingDevice:
+        """Get coordinator data."""
         return device.state
 
     async def _async_update_event_message(self, event: ThingEventMessage) -> None:

@@ -14,12 +14,12 @@ from .coordinator import MammotionBaseUpdateCoordinator
 
 
 class MammotionBaseEntity(CoordinatorEntity[MammotionBaseUpdateCoordinator]):
-    """Representation of a Luba lawn mower."""
+    """Representation of a Mammotion Lawn Mower."""
 
     _attr_has_entity_name = True
 
     def __init__(self, coordinator: MammotionBaseUpdateCoordinator, key: str) -> None:
-        """Initialize the lawn mower."""
+        """Initialize the Lawn Mower."""
         super().__init__(coordinator)
         self._attr_unique_id = f"{coordinator.device_name}_{key}"
 

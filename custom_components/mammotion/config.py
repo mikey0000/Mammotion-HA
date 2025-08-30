@@ -1,3 +1,5 @@
+"""Config for Mammotion."""
+
 from typing import Any
 
 from homeassistant.helpers.storage import Store
@@ -7,7 +9,7 @@ from .const import DOMAIN
 
 
 class MammotionConfigStore(Store):
-    """A configuration store for Alexa."""
+    """A configuration store for Mammotion."""
 
     _STORAGE_VERSION = 1
     _STORAGE_MINOR_VERSION = 2
