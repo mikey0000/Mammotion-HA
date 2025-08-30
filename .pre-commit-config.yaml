@@ -36,7 +36,8 @@ repos:
     rev: v1.37.1
     hooks:
       - id: yamllint
-        exclude: (.vscode|.devcontainer)
+        exclude: (.github|.vscode|.devcontainer)
+    args: -c .yamllint.yaml
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: v4.0.0-alpha.8
     hooks:

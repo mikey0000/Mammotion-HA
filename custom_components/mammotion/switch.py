@@ -176,6 +176,7 @@ async def async_setup_entry(
 
 class MammotionSwitchEntity(MammotionBaseEntity, SwitchEntity, RestoreEntity):
     """Mammotion switch entity."""
+
     entity_description: MammotionAsyncSwitchEntityDescription
     _attr_has_entity_name = True
 

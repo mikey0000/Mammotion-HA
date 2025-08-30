@@ -652,6 +652,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
 
 class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevice]):
     """Mammotion report update coordinator."""
+
     def __init__(
         self,
         hass: HomeAssistant,
