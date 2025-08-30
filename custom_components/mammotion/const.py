@@ -1,6 +1,7 @@
 """Constants for the Mammotion Luba integration."""
 
 import logging
+from datetime import timedelta
 from typing import Final
 
 from bleak.exc import BleakError
@@ -12,7 +13,7 @@ from pymammotion.utility.constant import WorkMode
 DOMAIN: Final = "mammotion"
 
 DEVICE_SUPPORT = ("Luba", "Yuka")
-
+SCAN_INTERVAL = timedelta(hours=1)
 ATTR_DIRECTION = "direction"
 
 DEFAULT_RETRY_COUNT = 3

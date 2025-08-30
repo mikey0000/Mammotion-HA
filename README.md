@@ -14,7 +14,7 @@ This integration allows you to control and monitor Mammotion products, e.g robot
 - [x] Wi-Fi support (Including SIM 3G)
 - [ ] Scheduling
 - [ ] Mapping and zone management
-- [ ] Firmware updates
+- [x] Firmware updates
 - [x] Automations
 - [ ] More...
 
@@ -32,6 +32,10 @@ This integration allows you to control and monitor Mammotion products, e.g robot
 > **Home Assistant Minimum Version 2025.3.0**
 - A second account with your mower/s shared to it for using Wi-Fi (If you use your primary accouunt it will log you out of your mobile app)
 - (Optional)[Bluetooth proxy for Home Assistant](https://esphome.io/components/bluetooth_proxy.html)
+
+## Troubleshooting
+
+- Sometimes using the account number works instead of email address when adding via discovery (not sure why)
 
 ## Installation 🛠️
 
