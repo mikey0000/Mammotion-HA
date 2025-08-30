@@ -7,8 +7,9 @@ import datetime
 import json
 import time
 from abc import abstractmethod
+from collections.abc import Mapping
 from datetime import timedelta
-from typing import TYPE_CHECKING, Any, Mapping
+from typing import TYPE_CHECKING, Any
 
 import betterproto
 from homeassistant.components import bluetooth
@@ -96,7 +97,8 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
             config_entry=config_entry,
         )
         assert config_entry.unique_id
-        self.config_entry = config_entry
+        self.account = self.config_entry.data[CONF_ACCOUNTNAME]
+        self.password = self.config_entry.data[CONF_PASSWORD]
         self.device: Device = device
         self.device_name = device.deviceName
         self.manager: Mammotion = mammotion
@@ -155,17 +157,21 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
             if device.has_ble():
                 await device.ble().stop()
 
+    def is_online(self) -> bool:
+        if device := self.manager.get_device_by_name(self.device_name):
+            ble = device.ble()
+            return device.state.online or ble is not None and ble.client.is_connected
+        return False
+
     async def async_refresh_login(self) -> None:
         """Refresh login credentials asynchronously."""
-        account = self.config_entry.data.get(CONF_ACCOUNTNAME)
-        password = self.config_entry.data.get(CONF_PASSWORD)
-        await self.manager.refresh_login(account, password)
+        await self.manager.refresh_login(self.account, self.password)
         self.store_cloud_credentials()
 
     async def device_offline(self, device: MammotionMixedDeviceManager) -> None:
         device.state.online = False
-        if device.has_cloud():
-            await device.cloud().stop()
+        if cloud := device.cloud():
+            await cloud.stop()
 
         loop = asyncio.get_running_loop()
         loop.call_later(900, lambda: asyncio.create_task(self.clear_update_failures()))
@@ -173,25 +179,26 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
     def store_cloud_credentials(self) -> None:
         """Store cloud credentials in config entry."""
         # config_updates = {}
-        mammotion_cloud = self.manager.mqtt_list.get(
-            self.config_entry.data.get(CONF_ACCOUNTNAME, "")
-        )
-        cloud_client = mammotion_cloud.cloud_client if mammotion_cloud else None
-
-        if cloud_client is not None:
-            config_updates = {
-                **self.config_entry.data,
-                CONF_CONNECT_DATA: cloud_client.connect_response,
-                CONF_AUTH_DATA: cloud_client.login_by_oauth_response,
-                CONF_REGION_DATA: cloud_client.region_response,
-                CONF_AEP_DATA: cloud_client.aep_response,
-                CONF_SESSION_DATA: cloud_client.session_by_authcode_response,
-                CONF_DEVICE_DATA: cloud_client.devices_by_account_response,
-                CONF_MAMMOTION_DATA: cloud_client.mammotion_http.response,
-            }
-            self.hass.config_entries.async_update_entry(
-                self.config_entry, data=config_updates
+        if config_entry := self.config_entry:
+            mammotion_cloud = self.manager.mqtt_list.get(
+                config_entry.data.get(CONF_ACCOUNTNAME, "")
             )
+            cloud_client = mammotion_cloud.cloud_client if mammotion_cloud else None
+
+            if cloud_client is not None:
+                config_updates = {
+                    **config_entry.data,
+                    CONF_CONNECT_DATA: cloud_client.connect_response,
+                    CONF_AUTH_DATA: cloud_client.login_by_oauth_response,
+                    CONF_REGION_DATA: cloud_client.region_response,
+                    CONF_AEP_DATA: cloud_client.aep_response,
+                    CONF_SESSION_DATA: cloud_client.session_by_authcode_response,
+                    CONF_DEVICE_DATA: cloud_client.devices_by_account_response,
+                    CONF_MAMMOTION_DATA: cloud_client.mammotion_http.response,
+                }
+                self.hass.config_entries.async_update_entry(
+                    config_entry, data=config_updates
+                )
 
     async def async_send_command(self, command: str, **kwargs: Any) -> bool | None:
         """Send command."""
@@ -224,14 +231,11 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         except (DeviceOfflineException, NoConnectionException) as ex:
             """Device is offline try bluetooth if we have it."""
             try:
-                if device.has_ble():
+                if ble := device.ble():
                     # if we don't do this it will stay connected and no longer update over wifi
-                    device.ble().set_disconnect_strategy(True)
-                    await (
-                        self.manager.get_device_by_name(self.device_name)
-                        .ble()
-                        .queue_command(command, **kwargs)
-                    )
+                    ble.set_disconnect_strategy(True)
+                    await ble.queue_command(command, **kwargs)
+
                     return True
                 raise DeviceOfflineException(ex.args[0], self.device.iotId)
             except COMMAND_EXCEPTIONS as exc:
@@ -296,6 +300,7 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
                     )
 
     async def update_firmware(self, version: str) -> None:
+        """Update firmware."""
         device = self.manager.get_device_by_name(self.device_name)
         await device.mammotion_http.start_ota_upgrade(device.iot_id, version)
 
@@ -339,6 +344,10 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         await self.async_send_command(
             "allpowerfull_rw", rw_id=3, context=int(on_off), rw=1
         )
+
+    async def async_read_rain_detection(self) -> None:
+        """Set rain detection."""
+        await self.async_send_command("allpowerfull_rw", rw_id=3, context=1, rw=0)
 
     async def async_set_sidelight(self, on_off: int) -> None:
         """Set Sidelight."""
@@ -399,6 +408,7 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         await self.async_send_command("get_area_name_list", device_id=self.device.iotId)
 
     async def send_command_and_update(self, command_str: str, **kwargs: Any) -> None:
+        """Send command and update."""
         await self.async_send_command(command_str, **kwargs)
         await self.async_request_iot_sync()
 
@@ -478,12 +488,14 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         data.map = HashList()
 
     async def clear_update_failures(self) -> None:
+        """Clear update failures."""
         self.update_failures = 0
         device = self.manager.get_device_by_name(self.device_name)
         if not device.state.online:
             device.state.online = True
-        if device.has_cloud() and device.cloud().stopped:
-            await device.cloud().start()
+        if cloud := device.cloud():
+            if cloud.stopped:
+                await cloud.start()
 
     @property
     def operation_settings(self) -> OperationSettings:
@@ -496,6 +508,11 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
             self.hass, version=1, minor_version=2, key=self.device_name
         )
         restored_data: Mapping[str, Any] | None = await store.async_load()
+
+        if restored_data is None:
+            self.data = MowingDevice()
+            self.manager.get_device_by_name(self.device_name).state = self.data
+            return
 
         try:
             if restored_data is not None:
@@ -513,23 +530,19 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
         await store.async_save(data.to_dict())
 
     async def _async_update_data(self) -> _DataT | None:
+        """Update data from the device."""
         if device := self.manager.get_device_by_name(self.device_name):
             if not device.state.enabled or (
                 not device.state.online
                 and device.preference is ConnectionPreference.WIFI
             ):
-                if (
-                    not device.state.enabled
-                    and device.has_cloud()
-                    and device.cloud().mqtt.is_connected()
-                ):
-                    device.cloud().mqtt.disconnect()
-                if not device.state.enabled and device.has_ble():
-                    if (
-                        device.ble().client is not None
-                        and device.ble().client.is_connected
-                    ):
-                        await device.ble().client.disconnect()
+                if cloud := device.cloud():
+                    if not device.state.enabled and cloud.mqtt.is_connected():
+                        cloud.mqtt.disconnect()
+                if ble := device.ble():
+                    if not device.state.enabled:
+                        if ble.client is not None and ble.client.is_connected:
+                            await ble.client.disconnect()
                 return self.get_coordinator_data(device)
 
             if (
@@ -539,10 +552,10 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
                 if ble_device := bluetooth.async_ble_device_from_address(
                     self.hass, device.state.mower_state.ble_mac.upper(), True
                 ):
-                    if not device.has_ble():
-                        device.add_ble(ble_device)
+                    if ble := device.ble():
+                        ble.update_device(ble_device)
                     else:
-                        device.ble().update_device(ble_device)
+                        device.add_ble(ble_device)
 
             # don't query the mower while users are doing map changes or its updating.
             if device.state.report_data.dev.sys_status in NO_REQUEST_MODES:
@@ -590,10 +603,10 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
 
         if self.data is None:
             self.data = device.state
-        if device.has_cloud():
-            device.cloud().set_notification_callback(self._async_update_notification)
-        elif device.has_ble():
-            device.ble().set_notification_callback(self._async_update_notification)
+        if cloud := device.cloud():
+            cloud.set_notification_callback(self._async_update_notification)
+        elif ble := device.ble():
+            ble.set_notification_callback(self._async_update_notification)
 
         device.state_manager.properties_callback.add_subscribers(
             self._async_update_properties
@@ -638,6 +651,7 @@ class MammotionBaseUpdateCoordinator[_DataT](DataUpdateCoordinator[_DataT]):
 
 
 class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevice]):
+    """Mammotion report update coordinator."""
     def __init__(
         self,
         hass: HomeAssistant,
@@ -669,10 +683,10 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
 
         try:
             last_sent_time = 0
-            if device.cloud():
-                last_sent_time = device.cloud().command_sent_time
-            elif device.ble():
-                last_sent_time = device.ble().command_sent_time
+            if cloud := device.cloud():
+                last_sent_time = cloud.command_sent_time
+            elif ble := device.ble():
+                last_sent_time = ble.command_sent_time
 
             if (
                 self.update_interval
@@ -727,8 +741,28 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
                 if mower := self.manager.mower(self.device_name):
                     self.async_set_updated_data(mower)
 
-    async def _async_update_properties(self, res: tuple[str, Any | None]) -> None:
+    async def _async_update_properties(
+        self, properties: ThingPropertiesMessage
+    ) -> None:
         """Update data from incoming properties messages."""
+        if not self.data.online and self.data.enabled:
+            await self.set_scheduled_updates(True)
+            if mower := self.manager.mower(self.device_name):
+                self.async_set_updated_data(mower)
+
+    async def _async_update_status(self, status: ThingStatusMessage) -> None:
+        """Update data from incoming status messages."""
+        if not self.data.online and self.data.enabled:
+            await self.set_scheduled_updates(True)
+            if mower := self.manager.mower(self.device_name):
+                self.async_set_updated_data(mower)
+
+    async def _async_update_event_message(self, event: ThingEventMessage) -> None:
+        """Update data from incoming event messages."""
+        if not self.data.online and self.data.enabled:
+            await self.set_scheduled_updates(True)
+            if mower := self.manager.mower(self.device_name):
+                self.async_set_updated_data(mower)
 
 
 class MammotionMaintenanceUpdateCoordinator(MammotionBaseUpdateCoordinator[Maintain]):
@@ -984,7 +1018,10 @@ class MammotionDeviceErrorUpdateCoordinator(
         return device.state
 
     async def _async_update_event_message(self, event: ThingEventMessage) -> None:
-        if event.params.identifier == "device_warning_code_event":
+        if (
+            hasattr(event.params, "identifier")
+            and event.params.identifier == "device_warning_code_event"
+        ):
             event_params: DeviceNotificationEventParams = event.params
             # '[{"c":-2801,"ct":1,"ft":1731493734000},{"c":-1008,"ct":1,"ft":1731493734000}]'
             try:
@@ -1028,9 +1065,7 @@ class MammotionDeviceErrorUpdateCoordinator(
             error_code: int = next(iter(self.data.errors.err_code_list))
 
             error_code = abs(error_code)
-            error_info: ErrorInfo = self.data.errors.error_codes.get(
-                f"{error_code}", None
-            )
+            error_info: ErrorInfo = self.data.errors.error_codes[f"{error_code}"]
 
             implication = (
                 getattr(error_info, f"{self.hass.config.language}_implication")

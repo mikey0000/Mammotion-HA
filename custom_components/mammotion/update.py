@@ -1,3 +1,5 @@
+"""Update entity for Mammotion."""
+
 import logging
 from dataclasses import dataclass
 from typing import Any
@@ -52,7 +54,9 @@ class MammotionUpdateEntity(MammotionBaseEntity, UpdateEntity):
 
     _attr_device_class = UpdateDeviceClass.FIRMWARE
     _attr_supported_features = (
-        UpdateEntityFeature.INSTALL | UpdateEntityFeature.RELEASE_NOTES
+        UpdateEntityFeature.INSTALL
+        | UpdateEntityFeature.RELEASE_NOTES
+        | UpdateEntityFeature.PROGRESS
     )
     _attr_has_entity_name = True
 
@@ -95,6 +99,7 @@ class MammotionUpdateEntity(MammotionBaseEntity, UpdateEntity):
         return None
 
     def release_notes(self) -> str | None:
+        """Release notes."""
         if self.coordinator.data.update_check.product_version_info_vo is not None:
             return (
                 self.coordinator.data.update_check.product_version_info_vo.release_note
@@ -107,8 +112,8 @@ class MammotionUpdateEntity(MammotionBaseEntity, UpdateEntity):
         return self.coordinator.data.update_check.isupgrading
 
     @property
-    def progress(self) -> int | None:
-        """Update installation progress."""
+    def update_percentage(self) -> int | float | None:
+        """Update installation progress percentage."""
         if self.coordinator.data.update_check.isupgrading:
             return self.coordinator.data.update_check.progress
         return None

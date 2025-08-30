@@ -1,5 +1,6 @@
 """Base class for entities."""
 
+from homeassistant.core import callback
 from homeassistant.helpers.device_registry import (
     CONNECTION_BLUETOOTH,
     CONNECTION_NETWORK_MAC,
@@ -84,6 +85,17 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionBaseUpdateCoordinator]):
             connections=connections,
         )
 
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+        # self._update_attr()
+        super()._handle_coordinator_update()
+
+    # @abstractmethod
+    # @callback
+    # def _update_attr(self) -> None:
+    #     """Update the attribute of the entity."""
+
     @property
     def available(self) -> bool:
         """Return True if entity is available."""
@@ -93,4 +105,5 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionBaseUpdateCoordinator]):
             <= self.coordinator.config_entry.options.get(
                 CONF_RETRY_COUNT, DEFAULT_RETRY_COUNT
             )
+            and self.coordinator.is_online()
         )

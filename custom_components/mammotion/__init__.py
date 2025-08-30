@@ -133,10 +133,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                         hass, device_ble_address.upper(), True
                     )
                     if ble_device:
-                        mammotion_device.add_ble(ble_device)
-                        mammotion_device.ble().set_disconnect_strategy(
-                            not stay_connected_ble
-                        )
+                        ble = mammotion_device.add_ble(ble_device)
+                        ble.set_disconnect_strategy(disconnect=not stay_connected_ble)
 
                 maintenance_coordinator = MammotionMaintenanceUpdateCoordinator(
                     hass, entry, device, mammotion
@@ -259,13 +257,13 @@ async def check_and_restore_cloud(
 ) -> CloudIOTGateway | None:
     """Check and restore previous cloud connection."""
 
-    auth_data = entry.data.get(CONF_AUTH_DATA)
-    region_data = entry.data.get(CONF_REGION_DATA)
-    aep_data = entry.data.get(CONF_AEP_DATA)
-    session_data = entry.data.get(CONF_SESSION_DATA)
-    device_data = entry.data.get(CONF_DEVICE_DATA)
-    connect_data = entry.data.get(CONF_CONNECT_DATA)
-    mammotion_data = entry.data.get(CONF_MAMMOTION_DATA)
+    auth_data = entry.data[CONF_AUTH_DATA]
+    region_data = entry.data[CONF_REGION_DATA]
+    aep_data = entry.data[CONF_AEP_DATA]
+    session_data = entry.data[CONF_SESSION_DATA]
+    device_data = entry.data[CONF_DEVICE_DATA]
+    connect_data = entry.data[CONF_CONNECT_DATA]
+    mammotion_data = entry.data[CONF_MAMMOTION_DATA]
 
     if any(
         data is None
