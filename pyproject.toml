@@ -8,7 +8,7 @@ package-mode = false
 
 [tool.poetry.dependencies]
 python = "~3.13.0"
-pymammotion = "0.5.12"
+pymammotion = "0.5.13"
 homeassistant = "^2025.3.0"
 autotyping = "^24.3.0"
 

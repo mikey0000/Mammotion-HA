@@ -342,7 +342,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
     async def async_set_rain_detection(self, on_off: bool) -> None:
         """Set rain detection."""
         await self.async_send_command(
-            "read_write_device", rw_id=3, context=int(not on_off), rw=1
+            "read_write_device", rw_id=3, context=int(on_off), rw=1
         )
 
     async def async_read_rain_detection(self) -> None:
