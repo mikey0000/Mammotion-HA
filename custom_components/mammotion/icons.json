@@ -185,6 +185,11 @@
       "schedule_updates": {
         "default": "mdi:update"
       }
+    },
+    "update": {
+      "update": {
+        "default": "mdi:cellphone-arrow-down"
+      }
     }
   }
 }

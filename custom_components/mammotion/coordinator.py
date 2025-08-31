@@ -342,12 +342,12 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
     async def async_set_rain_detection(self, on_off: bool) -> None:
         """Set rain detection."""
         await self.async_send_command(
-            "allpowerfull_rw", rw_id=3, context=int(on_off), rw=1
+            "read_write_device", rw_id=3, context=int(not on_off), rw=1
         )
 
     async def async_read_rain_detection(self) -> None:
         """Set rain detection."""
-        await self.async_send_command("allpowerfull_rw", rw_id=3, context=1, rw=0)
+        await self.async_send_command("read_write_device", rw_id=3, context=1, rw=0)
 
     async def async_set_sidelight(self, on_off: int) -> None:
         """Set Sidelight."""
@@ -401,7 +401,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
 
     async def async_rtk_dock_location(self) -> None:
         """RTK and dock location."""
-        await self.async_send_command("allpowerfull_rw", rw_id=5, rw=1, context=1)
+        await self.async_send_command("read_write_device", rw_id=5, rw=1, context=1)
 
     async def async_get_area_list(self) -> None:
         """Mowing area List."""
@@ -1103,8 +1103,8 @@ class MammotionDeviceErrorUpdateCoordinator(
         device = self.manager.get_device_by_name(self.device_name)
 
         try:
-            await self.async_send_command("allpowerfull_rw", rw_id=5, rw=1, context=2)
-            await self.async_send_command("allpowerfull_rw", rw_id=5, rw=1, context=3)
+            await self.async_send_command("read_write_device", rw_id=5, rw=1, context=2)
+            await self.async_send_command("read_write_device", rw_id=5, rw=1, context=3)
             if not device.state.errors.error_codes:
                 device.state.errors.error_codes = (
                     await device.mammotion_http.get_all_error_codes()
@@ -1128,8 +1128,8 @@ class MammotionDeviceErrorUpdateCoordinator(
 
         try:
             # get current errors
-            await self.async_send_command("allpowerfull_rw", rw_id=5, rw=1, context=2)
-            await self.async_send_command("allpowerfull_rw", rw_id=5, rw=1, context=3)
+            await self.async_send_command("read_write_device", rw_id=5, rw=1, context=2)
+            await self.async_send_command("read_write_device", rw_id=5, rw=1, context=3)
             if not device.state.errors.error_codes:
                 device.state.errors.error_codes = (
                     await device.mammotion_http.get_all_error_codes()
