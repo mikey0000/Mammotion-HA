@@ -257,15 +257,18 @@ async def check_and_restore_cloud(
 ) -> CloudIOTGateway | None:
     """Check and restore previous cloud connection."""
 
-    if (
-        CONF_REGION_DATA,
-        CONF_AUTH_DATA,
-        CONF_AEP_DATA,
-        CONF_SESSION_DATA,
-        CONF_DEVICE_DATA,
-        CONF_CONNECT_DATA,
-        CONF_MAMMOTION_DATA,
-    ) not in entry.data:
+    if any(
+        k not in entry.data
+        for k in (
+            CONF_REGION_DATA,
+            CONF_AUTH_DATA,
+            CONF_AEP_DATA,
+            CONF_SESSION_DATA,
+            CONF_DEVICE_DATA,
+            CONF_CONNECT_DATA,
+            CONF_MAMMOTION_DATA,
+        )
+    ):
         return None
 
     auth_data = entry.data[CONF_AUTH_DATA]
