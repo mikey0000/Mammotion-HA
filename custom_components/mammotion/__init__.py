@@ -97,7 +97,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
         credentials.email = account
         credentials.password = password
         try:
-            cloud_client = await check_and_restore_cloud(hass, entry)
+            cloud_client = await check_and_restore_cloud(entry)
             if cloud_client is None:
                 await mammotion.login_and_initiate_cloud(account, password)
             else:
@@ -253,9 +253,20 @@ def store_cloud_credentials(
 
 
 async def check_and_restore_cloud(
-    hass: HomeAssistant, entry: MammotionConfigEntry
+    entry: MammotionConfigEntry,
 ) -> CloudIOTGateway | None:
     """Check and restore previous cloud connection."""
+
+    if (
+        CONF_REGION_DATA,
+        CONF_AUTH_DATA,
+        CONF_AEP_DATA,
+        CONF_SESSION_DATA,
+        CONF_DEVICE_DATA,
+        CONF_CONNECT_DATA,
+        CONF_MAMMOTION_DATA,
+    ) not in entry.data:
+        return None
 
     auth_data = entry.data[CONF_AUTH_DATA]
     region_data = entry.data[CONF_REGION_DATA]
