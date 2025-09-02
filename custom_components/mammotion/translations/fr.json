@@ -138,10 +138,10 @@
         "name": "LoRa"
       },
       "rtk_latitude": {
-        "name": "latitude"
+        "name": "Latitude"
       },
       "rtk_longitude": {
-        "name": "longitude"
+        "name": "Longitude"
       },
       "rtk_wifi_rssi": {
         "name": "Wi-Fi RSSI"
@@ -270,7 +270,7 @@
         }
       },
       "traversal_mode": {
-        "name": "Traversal Mode",
+        "name": "Mode de traversée",
         "state": {
           "direct": "Direct",
           "follow_perimeter": "Suivre le périmètre"

@@ -135,13 +135,13 @@
         "unit_of_measurement": "cyklů"
       },
       "rtk_lora": {
-        "name": "LoRa"
+        "name": "LoRa version"
       },
       "rtk_latitude": {
-        "name": "latitude"
+        "name": "Zeměpisná šířka"
       },
       "rtk_longitude": {
-        "name": "longitude"
+        "name": "Zeměpisná délka"
       },
       "rtk_wifi_rssi": {
         "name": "Wi-Fi RSSI"
@@ -270,7 +270,7 @@
         }
       },
       "traversal_mode": {
-        "name": "Traversal Mode",
+        "name": "Způsob otačení",
         "state": {
           "direct": "Přímý",
           "follow_perimeter": "Podél hranice"

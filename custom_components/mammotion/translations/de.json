@@ -38,7 +38,7 @@
           "account_name": "Mammotion E-Mail oder Account Nummer",
           "password": "Mammotion Kennwort"
         },
-        "title": "Mit WLAN verbinden",
+        "title": "Mit Wi-Fi verbinden",
         "description": "Geben Sie Ihre Mammotion E-Mail oder ID und das Passwort ein"
       }
     }
@@ -138,10 +138,10 @@
         "name": "LoRa"
       },
       "rtk_latitude": {
-        "name": "latitude"
+        "name": "Breitengrad"
       },
       "rtk_longitude": {
-        "name": "longitude"
+        "name": "Längengrad"
       },
       "rtk_wifi_rssi": {
         "name": "Wi-Fi RSSI"
@@ -270,7 +270,7 @@
         }
       },
       "traversal_mode": {
-        "name": "Traversal Mode",
+        "name": "Aufladungsmodus",
         "state": {
           "direct": "Direkt",
           "follow_perimeter": "Dem Umfang folgen"

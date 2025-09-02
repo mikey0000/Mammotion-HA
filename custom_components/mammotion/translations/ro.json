@@ -270,7 +270,7 @@
         }
       },
       "traversal_mode": {
-        "name": "Traversal Mode",
+        "name": "Mod de traversare",
         "state": {
           "direct": "Direct",
           "follow_perimeter": "Urmărește perimetrul"

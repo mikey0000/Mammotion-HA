@@ -138,10 +138,10 @@
         "name": "LoRa"
       },
       "rtk_latitude": {
-        "name": "latitude"
+        "name": "Breedtegraad"
       },
       "rtk_longitude": {
-        "name": "longitude"
+        "name": "Lengtegraad"
       },
       "rtk_wifi_rssi": {
         "name": "Wi-Fi RSSI"
@@ -199,7 +199,7 @@
         "name": "Rand maaien"
       },
       "rain_tactics": {
-        "name": ""
+        "name": "Rain detection (during mow) On/Off"
       },
       "rain_detection": {
         "name": "Regen­detectie (maaier) aan/uit"
@@ -270,7 +270,7 @@
         }
       },
       "traversal_mode": {
-        "name": "Traversal Mode",
+        "name": "Traverseermodus",
         "state": {
           "direct": "Direct",
           "follow_perimeter": "Volg de omtrek"

@@ -270,7 +270,7 @@
         }
       },
       "traversal_mode": {
-        "name": "Traversal Mode",
+        "name": "Gennemgangstilstand",
         "state": {
           "direct": "Direkte",
           "follow_perimeter": "Følg kanten"
