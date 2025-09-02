@@ -55,6 +55,15 @@
   },
   "entity": {
     "sensor": {
+      "error_1_message": {
+        "name": "Last error"
+      },
+      "error_1_time": {
+        "name": "Last error time"
+      },
+      "error_1_code": {
+        "name": "Last error code"
+      },
       "battery_percent": {
         "name": "Batterie"
       },
@@ -125,11 +134,17 @@
         "name": "Batteriezyklen",
         "unit_of_measurement": "Zyklen"
       },
+      "rtk_lora": {
+        "name": "LoRa"
+      },
       "rtk_latitude": {
-        "name": "RTK Breitengrad"
+        "name": "Breitengrad"
       },
       "rtk_longitude": {
-        "name": "RTK Längengrad"
+        "name": "Längengrad"
+      },
+      "rtk_wifi_rssi": {
+        "name": "Wi-Fi RSSI"
       }
     },
     "button": {
@@ -162,6 +177,9 @@
       },
       "clear_all_mapdata": {
         "name": "Bereinige alle Karten- und Bereichsdaten"
+      },
+      "relocate_charging_station": {
+        "name": "Relocate charging station"
       }
     },
     "switch": {

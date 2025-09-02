@@ -55,6 +55,15 @@
   },
   "entity": {
     "sensor": {
+      "error_1_message": {
+        "name": "Last error"
+      },
+      "error_1_time": {
+        "name": "Last error time"
+      },
+      "error_1_code": {
+        "name": "Last error code"
+      },
       "battery_percent": {
         "name": "Batteria"
       },
@@ -125,11 +134,17 @@
         "name": "Cicli della batteria",
         "unit_of_measurement": "Cicli batteria"
       },
+      "rtk_lora": {
+        "name": "LoRa version"
+      },
       "rtk_latitude": {
-        "name": "RTK latitude"
+        "name": "Latitude"
       },
       "rtk_longitude": {
-        "name": "Longitudine RTK"
+        "name": "Longitude"
+      },
+      "rtk_wifi_rssi": {
+        "name": "Wi-Fi RSSI"
       }
     },
     "button": {
@@ -137,7 +152,7 @@
         "name": "Sincronizza mappe"
       },
       "join_webrtc": {
-        "name": "Start camera on mower"
+        "name": "Avvia telecamera del tosaerba"
       },
       "resync_rtk_dock": {
         "name": "Sincronizza base e RTK"
@@ -162,6 +177,9 @@
       },
       "clear_all_mapdata": {
         "name": "Cancella nomi di mappe e aree"
+      },
+      "relocate_charging_station": {
+        "name": "Relocate charging station"
       }
     },
     "switch": {
@@ -181,10 +199,10 @@
         "name": "Taglio dei bordi"
       },
       "rain_tactics": {
-        "name": "Rain detection (during mow) On/Off"
+        "name": "Rilevazione pioggia (durante la falciatura) On/Off"
       },
       "rain_detection": {
-        "name": "Rain detection (Mower) On/Off"
+        "name": "Rilevamento pioggia (Tosaerba) On/Off"
       },
       "side_led": {
         "name": "LED laterale On/Off"
@@ -193,7 +211,7 @@
         "name": "Taglio perimetro"
       },
       "schedule_updates": {
-        "name": "Turn Updates On/Off"
+        "name": "Attivare/Disattivare Gli aggiornamenti"
       }
     },
     "select": {
