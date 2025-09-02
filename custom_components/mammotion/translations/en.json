@@ -460,6 +460,20 @@
           "description": "List of areas to mow (represented as integers)."
         }
       }
+    },
+    "start_stop_blades": {
+      "name": "Start or stop blades",
+      "description": "Start or stop the blades manually.",
+      "fields": {
+        "start_stop": {
+          "name": "Start or stop",
+          "description": "Whether blades are on or off."
+        },
+        "blade_height": {
+          "name": "Blade height",
+          "description": "Height of the blade."
+        }
+      }
     }
   },
   "exceptions": {

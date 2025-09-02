@@ -319,7 +319,9 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
             if self.update_failures < 5:
                 await self.async_sync_maps()
 
-    async def async_start_stop_blades(self, start_stop: bool) -> None:
+    async def async_start_stop_blades(
+        self, start_stop: bool, blade_height: int = 60
+    ) -> None:
         """Start stop blades."""
         if DeviceType.is_luba1(self.device_name):
             if start_stop:
@@ -331,7 +333,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
                 "operate_on_device",
                 main_ctrl=1,
                 cut_knife_ctrl=1,
-                cut_knife_height=60,
+                cut_knife_height=blade_height,
                 max_run_speed=1.2,
             )
         else:
@@ -339,7 +341,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
                 "operate_on_device",
                 main_ctrl=0,
                 cut_knife_ctrl=0,
-                cut_knife_height=60,
+                cut_knife_height=blade_height,
                 max_run_speed=1.2,
             )
 

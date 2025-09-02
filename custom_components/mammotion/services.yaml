@@ -193,3 +193,25 @@ start_mow:
           multiple: true
           integration: mammotion
           domain: switch
+start_stop_blades:
+  target:
+    entity:
+      integration: mammotion
+      domain: lawn_mower
+  fields:
+    start_stop:
+      example: true
+      default: true
+      required: true
+      selector:
+        boolean:
+    blade_height:
+      example: 0
+      default: 25
+      required: false
+      selector:
+        number:
+          min: 15
+          max: 100
+          step: 5
+          unit_of_measurement: "mm"

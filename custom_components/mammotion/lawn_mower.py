@@ -26,6 +26,7 @@ from .entity import MammotionBaseEntity
 
 SERVICE_START_MOWING = "start_mow"
 SERVICE_CANCEL_JOB = "cancel_job"
+SERVICE_START_STOP_BLADES = "start_stop_blades"
 
 START_MOW_SCHEMA = {
     vol.Optional("is_mow", default=True): cv.boolean,
@@ -74,6 +75,13 @@ START_MOW_SCHEMA = {
     ),  # This assumes `areas` are entity IDs from the integration
 }
 
+START_STOP_BLADES_SCHEMA = {
+    vol.Required("start_stop", default=True): cv.boolean,
+    vol.Optional("blade_height", default=30): vol.All(
+        vol.Coerce(int), vol.Range(min=15, max=100)
+    ),
+}
+
 
 def get_entity_attribute(
     hass: HomeAssistant, entity_id: str, attribute_name: str
@@ -111,6 +119,10 @@ async def async_setup_entry(
 
     platform.async_register_entity_service(SERVICE_CANCEL_JOB, None, "async_cancel")
 
+    platform.async_register_entity_service(
+        SERVICE_START_STOP_BLADES, START_STOP_BLADES_SCHEMA, "async_start_stop_blades"
+    )
+
 
 class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
     """Representation of a Mammotion Lawn Mower."""
@@ -133,6 +145,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
 
     @property
     def report_data(self) -> ReportData:
+        """Return the report data."""
         return self.coordinator.data.report_data
 
     @property
@@ -330,3 +343,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
                 ) from exc
             finally:
                 await self.coordinator.async_request_iot_sync()
+
+    async def async_start_stop_blades(self, **kwargs: Any) -> None:
+        """Start/Stop Blades."""
+        await self.coordinator.async_start_stop_blades(**kwargs)
