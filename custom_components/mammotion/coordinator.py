@@ -1189,6 +1189,26 @@ class MammotionRTKCoordinator(DataUpdateCoordinator[RTKDevice]):
             iot_id=self.device.iotId,
             product_key=self.device.productKey,
         )
+        self.cloud.mqtt_message_event.add_subscribers(self._on_mqtt_message)
+        self.cloud.mqtt_properties_event.add_subscribers(self._on_mqtt_properties)
+
+    async def _on_mqtt_message(self, event: ThingEventMessage) -> None:
+        if event.params.iotId != self.data.iot_id:
+            return
+        # set data based on mqtt protobuf messages to set lat lon
+
+    async def _on_mqtt_properties(self, properties: ThingPropertiesMessage) -> None:
+        if properties.params.iotId != self.data.iot_id:
+            return
+        if ota_progress := properties.params.items.otaProgress:
+            ota_progress.value = OTAProgressItems.from_dict(ota_progress.value)
+            self.data.update_check.progress = ota_progress.value.progress
+            self.data.update_check.isupgrading = True
+            if ota_progress.value.progress == 100:
+                self.data.update_check.isupgrading = False
+                self.data.update_check.upgradeable = False
+                self.data.device_version = ota_progress.value.version
+            self.async_set_updated_data(self.data)
 
     async def _async_update_data(self):
         """Update RTK data."""
@@ -1209,8 +1229,10 @@ class MammotionRTKCoordinator(DataUpdateCoordinator[RTKDevice]):
                     self.data.bt_mac = network["bt_mac"]
                 if coordinate := data.coordinate:
                     coord_val = json.loads(coordinate.value)
-                    self.data.lat = coord_val["lat"]
-                    self.data.lon = coord_val["lon"]
+                    if self.data.lat == 0:
+                        self.data.lat = coord_val["lat"]
+                    if self.data.lon == 0:
+                        self.data.lon = coord_val["lon"]
                 if device_version := data.deviceVersion:
                     self.data.device_version = device_version.value
             self.data.online = True

@@ -341,13 +341,13 @@ RTK_SENSOR_TYPES: tuple[MammotionRTKSensorEntityDescription, ...] = (
     MammotionRTKSensorEntityDescription(
         key="rtk_latitude",
         native_unit_of_measurement=DEGREE,
-        value_fn=lambda rtk_data: rtk_data.lat,
+        value_fn=lambda rtk_data: rtk_data.lat * 180 / math.pi,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     MammotionRTKSensorEntityDescription(
         key="rtk_longitude",
         native_unit_of_measurement=DEGREE,
-        value_fn=lambda rtk_data: rtk_data.lon,
+        value_fn=lambda rtk_data: rtk_data.lon * 180 / math.pi,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     MammotionRTKSensorEntityDescription(
