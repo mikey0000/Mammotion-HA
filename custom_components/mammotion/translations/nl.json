@@ -135,7 +135,7 @@
         "unit_of_measurement": "cycli"
       },
       "rtk_lora": {
-        "name": "LoRa"
+        "name": "LoRa version"
       },
       "rtk_latitude": {
         "name": "Breedtegraad"

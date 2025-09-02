@@ -135,13 +135,13 @@
         "unit_of_measurement": "cykle"
       },
       "rtk_lora": {
-        "name": "LoRa"
+        "name": "LoRa version"
       },
       "rtk_latitude": {
-        "name": "latitude"
+        "name": "Latitude"
       },
       "rtk_longitude": {
-        "name": "longitude"
+        "name": "Longitude"
       },
       "rtk_wifi_rssi": {
         "name": "Wi-Fi RSSI"

@@ -135,7 +135,7 @@
         "unit_of_measurement": "cycles"
       },
       "rtk_lora": {
-        "name": "LoRa"
+        "name": "LoRa version"
       },
       "rtk_latitude": {
         "name": "Latitude"
