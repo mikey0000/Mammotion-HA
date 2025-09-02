@@ -134,11 +134,17 @@
         "name": "Battery cycles",
         "unit_of_measurement": "cycles"
       },
+      "rtk_lora": {
+        "name": "LoRa"
+      },
       "rtk_latitude": {
-        "name": "RTK latitude"
+        "name": "latitude"
       },
       "rtk_longitude": {
-        "name": "RTK longitude"
+        "name": "longitude"
+      },
+      "rtk_wifi_rssi": {
+        "name": "Wi-Fi RSSI"
       }
     },
     "button": {
@@ -171,6 +177,9 @@
       },
       "clear_all_mapdata": {
         "name": "Clear maps and area names"
+      },
+      "relocate_charging_station": {
+        "name": "Relocate charging station"
       }
     },
     "switch": {

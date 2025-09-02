@@ -129,7 +129,7 @@ async def async_setup_entry(
     hass: HomeAssistant, entry: MammotionConfigEntry, async_add_entities: Callable
 ) -> None:
     """Set up the Mammotion switch entities."""
-    mammotion_devices = entry.runtime_data
+    mammotion_devices = entry.runtime_data.mowers
 
     for mower in mammotion_devices:
         added_areas: set[int] = set()

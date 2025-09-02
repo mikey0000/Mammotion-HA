@@ -25,10 +25,11 @@ from pymammotion.aliyun.cloud_gateway import (
     FailedRequestException,
     GatewayTimeoutException,
     NoConnectionException,
+    SetupException,
 )
 from pymammotion.aliyun.model.dev_by_account_response import Device
 from pymammotion.data.model import GenerateRouteInformation, HashList
-from pymammotion.data.model.device import MowerInfo, MowingDevice
+from pymammotion.data.model.device import MowerInfo, MowingDevice, RTKDevice
 from pymammotion.data.model.device_config import OperationSettings, create_path_order
 from pymammotion.data.model.report_info import Maintain
 from pymammotion.data.mqtt.event import DeviceNotificationEventParams, ThingEventMessage
@@ -37,13 +38,15 @@ from pymammotion.data.mqtt.status import ThingStatusMessage
 from pymammotion.http.model.camera_stream import (
     StreamSubscriptionResponse,
 )
-from pymammotion.http.model.http import ErrorInfo, Response
+from pymammotion.http.model.http import CheckDeviceVersion, ErrorInfo, Response
+from pymammotion.http.model.rtk import RTK
 from pymammotion.mammotion.commands.mammotion_command import MammotionCommand
 from pymammotion.mammotion.devices.mammotion import (
     ConnectionPreference,
     Mammotion,
     MammotionMixedDeviceManager,
 )
+from pymammotion.mammotion.devices.mammotion_cloud import MammotionCloud
 from pymammotion.proto import RptAct, RptInfoType, SystemUpdateBufMsg
 from pymammotion.utility.constant import WorkMode
 from pymammotion.utility.device_type import DeviceType
@@ -75,6 +78,7 @@ WORKING_INTERVAL = timedelta(seconds=5)
 REPORT_INTERVAL = timedelta(minutes=1)
 DEVICE_VERSION_INTERVAL = timedelta(days=1)
 MAP_INTERVAL = timedelta(minutes=30)
+RTK_INTERVAL = timedelta(hours=5)
 
 
 class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
@@ -170,8 +174,8 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
 
     async def device_offline(self, device: MammotionMixedDeviceManager) -> None:
         device.state.online = False
-        if cloud := device.cloud():
-            await cloud.stop()
+        # if cloud := device.cloud():
+        #     await cloud.stop()
 
         loop = asyncio.get_running_loop()
         loop.call_later(900, lambda: asyncio.create_task(self.clear_update_failures()))
@@ -233,7 +237,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
             try:
                 if ble := device.ble():
                     # if we don't do this it will stay connected and no longer update over wifi
-                    ble.set_disconnect_strategy(True)
+                    ble.set_disconnect_strategy(disconnect=True)
                     await ble.queue_command(command, **kwargs)
 
                     return True
@@ -406,6 +410,23 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
     async def async_get_area_list(self) -> None:
         """Mowing area List."""
         await self.async_send_command("get_area_name_list", device_id=self.device.iotId)
+
+    async def async_relocate_charging_station(self):
+        """Reset charging station."""
+        await self.async_send_command("delete_charge_point")
+        # fetch charging location?
+        """
+        nav {
+          todev_get_commondata {
+            pver: 1
+            subCmd: 2
+            action: 6
+            type: 5
+            totalFrame: 1
+            currentFrame: 1
+          }
+        }
+        """
 
     async def send_command_and_update(self, command_str: str, **kwargs: Any) -> None:
         """Send command and update."""
@@ -963,7 +984,6 @@ class MammotionMapUpdateCoordinator(MammotionBaseUpdateCoordinator[MowerInfo]):
             if (
                 len(device.state.map.hashlist) == 0
                 or len(device.state.map.missing_hashlist()) > 0
-                or len(device.state.map.plan) == 0
             ):
                 await self.manager.start_map_sync(self.device_name)
 
@@ -1136,3 +1156,101 @@ class MammotionDeviceErrorUpdateCoordinator(
                 )
         except DeviceOfflineException:
             """Device is offline bluetooth has been attempted."""
+
+
+class MammotionRTKCoordinator(DataUpdateCoordinator[RTKDevice]):
+    """Mammotion DataUpdateCoordinator."""
+
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        config_entry: MammotionConfigEntry,
+        device: Device,
+        cloud: MammotionCloud,
+    ) -> None:
+        """Initialize global mammotion data updater."""
+        super().__init__(
+            hass=hass,
+            logger=LOGGER,
+            name=DOMAIN,
+            update_interval=RTK_INTERVAL,
+            config_entry=config_entry,
+        )
+        assert config_entry.unique_id
+        self.account = self.config_entry.data[CONF_ACCOUNTNAME]
+        self.password = self.config_entry.data[CONF_PASSWORD]
+        self.device: Device = device
+        self.device_name = device.deviceName
+        self.cloud: MammotionCloud = cloud
+        self.data: RTKDevice = RTKDevice(
+            name=self.device_name,
+            iot_id=self.device.iotId,
+            product_key=self.device.productKey,
+        )
+
+    async def _async_update_data(self):
+        """Update RTK data."""
+        try:
+            response = await self.cloud.cloud_client.get_device_properties(
+                self.device.iotId
+            )
+            if response.code == 200:
+                data = response.data
+                if ota_progress := data.otaProgress:
+                    self.data.update_check = CheckDeviceVersion.from_dict(
+                        ota_progress.value
+                    )
+                if network_info := data.networkInfo:
+                    network = json.loads(network_info.value)
+                    self.data.wifi_rssi = network["wifi_rssi"]
+                    self.data.wifi_sta_mac = network["wifi_sta_mac"]
+                    self.data.bt_mac = network["bt_mac"]
+                if coordinate := data.coordinate:
+                    coord_val = json.loads(coordinate.value)
+                    self.data.lat = coord_val["lat"]
+                    self.data.lon = coord_val["lon"]
+                if device_version := data.deviceVersion:
+                    self.data.device_version = device_version.value
+            self.data.online = True
+
+            ota_info = (
+                await self.cloud.cloud_client.mammotion_http.get_device_ota_firmware(
+                    [self.data.iot_id]
+                )
+            )
+            if check_versions := ota_info.data:
+                for check_version in check_versions:
+                    if check_version.device_id == self.data.iot_id:
+                        self.data.update_check = check_version
+            return self.data
+        except SetupException:
+            """Cloud IOT Gateway is not setup."""
+            return self.data
+        except DeviceOfflineException:
+            self.data.online = False
+        except GatewayTimeoutException:
+            """Gateway is timing out again."""
+        return self.data
+
+    async def _async_setup(self) -> None:
+        """Setup RTK data."""
+
+        rtk_response = await self.cloud.cloud_client.mammotion_http.get_rtk_devices()
+        if rtk_response.code == 0:
+            rtk_list = [
+                rtk
+                for rtk in rtk_response.data
+                if self.device.deviceName == rtk.device_name
+            ]
+            try:
+                rtk_device: RTK = next(iter(rtk_list))
+                self.data.lora_version = rtk_device.lora
+            except StopIteration:
+                """Failed to get RTK device."""
+                return
+
+    async def update_firmware(self, version: str) -> None:
+        """Update firmware."""
+        await self.cloud.cloud_client.mammotion_http.start_ota_upgrade(
+            self.device.iotId, version
+        )

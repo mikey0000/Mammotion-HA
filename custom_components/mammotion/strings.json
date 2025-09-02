@@ -158,6 +158,9 @@
       },
       "clear_all_mapdata": {
         "name": "Clear maps and area names"
+      },
+      "relocate_charging_station": {
+        "name": "Relocate charging station"
       }
     },
     "switch": {

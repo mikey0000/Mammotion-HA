@@ -13,7 +13,10 @@ from homeassistant.helpers.device_registry import DeviceEntry
 from pymammotion import CloudIOTGateway
 from pymammotion.aliyun.model.aep_response import AepResponse
 from pymammotion.aliyun.model.connect_response import ConnectResponse
-from pymammotion.aliyun.model.dev_by_account_response import ListingDevByAccountResponse
+from pymammotion.aliyun.model.dev_by_account_response import (
+    Device,
+    ListingDevByAccountResponse,
+)
 from pymammotion.aliyun.model.login_by_oauth_response import LoginByOAuthResponse
 from pymammotion.aliyun.model.regions_response import RegionResponse
 from pymammotion.aliyun.model.session_by_authcode_response import (
@@ -51,8 +54,9 @@ from .coordinator import (
     MammotionMaintenanceUpdateCoordinator,
     MammotionMapUpdateCoordinator,
     MammotionReportUpdateCoordinator,
+    MammotionRTKCoordinator,
 )
-from .models import MammotionMowerData
+from .models import MammotionDevices, MammotionMowerData, MammotionRTKData
 
 PLATFORMS: list[Platform] = [
     Platform.BINARY_SENSOR,
@@ -67,7 +71,7 @@ PLATFORMS: list[Platform] = [
     Platform.UPDATE,
 ]
 
-type MammotionConfigEntry = ConfigEntry[list[MammotionMowerData]]
+type MammotionConfigEntry = ConfigEntry[MammotionDevices]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) -> bool:
@@ -90,7 +94,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
 
     use_wifi = entry.data.get(CONF_USE_WIFI, True)
 
-    mammotion_devices: list[MammotionMowerData] = []
+    mammotion_mowers: list[MammotionMowerData] = []
+    mammotion_devices: MammotionDevices = MammotionDevices([], [])
+    mammotion_rtk: list[MammotionRTKData] = []
+    mammotion_rtk_devices: list[Device] = []
 
     if account and password:
         credentials = Credentials()
@@ -121,6 +128,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                 device
             ) in mqtt_client.cloud_client.devices_by_account_response.data.data:
                 if not device.deviceName.startswith(DEVICE_SUPPORT):
+                    if device.categoryKey == "Tracker":
+                        mammotion_rtk_devices.append(device)
                     continue
 
                 mammotion_device = mammotion.get_or_create_device_by_name(
@@ -178,7 +187,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                     # not entirely sure this is a good idea
                     mammotion_device.remove_cloud()
 
-                mammotion_devices.append(
+                mammotion_mowers.append(
                     MammotionMowerData(
                         name=device.deviceName,
                         device=device,
@@ -196,13 +205,26 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                 except:
                     """Do nothing for now."""
 
+            for rtk in mammotion_rtk_devices:
+                rtk_coordinator = MammotionRTKCoordinator(hass, entry, rtk, mqtt_client)
+                await rtk_coordinator.async_config_entry_first_refresh()
+                mammotion_rtk.append(
+                    MammotionRTKData(
+                        name=rtk.deviceName,
+                        api=mammotion,
+                        device=rtk,
+                        coordinator=rtk_coordinator,
+                    )
+                )
+
     # if not any(mammotion.get_device_by_name(mammotion_device.device.deviceName).preference == ConnectionPreference.WIFI for mammotion_device in mammotion_devices):
     #     for mammotion_device in mammotion_devices:
     #         mower = mammotion.get_device_by_name(mammotion_device.device.deviceName)
     #         await mower.cloud().stop()
     #         mower.cloud().mqtt.disconnect() if mower.cloud().mqtt.is_connected() else None
     #         mower.remove_cloud()
-
+    mammotion_devices.RTK = mammotion_rtk
+    mammotion_devices.mowers = mammotion_mowers
     entry.runtime_data = mammotion_devices
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
@@ -343,7 +365,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: MammotionConfigEntry) -
     """Unload a config entry."""
 
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
-        for mower in entry.runtime_data:
+        for mower in entry.runtime_data.mowers:
             try:
                 await mower.api.remove_device(mower.name)
             except TimeoutError:
@@ -363,7 +385,12 @@ async def async_remove_config_entry_device(
         ),
     )
     mower = next(
-        (mower for mower in config_entry.runtime_data if mower.name == mower_name), None
+        (
+            mower
+            for mower in config_entry.runtime_data.mowers
+            if mower.name == mower_name
+        ),
+        None,
     )
 
     return not bool(mower)

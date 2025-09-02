@@ -55,7 +55,7 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the Mammotion camera entities."""
-    mowers = entry.runtime_data
+    mowers = entry.runtime_data.mowers
     entities = []
     for mower in mowers:
         if not DeviceType.is_luba1(mower.device.deviceName):
@@ -153,7 +153,11 @@ async def async_setup_platform_services(
         state = hass.states.get(entity_id)
         name = state.attributes.get("model_name")
         return next(
-            (mower for mower in entry.runtime_data if mower.device.deviceName == name),
+            (
+                mower
+                for mower in entry.runtime_data.mowers
+                if mower.device.deviceName == name
+            ),
             None,
         )
 

@@ -8,9 +8,10 @@ from homeassistant.helpers.device_registry import (
     format_mac,
 )
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from pymammotion.data.model.device import RTKDevice
 
 from .const import CONF_RETRY_COUNT, DEFAULT_RETRY_COUNT, DOMAIN
-from .coordinator import MammotionBaseUpdateCoordinator
+from .coordinator import MammotionBaseUpdateCoordinator, MammotionRTKCoordinator
 
 
 class MammotionBaseEntity(CoordinatorEntity[MammotionBaseUpdateCoordinator]):
@@ -107,3 +108,44 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionBaseUpdateCoordinator]):
             )
             and self.coordinator.is_online()
         )
+
+
+class MammotionBaseRTKEntity(CoordinatorEntity[MammotionRTKCoordinator]):
+    """Representation of a Mammotion RTK entity."""
+
+    _attr_has_entity_name = True
+
+    def __init__(self, coordinator: MammotionRTKCoordinator, key: str) -> None:
+        """Initialize the Lawn Mower."""
+        super().__init__(coordinator)
+        self._attr_unique_id = f"{coordinator.device_name}_{key}"
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        rtk_device: RTKDevice = self.coordinator.data
+
+        return DeviceInfo(
+            identifiers={(DOMAIN, rtk_device.name)},
+            name=rtk_device.name
+            if self.coordinator.device.nickName is None
+            else self.coordinator.device.nickName,
+            manufacturer="Mammotion",
+            serial_number=rtk_device.name,
+            model=rtk_device.name,
+            model_id=self.coordinator.device.productKey,
+            sw_version=self.coordinator.data.device_version,
+            suggested_area="Garden",
+            connections={
+                (CONNECTION_BLUETOOTH, rtk_device.bt_mac),
+                (CONNECTION_NETWORK_MAC, rtk_device.wifi_sta_mac),
+            },
+        )
+
+    @property
+    def available(self) -> bool:
+        return self.coordinator.data.online
+
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+        super()._handle_coordinator_update()

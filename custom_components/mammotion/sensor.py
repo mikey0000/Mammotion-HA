@@ -24,7 +24,7 @@ from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import StateType
 from homeassistant.util.unit_conversion import SpeedConverter
-from pymammotion.data.model.device import MowingDevice
+from pymammotion.data.model.device import MowingDevice, RTKDevice
 from pymammotion.data.model.enums import RTKStatus
 from pymammotion.utility.constant.device_constant import (
     PosType,
@@ -38,8 +38,9 @@ from . import (
     MammotionConfigEntry,
     MammotionDeviceErrorUpdateCoordinator,
     MammotionReportUpdateCoordinator,
+    MammotionRTKCoordinator,
 )
-from .entity import MammotionBaseEntity
+from .entity import MammotionBaseEntity, MammotionBaseRTKEntity
 
 SPEED_UNITS = SpeedConverter.VALID_UNITS
 
@@ -49,6 +50,11 @@ class MammotionSensorEntityDescription(SensorEntityDescription):
     """Describes Mammotion sensor entity."""
 
     value_fn: Callable[[MowingDevice], StateType]
+
+
+@dataclass(frozen=True, kw_only=True)
+class MammotionRTKSensorEntityDescription(SensorEntityDescription):
+    value_fn: Callable[[RTKDevice], StateType]
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -326,6 +332,34 @@ WORK_SENSOR_TYPES: tuple[MammotionWorkSensorEntityDescription, ...] = (
     ),
 )
 
+RTK_SENSOR_TYPES: tuple[MammotionRTKSensorEntityDescription, ...] = (
+    MammotionRTKSensorEntityDescription(
+        key="rtk_lora",
+        value_fn=lambda rtk_data: rtk_data.lora_version,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    MammotionRTKSensorEntityDescription(
+        key="rtk_latitude",
+        native_unit_of_measurement=DEGREE,
+        value_fn=lambda rtk_data: rtk_data.lat,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    MammotionRTKSensorEntityDescription(
+        key="rtk_longitude",
+        native_unit_of_measurement=DEGREE,
+        value_fn=lambda rtk_data: rtk_data.lon,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    MammotionRTKSensorEntityDescription(
+        key="rtk_wifi_rssi",
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.SIGNAL_STRENGTH,
+        native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
+        value_fn=lambda rtk_data: rtk_data.wifi_rssi,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+)
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -333,10 +367,10 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up sensor platform."""
-    mammotion_devices = entry.runtime_data
+    mammotion_mowers = entry.runtime_data.mowers
 
     entities = []
-    for mower in mammotion_devices:
+    for mower in mammotion_mowers:
         if not DeviceType.is_yuka(mower.device.deviceName):
             entities.extend(
                 MammotionSensorEntity(mower.reporting_coordinator, description)
@@ -363,6 +397,13 @@ async def async_setup_entry(
             for description in SENSOR_ERROR_TYPES
         )
 
+    mammotion_rtks = entry.runtime_data.RTK
+    for rtk in mammotion_rtks:
+        entities.extend(
+            MammotionRTKSensorEntity(rtk.coordinator, description)
+            for description in RTK_SENSOR_TYPES
+        )
+
     async_add_entities(entities)
 
 
@@ -376,6 +417,27 @@ class MammotionSensorEntity(MammotionBaseEntity, SensorEntity):
         self,
         coordinator: MammotionReportUpdateCoordinator,
         entity_description: MammotionSensorEntityDescription,
+    ) -> None:
+        """Set up MammotionSensor."""
+        super().__init__(coordinator, entity_description.key)
+        self.entity_description = entity_description
+        self._attr_translation_key = entity_description.key
+
+    @property
+    def native_value(self) -> StateType:
+        """Return the state of the sensor."""
+        return self.entity_description.value_fn(self.coordinator.data)
+
+
+class MammotionRTKSensorEntity(MammotionBaseRTKEntity, SensorEntity):
+    """Defining the Mammotion Sensor."""
+
+    entity_description: MammotionRTKSensorEntityDescription
+
+    def __init__(
+        self,
+        coordinator: MammotionRTKCoordinator,
+        entity_description: MammotionRTKSensorEntityDescription,
     ) -> None:
         """Set up MammotionSensor."""
         super().__init__(coordinator, entity_description.key)

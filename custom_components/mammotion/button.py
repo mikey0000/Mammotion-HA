@@ -76,7 +76,10 @@ BUTTON_SENSORS: tuple[MammotionButtonSensorEntityDescription, ...] = (
         press_fn=lambda coordinator: coordinator.join_webrtc_channel(),
         entity_category=EntityCategory.CONFIG,
     ),
-    # TODO add delete and set charging station
+    MammotionButtonSensorEntityDescription(
+        key="relocate_charging_station",
+        press_fn=lambda coordinator: coordinator.async_relocate_charging_station(),
+    ),
     # delete_charge_point
 )
 
@@ -87,7 +90,7 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the Mammotion button sensor entity."""
-    mammotion_devices = entry.runtime_data
+    mammotion_devices = entry.runtime_data.mowers
 
     for mower in mammotion_devices:
         added_tasks: set[int] = set()

@@ -145,7 +145,7 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the Mammotion select entity."""
-    mammotion_devices = entry.runtime_data
+    mammotion_devices = entry.runtime_data.mowers
 
     for mower in mammotion_devices:
         entities = []
