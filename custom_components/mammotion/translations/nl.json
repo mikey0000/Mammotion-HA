@@ -2,7 +2,7 @@
   "config": {
     "abort": {
       "already_configured": "Het apparaat is al ingesteld",
-      "already_in_progress": "De configuratieflow is al in uitvoering",
+      "already_in_progress": "Een configuratieproces is al gestart",
       "no_devices_found": "Kon geen apparaten vinden",
       "no_devices_found_in_account": "Er zijn geen apparaten aan uw account verbonden",
       "bluetooth_and_account_mismatch": "Bluetooth-apparaat niet gevonden in uw account",
@@ -55,6 +55,15 @@
   },
   "entity": {
     "sensor": {
+      "error_1_message": {
+        "name": "Last error"
+      },
+      "error_1_time": {
+        "name": "Last error time"
+      },
+      "error_1_code": {
+        "name": "Last error code"
+      },
       "battery_percent": {
         "name": "Batterij"
       },
@@ -104,7 +113,7 @@
         "name": "L2 Satellieten (Samen kijkend)"
       },
       "position_mode": {
-        "name": "RTK positie"
+        "name": "RTK-positie"
       },
       "position_type": {
         "name": "Apparaatpositietype"
@@ -123,13 +132,19 @@
       },
       "maintenance_bat_cycles": {
         "name": "Batterijcycli",
-        "unit_of_measurement": "cycles"
+        "unit_of_measurement": "cycli"
+      },
+      "rtk_lora": {
+        "name": "LoRa"
       },
       "rtk_latitude": {
-        "name": "RTK breedtegraad"
+        "name": "latitude"
       },
       "rtk_longitude": {
-        "name": "RTK lengtegraad"
+        "name": "longitude"
+      },
+      "rtk_wifi_rssi": {
+        "name": "Wi-Fi RSSI"
       }
     },
     "button": {
@@ -137,7 +152,7 @@
         "name": "Synchroniseer kaarten"
       },
       "join_webrtc": {
-        "name": "Start camera on mower"
+        "name": "Start camera op maaier"
       },
       "resync_rtk_dock": {
         "name": "Synchroniseer RTK en laadstation"
@@ -162,6 +177,9 @@
       },
       "clear_all_mapdata": {
         "name": "Kaart- en zone namen wissen"
+      },
+      "relocate_charging_station": {
+        "name": "Relocate charging station"
       }
     },
     "switch": {
@@ -181,10 +199,10 @@
         "name": "Rand maaien"
       },
       "rain_tactics": {
-        "name": "Rain detection (during mow) On/Off"
+        "name": ""
       },
       "rain_detection": {
-        "name": "Rain detection (Mower) On/Off"
+        "name": "Regen­detectie (maaier) aan/uit"
       },
       "side_led": {
         "name": "Zijkant LED's aan/uit"
@@ -193,7 +211,7 @@
         "name": "Rand Eerst"
       },
       "schedule_updates": {
-        "name": "Turn Updates On/Off"
+        "name": "Updates aan/uit zetten"
       }
     },
     "select": {
@@ -252,7 +270,7 @@
         }
       },
       "traversal_mode": {
-        "name": "Traverseermodus",
+        "name": "Traversal Mode",
         "state": {
           "direct": "Direct",
           "follow_perimeter": "Volg de omtrek"
@@ -464,7 +482,7 @@
       "message": "Het is niet gelukt om te stoppen met het terugbrengen van de robot naar het laadstation."
     },
     "command_failed": {
-      "message": "Kon de opdracht niet verzenden naar de robot."
+      "message": "Verzenden van de opdracht naar de maaier is mislukt."
     }
   }
 }

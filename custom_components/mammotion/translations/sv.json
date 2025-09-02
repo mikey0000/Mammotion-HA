@@ -3,9 +3,9 @@
     "abort": {
       "already_configured": "Enheten är redan konfigurerad",
       "already_in_progress": "Konfigurationsflödet pågår redan",
-      "no_devices_found": "Kunde inte hitta enheter",
-      "no_devices_found_in_account": "Inga enheter finns på ditt konto",
-      "bluetooth_and_account_mismatch": "Bluetooth-enheten hittades inte i ditt konto",
+      "no_devices_found": "Inga enheter funna",
+      "no_devices_found_in_account": "Inga enheter funna på ditt konto",
+      "bluetooth_and_account_mismatch": "Ingen Bluetooth-enheten funnen på ditt konto",
       "no_longer_present": "Enheten finns inte längre",
       "not_supported": "Enheten stöds inte",
       "reconfigure_successful": "Omkonfigurering lyckades"
@@ -15,31 +15,31 @@
       "bluetooth_confirm": {
         "description": "Konfiguration {name}",
         "data": {
-          "stay_connected_bluetooth": "Håll Bluetooth ansluten"
+          "stay_connected_bluetooth": "Behåll Bluetooth anslutningen aktiv"
         }
       },
       "reconfigure": {
         "data": {
           "use_wifi": "Använd Wi-Fi",
-          "account_name": "Mammotion e-post eller kontonummer",
-          "password": "Mammotion kontots lösenord"
+          "account_name": "E-post eller kontonnummer för Mammotion",
+          "password": "Lössenord för Mammotion konto"
         }
       },
       "user": {
         "data": {
           "address": "Enhet",
-          "stay_connected_bluetooth": "Håll Bluetooth ansluten"
+          "stay_connected_bluetooth": "Behåll Bluetooth anslutningen aktiv"
         },
-        "description": "Välj din gräsklippare"
+        "description": "Välj gräsklippare"
       },
       "wifi": {
         "data": {
-          "use_wifi": "Använd Wi-Fi (avmarkera och skicka för att använda Bluetooth)",
-          "account_name": "Mammotion e-post eller kontonummer",
-          "password": "Mammotion kontots lösenord"
+          "use_wifi": "Använd Wi-Fi (avmarkera och klicka på skicka för att använda Bluetooth)",
+          "account_name": "E-post eller kontonnummer för Mammotion",
+          "password": "Lössenord för Mammotion konto"
         },
         "title": "Anslut till Wi-Fi",
-        "description": "Ange ditt Mammotion kontos e-postadress eller id och lösenord"
+        "description": "Ange din e-postadress eller kontonnummer samt lösenord för ditt Mammotion konto"
       }
     }
   },
@@ -47,14 +47,23 @@
     "step": {
       "init": {
         "data": {
-          "title": "Uppdatera konfiguration",
-          "stay_connected_bluetooth": "Håll Bluetooth ansluten"
+          "title": "Uppdatera konfigurationen",
+          "stay_connected_bluetooth": "Behåll Bluetooth anslutningen aktiv"
         }
       }
     }
   },
   "entity": {
     "sensor": {
+      "error_1_message": {
+        "name": "Last error"
+      },
+      "error_1_time": {
+        "name": "Last error time"
+      },
+      "error_1_code": {
+        "name": "Last error code"
+      },
       "battery_percent": {
         "name": "Batteri"
       },
@@ -77,7 +86,7 @@
         "name": "Satelliter (Robot)"
       },
       "blade_height": {
-        "name": "Bladhöjd"
+        "name": "Klipphöjd"
       },
       "area": {
         "name": "Område"
@@ -113,7 +122,7 @@
         "name": "Aktivitetsläge"
       },
       "work_area": {
-        "name": "Arbetsyta"
+        "name": "Arbetsområde"
       },
       "maintenance_distance": {
         "name": "Total körsträcka"
@@ -125,11 +134,17 @@
         "name": "Battericykler",
         "unit_of_measurement": "cykler"
       },
+      "rtk_lora": {
+        "name": "LoRa"
+      },
       "rtk_latitude": {
-        "name": "RTK latitud"
+        "name": "latitude"
       },
       "rtk_longitude": {
-        "name": "RTK longitud"
+        "name": "longitude"
+      },
+      "rtk_wifi_rssi": {
+        "name": "Wi-Fi RSSI"
       }
     },
     "button": {
@@ -140,42 +155,45 @@
         "name": "Starta kameran på gräsklipparen"
       },
       "resync_rtk_dock": {
-        "name": "Synkronisera RTK och docka"
+        "name": "Synkronisera RTK och laddstationen"
       },
       "release_from_dock": {
-        "name": "Avdocka"
+        "name": "Lämna laddstationen"
       },
       "emergency_nudge_forward": {
-        "name": "Nödknuff framåt"
+        "name": "Ett steg framåt"
       },
       "emergency_nudge_left": {
-        "name": "Nödknuff vänster"
+        "name": "Ett steg vänster"
       },
       "emergency_nudge_right": {
-        "name": "Nödknuff höger"
+        "name": "Ett steg höger"
       },
       "emergency_nudge_back": {
-        "name": "Nödknuffa bakåt"
+        "name": "Ett steg bakåt"
       },
       "cancel_task": {
         "name": "Avbryt nuvarande uppgift"
       },
       "clear_all_mapdata": {
         "name": "Rensa kartor och områdesnamn"
+      },
+      "relocate_charging_station": {
+        "name": "Relocate charging station"
       }
     },
     "switch": {
       "area": {
-        "name": "Område {name}"
+        "name": "Områdes {namn}"
       },
       "blade_status": {
-        "name": "Blad på/av"
+        "name": "Klippblad på/av"
       },
       "is_mow": {
         "name": "Klippning på/av"
       },
       "is_dump": {
-        "name": "Dumpa gräs på/av"
+        "name": "Dumpning av gräs på/av"
       },
       "is_edge": {
         "name": "Kantklippning"
@@ -190,7 +208,7 @@
         "name": "Sido-LED på/av"
       },
       "perimeter_first_on_off": {
-        "name": "Omkrets först"
+        "name": "Kantklippning först"
       },
       "schedule_updates": {
         "name": "Slå på/av uppdateringar"
@@ -198,16 +216,16 @@
     },
     "select": {
       "channel_mode": {
-        "name": "Klippvägsläge",
+        "name": "Val klipp mönster",
         "state": {
-          "single_grid": "Sicksackväg",
-          "double_grid": "Schackbräde",
-          "segment_grid": "Adaptiv sicksack",
-          "no_grid": "Enbart omkrets"
+          "single_grid": "Sicksack mönster",
+          "double_grid": "Schack mönster",
+          "segment_grid": "Adaptivt sicksack mönster",
+          "no_grid": "Enbart kantklippning"
         }
       },
       "mowing_laps": {
-        "name": "Klippvarv omkrets",
+        "name": "Antal varv för kantklippning",
         "state": {
           "none": "Ingen",
           "one": "Ett",
@@ -217,7 +235,7 @@
         }
       },
       "obstacle_laps": {
-        "name": "Klippvarv No-go Zone",
+        "name": "Antal varv för kantklippning runt förbjudna zoner",
         "state": {
           "none": "Ingen",
           "one": "Ett",
@@ -229,12 +247,12 @@
       "border_mode": {
         "name": "Klippordning",
         "state": {
-          "border_first": "Omkrets först",
+          "border_first": "Kantklippning först",
           "grid_first": "Sicksack / Schackbräda först"
         }
       },
       "bypass_mode": {
-        "name": "Läge för hinderundvikning",
+        "name": "Val för att undvika hinder",
         "state": {
           "direct_touch": "Direkt kontakt",
           "slow_touch": "Långsam kontakt",
@@ -244,7 +262,7 @@
         }
       },
       "cutting_angle_mode": {
-        "name": "Klippväg vinkel läge",
+        "name": "Val av vinkel för klippning",
         "state": {
           "relative_angle": "Optimal",
           "absolute_angle": "Norr",
@@ -252,23 +270,23 @@
         }
       },
       "traversal_mode": {
-        "name": "Förflyttningsläge",
+        "name": "Traversal Mode",
         "state": {
           "direct": "Direkt",
-          "follow_perimeter": "Följ omkrets"
+          "follow_perimeter": "Följ kant"
         }
       },
       "turning_mode": {
         "name": "Vändningsläge",
         "state": {
-          "multipoint": "Multipunkt sväng",
-          "zero_turn": "Punkt sväng"
+          "multipoint": "Flerpunkt sväng",
+          "zero_turn": "Runt egen axel"
         }
       }
     },
     "number": {
       "start_progress": {
-        "name": "Starta uppgift"
+        "name": "Starta klippning"
       },
       "blade_height": {
         "name": "Bladens höjd"
@@ -280,10 +298,10 @@
         "name": "Arbetshastighet"
       },
       "cutting_angle": {
-        "name": "Klippvägsvinkel"
+        "name": "Klipp vinkel"
       },
       "path_spacing": {
-        "name": "Spåravstånd"
+        "name": "Avstånd till kant"
       },
       "dumping_interval": {
         "name": "Tömningsfrekvens"
@@ -299,7 +317,7 @@
   "selector": {
     "border_mode": {
       "options": {
-        "0": "Omkrets först",
+        "0": "Kantklippning först",
         "1": "Sicksack/schackbräde först"
       }
     },
@@ -314,10 +332,10 @@
     },
     "channel_mode": {
       "options": {
-        "0": "Sicksackväg",
-        "1": "Schackmönstrad väg",
-        "2": "Adaptiv sicksackväg",
-        "3": "Endast omkrets"
+        "0": "Sicksackklippning",
+        "1": "Schackmönstrad klippning",
+        "2": "Adaptiv sicksack klippning",
+        "3": "Endast kantklippning"
       }
     },
     "rain_tactics": {
@@ -330,7 +348,7 @@
       "options": {
         "0": "Optimal",
         "1": "Norr",
-        "2": "Slumpmässig"
+        "2": "Slumpmässig vinkel"
       }
     },
     "mowing_laps": {
@@ -355,7 +373,7 @@
   "services": {
     "cancel_job": {
       "name": "Avbryt nuvarande uppgift",
-      "description": "Stoppar gräsklipparen och rensar den aktuella uppgiften."
+      "description": "Stoppar gräsklipparen och tar bort aktuell uppgift."
     },
     "start_mow": {
       "name": "Börja klippa",
@@ -379,7 +397,7 @@
         },
         "border_mode": {
           "name": "Klippordning",
-          "description": "Klippordning (Omkrets först eller rutnät först)."
+          "description": "Klippordning (kantklippning först eller rutnät först)."
         },
         "job_version": {
           "name": "Jobbversion",
@@ -398,8 +416,8 @@
           "description": "Läge för hinderundvikning."
         },
         "channel_mode": {
-          "name": "Klippvägsläge",
-          "description": "Klippväg (sicksack, schackmönster, adaptiv sicksack eller endast omkrets)."
+          "name": "Klippmönster",
+          "description": "Klippmönster (sicksack, schackmönster, adaptiv sicksack eller endast kantklippning)."
         },
         "channel_width": {
           "name": "Spårbredd",
@@ -426,19 +444,19 @@
           "description": "Riktningen för gräsklippningen."
         },
         "mowing_laps": {
-          "name": "Klippningsvarv omkrets",
-          "description": "Antal varv runt klippområdets omkrets."
+          "name": "Antal varv kantklippning",
+          "description": "Antal varv runt klippområdets kant."
         },
         "obstacle_laps": {
-          "name": "Klippningsvarv No-go zone",
-          "description": "Antal varv runt förbjudna (No-go) zoner."
+          "name": "Varv kantklippning förbjudna zone",
+          "description": "Antal varv runt förbjudna zoner."
         },
         "start_progress": {
           "name": "Starta uppgift",
-          "description": "Startar förloppsprocent."
+          "description": "Start procent uppgift."
         },
         "areas": {
-          "name": "Områdesval",
+          "name": "Val av område",
           "description": "Lista över områden att klippa (representeras som heltal)."
         }
       }
@@ -458,10 +476,10 @@
       "message": "Det gick inte att starta gräsklipparen."
     },
     "dock_failed": {
-      "message": "Det gick inte att skicka gräsklipparen till dockan."
+      "message": "Det gick inte att skicka gräsklipparen till laddstationen."
     },
     "dock_cancel_failed": {
-      "message": "Det gick inte att stoppa gräsklipparen att återvända till dockan."
+      "message": "Det gick inte att stoppa gräsklipparen återvänder till laddstationen."
     },
     "command_failed": {
       "message": "Det gick inte att skicka kommandot till gräsklipparen."
