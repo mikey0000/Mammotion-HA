@@ -3246,14 +3246,14 @@ testutils = ["gitpython (>3)"]
 
 [[package]]
 name = "pymammotion"
-version = "0.5.15"
+version = "0.5.16"
 description = ""
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "pymammotion-0.5.15-py3-none-any.whl", hash = "sha256:4aeca928a22b9b1ed848794b74d9998aa6b0b563ef5474949348d4db6cdbbbef"},
-    {file = "pymammotion-0.5.15.tar.gz", hash = "sha256:6426aec4db525e1ea7b082b682be8e227ed897d38212d588a30093a98efad4df"},
+    {file = "pymammotion-0.5.16-py3-none-any.whl", hash = "sha256:a1c7c92b0c2e64f7650876412937fd765cd7656978a1b9c3350315cf052ac3fb"},
+    {file = "pymammotion-0.5.16.tar.gz", hash = "sha256:50376d41fd8a34eb326137878efff947fe3d5d7f6a9acee0d538612d45728577"},
 ]
 
 [package.dependencies]
@@ -4528,4 +4528,4 @@ ifaddr = ">=0.1.7"
 [metadata]
 lock-version = "2.1"
 python-versions = "~3.13.0"
-content-hash = "a9d7a0d3306388afe84248f252522205b65d7d78a0e4a7a729634ba53c05a451"
+content-hash = "a0f1596536797bd8394c2af1b581ae5ad9139c610cdccd60c617d58c573edcf5"

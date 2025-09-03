@@ -37,7 +37,7 @@ class MammotionAsyncSwitchEntityDescription(MammotionSwitchEntityDescription):
 
     polling: bool = False
     poll_func: Callable[[MammotionBaseUpdateCoordinator], Awaitable[None]] = None
-    is_on_func: Callable[[MammotionBaseUpdateCoordinator], bool]
+    is_on_func: Callable[[MammotionBaseUpdateCoordinator], bool] = None
     set_fn: Callable[[MammotionBaseUpdateCoordinator, bool], Awaitable[None]]
 
 
@@ -74,6 +74,19 @@ YUKA_CONFIG_SWITCH_ENTITIES: tuple[MammotionConfigSwitchEntityDescription, ...] 
         set_fn=lambda coordinator, value: setattr(
             coordinator.operation_settings, "is_edge", value
         ),
+    ),
+)
+
+MINI_AND_X_SERIES_CONFIG_SWITCH_ENTITIES: tuple[
+    MammotionAsyncSwitchEntityDescription, ...
+] = (
+    MammotionAsyncSwitchEntityDescription(
+        key="manual_light",
+        set_fn=lambda coordinator, value: coordinator.async_set_manual_light(value),
+    ),
+    MammotionAsyncSwitchEntityDescription(
+        key="night_light",
+        set_fn=lambda coordinator, value: coordinator.async_set_manual_light(value),
     ),
 )
 
@@ -171,6 +184,11 @@ async def async_setup_entry(
             for entity_description in LUBA_1_SWITCH_ENTITIES:
                 entity = MammotionSwitchEntity(coordinator, entity_description)
                 entities.append(entity)
+
+        if DeviceType.is_mini_or_x_series(mower.device.deviceName):
+            for entity_description in MINI_AND_X_SERIES_CONFIG_SWITCH_ENTITIES:
+                config_entity = MammotionSwitchEntity(coordinator, entity_description)
+                entities.append(config_entity)
         async_add_entities(entities)
 
 
@@ -212,7 +230,7 @@ class MammotionSwitchEntity(MammotionBaseEntity, SwitchEntity, RestoreEntity):
         ):
             await self.entity_description.poll_func(self.coordinator)
 
-        if callable(self.entity_description.is_on_func):
+        if self.entity_description.is_on_func is not None:
             self._attr_is_on = self.entity_description.is_on_func(self.coordinator)
             self.async_write_ha_state()
 
@@ -242,7 +260,10 @@ class MammotionUpdateSwitchEntity(MammotionBaseEntity, SwitchEntity, RestoreEnti
 
     @property
     def is_on(self) -> bool:
-        return self.entity_description.is_on_func(self.coordinator)
+        """Return if settings is on or off."""
+        if self.entity_description.is_on_func is not None:
+            return self.entity_description.is_on_func(self.coordinator)
+        return self._attr_is_on
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         self._attr_is_on = True
@@ -256,7 +277,7 @@ class MammotionUpdateSwitchEntity(MammotionBaseEntity, SwitchEntity, RestoreEnti
 
     async def async_update(self) -> None:
         """Update the entity state."""
-        if callable(self.entity_description.is_on_func):
+        if self.entity_description.is_on_func is not None:
             self._attr_is_on = self.entity_description.is_on_func(self.coordinator)
             self.async_write_ha_state()
 

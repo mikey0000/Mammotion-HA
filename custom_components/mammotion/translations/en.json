@@ -212,6 +212,12 @@
       },
       "schedule_updates": {
         "name": "Turn Updates On/Off"
+      },
+      "manual_light": {
+        "name": "Manual light on/off"
+      },
+      "night_light": {
+        "name": "Night light on/off"
       }
     },
     "select": {

@@ -329,6 +329,11 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
             else:
                 await self.async_send_command("set_blade_control", on_off=0)
         elif start_stop:
+            if DeviceType.is_yuka(self.device_name) or DeviceType.is_yuka_mini(
+                self.device_name
+            ):
+                blade_height = 0
+
             await self.async_send_command(
                 "operate_on_device",
                 main_ctrl=1,
@@ -368,6 +373,14 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
             "read_and_set_sidelight", is_sidelight=False, operate=1
         )
 
+    async def async_set_manual_light(self, manual_ctrl: bool) -> None:
+        """Set manual night light."""
+        await self.async_send_command("set_car_manual_light", manual_ctrl=manual_ctrl)
+
+    async def async_set_night_light(self, night_light: bool) -> None:
+        """Set night light."""
+        await self.async_send_command("set_car_light", on_off=night_light)
+
     async def set_traversal_mode(self, context: int) -> None:
         """Set traversal mode."""
         await self.async_send_command("traverse_mode", context=context)
@@ -380,6 +393,10 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         """Set blade height."""
         await self.async_send_command("set_blade_height", height=height)
         return height
+
+    async def async_set_speed(self, speed: float) -> None:
+        """Set working speed."""
+        await self.async_send_command("set_speed", speed=speed)
 
     async def async_leave_dock(self) -> None:
         """Leave dock."""
