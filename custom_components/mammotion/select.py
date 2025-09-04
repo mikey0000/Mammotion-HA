@@ -68,7 +68,7 @@ MINI_AND_X_SERIES_CONFIG_SELECT_ENTITIES: tuple[
     MammotionAsyncConfigSelectEntityDescription(
         key="cutter_mode",
         options=[mode.name for mode in CuttingSpeedMode],
-        get_fn=lambda coordinator: coordinator.data.mower_state.cutter_mode,
+        get_fn=lambda coordinator: coordinator.data.mower_state.blade_mode,
         set_fn=lambda coordinator, value: coordinator.set_cutter_mode(
             CuttingSpeedMode[value].value
         ),
