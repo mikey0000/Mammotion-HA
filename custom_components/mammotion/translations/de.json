@@ -38,7 +38,7 @@
           "account_name": "Mammotion E-Mail oder Account Nummer",
           "password": "Mammotion Kennwort"
         },
-        "title": "Mit Wi-Fi verbinden",
+        "title": "Mit WLAN verbinden",
         "description": "Geben Sie Ihre Mammotion E-Mail oder ID und das Passwort ein"
       }
     }
@@ -138,10 +138,10 @@
         "name": "LoRa version"
       },
       "rtk_latitude": {
-        "name": "Breitengrad"
+        "name": "Latitude"
       },
       "rtk_longitude": {
-        "name": "Längengrad"
+        "name": "Longitude"
       },
       "rtk_wifi_rssi": {
         "name": "Wi-Fi RSSI"
@@ -212,6 +212,12 @@
       },
       "schedule_updates": {
         "name": "Updates ein-/ausschalten"
+      },
+      "manual_light": {
+        "name": "Manual light on/off"
+      },
+      "night_light": {
+        "name": "Night light on/off"
       }
     },
     "select": {
@@ -270,7 +276,7 @@
         }
       },
       "traversal_mode": {
-        "name": "Aufladungsmodus",
+        "name": "Traversal Mode",
         "state": {
           "direct": "Direkt",
           "follow_perimeter": "Dem Umfang folgen"
@@ -281,6 +287,14 @@
         "state": {
           "multipoint": "Mehrpunkt-Wendung",
           "zero_turn": "Nullwendung"
+        }
+      },
+      "cutter_mode": {
+        "name": "Cutter Speed",
+        "state": {
+          "normal": "Medium",
+          "slow": "Slow",
+          "fast": "Fast"
         }
       }
     },
@@ -458,6 +472,20 @@
         "areas": {
           "name": "Bereiche",
           "description": "Auswahl der zu mähenden Bereiche."
+        }
+      }
+    },
+    "start_stop_blades": {
+      "name": "Start or stop blades",
+      "description": "Start or stop the blades manually.",
+      "fields": {
+        "start_stop": {
+          "name": "Start or stop",
+          "description": "Whether blades are on or off."
+        },
+        "blade_height": {
+          "name": "Blade height",
+          "description": "Height of the blade."
         }
       }
     }

@@ -212,6 +212,12 @@
       },
       "schedule_updates": {
         "name": "Activer les mises à jour Activer/ Désactiver"
+      },
+      "manual_light": {
+        "name": "Manual light on/off"
+      },
+      "night_light": {
+        "name": "Night light on/off"
       }
     },
     "select": {
@@ -270,7 +276,7 @@
         }
       },
       "traversal_mode": {
-        "name": "Mode de traversée",
+        "name": "Traversal Mode",
         "state": {
           "direct": "Direct",
           "follow_perimeter": "Suivre le périmètre"
@@ -281,6 +287,14 @@
         "state": {
           "multipoint": "Virage multipoint",
           "zero_turn": "Virage sur place"
+        }
+      },
+      "cutter_mode": {
+        "name": "Cutter Speed",
+        "state": {
+          "normal": "Medium",
+          "slow": "Slow",
+          "fast": "Fast"
         }
       }
     },
@@ -458,6 +472,20 @@
         "areas": {
           "name": "Zones",
           "description": "Liste des zones à tondre (représentées sous forme d'entiers)."
+        }
+      }
+    },
+    "start_stop_blades": {
+      "name": "Start or stop blades",
+      "description": "Start or stop the blades manually.",
+      "fields": {
+        "start_stop": {
+          "name": "Start or stop",
+          "description": "Whether blades are on or off."
+        },
+        "blade_height": {
+          "name": "Blade height",
+          "description": "Height of the blade."
         }
       }
     }
