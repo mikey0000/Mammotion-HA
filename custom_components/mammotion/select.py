@@ -9,6 +9,7 @@ from homeassistant.helpers.restore_state import RestoreEntity
 from pymammotion.data.model.mowing_modes import (
     BorderPatrolMode,
     CuttingMode,
+    CuttingSpeedMode,
     DetectionStrategy,
     MowOrder,
     ObstacleLapsMode,
@@ -57,6 +58,19 @@ ASYNC_SELECT_ENTITIES: tuple[MammotionAsyncConfigSelectEntityDescription, ...] =
         get_fn=lambda coordinator: coordinator.data.mower_state.turning_mode,
         set_fn=lambda coordinator, value: coordinator.set_turning_mode(
             TurningMode[value].value
+        ),
+    ),
+)
+
+MINI_AND_X_SERIES_CONFIG_SELECT_ENTITIES: tuple[
+    MammotionAsyncConfigSelectEntityDescription, ...
+] = (
+    MammotionAsyncConfigSelectEntityDescription(
+        key="cutter_mode",
+        options=[mode.name for mode in CuttingSpeedMode],
+        get_fn=lambda coordinator: coordinator.data.mower_state.cutter_mode,
+        set_fn=lambda coordinator, value: coordinator.set_cutter_mode(
+            CuttingSpeedMode[value].value
         ),
     ),
 )
@@ -175,6 +189,14 @@ async def async_setup_entry(
             for entity_description in LUBA_PRO_SELECT_ENTITIES:
                 entities.append(
                     MammotionConfigSelectEntity(
+                        mower.reporting_coordinator, entity_description
+                    )
+                )
+
+        if DeviceType.is_mini_or_x_series(mower.device.deviceName):
+            for entity_description in MINI_AND_X_SERIES_CONFIG_SELECT_ENTITIES:
+                entities.append(
+                    MammotionAsyncConfigSelectEntity(
                         mower.reporting_coordinator, entity_description
                     )
                 )

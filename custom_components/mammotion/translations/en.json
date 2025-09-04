@@ -288,6 +288,14 @@
           "multipoint": "Multipoint turn",
           "zero_turn": "Zero turn"
         }
+      },
+      "cutter_mode": {
+        "name": "Cutter Speed",
+        "state": {
+          "normal": "Medium",
+          "slow": "Slow",
+          "fast": "Fast"
+        }
       }
     },
     "number": {
