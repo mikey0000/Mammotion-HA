@@ -48,7 +48,7 @@ ASYNC_SELECT_ENTITIES: tuple[MammotionAsyncConfigSelectEntityDescription, ...] =
         key="traversal_mode",
         options=[mode.name for mode in TraversalMode],
         get_fn=lambda coordinator: coordinator.data.mower_state.traversal_mode,
-        set_fn=lambda coordinator, value: coordinator.set_traversal_mode(
+        set_fn=lambda coordinator, value: coordinator.async_set_traversal_mode(
             TraversalMode[value].value
         ),
     ),
@@ -56,7 +56,7 @@ ASYNC_SELECT_ENTITIES: tuple[MammotionAsyncConfigSelectEntityDescription, ...] =
         key="turning_mode",
         options=[mode.name for mode in TurningMode],
         get_fn=lambda coordinator: coordinator.data.mower_state.turning_mode,
-        set_fn=lambda coordinator, value: coordinator.set_turning_mode(
+        set_fn=lambda coordinator, value: coordinator.async_set_turning_mode(
             TurningMode[value].value
         ),
     ),
@@ -69,7 +69,7 @@ MINI_AND_X_SERIES_CONFIG_SELECT_ENTITIES: tuple[
         key="cutter_mode",
         options=[mode.name for mode in CuttingSpeedMode],
         get_fn=lambda coordinator: coordinator.data.mower_state.blade_mode,
-        set_fn=lambda coordinator, value: coordinator.set_cutter_mode(
+        set_fn=lambda coordinator, value: coordinator.async_set_cutter_speed(
             CuttingSpeedMode[value].value
         ),
     ),

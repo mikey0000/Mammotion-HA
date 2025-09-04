@@ -383,11 +383,11 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         await self.async_send_command("set_car_light", on_off=night_light)
         await self.async_send_command("get_car_light", ids=1123)
 
-    async def set_traversal_mode(self, context: int) -> None:
+    async def async_set_traversal_mode(self, context: int) -> None:
         """Set traversal mode."""
         await self.async_send_command("traverse_mode", context=context)
 
-    async def set_turning_mode(self, context: int) -> None:
+    async def async_set_turning_mode(self, context: int) -> None:
         """Set turning mode."""
         await self.async_send_command("turning_mode", context=context)
 
@@ -395,6 +395,10 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         """Set blade height."""
         await self.async_send_command("set_blade_height", height=height)
         return height
+
+    async def async_set_cutter_speed(self, mode: int) -> None:
+        """Set cutter speed."""
+        await self.async_send_command("set_cutter_mode", cutter_mode=mode)
 
     async def async_set_speed(self, speed: float) -> None:
         """Set working speed."""
