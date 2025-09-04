@@ -759,22 +759,27 @@ tests = ["pytest (>=3.2.1,!=3.3.0)"]
 typecheck = ["mypy"]
 
 [[package]]
-name = "betterproto"
-version = "1.2.5"
+name = "betterproto2"
+version = "0.8.0"
 description = "A better Protobuf / gRPC generator & library"
 optional = false
-python-versions = ">=3.6"
+python-versions = "<4.0,>=3.10"
 groups = ["main"]
 files = [
-    {file = "betterproto-1.2.5.tar.gz", hash = "sha256:74a3ab34646054f674d236d1229ba8182dc2eae86feb249b8590ef496ce9803d"},
+    {file = "betterproto2-0.8.0-py3-none-any.whl", hash = "sha256:b79dc910453ee5153c32d74c896e423234aaa2bb5c0bd73f020a7db63e72ee24"},
+    {file = "betterproto2-0.8.0.tar.gz", hash = "sha256:75f8a46d056e22bef18e61ec62c1b071091f9df64a081a2c305f6a8011c8e8f5"},
 ]
 
 [package.dependencies]
-grpclib = "*"
-stringcase = "*"
+python-dateutil = ">=2.9.0.post0"
+typing-extensions = ">=4.14.0"
 
 [package.extras]
-compiler = ["black", "jinja2", "protobuf"]
+all = ["grpcio (>=1.72.1)", "grpclib (>=0.4.8)", "protobuf (>=5.29.3)", "pydantic (>=2.11.5)"]
+grpcio = ["grpcio (>=1.72.1)"]
+grpclib = ["grpclib (>=0.4.8)"]
+protobuf = ["protobuf (>=5.29.3)"]
+pydantic = ["pydantic (>=2.11.5)"]
 
 [[package]]
 name = "bleak"
@@ -1702,24 +1707,6 @@ docs = ["Sphinx", "furo"]
 test = ["objgraph", "psutil"]
 
 [[package]]
-name = "grpclib"
-version = "0.4.7"
-description = "Pure-Python gRPC implementation for asyncio"
-optional = false
-python-versions = ">=3.7"
-groups = ["main"]
-files = [
-    {file = "grpclib-0.4.7.tar.gz", hash = "sha256:2988ef57c02b22b7a2e8e961792c41ccf97efc2ace91ae7a5b0de03c363823c3"},
-]
-
-[package.dependencies]
-h2 = ">=3.1.0,<5"
-multidict = "*"
-
-[package.extras]
-protobuf = ["protobuf (>=3.20.0)"]
-
-[[package]]
 name = "h11"
 version = "0.16.0"
 description = "A pure-Python, bring-your-own-I/O implementation of HTTP/1.1"
@@ -1730,22 +1717,6 @@ files = [
     {file = "h11-0.16.0-py3-none-any.whl", hash = "sha256:63cf8bbe7522de3bf65932fda1d9c2772064ffb3dae62d55932da54b31cb6c86"},
     {file = "h11-0.16.0.tar.gz", hash = "sha256:4e35b956cf45792e4caa5885e69fba00bdbc6ffafbfa020300e549b208ee5ff1"},
 ]
-
-[[package]]
-name = "h2"
-version = "4.2.0"
-description = "Pure-Python HTTP/2 protocol implementation"
-optional = false
-python-versions = ">=3.9"
-groups = ["main"]
-files = [
-    {file = "h2-4.2.0-py3-none-any.whl", hash = "sha256:479a53ad425bb29af087f3458a61d30780bc818e4ebcf01f0b536ba916462ed0"},
-    {file = "h2-4.2.0.tar.gz", hash = "sha256:c8a52129695e88b1a0578d8d2cc6842bbd79128ac685463b887ee278126ad01f"},
-]
-
-[package.dependencies]
-hpack = ">=4.1,<5"
-hyperframe = ">=6.1,<7"
 
 [[package]]
 name = "ha-ffmpeg"
@@ -1963,18 +1934,6 @@ yarl = "1.18.3"
 zeroconf = "0.146.0"
 
 [[package]]
-name = "hpack"
-version = "4.1.0"
-description = "Pure-Python HPACK header encoding"
-optional = false
-python-versions = ">=3.9"
-groups = ["main"]
-files = [
-    {file = "hpack-4.1.0-py3-none-any.whl", hash = "sha256:157ac792668d995c657d93111f46b4535ed114f0c9c8d672271bbec7eae1b496"},
-    {file = "hpack-4.1.0.tar.gz", hash = "sha256:ec5eca154f7056aa06f196a557655c5b009b382873ac8d1e66e79e87535f1dca"},
-]
-
-[[package]]
 name = "httpcore"
 version = "1.0.9"
 description = "A minimal low-level HTTP client."
@@ -2020,18 +1979,6 @@ cli = ["click (==8.*)", "pygments (==2.*)", "rich (>=10,<14)"]
 http2 = ["h2 (>=3,<5)"]
 socks = ["socksio (==1.*)"]
 zstd = ["zstandard (>=0.18.0)"]
-
-[[package]]
-name = "hyperframe"
-version = "6.1.0"
-description = "Pure-Python HTTP/2 framing"
-optional = false
-python-versions = ">=3.9"
-groups = ["main"]
-files = [
-    {file = "hyperframe-6.1.0-py3-none-any.whl", hash = "sha256:b03380493a519fce58ea5af42e4a42317bf9bd425596f7a0835ffce80f1a42e5"},
-    {file = "hyperframe-6.1.0.tar.gz", hash = "sha256:f630908a00854a7adeabd6382b43923a4c4cd4b821fcb527e6ab9e15382a3b08"},
-]
 
 [[package]]
 name = "identify"
@@ -3246,14 +3193,14 @@ testutils = ["gitpython (>3)"]
 
 [[package]]
 name = "pymammotion"
-version = "0.5.18"
+version = "0.5.25"
 description = ""
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "pymammotion-0.5.18-py3-none-any.whl", hash = "sha256:3b2cafeb8997cde1395a7f4fef2265f5815564128f4f5f83c83faf5e76600b93"},
-    {file = "pymammotion-0.5.18.tar.gz", hash = "sha256:4f9118c58ed4eca82198e339663d8f79abdc028853120173591a44cba39ad398"},
+    {file = "pymammotion-0.5.25-py3-none-any.whl", hash = "sha256:f50329b65c733dcbad29de3a99ead1afccdd7680b0e3226ffd39262b3d51a80c"},
+    {file = "pymammotion-0.5.25.tar.gz", hash = "sha256:0e8f88d9ec5147f3f115c93b3d565b9e038e2394d13403c9ab1162e61f449b93"},
 ]
 
 [package.dependencies]
@@ -3262,7 +3209,7 @@ alibabacloud-apigateway-util = ">=0.0.2,<0.0.3"
 alibabacloud-iot-api-gateway = ">=0.0.4,<0.0.5"
 alicloud-gateway-iot = ">=1.0.0,<2.0.0"
 async-timeout = ">=4.0.3,<5.0.0"
-betterproto = ">=1.2.5,<2.0.0"
+betterproto2 = ">=0.8.0,<0.9.0"
 bleak = ">=0.21.0"
 bleak-retry-connector = ">=3.5.0"
 crcmod = ">=1.7,<2.0"
@@ -3829,17 +3776,6 @@ files = [
 ]
 
 [[package]]
-name = "stringcase"
-version = "1.2.0"
-description = "String case converter."
-optional = false
-python-versions = "*"
-groups = ["main"]
-files = [
-    {file = "stringcase-1.2.0.tar.gz", hash = "sha256:48a06980661908efe8d9d34eab2b6c13aefa2163b3ced26972902e3bdfd87008"},
-]
-
-[[package]]
 name = "text-unidecode"
 version = "1.3"
 description = "The most basic Text::Unidecode port"
@@ -3865,14 +3801,14 @@ files = [
 
 [[package]]
 name = "typing-extensions"
-version = "4.13.2"
-description = "Backported and Experimental Type Hints for Python 3.8+"
+version = "4.15.0"
+description = "Backported and Experimental Type Hints for Python 3.9+"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 groups = ["main", "dev"]
 files = [
-    {file = "typing_extensions-4.13.2-py3-none-any.whl", hash = "sha256:a439e7c04b49fec3e5d3e2beaa21755cadbbdc391694e28ccdd36ca4a1408f8c"},
-    {file = "typing_extensions-4.13.2.tar.gz", hash = "sha256:e6c81219bd689f51865d9e372991c540bda33a0379d5573cddb9a3a23f7caaef"},
+    {file = "typing_extensions-4.15.0-py3-none-any.whl", hash = "sha256:f0fa19c6845758ab08074a0cfa8b7aecb71c999ca73d62883bc25cc018c4e548"},
+    {file = "typing_extensions-4.15.0.tar.gz", hash = "sha256:0cea48d173cc12fa28ecabc3b837ea3cf6f38c6d1136f85cbaaf598984861466"},
 ]
 
 [[package]]
@@ -4528,4 +4464,4 @@ ifaddr = ">=0.1.7"
 [metadata]
 lock-version = "2.1"
 python-versions = "~3.13.0"
-content-hash = "b75f0001355d8f371cae51ab5a68df1ed6250c3683b03f15855ca1a6cd1c0555"
+content-hash = "ba4f27ef21b161741aba98e56b40fd84464478c7e3449a75ddf20a880be71bd4"

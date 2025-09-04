@@ -11,7 +11,7 @@ from collections.abc import Mapping
 from datetime import timedelta
 from typing import TYPE_CHECKING, Any
 
-import betterproto
+import betterproto2
 from homeassistant.components import bluetooth
 from homeassistant.const import CONF_PASSWORD
 from homeassistant.core import HomeAssistant
@@ -780,7 +780,7 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
     async def _async_update_notification(self, res: tuple[str, Any | None]) -> None:
         """Update data from incoming messages."""
         if res[0] == "sys" and res[1] is not None:
-            sys_msg = betterproto.which_one_of(res[1], "SubSysMsg")
+            sys_msg = betterproto2.which_one_of(res[1], "SubSysMsg")
             if sys_msg[0] == "toapp_report_data":
                 if mower := self.manager.mower(self.device_name):
                     self.async_set_updated_data(mower)
@@ -1083,7 +1083,7 @@ class MammotionDeviceErrorUpdateCoordinator(
     async def _async_update_notification(self, res: tuple[str, Any | None]) -> None:
         """Update data from incoming notifications messages."""
         if res[0] == "sys" and res[1] is not None:
-            sys_msg = betterproto.which_one_of(res[1], "SubSysMsg")
+            sys_msg = betterproto2.which_one_of(res[1], "SubSysMsg")
             if sys_msg[0] == "system_update_buf" and sys_msg[1] is not None:
                 buffer_list: SystemUpdateBufMsg = sys_msg[1]
                 if buffer_list.update_buf_data[0] == 2:
