@@ -376,10 +376,12 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
     async def async_set_manual_light(self, manual_ctrl: bool) -> None:
         """Set manual night light."""
         await self.async_send_command("set_car_manual_light", manual_ctrl=manual_ctrl)
+        await self.async_send_command("get_car_light", ids=1126)
 
     async def async_set_night_light(self, night_light: bool) -> None:
         """Set night light."""
         await self.async_send_command("set_car_light", on_off=night_light)
+        await self.async_send_command("get_car_light", ids=1123)
 
     async def set_traversal_mode(self, context: int) -> None:
         """Set traversal mode."""

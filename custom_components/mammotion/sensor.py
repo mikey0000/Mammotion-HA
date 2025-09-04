@@ -101,17 +101,20 @@ LUBA_2_YUKA_ONLY_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     MammotionSensorEntityDescription(
-        key="maintenance_bat_cycles",
-        state_class=SensorStateClass.MEASUREMENT,
-        value_fn=lambda mower_data: mower_data.report_data.maintenance.bat_cycles,
-        entity_category=EntityCategory.DIAGNOSTIC,
-    ),
-    MammotionSensorEntityDescription(
         key="maintenance_work_time",
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.DURATION,
         native_unit_of_measurement=UnitOfTime.SECONDS,
         value_fn=lambda mower_data: mower_data.report_data.maintenance.work_time,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+)
+
+MINI_SERIES_EXCLUDED_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
+    MammotionSensorEntityDescription(
+        key="maintenance_bat_cycles",
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=lambda mower_data: mower_data.report_data.maintenance.bat_cycles,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
 )
@@ -382,6 +385,11 @@ async def async_setup_entry(
                 MammotionSensorEntity(mower.reporting_coordinator, description)
                 for description in LUBA_2_YUKA_ONLY_TYPES
             )
+            if not DeviceType.is_yuka_mini(mower.device.deviceName):
+                entities.extend(
+                    MammotionSensorEntity(mower.reporting_coordinator, description)
+                    for description in MINI_SERIES_EXCLUDED_TYPES
+                )
 
         entities.extend(
             MammotionSensorEntity(mower.reporting_coordinator, description)

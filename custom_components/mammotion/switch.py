@@ -82,11 +82,13 @@ MINI_AND_X_SERIES_CONFIG_SWITCH_ENTITIES: tuple[
 ] = (
     MammotionAsyncSwitchEntityDescription(
         key="manual_light",
+        is_on_func=lambda coordinator: coordinator.data.mower_state.lamp_info.manual_light,
         set_fn=lambda coordinator, value: coordinator.async_set_manual_light(value),
     ),
     MammotionAsyncSwitchEntityDescription(
         key="night_light",
-        set_fn=lambda coordinator, value: coordinator.async_set_manual_light(value),
+        is_on_func=lambda coordinator: coordinator.data.mower_state.lamp_info.night_light,
+        set_fn=lambda coordinator, value: coordinator.async_set_night_light(value),
     ),
 )
 
@@ -299,6 +301,7 @@ class MammotionConfigSwitchEntity(MammotionBaseEntity, SwitchEntity, RestoreEnti
         coordinator: MammotionBaseUpdateCoordinator,
         entity_description: MammotionConfigSwitchEntityDescription,
     ) -> None:
+        """Initialize the config switch entities."""
         super().__init__(coordinator, entity_description.key)
         self.coordinator = coordinator
         self.entity_description = entity_description
@@ -312,11 +315,13 @@ class MammotionConfigSwitchEntity(MammotionBaseEntity, SwitchEntity, RestoreEnti
         )
 
     async def async_turn_on(self, **kwargs: Any) -> None:
+        """Turn the entity on."""
         self._attr_is_on = True
         self.entity_description.set_fn(self.coordinator, True)
         self.async_write_ha_state()
 
     async def async_turn_off(self, **kwargs: Any) -> None:
+        """Turn the entity off."""
         self._attr_is_on = False
         self.entity_description.set_fn(self.coordinator, False)
         self.async_write_ha_state()
