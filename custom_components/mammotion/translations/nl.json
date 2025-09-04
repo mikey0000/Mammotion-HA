@@ -138,10 +138,10 @@
         "name": "LoRa version"
       },
       "rtk_latitude": {
-        "name": "Breedtegraad"
+        "name": "Latitude"
       },
       "rtk_longitude": {
-        "name": "Lengtegraad"
+        "name": "Longitude"
       },
       "rtk_wifi_rssi": {
         "name": "Wi-Fi RSSI"
@@ -199,7 +199,7 @@
         "name": "Rand maaien"
       },
       "rain_tactics": {
-        "name": "Rain detection (during mow) On/Off"
+        "name": ""
       },
       "rain_detection": {
         "name": "Regen­detectie (maaier) aan/uit"
@@ -212,6 +212,12 @@
       },
       "schedule_updates": {
         "name": "Updates aan/uit zetten"
+      },
+      "manual_light": {
+        "name": "Manual light on/off"
+      },
+      "night_light": {
+        "name": "Night light on/off"
       }
     },
     "select": {
@@ -270,7 +276,7 @@
         }
       },
       "traversal_mode": {
-        "name": "Traverseermodus",
+        "name": "Traversal Mode",
         "state": {
           "direct": "Direct",
           "follow_perimeter": "Volg de omtrek"
@@ -281,6 +287,14 @@
         "state": {
           "multipoint": "Meerpunts draai",
           "zero_turn": "Nulpunts draai"
+        }
+      },
+      "cutter_mode": {
+        "name": "Cutter Speed",
+        "state": {
+          "normal": "Medium",
+          "slow": "Slow",
+          "fast": "Fast"
         }
       }
     },
@@ -458,6 +472,20 @@
         "areas": {
           "name": "Gebiedselectie",
           "description": "Lijst van te maaien gebieden (weergegeven als geheel getal)."
+        }
+      }
+    },
+    "start_stop_blades": {
+      "name": "Start or stop blades",
+      "description": "Start or stop the blades manually.",
+      "fields": {
+        "start_stop": {
+          "name": "Start or stop",
+          "description": "Whether blades are on or off."
+        },
+        "blade_height": {
+          "name": "Blade height",
+          "description": "Height of the blade."
         }
       }
     }
