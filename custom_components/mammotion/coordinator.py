@@ -628,22 +628,22 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
 
                 return self.get_coordinator_data(device)
 
-            last_sent_times = []
-            if cloud := device.cloud():
-                last_sent_times.append(cloud.command_sent_time)
-            if ble := device.ble():
-                last_sent_times.append(ble.command_sent_time)
-
-            seconds_check = (
-                self.update_interval.seconds
-                if self.update_interval != WORKING_INTERVAL
-                else DEFAULT_INTERVAL
-            )
-
-            if self.update_interval and any(
-                t > time.time() - seconds_check for t in last_sent_times
-            ):
-                return self.get_coordinator_data(device)
+            # last_sent_times = []
+            # if cloud := device.cloud():
+            #     last_sent_times.append(cloud.command_sent_time)
+            # if ble := device.ble():
+            #     last_sent_times.append(ble.command_sent_time)
+            #
+            # seconds_check = (
+            #     self.update_interval.seconds
+            #     if self.update_interval != WORKING_INTERVAL
+            #     else DEFAULT_INTERVAL
+            # )
+            #
+            # if self.update_interval and any(
+            #     t > time.time() - seconds_check for t in last_sent_times
+            # ):
+            #     return self.get_coordinator_data(device)
 
             return None
         return None
