@@ -169,7 +169,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
 
     async def async_refresh_login(self) -> None:
         """Refresh login credentials asynchronously."""
-        await self.manager.refresh_login(self.account, self.password)
+        await self.manager.refresh_login()
         self.store_cloud_credentials()
 
     async def device_offline(self, device: MammotionMixedDeviceManager) -> None:
@@ -627,6 +627,24 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
                 )
 
                 return self.get_coordinator_data(device)
+
+            last_sent_times = []
+            if cloud := device.cloud():
+                last_sent_times.append(cloud.command_sent_time)
+            if ble := device.ble():
+                last_sent_times.append(ble.command_sent_time)
+
+            seconds_check = (
+                self.update_interval.seconds
+                if self.update_interval != WORKING_INTERVAL
+                else DEFAULT_INTERVAL
+            )
+
+            if self.update_interval and any(
+                t > time.time() - seconds_check for t in last_sent_times
+            ):
+                return self.get_coordinator_data(device)
+
             return None
         return None
 
@@ -730,17 +748,7 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
             return data
 
         try:
-            last_sent_time = 0
-            if cloud := device.cloud():
-                last_sent_time = cloud.command_sent_time
-            elif ble := device.ble():
-                last_sent_time = ble.command_sent_time
-
-            if (
-                self.update_interval
-                and last_sent_time < time.time() - self.update_interval.seconds
-            ):
-                await self.async_send_command("get_report_cfg")
+            await self.async_send_command("get_report_cfg")
 
         except DeviceOfflineException as ex:
             """Device is offline."""
@@ -772,7 +780,6 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
         if data.report_data.dev.sys_status in (
             WorkMode.MODE_WORKING,
             WorkMode.MODE_RETURNING,
-            WorkMode.MODE_PAUSE,
         ):
             self.update_interval = WORKING_INTERVAL
         else:
@@ -962,6 +969,7 @@ class MammotionDeviceVersionUpdateCoordinator(
                     if check_version.device_id == device.iot_id:
                         device.state.update_check = check_version
 
+            self.async_set_updated_data(self.data)
         except DeviceOfflineException:
             """Device is offline bluetooth has been attempted."""
 
@@ -1179,6 +1187,8 @@ class MammotionDeviceErrorUpdateCoordinator(
                 device.state.errors.error_codes = (
                     await device.mammotion_http.get_all_error_codes()
                 )
+
+            self.async_set_updated_data(self.data)
         except DeviceOfflineException:
             """Device is offline bluetooth has been attempted."""
 

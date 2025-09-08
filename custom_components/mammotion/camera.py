@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import secrets
+from collections import deque
 from collections.abc import Callable
 from dataclasses import dataclass
 
@@ -65,7 +66,7 @@ async def async_setup_entry(
                 stream_data = await mower.api.get_stream_subscription(
                     mower.device.deviceName, mower.device.iotId
                 )
-                if stream_data:
+                if stream_data is not None:
                     _LOGGER.debug("Received stream data: %s", stream_data)
                     entities.extend(
                         MammotionWebRTCCamera(
@@ -76,7 +77,7 @@ async def async_setup_entry(
                 else:
                     _LOGGER.error("No Agora data for %s", mower.device.deviceName)
             except Exception as e:
-                _LOGGER.error("Error on config camera for: %s", e)
+                _LOGGER.error("Error on async setup entry camera for: %s", e)
 
     async_add_entities(entities)
     await async_setup_platform_services(hass, entry)
@@ -100,7 +101,7 @@ class MammotionWebRTCCamera(MammotionBaseEntity, Camera):
         self._attr_translation_key = entity_description.key
         self._stream_data: StreamSubscriptionResponse | None = None
         self._attr_model = coordinator.device.deviceName
-        self.access_tokens = [secrets.token_hex(16)]
+        self.access_tokens = deque([secrets.token_hex(16)])
         self._webrtc_provider = None  # Avoid crash on async_refresh_providers()
         self._legacy_webrtc_provider = None
         self._supports_native_sync_webrtc = False

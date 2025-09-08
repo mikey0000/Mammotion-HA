@@ -13,6 +13,7 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.restore_state import RestoreEntity
+from pymammotion.data.model.hash_list import AreaHashNameList
 from pymammotion.utility.device_type import DeviceType
 
 from . import MammotionConfigEntry
@@ -391,14 +392,20 @@ def async_add_area_entities(
 
     switch_entities: list[MammotionConfigAreaSwitchEntity] = []
     areas = list(map(int, coordinator.data.map.area.keys()))
-    new_areas = set(areas) - added_areas
+    area_name_hashes = [area.hash for area in coordinator.data.map.area_name]
+    area_name = coordinator.data.map.area_name
+    new_areas = (set(areas) | set(area_name_hashes)) - added_areas
     if new_areas:
         for area_id in new_areas:
-            name: str = f"{area_id}"
-            area_data = coordinator.data.map.area.get(area_id).data
-            area_frame = area_data[0] if len(area_data) > 0 else None
-            if area_frame is not None and area_frame.area_label.label != "":
-                name = area_frame.area_label.label
+            existing_name: AreaHashNameList | None = next(
+                (area for area in area_name if str(area.hash) == str(area_id)),
+                None,
+            )
+            name = (
+                existing_name.name
+                if (existing_name and existing_name.name)
+                else f"{area_id}"
+            )
 
             base_area_switch_entity = MammotionConfigAreaSwitchEntityDescription(
                 key=f"{area_id}",
