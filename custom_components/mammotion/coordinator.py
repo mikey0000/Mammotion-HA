@@ -5,7 +5,6 @@ from __future__ import annotations
 import asyncio
 import datetime
 import json
-import time
 from abc import abstractmethod
 from collections.abc import Mapping
 from datetime import timedelta
@@ -169,7 +168,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
 
     async def async_refresh_login(self) -> None:
         """Refresh login credentials asynchronously."""
-        await self.manager.refresh_login()
+        await self.manager.refresh_login(self.account)
         self.store_cloud_credentials()
 
     async def device_offline(self, device: MammotionMixedDeviceManager) -> None:
