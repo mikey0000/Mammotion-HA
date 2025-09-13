@@ -1147,6 +1147,9 @@ class MammotionDeviceErrorUpdateCoordinator(
         except StopIteration:
             """Failed to get error code."""
             return "No Error"
+        except KeyError:
+            """Failed to get error message."""
+            return "Error message not found"
 
     async def _async_update_data(self):
         """Get data from the device."""

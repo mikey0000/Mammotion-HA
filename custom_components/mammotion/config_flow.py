@@ -215,7 +215,7 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
         ):
             account = user_input.get(CONF_ACCOUNTNAME, "")
             password = user_input.get(CONF_PASSWORD, "")
-            mammotion_http = MammotionHTTP()
+            mammotion_http = MammotionHTTP(account, password)
 
             try:
                 await mammotion_http.login(account, password)

@@ -110,7 +110,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
             else:
                 # sometimes mammotion_data is missing....
                 if cloud_client.mammotion_http is None:
-                    mammotion_http = MammotionHTTP()
+                    mammotion_http = MammotionHTTP(account, password)
                     await mammotion_http.login(account, password)
                     cloud_client.set_http(mammotion_http)
                 await mammotion.initiate_cloud_connection(account, cloud_client)
@@ -320,7 +320,10 @@ async def check_and_restore_cloud(
         if isinstance(mammotion_data, dict)
         else mammotion_data
     )
-    mammotion_http = MammotionHTTP()
+    account = entry.data.get(CONF_ACCOUNTNAME)
+    password = entry.data.get(CONF_PASSWORD)
+
+    mammotion_http = MammotionHTTP(account, password)
     mammotion_http.response = mammotion_response_data
     mammotion_http.login_info = (
         LoginResponseData.from_dict(mammotion_response_data.data)
