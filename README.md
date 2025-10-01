@@ -71,6 +71,7 @@ If you encounter any issues with the Mammotion integration, please check the Hom
 - Verify that you have Bluetooth proxy setup with Home Assistant.
 - Ensure that your mower is connected to your home network and accessible from Home Assistant.
 - Restart Home Assistant and check if the issue persists.
+- Make sure your not blocking China (Connection timeout to host https://api.link.aliyun.com/living/account/region/get)
 
 ## Contributing to Translations
 
