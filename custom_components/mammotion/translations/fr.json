@@ -56,28 +56,28 @@
   "entity": {
     "sensor": {
       "error_1_message": {
-        "name": "Last error"
+        "name": "Dernière erreur"
       },
       "error_1_time": {
-        "name": "Last error time"
+        "name": "Heure de la dernière erreur"
       },
       "error_1_code": {
-        "name": "Last error code"
+        "name": "Dernier code d'erreur"
       },
       "battery_percent": {
         "name": "Batterie"
       },
       "ble_rssi": {
-        "name": "Signal Bluetooth"
+        "name": "Qualité du signal Bluetooth"
       },
       "camera_brightness": {
         "name": "Luminosité de la caméra"
       },
       "wifi_rssi": {
-        "name": "Signal Wi-Fi"
+        "name": "Qualité du signal Wi-Fi"
       },
       "mnet_rssi": {
-        "name": "Signal Réseau mobile"
+        "name": "Qualité du signal Réseau mobile"
       },
       "connect_type": {
         "name": "Connexion"
@@ -135,7 +135,7 @@
         "unit_of_measurement": "cycles"
       },
       "rtk_lora": {
-        "name": "LoRa version"
+        "name": "Version LoRa"
       },
       "rtk_latitude": {
         "name": "Latitude"
@@ -144,7 +144,7 @@
         "name": "Longitude"
       },
       "rtk_wifi_rssi": {
-        "name": "Wi-Fi RSSI"
+        "name": "Qualité du signal Wi-Fi"
       }
     },
     "button": {
@@ -179,7 +179,7 @@
         "name": "Supprimer les cartes et les noms de zones"
       },
       "relocate_charging_station": {
-        "name": "Relocate charging station"
+        "name": "Déplacer la station de recharge"
       }
     },
     "switch": {
@@ -212,6 +212,12 @@
       },
       "schedule_updates": {
         "name": "Activer les mises à jour Activer/ Désactiver"
+      },
+      "manual_light": {
+        "name": "Allumage/extinction manuelle de la lumière"
+      },
+      "night_light": {
+        "name": "Éclairage de nuit allumé/éteint"
       }
     },
     "select": {
@@ -270,7 +276,7 @@
         }
       },
       "traversal_mode": {
-        "name": "Mode de traversée",
+        "name": "Trajet de recharge",
         "state": {
           "direct": "Direct",
           "follow_perimeter": "Suivre le périmètre"
@@ -281,6 +287,14 @@
         "state": {
           "multipoint": "Virage multipoint",
           "zero_turn": "Virage sur place"
+        }
+      },
+      "cutter_mode": {
+        "name": "Vitesse de coupe",
+        "state": {
+          "normal": "Moyenne",
+          "slow": "Lente",
+          "fast": "Rapide"
         }
       }
     },
@@ -458,6 +472,20 @@
         "areas": {
           "name": "Zones",
           "description": "Liste des zones à tondre (représentées sous forme d'entiers)."
+        }
+      }
+    },
+    "start_stop_blades": {
+      "name": "Démarrer ou arrêter les lames",
+      "description": "Démarrer ou arrêter les lames manuellement.",
+      "fields": {
+        "start_stop": {
+          "name": "Démarrer ou arrêter",
+          "description": "Si les lames sont activées ou désactivées."
+        },
+        "blade_height": {
+          "name": "Hauteur de coupe",
+          "description": "Hauteur de coupe."
         }
       }
     }

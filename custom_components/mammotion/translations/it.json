@@ -212,6 +212,12 @@
       },
       "schedule_updates": {
         "name": "Attivare/Disattivare Gli aggiornamenti"
+      },
+      "manual_light": {
+        "name": "Manual light on/off"
+      },
+      "night_light": {
+        "name": "Night light on/off"
       }
     },
     "select": {
@@ -270,7 +276,7 @@
         }
       },
       "traversal_mode": {
-        "name": "Modalità di attraversamento",
+        "name": "Traversal Mode",
         "state": {
           "direct": "Diretto",
           "follow_perimeter": "Segui il perimetro"
@@ -281,6 +287,14 @@
         "state": {
           "multipoint": "Svolta multipunto",
           "zero_turn": "Svolta zero"
+        }
+      },
+      "cutter_mode": {
+        "name": "Cutter Speed",
+        "state": {
+          "normal": "Medium",
+          "slow": "Slow",
+          "fast": "Fast"
         }
       }
     },
@@ -458,6 +472,20 @@
         "areas": {
           "name": "Selezione Area",
           "description": "Elenco di aree da tagliare(rappresentati come interi)."
+        }
+      }
+    },
+    "start_stop_blades": {
+      "name": "Start or stop blades",
+      "description": "Start or stop the blades manually.",
+      "fields": {
+        "start_stop": {
+          "name": "Start or stop",
+          "description": "Whether blades are on or off."
+        },
+        "blade_height": {
+          "name": "Blade height",
+          "description": "Height of the blade."
         }
       }
     }
