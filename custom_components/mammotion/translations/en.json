@@ -128,7 +128,7 @@
         "name": "Total mileage"
       },
       "maintenance_work_time": {
-        "name": "Task duration"
+        "name": "Total work time"
       },
       "maintenance_bat_cycles": {
         "name": "Battery cycles",
