@@ -56,13 +56,13 @@
   "entity": {
     "sensor": {
       "error_1_message": {
-        "name": "Last error"
+        "name": "Poslední chyba"
       },
       "error_1_time": {
-        "name": "Last error time"
+        "name": "Čas poslední chyby"
       },
       "error_1_code": {
-        "name": "Last error code"
+        "name": "Kód poslední chyby"
       },
       "battery_percent": {
         "name": "Baterie"
@@ -135,7 +135,7 @@
         "unit_of_measurement": "cyklů"
       },
       "rtk_lora": {
-        "name": "LoRa version"
+        "name": "Verze LoRa"
       },
       "rtk_latitude": {
         "name": "Zeměpisná šířka"
@@ -179,7 +179,7 @@
         "name": "Vyčištění map a názvů oblastí"
       },
       "relocate_charging_station": {
-        "name": "Relocate charging station"
+        "name": "Přemístit nabíjecí stanici"
       }
     },
     "switch": {
@@ -212,6 +212,12 @@
       },
       "schedule_updates": {
         "name": "Zapnout/Vypnout aktualizace"
+      },
+      "manual_light": {
+        "name": "Ruční osvětlení zapnuto/vypnuto"
+      },
+      "night_light": {
+        "name": "Noční světlo zapnout/vypnout"
       }
     },
     "select": {
@@ -270,7 +276,7 @@
         }
       },
       "traversal_mode": {
-        "name": "Způsob otačení",
+        "name": "Způsob otáčení",
         "state": {
           "direct": "Přímý",
           "follow_perimeter": "Podél hranice"
@@ -281,6 +287,14 @@
         "state": {
           "multipoint": "Vícebodové otáčení",
           "zero_turn": "Otáčení na místě"
+        }
+      },
+      "cutter_mode": {
+        "name": "Rychlost nožů",
+        "state": {
+          "normal": "Střední",
+          "slow": "Pomalý",
+          "fast": "Rychlá"
         }
       }
     },
@@ -458,6 +472,20 @@
         "areas": {
           "name": "Výběr oblasti",
           "description": "Seznam oblastí k sečení (reprezentovaný jako celá čísla)."
+        }
+      }
+    },
+    "start_stop_blades": {
+      "name": "Spustit nebo zastavit nože",
+      "description": "Manuální spuštění nebo zastavení břitů.",
+      "fields": {
+        "start_stop": {
+          "name": "Spustit nebo zastavit",
+          "description": "Zda jsou nože zapnuté nebo vypnuté."
+        },
+        "blade_height": {
+          "name": "Výška nožů",
+          "description": "Výška nožů."
         }
       }
     }

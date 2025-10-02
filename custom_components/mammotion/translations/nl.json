@@ -56,13 +56,13 @@
   "entity": {
     "sensor": {
       "error_1_message": {
-        "name": "Last error"
+        "name": "Laatste fout"
       },
       "error_1_time": {
-        "name": "Last error time"
+        "name": "Laatste fout tijd"
       },
       "error_1_code": {
-        "name": "Last error code"
+        "name": "Laatste foutcode"
       },
       "battery_percent": {
         "name": "Batterij"
@@ -135,13 +135,13 @@
         "unit_of_measurement": "cycli"
       },
       "rtk_lora": {
-        "name": "LoRa version"
+        "name": "LoRa versie"
       },
       "rtk_latitude": {
-        "name": "Breedtegraad"
+        "name": "Latitude"
       },
       "rtk_longitude": {
-        "name": "Lengtegraad"
+        "name": "Longitude"
       },
       "rtk_wifi_rssi": {
         "name": "Wi-Fi RSSI"
@@ -212,6 +212,12 @@
       },
       "schedule_updates": {
         "name": "Updates aan/uit zetten"
+      },
+      "manual_light": {
+        "name": "Manual light on/off"
+      },
+      "night_light": {
+        "name": "Nachtverlichting aan/uit"
       }
     },
     "select": {
@@ -281,6 +287,14 @@
         "state": {
           "multipoint": "Meerpunts draai",
           "zero_turn": "Nulpunts draai"
+        }
+      },
+      "cutter_mode": {
+        "name": "Maaisnelheid",
+        "state": {
+          "normal": "Gemiddeld",
+          "slow": "Langzaam",
+          "fast": "Snel"
         }
       }
     },
@@ -458,6 +472,20 @@
         "areas": {
           "name": "Gebiedselectie",
           "description": "Lijst van te maaien gebieden (weergegeven als geheel getal)."
+        }
+      }
+    },
+    "start_stop_blades": {
+      "name": "Start or stop blades",
+      "description": "Start or stop the blades manually.",
+      "fields": {
+        "start_stop": {
+          "name": "Start of stop",
+          "description": "Whether blades are on or off."
+        },
+        "blade_height": {
+          "name": "Blade height",
+          "description": "Height of the blade."
         }
       }
     }

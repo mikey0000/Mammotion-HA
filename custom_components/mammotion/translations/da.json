@@ -56,13 +56,13 @@
   "entity": {
     "sensor": {
       "error_1_message": {
-        "name": "Last error"
+        "name": "Seneste fejl"
       },
       "error_1_time": {
-        "name": "Last error time"
+        "name": "Tidspunkt for seneste fejl"
       },
       "error_1_code": {
-        "name": "Last error code"
+        "name": "Seneste fejl kode"
       },
       "battery_percent": {
         "name": "Batteri"
@@ -138,10 +138,10 @@
         "name": "LoRa version"
       },
       "rtk_latitude": {
-        "name": "Latitude"
+        "name": "Breddegrad"
       },
       "rtk_longitude": {
-        "name": "Longitude"
+        "name": "Længdegrad"
       },
       "rtk_wifi_rssi": {
         "name": "Wi-Fi RSSI"
@@ -179,7 +179,7 @@
         "name": "Ryd kort og områdenavne"
       },
       "relocate_charging_station": {
-        "name": "Relocate charging station"
+        "name": "Flyt ladestation"
       }
     },
     "switch": {
@@ -199,7 +199,7 @@
         "name": "Kantklipning"
       },
       "rain_tactics": {
-        "name": "Rain detection (during mow) On/Off"
+        "name": "Regn detektion (under arbejde) On/Off"
       },
       "rain_detection": {
         "name": "Regn detektering (Plæneklipper) Til/Fra"
@@ -211,7 +211,13 @@
         "name": "Kantklippning først"
       },
       "schedule_updates": {
-        "name": "Turn Updates On/Off"
+        "name": "Slå opdateringer til/fra"
+      },
+      "manual_light": {
+        "name": "Manuelt lys Tænd/sluk"
+      },
+      "night_light": {
+        "name": "Nattelys til/fra"
       }
     },
     "select": {
@@ -270,7 +276,7 @@
         }
       },
       "traversal_mode": {
-        "name": "Gennemgangstilstand",
+        "name": "Transport tilstand",
         "state": {
           "direct": "Direkte",
           "follow_perimeter": "Følg kanten"
@@ -281,6 +287,14 @@
         "state": {
           "multipoint": "Multipunkt vending",
           "zero_turn": "Nul vending"
+        }
+      },
+      "cutter_mode": {
+        "name": "Klippe hastighed",
+        "state": {
+          "normal": "Mellem",
+          "slow": "Langsom",
+          "fast": "Hurtig"
         }
       }
     },
@@ -424,7 +438,7 @@
           "description": "Bredde på klippebanen (i cm)."
         },
         "rain_tactics": {
-          "name": "Regnregistrering ",
+          "name": "Regnregistrering",
           "description": "Regnregistrering."
         },
         "blade_height": {
@@ -458,6 +472,20 @@
         "areas": {
           "name": "Områdevalg",
           "description": "Liste over områder, der skal klippes (repræsenteret som heltal)."
+        }
+      }
+    },
+    "start_stop_blades": {
+      "name": "Start eller stop blade",
+      "description": "Start eller stop blade manuelt.",
+      "fields": {
+        "start_stop": {
+          "name": "Start eller stop",
+          "description": "Om blade er tændt eller slukket."
+        },
+        "blade_height": {
+          "name": "Blad højde",
+          "description": "Højden på klippebordet."
         }
       }
     }

@@ -212,6 +212,12 @@
       },
       "schedule_updates": {
         "name": "Turn Updates On/Off"
+      },
+      "manual_light": {
+        "name": "Manual light on/off"
+      },
+      "night_light": {
+        "name": "Night light on/off"
       }
     },
     "select": {
@@ -281,6 +287,14 @@
         "state": {
           "multipoint": "Obrat v več točkah",
           "zero_turn": "Obrat na mestu"
+        }
+      },
+      "cutter_mode": {
+        "name": "Cutter Speed",
+        "state": {
+          "normal": "Medium",
+          "slow": "Slow",
+          "fast": "Fast"
         }
       }
     },
@@ -458,6 +472,20 @@
         "areas": {
           "name": "Območje naloge",
           "description": "Spisek območij."
+        }
+      }
+    },
+    "start_stop_blades": {
+      "name": "Start or stop blades",
+      "description": "Start or stop the blades manually.",
+      "fields": {
+        "start_stop": {
+          "name": "Start or stop",
+          "description": "Whether blades are on or off."
+        },
+        "blade_height": {
+          "name": "Blade height",
+          "description": "Height of the blade."
         }
       }
     }
