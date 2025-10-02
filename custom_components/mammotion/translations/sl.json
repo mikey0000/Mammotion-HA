@@ -276,7 +276,7 @@
         }
       },
       "traversal_mode": {
-        "name": "Traversal Mode",
+        "name": "Način vračanja",
         "state": {
           "direct": "Neposredno",
           "follow_perimeter": "Sledi obodu"
