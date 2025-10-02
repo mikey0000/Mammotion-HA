@@ -276,7 +276,7 @@
         }
       },
       "traversal_mode": {
-        "name": "Traversal Mode",
+        "name": "Tryb przejazdu",
         "state": {
           "direct": "Bezpośredni",
           "follow_perimeter": "Podążaj po obwodzie"

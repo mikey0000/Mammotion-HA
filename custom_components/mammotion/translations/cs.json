@@ -144,7 +144,7 @@
         "name": "Zeměpisná délka"
       },
       "rtk_wifi_rssi": {
-        "name": "WiFi RSSI"
+        "name": "Wi-Fi RSSI"
       }
     },
     "button": {
