@@ -184,7 +184,7 @@
     },
     "switch": {
       "area": {
-        "name": "Områdes {namn}"
+        "name": "Områdes {name}"
       },
       "blade_status": {
         "name": "Klippblad på/av"
