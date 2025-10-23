@@ -39,6 +39,8 @@ This integration allows you to control and monitor Mammotion products, e.g robot
 
 - Sometimes using the account number works instead of email address when adding via discovery (not sure why)
 
+- Connection timeout to host https://api.link.aliyun.com/living/account/region/get - unblock china
+
 ## Installation 🛠️
 
 This integration can be installed using [HACS](https://hacs.xyz/)
