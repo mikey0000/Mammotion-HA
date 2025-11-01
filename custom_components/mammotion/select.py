@@ -178,7 +178,7 @@ async def async_setup_entry(
                 )
             )
 
-        if DeviceType.is_luba1(mower.device.deviceName):
+        if DeviceType.is_luba1(mower.device.device_name):
             for entity_description in LUBA1_SELECT_ENTITIES:
                 entities.append(
                     MammotionConfigSelectEntity(
@@ -193,7 +193,7 @@ async def async_setup_entry(
                     )
                 )
 
-        if DeviceType.is_mini_or_x_series(mower.device.deviceName):
+        if DeviceType.is_mini_or_x_series(mower.device.device_name):
             for entity_description in MINI_AND_X_SERIES_CONFIG_SELECT_ENTITIES:
                 entities.append(
                     MammotionAsyncConfigSelectEntity(

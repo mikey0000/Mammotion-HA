@@ -93,7 +93,7 @@ async def async_setup_entry(
     mammotion_devices = entry.runtime_data.mowers
 
     for mower in mammotion_devices:
-        added_tasks: set[int] = set()
+        added_tasks: set[str] = set()
 
         coordinator = mower.reporting_coordinator
 

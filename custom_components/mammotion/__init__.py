@@ -15,7 +15,7 @@ from pymammotion.aliyun.model.aep_response import AepResponse
 from pymammotion.aliyun.model.connect_response import ConnectResponse
 from pymammotion.aliyun.model.dev_by_account_response import (
     Device,
-    ListingDevByAccountResponse,
+    ListingDevAccountResponse,
 )
 from pymammotion.aliyun.model.login_by_oauth_response import LoginByOAuthResponse
 from pymammotion.aliyun.model.regions_response import RegionResponse
@@ -127,8 +127,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
             for (
                 device
             ) in mqtt_client.cloud_client.devices_by_account_response.data.data:
-                if not device.deviceName.startswith(DEVICE_SUPPORT):
-                    if device.categoryKey == "Tracker":
+                if not device.device_name.startswith(DEVICE_SUPPORT):
+                    if device.category_key == "Tracker":
                         mammotion_rtk_devices.append(device)
                     continue
 
@@ -136,7 +136,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                     device, mqtt_client
                 )
 
-                if device_ble_address := addresses.get(device.deviceName, None):
+                if device_ble_address := addresses.get(device.device_name, None):
                     mammotion_device.state.mower_state.ble_mac = device_ble_address
                     ble_device = bluetooth.async_ble_device_from_address(
                         hass, device_ble_address.upper(), True
@@ -174,22 +174,22 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                 )
                 if device_limits is None:
                     device_limits = device_config.get_working_parameters(
-                        device.productKey
+                        device.product_key
                     )
 
                 if device_limits is None:
-                    device_limits = device_config.get_best_default(device.productKey)
+                    device_limits = device_config.get_best_default(device.product_key)
 
                 if not use_wifi:
                     mammotion_device.preference = ConnectionPreference.BLUETOOTH
-                    await mammotion_device.cloud().stop()
-                    mammotion_device.cloud().mqtt.disconnect() if mammotion_device.cloud().mqtt.is_connected() else None
+                    await mammotion_device.cloud.stop()
+                    mammotion_device.cloud.mqtt.disconnect() if mammotion_device.cloud.mqtt.is_connected() else None
                     # not entirely sure this is a good idea
                     mammotion_device.remove_cloud()
 
                 mammotion_mowers.append(
                     MammotionMowerData(
-                        name=device.deviceName,
+                        name=device.device_name,
                         device=device,
                         device_limits=device_limits,
                         api=mammotion,
@@ -210,18 +210,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                 await rtk_coordinator.async_config_entry_first_refresh()
                 mammotion_rtk.append(
                     MammotionRTKData(
-                        name=rtk.deviceName,
+                        name=rtk.device_name,
                         api=mammotion,
                         device=rtk,
                         coordinator=rtk_coordinator,
                     )
                 )
 
-    # if not any(mammotion.get_device_by_name(mammotion_device.device.deviceName).preference == ConnectionPreference.WIFI for mammotion_device in mammotion_devices):
+    # if not any(mammotion.get_device_by_name(mammotion_device.device.device_name).preference == ConnectionPreference.WIFI for mammotion_device in mammotion_devices):
     #     for mammotion_device in mammotion_devices:
-    #         mower = mammotion.get_device_by_name(mammotion_device.device.deviceName)
-    #         await mower.cloud().stop()
-    #         mower.cloud().mqtt.disconnect() if mower.cloud().mqtt.is_connected() else None
+    #         mower = mammotion.get_device_by_name(mammotion_device.device.device_name)
+    #         await mower.cloud.stop()
+    #         mower.cloud.mqtt.disconnect() if mower.cloud.mqtt.is_connected() else None
     #         mower.remove_cloud()
     mammotion_devices.RTK = mammotion_rtk
     mammotion_devices.mowers = mammotion_mowers
@@ -344,7 +344,7 @@ async def check_and_restore_cloud(
         session_by_authcode_response=SessionByAuthCodeResponse.from_dict(session_data)
         if isinstance(session_data, dict)
         else session_data,
-        dev_by_account=ListingDevByAccountResponse.from_dict(device_data)
+        dev_by_account=ListingDevAccountResponse.from_dict(device_data)
         if isinstance(device_data, dict)
         else device_data,
         login_by_oauth_response=LoginByOAuthResponse.from_dict(auth_data)

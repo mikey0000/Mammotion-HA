@@ -175,20 +175,20 @@ async def async_setup_entry(
             config_entity = MammotionUpdateSwitchEntity(coordinator, entity_description)
             entities.append(config_entity)
 
-        if DeviceType.is_yuka(mower.device.deviceName) and not DeviceType.is_yuka_mini(
-            mower.device.deviceName
+        if DeviceType.is_yuka(mower.device.device_name) and not DeviceType.is_yuka_mini(
+            mower.device.device_name
         ):
             for entity_description in YUKA_CONFIG_SWITCH_ENTITIES:
                 config_entity = MammotionConfigSwitchEntity(
                     coordinator, entity_description
                 )
                 entities.append(config_entity)
-        if DeviceType.is_luba1(mower.device.deviceName):
+        if DeviceType.is_luba1(mower.device.device_name):
             for entity_description in LUBA_1_SWITCH_ENTITIES:
                 entity = MammotionSwitchEntity(coordinator, entity_description)
                 entities.append(entity)
 
-        if DeviceType.is_mini_or_x_series(mower.device.deviceName):
+        if DeviceType.is_mini_or_x_series(mower.device.device_name):
             for entity_description in MINI_AND_X_SERIES_CONFIG_SWITCH_ENTITIES:
                 config_entity = MammotionSwitchEntity(coordinator, entity_description)
                 entities.append(config_entity)
@@ -407,17 +407,19 @@ def async_add_area_entities(
                 else f"{area_id}"
             )
 
+            def set_area_entity(coord, bool_val, value):
+                if bool_val:
+                    coord.operation_settings.areas.add(value)
+                elif value in coord.operation_settings.areas:
+                    coord.operation_settings.areas.remove(value)
+
             base_area_switch_entity = MammotionConfigAreaSwitchEntityDescription(
                 key=f"{area_id}",
                 translation_key="area",
                 translation_placeholders={"name": name},
                 area=area_id,
                 name=f"{name}",
-                set_fn=lambda coord, bool_val, value: (
-                    coord.operation_settings.areas.append(value)
-                    if bool_val
-                    else coord.operation_settings.areas.remove(value)
-                ),
+                set_fn=set_area_entity,
             )
             switch_entities.append(
                 MammotionConfigAreaSwitchEntity(

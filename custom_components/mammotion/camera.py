@@ -59,12 +59,12 @@ async def async_setup_entry(
     mowers = entry.runtime_data.mowers
     entities = []
     for mower in mowers:
-        if not DeviceType.is_luba1(mower.device.deviceName):
-            _LOGGER.debug("Config camera for %s", mower.device.deviceName)
+        if not DeviceType.is_luba1(mower.device.device_name):
+            _LOGGER.debug("Config camera for %s", mower.device.device_name)
             try:
                 # Try to get stream data
                 stream_data = await mower.api.get_stream_subscription(
-                    mower.device.deviceName, mower.device.iotId
+                    mower.device.device_name, mower.device.iot_id
                 )
                 if stream_data is not None:
                     _LOGGER.debug("Received stream data: %s", stream_data)
@@ -75,7 +75,7 @@ async def async_setup_entry(
                         for entity_description in CAMERAS
                     )
                 else:
-                    _LOGGER.error("No Agora data for %s", mower.device.deviceName)
+                    _LOGGER.error("No Agora data for %s", mower.device.device_name)
             except Exception as e:
                 _LOGGER.error("Error on async setup entry camera for: %s", e)
 
@@ -100,7 +100,7 @@ class MammotionWebRTCCamera(MammotionBaseEntity, Camera):
         self.entity_description = entity_description
         self._attr_translation_key = entity_description.key
         self._stream_data: StreamSubscriptionResponse | None = None
-        self._attr_model = coordinator.device.deviceName
+        self._attr_model = coordinator.device.device_name
         self.access_tokens = deque([secrets.token_hex(16)])
         self._webrtc_provider = None  # Avoid crash on async_refresh_providers()
         self._legacy_webrtc_provider = None
@@ -157,7 +157,7 @@ async def async_setup_platform_services(
             (
                 mower
                 for mower in entry.runtime_data.mowers
-                if mower.device.deviceName == name
+                if mower.device.device_name == name
             ),
             None,
         )
@@ -167,7 +167,7 @@ async def async_setup_platform_services(
         mower: MammotionMowerData = _get_mower_by_entity_id(entity_id)
         if mower:
             stream_data = await mower.api.get_stream_subscription(
-                mower.device.deviceName, mower.device.iotId
+                mower.device.device_name, mower.device.iot_id
             )
             _LOGGER.debug("Refresh stream data : %s", stream_data)
 

@@ -41,20 +41,20 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionBaseUpdateCoordinator]):
             ):
                 model_id = mower.state.mqtt_properties.params.items.extMod.value
 
-        nick_name = self.coordinator.device.nickName
+        nick_name = self.coordinator.device.nick_name
         device_name = (
             self.coordinator.device_name
             if nick_name is None or nick_name == ""
-            else self.coordinator.device.nickName
+            else self.coordinator.device.nick_name
         )
 
         connections: set[tuple[str, str]] = set()
 
-        if mower.ble():
+        if mower.ble:
             connections.add(
                 (
                     CONNECTION_BLUETOOTH,
-                    format_mac(mower.ble().ble_device.address),
+                    format_mac(mower.ble.ble_device.address),
                 )
             )
 
@@ -75,13 +75,13 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionBaseUpdateCoordinator]):
             )
 
         return DeviceInfo(
-            identifiers={(DOMAIN, self.coordinator.device.deviceName)},
+            identifiers={(DOMAIN, self.coordinator.device.device_name)},
             manufacturer="Mammotion",
             serial_number=self.coordinator.device_name.split("-", 1)[-1],
             model_id=model_id,
             name=device_name,
             sw_version=swversion,
-            model=self.coordinator.device.productModel or model_id,
+            model=self.coordinator.device.product_model or model_id,
             suggested_area="Garden",
             connections=connections,
         )
@@ -127,12 +127,12 @@ class MammotionBaseRTKEntity(CoordinatorEntity[MammotionRTKCoordinator]):
         return DeviceInfo(
             identifiers={(DOMAIN, rtk_device.name)},
             name=rtk_device.name
-            if self.coordinator.device.nickName is None
-            else self.coordinator.device.nickName,
+            if self.coordinator.device.nick_name is None
+            else self.coordinator.device.nick_name,
             manufacturer="Mammotion",
             serial_number=rtk_device.name,
             model=rtk_device.name,
-            model_id=self.coordinator.device.productKey,
+            model_id=self.coordinator.device.product_key,
             sw_version=self.coordinator.data.device_version,
             suggested_area="Garden",
             connections={
