@@ -30,6 +30,7 @@ from pymammotion.aliyun.model.dev_by_account_response import Device
 from pymammotion.data.model import GenerateRouteInformation, HashList
 from pymammotion.data.model.device import MowerInfo, MowingDevice, RTKDevice
 from pymammotion.data.model.device_config import OperationSettings, create_path_order
+from pymammotion.data.model.hash_list import AreaHashNameList
 from pymammotion.data.model.report_info import Maintain
 from pymammotion.data.mqtt.event import DeviceNotificationEventParams, ThingEventMessage
 from pymammotion.data.mqtt.properties import OTAProgressItems, ThingPropertiesMessage
@@ -719,8 +720,16 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         name = None
         if area_data := self.data.map.area.get(area_hash):
             area_frame = area_data.data[0] if len(area_data.data) > 0 else None
-            if area_frame is not None and area_frame.area_label.label != "":
-                name = area_frame.area_label.label
+            if area_frame is not None:
+                area_name: AreaHashNameList = next(
+                    (
+                        area
+                        for area in self.data.map.area_name
+                        if area.hash == area_data.hash
+                    ),
+                    None,
+                )
+                name = area_name.name if area_name is not None else None
         else:
             LOGGER.error("area not found %s %s", self.device_name, area_hash)
             return None

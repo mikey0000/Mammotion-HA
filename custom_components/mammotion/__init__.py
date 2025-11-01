@@ -117,6 +117,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                     mammotion_http = MammotionHTTP(account, password)
                     await mammotion_http.login(account, password)
                     cloud_client.set_http(mammotion_http)
+
+                await cloud_client.mammotion_http.get_user_device_list()
+                await cloud_client.mammotion_http.get_user_device_page()
                 await mammotion.initiate_cloud_connection(account, cloud_client)
         except ClientConnectorError as err:
             raise ConfigEntryNotReady(err)
@@ -367,10 +370,14 @@ async def check_and_restore_cloud(
 
     mammotion_http = MammotionHTTP(account, password)
     mammotion_http.response = mammotion_response_data
-    mammotion_http.device_info = mammotion_device_list
-    mammotion_http.device_records = mammotion_device_records
-    mammotion_http.mqtt_credentials = mammotion_mqtt
-    mammotion_http.jwt_info = mammotion_jwt
+    if mammotion_device_list:
+        mammotion_http.device_info = mammotion_device_list
+    if mammotion_device_records:
+        mammotion_http.device_records = mammotion_device_records
+    if mammotion_mqtt:
+        mammotion_http.mqtt_credentials = mammotion_mqtt
+    if mammotion_jwt:
+        mammotion_http.jwt_info = mammotion_jwt
     mammotion_http.login_info = (
         LoginResponseData.from_dict(mammotion_response_data.data)
         if isinstance(mammotion_response_data.data, dict)

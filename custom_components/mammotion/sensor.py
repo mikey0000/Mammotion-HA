@@ -99,6 +99,7 @@ LUBA_2_YUKA_ONLY_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfLength.METERS,
         value_fn=lambda mower_data: mower_data.report_data.maintenance.mileage,
         entity_category=EntityCategory.DIAGNOSTIC,
+        suggested_unit_of_measurement=UnitOfLength.KILOMETERS,
     ),
     MammotionSensorEntityDescription(
         key="maintenance_work_time",
@@ -107,6 +108,7 @@ LUBA_2_YUKA_ONLY_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTime.SECONDS,
         value_fn=lambda mower_data: mower_data.report_data.maintenance.work_time,
         entity_category=EntityCategory.DIAGNOSTIC,
+        suggested_unit_of_measurement=UnitOfTime.HOURS,
     ),
 )
 
