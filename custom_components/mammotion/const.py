@@ -42,6 +42,10 @@ CONF_SESSION_DATA: Final = "session_data"
 CONF_REGION_DATA: Final = "region_data"
 CONF_DEVICE_DATA: Final = "device_data"
 CONF_MAMMOTION_DATA: Final = "mammotion_data"
+CONF_MAMMOTION_MQTT = "mammotion_mqtt"
+CONF_MAMMOTION_DEVICE_LIST = "mammotion_device_list"
+CONF_MAMMOTION_DEVICE_RECORDS = "mammotion_device_records"
+CONF_MAMMOTION_JWT_INFO = "mammotion_jwt_info"
 
 NO_REQUEST_MODES = (
     WorkMode.MODE_JOB_DRAW,

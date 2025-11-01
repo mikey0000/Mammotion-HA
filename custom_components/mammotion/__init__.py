@@ -39,6 +39,10 @@ from .const import (
     CONF_DEVICE_DATA,
     CONF_DEVICE_NAME,
     CONF_MAMMOTION_DATA,
+    CONF_MAMMOTION_DEVICE_LIST,
+    CONF_MAMMOTION_DEVICE_RECORDS,
+    CONF_MAMMOTION_JWT_INFO,
+    CONF_MAMMOTION_MQTT,
     CONF_REGION_DATA,
     CONF_SESSION_DATA,
     CONF_STAY_CONNECTED_BLUETOOTH,
@@ -122,100 +126,130 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
         except UnretryableException as err:
             raise ConfigEntryError(err)
 
-        if mqtt_client := mammotion.mqtt_list.get(account):
+        aliyun_mqtt_client = mammotion.mqtt_list.get(f"{account}_aliyun")
+        mammotion_mqtt_client = mammotion.mqtt_list.get(f"{account}_mammotion")
+
+        if aliyun_mqtt_client or mammotion_mqtt_client:
+            if aliyun_mqtt_client:
+                mqtt_client = aliyun_mqtt_client
+            else:
+                mqtt_client = mammotion_mqtt_client
             store_cloud_credentials(hass, entry, mqtt_client.cloud_client)
-            for (
-                device
-            ) in mqtt_client.cloud_client.devices_by_account_response.data.data:
-                if not device.device_name.startswith(DEVICE_SUPPORT):
-                    if device.category_key == "Tracker":
-                        mammotion_rtk_devices.append(device)
-                    continue
 
+        device_list: list[Device] = []
+        shimed_cloud_devices = []
+        cloud_devices = []
+
+        if mammotion_mqtt_client:
+            shimed_cloud_devices = mammotion.shim_cloud_devices(
+                mammotion_mqtt_client.cloud_client.mammotion_http.device_records.records
+            )
+            device_list.extend(shimed_cloud_devices)
+        if aliyun_mqtt_client:
+            cloud_devices = (
+                aliyun_mqtt_client.cloud_client.devices_by_account_response.data.data
+            )
+            device_list.extend(cloud_devices)
+
+        for device in device_list:
+            if not device.device_name.startswith(DEVICE_SUPPORT):
+                if device.category_key == "Tracker":
+                    mammotion_rtk_devices.append(device)
+                continue
+
+            if device in shimed_cloud_devices:
                 mammotion_device = mammotion.get_or_create_device_by_name(
-                    device, mqtt_client
+                    device, mammotion_mqtt_client, None
                 )
+            elif device in cloud_devices:
+                mammotion_device = mammotion.get_or_create_device_by_name(
+                    device, aliyun_mqtt_client, None
+                )
+            else:
+                mammotion_device = mammotion.get_or_create_device_by_name(device, None)
 
-                if device_ble_address := addresses.get(device.device_name, None):
-                    mammotion_device.state.mower_state.ble_mac = device_ble_address
-                    ble_device = bluetooth.async_ble_device_from_address(
-                        hass, device_ble_address.upper(), True
-                    )
-                    if ble_device:
-                        ble = mammotion_device.add_ble(ble_device)
-                        ble.set_disconnect_strategy(disconnect=not stay_connected_ble)
+            if device_ble_address := addresses.get(device.device_name, None):
+                mammotion_device.state.mower_state.ble_mac = device_ble_address
+                ble_device = bluetooth.async_ble_device_from_address(
+                    hass, device_ble_address.upper(), True
+                )
+                if ble_device:
+                    ble = mammotion_device.add_ble(ble_device)
+                    ble.set_disconnect_strategy(disconnect=not stay_connected_ble)
 
-                maintenance_coordinator = MammotionMaintenanceUpdateCoordinator(
-                    hass, entry, device, mammotion
-                )
-                version_coordinator = MammotionDeviceVersionUpdateCoordinator(
-                    hass, entry, device, mammotion
-                )
-                report_coordinator = MammotionReportUpdateCoordinator(
-                    hass, entry, device, mammotion
-                )
-                map_coordinator = MammotionMapUpdateCoordinator(
-                    hass, entry, device, mammotion
-                )
-                error_coordinator = MammotionDeviceErrorUpdateCoordinator(
-                    hass, entry, device, mammotion
-                )
-                # sometimes device is not there when restoring data
-                await report_coordinator.async_restore_data()
-                # other coordinator
-                await maintenance_coordinator.async_config_entry_first_refresh()
-                await version_coordinator.async_config_entry_first_refresh()
-                await report_coordinator.async_config_entry_first_refresh()
-                await error_coordinator.async_config_entry_first_refresh()
+            maintenance_coordinator = MammotionMaintenanceUpdateCoordinator(
+                hass, entry, device, mammotion
+            )
+            version_coordinator = MammotionDeviceVersionUpdateCoordinator(
+                hass, entry, device, mammotion
+            )
+            report_coordinator = MammotionReportUpdateCoordinator(
+                hass, entry, device, mammotion
+            )
+            map_coordinator = MammotionMapUpdateCoordinator(
+                hass, entry, device, mammotion
+            )
+            error_coordinator = MammotionDeviceErrorUpdateCoordinator(
+                hass, entry, device, mammotion
+            )
+            # sometimes device is not there when restoring data
+            await report_coordinator.async_restore_data()
+            # other coordinator
+            await maintenance_coordinator.async_config_entry_first_refresh()
+            await version_coordinator.async_config_entry_first_refresh()
+            await report_coordinator.async_config_entry_first_refresh()
+            await error_coordinator.async_config_entry_first_refresh()
 
-                device_config = DeviceConfig()
-                device_limits = device_config.get_working_parameters(
-                    version_coordinator.data.mower_state.sub_model_id
+            device_config = DeviceConfig()
+            device_limits = device_config.get_working_parameters(
+                version_coordinator.data.mower_state.sub_model_id
+            )
+            if device_limits is None:
+                device_limits = device_config.get_working_parameters(device.product_key)
+
+            if device_limits is None:
+                device_limits = device_config.get_best_default(device.product_key)
+
+            if not use_wifi:
+                mammotion_device.preference = ConnectionPreference.BLUETOOTH
+                await mammotion_device.cloud.stop()
+                mammotion_device.cloud.mqtt.disconnect() if mammotion_device.cloud.mqtt.is_connected() else None
+                # not entirely sure this is a good idea
+                mammotion_device.remove_cloud()
+
+            mammotion_mowers.append(
+                MammotionMowerData(
+                    name=device.device_name,
+                    device=device,
+                    device_limits=device_limits,
+                    api=mammotion,
+                    maintenance_coordinator=maintenance_coordinator,
+                    reporting_coordinator=report_coordinator,
+                    version_coordinator=version_coordinator,
+                    map_coordinator=map_coordinator,
+                    error_coordinator=error_coordinator,
                 )
-                if device_limits is None:
-                    device_limits = device_config.get_working_parameters(
-                        device.product_key
-                    )
+            )
+            try:
+                await map_coordinator.async_request_refresh()
+            except:
+                """Do nothing for now."""
 
-                if device_limits is None:
-                    device_limits = device_config.get_best_default(device.product_key)
-
-                if not use_wifi:
-                    mammotion_device.preference = ConnectionPreference.BLUETOOTH
-                    await mammotion_device.cloud.stop()
-                    mammotion_device.cloud.mqtt.disconnect() if mammotion_device.cloud.mqtt.is_connected() else None
-                    # not entirely sure this is a good idea
-                    mammotion_device.remove_cloud()
-
-                mammotion_mowers.append(
-                    MammotionMowerData(
-                        name=device.device_name,
-                        device=device,
-                        device_limits=device_limits,
-                        api=mammotion,
-                        maintenance_coordinator=maintenance_coordinator,
-                        reporting_coordinator=report_coordinator,
-                        version_coordinator=version_coordinator,
-                        map_coordinator=map_coordinator,
-                        error_coordinator=error_coordinator,
-                    )
+        for rtk in mammotion_rtk_devices:
+            if rtk in shimed_cloud_devices:
+                mqtt_client = mammotion_mqtt_client
+            else:
+                mqtt_client = aliyun_mqtt_client
+            rtk_coordinator = MammotionRTKCoordinator(hass, entry, rtk, mqtt_client)
+            await rtk_coordinator.async_config_entry_first_refresh()
+            mammotion_rtk.append(
+                MammotionRTKData(
+                    name=rtk.device_name,
+                    api=mammotion,
+                    device=rtk,
+                    coordinator=rtk_coordinator,
                 )
-                try:
-                    await map_coordinator.async_request_refresh()
-                except:
-                    """Do nothing for now."""
-
-            for rtk in mammotion_rtk_devices:
-                rtk_coordinator = MammotionRTKCoordinator(hass, entry, rtk, mqtt_client)
-                await rtk_coordinator.async_config_entry_first_refresh()
-                mammotion_rtk.append(
-                    MammotionRTKData(
-                        name=rtk.device_name,
-                        api=mammotion,
-                        device=rtk,
-                        coordinator=rtk_coordinator,
-                    )
-                )
+            )
 
     # if not any(mammotion.get_device_by_name(mammotion_device.device.device_name).preference == ConnectionPreference.WIFI for mammotion_device in mammotion_devices):
     #     for mammotion_device in mammotion_devices:
@@ -270,6 +304,10 @@ def store_cloud_credentials(
             CONF_SESSION_DATA: cloud_client.session_by_authcode_response,
             CONF_DEVICE_DATA: cloud_client.devices_by_account_response,
             CONF_MAMMOTION_DATA: mammotion_data,
+            CONF_MAMMOTION_MQTT: cloud_client.mammotion_http.mqtt_credentials,
+            CONF_MAMMOTION_DEVICE_LIST: cloud_client.mammotion_http.device_info,
+            CONF_MAMMOTION_DEVICE_RECORDS: cloud_client.mammotion_http.device_records,
+            CONF_MAMMOTION_JWT_INFO: cloud_client.mammotion_http.jwt_info,
         }
         hass.config_entries.async_update_entry(config_entry, data=config_updates)
 
@@ -300,6 +338,10 @@ async def check_and_restore_cloud(
     device_data = entry.data[CONF_DEVICE_DATA]
     connect_data = entry.data[CONF_CONNECT_DATA]
     mammotion_data = entry.data[CONF_MAMMOTION_DATA]
+    mammotion_mqtt = entry.data.get(CONF_MAMMOTION_MQTT, None)
+    mammotion_device_list = entry.data.get(CONF_MAMMOTION_DEVICE_LIST, None)
+    mammotion_device_records = entry.data.get(CONF_MAMMOTION_DEVICE_RECORDS, None)
+    mammotion_jwt = entry.data.get(CONF_MAMMOTION_JWT_INFO, None)
 
     if any(
         data is None
@@ -325,33 +367,43 @@ async def check_and_restore_cloud(
 
     mammotion_http = MammotionHTTP(account, password)
     mammotion_http.response = mammotion_response_data
+    mammotion_http.device_info = mammotion_device_list
+    mammotion_http.device_records = mammotion_device_records
+    mammotion_http.mqtt_credentials = mammotion_mqtt
+    mammotion_http.jwt_info = mammotion_jwt
     mammotion_http.login_info = (
         LoginResponseData.from_dict(mammotion_response_data.data)
         if isinstance(mammotion_response_data.data, dict)
         else mammotion_response_data.data
     )
 
-    cloud_client = CloudIOTGateway(
-        connect_response=ConnectResponse.from_dict(connect_data)
-        if isinstance(connect_data, dict)
-        else connect_data,
-        aep_response=AepResponse.from_dict(aep_data)
-        if isinstance(aep_data, dict)
-        else aep_data,
-        region_response=RegionResponse.from_dict(region_data)
-        if isinstance(region_data, dict)
-        else region_data,
-        session_by_authcode_response=SessionByAuthCodeResponse.from_dict(session_data)
-        if isinstance(session_data, dict)
-        else session_data,
-        dev_by_account=ListingDevAccountResponse.from_dict(device_data)
-        if isinstance(device_data, dict)
-        else device_data,
-        login_by_oauth_response=LoginByOAuthResponse.from_dict(auth_data)
-        if isinstance(auth_data, dict)
-        else auth_data,
-        mammotion_http=mammotion_http,
-    )
+    try:
+        cloud_client = CloudIOTGateway(
+            connect_response=ConnectResponse.from_dict(connect_data)
+            if isinstance(connect_data, dict)
+            else connect_data,
+            aep_response=AepResponse.from_dict(aep_data)
+            if isinstance(aep_data, dict)
+            else aep_data,
+            region_response=RegionResponse.from_dict(region_data)
+            if isinstance(region_data, dict)
+            else region_data,
+            session_by_authcode_response=SessionByAuthCodeResponse.from_dict(
+                session_data
+            )
+            if isinstance(session_data, dict)
+            else session_data,
+            dev_by_account=ListingDevAccountResponse.from_dict(device_data)
+            if isinstance(device_data, dict)
+            else device_data,
+            login_by_oauth_response=LoginByOAuthResponse.from_dict(auth_data)
+            if isinstance(auth_data, dict)
+            else auth_data,
+            mammotion_http=mammotion_http,
+        )
+    except Exception:
+        LOGGER.exception("Error while restoring cloud data")
+        return None
 
     await cloud_client.check_or_refresh_session()
     return cloud_client

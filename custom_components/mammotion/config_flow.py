@@ -274,12 +274,18 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
 
             if self._cloud_client is None:
                 try:
-                    if mammotion.mqtt_list.get(account) is None:
+                    if mammotion.mqtt_list.get(
+                        f"{account}_aliyun"
+                    ) and mammotion.mqtt_list.get(f"{account}_mammotion"):
                         self._cloud_client = await Mammotion().login(account, password)
                     else:
-                        self._cloud_client = mammotion.mqtt_list.get(
-                            account
-                        ).cloud_client
+                        self._cloud_client = (
+                            mammotion.mqtt_list.get(f"{account}_aliyun").cloud_client
+                            if mammotion.mqtt_list.get(f"{account}_aliyun")
+                            else mammotion.mqtt_list.get(
+                                f"{account}_mammotion"
+                            ).cloud_client
+                        )
                 except HTTPException as err:
                     return self.async_abort(reason=str(err))
             user_account = (

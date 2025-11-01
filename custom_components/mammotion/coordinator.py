@@ -59,6 +59,10 @@ from .const import (
     CONF_CONNECT_DATA,
     CONF_DEVICE_DATA,
     CONF_MAMMOTION_DATA,
+    CONF_MAMMOTION_DEVICE_LIST,
+    CONF_MAMMOTION_DEVICE_RECORDS,
+    CONF_MAMMOTION_JWT_INFO,
+    CONF_MAMMOTION_MQTT,
     CONF_REGION_DATA,
     CONF_SESSION_DATA,
     DOMAIN,
@@ -182,10 +186,15 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
     def store_cloud_credentials(self) -> None:
         """Store cloud credentials in config entry."""
         # config_updates = {}
+
         if config_entry := self.config_entry:
-            mammotion_cloud = self.manager.mqtt_list.get(
-                config_entry.data.get(CONF_ACCOUNTNAME, "")
+            account = config_entry.data.get(CONF_ACCOUNTNAME, "")
+            mammotion_cloud = (
+                self.manager.mqtt_list.get(f"{account}_aliyun")
+                if self.manager.mqtt_list.get(f"{account}_aliyun")
+                else self.manager.mqtt_list.get(f"{account}_mammotion")
             )
+
             cloud_client = mammotion_cloud.cloud_client if mammotion_cloud else None
 
             if cloud_client is not None:
@@ -198,6 +207,10 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
                     CONF_SESSION_DATA: cloud_client.session_by_authcode_response,
                     CONF_DEVICE_DATA: cloud_client.devices_by_account_response,
                     CONF_MAMMOTION_DATA: cloud_client.mammotion_http.response,
+                    CONF_MAMMOTION_MQTT: cloud_client.mammotion_http.mqtt_credentials,
+                    CONF_MAMMOTION_DEVICE_LIST: cloud_client.mammotion_http.device_info,
+                    CONF_MAMMOTION_DEVICE_RECORDS: cloud_client.mammotion_http.device_records,
+                    CONF_MAMMOTION_JWT_INFO: cloud_client.mammotion_http.jwt_info,
                 }
                 self.hass.config_entries.async_update_entry(
                     config_entry, data=config_updates
@@ -1230,12 +1243,12 @@ class MammotionRTKCoordinator(DataUpdateCoordinator[RTKDevice]):
         self.cloud.mqtt_properties_event.add_subscribers(self._on_mqtt_properties)
 
     async def _on_mqtt_message(self, event: ThingEventMessage) -> None:
-        if event.params.iot_id != self.data.iot_id:
+        if event.params.iotId != self.data.iot_id:
             return
         # set data based on mqtt protobuf messages to set lat lon
 
     async def _on_mqtt_properties(self, properties: ThingPropertiesMessage) -> None:
-        if properties.params.iot_id != self.data.iot_id:
+        if properties.params.iotId != self.data.iot_id:
             return
         if ota_progress := properties.params.items.otaProgress:
             ota_progress.value = OTAProgressItems.from_dict(ota_progress.value)
