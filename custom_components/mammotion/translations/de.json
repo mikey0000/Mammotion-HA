@@ -141,7 +141,7 @@
         "name": "Breitengrad"
       },
       "rtk_longitude": {
-        "name": "Längengrad
+        "name": "Längengrad"
       },
       "rtk_wifi_rssi": {
         "name": "Wi-Fi RSSI"
