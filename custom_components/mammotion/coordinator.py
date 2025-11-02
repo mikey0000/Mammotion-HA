@@ -621,7 +621,10 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
             # don't query the mower while users are doing map changes or its updating.
             if device.state.report_data.dev.sys_status in NO_REQUEST_MODES:
                 # MQTT we are likely to get an update, BLE we are not
-                if device.preference is ConnectionPreference.BLUETOOTH:
+                if (
+                    device.preference is ConnectionPreference.BLUETOOTH
+                    or device.state.report_data.dev.sys_status == WorkMode.MODE_LOCK
+                ):
                     loop = asyncio.get_running_loop()
                     loop.call_later(
                         300,
@@ -725,7 +728,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
                     (
                         area
                         for area in self.data.map.area_name
-                        if area.hash == area_data.hash
+                        if area.hash == area_frame.hash
                     ),
                     None,
                 )
@@ -1252,12 +1255,12 @@ class MammotionRTKCoordinator(DataUpdateCoordinator[RTKDevice]):
         self.cloud.mqtt_properties_event.add_subscribers(self._on_mqtt_properties)
 
     async def _on_mqtt_message(self, event: ThingEventMessage) -> None:
-        if event.params.iotId != self.data.iot_id:
+        if event.params.iot_id != self.data.iot_id:
             return
         # set data based on mqtt protobuf messages to set lat lon
 
     async def _on_mqtt_properties(self, properties: ThingPropertiesMessage) -> None:
-        if properties.params.iotId != self.data.iot_id:
+        if properties.params.iot_id != self.data.iot_id:
             return
         if ota_progress := properties.params.items.otaProgress:
             ota_progress.value = OTAProgressItems.from_dict(ota_progress.value)

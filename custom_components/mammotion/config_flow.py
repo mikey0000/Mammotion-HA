@@ -218,7 +218,7 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
             mammotion_http = MammotionHTTP(account, password)
 
             try:
-                await mammotion_http.login(account, password)
+                await mammotion_http.login_v2(account, password)
                 if mammotion_http.login_info is None:
                     return self.async_abort(reason=str(mammotion_http.msg))
             except HTTPException as err:

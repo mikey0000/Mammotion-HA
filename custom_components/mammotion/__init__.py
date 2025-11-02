@@ -115,7 +115,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                 # sometimes mammotion_data is missing....
                 if cloud_client.mammotion_http is None:
                     mammotion_http = MammotionHTTP(account, password)
-                    await mammotion_http.login(account, password)
+                    await mammotion_http.login_v2(account, password)
                     cloud_client.set_http(mammotion_http)
 
                 await cloud_client.mammotion_http.get_user_device_list()
