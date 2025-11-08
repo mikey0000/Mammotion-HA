@@ -38,7 +38,7 @@
           "account_name": "Mammotion E-Mail oder Account Nummer",
           "password": "Mammotion Kennwort"
         },
-        "title": "Mit WLAN verbinden",
+        "title": "Mit Wi-Fi verbinden",
         "description": "Geben Sie Ihre Mammotion E-Mail oder ID und das Passwort ein"
       }
     }
@@ -279,7 +279,7 @@
         }
       },
       "traversal_mode": {
-        "name": "Traversal Mode",
+        "name": "Aufladungsmodus",
         "state": {
           "direct": "Direkt",
           "follow_perimeter": "Dem Umfang folgen"
