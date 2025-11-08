@@ -57,20 +57,19 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionBaseUpdateCoordinator]):
                     format_mac(mower.ble.ble_device.address),
                 )
             )
+        elif mower.state.mower_state.ble_mac != "":
+            connections.add(
+                (
+                    CONNECTION_BLUETOOTH,
+                    format_mac(mower.state.mower_state.ble_mac),
+                )
+            )
 
         if mower.state.mower_state.wifi_mac != "":
             connections.add(
                 (
                     CONNECTION_NETWORK_MAC,
                     format_mac(mower.state.mower_state.wifi_mac),
-                )
-            )
-
-        if mower.state.mower_state.ble_mac != "":
-            connections.add(
-                (
-                    CONNECTION_BLUETOOTH,
-                    format_mac(mower.state.mower_state.ble_mac),
                 )
             )
 

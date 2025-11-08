@@ -151,6 +151,9 @@
       "start_map_sync": {
         "name": "Sync maps"
       },
+      "start_schedule_sync": {
+        "name": "Synchronize schedules"
+      },
       "join_webrtc": {
         "name": "Start camera on mower"
       },

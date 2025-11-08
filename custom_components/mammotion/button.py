@@ -43,6 +43,11 @@ BUTTON_SENSORS: tuple[MammotionButtonSensorEntityDescription, ...] = (
         entity_category=EntityCategory.CONFIG,
     ),
     MammotionButtonSensorEntityDescription(
+        key="start_schedule_sync",
+        press_fn=lambda coordinator: coordinator.async_sync_schedule(),
+        entity_category=EntityCategory.CONFIG,
+    ),
+    MammotionButtonSensorEntityDescription(
         key="resync_rtk_dock",
         press_fn=lambda coordinator: coordinator.async_rtk_dock_location(),
         entity_category=EntityCategory.CONFIG,
@@ -217,7 +222,7 @@ def async_remove_entities(
     coordinator: MammotionBaseUpdateCoordinator,
     old_tasks: set[str],
 ) -> None:
-    """Remove area switch sensors from Home Assistant."""
+    """Remove task buttons from Home Assistant."""
     registry = er.async_get(coordinator.hass)
     for task in old_tasks:
         entity_id = registry.async_get_entity_id(

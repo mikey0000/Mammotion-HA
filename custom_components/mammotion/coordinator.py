@@ -27,7 +27,7 @@ from pymammotion.aliyun.cloud_gateway import (
     SetupException,
 )
 from pymammotion.aliyun.model.dev_by_account_response import Device
-from pymammotion.data.model import GenerateRouteInformation, HashList
+from pymammotion.data.model import GenerateRouteInformation
 from pymammotion.data.model.device import MowerInfo, MowingDevice, RTKDevice
 from pymammotion.data.model.device_config import OperationSettings, create_path_order
 from pymammotion.data.model.hash_list import AreaHashNameList
@@ -324,13 +324,21 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
     async def async_sync_maps(self) -> None:
         """Get map data from the device."""
         try:
-            self.clear_all_maps()
             await self.manager.start_map_sync(self.device_name)
         except EXPIRED_CREDENTIAL_EXCEPTIONS:
             self.update_failures += 1
             await self.async_refresh_login()
             if self.update_failures < 5:
                 await self.async_sync_maps()
+
+    async def async_sync_schedule(self) -> None:
+        try:
+            await self.manager.start_schedule_sync(self.device_name)
+        except EXPIRED_CREDENTIAL_EXCEPTIONS:
+            self.update_failures += 1
+            await self.async_refresh_login()
+            if self.update_failures < 5:
+                await self.async_sync_schedule()
 
     async def async_start_stop_blades(
         self, start_stop: bool, blade_height: int = 60
@@ -542,11 +550,6 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
     async def start_task(self, plan_id: str) -> None:
         """Start task."""
         await self.async_send_command("single_schedule", plan_id=plan_id)
-
-    def clear_all_maps(self) -> None:
-        """Clear all map data stored."""
-        data = self.manager.get_device_by_name(self.device_name).state
-        data.map = HashList()
 
     async def clear_update_failures(self) -> None:
         """Clear update failures."""
