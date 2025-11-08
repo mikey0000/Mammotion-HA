@@ -3,8 +3,8 @@
     "abort": {
       "already_configured": "L'appareil est déjà configuré",
       "already_in_progress": "Le flux de configuration est déjà en cours",
-      "no_devices_found": "Impossible de trouver des appareils",
-      "no_devices_found_in_account": "Aucun appareil présent sur votre compte",
+      "no_devices_found": "Aucun appareil trouvé",
+      "no_devices_found_in_account": "Aucun appareil configuré sur votre compte",
       "bluetooth_and_account_mismatch": "Appareil Bluetooth introuvable dans votre compte",
       "no_longer_present": "L'appareil n'est plus présent",
       "not_supported": "Appareil non pris en charge",
@@ -128,7 +128,7 @@
         "name": "Kilométrage total"
       },
       "maintenance_work_time": {
-        "name": "Durée de la tâche"
+        "name": "Temps de travail total"
       },
       "maintenance_bat_cycles": {
         "name": "Cycles de batterie",
@@ -150,6 +150,9 @@
     "button": {
       "start_map_sync": {
         "name": "Synchroniser les cartes"
+      },
+      "start_schedule_sync": {
+        "name": "Synchronize schedules"
       },
       "join_webrtc": {
         "name": "Activer la caméra durant la tonte"

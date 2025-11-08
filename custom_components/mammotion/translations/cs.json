@@ -144,12 +144,15 @@
         "name": "Zeměpisná délka"
       },
       "rtk_wifi_rssi": {
-        "name": "Wi-Fi RSSI"
+        "name": "WiFi RSSI"
       }
     },
     "button": {
       "start_map_sync": {
         "name": "Synchronizace mapy"
+      },
+      "start_schedule_sync": {
+        "name": "Synchronize schedules"
       },
       "join_webrtc": {
         "name": "Spustit kameru"

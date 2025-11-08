@@ -21,8 +21,8 @@
       "reconfigure": {
         "data": {
           "use_wifi": "Använd Wi-Fi",
-          "account_name": "E-post eller kontonnummer för Mammotion",
-          "password": "Lössenord för Mammotion konto"
+          "account_name": "E-post eller kontonummer för Mammotion",
+          "password": "Lösenord för Mammotion-konto"
         }
       },
       "user": {
@@ -35,11 +35,11 @@
       "wifi": {
         "data": {
           "use_wifi": "Använd Wi-Fi (avmarkera och klicka på skicka för att använda Bluetooth)",
-          "account_name": "E-post eller kontonnummer för Mammotion",
-          "password": "Lössenord för Mammotion konto"
+          "account_name": "E-post eller kontonummer för Mammotion",
+          "password": "Lösenord för Mammotion-konto"
         },
         "title": "Anslut till Wi-Fi",
-        "description": "Ange din e-postadress eller kontonnummer samt lösenord för ditt Mammotion konto"
+        "description": "Ange din e-postadress eller kontonummer samt lösenord för ditt Mammotion-konto"
       }
     }
   },
@@ -56,13 +56,13 @@
   "entity": {
     "sensor": {
       "error_1_message": {
-        "name": "Last error"
+        "name": "Senaste fel"
       },
       "error_1_time": {
-        "name": "Last error time"
+        "name": "Senaste fel-tid"
       },
       "error_1_code": {
-        "name": "Last error code"
+        "name": "Senaste felkod"
       },
       "battery_percent": {
         "name": "Batteri"
@@ -74,7 +74,7 @@
         "name": "Kamera ljusstyrka"
       },
       "wifi_rssi": {
-        "name": "WiFi RSSI"
+        "name": "Wifi RSSI"
       },
       "mnet_rssi": {
         "name": "Mobil RSSI"
@@ -107,10 +107,10 @@
         "name": "Tid kvar"
       },
       "l1_satellites": {
-        "name": "L1 Satelliter (samvisning)"
+        "name": "L1-satelliter (samvisning)"
       },
       "l2_satellites": {
-        "name": "L2 Satelliter (samvisning)"
+        "name": "L2-satelliter (samvisning)"
       },
       "position_mode": {
         "name": "RTK position"
@@ -128,20 +128,20 @@
         "name": "Total körsträcka"
       },
       "maintenance_work_time": {
-        "name": "Uppgiftens varaktighet"
+        "name": "Total arbetstid"
       },
       "maintenance_bat_cycles": {
         "name": "Battericykler",
         "unit_of_measurement": "cykler"
       },
       "rtk_lora": {
-        "name": "LoRa version"
+        "name": "LoRa-version"
       },
       "rtk_latitude": {
-        "name": "Latitude"
+        "name": "Latitud"
       },
       "rtk_longitude": {
-        "name": "Longitude"
+        "name": "Longitud"
       },
       "rtk_wifi_rssi": {
         "name": "Wi-Fi RSSI"
@@ -150,6 +150,9 @@
     "button": {
       "start_map_sync": {
         "name": "Synkronisera kartor"
+      },
+      "start_schedule_sync": {
+        "name": "Synchronize schedules"
       },
       "join_webrtc": {
         "name": "Starta kameran på gräsklipparen"
@@ -179,15 +182,15 @@
         "name": "Rensa kartor och områdesnamn"
       },
       "relocate_charging_station": {
-        "name": "Relocate charging station"
+        "name": "Flytta laddstation"
       }
     },
     "switch": {
       "area": {
-        "name": "Områdes {name}"
+        "name": "Område {name}"
       },
       "blade_status": {
-        "name": "Klippblad på/av"
+        "name": "Knivar på/av"
       },
       "is_mow": {
         "name": "Klippning på/av"
@@ -202,7 +205,7 @@
         "name": "Regndetektering (under klippning) på/av"
       },
       "rain_detection": {
-        "name": "Regndetektering på/av"
+        "name": "Regndetektering (gräsklippare) på/av"
       },
       "side_led": {
         "name": "Sido-LED på/av"
@@ -214,10 +217,10 @@
         "name": "Slå på/av uppdateringar"
       },
       "manual_light": {
-        "name": "Manual light on/off"
+        "name": "Manuellt ljus på/av"
       },
       "night_light": {
-        "name": "Night light on/off"
+        "name": "Nattljus på/av"
       }
     },
     "select": {
@@ -276,7 +279,7 @@
         }
       },
       "traversal_mode": {
-        "name": "Traversal Mode",
+        "name": "Förflyttningsläge",
         "state": {
           "direct": "Direkt",
           "follow_perimeter": "Följ kant"
@@ -290,11 +293,11 @@
         }
       },
       "cutter_mode": {
-        "name": "Cutter Speed",
+        "name": "Klipphastighet",
         "state": {
           "normal": "Medium",
-          "slow": "Slow",
-          "fast": "Fast"
+          "slow": "Långsam",
+          "fast": "Snabb"
         }
       }
     },
@@ -398,8 +401,8 @@
           "description": "Om klippning är aktiv. (Yuka)."
         },
         "is_dump": {
-          "name": "tömmer",
-          "description": "Om tömning är aktiv. (Yuka)"
+          "name": "Tömmer",
+          "description": "Om tömning är aktiv. (Yuka)."
         },
         "is_edge": {
           "name": "Kantklippning",
@@ -427,7 +430,7 @@
         },
         "ultra_wave": {
           "name": "Hinderdetektering",
-          "description": "Läge för hinderundvikning."
+          "description": "Läge för att undvika hinder."
         },
         "channel_mode": {
           "name": "Klippmönster",
@@ -462,7 +465,7 @@
           "description": "Antal varv runt klippområdets kant."
         },
         "obstacle_laps": {
-          "name": "Varv kantklippning förbjudna zone",
+          "name": "Varv för kantklippning i förbjudna zoner",
           "description": "Antal varv runt förbjudna zoner."
         },
         "start_progress": {
@@ -476,16 +479,16 @@
       }
     },
     "start_stop_blades": {
-      "name": "Start or stop blades",
-      "description": "Start or stop the blades manually.",
+      "name": "Starta eller stoppa knivar",
+      "description": "Starta eller stoppa knivarna manuellt.",
       "fields": {
         "start_stop": {
-          "name": "Start or stop",
-          "description": "Whether blades are on or off."
+          "name": "Starta eller stoppa",
+          "description": "Om knivar är på eller av."
         },
         "blade_height": {
-          "name": "Blade height",
-          "description": "Height of the blade."
+          "name": "Klipphöjd",
+          "description": "Höjd på knivarna."
         }
       }
     }
