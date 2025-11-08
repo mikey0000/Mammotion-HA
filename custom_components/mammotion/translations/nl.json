@@ -151,6 +151,9 @@
       "start_map_sync": {
         "name": "Synchroniseer kaarten"
       },
+      "start_schedule_sync": {
+        "name": "Synchronize schedules"
+      },
       "join_webrtc": {
         "name": "Start camera op maaier"
       },
@@ -199,7 +202,7 @@
         "name": "Rand maaien"
       },
       "rain_tactics": {
-        "name": "Rain detection (during mow) On/Off"
+        "name": ""
       },
       "rain_detection": {
         "name": "Regen­detectie (maaier) aan/uit"

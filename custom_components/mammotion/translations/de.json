@@ -38,7 +38,7 @@
           "account_name": "Mammotion E-Mail oder Account Nummer",
           "password": "Mammotion Kennwort"
         },
-        "title": "Mit Wi-Fi verbinden",
+        "title": "Mit WLAN verbinden",
         "description": "Geben Sie Ihre Mammotion E-Mail oder ID und das Passwort ein"
       }
     }
@@ -56,13 +56,13 @@
   "entity": {
     "sensor": {
       "error_1_message": {
-        "name": "Last error"
+        "name": "Letzte Fehlermeldung"
       },
       "error_1_time": {
-        "name": "Last error time"
+        "name": "Letzter Fehlerzeitpunkt"
       },
       "error_1_code": {
-        "name": "Last error code"
+        "name": "Letzter Fehlercode"
       },
       "battery_percent": {
         "name": "Batterie"
@@ -135,7 +135,7 @@
         "unit_of_measurement": "Zyklen"
       },
       "rtk_lora": {
-        "name": "LoRa version"
+        "name": "LoRa Version"
       },
       "rtk_latitude": {
         "name": "Breitengrad"
@@ -150,6 +150,9 @@
     "button": {
       "start_map_sync": {
         "name": "Synchronisiere Karte"
+      },
+      "start_schedule_sync": {
+        "name": "Synchronize schedules"
       },
       "join_webrtc": {
         "name": "Kamera des Rasenmähers starten"
@@ -179,7 +182,7 @@
         "name": "Bereinige alle Karten- und Bereichsdaten"
       },
       "relocate_charging_station": {
-        "name": "Relocate charging station"
+        "name": "Ladestation umsetzen"
       }
     },
     "switch": {
@@ -214,10 +217,10 @@
         "name": "Updates ein-/ausschalten"
       },
       "manual_light": {
-        "name": "Manual light on/off"
+        "name": "Manuelles Licht an/aus"
       },
       "night_light": {
-        "name": "Night light on/off"
+        "name": "Nachtlicht an/aus"
       }
     },
     "select": {
@@ -276,7 +279,7 @@
         }
       },
       "traversal_mode": {
-        "name": "Aufladungsmodus",
+        "name": "Traversal Mode",
         "state": {
           "direct": "Direkt",
           "follow_perimeter": "Dem Umfang folgen"
@@ -290,11 +293,11 @@
         }
       },
       "cutter_mode": {
-        "name": "Cutter Speed",
+        "name": "Messerdrehzahl",
         "state": {
-          "normal": "Medium",
-          "slow": "Slow",
-          "fast": "Fast"
+          "normal": "Mittel",
+          "slow": "Niedrig",
+          "fast": "Hoch"
         }
       }
     },
@@ -476,16 +479,16 @@
       }
     },
     "start_stop_blades": {
-      "name": "Start or stop blades",
-      "description": "Start or stop the blades manually.",
+      "name": "Starte oder stoppe Klingen",
+      "description": "Klingen manuell starten oder stoppen.",
       "fields": {
         "start_stop": {
-          "name": "Start or stop",
-          "description": "Whether blades are on or off."
+          "name": "Start oder Stopp",
+          "description": "Ob Klingen an oder aus."
         },
         "blade_height": {
-          "name": "Blade height",
-          "description": "Height of the blade."
+          "name": "Schnitthöhe",
+          "description": "Höhe der Klinge"
         }
       }
     }
