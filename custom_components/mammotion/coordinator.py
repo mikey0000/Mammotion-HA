@@ -293,6 +293,17 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
             LOGGER.error(f"Device offline: {ex.iot_id}")
         return False
 
+    async def async_send_bluetooth_command(
+        self, key: str, **kwargs: Any
+    ) -> bool | None:
+        """Send command."""
+        device = self.manager.get_device_by_name(self.device_name)
+        if ble := device.ble:
+            await ble.command(key, **kwargs)
+
+            return True
+        raise DeviceOfflineException("bluetooth command failed", device.iot_id)
+
     async def check_firmware_version(self) -> None:
         """Check if firmware version is updated."""
         if mower := self.manager.mower(self.device_name):
@@ -435,19 +446,39 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
 
     async def async_move_forward(self, speed: float) -> None:
         """Move forward."""
-        await self.async_send_command("move_forward", linear=speed)
+        device = self.manager.get_device_by_name(self.device_name)
+
+        if device.preference is ConnectionPreference.WIFI:
+            await self.async_send_bluetooth_command("move_forward", linear=speed)
+        else:
+            await self.async_send_command("move_forward", linear=speed)
 
     async def async_move_left(self, speed: float) -> None:
         """Move left."""
-        await self.async_send_command("move_left", angular=speed)
+        device = self.manager.get_device_by_name(self.device_name)
+
+        if device.preference is ConnectionPreference.WIFI:
+            await self.async_send_bluetooth_command("move_left", angular=speed)
+        else:
+            await self.async_send_command("move_left", linear=speed)
 
     async def async_move_right(self, speed: float) -> None:
         """Move right."""
-        await self.async_send_command("move_right", angular=speed)
+        device = self.manager.get_device_by_name(self.device_name)
+
+        if device.preference is ConnectionPreference.WIFI:
+            await self.async_send_bluetooth_command("move_right", angular=speed)
+        else:
+            await self.async_send_command("move_right", linear=speed)
 
     async def async_move_back(self, speed: float) -> None:
         """Move back."""
-        await self.async_send_command("move_back", linear=speed)
+        device = self.manager.get_device_by_name(self.device_name)
+
+        if device.preference is ConnectionPreference.WIFI:
+            await self.async_send_bluetooth_command("move_back", linear=speed)
+        else:
+            await self.async_send_command("move_back", linear=speed)
 
     async def async_rtk_dock_location(self) -> None:
         """RTK and dock location."""
