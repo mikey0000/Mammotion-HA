@@ -81,6 +81,7 @@ DEFAULT_INTERVAL = timedelta(minutes=1)
 WORKING_INTERVAL = timedelta(seconds=5)
 REPORT_INTERVAL = timedelta(minutes=1)
 DEVICE_VERSION_INTERVAL = timedelta(days=1)
+MAP_INTERVAL_FAST = timedelta(minutes=1)
 MAP_INTERVAL = timedelta(minutes=30)
 RTK_INTERVAL = timedelta(hours=5)
 
@@ -1050,7 +1051,7 @@ class MammotionMapUpdateCoordinator(MammotionBaseUpdateCoordinator[MowerInfo]):
             config_entry=config_entry,
             device=device,
             mammotion=mammotion,
-            update_interval=MAP_INTERVAL,
+            update_interval=MAP_INTERVAL_FAST,
         )
 
     def get_coordinator_data(self, device: MammotionMowerDeviceManager) -> MowerInfo:
@@ -1078,7 +1079,11 @@ class MammotionMapUpdateCoordinator(MammotionBaseUpdateCoordinator[MowerInfo]):
                 len(device.state.map.hashlist) == 0
                 or len(device.state.map.missing_hashlist()) > 0
             ):
+                if self.update_interval == MAP_INTERVAL:
+                    self.update_interval = MAP_INTERVAL_FAST
                 await self.manager.start_map_sync(self.device_name)
+            elif self.update_interval == MAP_INTERVAL_FAST:
+                self.update_interval = MAP_INTERVAL
 
         except DeviceOfflineException as ex:
             """Device is offline try bluetooth if we have it."""

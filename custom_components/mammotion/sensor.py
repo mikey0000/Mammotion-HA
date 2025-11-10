@@ -275,8 +275,8 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
     MammotionSensorEntityDescription(
         key="non_work_hours",
         value_fn=lambda mower_data: MowerDataFormatter.format_time_range(
-            mower_data.report_data.work.non_work_hours.start_time,
-            mower_data.report_data.work.non_work_hours.end_time,
+            mower_data.non_work_hours.start_time,
+            mower_data.non_work_hours.end_time,
         ),
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
