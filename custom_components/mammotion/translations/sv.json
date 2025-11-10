@@ -20,7 +20,7 @@
       },
       "reconfigure": {
         "data": {
-          "use_wifi": "Använd Wi-Fi",
+          "use_wifi": "Använd wifi",
           "account_name": "E-post eller kontonummer för Mammotion",
           "password": "Lösenord för Mammotion-konto"
         }
@@ -34,11 +34,11 @@
       },
       "wifi": {
         "data": {
-          "use_wifi": "Använd Wi-Fi (avmarkera och klicka på skicka för att använda Bluetooth)",
+          "use_wifi": "Använd wifi (avmarkera och klicka på skicka för att använda Bluetooth)",
           "account_name": "E-post eller kontonummer för Mammotion",
           "password": "Lösenord för Mammotion-konto"
         },
-        "title": "Anslut till Wi-Fi",
+        "title": "Anslut till wifi",
         "description": "Ange din e-postadress eller kontonummer samt lösenord för ditt Mammotion-konto"
       }
     }
@@ -116,10 +116,50 @@
         "name": "RTK position"
       },
       "position_type": {
-        "name": "Typ av enhet"
+        "name": "Typ av enhet",
+        "state": {
+          "AREA_BORDER_ON": "At perimeter",
+          "AREA_INSIDE": "Inside area",
+          "AREA_OUT": "Outside area",
+          "CHANNEL_AREA_OVERLAP": "Path area overlap",
+          "CHANNEL_ON": "On path",
+          "CHARGE_ON": "At charging station",
+          "DUMPING_AREA_INSIDE": "In dump area",
+          "DUMPING_OUTSIDE": "Outside dump area",
+          "ABNORMAL_POSITIONING": "Position error",
+          "NO_AREAS": "No areas defined",
+          "OBS_ON": "At obstacle",
+          "TURN_AREA_INSIDE": "In turn area",
+          "VIRTUAL_INSIDE": "In virtual area"
+        }
       },
       "activity_mode": {
-        "name": "Aktivitetsläge"
+        "name": "Aktivitetsläge",
+        "state": {
+          "MODE_NOT_ACTIVE": "Not active",
+          "MODE_ONLINE": "Online",
+          "MODE_OFFLINE": "Offline",
+          "MODE_DISABLE": "Disabled",
+          "MODE_INITIALIZATION": "Initializing",
+          "MODE_READY": "Ready",
+          "MODE_WORKING": "Working",
+          "MODE_RETURNING": "Returning",
+          "MODE_CHARGING": "Charging",
+          "MODE_UPDATING": "Updating",
+          "MODE_LOCK": "Locked",
+          "MODE_PAUSE": "Paused",
+          "MODE_MANUAL_MOWING": "Manual mowing",
+          "MODE_UPDATE_SUCCESS": "Update successful",
+          "MODE_OTA_UPGRADE_FAIL": "Update failed",
+          "MODE_JOB_DRAW": "Drawing job",
+          "MODE_OBSTACLE_DRAW": "Drawing obstacles",
+          "MODE_CHANNEL_DRAW": "Drawing channel",
+          "MODE_ERASER_DRAW": "Drawing eraser",
+          "MODE_EDIT_BOUNDARY": "Editing boundary",
+          "MODE_LOCATION_ERROR": "Location error",
+          "MODE_BOUNDARY_JUMP": "Boundary crossed",
+          "MODE_CHARGING_PAUSE": "Charging paused"
+        }
       },
       "work_area": {
         "name": "Arbetsområde"
@@ -134,6 +174,9 @@
         "name": "Battericykler",
         "unit_of_measurement": "cykler"
       },
+      "non_work_hours": {
+        "name": "Non-work hours"
+      },
       "rtk_lora": {
         "name": "LoRa-version"
       },
@@ -144,7 +187,7 @@
         "name": "Longitud"
       },
       "rtk_wifi_rssi": {
-        "name": "Wi-Fi RSSI"
+        "name": "Wifi RSSI"
       }
     },
     "button": {
