@@ -3,6 +3,7 @@
 import math
 from collections.abc import Callable
 from dataclasses import dataclass
+from datetime import time
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
@@ -23,7 +24,6 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import StateType
-from homeassistant.util.unit_conversion import SpeedConverter
 from pymammotion.data.model.device import MowingDevice, RTKDevice
 from pymammotion.data.model.enums import RTKStatus
 from pymammotion.utility.constant.device_constant import (
@@ -34,15 +34,67 @@ from pymammotion.utility.constant.device_constant import (
 )
 from pymammotion.utility.device_type import DeviceType
 
-from . import (
-    MammotionConfigEntry,
+from . import MammotionConfigEntry
+from .coordinator import (
     MammotionDeviceErrorUpdateCoordinator,
     MammotionReportUpdateCoordinator,
     MammotionRTKCoordinator,
 )
 from .entity import MammotionBaseEntity, MammotionBaseRTKEntity
 
-SPEED_UNITS = SpeedConverter.VALID_UNITS
+
+class MowerDataFormatter:
+    """Helper class for formatting mower data."""
+
+    @staticmethod
+    def parse_time_string(time_str: str) -> time:
+        """Convert time string (e.g., '1330') to time object.
+
+        Args:
+            time_str: Time in format 'HHMM' (e.g., '1330' for 1:30 PM)
+
+        Returns:
+            time object
+
+        """
+        if not time_str or len(time_str) < 3:
+            return time(0, 0)
+
+        # Pad with leading zeros if needed
+        time_str = time_str.zfill(4)
+
+        hour = int(time_str[:2])
+        minute = int(time_str[2:4])
+
+        # Handle 24-hour format
+        if hour >= 24:
+            hour = 0
+        if minute >= 60:
+            minute = 0
+
+        return time(hour, minute)
+
+    @staticmethod
+    def format_time(time_str: str) -> str:
+        """Convert time string to 12-hour format string.
+
+        Args:
+            time_str: Time in format 'HHMM' (e.g., '1330')
+
+        Returns:
+            Formatted string (e.g., '01:30pm')
+
+        """
+        t = MowerDataFormatter.parse_time_string(time_str)
+        return t.strftime("%I:%M%p").lower()
+
+    @staticmethod
+    def format_time_range(start: str, end: str) -> str:
+        """Format time range from decimal hours."""
+        if start == "" or end == "":
+            return "Not set"
+
+        return f"{MowerDataFormatter.format_time(start)} - {MowerDataFormatter.format_time(end)}"
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -54,6 +106,8 @@ class MammotionSensorEntityDescription(SensorEntityDescription):
 
 @dataclass(frozen=True, kw_only=True)
 class MammotionRTKSensorEntityDescription(SensorEntityDescription):
+    """Describes Mammotion RTK sensor entity."""
+
     value_fn: Callable[[RTKDevice], StateType]
 
 
@@ -216,6 +270,14 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.DURATION,
         native_unit_of_measurement=UnitOfTime.MINUTES,
         value_fn=lambda mower_data: mower_data.report_data.work.progress >> 16,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    MammotionSensorEntityDescription(
+        key="non_work_hours",
+        value_fn=lambda mower_data: MowerDataFormatter.format_time_range(
+            mower_data.report_data.work.non_work_hours.start_time,
+            mower_data.report_data.work.non_work_hours.end_time,
+        ),
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     MammotionSensorEntityDescription(

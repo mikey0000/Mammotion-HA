@@ -490,7 +490,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
             "get_area_name_list", device_id=self.device.iot_id
         )
 
-    async def async_relocate_charging_station(self):
+    async def async_relocate_charging_station(self) -> None:
         """Reset charging station."""
         await self.async_send_command("delete_charge_point")
         # fetch charging location?
@@ -1353,7 +1353,7 @@ class MammotionRTKCoordinator(DataUpdateCoordinator[RTKDevice]):
         return self.data
 
     async def _async_setup(self) -> None:
-        """Setup RTK data."""
+        """Sets up RTK data."""
 
         rtk_response = await self.cloud.cloud_client.mammotion_http.get_rtk_devices()
         if rtk_response.code == 0:
