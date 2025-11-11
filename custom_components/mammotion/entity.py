@@ -1,5 +1,8 @@
 """Base class for entities."""
 
+from abc import ABC
+
+from homeassistant.components.camera import Camera, CameraEntityFeature
 from homeassistant.core import callback
 from homeassistant.helpers.device_registry import (
     CONNECTION_BLUETOOTH,
@@ -148,3 +151,18 @@ class MammotionBaseRTKEntity(CoordinatorEntity[MammotionRTKCoordinator]):
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
         super()._handle_coordinator_update()
+
+
+class MammotionCameraBaseEntity(Camera, ABC):
+    """Devices that support cameras."""
+
+    _attr_has_entity_name = True
+    _attr_name = None
+    _attr_is_streaming = True
+    _attr_supported_features = CameraEntityFeature.STREAM
+
+    def __init__(self, coordinator: MammotionBaseUpdateCoordinator, key: str) -> None:
+        """Initialize the camera."""
+        super().__init__()
+        # The API "name" field is a unique device identifier.
+        self._attr_unique_id = f"{coordinator.device_name}_{key}"

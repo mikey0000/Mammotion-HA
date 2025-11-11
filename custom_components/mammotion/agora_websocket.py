@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import random
 import secrets
 import ssl
 import time
@@ -12,10 +13,10 @@ from dataclasses import dataclass
 from typing import Any, Callable
 
 import aiohttp
-import websockets
 from homeassistant.core import HomeAssistant
-from websockets.client import ClientConnection
 from sdp_transform import parse as sdp_parse
+from websockets.asyncio.client import ClientConnection, connect
+from websockets.exceptions import WebSocketException
 
 from .coordinator import StreamSubscriptionResponse
 
@@ -61,6 +62,7 @@ class ResponseInfo:
 @dataclass
 class SdpInfo:
     """SDP parsing information."""
+
     parsed_sdp: dict
     fingerprint: str
     ice_ufrag: str
@@ -69,6 +71,8 @@ class SdpInfo:
     video_codecs: list[dict[str, Any]]
     audio_extensions: list[dict[str, Any]]
     video_extensions: list[dict[str, Any]]
+    audio_direction: str
+    video_direction: str
 
 
 class AgoraWebSocketHandler:
@@ -99,12 +103,14 @@ class AgoraWebSocketHandler:
     ) -> str | None:
         """Connect to Agora WebSocket and perform join negotiation."""
         _LOGGER.debug("Starting Agora WebSocket connection for session %s", session_id)
-
+        _LOGGER.info("Agora data: %s", agora_data)
         # Get edge server information
         edge_info = await self._get_agora_edge_services(agora_data)
         if not edge_info:
             _LOGGER.error("Failed to get Agora edge services")
             return None
+
+        _LOGGER.info("Edge: %s", edge_info)
 
         # Parse offer SDP for capabilities
         sdp_info = self._parse_offer_sdp(offer_sdp)
@@ -112,45 +118,57 @@ class AgoraWebSocketHandler:
             _LOGGER.error("Failed to parse offer SDP")
             return None
 
-        _LOGGER.debug("Parsed offer SDP: %s", sdp_info)
+        _LOGGER.info("Parsed offer SDP: %s", sdp_info)
 
-        # Connect to WebSocket
-        edge_address = edge_info.addresses[0]
-        edge_ip_dashed = edge_address.ip.replace(".", "-")
-        ws_url = f"wss://{edge_ip_dashed}.edge.agora.io:{edge_address.port}"
+        # Try each edge address with timeout
+        for edge_address in edge_info.addresses:
+            edge_ip_dashed = edge_address.ip.replace(".", "-")
+            ws_url = f"wss://{edge_ip_dashed}.edge.agora.io:{edge_address.port}"
 
-        try:
-            async with websockets.connect(
-                ws_url, ssl=_SSL_CONTEXT, ping_timeout=30, close_timeout=30
-            ) as websocket:
-                self._websocket = websocket
-                self._connection_state = "CONNECTED"
-                _LOGGER.debug("Connected to Agora WebSocket: %s", ws_url)
+            try:
+                async with asyncio.timeout(10):  # 10 second timeout
+                    async with connect(
+                        ws_url, ssl=_SSL_CONTEXT, ping_timeout=30, close_timeout=30
+                    ) as websocket:
+                        self._websocket = websocket
+                        self._connection_state = "CONNECTED"
+                        _LOGGER.info("Connected to Agora WebSocket: %s", ws_url)
 
-                # Send join message
-                join_message = self._create_join_message(
-                    agora_data, offer_sdp, edge_info, sdp_info
+                        # Send join message
+                        join_message = self._create_join_message(
+                            agora_data, offer_sdp, edge_info, sdp_info
+                        )
+                        await websocket.send(json.dumps(join_message))
+                        _LOGGER.info("Sent join message to Agora %s", join_message)
+
+                        # Handle responses
+                        return await self._handle_websocket_messages(
+                            websocket, session_id, sdp_info
+                        )
+
+            except asyncio.TimeoutError:
+                _LOGGER.warning(
+                    "Connection timeout for edge address %s, trying next", ws_url
                 )
-                await websocket.send(json.dumps(join_message))
-                _LOGGER.debug("Sent join message to Agora %s", join_message)
+                continue
+            except (WebSocketException, json.JSONDecodeError) as ex:
+                _LOGGER.warning("WebSocket connection failed for %s: %s", ws_url, ex)
+                continue
 
-                # Handle responses
-                return await self._handle_websocket_messages(websocket, session_id, sdp_info)
-
-        except (websockets.exceptions.WebSocketException, json.JSONDecodeError) as ex:
-            _LOGGER.error("WebSocket connection failed: %s", ex)
-            self._connection_state = "DISCONNECTED"
-            return None
+        # If we get here, all connection attempts failed
+        _LOGGER.error("Failed to connect to any Agora edge servers")
+        self._connection_state = "DISCONNECTED"
+        return None
 
     async def _handle_websocket_messages(
-        self, websocket: websockets.WebSocketClientProtocol, session_id: str, sdp_info: SdpInfo
+        self, websocket: ClientConnection, session_id: str, sdp_info: SdpInfo
     ) -> str | None:
         """Handle incoming WebSocket messages."""
         try:
             async for message in websocket:
                 try:
                     response = json.loads(message)
-                    _LOGGER.debug("Received Agora message: %s", response)
+                    _LOGGER.info("Received Agora message: %s", response)
 
                     message_type = response.get("_type")
                     message_id = response.get("_id")
@@ -175,7 +193,7 @@ class AgoraWebSocketHandler:
                 except json.JSONDecodeError as ex:
                     _LOGGER.error("Failed to parse Agora message: %s", ex)
 
-        except websockets.exceptions.WebSocketException as ex:
+        except WebSocketException as ex:
             _LOGGER.error("WebSocket communication error: %s", ex)
             self._connection_state = "DISCONNECTED"
 
@@ -185,23 +203,25 @@ class AgoraWebSocketHandler:
         )
         return self._generate_fallback_sdp()
 
-    async def _handle_join_success(self, response: dict[str, Any], sdp_info: SdpInfo) -> str | None:
+    async def _handle_join_success(
+        self, response: dict[str, Any], sdp_info: SdpInfo
+    ) -> str | None:
         """Handle successful join response and generate answer SDP."""
         message = response.get("_message", {})
         ortc = message.get("ortc", {})
 
         if not ortc:
             _LOGGER.error("No ORTC parameters in join success response")
-            _LOGGER.debug("Full response message: %s", message)
+            _LOGGER.info("Full response message: %s", message)
             return None
 
-        _LOGGER.debug("ORTC parameters: %s", ortc)
+        _LOGGER.info("ORTC parameters: %s", ortc)
 
         # Generate answer SDP from ORTC parameters
         answer_sdp = self._generate_answer_sdp(ortc, sdp_info)
         if answer_sdp:
             _LOGGER.info("Generated answer SDP from Agora ORTC parameters")
-            _LOGGER.debug("Generated SDP: %s", answer_sdp)
+            _LOGGER.info("Generated SDP: %s", answer_sdp)
             return answer_sdp
 
         _LOGGER.error("Failed to generate answer SDP")
@@ -330,17 +350,18 @@ class AgoraWebSocketHandler:
                             "videoExtensions": sdp_info.video_extensions,
                         },
                     },
-                    "version": "2"
+                    "version": "2",
                 },
             },
         }
 
-    def _parse_offer_sdp(self, offer_sdp: str) -> SdpInfo | None:
+    @staticmethod
+    def _parse_offer_sdp(offer_sdp: str) -> SdpInfo | None:
         """Parse offer SDP to extract capabilities and parameters using sdp_transform."""
         try:
             # Parse SDP using sdp_transform
             parsed_sdp = sdp_parse(offer_sdp)
-            _LOGGER.debug("Parsed SDP structure: %s", parsed_sdp)
+            _LOGGER.info("Parsed SDP structure: %s", parsed_sdp)
 
             # Extract fingerprint
             fingerprint = ""
@@ -372,9 +393,20 @@ class AgoraWebSocketHandler:
             audio_extensions = []
             video_extensions = []
 
+            audio_direction = "sendrecv"
+            video_direction = "sendrecv"
+
             # Process media sections
             for media in parsed_sdp.get("media", []):
                 media_type = media.get("type")
+
+                # capture direction per media so answer generator can choose complementary dir
+                dir_val = media.get("direction", "sendrecv")
+
+                if media_type == "audio":
+                    audio_direction = dir_val
+                elif media_type == "video":
+                    video_direction = dir_val
 
                 # Process RTP codecs
                 for rtp in media.get("rtp", []):
@@ -476,7 +508,9 @@ class AgoraWebSocketHandler:
                     }
 
                     # Use mapped URI if available
-                    ext_entry["extensionName"] = uri_mappings.get(ext["uri"], ext["uri"])
+                    ext_entry["extensionName"] = uri_mappings.get(
+                        ext["uri"], ext["uri"]
+                    )
 
                     if media_type == "audio":
                         audio_extensions.append(ext_entry)
@@ -492,14 +526,17 @@ class AgoraWebSocketHandler:
                 video_codecs=video_codecs,
                 audio_extensions=audio_extensions,
                 video_extensions=video_extensions,
-
+                audio_direction=audio_direction,
+                video_direction=video_direction,
             )
 
         except (ValueError, IndexError, KeyError) as ex:
             _LOGGER.error("Failed to parse offer SDP with sdp_transform: %s", ex)
             return None
 
-    def _generate_answer_sdp(self, ortc: dict[str, Any], sdp_info: SdpInfo) -> str | None:
+    def _generate_answer_sdp(
+        self, ortc: dict[str, Any], sdp_info: SdpInfo
+    ) -> str | None:
         """Generate SDP answer from ORTC parameters."""
         try:
             ice_params = ortc.get("iceParameters", {})
@@ -510,20 +547,10 @@ class AgoraWebSocketHandler:
             _LOGGER.debug("DTLS params: %s", dtls_params)
             _LOGGER.debug("RTP caps: %s", rtp_caps)
 
-            # Extract ICE candidates
             candidates = ice_params.get("candidates", [])
-            ice_ufrag = ice_params.get("iceUfrag", "")
-            ice_pwd = ice_params.get("icePwd", "")
+            ice_ufrag = ice_params.get("iceUfrag", "") or secrets.token_hex(4)
+            ice_pwd = ice_params.get("icePwd", "") or secrets.token_hex(16)
 
-            # Use fallback values if ICE parameters are missing
-            if not ice_ufrag:
-                ice_ufrag = secrets.token_hex(4)
-                _LOGGER.warning("Using fallback ICE ufrag: %s", ice_ufrag)
-            if not ice_pwd:
-                ice_pwd = secrets.token_hex(16)
-                _LOGGER.warning("Using fallback ICE pwd")
-
-            # Extract DTLS fingerprint
             fingerprints = dtls_params.get("fingerprints", [])
             fingerprint = ""
             if fingerprints:
@@ -531,70 +558,75 @@ class AgoraWebSocketHandler:
                 fingerprint = (
                     f"{fp.get('algorithm', 'sha-256')} {fp.get('fingerprint', '')}"
                 )
-
-            # Use fallback fingerprint if missing
             if not fingerprint:
                 fallback_fingerprint = ":".join(
                     [secrets.token_hex(1).upper() for _ in range(32)]
                 )
                 fingerprint = f"sha-256 {fallback_fingerprint}"
-                _LOGGER.warning("Using fallback fingerprint")
 
-            # Build candidate lines
-            candidate_lines = []
-            for i, candidate in enumerate(candidates):
-                candidate_line = (
-                    f"a=candidate:{candidate.get('foundation', f'candidate{i}')} "
-                    f"1 {candidate.get('protocol', 'udp')} "
-                    f"{candidate.get('priority', 2103266323)} "
-                    f"{candidate.get('ip', '')} "
-                    f"{candidate.get('port', 4701)} "
-                    f"typ {candidate.get('type', 'host')}"
-                )
-                candidate_lines.append(candidate_line)
+            # helper: answer direction mapping
+            def answer_direction_for_offer(offer_dir: str) -> str:
+                if offer_dir == "sendonly":
+                    return "recvonly"
+                if offer_dir == "recvonly":
+                    return "sendonly"
+                if offer_dir == "sendrecv":
+                    return "sendrecv"
+                return "inactive"
 
-            # Build codec lines from RTP capabilities
-            video_codecs = rtp_caps.get("videoCodecs", [])
-            audio_codecs = rtp_caps.get("audioCodecs", [])
+            # helper: render codec block lines (rtpmap, fmtp, rtcp-fb)
+            def codec_lines_for_list(codecs: list[dict]) -> list[str]:
+                lines: list[str] = []
+                for c in codecs:
+                    pt = c.get("payloadType")
+                    rtpmap = c.get("rtpMap")
+                    if pt is None or not rtpmap:
+                        continue
+                    enc = rtpmap.get("encodingName")
+                    clock = rtpmap.get("clockRate")
+                    params = rtpmap.get("encodingParameters")
+                    if params:
+                        lines.append(f"a=rtpmap:{pt} {enc}/{clock}/{params}")
+                    else:
+                        lines.append(f"a=rtpmap:{pt} {enc}/{clock}")
+                    # fmtp
+                    fmtp = (
+                        c.get("fmtp", {}).get("parameters") if c.get("fmtp") else None
+                    )
+                    if fmtp:
+                        # join key=val with ';' like typical fmtp
+                        kv = ";".join(f"{k}={v}" for k, v in fmtp.items())
+                        lines.append(f"a=fmtp:{pt} {kv}")
+                    # rtcp-fb
+                    for fb in c.get("rtcpFeedbacks", []) or []:
+                        t = fb.get("type")
+                        p = fb.get("parameter")
+                        if p:
+                            lines.append(f"a=rtcp-fb:{pt} {t} {p}")
+                        else:
+                            lines.append(f"a=rtcp-fb:{pt} {t}")
+                return lines
 
-            _LOGGER.debug("Video codecs: %s", video_codecs)
-            _LOGGER.debug("Audio codecs: %s", audio_codecs)
+            # collect audio/video capabilities and rtx separately
+            audio_codecs = rtp_caps.get("audioCodecs", []) or []
+            video_codecs = rtp_caps.get("videoCodecs", []) or []
+            # find rtx codecs (encodingName 'rtx')
+            rtx_codecs = [
+                c
+                for c in (video_codecs + audio_codecs)
+                if c.get("rtpMap", {}).get("encodingName", "").lower() == "rtx"
+            ]
 
-            # Find VP8 codec for video
-            vp8_payload = None
-            vp8_payload_list = []
-            for codec in video_codecs:
-                if codec.get("rtpMap", {}).get("encodingName", "").upper() == "VP8":
-                    vp8_payload = codec.get("payloadType")
-                    vp8_payload_list.append(codec.get("payloadType"))
-                    break
+            # build extmap lines
+            audio_ext = rtp_caps.get("audioExtensions", []) or []
+            video_ext = rtp_caps.get("videoExtensions", []) or []
 
-            # Find Opus codec for audio
-            opus_payload = None
-            opus_payload_list = []
-            for codec in audio_codecs:
-                if codec.get("rtpMap", {}).get("encodingName", "").upper() == "OPUS":
-                    opus_payload = codec.get("payloadType")
-                    opus_payload_list.append(codec.get("payloadType"))
-                    break
+            def extmap_lines(extlist):
+                return [
+                    f"a=extmap:{e.get('entry')} {e.get('extensionName')}"
+                    for e in extlist
+                ]
 
-            # Use default payload types if not found
-            if vp8_payload is None:
-                vp8_payload = 120
-                _LOGGER.warning(
-                    "VP8 codec not found in RTP capabilities, using default payload %s",
-                    vp8_payload,
-                )
-
-            if opus_payload is None:
-                opus_payload = 109
-                _LOGGER.warning(
-                    "Opus codec not found in RTP capabilities, using default payload %s",
-                    opus_payload,
-                )
-
-
-            # Build basic SDP answer
             sdp_lines = [
                 "v=0",
                 f"o=- {sdp_info.parsed_sdp['origin']['sessionId']} {sdp_info.parsed_sdp['origin']['sessionVersion']} IN IP4 127.0.0.1",
@@ -602,47 +634,104 @@ class AgoraWebSocketHandler:
                 "t=0 0",
                 "a=group:BUNDLE 0 1",
                 "a=msid-semantic: WMS",
-                # Audio m-line
-                f"m=audio 9 UDP/TLS/RTP/SAVPF {' '.join([str(i) for i in opus_payload_list])}",
-                "c=IN IP4 0.0.0.0",
-                "a=rtcp:9 IN IP4 0.0.0.0",
-                f"a=ice-ufrag:{ice_ufrag}",
-                f"a=ice-pwd:{ice_pwd}",
-                "a=ice-options:trickle",
-                f"a=fingerprint:{fingerprint}",
-                "a=setup:active",
-                "a=mid:0",
-                "a=sendrecv",
-                "a=rtcp-mux",
-                f"a=rtpmap:{opus_payload} opus/48000/2",
-                # Video m-line
-                f"m=video 9 UDP/TLS/RTP/SAVPF {' '.join([str(i) for i in vp8_payload_list])}",
-                "c=IN IP4 0.0.0.0",
-                "a=rtcp:9 IN IP4 0.0.0.0",
-                f"a=ice-ufrag:{ice_ufrag}",
-                f"a=ice-pwd:{ice_pwd}",
-                "a=ice-options:trickle",
-                f"a=fingerprint:{fingerprint}",
-                "a=setup:active",
-                "a=mid:1",
-                "a=sendrecv",
-                "a=rtcp-mux",
-                f"a=rtpmap:{vp8_payload} VP8/90000",
             ]
 
-            # Add candidates
-            sdp_lines.extend(candidate_lines)
+            # top-level ice/fingerprint are per-media in many examples; keep them per-media but log here
+            _LOGGER.debug(
+                "Using ice-ufrag=%s ice-pwd=%s fingerprint=%s",
+                ice_ufrag,
+                ice_pwd,
+                fingerprint,
+            )
+
+            # Build media sections in the same order as the offer
+            media_list = sdp_info.parsed_sdp.get("media", [])
+            for idx, m in enumerate(media_list):
+                mtype = m.get("type", "audio")
+                offer_dir = m.get("direction", "sendonly")
+                answer_dir = answer_direction_for_offer(offer_dir)
+                mid = m.get("mid", str(idx))
+                # select codec list based on type
+                if mtype == "audio":
+                    caps = audio_codecs
+                    ext_lines = extmap_lines(audio_ext)
+                else:
+                    caps = video_codecs
+                    ext_lines = extmap_lines(video_ext)
+
+                # build payloads string from caps (preserve order in caps)
+                payloads = [
+                    str(c.get("payloadType"))
+                    for c in caps
+                    if c.get("payloadType") is not None
+                ]
+                # include rtx payloads that reference these payloads
+                for r in rtx_codecs:
+                    apt = (
+                        r.get("fmtp", {}).get("parameters", {}).get("apt")
+                        if r.get("fmtp")
+                        else None
+                    )
+                    if apt and str(apt) not in payloads:
+                        payloads.append(str(r.get("payloadType")))
+
+                payloads_str = (
+                    " ".join(payloads)
+                    if payloads
+                    else ("111" if mtype == "audio" else "96")
+                )
+
+                # m-line
+                sdp_lines.append(f"m={mtype} 9 UDP/TLS/RTP/SAVPF {payloads_str}")
+                sdp_lines.append("c=IN IP4 0.0.0.0")
+                sdp_lines.append("a=rtcp:9 IN IP4 0.0.0.0")
+                # ICE / DTLS per-media
+                sdp_lines.append(f"a=ice-ufrag:{ice_ufrag}")
+                sdp_lines.append(f"a=ice-pwd:{ice_pwd}")
+                sdp_lines.append("a=ice-options:trickle")
+                sdp_lines.append(f"a=fingerprint:{fingerprint}")
+                sdp_lines.append("a=setup:active")
+                sdp_lines.append(f"a=mid:{mid}")
+                sdp_lines.append(f"a={answer_dir}")
+                sdp_lines.append("a=rtcp-mux")
+                # include reduced-size RTCP if offer had it (best-effort)
+                if m.get("rtcp-rsize", True) is not False:
+                    sdp_lines.append("a=rtcp-rsize")
+                # extmap lines
+                sdp_lines.extend(ext_lines)
+                # codec specific lines
+                sdp_lines.extend(codec_lines_for_list(caps))
+                # rtx lines (rtx codecs usually include fmtp apt)
+                sdp_lines.extend(codec_lines_for_list(rtx_codecs))
+                # include SSRC if answer will send
+                if "send" in answer_dir:
+                    local_ssrc = random.randint(1, 2**32 - 1)
+                    local_cname = ortc.get("cname") or f"pc-{secrets.token_hex(6)}"
+                    sdp_lines.append(f"a=ssrc:{local_ssrc} cname:{local_cname}")
+
+                # candidates - put candidate lines after each m= section (format similar to offer)
+                for candidate in candidates:
+                    cand_line = (
+                        f"a=candidate:{candidate.get('foundation', 'candidate')} "
+                        f"1 {candidate.get('protocol', 'udp')} "
+                        f"{candidate.get('priority', 2103266323)} "
+                        f"{candidate.get('ip', '')} "
+                        f"{candidate.get('port', 4701)} "
+                        f"typ {candidate.get('type', 'host')}"
+                    )
+                    # optional attributes from candidate
+                    generation = candidate.get("generation")
+                    if generation is not None:
+                        cand_line += f" generation {generation}"
+                    sdp_lines.append(cand_line)
 
             generated_sdp = "\r\n".join(sdp_lines) + "\r\n"
-            _LOGGER.debug("Generated SDP lines count: %s", len(sdp_lines))
             _LOGGER.debug("Generated SDP content: %s", generated_sdp)
 
-            # Validate SDP format
             if self._validate_sdp(generated_sdp):
                 return generated_sdp
-            else:
-                _LOGGER.error("Generated SDP failed validation")
-                return None
+            _LOGGER.error("Generated SDP failed validation")
+            return None
 
         except (KeyError, ValueError, AttributeError) as ex:
             _LOGGER.error("Failed to generate answer SDP: %s", ex)
@@ -758,10 +847,9 @@ class AgoraWebSocketHandler:
         # Validate fallback SDP
         if self._validate_sdp(generated_sdp):
             return generated_sdp
-        else:
-            _LOGGER.error("Fallback SDP failed validation")
-            # Return a minimal valid SDP as last resort
-            return self._generate_minimal_sdp()
+        _LOGGER.error("Fallback SDP failed validation")
+        # Return a minimal valid SDP as last resort
+        return self._generate_minimal_sdp()
 
     def _generate_minimal_sdp(self) -> str:
         """Generate minimal valid SDP as last resort."""

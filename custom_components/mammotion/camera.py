@@ -7,18 +7,13 @@ import collections
 import json
 import logging
 import secrets
-from collections import deque
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
 import websockets
 from homeassistant.components.camera import (
-    Camera,
     CameraEntityDescription,
-    CameraEntityFeature,
-    CameraWebRTCProvider,
-    StreamType,
     WebRTCAnswer,
     WebRTCError,
     WebRTCSendMessage,
@@ -40,7 +35,7 @@ from webrtc_models import RTCIceCandidateInit
 from . import MammotionConfigEntry
 from .agora_websocket import AgoraWebSocketHandler
 from .coordinator import MammotionBaseUpdateCoordinator
-from .entity import MammotionBaseEntity
+from .entity import MammotionCameraBaseEntity
 from .models import MammotionMowerData
 
 _LOGGER = logging.getLogger(__name__)
@@ -81,7 +76,6 @@ async def async_setup_entry(
                 mower.reporting_coordinator._stream_data = stream_data
 
                 if stream_data is not None:
-
                     _LOGGER.debug("Received stream data: %s", stream_data)
                     entities.extend(
                         MammotionWebRTCCamera(
@@ -98,16 +92,11 @@ async def async_setup_entry(
     await async_setup_platform_services(hass, entry)
 
 
-class MammotionWebRTCCamera(MammotionBaseEntity, Camera):
+class MammotionWebRTCCamera(MammotionCameraBaseEntity):
     """Mammotion WebRTC camera entity."""
 
     entity_description: MammotionCameraEntityDescription
-    _attr_has_entity_name = True
-    _attr_name = None
-    _attr_is_streaming = True
-    _attr_supported_features = CameraEntityFeature.STREAM
     _attr_capability_attributes = None
-    _supports_native_async_webrtc = True
 
     def __init__(
         self,
@@ -122,28 +111,12 @@ class MammotionWebRTCCamera(MammotionBaseEntity, Camera):
         self.async_update_token()
         self._create_stream_lock: asyncio.Lock | None = None
         self._agora_handler = AgoraWebSocketHandler(hass)
-        self._webrtc_provider: CameraWebRTCProvider | None = None
-        self._supports_native_async_webrtc = True
         self.coordinator = coordinator
         self.entity_description = entity_description
         self._attr_translation_key = entity_description.key
         self._stream_data: StreamSubscriptionResponse | None = None
         self._attr_model = coordinator.device.device_name
         self.access_tokens = [secrets.token_hex(16)]
-        self._webrtc_provider = None  # Avoid crash on async_refresh_providers()
-        self._legacy_webrtc_provider = None
-        self._supports_native_sync_webrtc = False
-        self._supports_native_async_webrtc = False
-
-    @property
-    def frontend_stream_type(self) -> StreamType | None:
-        """Return the type of stream supported by this camera."""
-        return StreamType.WEB_RTC
-
-    @property
-    def content_type(self) -> str:
-        """Return the content type of the camera image."""
-        return "image/jpeg"
 
     async def async_camera_image(
         self, width: int | None = None, height: int | None = None
@@ -197,12 +170,13 @@ class MammotionWebRTCCamera(MammotionBaseEntity, Camera):
         self, session_id: str, candidate: RTCIceCandidateInit
     ) -> None:
         """Ignore WebRTC candidates."""
-        return
+        _LOGGER.info("Received WebRTC candidate for session %s", session_id)
+        _LOGGER.info("Received WebRTC candidate %s", candidate)
 
     @callback
-    def close_webrtc_session(self, session_id: str) -> None:
+    async def close_webrtc_session(self, session_id: str) -> None:
         """Close WebRTC session."""
-        return None
+        await self._agora_handler.disconnect()
 
     async def _perform_webrtc_negotiation(
         self, offer_sdp: str, agora_data: StreamSubscriptionResponse, session_id: str
@@ -348,7 +322,6 @@ async def async_setup_platform_services(
                     "Invalid speed format for %s: %s. Must be a number. Using default.",
                     entity_id,
                     raw_speed,
-
                 )
 
         mower: MammotionMowerData = _get_mower_by_entity_id(entity_id)
@@ -377,7 +350,6 @@ async def async_setup_platform_services(
                     "Invalid speed format for %s: %s. Must be a number. Using default.",
                     entity_id,
                     raw_speed,
-
                 )
 
         mower: MammotionMowerData = _get_mower_by_entity_id(entity_id)
