@@ -36,7 +36,9 @@ class MammotionSwitchEntityDescription(SwitchEntityDescription):
 class MammotionAsyncSwitchEntityDescription(MammotionSwitchEntityDescription):
     """Describes Mammotion switch entity."""
 
-    is_on_func: Callable[[MammotionBaseUpdateCoordinator], bool]
+    polling: bool = False
+    poll_func: Callable[[MammotionBaseUpdateCoordinator], Awaitable[None]] = None
+    is_on_func: Callable[[MammotionBaseUpdateCoordinator], bool] = None
     set_fn: Callable[[MammotionBaseUpdateCoordinator, bool], Awaitable[None]]
 
 
@@ -76,9 +78,26 @@ YUKA_CONFIG_SWITCH_ENTITIES: tuple[MammotionConfigSwitchEntityDescription, ...] 
     ),
 )
 
+MINI_AND_X_SERIES_CONFIG_SWITCH_ENTITIES: tuple[
+    MammotionAsyncSwitchEntityDescription, ...
+] = (
+    MammotionAsyncSwitchEntityDescription(
+        key="manual_light",
+        is_on_func=lambda coordinator: coordinator.data.mower_state.lamp_info.manual_light,
+        set_fn=lambda coordinator, value: coordinator.async_set_manual_light(value),
+    ),
+    MammotionAsyncSwitchEntityDescription(
+        key="night_light",
+        is_on_func=lambda coordinator: coordinator.data.mower_state.lamp_info.night_light,
+        set_fn=lambda coordinator, value: coordinator.async_set_night_light(value),
+    ),
+)
+
 SWITCH_ENTITIES: tuple[MammotionAsyncSwitchEntityDescription, ...] = (
     MammotionAsyncSwitchEntityDescription(
         key="side_led",
+        polling=True,
+        poll_func=lambda coordinator: coordinator.async_read_sidelight(),
         is_on_func=lambda coordinator: bool(
             coordinator.data.mower_state.side_led.operate
         ),
@@ -87,6 +106,8 @@ SWITCH_ENTITIES: tuple[MammotionAsyncSwitchEntityDescription, ...] = (
     ),
     MammotionAsyncSwitchEntityDescription(
         key="rain_detection",
+        polling=True,
+        poll_func=lambda coordinator: coordinator.async_read_rain_detection(),
         is_on_func=lambda coordinator: coordinator.data.mower_state.rain_detection,
         set_fn=lambda coordinator, value: coordinator.async_set_rain_detection(value),
         entity_category=EntityCategory.CONFIG,
@@ -124,7 +145,7 @@ async def async_setup_entry(
     hass: HomeAssistant, entry: MammotionConfigEntry, async_add_entities: Callable
 ) -> None:
     """Set up the Mammotion switch entities."""
-    mammotion_devices = entry.runtime_data
+    mammotion_devices = entry.runtime_data.mowers
 
     for mower in mammotion_devices:
         added_areas: set[int] = set()
@@ -154,22 +175,29 @@ async def async_setup_entry(
             config_entity = MammotionUpdateSwitchEntity(coordinator, entity_description)
             entities.append(config_entity)
 
-        if DeviceType.is_yuka(mower.device.deviceName) and not DeviceType.is_yuka_mini(
-            mower.device.deviceName
+        if DeviceType.is_yuka(mower.device.device_name) and not DeviceType.is_yuka_mini(
+            mower.device.device_name
         ):
             for entity_description in YUKA_CONFIG_SWITCH_ENTITIES:
                 config_entity = MammotionConfigSwitchEntity(
                     coordinator, entity_description
                 )
                 entities.append(config_entity)
-        if DeviceType.is_luba1(mower.device.deviceName):
+        if DeviceType.is_luba1(mower.device.device_name):
             for entity_description in LUBA_1_SWITCH_ENTITIES:
                 entity = MammotionSwitchEntity(coordinator, entity_description)
                 entities.append(entity)
+
+        if DeviceType.is_mini_or_x_series(mower.device.device_name):
+            for entity_description in MINI_AND_X_SERIES_CONFIG_SWITCH_ENTITIES:
+                config_entity = MammotionSwitchEntity(coordinator, entity_description)
+                entities.append(config_entity)
         async_add_entities(entities)
 
 
 class MammotionSwitchEntity(MammotionBaseEntity, SwitchEntity, RestoreEntity):
+    """Mammotion switch entity."""
+
     entity_description: MammotionAsyncSwitchEntityDescription
     _attr_has_entity_name = True
 
@@ -182,7 +210,7 @@ class MammotionSwitchEntity(MammotionBaseEntity, SwitchEntity, RestoreEntity):
         self.coordinator = coordinator
         self.entity_description = entity_description
         self._attr_translation_key = entity_description.key
-        if entity_description.is_on_func:
+        if callable(entity_description.is_on_func):
             self._attr_is_on = entity_description.is_on_func(self.coordinator)
         else:
             self._attr_is_on = False  # Default state
@@ -199,7 +227,13 @@ class MammotionSwitchEntity(MammotionBaseEntity, SwitchEntity, RestoreEntity):
 
     async def async_update(self) -> None:
         """Update the entity state."""
-        if self.entity_description.is_on_func:
+        if (
+            self.entity_description.polling
+            and self.entity_description.poll_func is not None
+        ):
+            await self.entity_description.poll_func(self.coordinator)
+
+        if self.entity_description.is_on_func is not None:
             self._attr_is_on = self.entity_description.is_on_func(self.coordinator)
             self.async_write_ha_state()
 
@@ -229,7 +263,10 @@ class MammotionUpdateSwitchEntity(MammotionBaseEntity, SwitchEntity, RestoreEnti
 
     @property
     def is_on(self) -> bool:
-        return self.entity_description.is_on_func(self.coordinator)
+        """Return if settings is on or off."""
+        if self.entity_description.is_on_func is not None:
+            return self.entity_description.is_on_func(self.coordinator)
+        return self._attr_is_on
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         self._attr_is_on = True
@@ -243,7 +280,7 @@ class MammotionUpdateSwitchEntity(MammotionBaseEntity, SwitchEntity, RestoreEnti
 
     async def async_update(self) -> None:
         """Update the entity state."""
-        if self.entity_description.is_on_func:
+        if self.entity_description.is_on_func is not None:
             self._attr_is_on = self.entity_description.is_on_func(self.coordinator)
             self.async_write_ha_state()
 
@@ -265,6 +302,7 @@ class MammotionConfigSwitchEntity(MammotionBaseEntity, SwitchEntity, RestoreEnti
         coordinator: MammotionBaseUpdateCoordinator,
         entity_description: MammotionConfigSwitchEntityDescription,
     ) -> None:
+        """Initialize the config switch entities."""
         super().__init__(coordinator, entity_description.key)
         self.coordinator = coordinator
         self.entity_description = entity_description
@@ -278,11 +316,13 @@ class MammotionConfigSwitchEntity(MammotionBaseEntity, SwitchEntity, RestoreEnti
         )
 
     async def async_turn_on(self, **kwargs: Any) -> None:
+        """Turn the entity on."""
         self._attr_is_on = True
         self.entity_description.set_fn(self.coordinator, True)
         self.async_write_ha_state()
 
     async def async_turn_off(self, **kwargs: Any) -> None:
+        """Turn the entity off."""
         self._attr_is_on = False
         self.entity_description.set_fn(self.coordinator, False)
         self.async_write_ha_state()
@@ -292,6 +332,8 @@ class MammotionConfigSwitchEntity(MammotionBaseEntity, SwitchEntity, RestoreEnti
 
 
 class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, RestoreEntity):
+    """Mammotion Config Area Switch Entity."""
+
     entity_description: MammotionConfigAreaSwitchEntityDescription
     _attr_has_entity_name = True
     _attr_entity_category = EntityCategory.CONFIG
@@ -301,15 +343,17 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
         coordinator: MammotionBaseUpdateCoordinator,
         entity_description: MammotionConfigAreaSwitchEntityDescription,
     ) -> None:
+        """Initialize the area switch entity."""
         super().__init__(coordinator, entity_description.key)
         self.coordinator = coordinator
         self.entity_description = entity_description
         self._attr_extra_state_attributes = {"hash": entity_description.area}
-        self._attr_is_on = self._attr_is_on = (
+        self._attr_is_on = (
             entity_description.area in self.coordinator.operation_settings.areas
         )  # Default state
 
     async def async_turn_on(self, **kwargs: Any) -> None:
+        """Turn the entity on."""
         self._attr_is_on = True
         self.entity_description.set_fn(
             self.coordinator,
@@ -319,6 +363,7 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
         self.async_write_ha_state()
 
     async def async_turn_off(self, **kwargs: Any) -> None:
+        """Turn the entity off."""
         self._attr_is_on = False
         self.entity_description.set_fn(
             self.coordinator,
@@ -361,17 +406,20 @@ def async_add_area_entities(
                 if (existing_name and existing_name.name)
                 else f"{area_id}"
             )
+
+            def set_area_entity(coord, bool_val, value):
+                if bool_val:
+                    coord.operation_settings.areas.add(value)
+                elif value in coord.operation_settings.areas:
+                    coord.operation_settings.areas.remove(value)
+
             base_area_switch_entity = MammotionConfigAreaSwitchEntityDescription(
                 key=f"{area_id}",
                 translation_key="area",
                 translation_placeholders={"name": name},
                 area=area_id,
                 name=f"{name}",
-                set_fn=lambda coord, bool_val, value: (
-                    coord.operation_settings.areas.append(value)
-                    if bool_val
-                    else coord.operation_settings.areas.remove(value)
-                ),
+                set_fn=set_area_entity,
             )
             switch_entities.append(
                 MammotionConfigAreaSwitchEntity(
@@ -381,7 +429,7 @@ def async_add_area_entities(
             )
             added_areas.add(area_id)
 
-    old_areas = set(area_name_hashes) - added_areas
+    old_areas = set(areas) - added_areas
     if old_areas:
         async_remove_entities(coordinator, old_areas)
         for area in old_areas:

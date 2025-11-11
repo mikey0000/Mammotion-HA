@@ -1,18 +1,20 @@
-"""Constants for the Mammotion Luba integration."""
+"""Constants for the Mammotion integration."""
 
 import logging
+from datetime import timedelta
 from typing import Final
 
 from bleak.exc import BleakError
 from bleak_retry_connector import BleakNotFoundError
 from pymammotion.aliyun.cloud_gateway import CheckSessionException, SetupException
+from pymammotion.http.model.http import UnauthorizedException
 from pymammotion.mammotion.devices.mammotion_bluetooth import CharacteristicMissingError
 from pymammotion.utility.constant import WorkMode
 
 DOMAIN: Final = "mammotion"
 
 DEVICE_SUPPORT = ("Luba", "Yuka")
-
+SCAN_INTERVAL = timedelta(hours=1)
 ATTR_DIRECTION = "direction"
 
 DEFAULT_RETRY_COUNT = 3
@@ -26,7 +28,11 @@ COMMAND_EXCEPTIONS = (
     TimeoutError,
 )
 
-EXPIRED_CREDENTIAL_EXCEPTIONS = (CheckSessionException, SetupException)
+EXPIRED_CREDENTIAL_EXCEPTIONS = (
+    CheckSessionException,
+    SetupException,
+    UnauthorizedException,
+)
 
 CONF_STAY_CONNECTED_BLUETOOTH: Final = "stay_connected_bluetooth"
 CONF_ACCOUNTNAME: Final = "account_name"
@@ -41,6 +47,10 @@ CONF_SESSION_DATA: Final = "session_data"
 CONF_REGION_DATA: Final = "region_data"
 CONF_DEVICE_DATA: Final = "device_data"
 CONF_MAMMOTION_DATA: Final = "mammotion_data"
+CONF_MAMMOTION_MQTT = "mammotion_mqtt"
+CONF_MAMMOTION_DEVICE_LIST = "mammotion_device_list"
+CONF_MAMMOTION_DEVICE_RECORDS = "mammotion_device_records"
+CONF_MAMMOTION_JWT_INFO = "mammotion_jwt_info"
 
 NO_REQUEST_MODES = (
     WorkMode.MODE_JOB_DRAW,

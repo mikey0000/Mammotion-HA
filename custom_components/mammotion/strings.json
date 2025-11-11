@@ -55,6 +55,15 @@
   },
   "entity": {
     "sensor": {
+      "error_1_message": {
+        "name": "Last error"
+      },
+      "error_1_time": {
+        "name": "Last error time"
+      },
+      "error_1_code": {
+        "name": "Last error code"
+      },
       "battery_percent": {
         "name": "Battery"
       },
@@ -149,6 +158,9 @@
       },
       "clear_all_mapdata": {
         "name": "Clear maps and area names"
+      },
+      "relocate_charging_station": {
+        "name": "Relocate charging station"
       }
     },
     "switch": {

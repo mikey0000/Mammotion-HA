@@ -7,6 +7,7 @@ import collections
 import json
 import logging
 import secrets
+from collections import deque
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
@@ -67,19 +68,20 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the Mammotion camera entities."""
-    mowers = entry.runtime_data
+    mowers = entry.runtime_data.mowers
     entities = []
     for mower in mowers:
-        if not DeviceType.is_luba1(mower.device.deviceName):
-            _LOGGER.debug("Config camera for %s", mower.device.deviceName)
+        if not DeviceType.is_luba1(mower.device.device_name):
+            _LOGGER.debug("Config camera for %s", mower.device.device_name)
             try:
                 # Try to get stream data
                 stream_data = await mower.api.get_stream_subscription(
-                    mower.device.deviceName, mower.device.iotId
+                    mower.device.device_name, mower.device.iot_id
                 )
                 mower.reporting_coordinator._stream_data = stream_data
 
-                if stream_data:
+                if stream_data is not None:
+
                     _LOGGER.debug("Received stream data: %s", stream_data)
                     entities.extend(
                         MammotionWebRTCCamera(
@@ -88,9 +90,9 @@ async def async_setup_entry(
                         for entity_description in CAMERAS
                     )
                 else:
-                    _LOGGER.error("No Agora data for %s", mower.device.deviceName)
-            except (OSError, ValueError) as e:
-                _LOGGER.error("Error on config camera for: %s", e)
+                    _LOGGER.error("No Agora data for %s", mower.device.device_name)
+            except Exception as e:
+                _LOGGER.error("Error on async setup entry camera for: %s", e)
 
     async_add_entities(entities)
     await async_setup_platform_services(hass, entry)
@@ -126,13 +128,22 @@ class MammotionWebRTCCamera(MammotionBaseEntity, Camera):
         self.entity_description = entity_description
         self._attr_translation_key = entity_description.key
         self._stream_data: StreamSubscriptionResponse | None = None
-        self._attr_model = coordinator.device.deviceName
+        self._attr_model = coordinator.device.device_name
         self.access_tokens = [secrets.token_hex(16)]
+        self._webrtc_provider = None  # Avoid crash on async_refresh_providers()
+        self._legacy_webrtc_provider = None
+        self._supports_native_sync_webrtc = False
+        self._supports_native_async_webrtc = False
 
     @property
     def frontend_stream_type(self) -> StreamType | None:
         """Return the type of stream supported by this camera."""
         return StreamType.WEB_RTC
+
+    @property
+    def content_type(self) -> str:
+        """Return the content type of the camera image."""
+        return "image/jpeg"
 
     async def async_camera_image(
         self, width: int | None = None, height: int | None = None
@@ -243,7 +254,11 @@ async def async_setup_platform_services(
         state = hass.states.get(entity_id)
         name = state.attributes.get("model_name")
         return next(
-            (mower for mower in entry.runtime_data if mower.device.deviceName == name),
+            (
+                mower
+                for mower in entry.runtime_data.mowers
+                if mower.device.device_name == name
+            ),
             None,
         )
 
@@ -252,7 +267,7 @@ async def async_setup_platform_services(
         mower: MammotionMowerData = _get_mower_by_entity_id(entity_id)
         if mower:
             stream_data = await mower.api.get_stream_subscription(
-                mower.device.deviceName, mower.device.iotId
+                mower.device.device_name, mower.device.iot_id
             )
             _LOGGER.debug("Refresh stream data : %s", stream_data)
 
@@ -288,9 +303,10 @@ async def async_setup_platform_services(
 
         # Check if speed parameter exists and validate it
         speed = 0.4  # Default speed
-        if "speed" in call.data:
+        raw_speed = call.data["speed"]
+        if raw_speed is not None:
             try:
-                speed_value = float(call.data["speed"])
+                speed_value = float(raw_speed)
                 if 0.1 <= speed_value <= 1:
                     speed = speed_value
                 else:
@@ -303,7 +319,7 @@ async def async_setup_platform_services(
                 _LOGGER.warning(
                     "Invalid speed format for %s: %s. Must be a number. Using default.",
                     entity_id,
-                    call.data["speed"],
+                    raw_speed,
                 )
 
         mower: MammotionMowerData = _get_mower_by_entity_id(entity_id)
@@ -315,9 +331,10 @@ async def async_setup_platform_services(
 
         # Check if speed parameter exists and validate it
         speed = 0.4  # Default speed
-        if "speed" in call.data:
+        raw_speed = call.data["speed"]
+        if raw_speed is not None:
             try:
-                speed_value = float(call.data["speed"])
+                speed_value = float(raw_speed)
                 if 0.1 <= speed_value <= 1:
                     speed = speed_value
                 else:
@@ -330,7 +347,8 @@ async def async_setup_platform_services(
                 _LOGGER.warning(
                     "Invalid speed format for %s: %s. Must be a number. Using default.",
                     entity_id,
-                    call.data["speed"],
+                    raw_speed,
+
                 )
 
         mower: MammotionMowerData = _get_mower_by_entity_id(entity_id)
@@ -342,9 +360,10 @@ async def async_setup_platform_services(
 
         # Check if speed parameter exists and validate it
         speed = 0.4  # Default speed
-        if "speed" in call.data:
+        raw_speed = call.data["speed"]
+        if raw_speed is not None:
             try:
-                speed_value = float(call.data["speed"])
+                speed_value = float(raw_speed)
                 if 0.1 <= speed_value <= 1:
                     speed = speed_value
                 else:
@@ -357,7 +376,8 @@ async def async_setup_platform_services(
                 _LOGGER.warning(
                     "Invalid speed format for %s: %s. Must be a number. Using default.",
                     entity_id,
-                    call.data["speed"],
+                    raw_speed,
+
                 )
 
         mower: MammotionMowerData = _get_mower_by_entity_id(entity_id)
@@ -369,9 +389,10 @@ async def async_setup_platform_services(
 
         # Check if speed parameter exists and validate it
         speed = 0.4  # Default speed
-        if "speed" in call.data:
+        raw_speed = call.data["speed"]
+        if raw_speed is not None:
             try:
-                speed_value = float(call.data["speed"])
+                speed_value = float(raw_speed)
                 if 0.1 <= speed_value <= 1:
                     speed = speed_value
                 else:
@@ -384,7 +405,7 @@ async def async_setup_platform_services(
                 _LOGGER.warning(
                     "Invalid speed format for %s: %s. Must be a number. Using default.",
                     entity_id,
-                    call.data["speed"],
+                    raw_speed,
                 )
 
         mower: MammotionMowerData = _get_mower_by_entity_id(entity_id)

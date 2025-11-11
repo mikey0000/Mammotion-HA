@@ -3,18 +3,18 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'  # Trigger on version tags
+      - "v*" # Trigger on version tags
 
 jobs:
   release:
     name: Create Release
     runs-on: ubuntu-latest
     permissions:
-      id-token: write  # Required for OIDC
-      contents: write  # Required for creating releases
+      id-token: write # Required for OIDC
+      contents: write # Required for creating releases
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -25,49 +25,57 @@ jobs:
           virtualenvs-create: true
           virtualenvs-in-project: true
 
-      - name: Check package version matches tag
+      - name: Get version from tag
+        id: get_version
+        run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Check versions match tag
         run: |
           # Extract version from pyproject.toml
           PACKAGE_VERSION=$(poetry version -s)
-          # Remove 'v' prefix from tag
-          TAG_VERSION=${GITHUB_REF#refs/tags/v}
+          # Extract version from manifest.json
+          MANIFEST_VERSION=$(jq -r .version custom_components/mammotion/manifest.json)
+          # Get version from tag
+          TAG_VERSION=${{ steps.get_version.outputs.version }}
 
           if [ "$PACKAGE_VERSION" != "$TAG_VERSION" ]; then
-            echo "Package version ($PACKAGE_VERSION) does not match tag version ($TAG_VERSION)"
+            echo "Package version ($PACKAGE_VERSION) in pyproject.toml does not match tag version ($TAG_VERSION)"
             exit 1
           fi
-
-      - name: Get version from manifest.json
-        id: get_version
-        run: |
-          version=$(jq -r .version custom_components/mammotion/manifest.json)
-          echo "::set-output name=version::$version"
+          if [ "$MANIFEST_VERSION" != "$TAG_VERSION" ]; then
+            echo "Manifest version ($MANIFEST_VERSION) in manifest.json does not match tag version ($TAG_VERSION)"
+            exit 1
+          fi
 
       - name: Get previous version
         id: get_previous_version
         run: |
-          previous_version=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
-          echo "::set-output name=previous_version::$previous_version"
+          # Get the previous tag, or the first commit if no previous tag exists
+          previous_tag=$(git tag --sort=-v:refname | sed -n 2p)
+          if [ -z "$previous_tag" ]; then
+            previous_tag=$(git rev-list --max-parents=0 HEAD)
+          fi
+          echo "previous_version=${previous_tag}" >> $GITHUB_OUTPUT
 
       - name: Generate changelog
         id: changelog
         run: |
-          changelog=$(git log --pretty=format:"- %h - %an: %s" ${{ steps.get_previous_version.outputs.previous_version }}..HEAD)
-          changelog="${changelog//'%'/'%25'}"
-          changelog="${changelog//$'\n'/'%0A'}"
-          changelog="${changelog//$'\r'/'%0D'}"
-          echo "::set-output name=changelog::$changelog"
+          {
+            echo 'changelog<<EOF'
+            echo $(git log --pretty=format:"- %h - %an: %s" ${{ steps.get_previous_version.outputs.previous_version }}..${{ github.ref_name }} | sed 's|%0A|\n|g' | sed 's|%0D|\r|g')
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
 
       - name: Create Release
         id: create_release
-        uses: actions/create-release@v1
+        uses: comnoco/create-release-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v${{ steps.get_version.outputs.version }}
-          release_name: Release v${{ steps.get_version.outputs.version }}
+          tag_name: ${{ github.ref_name }}
+          release_name: Release ${{ github.ref_name }}
           body: |
-            # Mammotion - Home Assistant Integration v${{ steps.get_version.outputs.version }} 🚀
+            # Mammotion - Home Assistant Integration ${{ github.ref_name }} 🚀
 
             [![Discord](https://img.shields.io/discord/1247286396297678879)](https://discord.gg/vpZdWhJX8x)
 
@@ -95,6 +103,6 @@ jobs:
 
             A big thank you to all contributors and users of this integration. Your feedback and support help make this project better!
 
-            **Full Changelog**: https://github.com/${{ github.repository }}/compare/${{ steps.get_previous_version.outputs.previous_version }}...v${{ steps.get_version.outputs.version }}
+            **Full Changelog**: https://github.com/${{ github.repository }}/compare/${{ steps.get_previous_version.outputs.previous_version }}...${{ github.ref_name }}
           draft: false
           prerelease: false

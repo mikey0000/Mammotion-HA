@@ -1,6 +1,5 @@
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
-from typing import Awaitable
 
 from homeassistant.components.select import SelectEntity, SelectEntityDescription
 from homeassistant.const import EntityCategory
@@ -10,6 +9,7 @@ from homeassistant.helpers.restore_state import RestoreEntity
 from pymammotion.data.model.mowing_modes import (
     BorderPatrolMode,
     CuttingMode,
+    CuttingSpeedMode,
     DetectionStrategy,
     MowOrder,
     ObstacleLapsMode,
@@ -48,7 +48,7 @@ ASYNC_SELECT_ENTITIES: tuple[MammotionAsyncConfigSelectEntityDescription, ...] =
         key="traversal_mode",
         options=[mode.name for mode in TraversalMode],
         get_fn=lambda coordinator: coordinator.data.mower_state.traversal_mode,
-        set_fn=lambda coordinator, value: coordinator.set_traversal_mode(
+        set_fn=lambda coordinator, value: coordinator.async_set_traversal_mode(
             TraversalMode[value].value
         ),
     ),
@@ -56,8 +56,21 @@ ASYNC_SELECT_ENTITIES: tuple[MammotionAsyncConfigSelectEntityDescription, ...] =
         key="turning_mode",
         options=[mode.name for mode in TurningMode],
         get_fn=lambda coordinator: coordinator.data.mower_state.turning_mode,
-        set_fn=lambda coordinator, value: coordinator.set_turning_mode(
+        set_fn=lambda coordinator, value: coordinator.async_set_turning_mode(
             TurningMode[value].value
+        ),
+    ),
+)
+
+MINI_AND_X_SERIES_CONFIG_SELECT_ENTITIES: tuple[
+    MammotionAsyncConfigSelectEntityDescription, ...
+] = (
+    MammotionAsyncConfigSelectEntityDescription(
+        key="cutter_mode",
+        options=[mode.name for mode in CuttingSpeedMode],
+        get_fn=lambda coordinator: coordinator.data.mower_state.blade_mode,
+        set_fn=lambda coordinator, value: coordinator.async_set_cutter_speed(
+            CuttingSpeedMode[value].value
         ),
     ),
 )
@@ -146,7 +159,7 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the Mammotion select entity."""
-    mammotion_devices = entry.runtime_data
+    mammotion_devices = entry.runtime_data.mowers
 
     for mower in mammotion_devices:
         entities = []
@@ -165,7 +178,7 @@ async def async_setup_entry(
                 )
             )
 
-        if DeviceType.is_luba1(mower.device.deviceName):
+        if DeviceType.is_luba1(mower.device.device_name):
             for entity_description in LUBA1_SELECT_ENTITIES:
                 entities.append(
                     MammotionConfigSelectEntity(
@@ -176,6 +189,14 @@ async def async_setup_entry(
             for entity_description in LUBA_PRO_SELECT_ENTITIES:
                 entities.append(
                     MammotionConfigSelectEntity(
+                        mower.reporting_coordinator, entity_description
+                    )
+                )
+
+        if DeviceType.is_mini_or_x_series(mower.device.device_name):
+            for entity_description in MINI_AND_X_SERIES_CONFIG_SELECT_ENTITIES:
+                entities.append(
+                    MammotionAsyncConfigSelectEntity(
                         mower.reporting_coordinator, entity_description
                     )
                 )
@@ -242,7 +263,7 @@ class MammotionAsyncConfigSelectEntity(
         self.entity_description = entity_description
         self._attr_translation_key = entity_description.key
         self._attr_options = entity_description.options
-        if entity_description.get_fn:
+        if callable(entity_description.get_fn):
             self._attr_current_option = self._attr_options[
                 entity_description.get_fn(self.coordinator)
             ]
@@ -262,7 +283,7 @@ class MammotionAsyncConfigSelectEntity(
                 self._attr_current_option = state.state
 
     async def async_update(self) -> None:
-        if self.entity_description.get_fn:
+        if callable(self.entity_description.get_fn):
             self._attr_current_option = self._attr_options[
                 self.entity_description.get_fn(self.coordinator)
             ]

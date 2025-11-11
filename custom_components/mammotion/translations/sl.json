@@ -55,6 +55,15 @@
   },
   "entity": {
     "sensor": {
+      "error_1_message": {
+        "name": "Last error"
+      },
+      "error_1_time": {
+        "name": "Last error time"
+      },
+      "error_1_code": {
+        "name": "Last error code"
+      },
       "battery_percent": {
         "name": "Baterija"
       },
@@ -107,10 +116,50 @@
         "name": "Položaj RTK postaje"
       },
       "position_type": {
-        "name": "Vrsta pozicioniranja"
+        "name": "Vrsta pozicioniranja",
+        "state": {
+          "AREA_BORDER_ON": "At perimeter",
+          "AREA_INSIDE": "Inside area",
+          "AREA_OUT": "Outside area",
+          "CHANNEL_AREA_OVERLAP": "Path area overlap",
+          "CHANNEL_ON": "On path",
+          "CHARGE_ON": "At charging station",
+          "DUMPING_AREA_INSIDE": "In dump area",
+          "DUMPING_OUTSIDE": "Outside dump area",
+          "ABNORMAL_POSITIONING": "Position error",
+          "NO_AREAS": "No areas defined",
+          "OBS_ON": "At obstacle",
+          "TURN_AREA_INSIDE": "In turn area",
+          "VIRTUAL_INSIDE": "In virtual area"
+        }
       },
       "activity_mode": {
-        "name": "Vrsta dejavnosti"
+        "name": "Vrsta dejavnosti",
+        "state": {
+          "MODE_NOT_ACTIVE": "Not active",
+          "MODE_ONLINE": "Online",
+          "MODE_OFFLINE": "Offline",
+          "MODE_DISABLE": "Disabled",
+          "MODE_INITIALIZATION": "Initializing",
+          "MODE_READY": "Ready",
+          "MODE_WORKING": "Working",
+          "MODE_RETURNING": "Returning",
+          "MODE_CHARGING": "Charging",
+          "MODE_UPDATING": "Updating",
+          "MODE_LOCK": "Locked",
+          "MODE_PAUSE": "Paused",
+          "MODE_MANUAL_MOWING": "Manual mowing",
+          "MODE_UPDATE_SUCCESS": "Update successful",
+          "MODE_OTA_UPGRADE_FAIL": "Update failed",
+          "MODE_JOB_DRAW": "Drawing job",
+          "MODE_OBSTACLE_DRAW": "Drawing obstacles",
+          "MODE_CHANNEL_DRAW": "Drawing channel",
+          "MODE_ERASER_DRAW": "Drawing eraser",
+          "MODE_EDIT_BOUNDARY": "Editing boundary",
+          "MODE_LOCATION_ERROR": "Location error",
+          "MODE_BOUNDARY_JUMP": "Boundary crossed",
+          "MODE_CHARGING_PAUSE": "Charging paused"
+        }
       },
       "work_area": {
         "name": "Področja dela"
@@ -125,16 +174,28 @@
         "name": "Baterijski cikli",
         "unit_of_measurement": "Cikli polnjenja baterije"
       },
+      "non_work_hours": {
+        "name": "Non-work hours"
+      },
+      "rtk_lora": {
+        "name": "LoRa version"
+      },
       "rtk_latitude": {
-        "name": "RTK latitude"
+        "name": "Latitude"
       },
       "rtk_longitude": {
-        "name": "RTK longitude"
+        "name": "Longitude"
+      },
+      "rtk_wifi_rssi": {
+        "name": "Wi-Fi RSSI"
       }
     },
     "button": {
       "start_map_sync": {
         "name": "Sinhronizacija zemljevidov"
+      },
+      "start_schedule_sync": {
+        "name": "Synchronize schedules"
       },
       "join_webrtc": {
         "name": "Vklopi kamero na kosilnici"
@@ -162,6 +223,9 @@
       },
       "clear_all_mapdata": {
         "name": "Počisti zemljevide in imena področji"
+      },
+      "relocate_charging_station": {
+        "name": "Relocate charging station"
       }
     },
     "switch": {
@@ -194,6 +258,12 @@
       },
       "schedule_updates": {
         "name": "Turn Updates On/Off"
+      },
+      "manual_light": {
+        "name": "Manual light on/off"
+      },
+      "night_light": {
+        "name": "Night light on/off"
       }
     },
     "select": {
@@ -263,6 +333,14 @@
         "state": {
           "multipoint": "Obrat v več točkah",
           "zero_turn": "Obrat na mestu"
+        }
+      },
+      "cutter_mode": {
+        "name": "Cutter Speed",
+        "state": {
+          "normal": "Medium",
+          "slow": "Slow",
+          "fast": "Fast"
         }
       }
     },
@@ -440,6 +518,20 @@
         "areas": {
           "name": "Območje naloge",
           "description": "Spisek območij."
+        }
+      }
+    },
+    "start_stop_blades": {
+      "name": "Start or stop blades",
+      "description": "Start or stop the blades manually.",
+      "fields": {
+        "start_stop": {
+          "name": "Start or stop",
+          "description": "Whether blades are on or off."
+        },
+        "blade_height": {
+          "name": "Blade height",
+          "description": "Height of the blade."
         }
       }
     }

@@ -18,7 +18,7 @@ async def async_get_config_entry_diagnostics(
     entry: MammotionConfigEntry,
 ) -> dict[str, Any]:
     """Return diagnostics for a config entry."""
-    mammotion_devices: list[MammotionMowerData] = entry.runtime_data
+    mammotion_devices: list[MammotionMowerData] = entry.runtime_data.mowers
     data = {}
     for device in mammotion_devices:
         data[device.name] = asdict(device.reporting_coordinator.data)

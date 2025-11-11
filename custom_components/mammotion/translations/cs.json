@@ -3,7 +3,7 @@
     "abort": {
       "already_configured": "Zařízení je již nakonfigurováno",
       "already_in_progress": "Konfigurační proces již probíhá",
-      "no_devices_found": "Nelze najít zařízení",
+      "no_devices_found": "Zařízení se nepodařilo najít",
       "no_devices_found_in_account": "Ve vašem účtu nejsou žádná zařízení",
       "bluetooth_and_account_mismatch": "Zařízení Bluetooth nebylo ve vašem účtu nalezeno",
       "no_longer_present": "Zařízení již není k dispozici",
@@ -55,6 +55,15 @@
   },
   "entity": {
     "sensor": {
+      "error_1_message": {
+        "name": "Poslední chyba"
+      },
+      "error_1_time": {
+        "name": "Čas poslední chyby"
+      },
+      "error_1_code": {
+        "name": "Kód poslední chyby"
+      },
       "battery_percent": {
         "name": "Baterie"
       },
@@ -86,7 +95,7 @@
         "name": "Rychlost sečení"
       },
       "progress": {
-        "name": "Pokrok"
+        "name": "Postup"
       },
       "total_time": {
         "name": "Celkový čas"
@@ -107,10 +116,50 @@
         "name": "Poloha RTK"
       },
       "position_type": {
-        "name": "Typ pozice zařízení"
+        "name": "Typ pozice zařízení",
+        "state": {
+          "AREA_BORDER_ON": "At perimeter",
+          "AREA_INSIDE": "Inside area",
+          "AREA_OUT": "Outside area",
+          "CHANNEL_AREA_OVERLAP": "Path area overlap",
+          "CHANNEL_ON": "On path",
+          "CHARGE_ON": "At charging station",
+          "DUMPING_AREA_INSIDE": "In dump area",
+          "DUMPING_OUTSIDE": "Outside dump area",
+          "ABNORMAL_POSITIONING": "Position error",
+          "NO_AREAS": "No areas defined",
+          "OBS_ON": "At obstacle",
+          "TURN_AREA_INSIDE": "In turn area",
+          "VIRTUAL_INSIDE": "In virtual area"
+        }
       },
       "activity_mode": {
-        "name": "Režim činnosti"
+        "name": "Režim činnosti",
+        "state": {
+          "MODE_NOT_ACTIVE": "Not active",
+          "MODE_ONLINE": "Online",
+          "MODE_OFFLINE": "Offline",
+          "MODE_DISABLE": "Disabled",
+          "MODE_INITIALIZATION": "Initializing",
+          "MODE_READY": "Ready",
+          "MODE_WORKING": "Working",
+          "MODE_RETURNING": "Returning",
+          "MODE_CHARGING": "Charging",
+          "MODE_UPDATING": "Updating",
+          "MODE_LOCK": "Locked",
+          "MODE_PAUSE": "Paused",
+          "MODE_MANUAL_MOWING": "Manual mowing",
+          "MODE_UPDATE_SUCCESS": "Update successful",
+          "MODE_OTA_UPGRADE_FAIL": "Update failed",
+          "MODE_JOB_DRAW": "Drawing job",
+          "MODE_OBSTACLE_DRAW": "Drawing obstacles",
+          "MODE_CHANNEL_DRAW": "Drawing channel",
+          "MODE_ERASER_DRAW": "Drawing eraser",
+          "MODE_EDIT_BOUNDARY": "Editing boundary",
+          "MODE_LOCATION_ERROR": "Location error",
+          "MODE_BOUNDARY_JUMP": "Boundary crossed",
+          "MODE_CHARGING_PAUSE": "Charging paused"
+        }
       },
       "work_area": {
         "name": "Pracovní oblast"
@@ -125,16 +174,28 @@
         "name": "Cykly baterie",
         "unit_of_measurement": "cyklů"
       },
+      "non_work_hours": {
+        "name": "Non-work hours"
+      },
+      "rtk_lora": {
+        "name": "Verze LoRa"
+      },
       "rtk_latitude": {
-        "name": "RTK latitude"
+        "name": "Zeměpisná šířka"
       },
       "rtk_longitude": {
-        "name": "RTK longitude"
+        "name": "Zeměpisná délka"
+      },
+      "rtk_wifi_rssi": {
+        "name": "WiFi RSSI"
       }
     },
     "button": {
       "start_map_sync": {
         "name": "Synchronizace mapy"
+      },
+      "start_schedule_sync": {
+        "name": "Synchronize schedules"
       },
       "join_webrtc": {
         "name": "Spustit kameru"
@@ -162,6 +223,9 @@
       },
       "clear_all_mapdata": {
         "name": "Vyčištění map a názvů oblastí"
+      },
+      "relocate_charging_station": {
+        "name": "Přemístit nabíjecí stanici"
       }
     },
     "switch": {
@@ -169,22 +233,22 @@
         "name": "Oblast {name}"
       },
       "blade_status": {
-        "name": "Zapnutí/vypnutí nožů"
+        "name": "Zapnutí/Vypnutí nožů"
       },
       "is_mow": {
-        "name": "Zapnutí a vypnutí sekání"
+        "name": "Zapnutí/Vypnutí sekání"
       },
       "is_dump": {
-        "name": "Zapnutí/vypnutí vysypávání trávy"
+        "name": "Zapnutí/Vypnutí vysypávání trávy"
       },
       "is_edge": {
         "name": "Řezání okrajů"
       },
       "rain_tactics": {
-        "name": "Rain detection (during mow) On/Off"
+        "name": "Detekce deště (během sečení) Zap/Vyp"
       },
       "rain_detection": {
-        "name": "Rain detection (Mower) On/Off"
+        "name": "Detekce deště (sekačky) Zap/Vyp"
       },
       "side_led": {
         "name": "Boční světla"
@@ -193,7 +257,13 @@
         "name": "Nejprve obvod"
       },
       "schedule_updates": {
-        "name": "Turn Updates On/Off"
+        "name": "Zapnout/Vypnout aktualizace"
+      },
+      "manual_light": {
+        "name": "Ruční osvětlení zapnuto/vypnuto"
+      },
+      "night_light": {
+        "name": "Noční světlo zapnout/vypnout"
       }
     },
     "select": {
@@ -207,23 +277,23 @@
         }
       },
       "mowing_laps": {
-        "name": "Sekání po obvodu",
+        "name": "Počet sečení obvodu",
         "state": {
           "none": "Žádné",
-          "one": "jeden",
-          "two": "dvě",
-          "three": "tři",
-          "four": "čtyři"
+          "one": "Jednou",
+          "two": "Dvakrát",
+          "three": "Třikrát",
+          "four": "Čtyřikrát"
         }
       },
       "obstacle_laps": {
-        "name": "Počet sečení obvodů no-go zóny",
+        "name": "Počet sečení obvodů no-go zón",
         "state": {
           "none": "Žádný",
-          "one": "Jeden",
-          "two": "dvě",
-          "three": "Tři",
-          "four": "čtyři"
+          "one": "Jednou",
+          "two": "Dvakrát",
+          "three": "Třikrát",
+          "four": "Čtyřikrát"
         }
       },
       "border_mode": {
@@ -244,15 +314,15 @@
         }
       },
       "cutting_angle_mode": {
-        "name": "Režim řezného úhlu",
+        "name": "Úhel sečení",
         "state": {
-          "relative_angle": "Relativní úhel",
-          "absolute_angle": "Absolutní úhel",
+          "relative_angle": "Relativní úhel (optimální)",
+          "absolute_angle": "Absolutní úhel (sever)",
           "random_angle": "Náhodný úhel"
         }
       },
       "traversal_mode": {
-        "name": "Způsob otačení",
+        "name": "Způsob otáčení",
         "state": {
           "direct": "Přímý",
           "follow_perimeter": "Podél hranice"
@@ -264,6 +334,14 @@
           "multipoint": "Vícebodové otáčení",
           "zero_turn": "Otáčení na místě"
         }
+      },
+      "cutter_mode": {
+        "name": "Rychlost nožů",
+        "state": {
+          "normal": "Střední",
+          "slow": "Pomalý",
+          "fast": "Rychlá"
+        }
       }
     },
     "number": {
@@ -274,7 +352,7 @@
         "name": "Výška nožů"
       },
       "blade_height_inches": {
-        "name": "Výška čepele (palce)"
+        "name": "Výška nožů (palce)"
       },
       "working_speed": {
         "name": "Pracovní rychlost"
@@ -440,6 +518,20 @@
         "areas": {
           "name": "Výběr oblasti",
           "description": "Seznam oblastí k sečení (reprezentovaný jako celá čísla)."
+        }
+      }
+    },
+    "start_stop_blades": {
+      "name": "Spustit nebo zastavit nože",
+      "description": "Manuální spuštění nebo zastavení břitů.",
+      "fields": {
+        "start_stop": {
+          "name": "Spustit nebo zastavit",
+          "description": "Zda jsou nože zapnuté nebo vypnuté."
+        },
+        "blade_height": {
+          "name": "Výška nožů",
+          "description": "Výška nožů."
         }
       }
     }

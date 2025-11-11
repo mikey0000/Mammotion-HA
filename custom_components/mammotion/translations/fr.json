@@ -3,8 +3,8 @@
     "abort": {
       "already_configured": "L'appareil est déjà configuré",
       "already_in_progress": "Le flux de configuration est déjà en cours",
-      "no_devices_found": "Impossible de trouver des appareils",
-      "no_devices_found_in_account": "Aucun appareil présent sur votre compte",
+      "no_devices_found": "Aucun appareil trouvé",
+      "no_devices_found_in_account": "Aucun appareil configuré sur votre compte",
       "bluetooth_and_account_mismatch": "Appareil Bluetooth introuvable dans votre compte",
       "no_longer_present": "L'appareil n'est plus présent",
       "not_supported": "Appareil non pris en charge",
@@ -55,20 +55,29 @@
   },
   "entity": {
     "sensor": {
+      "error_1_message": {
+        "name": "Dernière erreur"
+      },
+      "error_1_time": {
+        "name": "Heure de la dernière erreur"
+      },
+      "error_1_code": {
+        "name": "Dernier code d'erreur"
+      },
       "battery_percent": {
         "name": "Batterie"
       },
       "ble_rssi": {
-        "name": "Signal Bluetooth"
+        "name": "Qualité du signal Bluetooth"
       },
       "camera_brightness": {
         "name": "Luminosité de la caméra"
       },
       "wifi_rssi": {
-        "name": "Signal Wi-Fi"
+        "name": "Qualité du signal Wi-Fi"
       },
       "mnet_rssi": {
-        "name": "Signal Réseau mobile"
+        "name": "Qualité du signal Réseau mobile"
       },
       "connect_type": {
         "name": "Connexion"
@@ -107,10 +116,50 @@
         "name": "Position RTK"
       },
       "position_type": {
-        "name": "Type de position de l'appareil"
+        "name": "Type de position de l'appareil",
+        "state": {
+          "AREA_BORDER_ON": "At perimeter",
+          "AREA_INSIDE": "Inside area",
+          "AREA_OUT": "Outside area",
+          "CHANNEL_AREA_OVERLAP": "Path area overlap",
+          "CHANNEL_ON": "On path",
+          "CHARGE_ON": "At charging station",
+          "DUMPING_AREA_INSIDE": "In dump area",
+          "DUMPING_OUTSIDE": "Outside dump area",
+          "ABNORMAL_POSITIONING": "Position error",
+          "NO_AREAS": "No areas defined",
+          "OBS_ON": "At obstacle",
+          "TURN_AREA_INSIDE": "In turn area",
+          "VIRTUAL_INSIDE": "In virtual area"
+        }
       },
       "activity_mode": {
-        "name": "Mode activité"
+        "name": "Mode activité",
+        "state": {
+          "MODE_NOT_ACTIVE": "Not active",
+          "MODE_ONLINE": "Online",
+          "MODE_OFFLINE": "Offline",
+          "MODE_DISABLE": "Disabled",
+          "MODE_INITIALIZATION": "Initializing",
+          "MODE_READY": "Ready",
+          "MODE_WORKING": "Working",
+          "MODE_RETURNING": "Returning",
+          "MODE_CHARGING": "Charging",
+          "MODE_UPDATING": "Updating",
+          "MODE_LOCK": "Locked",
+          "MODE_PAUSE": "Paused",
+          "MODE_MANUAL_MOWING": "Manual mowing",
+          "MODE_UPDATE_SUCCESS": "Update successful",
+          "MODE_OTA_UPGRADE_FAIL": "Update failed",
+          "MODE_JOB_DRAW": "Drawing job",
+          "MODE_OBSTACLE_DRAW": "Drawing obstacles",
+          "MODE_CHANNEL_DRAW": "Drawing channel",
+          "MODE_ERASER_DRAW": "Drawing eraser",
+          "MODE_EDIT_BOUNDARY": "Editing boundary",
+          "MODE_LOCATION_ERROR": "Location error",
+          "MODE_BOUNDARY_JUMP": "Boundary crossed",
+          "MODE_CHARGING_PAUSE": "Charging paused"
+        }
       },
       "work_area": {
         "name": "Zone de travail"
@@ -119,22 +168,34 @@
         "name": "Kilométrage total"
       },
       "maintenance_work_time": {
-        "name": "Durée de la tâche"
+        "name": "Temps de travail total"
       },
       "maintenance_bat_cycles": {
         "name": "Cycles de batterie",
         "unit_of_measurement": "cycles"
       },
+      "non_work_hours": {
+        "name": "Non-work hours"
+      },
+      "rtk_lora": {
+        "name": "Version LoRa"
+      },
       "rtk_latitude": {
-        "name": "RKT Base de la tondeuse Latitude"
+        "name": "Latitude"
       },
       "rtk_longitude": {
-        "name": "RKT Base de la tondeuse Longitude"
+        "name": "Longitude"
+      },
+      "rtk_wifi_rssi": {
+        "name": "Qualité du signal Wi-Fi"
       }
     },
     "button": {
       "start_map_sync": {
         "name": "Synchroniser les cartes"
+      },
+      "start_schedule_sync": {
+        "name": "Synchronize schedules"
       },
       "join_webrtc": {
         "name": "Activer la caméra durant la tonte"
@@ -162,6 +223,9 @@
       },
       "clear_all_mapdata": {
         "name": "Supprimer les cartes et les noms de zones"
+      },
+      "relocate_charging_station": {
+        "name": "Déplacer la station de recharge"
       }
     },
     "switch": {
@@ -194,6 +258,12 @@
       },
       "schedule_updates": {
         "name": "Activer les mises à jour Activer/ Désactiver"
+      },
+      "manual_light": {
+        "name": "Allumage/extinction manuelle de la lumière"
+      },
+      "night_light": {
+        "name": "Éclairage de nuit allumé/éteint"
       }
     },
     "select": {
@@ -252,7 +322,7 @@
         }
       },
       "traversal_mode": {
-        "name": "Mode de traversée",
+        "name": "Trajet de recharge",
         "state": {
           "direct": "Direct",
           "follow_perimeter": "Suivre le périmètre"
@@ -263,6 +333,14 @@
         "state": {
           "multipoint": "Virage multipoint",
           "zero_turn": "Virage sur place"
+        }
+      },
+      "cutter_mode": {
+        "name": "Vitesse de coupe",
+        "state": {
+          "normal": "Moyenne",
+          "slow": "Lente",
+          "fast": "Rapide"
         }
       }
     },
@@ -440,6 +518,20 @@
         "areas": {
           "name": "Zones",
           "description": "Liste des zones à tondre (représentées sous forme d'entiers)."
+        }
+      }
+    },
+    "start_stop_blades": {
+      "name": "Démarrer ou arrêter les lames",
+      "description": "Démarrer ou arrêter les lames manuellement.",
+      "fields": {
+        "start_stop": {
+          "name": "Démarrer ou arrêter",
+          "description": "Si les lames sont activées ou désactivées."
+        },
+        "blade_height": {
+          "name": "Hauteur de coupe",
+          "description": "Hauteur de coupe."
         }
       }
     }

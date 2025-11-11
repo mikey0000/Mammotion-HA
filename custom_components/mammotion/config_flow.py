@@ -1,4 +1,4 @@
-"""Config flow for Mammotion Luba."""
+"""Config flow for Mammotion"""
 
 from typing import TYPE_CHECKING, Any
 
@@ -215,10 +215,10 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
         ):
             account = user_input.get(CONF_ACCOUNTNAME, "")
             password = user_input.get(CONF_PASSWORD, "")
-            mammotion_http = MammotionHTTP()
+            mammotion_http = MammotionHTTP(account, password)
 
             try:
-                await mammotion_http.login(account, password)
+                await mammotion_http.login_v2(account, password)
                 if mammotion_http.login_info is None:
                     return self.async_abort(reason=str(mammotion_http.msg))
             except HTTPException as err:
@@ -274,12 +274,18 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
 
             if self._cloud_client is None:
                 try:
-                    if mammotion.mqtt_list.get(account) is None:
+                    if mammotion.mqtt_list.get(
+                        f"{account}_aliyun"
+                    ) and mammotion.mqtt_list.get(f"{account}_mammotion"):
                         self._cloud_client = await Mammotion().login(account, password)
                     else:
-                        self._cloud_client = mammotion.mqtt_list.get(
-                            account
-                        ).cloud_client
+                        self._cloud_client = (
+                            mammotion.mqtt_list.get(f"{account}_aliyun").cloud_client
+                            if mammotion.mqtt_list.get(f"{account}_aliyun")
+                            else mammotion.mqtt_list.get(
+                                f"{account}_mammotion"
+                            ).cloud_client
+                        )
                 except HTTPException as err:
                     return self.async_abort(reason=str(err))
             user_account = (

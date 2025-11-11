@@ -1,4 +1,4 @@
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 
 from homeassistant.components.number import (
@@ -29,7 +29,10 @@ from .entity import MammotionBaseEntity
 class MammotionConfigNumberEntityDescription(NumberEntityDescription):
     """Describes Mammotion number entity."""
 
-    set_fn: Callable[[MammotionBaseUpdateCoordinator, float], None]
+    set_fn: Callable[[MammotionBaseUpdateCoordinator, float], None] = None
+    set_async_fn: Callable[[MammotionBaseUpdateCoordinator, float], Awaitable[None]] = (
+        None
+    )
     get_fn: Callable[[MammotionBaseUpdateCoordinator], float | None] = None
 
 
@@ -88,9 +91,12 @@ LUBA_WORKING_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
         step=1,
         min_value=25,
         max_value=70,
-        mode=NumberMode.BOX,
+        mode=NumberMode.SLIDER,
         set_fn=lambda coordinator, value: setattr(
             coordinator.operation_settings, "blade_height", int(value)
+        ),
+        set_async_fn=lambda coordinator, value: coordinator.async_blade_height(
+            int(value)
         ),
         get_fn=lambda coordinator: coordinator.operation_settings.blade_height,
     ),
@@ -100,9 +106,12 @@ LUBA_WORKING_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
         step=0.01,
         min_value=1.0,
         max_value=4.0,
-        mode=NumberMode.BOX,
+        mode=NumberMode.SLIDER,
         set_fn=lambda coordinator, value: setattr(
             coordinator.operation_settings, "blade_height", round(value * 25.4)
+        ),
+        set_async_fn=lambda coordinator, value: coordinator.async_blade_height(
+            round(value * 25.4)
         ),
         get_fn=lambda coordinator: round(
             coordinator.operation_settings.blade_height / 25.4, 2
@@ -119,6 +128,7 @@ NUMBER_WORKING_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
         step=0.1,
         min_value=0.2,
         max_value=0.6,
+        set_async_fn=lambda coordinator, value: coordinator.async_set_speed(value),
         set_fn=lambda coordinator, value: setattr(
             coordinator.operation_settings, "speed", value
         ),
@@ -143,7 +153,7 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the Mammotion number entities."""
-    mammotion_devices = entry.runtime_data
+    mammotion_devices = entry.runtime_data.mowers
 
     for mower in mammotion_devices:
         limits = mower.device_limits
@@ -162,15 +172,15 @@ async def async_setup_entry(
             )
             entities.append(entity)
 
-        if DeviceType.is_yuka(mower.device.deviceName) and not DeviceType.is_yuka_mini(
-            mower.device.deviceName
+        if DeviceType.is_yuka(mower.device.device_name) and not DeviceType.is_yuka_mini(
+            mower.device.device_name
         ):
             for entity_description in YUKA_NUMBER_ENTITIES:
                 entity = MammotionConfigNumberEntity(
                     mower.reporting_coordinator, entity_description
                 )
                 entities.append(entity)
-        if not DeviceType.is_yuka(mower.device.deviceName):
+        if not DeviceType.is_yuka(mower.device.device_name):
             for entity_description in LUBA_WORKING_ENTITIES:
                 entity = MammotionWorkingNumberEntity(
                     mower.reporting_coordinator, entity_description, limits
@@ -208,13 +218,14 @@ class MammotionConfigNumberEntity(MammotionBaseEntity, RestoreNumber):
             self._attr_native_value = 90
         if self.entity_description.get_fn is not None:
             self._attr_native_value = self.entity_description.get_fn(self.coordinator)
-        else:
+        elif self.entity_description.set_fn is not None:
             self.entity_description.set_fn(self.coordinator, self._attr_native_value)
 
     async def async_set_native_value(self, value: float) -> None:
         """Sets native value for number."""
         self._attr_native_value = value
-        self.entity_description.set_fn(self.coordinator, value)
+        if self.entity_description.set_fn is not None:
+            self.entity_description.set_fn(self.coordinator, value)
         self.async_write_ha_state()
 
     async def async_added_to_hass(self) -> None:
@@ -224,7 +235,10 @@ class MammotionConfigNumberEntity(MammotionBaseEntity, RestoreNumber):
             last_number_data.native_value is not None
         ):
             await self.async_set_native_value(last_number_data.native_value)
-            self.entity_description.set_fn(self.coordinator, self._attr_native_value)
+            if self.entity_description.set_fn is not None:
+                self.entity_description.set_fn(
+                    self.coordinator, self._attr_native_value
+                )
 
 
 class MammotionWorkingNumberEntity(MammotionConfigNumberEntity):
@@ -257,10 +271,11 @@ class MammotionWorkingNumberEntity(MammotionConfigNumberEntity):
         if self.entity_description.get_fn is not None:
             self._attr_native_value = self.entity_description.get_fn(self.coordinator)
 
-        if self._attr_native_value < self._attr_native_min_value:
-            self._attr_native_value = self._attr_native_min_value
-
-        self.entity_description.set_fn(self.coordinator, self._attr_native_value)
+        self._attr_native_value = max(
+            self._attr_native_value, self._attr_native_min_value
+        )
+        if self.entity_description.set_fn is not None:
+            self.entity_description.set_fn(self.coordinator, self._attr_native_value)
 
     @property
     def native_min_value(self) -> float:
@@ -281,6 +296,11 @@ class MammotionWorkingNumberEntity(MammotionConfigNumberEntity):
 
     async def async_set_native_value(self, value: float) -> None:
         """Set native value for number and call update_fn if defined."""
+        if self._attr_native_value == value:
+            return
         self._attr_native_value = value
-        self.entity_description.set_fn(self.coordinator, value)
+        if self.entity_description.set_fn is not None:
+            self.entity_description.set_fn(self.coordinator, value)
+        if self.entity_description.set_async_fn is not None:
+            await self.entity_description.set_async_fn(self.coordinator, value)
         self.async_write_ha_state()
