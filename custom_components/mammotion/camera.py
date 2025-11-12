@@ -34,6 +34,7 @@ from pymammotion.utility.device_type import DeviceType
 from webrtc_models import RTCIceCandidateInit, RTCIceServer
 
 from . import MammotionConfigEntry
+from .agora_api import SERVICE_FLAGS, AgoraAPIClient
 from .agora_websocket import AgoraWebSocketHandler
 from .coordinator import MammotionBaseUpdateCoordinator
 from .entity import MammotionCameraBaseEntity
@@ -78,6 +79,47 @@ async def async_setup_entry(
 
                 if stream_data is not None:
                     _LOGGER.debug("Received stream data: %s", stream_data)
+
+                    # Get ICE servers from Agora API
+                    try:
+                        subscription = stream_data.data.to_dict()
+                        async with AgoraAPIClient() as agora_client:
+                            agora_response = await agora_client.choose_server(
+                                app_id=subscription["appid"],
+                                token=subscription["token"],
+                                channel_name=subscription["channelName"],
+                                user_id=int(subscription["uid"]),
+                                service_flags=[
+                                    SERVICE_FLAGS["CHOOSE_SERVER"],
+                                    SERVICE_FLAGS["CLOUD_PROXY"],
+                                ],
+                            )
+
+                            # Get ICE servers and convert to RTCIceServer format
+                            ice_servers_agora = agora_response.get_ice_servers()
+                            ice_servers = []
+                            _LOGGER.info(
+                                "Ice Servers from Agora API:%s", ice_servers_agora
+                            )
+                            for ice_server in ice_servers_agora:
+                                ice_servers.append(
+                                    RTCIceServer(
+                                        urls=ice_server.urls,
+                                        username=ice_server.username,
+                                        credential=ice_server.credential,
+                                    )
+                                )
+
+                            # Store ICE servers in coordinator
+                            mower.reporting_coordinator._ice_servers = ice_servers
+                            _LOGGER.info(
+                                "Retrieved %d ICE servers from Agora API",
+                                len(ice_servers),
+                            )
+                    except Exception as e:
+                        _LOGGER.error("Failed to get ICE servers from Agora API: %s", e)
+                        mower.reporting_coordinator._ice_servers = []
+
                     entities.extend(
                         MammotionWebRTCCamera(
                             mower.reporting_coordinator, entity_description, hass
@@ -118,6 +160,8 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         self._stream_data: StreamSubscriptionResponse | None = None
         self._attr_model = coordinator.device.device_name
         self.access_tokens = [secrets.token_hex(16)]
+        # Get ICE servers from coordinator (populated in async_setup_entry)
+        self.ice_servers = getattr(coordinator, "_ice_servers", [])
         async_register_ice_servers(hass, self.get_ice_servers)
 
     async def async_camera_image(
@@ -222,29 +266,8 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
             return self._agora_handler._generate_fallback_sdp()
 
     def get_ice_servers(self) -> list[RTCIceServer]:
-        """Return the ICE servers."""
-        return [
-            RTCIceServer(
-                username="21231058",
-                credential="997adc40c3ee7e39aab6f805dd41d42b6205f45eff6f2edb8b7fc70e4f241367",
-                urls="stun:164-52-103-9.edge.agora.io:3478",
-            ),
-            RTCIceServer(
-                username="21231058",
-                credential="997adc40c3ee7e39aab6f805dd41d42b6205f45eff6f2edb8b7fc70e4f241367",
-                urls="turn:164-52-103-9.edge.agora.io:3478?transport=udp",
-            ),
-            RTCIceServer(
-                username="21231058",
-                credential="997adc40c3ee7e39aab6f805dd41d42b6205f45eff6f2edb8b7fc70e4f241367",
-                urls="turn:164-52-103-9.edge.agora.io:3478?transport=tcp",
-            ),
-            RTCIceServer(
-                username="21231058",
-                credential="997adc40c3ee7e39aab6f805dd41d42b6205f45eff6f2edb8b7fc70e4f241367",
-                urls="turn:164-52-103-9.edge.agora.io:443?transport=tcp",
-            ),
-        ]
+        """Return the ICE servers from Agora API."""
+        return self.ice_servers
 
 
 # Global

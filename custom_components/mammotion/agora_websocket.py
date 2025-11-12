@@ -14,9 +14,17 @@ from typing import Any, Callable
 import aiohttp
 from homeassistant.core import HomeAssistant
 from sdp_transform import parse as sdp_parse
+from webrtc_models import RTCIceCandidateInit
 from websockets.asyncio.client import ClientConnection, connect
 from websockets.exceptions import WebSocketException
 
+from .agora_rtc_capabilities import (
+    get_audio_codecs,
+    get_audio_extensions,
+    get_video_codecs_recv,
+    get_video_codecs_sendrecv,
+    get_video_extensions,
+)
 from .coordinator import StreamSubscriptionResponse
 
 _LOGGER = logging.getLogger(__name__)
@@ -263,7 +271,7 @@ class AgoraWebSocketHandler:
         sdp_info: SdpInfo,
     ) -> dict[str, Any]:
         """Create join_v3 message for Agora WebSocket."""
-        self.candidates = []
+        self.candidates: list[RTCIceCandidateInit] = []
         message_id = secrets.token_hex(3)  # 6 characters
         process_id = f"process-{secrets.token_hex(4)}-{secrets.token_hex(2)}-{secrets.token_hex(2)}-{secrets.token_hex(2)}-{secrets.token_hex(6)}"
 
@@ -271,13 +279,13 @@ class AgoraWebSocketHandler:
             "_id": message_id,
             "_type": "join_v3",
             "_message": {
-                "p2p_id": 1,
+                "p2p_id": 3,
                 "session_id": secrets.token_hex(16).upper(),
                 "app_id": agora_data.appid,
                 "channel_key": agora_data.token,
                 "channel_name": agora_data.channelName,
-                "sdk_version": "4.23.4",
-                "browser": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:137.0) Gecko/20100101 Firefox/137.0",
+                "sdk_version": "4.24.0",
+                "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
                 "process_id": process_id,
                 "mode": "live",
                 "codec": "vp8",
@@ -306,10 +314,13 @@ class AgoraWebSocketHandler:
                         "maxSubscription": 50,
                         "enableUserLicenseCheck": True,
                         "enableRTX": True,
+                        "enableInstantVideo": False,
                         "enableDataStream2": False,
+                        "enableAutFeedback": True,
                         "enableUserAutoRebalanceCheck": True,
                         "enableXR": True,
                         "enableLossbasedBwe": True,
+                        "enableAutCC": True,
                         "enablePreallocPC": False,
                         "enablePubTWCC": False,
                         "enableSubTWCC": True,
@@ -341,14 +352,14 @@ class AgoraWebSocketHandler:
                         "recv": {
                             "audioCodecs": [],
                             "audioExtensions": [],
-                            "videoCodecs": sdp_info.video_codecs,
+                            "videoCodecs": get_video_codecs_recv(),
                             "videoExtensions": [],
                         },
                         "sendrecv": {
-                            "audioCodecs": sdp_info.audio_codecs,
-                            "audioExtensions": sdp_info.audio_extensions,
-                            "videoCodecs": sdp_info.video_codecs,
-                            "videoExtensions": sdp_info.video_extensions,
+                            "audioCodecs": get_audio_codecs(),
+                            "audioExtensions": get_audio_extensions(),
+                            "videoCodecs": get_video_codecs_sendrecv(),
+                            "videoExtensions": get_video_extensions(),
                         },
                     },
                     "version": "2",
@@ -603,7 +614,7 @@ class AgoraWebSocketHandler:
                 cand_mid = None
                 # dict case (common)
                 if isinstance(rcand, dict):
-                    cand_str = rcand.get("candidate") or ""
+                    cand_str = rcand.candidate or ""
                     # sdpMid can be under different keys
                     cand_mid = (
                         rcand.get("sdpMid")
@@ -1014,5 +1025,5 @@ class AgoraWebSocketHandler:
             self._websocket = None
         self._connection_state = "DISCONNECTED"
 
-    def add_ice_candidate(self, candidate):
+    def add_ice_candidate(self, candidate: RTCIceCandidateInit):
         self.candidates.append(candidate)
