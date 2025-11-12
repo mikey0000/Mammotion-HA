@@ -17,6 +17,7 @@ from homeassistant.components.camera import (
     WebRTCAnswer,
     WebRTCError,
     WebRTCSendMessage,
+    async_register_ice_servers,
 )
 from homeassistant.core import (
     HomeAssistant,
@@ -30,7 +31,7 @@ from pymammotion.http.model.camera_stream import (
     StreamSubscriptionResponse,
 )
 from pymammotion.utility.device_type import DeviceType
-from webrtc_models import RTCIceCandidateInit
+from webrtc_models import RTCIceCandidateInit, RTCIceServer
 
 from . import MammotionConfigEntry
 from .agora_websocket import AgoraWebSocketHandler
@@ -117,6 +118,7 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         self._stream_data: StreamSubscriptionResponse | None = None
         self._attr_model = coordinator.device.device_name
         self.access_tokens = [secrets.token_hex(16)]
+        async_register_ice_servers(hass, self.get_ice_servers)
 
     async def async_camera_image(
         self, width: int | None = None, height: int | None = None
@@ -172,6 +174,8 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         """Ignore WebRTC candidates."""
         _LOGGER.info("Received WebRTC candidate for session %s", session_id)
         _LOGGER.info("Received WebRTC candidate %s", candidate)
+        if "typ host" not in candidate.candidate:
+            self._agora_handler.add_ice_candidate(candidate)
 
     @callback
     async def close_webrtc_session(self, session_id: str) -> None:
@@ -216,6 +220,31 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
             _LOGGER.error("WebRTC negotiation failed: %s", ex)
             _LOGGER.warning("Using fallback SDP due to exception")
             return self._agora_handler._generate_fallback_sdp()
+
+    def get_ice_servers(self) -> list[RTCIceServer]:
+        """Return the ICE servers."""
+        return [
+            RTCIceServer(
+                username="21231058",
+                credential="997adc40c3ee7e39aab6f805dd41d42b6205f45eff6f2edb8b7fc70e4f241367",
+                urls="stun:164-52-103-9.edge.agora.io:3478",
+            ),
+            RTCIceServer(
+                username="21231058",
+                credential="997adc40c3ee7e39aab6f805dd41d42b6205f45eff6f2edb8b7fc70e4f241367",
+                urls="turn:164-52-103-9.edge.agora.io:3478?transport=udp",
+            ),
+            RTCIceServer(
+                username="21231058",
+                credential="997adc40c3ee7e39aab6f805dd41d42b6205f45eff6f2edb8b7fc70e4f241367",
+                urls="turn:164-52-103-9.edge.agora.io:3478?transport=tcp",
+            ),
+            RTCIceServer(
+                username="21231058",
+                credential="997adc40c3ee7e39aab6f805dd41d42b6205f45eff6f2edb8b7fc70e4f241367",
+                urls="turn:164-52-103-9.edge.agora.io:443?transport=tcp",
+            ),
+        ]
 
 
 # Global

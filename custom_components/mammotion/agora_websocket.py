@@ -5,7 +5,6 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-import random
 import secrets
 import ssl
 import time
@@ -85,6 +84,7 @@ class AgoraWebSocketHandler:
         self._connection_state = "DISCONNECTED"
         self._message_handlers: dict[str, Callable] = {}
         self._response_handlers: dict[str, asyncio.Future] = {}
+        self.candidates = []
         self._setup_message_handlers()
 
     def _setup_message_handlers(self) -> None:
@@ -263,6 +263,7 @@ class AgoraWebSocketHandler:
         sdp_info: SdpInfo,
     ) -> dict[str, Any]:
         """Create join_v3 message for Agora WebSocket."""
+        self.candidates = []
         message_id = secrets.token_hex(3)  # 6 characters
         process_id = f"process-{secrets.token_hex(4)}-{secrets.token_hex(2)}-{secrets.token_hex(2)}-{secrets.token_hex(2)}-{secrets.token_hex(6)}"
 
@@ -539,6 +540,10 @@ class AgoraWebSocketHandler:
     ) -> str | None:
         """Generate SDP answer from ORTC parameters."""
         try:
+            import random
+            import secrets
+            from collections import defaultdict
+
             ice_params = ortc.get("iceParameters", {})
             dtls_params = ortc.get("dtlsParameters", {})
             rtp_caps = ortc.get("rtpCapabilities", {}).get("sendrecv", {})
@@ -547,11 +552,21 @@ class AgoraWebSocketHandler:
             _LOGGER.debug("DTLS params: %s", dtls_params)
             _LOGGER.debug("RTP caps: %s", rtp_caps)
 
-            candidates = ice_params.get("candidates", [])
-            ice_ufrag = ice_params.get("iceUfrag", "") or secrets.token_hex(4)
-            ice_pwd = ice_params.get("icePwd", "") or secrets.token_hex(16)
+            # Extract ICE candidates and credentials from ORTC
+            ortc_candidates = ice_params.get("candidates", []) or []
+            ice_ufrag = ice_params.get("iceUfrag", "") or ""
+            ice_pwd = ice_params.get("icePwd", "") or ""
 
-            fingerprints = dtls_params.get("fingerprints", [])
+            # fallback credentials
+            if not ice_ufrag:
+                ice_ufrag = secrets.token_hex(4)
+                _LOGGER.warning("Using fallback ICE ufrag: %s", ice_ufrag)
+            if not ice_pwd:
+                ice_pwd = secrets.token_hex(16)
+                _LOGGER.warning("Using fallback ICE pwd")
+
+            # Extract DTLS fingerprint
+            fingerprints = dtls_params.get("fingerprints", []) or []
             fingerprint = ""
             if fingerprints:
                 fp = fingerprints[0]
@@ -563,8 +578,70 @@ class AgoraWebSocketHandler:
                     [secrets.token_hex(1).upper() for _ in range(32)]
                 )
                 fingerprint = f"sha-256 {fallback_fingerprint}"
+                _LOGGER.warning("Using fallback fingerprint")
 
-            # helper: answer direction mapping
+            # Build candidate lines grouped by mid. '*' = generic (no mid)
+            candidates_by_mid = defaultdict(list)
+
+            # Add ORTC-provided candidates as generic candidates
+            for i, c in enumerate(ortc_candidates):
+                foundation = c.get("foundation", f"candidate{i}")
+                protocol = c.get("protocol", "udp")
+                priority = c.get("priority", 2103266323)
+                ip = c.get("ip", "")
+                port = c.get("port", 0)
+                ctype = c.get("type", "host")
+                cand_line = f"a=candidate:{foundation} 1 {protocol} {priority} {ip} {port} typ {ctype}"
+                if c.get("generation") is not None:
+                    cand_line += f" generation {c.get('generation')}"
+                candidates_by_mid["*"].append(cand_line)
+
+            # Incorporate candidates received at runtime (self._candidates)
+            # Accept dicts like RTCIceCandidateInit or raw strings.
+            for rcand in self.candidates:
+                cand_str = None
+                cand_mid = None
+                # dict case (common)
+                if isinstance(rcand, dict):
+                    cand_str = rcand.get("candidate") or ""
+                    # sdpMid can be under different keys
+                    cand_mid = (
+                        rcand.get("sdpMid")
+                        or rcand.get("sdp_mid")
+                        or rcand.get("sdpMLineIndex")
+                    )
+                # string case
+                elif isinstance(rcand, str):
+                    cand_str = rcand
+                else:
+                    # unknown type: try str()
+                    cand_str = str(rcand)
+
+                if not cand_str:
+                    continue
+
+                # normalize to "a=" prefix
+                cand_line = (
+                    cand_str
+                    if cand_str.startswith("a=")
+                    else (
+                        "a=" + cand_str
+                        if cand_str.startswith("candidate:")
+                        else "a=candidate:" + cand_str
+                    )
+                )
+
+                # map to mid if provided, else generic
+                if cand_mid is not None:
+                    # use string key for mid (some clients use numeric mline index)
+                    candidates_by_mid[str(cand_mid)].append(cand_line)
+                else:
+                    candidates_by_mid["*"].append(cand_line)
+
+            # Build codec lists (minimal rtpmap entries as before)
+            video_codecs = rtp_caps.get("videoCodecs", []) or []
+            audio_codecs = rtp_caps.get("audioCodecs", []) or []
+
             def answer_direction_for_offer(offer_dir: str) -> str:
                 if offer_dir == "sendonly":
                     return "recvonly"
@@ -574,59 +651,29 @@ class AgoraWebSocketHandler:
                     return "sendrecv"
                 return "inactive"
 
-            # helper: render codec block lines (rtpmap, fmtp, rtcp-fb)
-            def codec_lines_for_list(codecs: list[dict]) -> list[str]:
-                lines: list[str] = []
-                for c in codecs:
-                    pt = c.get("payloadType")
-                    rtpmap = c.get("rtpMap")
-                    if pt is None or not rtpmap:
-                        continue
-                    enc = rtpmap.get("encodingName")
-                    clock = rtpmap.get("clockRate")
-                    params = rtpmap.get("encodingParameters")
-                    if params:
-                        lines.append(f"a=rtpmap:{pt} {enc}/{clock}/{params}")
-                    else:
-                        lines.append(f"a=rtpmap:{pt} {enc}/{clock}")
-                    # fmtp
-                    fmtp = (
-                        c.get("fmtp", {}).get("parameters") if c.get("fmtp") else None
-                    )
-                    if fmtp:
-                        # join key=val with ';' like typical fmtp
-                        kv = ";".join(f"{k}={v}" for k, v in fmtp.items())
-                        lines.append(f"a=fmtp:{pt} {kv}")
-                    # rtcp-fb
-                    for fb in c.get("rtcpFeedbacks", []) or []:
-                        t = fb.get("type")
-                        p = fb.get("parameter")
-                        if p:
-                            lines.append(f"a=rtcp-fb:{pt} {t} {p}")
-                        else:
-                            lines.append(f"a=rtcp-fb:{pt} {t}")
-                return lines
+            # Find payloads (keep first matching as original)
+            vp8_payload = None
+            for codec in video_codecs:
+                if codec.get("rtpMap", {}).get("encodingName", "").upper() == "VP8":
+                    vp8_payload = codec.get("payloadType")
+                    break
 
-            # collect audio/video capabilities and rtx separately
-            audio_codecs = rtp_caps.get("audioCodecs", []) or []
-            video_codecs = rtp_caps.get("videoCodecs", []) or []
-            # find rtx codecs (encodingName 'rtx')
-            rtx_codecs = [
-                c
-                for c in (video_codecs + audio_codecs)
-                if c.get("rtpMap", {}).get("encodingName", "").lower() == "rtx"
-            ]
+            opus_payload = None
+            for codec in audio_codecs:
+                if codec.get("rtpMap", {}).get("encodingName", "").upper() == "OPUS":
+                    opus_payload = codec.get("payloadType")
+                    break
 
-            # build extmap lines
-            audio_ext = rtp_caps.get("audioExtensions", []) or []
-            video_ext = rtp_caps.get("videoExtensions", []) or []
+            if opus_payload is None:
+                opus_payload = 111
+                _LOGGER.warning("Opus codec not found, using default %s", opus_payload)
+            if vp8_payload is None:
+                vp8_payload = 96
+                _LOGGER.warning("VP8 codec not found, using default %s", vp8_payload)
 
-            def extmap_lines(extlist):
-                return [
-                    f"a=extmap:{e.get('entry')} {e.get('extensionName')}"
-                    for e in extlist
-                ]
-
+            # Determine media order and directions from incoming offer
+            media = sdp_info.parsed_sdp.get("media", []) or []
+            # build base sdp header
             sdp_lines = [
                 "v=0",
                 f"o=- {sdp_info.parsed_sdp['origin']['sessionId']} {sdp_info.parsed_sdp['origin']['sessionVersion']} IN IP4 127.0.0.1",
@@ -636,56 +683,23 @@ class AgoraWebSocketHandler:
                 "a=msid-semantic: WMS",
             ]
 
-            # top-level ice/fingerprint are per-media in many examples; keep them per-media but log here
-            _LOGGER.debug(
-                "Using ice-ufrag=%s ice-pwd=%s fingerprint=%s",
-                ice_ufrag,
-                ice_pwd,
-                fingerprint,
-            )
-
-            # Build media sections in the same order as the offer
-            media_list = sdp_info.parsed_sdp.get("media", [])
-            for idx, m in enumerate(media_list):
+            # iterate media sections in offer order and emit corresponding answer media sections
+            for idx, m in enumerate(media):
                 mtype = m.get("type", "audio")
                 offer_dir = m.get("direction", "sendonly")
                 answer_dir = answer_direction_for_offer(offer_dir)
-                mid = m.get("mid", str(idx))
-                # select codec list based on type
+                mid = str(m.get("mid", str(idx)))
+
+                # select payload for this media
                 if mtype == "audio":
-                    caps = audio_codecs
-                    ext_lines = extmap_lines(audio_ext)
+                    payloads_str = str(opus_payload)
                 else:
-                    caps = video_codecs
-                    ext_lines = extmap_lines(video_ext)
+                    payloads_str = str(vp8_payload)
 
-                # build payloads string from caps (preserve order in caps)
-                payloads = [
-                    str(c.get("payloadType"))
-                    for c in caps
-                    if c.get("payloadType") is not None
-                ]
-                # include rtx payloads that reference these payloads
-                for r in rtx_codecs:
-                    apt = (
-                        r.get("fmtp", {}).get("parameters", {}).get("apt")
-                        if r.get("fmtp")
-                        else None
-                    )
-                    if apt and str(apt) not in payloads:
-                        payloads.append(str(r.get("payloadType")))
-
-                payloads_str = (
-                    " ".join(payloads)
-                    if payloads
-                    else ("111" if mtype == "audio" else "96")
-                )
-
-                # m-line
+                # media header
                 sdp_lines.append(f"m={mtype} 9 UDP/TLS/RTP/SAVPF {payloads_str}")
                 sdp_lines.append("c=IN IP4 0.0.0.0")
                 sdp_lines.append("a=rtcp:9 IN IP4 0.0.0.0")
-                # ICE / DTLS per-media
                 sdp_lines.append(f"a=ice-ufrag:{ice_ufrag}")
                 sdp_lines.append(f"a=ice-pwd:{ice_pwd}")
                 sdp_lines.append("a=ice-options:trickle")
@@ -694,38 +708,31 @@ class AgoraWebSocketHandler:
                 sdp_lines.append(f"a=mid:{mid}")
                 sdp_lines.append(f"a={answer_dir}")
                 sdp_lines.append("a=rtcp-mux")
-                # include reduced-size RTCP if offer had it (best-effort)
-                if m.get("rtcp-rsize", True) is not False:
-                    sdp_lines.append("a=rtcp-rsize")
-                # extmap lines
-                sdp_lines.extend(ext_lines)
-                # codec specific lines
-                sdp_lines.extend(codec_lines_for_list(caps))
-                # rtx lines (rtx codecs usually include fmtp apt)
-                sdp_lines.extend(codec_lines_for_list(rtx_codecs))
-                # include SSRC if answer will send
+
+                # minimal rtpmap lines
+                if mtype == "audio":
+                    sdp_lines.append(f"a=rtpmap:{opus_payload} opus/48000/2")
+                else:
+                    sdp_lines.append(f"a=rtpmap:{vp8_payload} VP8/90000")
+
+                # send SSRC if answer sends
                 if "send" in answer_dir:
                     local_ssrc = random.randint(1, 2**32 - 1)
                     local_cname = ortc.get("cname") or f"pc-{secrets.token_hex(6)}"
                     sdp_lines.append(f"a=ssrc:{local_ssrc} cname:{local_cname}")
 
-                # candidates - put candidate lines after each m= section (format similar to offer)
-                for candidate in candidates:
-                    cand_line = (
-                        f"a=candidate:{candidate.get('foundation', 'candidate')} "
-                        f"1 {candidate.get('protocol', 'udp')} "
-                        f"{candidate.get('priority', 2103266323)} "
-                        f"{candidate.get('ip', '')} "
-                        f"{candidate.get('port', 4701)} "
-                        f"typ {candidate.get('type', 'host')}"
-                    )
-                    # optional attributes from candidate
-                    generation = candidate.get("generation")
-                    if generation is not None:
-                        cand_line += f" generation {generation}"
-                    sdp_lines.append(cand_line)
+                # append candidates for this media: specific mid then generic ones
+                # try exact mid key, also accept numeric mline index as key
+                specific = candidates_by_mid.get(mid, []) + candidates_by_mid.get(
+                    str(idx), []
+                )
+                for cl in specific:
+                    sdp_lines.append(cl)
+                for cl in candidates_by_mid.get("*", []):
+                    sdp_lines.append(cl)
 
             generated_sdp = "\r\n".join(sdp_lines) + "\r\n"
+            _LOGGER.info("Generated SDP lines count: %s", len(sdp_lines))
             _LOGGER.debug("Generated SDP content: %s", generated_sdp)
 
             if self._validate_sdp(generated_sdp):
@@ -1006,3 +1013,6 @@ class AgoraWebSocketHandler:
             await self._websocket.close()
             self._websocket = None
         self._connection_state = "DISCONNECTED"
+
+    def add_ice_candidate(self, candidate):
+        self.candidates.append(candidate)
