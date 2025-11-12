@@ -19,10 +19,10 @@ import aiohttp
 
 # Service flags (from Agora SDK)
 SERVICE_FLAGS = {
-    "CHOOSE_SERVER": 4096,
-    "CLOUD_PROXY": 1048576,
-    "CLOUD_PROXY_5": 4194304,
-    "CLOUD_PROXY_FALLBACK": 4194310,
+    "CHOOSE_SERVER": 11,
+    "CLOUD_PROXY": 18,
+    "CLOUD_PROXY_5": 20,
+    "CLOUD_PROXY_FALLBACK": 26,
 }
 
 
