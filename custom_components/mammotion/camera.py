@@ -17,7 +17,7 @@ from homeassistant.components.camera import (
     WebRTCAnswer,
     WebRTCError,
     WebRTCSendMessage,
-    async_register_ice_servers,
+    async_register_ice_servers, Camera, CameraEntityFeature,
 )
 from homeassistant.core import (
     HomeAssistant,
@@ -37,7 +37,7 @@ from . import MammotionConfigEntry
 from .agora_api import SERVICE_FLAGS, AgoraAPIClient
 from .agora_websocket import AgoraWebSocketHandler
 from .coordinator import MammotionBaseUpdateCoordinator
-from .entity import MammotionCameraBaseEntity
+from .entity import MammotionCameraBaseEntity, MammotionBaseEntity
 from .models import MammotionMowerData
 
 _LOGGER = logging.getLogger(__name__)
@@ -208,6 +208,7 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
 
                 send_message(WebRTCAnswer(answer_sdp))
                 _LOGGER.info("WebRTC negotiation completed successfully")
+                # Send set_client_role after successful join
             else:
                 send_message(WebRTCError("500", "WebRTC negotiation failed"))
 

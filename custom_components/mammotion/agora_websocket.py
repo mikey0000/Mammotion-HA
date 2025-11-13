@@ -82,6 +82,8 @@ class SdpInfo:
     audio_direction: str
     video_direction: str
     ice_candidates: list[dict[str, Any]]
+    extmap_allow_mixed: bool
+    setup_role: str
 
 
 class AgoraWebSocketHandler:
@@ -242,6 +244,9 @@ class AgoraWebSocketHandler:
             _LOGGER.info("Full response message: %s", message)
             return None
 
+        # Send set_client_role after successful connection
+        await self._send_set_client_role(role="audience", level=1)
+
         _LOGGER.info("ORTC parameters: %s", ortc)
 
         # Generate answer SDP from ORTC parameters
@@ -252,9 +257,6 @@ class AgoraWebSocketHandler:
 
             # Store answer SDP for later retrieval
             self._answer_sdp = answer_sdp
-
-            # Send set_client_role after successful join
-            await self._send_set_client_role(role="audience", level=1)
 
             return answer_sdp
 
@@ -745,6 +747,16 @@ class AgoraWebSocketHandler:
 
                     ice_candidates.append(ice_candidate)
 
+            # Extract extmap-allow-mixed from session level
+            extmap_allow_mixed = parsed_sdp.get("extmapAllowMixed", False)
+
+            # Extract setup role from first media section (usually same for all)
+            setup_role = "actpass"  # default
+            for media in parsed_sdp.get("media", []):
+                if "setup" in media:
+                    setup_role = media["setup"]
+                    break
+
             return SdpInfo(
                 parsed_sdp,
                 fingerprint=fingerprint,
@@ -757,6 +769,8 @@ class AgoraWebSocketHandler:
                 audio_direction=audio_direction,
                 video_direction=video_direction,
                 ice_candidates=ice_candidates,
+                extmap_allow_mixed=extmap_allow_mixed,
+                setup_role=setup_role,
             )
 
         except (ValueError, IndexError, KeyError) as ex:
@@ -824,9 +838,11 @@ class AgoraWebSocketHandler:
                     cand_line += f" generation {c.get('generation')}"
                 candidates_by_mid["*"].append(cand_line)
 
-            # Build codec lists (minimal rtpmap entries as before)
+            # Extract codec lists and extensions from ORTC
             video_codecs = rtp_caps.get("videoCodecs", []) or []
             audio_codecs = rtp_caps.get("audioCodecs", []) or []
+            video_extensions = rtp_caps.get("videoExtensions", []) or []
+            audio_extensions = rtp_caps.get("audioExtensions", []) or []
 
             def answer_direction_for_offer(offer_dir: str) -> str:
                 if offer_dir == "sendonly":
@@ -837,50 +853,59 @@ class AgoraWebSocketHandler:
                     return "sendrecv"
                 return "inactive"
 
-            # Find payloads (keep first matching as original)
-            vp8_payload = None
-            for codec in video_codecs:
-                if codec.get("rtpMap", {}).get("encodingName", "").upper() == "VP8":
-                    vp8_payload = codec.get("payloadType")
-                    break
-
-            opus_payload = None
-            for codec in audio_codecs:
-                if codec.get("rtpMap", {}).get("encodingName", "").upper() == "OPUS":
-                    opus_payload = codec.get("payloadType")
-                    break
-
-            if opus_payload is None:
-                opus_payload = 111
-                _LOGGER.warning("Opus codec not found, using default %s", opus_payload)
-            if vp8_payload is None:
-                vp8_payload = 96
-                _LOGGER.warning("VP8 codec not found, using default %s", vp8_payload)
-
-            # Determine media order and directions from incoming offer
+            # Parse media from offer - MUST preserve exact order for answer
             media = sdp_info.parsed_sdp.get("media", []) or []
+
+            # Build BUNDLE list from offer
+            bundle_group = sdp_info.parsed_sdp.get("groups", [{}])[0] if sdp_info.parsed_sdp.get("groups") else {}
+            bundle_mids = bundle_group.get("mids", "0 1") if bundle_group else "0 1"
+
+            # Determine answer setup role based on offer
+            def answer_setup_for_offer(offer_setup: str) -> str:
+                if offer_setup == "actpass":
+                    return "active"  # We choose to be active
+                if offer_setup == "active":
+                    return "passive"  # Must be passive
+                if offer_setup == "passive":
+                    return "active"  # Must be active
+                return "active"  # default
+
+            answer_setup = answer_setup_for_offer(sdp_info.setup_role)
+
             # build base sdp header
             sdp_lines = [
                 "v=0",
                 f"o=- {sdp_info.parsed_sdp['origin']['sessionId']} {sdp_info.parsed_sdp['origin']['sessionVersion']} IN IP4 127.0.0.1",
                 "s=-",
                 "t=0 0",
-                "a=group:BUNDLE 0 1",
-                "a=msid-semantic: WMS",
+                f"a=group:BUNDLE {bundle_mids}",
             ]
 
-            # iterate media sections in offer order and emit corresponding answer media sections
+            # Add extmap-allow-mixed if present in offer
+            if sdp_info.extmap_allow_mixed:
+                sdp_lines.append("a=extmap-allow-mixed")
+
+            sdp_lines.append("a=msid-semantic: WMS")
+
+            # Generate media sections in EXACT SAME ORDER as offer
+            # The answer MUST match the offer's m-line order
             for idx, m in enumerate(media):
                 mtype = m.get("type", "audio")
                 offer_dir = m.get("direction", "sendonly")
                 answer_dir = answer_direction_for_offer(offer_dir)
                 mid = str(m.get("mid", str(idx)))
 
-                # select payload for this media
+                # Select codecs for this media type
                 if mtype == "audio":
-                    payloads_str = str(opus_payload)
+                    codecs = audio_codecs
+                    extensions = audio_extensions
                 else:
-                    payloads_str = str(vp8_payload)
+                    codecs = video_codecs
+                    extensions = video_extensions
+
+                # Build payload type list
+                payload_types = [str(codec.get("payloadType")) for codec in codecs]
+                payloads_str = " ".join(payload_types)
 
                 # media header
                 sdp_lines.append(f"m={mtype} 9 UDP/TLS/RTP/SAVPF {payloads_str}")
@@ -890,16 +915,69 @@ class AgoraWebSocketHandler:
                 sdp_lines.append(f"a=ice-pwd:{ice_pwd}")
                 sdp_lines.append("a=ice-options:trickle")
                 sdp_lines.append(f"a=fingerprint:{fingerprint}")
-                sdp_lines.append("a=setup:active")
+                sdp_lines.append(f"a=setup:{answer_setup}")
                 sdp_lines.append(f"a=mid:{mid}")
+
+                # Add RTP extensions - MUST use offer's extension IDs
+                # Build mapping from offer's extension URIs to their IDs
+                offer_ext_map = {}
+                if mtype == "audio":
+                    for ext in sdp_info.audio_extensions:
+                        offer_ext_map[ext.get("extensionName")] = ext.get("entry")
+                else:
+                    for ext in sdp_info.video_extensions:
+                        offer_ext_map[ext.get("extensionName")] = ext.get("entry")
+
+                # Add extensions using offer's IDs for matching URIs
+                for ext in extensions:
+                    ext_name = ext.get("extensionName")
+                    if not ext_name:
+                        continue
+
+                    # Use the offer's extension ID if this extension was in the offer
+                    if ext_name in offer_ext_map:
+                        entry = offer_ext_map[ext_name]
+                        sdp_lines.append(f"a=extmap:{entry} {ext_name}")
+                    # Otherwise skip this extension (not negotiated in offer)
+
                 sdp_lines.append(f"a={answer_dir}")
                 sdp_lines.append("a=rtcp-mux")
+                sdp_lines.append("a=rtcp-rsize")
 
-                # minimal rtpmap lines
-                if mtype == "audio":
-                    sdp_lines.append(f"a=rtpmap:{opus_payload} opus/48000/2")
-                else:
-                    sdp_lines.append(f"a=rtpmap:{vp8_payload} VP8/90000")
+                # Add codec details (rtpmap, rtcp-fb, fmtp)
+                for codec in codecs:
+                    pt = codec.get("payloadType")
+                    rtp_map = codec.get("rtpMap", {})
+                    encoding_name = rtp_map.get("encodingName", "")
+                    clock_rate = rtp_map.get("clockRate", 90000)
+                    encoding_params = rtp_map.get("encodingParameters")
+
+                    # rtpmap line
+                    if encoding_params:
+                        sdp_lines.append(
+                            f"a=rtpmap:{pt} {encoding_name}/{clock_rate}/{encoding_params}"
+                        )
+                    else:
+                        sdp_lines.append(f"a=rtpmap:{pt} {encoding_name}/{clock_rate}")
+
+                    # rtcp-fb lines
+                    for fb in codec.get("rtcpFeedbacks", []):
+                        fb_type = fb.get("type")
+                        fb_param = fb.get("parameter")
+                        if fb_param:
+                            sdp_lines.append(f"a=rtcp-fb:{pt} {fb_type} {fb_param}")
+                        else:
+                            sdp_lines.append(f"a=rtcp-fb:{pt} {fb_type}")
+
+                    # fmtp line
+                    fmtp = codec.get("fmtp", {})
+                    if fmtp:
+                        params = fmtp.get("parameters", {})
+                        if params:
+                            param_str = ";".join(
+                                [f"{k}={v}" for k, v in params.items()]
+                            )
+                            sdp_lines.append(f"a=fmtp:{pt} {param_str}")
 
                 # send SSRC if answer sends
                 if "send" in answer_dir:

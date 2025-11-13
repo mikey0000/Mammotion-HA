@@ -223,7 +223,7 @@ class AgoraResponse:
             # UDP TURN server
             ice_servers.append(
                 ICEServer(
-                    urls=f"turn:{addr.ip.replace('.', '-')}.edge.agora.io:{turn_port_udp}?transport=udp",
+                    urls=f"turn:{addr.ip}.edge.agora.io:{turn_port_udp}?transport=udp",
                     username=addr.username,
                     credential=addr.credentials,
                 )
@@ -232,7 +232,7 @@ class AgoraResponse:
             # TCP TURN server
             ice_servers.append(
                 ICEServer(
-                    urls=f"turn:{addr.ip.replace('.', '-')}.edge.agora.io:{turn_port_tcp}?transport=tcp",
+                    urls=f"turn:{addr.ip}:{turn_port_tcp}?transport=tcp",
                     username=addr.username,
                     credential=addr.credentials,
                 )
@@ -246,13 +246,13 @@ class AgoraResponse:
                     credential=addr.credentials,
                 )
             )
-            ice_servers.append(
-                ICEServer(
-                    urls=f"stun:{addr.ip.replace('.', '-')}.edge.agora.io:{turn_port_tcp}",
-                    username=addr.username,
-                    credential=addr.credentials,
-                )
-            )
+            # ice_servers.append(
+            #     ICEServer(
+            #         urls=f"stun:{addr.ip.replace('.', '-')}.edge.agora.io:{turn_port_tcp}",
+            #         username=addr.username,
+            #         credential=addr.credentials,
+            #     )
+            # )
 
         return ice_servers
 
