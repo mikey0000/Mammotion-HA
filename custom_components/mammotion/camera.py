@@ -17,7 +17,7 @@ from homeassistant.components.camera import (
     WebRTCAnswer,
     WebRTCError,
     WebRTCSendMessage,
-    async_register_ice_servers, Camera, CameraEntityFeature,
+    async_register_ice_servers,
 )
 from homeassistant.core import (
     HomeAssistant,
@@ -34,10 +34,10 @@ from pymammotion.utility.device_type import DeviceType
 from webrtc_models import RTCIceCandidateInit, RTCIceServer
 
 from . import MammotionConfigEntry
-from .agora_api import SERVICE_FLAGS, AgoraAPIClient
+from .agora_api import SERVICE_IDS, AgoraAPIClient
 from .agora_websocket import AgoraWebSocketHandler
 from .coordinator import MammotionBaseUpdateCoordinator
-from .entity import MammotionCameraBaseEntity, MammotionBaseEntity
+from .entity import MammotionCameraBaseEntity
 from .models import MammotionMowerData
 
 _LOGGER = logging.getLogger(__name__)
@@ -90,8 +90,8 @@ async def async_setup_entry(
                                 channel_name=subscription["channelName"],
                                 user_id=int(subscription["uid"]),
                                 service_flags=[
-                                    SERVICE_FLAGS["CHOOSE_SERVER"],
-                                    SERVICE_FLAGS["CLOUD_PROXY"],
+                                    SERVICE_IDS["CHOOSE_SERVER"],  # Gateway addresses
+                                    SERVICE_IDS["CLOUD_PROXY_FALLBACK"],  # TURN servers
                                 ],
                             )
 
@@ -220,10 +220,10 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         self, session_id: str, candidate: RTCIceCandidateInit
     ) -> None:
         """Ignore WebRTC candidates."""
-        _LOGGER.info("Received WebRTC candidate for session %s", session_id)
+        # _LOGGER.info("Received WebRTC candidate for session %s", session_id)
         _LOGGER.info("Received WebRTC candidate %s", candidate)
-        if "typ relay" in candidate.candidate or "typ srflx" in candidate.candidate:
-            self._agora_handler.add_ice_candidate(candidate)
+        # if "typ prflx" in candidate.candidate:
+        self._agora_handler.add_ice_candidate(candidate)
 
     @callback
     async def async_close_webrtc_session(self, session_id: str) -> None:

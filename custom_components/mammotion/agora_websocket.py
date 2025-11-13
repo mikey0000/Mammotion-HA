@@ -128,13 +128,30 @@ class AgoraWebSocketHandler:
         """
         _LOGGER.debug("Starting Agora WebSocket connection for session %s", session_id)
         _LOGGER.info("Agora data: %s", agora_data)
-        # Get edge server information
-        edge_info = await self._get_agora_edge_services(agora_data)
-        if not edge_info:
-            _LOGGER.error("Failed to get Agora edge services")
-            return None
 
-        _LOGGER.info("Edge: %s", edge_info)
+        # Wait for at least 2 ICE candidates before proceeding
+        max_wait_time = 10  # seconds
+        wait_interval = 0.1  # seconds
+        elapsed = 0.0
+
+        while len(self.candidates) < 2 and elapsed < max_wait_time:
+            _LOGGER.debug(
+                "Waiting for ICE candidates... Currently have %d, need at least 2",
+                len(self.candidates),
+            )
+            await asyncio.sleep(wait_interval)
+            elapsed += wait_interval
+
+        if len(self.candidates) < 2:
+            _LOGGER.warning(
+                "Timed out waiting for ICE candidates. Only received %d candidate(s)",
+                len(self.candidates),
+            )
+        else:
+            _LOGGER.info(
+                "Received %d ICE candidates, proceeding with connection",
+                len(self.candidates),
+            )
 
         # Parse offer SDP for capabilities
         sdp_info = self._parse_offer_sdp(offer_sdp)
@@ -145,12 +162,20 @@ class AgoraWebSocketHandler:
         _LOGGER.info("Parsed offer SDP: %s", sdp_info)
 
         # Incorporate runtime ICE candidates into offer SDP
-        if self.candidates:
+        if len(self.candidates) >= 2:
             offer_sdp = self._add_candidates_to_sdp(offer_sdp, self.candidates)
             _LOGGER.info("Added %d candidates to offer SDP", len(self.candidates))
         _LOGGER.info("Offer SDP with candidates: %s", offer_sdp)
-        # Try each edge address with timeout
-        for edge_address in edge_info.addresses:
+        # Try each gateway address (flag 4096) with timeout
+        # Use gateway addresses specifically for WebSocket connection
+        gateway_addresses = agora_response.get_gateway_addresses()
+        if not gateway_addresses:
+            _LOGGER.warning(
+                "No gateway addresses found, falling back to default addresses"
+            )
+            gateway_addresses = agora_response.addresses
+
+        for edge_address in gateway_addresses:
             edge_ip_dashed = edge_address.ip.replace(".", "-")
             ws_url = f"wss://{edge_ip_dashed}.edge.agora.io:{edge_address.port}"
 
@@ -165,7 +190,7 @@ class AgoraWebSocketHandler:
 
                         # Send join message
                         join_message = self._create_join_message(
-                            agora_data, offer_sdp, edge_info, sdp_info, agora_response
+                            agora_data, offer_sdp, sdp_info, agora_response
                         )
                         await websocket.send(json.dumps(join_message))
                         _LOGGER.info("Sent join message to Agora %s", join_message)
@@ -244,9 +269,6 @@ class AgoraWebSocketHandler:
             _LOGGER.info("Full response message: %s", message)
             return None
 
-        # Send set_client_role after successful connection
-        await self._send_set_client_role(role="audience", level=1)
-
         _LOGGER.info("ORTC parameters: %s", ortc)
 
         # Generate answer SDP from ORTC parameters
@@ -257,6 +279,9 @@ class AgoraWebSocketHandler:
 
             # Store answer SDP for later retrieval
             self._answer_sdp = answer_sdp
+
+            # # Send set_client_role after successful connection
+            # await self._send_set_client_role(role="audience", level=1)
 
             return answer_sdp
 
@@ -347,7 +372,6 @@ class AgoraWebSocketHandler:
         self,
         agora_data: StreamSubscriptionResponse,
         offer_sdp: str,
-        edge_info: ResponseInfo,
         sdp_info: SdpInfo,
         agora_response: AgoraResponse,
     ) -> dict[str, Any]:
@@ -371,7 +395,7 @@ class AgoraWebSocketHandler:
                 "codec": "vp8",
                 "role": "audience",
                 "has_changed_gateway": False,
-                "ap_response": agora_response.to_ap_response(),
+                "ap_response": agora_response.to_ap_response(4096),
                 "extend": "",
                 "details": {},
                 "features": {"rejoin": True},
@@ -857,7 +881,11 @@ class AgoraWebSocketHandler:
             media = sdp_info.parsed_sdp.get("media", []) or []
 
             # Build BUNDLE list from offer
-            bundle_group = sdp_info.parsed_sdp.get("groups", [{}])[0] if sdp_info.parsed_sdp.get("groups") else {}
+            bundle_group = (
+                sdp_info.parsed_sdp.get("groups", [{}])[0]
+                if sdp_info.parsed_sdp.get("groups")
+                else {}
+            )
             bundle_mids = bundle_group.get("mids", "0 1") if bundle_group else "0 1"
 
             # Determine answer setup role based on offer
