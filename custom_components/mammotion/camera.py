@@ -112,6 +112,7 @@ async def async_setup_entry(
 
                             # Store ICE servers in coordinator
                             mower.reporting_coordinator._ice_servers = ice_servers
+                            mower.reporting_coordinator._agora_response = agora_response
                             _LOGGER.info(
                                 "Retrieved %d ICE servers from Agora API",
                                 len(ice_servers),
@@ -162,6 +163,7 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         self.access_tokens = [secrets.token_hex(16)]
         # Get ICE servers from coordinator (populated in async_setup_entry)
         self.ice_servers = getattr(coordinator, "_ice_servers", [])
+        self._agora_response = getattr(coordinator, "_agora_response", None)
         async_register_ice_servers(hass, self.get_ice_servers)
 
     async def async_camera_image(
@@ -179,6 +181,7 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         negotiation directly in Python.
         """
         _LOGGER.info("Handling WebRTC offer for session %s", session_id)
+        _LOGGER.info("Raw OFFER SDP %s", offer_sdp)
 
         try:
             # Get stream data (appid, channelName, token, uid)
@@ -218,11 +221,11 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         """Ignore WebRTC candidates."""
         _LOGGER.info("Received WebRTC candidate for session %s", session_id)
         _LOGGER.info("Received WebRTC candidate %s", candidate)
-        if "typ host" not in candidate.candidate:
+        if "typ relay" in candidate.candidate or "typ srflx" in candidate.candidate:
             self._agora_handler.add_ice_candidate(candidate)
 
     @callback
-    async def close_webrtc_session(self, session_id: str) -> None:
+    async def async_close_webrtc_session(self, session_id: str) -> None:
         """Close WebRTC session."""
         await self._agora_handler.disconnect()
 
@@ -247,7 +250,7 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         # Use the new AgoraWebSocketHandler for negotiation
         try:
             answer_sdp = await self._agora_handler.connect_and_join(
-                agora_data, offer_sdp, session_id
+                agora_data, offer_sdp, session_id, agora_response=self._agora_response
             )
 
             if answer_sdp:

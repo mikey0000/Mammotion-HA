@@ -18,6 +18,7 @@ from webrtc_models import RTCIceCandidateInit
 from websockets.asyncio.client import ClientConnection, connect
 from websockets.exceptions import WebSocketException
 
+from .agora_api import AgoraResponse
 from .agora_rtc_capabilities import (
     get_audio_codecs,
     get_audio_extensions,
@@ -80,6 +81,7 @@ class SdpInfo:
     video_extensions: list[dict[str, Any]]
     audio_direction: str
     video_direction: str
+    ice_candidates: list[dict[str, Any]]
 
 
 class AgoraWebSocketHandler:
@@ -92,7 +94,10 @@ class AgoraWebSocketHandler:
         self._connection_state = "DISCONNECTED"
         self._message_handlers: dict[str, Callable] = {}
         self._response_handlers: dict[str, asyncio.Future] = {}
-        self.candidates = []
+        self.candidates: list[RTCIceCandidateInit] = []
+        self._online_users: set[int] = set()
+        self._video_streams: dict[int, dict[str, Any]] = {}
+        self._answer_sdp: str | None = None
         self._setup_message_handlers()
 
     def _setup_message_handlers(self) -> None:
@@ -101,6 +106,9 @@ class AgoraWebSocketHandler:
             "answer": self._handle_answer,
             "on_p2p_lost": self._handle_p2p_lost,
             "error": self._handle_error,
+            "on_rtp_capability_change": self._handle_rtp_capability_change,
+            "on_user_online": self._handle_user_online,
+            "on_add_video_stream": self._handle_add_video_stream,
         }
 
     async def connect_and_join(
@@ -108,8 +116,14 @@ class AgoraWebSocketHandler:
         agora_data: StreamSubscriptionResponse,
         offer_sdp: str,
         session_id: str,
+        agora_response: AgoraResponse,
     ) -> str | None:
-        """Connect to Agora WebSocket and perform join negotiation."""
+        """Connect to Agora WebSocket and perform join negotiation.
+
+        Note: ICE candidates should be set in self.candidates before calling this method.
+        These candidates will be incorporated into the offer SDP before sending to Agora.
+
+        """
         _LOGGER.debug("Starting Agora WebSocket connection for session %s", session_id)
         _LOGGER.info("Agora data: %s", agora_data)
         # Get edge server information
@@ -128,6 +142,11 @@ class AgoraWebSocketHandler:
 
         _LOGGER.info("Parsed offer SDP: %s", sdp_info)
 
+        # Incorporate runtime ICE candidates into offer SDP
+        if self.candidates:
+            offer_sdp = self._add_candidates_to_sdp(offer_sdp, self.candidates)
+            _LOGGER.info("Added %d candidates to offer SDP", len(self.candidates))
+        _LOGGER.info("Offer SDP with candidates: %s", offer_sdp)
         # Try each edge address with timeout
         for edge_address in edge_info.addresses:
             edge_ip_dashed = edge_address.ip.replace(".", "-")
@@ -144,7 +163,7 @@ class AgoraWebSocketHandler:
 
                         # Send join message
                         join_message = self._create_join_message(
-                            agora_data, offer_sdp, edge_info, sdp_info
+                            agora_data, offer_sdp, edge_info, sdp_info, agora_response
                         )
                         await websocket.send(json.dumps(join_message))
                         _LOGGER.info("Sent join message to Agora %s", join_message)
@@ -230,6 +249,13 @@ class AgoraWebSocketHandler:
         if answer_sdp:
             _LOGGER.info("Generated answer SDP from Agora ORTC parameters")
             _LOGGER.info("Generated SDP: %s", answer_sdp)
+
+            # Store answer SDP for later retrieval
+            self._answer_sdp = answer_sdp
+
+            # Send set_client_role after successful join
+            await self._send_set_client_role(role="audience", level=1)
+
             return answer_sdp
 
         _LOGGER.error("Failed to generate answer SDP")
@@ -263,15 +289,67 @@ class AgoraWebSocketHandler:
         error = message.get("error", "Unknown error")
         _LOGGER.error("Agora WebSocket error: %s", error)
 
+    async def _handle_rtp_capability_change(self, response: dict[str, Any]) -> None:
+        """Handle RTP capability change notification."""
+        message = response.get("_message", {})
+        _LOGGER.info("RTP capabilities changed: %s", message)
+        # Store capabilities if needed
+        video_codecs = message.get("video_codec", [])
+        extmap_allow_mixed = message.get("extmap_allow_mixed", False)
+        web_av1_svc = message.get("web_av1_svc", False)
+        _LOGGER.info(
+            "Video codecs: %s, extmap_allow_mixed: %s, web_av1_svc: %s",
+            video_codecs,
+            extmap_allow_mixed,
+            web_av1_svc,
+        )
+
+    async def _handle_user_online(self, response: dict[str, Any]) -> None:
+        """Handle user online notification."""
+        message = response.get("_message", {})
+        uid = message.get("uid")
+        if uid:
+            self._online_users.add(uid)
+            _LOGGER.info("User %s came online", uid)
+
+    async def _handle_add_video_stream(self, response: dict[str, Any]) -> None:
+        """Handle add video stream notification and auto-subscribe."""
+        message = response.get("_message", {})
+        uid = message.get("uid")
+        ssrc_id = message.get("ssrcId")
+        rtx_ssrc_id = message.get("rtxSsrcId")
+        cname = message.get("cname")
+        is_video = message.get("video", False)
+
+        if uid and is_video:
+            _LOGGER.info(
+                "Video stream added - uid: %s, ssrcId: %s, rtxSsrcId: %s, cname: %s",
+                uid,
+                ssrc_id,
+                rtx_ssrc_id,
+                cname,
+            )
+
+            # Store stream info
+            self._video_streams[uid] = {
+                "ssrcId": ssrc_id,
+                "rtxSsrcId": rtx_ssrc_id,
+                "cname": cname,
+            }
+
+            # Auto-subscribe to the video stream
+            if self._websocket:
+                await self._send_subscribe(stream_id=uid, ssrc_id=ssrc_id, codec="vp8")
+
     def _create_join_message(
         self,
         agora_data: StreamSubscriptionResponse,
         offer_sdp: str,
         edge_info: ResponseInfo,
         sdp_info: SdpInfo,
+        agora_response: AgoraResponse,
     ) -> dict[str, Any]:
         """Create join_v3 message for Agora WebSocket."""
-        self.candidates: list[RTCIceCandidateInit] = []
         message_id = secrets.token_hex(3)  # 6 characters
         process_id = f"process-{secrets.token_hex(4)}-{secrets.token_hex(2)}-{secrets.token_hex(2)}-{secrets.token_hex(2)}-{secrets.token_hex(6)}"
 
@@ -291,18 +369,7 @@ class AgoraWebSocketHandler:
                 "codec": "vp8",
                 "role": "audience",
                 "has_changed_gateway": False,
-                "ap_response": {
-                    "code": edge_info.code,
-                    "server_ts": edge_info.server_ts,
-                    "uid": int(agora_data.uid),
-                    "cid": edge_info.cid,
-                    "cname": agora_data.channelName,
-                    "detail": edge_info.detail,
-                    "flag": edge_info.flag,
-                    "opid": edge_info.opid,
-                    "cert": edge_info.cert,
-                    "ticket": edge_info.addresses[0].ticket,
-                },
+                "ap_response": agora_response.to_ap_response(),
                 "extend": "",
                 "details": {},
                 "features": {"rejoin": True},
@@ -366,6 +433,130 @@ class AgoraWebSocketHandler:
                 },
             },
         }
+
+    async def _send_set_client_role(
+        self, role: str = "audience", level: int = 1
+    ) -> None:
+        """Send set_client_role message to Agora.
+
+        Args:
+            role: Client role - "audience" or "host"
+            level: Role level (default: 1)
+
+        """
+        if not self._websocket:
+            _LOGGER.error("Cannot send set_client_role: websocket not connected")
+            return
+
+        message_id = secrets.token_hex(3)
+        message = {
+            "_id": message_id,
+            "_type": "set_client_role",
+            "_message": {
+                "role": role,
+                "level": level,
+                "client_ts": int(time.time() * 1000),
+            },
+        }
+
+        _LOGGER.info("Sending set_client_role message: %s", message)
+        await self._websocket.send(json.dumps(message))
+
+    async def _send_subscribe(
+        self,
+        stream_id: int,
+        ssrc_id: int,
+        codec: str = "vp8",
+        stream_type: str = "video",
+        mode: str = "live",
+        p2p_id: int = 4,
+        twcc: bool = True,
+        rtx: bool = True,
+        extend: str = "",
+    ) -> None:
+        """Send subscribe message to Agora.
+
+        Args:
+            stream_id: Stream ID (usually the uid)
+            ssrc_id: SSRC ID from on_add_video_stream
+            codec: Video codec (default: "vp8")
+            stream_type: Stream type (default: "video")
+            mode: Mode (default: "live")
+            p2p_id: P2P ID (default: 4)
+            twcc: Enable transport-wide congestion control
+            rtx: Enable retransmission
+            extend: Extended info
+
+        """
+        if not self._websocket:
+            _LOGGER.error("Cannot send subscribe: websocket not connected")
+            return
+
+        message_id = secrets.token_hex(3)
+        message = {
+            "_id": message_id,
+            "_type": "subscribe",
+            "_message": {
+                "stream_id": stream_id,
+                "stream_type": stream_type,
+                "mode": mode,
+                "codec": codec,
+                "p2p_id": p2p_id,
+                "twcc": twcc,
+                "rtx": rtx,
+                "extend": extend,
+                "ssrcId": ssrc_id,
+            },
+        }
+
+        _LOGGER.info("Sending subscribe message: %s", message)
+        await self._websocket.send(json.dumps(message))
+
+    @staticmethod
+    def _add_candidates_to_sdp(sdp: str, candidates: list[RTCIceCandidateInit]) -> str:
+        """Add ICE candidates to SDP.
+
+        Args:
+            sdp: Original SDP string
+            candidates: List of ICE candidates (dict or string format)
+
+        Returns:
+            Modified SDP with candidates added
+
+        """
+        sdp_lines = sdp.split("\n")
+        result_lines = []
+        in_media_section = False
+
+        for i, line in enumerate(sdp_lines):
+            # Check if we're entering a media section
+            if line.startswith("m="):
+                in_media_section = True
+
+            # Check if we're at the end of a media section (next m= line or end of SDP)
+            next_is_media = i + 1 < len(sdp_lines) and sdp_lines[i + 1].startswith("m=")
+            is_last_line = i == len(sdp_lines) - 1
+
+            result_lines.append(line)
+
+            # Add candidates at the end of each media section
+            if in_media_section and (next_is_media or is_last_line):
+                for cand in candidates:
+                    cand_str = cand.candidate
+
+                    if not cand_str:
+                        continue
+
+                    # Normalize to proper format (ensure it starts with "a=candidate:")
+                    if not cand_str.startswith("a="):
+                        if cand_str.startswith("candidate:"):
+                            cand_str = "a=" + cand_str
+                        else:
+                            cand_str = "a=candidate:" + cand_str
+
+                    result_lines.append(cand_str)
+
+        return "\n".join(result_lines)
 
     @staticmethod
     def _parse_offer_sdp(offer_sdp: str) -> SdpInfo | None:
@@ -529,6 +720,31 @@ class AgoraWebSocketHandler:
                     elif media_type == "video":
                         video_extensions.append(ext_entry)
 
+            # Extract ICE candidates from SDP
+            ice_candidates = []
+            for media in parsed_sdp.get("media", []):
+                for candidate in media.get("candidates", []):
+                    # Convert sdp_transform candidate format to ORTC format
+                    ice_candidate = {
+                        "foundation": candidate.get("foundation", ""),
+                        "protocol": candidate.get("transport", "udp"),
+                        "priority": candidate.get("priority", 0),
+                        "ip": candidate.get("ip", ""),
+                        "port": candidate.get("port", 0),
+                        "type": candidate.get("type", "host"),
+                    }
+                    # Add optional fields if present
+                    if "generation" in candidate:
+                        ice_candidate["generation"] = candidate["generation"]
+                    if "raddr" in candidate:
+                        ice_candidate["relatedAddress"] = candidate["raddr"]
+                    if "rport" in candidate:
+                        ice_candidate["relatedPort"] = candidate["rport"]
+                    if "tcptype" in candidate:
+                        ice_candidate["tcpType"] = candidate["tcptype"]
+
+                    ice_candidates.append(ice_candidate)
+
             return SdpInfo(
                 parsed_sdp,
                 fingerprint=fingerprint,
@@ -540,6 +756,7 @@ class AgoraWebSocketHandler:
                 video_extensions=video_extensions,
                 audio_direction=audio_direction,
                 video_direction=video_direction,
+                ice_candidates=ice_candidates,
             )
 
         except (ValueError, IndexError, KeyError) as ex:
@@ -594,7 +811,7 @@ class AgoraWebSocketHandler:
             # Build candidate lines grouped by mid. '*' = generic (no mid)
             candidates_by_mid = defaultdict(list)
 
-            # Add ORTC-provided candidates as generic candidates
+            # Add ORTC-provided candidates from server response
             for i, c in enumerate(ortc_candidates):
                 foundation = c.get("foundation", f"candidate{i}")
                 protocol = c.get("protocol", "udp")
@@ -606,48 +823,6 @@ class AgoraWebSocketHandler:
                 if c.get("generation") is not None:
                     cand_line += f" generation {c.get('generation')}"
                 candidates_by_mid["*"].append(cand_line)
-
-            # Incorporate candidates received at runtime (self._candidates)
-            # Accept dicts like RTCIceCandidateInit or raw strings.
-            for rcand in self.candidates:
-                cand_str = None
-                cand_mid = None
-                # dict case (common)
-                if isinstance(rcand, dict):
-                    cand_str = rcand.candidate or ""
-                    # sdpMid can be under different keys
-                    cand_mid = (
-                        rcand.get("sdpMid")
-                        or rcand.get("sdp_mid")
-                        or rcand.get("sdpMLineIndex")
-                    )
-                # string case
-                elif isinstance(rcand, str):
-                    cand_str = rcand
-                else:
-                    # unknown type: try str()
-                    cand_str = str(rcand)
-
-                if not cand_str:
-                    continue
-
-                # normalize to "a=" prefix
-                cand_line = (
-                    cand_str
-                    if cand_str.startswith("a=")
-                    else (
-                        "a=" + cand_str
-                        if cand_str.startswith("candidate:")
-                        else "a=candidate:" + cand_str
-                    )
-                )
-
-                # map to mid if provided, else generic
-                if cand_mid is not None:
-                    # use string key for mid (some clients use numeric mline index)
-                    candidates_by_mid[str(cand_mid)].append(cand_line)
-                else:
-                    candidates_by_mid["*"].append(cand_line)
 
             # Build codec lists (minimal rtpmap entries as before)
             video_codecs = rtp_caps.get("videoCodecs", []) or []

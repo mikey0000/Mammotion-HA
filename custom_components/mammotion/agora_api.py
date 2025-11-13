@@ -9,6 +9,7 @@ to ensure compatibility and parity with client-side behavior.
 """
 
 import asyncio
+import hashlib
 import json
 import time
 from dataclasses import dataclass
@@ -24,6 +25,25 @@ SERVICE_FLAGS = {
     "CLOUD_PROXY_5": 20,
     "CLOUD_PROXY_FALLBACK": 26,
 }
+
+
+def derive_password(uid: int | str) -> str:
+    """Derive TURN/STUN password using SHA-256 hash.
+
+    Python equivalent of the JavaScript Ww function from agoraRTC_N.js:
+    const Ww = async e => digest("SHA-256", jw(e)).hex()
+
+    This is used when ENCRYPT_PROXY_USERNAME_AND_PSW feature flag is enabled.
+
+    Args:
+        uid: User ID (numeric or string)
+
+    Returns:
+        Hexadecimal string representation of SHA-256 hash
+
+    """
+    uid_str = str(uid)
+    return hashlib.sha256(uid_str.encode("utf-8")).hexdigest()
 
 
 @dataclass
@@ -97,9 +117,11 @@ class AgoraResponse:
         """
         # Extract response body
         response_body = response_data.get("response_body", [])
+        detail = response_data.get("detail", {})
         if not response_body:
             raise ValueError("No response_body in API response")
 
+        print(response_data)
         # Parse all responses by flag
         responses_by_flag = {}
         first_buffer = None
@@ -114,20 +136,34 @@ class AgoraResponse:
             flag = buffer.get("flag", 0)
             ticket = buffer.get("cert", "")
             edges_services = buffer.get("edges_services", [])
-            detail = buffer.get("detail", {})
-            print(detail)
+            detail = {**detail, **buffer.get("detail", {})}
+            uid = buffer.get("uid", 0)
+
+            # Derive credentials from UID (matches JavaScript SDK behavior)
+            # When ENCRYPT_PROXY_USERNAME_AND_PSW feature flag is enabled:
+            # - username = uid as string
+            # - password = SHA-256(uid as string)
+            # Fallback to detail fields if uid not available
+            if uid:
+                username = str(uid)
+                credentials = derive_password(uid)
+            else:
+                # Fallback: use detail fields
+                username = detail.get("8", "")
+                credentials = detail.get("4", "")
+
             addresses = [
                 EdgeAddress(
                     ip=edge["ip"],
                     port=edge["port"],
-                    username=detail["8"],
-                    credentials=detail["4"],
+                    username=username,
+                    credentials=credentials,
                     ticket=ticket,
                 )
                 for edge in edges_services
             ]
 
-            # Store all responses
+            # Store all responses with complete data
             responses_by_flag[flag] = {
                 "code": code,
                 "addresses": addresses,
@@ -137,6 +173,7 @@ class AgoraResponse:
                 "cname": buffer.get("cname", ""),
                 "detail": detail,
                 "flag": flag,
+                "edges_services": edges_services,  # Preserve raw edges_services
             }
 
             # Use first response for primary fields
@@ -146,26 +183,23 @@ class AgoraResponse:
         if first_buffer is None:
             raise ValueError("No valid buffer in response_body")
 
+        # Get the first flag's response data (already parsed with addresses)
+        first_flag = first_buffer.get("flag", 0)
+        first_response = responses_by_flag.get(first_flag, {})
+
         # Create response with primary fields from first buffer
         return cls(
             code=first_buffer.get("code", -1),
-            addresses=[
-                EdgeAddress(
-                    ip=edge["ip"],
-                    port=edge["port"],
-                    username=edge["username"],
-                    credentials=edge["credentials"],
-                    ticket=first_buffer.get("cert", ""),
-                )
-                for edge in first_buffer.get("edges_services", [])
-            ],
+            addresses=first_response.get(
+                "addresses", []
+            ),  # Use already-created addresses
             ticket=first_buffer.get("cert", ""),
             uid=first_buffer.get("uid", 0),
             cid=first_buffer.get("cid", 0),
             cname=first_buffer.get("cname", ""),
             server_ts=response_data.get("enter_ts", int(time.time() * 1000)),
             detail=first_buffer.get("detail", {}),
-            flag=first_buffer.get("flag", 0),
+            flag=first_flag,
             opid=response_data.get("opid", 0),
             responses=responses_by_flag if len(responses_by_flag) > 1 else None,
         )
@@ -189,7 +223,7 @@ class AgoraResponse:
             # UDP TURN server
             ice_servers.append(
                 ICEServer(
-                    urls=f"turn:{addr.ip}:{turn_port_udp}?transport=udp",
+                    urls=f"turn:{addr.ip.replace('.', '-')}.edge.agora.io:{turn_port_udp}?transport=udp",
                     username=addr.username,
                     credential=addr.credentials,
                 )
@@ -198,7 +232,7 @@ class AgoraResponse:
             # TCP TURN server
             ice_servers.append(
                 ICEServer(
-                    urls=f"turn:{addr.ip}:{turn_port_tcp}?transport=tcp",
+                    urls=f"turn:{addr.ip.replace('.', '-')}.edge.agora.io:{turn_port_tcp}?transport=tcp",
                     username=addr.username,
                     credential=addr.credentials,
                 )
@@ -207,7 +241,14 @@ class AgoraResponse:
             # TLS/TURNS server
             ice_servers.append(
                 ICEServer(
-                    urls=f"turns:{addr.ip}:443?transport=tcp",
+                    urls=f"turns:{addr.ip.replace('.', '-')}.edge.agora.io:443?transport=tcp",
+                    username=addr.username,
+                    credential=addr.credentials,
+                )
+            )
+            ice_servers.append(
+                ICEServer(
+                    urls=f"stun:{addr.ip.replace('.', '-')}.edge.agora.io:{turn_port_tcp}",
                     username=addr.username,
                     credential=addr.credentials,
                 )
@@ -228,6 +269,47 @@ class AgoraResponse:
         if not self.responses:
             return None
         return self.responses.get(flag)
+
+    def to_ap_response(self, flag: Optional[int] = None) -> dict:
+        """Format response data for websocket join_v3 ap_response field.
+
+        Args:
+            flag: Specific service flag to format. If None, uses primary response.
+
+        Returns:
+            Dictionary formatted for ap_response in join_v3 websocket call
+
+        """
+        # Get data for specific flag or use primary response
+        if flag is not None and self.responses:
+            response_data = self.responses.get(flag)
+            if not response_data:
+                raise ValueError(f"No response data for flag {flag}")
+            return {
+                "code": response_data["code"],
+                "server_ts": self.server_ts,
+                "uid": response_data["uid"],
+                "cid": response_data["cid"],
+                "cname": response_data["cname"],
+                "detail": response_data["detail"],
+                "flag": response_data["flag"],
+                "opid": self.opid,
+                "cert": response_data["ticket"],
+                "ticket": response_data["ticket"],
+            }
+        # Use primary response data
+        return {
+            "code": self.code,
+            "server_ts": self.server_ts,
+            "uid": self.uid,
+            "cid": self.cid,
+            "cname": self.cname,
+            "detail": self.detail,
+            "flag": self.flag,
+            "opid": self.opid,
+            "cert": self.ticket,
+            "ticket": self.ticket,
+        }
 
 
 class AgoraAPIClient:
@@ -400,6 +482,29 @@ class AgoraAPIClient:
         # Parse response
         return AgoraResponse.from_api_response(response)
 
+    @staticmethod
+    def merge_objects(*objects):
+        """Merge multiple dictionaries, filtering out None values.
+
+        Python equivalent of the JavaScript mF function used in Agora SDK.
+        Merges objects left to right, skipping None/undefined values.
+
+        Args:
+            *objects: Variable number of dictionaries to merge
+
+        Returns:
+            Merged dictionary with None values filtered out
+
+        """
+        result = {}
+        for obj in objects:
+            if obj is not None:
+                # Merge object, filtering out None values (equivalent to undefined in JS)
+                for key, value in obj.items():
+                    if value is not None:
+                        result[key] = value
+        return result
+
     def _build_request_payload(
         self,
         app_id: str,
@@ -435,18 +540,20 @@ class AgoraAPIClient:
         """
         client_ts = int(time.time() * 1000)
         opid = randint(0, 10**12 - 1)
+        ap_rtm = None
+        # Build detail field - matches JavaScript SDK pattern
+        # mF(mF(mF({ 6: stringUid, 11: t, 12: USE_NEW_TOKEN ? "1" : undefined },
+        #           r ? { 17: r } : {}), {}, { 22: t }, ...)
+        # if use new token add "12": "1"
+        # "6": string_uid,
+        detail = self.merge_objects(
+            {"11": area_code},
+            {"17": str(role)} if role else {},
+            {"22": area_code},
+            {"26": "RTM2"} if ap_rtm else {},
+        )
 
-        # Build detail field - key-value pairs as strings
-        """""6": string_uid,
-            11": area_code,  # Area code
-            "12": "1",        # Token flag (supports new token format)
-            "17": str(role),  # Role (1=host, 2=audience)"""
-        detail = {
-            # String user ID
-            "11": area_code,
-            "22": area_code,  # Area code (duplicate)
-        }
-
+        print(detail)
         # Build buffer
         buffer = {
             "cname": channel_name,
@@ -593,7 +700,7 @@ async def main():
 
             print(f"Successfully got {len(response.addresses)} edge addresses:")
             for addr in response.addresses:
-                print(f"  - {addr.ip}:{addr.port}")
+                print(f"  - {addr.ip.replace('.', '-')}.edge.agora.io:{addr.port}")
             print(f"Ticket: {response.ticket[:50]}...")
 
             print("\n=== Example 2: Get both media gateway AND TURN servers ===")
@@ -620,12 +727,12 @@ async def main():
             if gateway_resp:
                 print(f"\nGateway addresses: {len(gateway_resp['addresses'])}")
                 for addr in gateway_resp["addresses"]:
-                    print(f"  - {addr.ip}:{addr.port}")
+                    print(f"  - {addr.ip.replace('.', '-')}.edge.agora.io:{addr.port}")
 
             if turn_resp:
                 print(f"\nTURN addresses: {len(turn_resp['addresses'])}")
                 for addr in turn_resp["addresses"]:
-                    print(f"  - {addr.ip}:{addr.port}")
+                    print(f"  - {addr.ip.replace('.', '-')}.edge.agora.io:{addr.port}")
 
             # Get ICE servers (TURN) configuration
             ice_servers = response.get_ice_servers()
