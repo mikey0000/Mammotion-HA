@@ -63,12 +63,15 @@ class EdgeAddress:
     username: Optional[str] = None
     credentials: Optional[str] = None
     ticket: Optional[str] = None
+    fingerprint: Optional[str] = None
 
     def to_dict(self) -> dict:
         """Convert to dictionary."""
         result = {"ip": self.ip, "port": self.port}
         if self.ticket:
             result["ticket"] = self.ticket
+        if self.fingerprint:
+            result["fingerprint"] = self.fingerprint
         return result
 
 
@@ -160,6 +163,14 @@ class AgoraResponse:
                 username = detail.get("8", "")
                 credentials = detail.get("4", "")
 
+            # Parse fingerprints from detail[19] (semicolon-separated list)
+            # Each fingerprint corresponds to an edge address
+            fingerprints = []
+            if "19" in detail and detail["19"]:
+                fingerprint_str = detail["19"]
+                # Split by semicolon and strip whitespace
+                fingerprints = [fp.strip() for fp in fingerprint_str.split(";") if fp.strip()]
+
             addresses = [
                 EdgeAddress(
                     ip=edge["ip"],
@@ -167,8 +178,9 @@ class AgoraResponse:
                     username=username,
                     credentials=credentials,
                     ticket=ticket,
+                    fingerprint=fingerprints[i] if i < len(fingerprints) else None,
                 )
-                for edge in edges_services
+                for i, edge in enumerate(edges_services)
             ]
 
             # Store all responses with complete data

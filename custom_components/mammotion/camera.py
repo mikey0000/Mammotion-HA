@@ -165,6 +165,7 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         self.ice_servers = getattr(coordinator, "_ice_servers", [])
         self._agora_response = getattr(coordinator, "_agora_response", None)
         async_register_ice_servers(hass, self.get_ice_servers)
+        self._add_candidates = True
 
     async def async_camera_image(
         self, width: int | None = None, height: int | None = None
@@ -180,9 +181,15 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         This replaces the JavaScript SDK functionality and performs the WebRTC
         negotiation directly in Python.
         """
+        self._add_candidates = True
+        self._agora_handler.candidates = []
         _LOGGER.info("Handling WebRTC offer for session %s", session_id)
         _LOGGER.info("Raw OFFER SDP %s", offer_sdp)
 
+        # if 'candidate' not in offer_sdp:
+        #     return
+        await asyncio.sleep(5)  # Small delay to ensure readiness
+        self._add_candidates = False
         try:
             # Get stream data (appid, channelName, token, uid)
             stream_data = self.coordinator.get_stream_data()
@@ -222,8 +229,8 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         """Ignore WebRTC candidates."""
         # _LOGGER.info("Received WebRTC candidate for session %s", session_id)
         _LOGGER.info("Received WebRTC candidate %s", candidate)
-        # if "typ prflx" in candidate.candidate:
-        self._agora_handler.add_ice_candidate(candidate)
+        if self._add_candidates:
+            self._agora_handler.add_ice_candidate(candidate)
 
     @callback
     async def async_close_webrtc_session(self, session_id: str) -> None:

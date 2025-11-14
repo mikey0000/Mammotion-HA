@@ -1,7 +1,7 @@
 """Agora WebSocket handler for Mammotion WebRTC streaming."""
 
 from __future__ import annotations
-
+import ipaddress
 import asyncio
 import json
 import logging
@@ -162,7 +162,7 @@ class AgoraWebSocketHandler:
         _LOGGER.info("Parsed offer SDP: %s", sdp_info)
 
         # Incorporate runtime ICE candidates into offer SDP
-        if len(self.candidates) >= 2:
+        if len(self.candidates) >= 1:
             offer_sdp = self._add_candidates_to_sdp(offer_sdp, self.candidates)
             _LOGGER.info("Added %d candidates to offer SDP", len(self.candidates))
         _LOGGER.info("Offer SDP with candidates: %s", offer_sdp)
@@ -190,7 +190,7 @@ class AgoraWebSocketHandler:
 
                         # Send join message
                         join_message = self._create_join_message(
-                            agora_data, offer_sdp, sdp_info, agora_response
+                            agora_data, offer_sdp, sdp_info, agora_response, session_id
                         )
                         await websocket.send(json.dumps(join_message))
                         _LOGGER.info("Sent join message to Agora %s", join_message)
@@ -264,6 +264,9 @@ class AgoraWebSocketHandler:
         message = response.get("_message", {})
         ortc = message.get("ortc", {})
 
+        # Send set_client_role after successful connection
+        await self._send_set_client_role(role="audience", level=1)
+
         if not ortc:
             _LOGGER.error("No ORTC parameters in join success response")
             _LOGGER.info("Full response message: %s", message)
@@ -280,8 +283,7 @@ class AgoraWebSocketHandler:
             # Store answer SDP for later retrieval
             self._answer_sdp = answer_sdp
 
-            # # Send set_client_role after successful connection
-            # await self._send_set_client_role(role="audience", level=1)
+            
 
             return answer_sdp
 
@@ -374,6 +376,7 @@ class AgoraWebSocketHandler:
         offer_sdp: str,
         sdp_info: SdpInfo,
         agora_response: AgoraResponse,
+        session_id: str,
     ) -> dict[str, Any]:
         """Create join_v3 message for Agora WebSocket."""
         message_id = secrets.token_hex(3)  # 6 characters
@@ -383,8 +386,8 @@ class AgoraWebSocketHandler:
             "_id": message_id,
             "_type": "join_v3",
             "_message": {
-                "p2p_id": 3,
-                "session_id": secrets.token_hex(16).upper(),
+                "p2p_id": 1,
+                "session_id": session_id,
                 "app_id": agora_data.appid,
                 "channel_key": agora_data.token,
                 "channel_name": agora_data.channelName,
@@ -849,13 +852,17 @@ class AgoraWebSocketHandler:
             # Build candidate lines grouped by mid. '*' = generic (no mid)
             candidates_by_mid = defaultdict(list)
 
+            udp_candidate_ip = ""
+
             # Add ORTC-provided candidates from server response
             for i, c in enumerate(ortc_candidates):
                 foundation = c.get("foundation", f"candidate{i}")
                 protocol = c.get("protocol", "udp")
-                priority = c.get("priority", 2103266323)
+                priority = f'{c.get("priority", 2103266323)}'
                 ip = c.get("ip", "")
-                port = c.get("port", 0)
+                if udp_candidate_ip == "" and self.is_ipv4(ip):
+                    udp_candidate_ip = ip
+                port = f'{c.get("port", 0)}'
                 ctype = c.get("type", "host")
                 cand_line = f"a=candidate:{foundation} 1 {protocol} {priority} {ip} {port} typ {ctype}"
                 if c.get("generation") is not None:
@@ -900,6 +907,7 @@ class AgoraWebSocketHandler:
 
             answer_setup = answer_setup_for_offer(sdp_info.setup_role)
 
+
             # build base sdp header
             sdp_lines = [
                 "v=0",
@@ -909,7 +917,7 @@ class AgoraWebSocketHandler:
                 f"a=group:BUNDLE {bundle_mids}",
             ]
 
-            # Add extmap-allow-mixed if present in offer
+            # Add extmap-allow-mixed if present in answer
             if sdp_info.extmap_allow_mixed:
                 sdp_lines.append("a=extmap-allow-mixed")
 
@@ -936,12 +944,15 @@ class AgoraWebSocketHandler:
                 payloads_str = " ".join(payload_types)
 
                 # media header
+                sdp_lines.append("a=ice-lite")
                 sdp_lines.append(f"m={mtype} 9 UDP/TLS/RTP/SAVPF {payloads_str}")
-                sdp_lines.append("c=IN IP4 0.0.0.0")
+                sdp_lines.append(f'c=IN IP4 127.0.0.1')
                 sdp_lines.append("a=rtcp:9 IN IP4 0.0.0.0")
                 sdp_lines.append(f"a=ice-ufrag:{ice_ufrag}")
                 sdp_lines.append(f"a=ice-pwd:{ice_pwd}")
                 sdp_lines.append("a=ice-options:trickle")
+                for cl in candidates_by_mid.get("*", []):
+                    sdp_lines.append(cl)
                 sdp_lines.append(f"a=fingerprint:{fingerprint}")
                 sdp_lines.append(f"a=setup:{answer_setup}")
                 sdp_lines.append(f"a=mid:{mid}")
@@ -1015,13 +1026,12 @@ class AgoraWebSocketHandler:
 
                 # append candidates for this media: specific mid then generic ones
                 # try exact mid key, also accept numeric mline index as key
-                specific = candidates_by_mid.get(mid, []) + candidates_by_mid.get(
-                    str(idx), []
-                )
-                for cl in specific:
-                    sdp_lines.append(cl)
-                for cl in candidates_by_mid.get("*", []):
-                    sdp_lines.append(cl)
+                # specific = candidates_by_mid.get(mid, []) + candidates_by_mid.get(
+                #     str(idx), []
+                # )
+                # for cl in specific:
+                #     sdp_lines.append(cl)
+                
 
             generated_sdp = "\r\n".join(sdp_lines) + "\r\n"
             _LOGGER.info("Generated SDP lines count: %s", len(sdp_lines))
@@ -1308,3 +1318,28 @@ class AgoraWebSocketHandler:
 
     def add_ice_candidate(self, candidate: RTCIceCandidateInit):
         self.candidates.append(candidate)
+
+
+    @staticmethod
+    def is_ipv4(ip_string):
+        """
+        Checks if a given string is a valid IPv4 address.
+
+        Args:
+            ip_string (str): The string to validate.
+
+        Returns:
+            bool: True if the string is a valid IPv4 address, False otherwise.
+        """
+        try:
+            # Attempt to create an IPv4Address object
+            ipaddress.IPv4Address(ip_string)
+            return True
+        except ipaddress.AddressValueError:
+            # If it's not a valid IPv4 address, an exception will be raised
+            return False
+        except ValueError:
+            # Catch other potential ValueErrors (e.g., if it's an IPv6 address)
+            # and ensure it's specifically an IPv4Address error.
+            # This is a more robust way to handle potential edge cases.
+            return False
