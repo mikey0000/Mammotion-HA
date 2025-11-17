@@ -1,8 +1,9 @@
 """Agora WebSocket handler for Mammotion WebRTC streaming."""
 
 from __future__ import annotations
-import ipaddress
+
 import asyncio
+import ipaddress
 import json
 import logging
 import secrets
@@ -282,8 +283,6 @@ class AgoraWebSocketHandler:
 
             # Store answer SDP for later retrieval
             self._answer_sdp = answer_sdp
-
-            
 
             return answer_sdp
 
@@ -858,11 +857,11 @@ class AgoraWebSocketHandler:
             for i, c in enumerate(ortc_candidates):
                 foundation = c.get("foundation", f"candidate{i}")
                 protocol = c.get("protocol", "udp")
-                priority = f'{c.get("priority", 2103266323)}'
+                priority = f"{c.get('priority', 2103266323)}"
                 ip = c.get("ip", "")
                 if udp_candidate_ip == "" and self.is_ipv4(ip):
                     udp_candidate_ip = ip
-                port = f'{c.get("port", 0)}'
+                port = f"{c.get('port', 0)}"
                 ctype = c.get("type", "host")
                 cand_line = f"a=candidate:{foundation} 1 {protocol} {priority} {ip} {port} typ {ctype}"
                 if c.get("generation") is not None:
@@ -907,7 +906,6 @@ class AgoraWebSocketHandler:
 
             answer_setup = answer_setup_for_offer(sdp_info.setup_role)
 
-
             # build base sdp header
             sdp_lines = [
                 "v=0",
@@ -946,7 +944,7 @@ class AgoraWebSocketHandler:
                 # media header
                 sdp_lines.append("a=ice-lite")
                 sdp_lines.append(f"m={mtype} 9 UDP/TLS/RTP/SAVPF {payloads_str}")
-                sdp_lines.append(f'c=IN IP4 127.0.0.1')
+                sdp_lines.append("c=IN IP4 127.0.0.1")
                 sdp_lines.append("a=rtcp:9 IN IP4 0.0.0.0")
                 sdp_lines.append(f"a=ice-ufrag:{ice_ufrag}")
                 sdp_lines.append(f"a=ice-pwd:{ice_pwd}")
@@ -1031,7 +1029,6 @@ class AgoraWebSocketHandler:
                 # )
                 # for cl in specific:
                 #     sdp_lines.append(cl)
-                
 
             generated_sdp = "\r\n".join(sdp_lines) + "\r\n"
             _LOGGER.info("Generated SDP lines count: %s", len(sdp_lines))
@@ -1271,6 +1268,7 @@ class AgoraWebSocketHandler:
                     if buffer and buffer.get("flag") == 4096:
                         edges_services = buffer.get("edges_services", [])
                         if edges_services:
+                            es = next(iter(edges_services), None)
                             return ResponseInfo(
                                 code=buffer["code"],
                                 addresses=[
@@ -1279,7 +1277,6 @@ class AgoraWebSocketHandler:
                                         port=es["port"],
                                         ticket=buffer["cert"],
                                     )
-                                    for es in edges_services
                                 ],
                                 server_ts=response_data["enter_ts"],
                                 uid=buffer["uid"],
@@ -1319,17 +1316,16 @@ class AgoraWebSocketHandler:
     def add_ice_candidate(self, candidate: RTCIceCandidateInit):
         self.candidates.append(candidate)
 
-
     @staticmethod
     def is_ipv4(ip_string):
-        """
-        Checks if a given string is a valid IPv4 address.
+        """Checks if a given string is a valid IPv4 address.
 
         Args:
             ip_string (str): The string to validate.
 
         Returns:
             bool: True if the string is a valid IPv4 address, False otherwise.
+
         """
         try:
             # Attempt to create an IPv4Address object
