@@ -791,10 +791,20 @@ class AgoraAPIClient:
 async def main():
     """Example usage of the Agora API client."""
     # Example parameters
-    app_id = "5bcfed01952d4f2eb306c98b8908da93"
-    token = "007eJxTYGCdnp61senSMbsiwUs+Uo+XKRzP94xl0Toga77vQdWjjHoFBtOk5LTUFANDS1OjFJM0o9QkYwOzZEuLJAtLA4uUREvj+1wimQJ8DAyylldOMzJAIIgvxRAaUpBU7u5sXlaRYuJS4FeW5ObuYwAGHAxGhkbGhgamFgD+7CVz"
-    channel_name = "UTpbwGC7vxd4DpNvbFGL000000"
-    user_id = 21231058
+    # mammotion_http = MammotionHTTP('EMAIL', 'PASSWORD')
+    # mammotion_http.login_info = LoginResponseData.from_dict(json.loads(LOGIN_RESPONSE)
+    # mammotion_http.expires_in = 2591999 + time.time()
+    # stream = await mammotion_http.get_stream_subscription("VIfnsgIQCmHqn4IXXWkQ000000")
+    #print(stream)
+
+    channel_name = "CHANNEL_NAME"
+    # user_id = stream.data.uid
+    # app_id = stream.data.appid
+    # token = stream.data.token
+    user_id = 81260392
+    app_id = 'APP_ID'
+    token = 'TOKEN'
+
     string_uid = "client_21231"
 
     # Make request
