@@ -95,9 +95,8 @@ LUBA_WORKING_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
         set_fn=lambda coordinator, value: setattr(
             coordinator.operation_settings, "blade_height", int(value)
         ),
-        set_async_fn=lambda coordinator, value: coordinator.async_blade_height(
-            int(value)
-        ),
+        set_async_fn=lambda coordinator,
+        value: coordinator.async_modify_plan_if_mowing(),
         get_fn=lambda coordinator: coordinator.operation_settings.blade_height,
     ),
     MammotionConfigNumberEntityDescription(
@@ -110,9 +109,8 @@ LUBA_WORKING_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
         set_fn=lambda coordinator, value: setattr(
             coordinator.operation_settings, "blade_height", round(value * 25.4)
         ),
-        set_async_fn=lambda coordinator, value: coordinator.async_blade_height(
-            round(value * 25.4)
-        ),
+        set_async_fn=lambda coordinator,
+        value: coordinator.async_modify_plan_if_mowing(),
         get_fn=lambda coordinator: round(
             coordinator.operation_settings.blade_height / 25.4, 2
         ),
@@ -128,7 +126,8 @@ NUMBER_WORKING_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
         step=0.1,
         min_value=0.2,
         max_value=0.6,
-        set_async_fn=lambda coordinator, value: coordinator.async_set_speed(value),
+        set_async_fn=lambda coordinator,
+        value: coordinator.async_modify_plan_if_mowing(),
         set_fn=lambda coordinator, value: setattr(
             coordinator.operation_settings, "speed", value
         ),
@@ -234,7 +233,7 @@ class MammotionConfigNumberEntity(MammotionBaseEntity, RestoreNumber):
         if (last_number_data is not None) and (
             last_number_data.native_value is not None
         ):
-            await self.async_set_native_value(last_number_data.native_value)
+            self._attr_native_value = last_number_data.native_value
             if self.entity_description.set_fn is not None:
                 self.entity_description.set_fn(
                     self.coordinator, self._attr_native_value
@@ -274,8 +273,6 @@ class MammotionWorkingNumberEntity(MammotionConfigNumberEntity):
         self._attr_native_value = max(
             self._attr_native_value, self._attr_native_min_value
         )
-        if self.entity_description.set_fn is not None:
-            self.entity_description.set_fn(self.coordinator, self._attr_native_value)
 
     @property
     def native_min_value(self) -> float:

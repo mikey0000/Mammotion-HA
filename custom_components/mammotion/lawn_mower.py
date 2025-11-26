@@ -22,8 +22,8 @@ from pymammotion.utility.constant.device_constant import WorkMode
 from pymammotion.utility.device_type import DeviceType
 
 from . import MammotionConfigEntry
-from .coordinator import MammotionReportUpdateCoordinator
 from .const import COMMAND_EXCEPTIONS, DOMAIN, LOGGER
+from .coordinator import MammotionReportUpdateCoordinator
 from .entity import MammotionBaseEntity
 
 SERVICE_START_MOWING = "start_mow"
@@ -87,8 +87,8 @@ START_STOP_BLADES_SCHEMA = {
 }
 
 SET_NON_WORK_HOURS_SCHEMA = {
-    vol.Required("start_time"): vol.All(cv.time),
-    vol.Required("end_time"): vol.All(cv.time),
+    vol.Required("start_time"): cv.time,
+    vol.Required("end_time"): cv.time,
 }
 
 

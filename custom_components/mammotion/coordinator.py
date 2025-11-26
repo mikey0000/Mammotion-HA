@@ -387,9 +387,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         """Set non work hours."""
         await self.async_send_command(
             "set_plan_unable_time",
-            sub_cmd=self.data.state.non_work_hours.sub_cmd
-            if self.data.state.non_work_hours
-            else 0,
+            sub_cmd=self.data.non_work_hours.sub_cmd if self.data.non_work_hours else 0,
             device_id=self.device.iot_id,
             unable_end_time=end_time,
             unable_start_time=start_time,
@@ -548,9 +546,9 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         self, operation_settings: OperationSettings
     ) -> GenerateRouteInformation:
         """Generate route information."""
-        device = self.data
-        if device.state.report_data.dev:
-            dev = device.state.report_data.dev
+        device: MowingDevice = self.data
+        if device.report_data.dev:
+            dev = device.report_data.dev
             if dev.collector_status.collector_installation_status == 0:
                 operation_settings.is_dump = False
 
@@ -582,7 +580,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         return route_information
 
     async def async_plan_route(
-        self, device_name: str, operation_settings: OperationSettings
+        self, operation_settings: OperationSettings
     ) -> bool | None:
         """Plan mow."""
         route_information = self.generate_route_information(operation_settings)
@@ -603,7 +601,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
     ) -> bool | None:
         """Modify plan mow."""
 
-        if work := self.data.state.work:
+        if work := self.data.work:
             operation_settings.areas = set(work.zone_hashs)
             operation_settings.toward = work.toward
             operation_settings.toward_mode = work.toward_mode
@@ -614,8 +612,6 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
             operation_settings.job_version = work.job_ver
 
         route_information = self.generate_route_information(operation_settings)
-        if route_information.toward_mode == 0:
-            route_information.toward = 0
 
         return await self.async_send_command(
             "modify_route_information", generate_route_information=route_information
@@ -639,6 +635,13 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
     def operation_settings(self) -> OperationSettings:
         """Return operation settings for planning."""
         return self._operation_settings
+
+    async def async_modify_plan_if_mowing(self):
+        if (
+            int(self.data.report_data.work.bp_hash) in self.data.work.zone_hashs
+            and (self.data.report_data.work.area >> 16) != 100
+        ):
+            await self.async_modify_plan_route(self.operation_settings)
 
     async def async_restore_data(self) -> None:
         """Restore saved data."""

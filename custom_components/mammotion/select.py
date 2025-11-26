@@ -31,6 +31,7 @@ class MammotionConfigSelectEntityDescription(SelectEntityDescription):
     key: str
     options: list[str]
     set_fn: Callable[[MammotionBaseUpdateCoordinator, str], None]
+    async_set_fn: Callable[[MammotionBaseUpdateCoordinator], Awaitable[None]] = None
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -131,6 +132,7 @@ LUBA1_SELECT_ENTITIES: tuple[MammotionConfigSelectEntityDescription, ...] = (
         set_fn=lambda coordinator, value: setattr(
             coordinator.operation_settings, "ultra_wave", DetectionStrategy[value].value
         ),
+        async_set_fn=lambda coordinator: coordinator.async_modify_plan_if_mowing(),
     ),
 )
 
@@ -148,6 +150,7 @@ LUBA_PRO_SELECT_ENTITIES: tuple[MammotionConfigSelectEntityDescription, ...] = (
         set_fn=lambda coordinator, value: setattr(
             coordinator.operation_settings, "ultra_wave", DetectionStrategy[value].value
         ),
+        async_set_fn=lambda coordinator: coordinator.async_modify_plan_if_mowing(),
     ),
 )
 
@@ -229,6 +232,8 @@ class MammotionConfigSelectEntity(MammotionBaseEntity, SelectEntity, RestoreEnti
     async def async_select_option(self, option: str) -> None:
         self._attr_current_option = option
         self.entity_description.set_fn(self.coordinator, option)
+        if self.entity_description.async_set_fn is not None:
+            await self.entity_description.async_set_fn(self.coordinator)
         self.async_write_ha_state()
 
     async def async_added_to_hass(self) -> None:
