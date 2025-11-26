@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import time
 from typing import Any
 
 import voluptuous as vol
@@ -20,13 +21,16 @@ from pymammotion.data.model.report_info import DeviceData, ReportData
 from pymammotion.utility.constant.device_constant import WorkMode
 from pymammotion.utility.device_type import DeviceType
 
-from . import MammotionConfigEntry, MammotionReportUpdateCoordinator
+from . import MammotionConfigEntry
+from .coordinator import MammotionReportUpdateCoordinator
 from .const import COMMAND_EXCEPTIONS, DOMAIN, LOGGER
 from .entity import MammotionBaseEntity
 
 SERVICE_START_MOWING = "start_mow"
 SERVICE_CANCEL_JOB = "cancel_job"
 SERVICE_START_STOP_BLADES = "start_stop_blades"
+
+SERVICE_SET_NON_WORK_HOURS = "set_non_work_hours"
 
 START_MOW_SCHEMA = {
     vol.Optional("is_mow", default=True): cv.boolean,
@@ -82,6 +86,11 @@ START_STOP_BLADES_SCHEMA = {
     ),
 }
 
+SET_NON_WORK_HOURS_SCHEMA = {
+    vol.Required("start_time"): vol.All(cv.time),
+    vol.Required("end_time"): vol.All(cv.time),
+}
+
 
 def get_entity_attribute(
     hass: HomeAssistant, entity_id: str, attribute_name: str
@@ -121,6 +130,12 @@ async def async_setup_entry(
 
     platform.async_register_entity_service(
         SERVICE_START_STOP_BLADES, START_STOP_BLADES_SCHEMA, "async_start_stop_blades"
+    )
+
+    platform.async_register_entity_service(
+        SERVICE_SET_NON_WORK_HOURS,
+        SET_NON_WORK_HOURS_SCHEMA,
+        "async_set_non_work_hours",
     )
 
 
@@ -347,3 +362,12 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
     async def async_start_stop_blades(self, **kwargs: Any) -> None:
         """Start/Stop Blades."""
         await self.coordinator.async_start_stop_blades(**kwargs)
+
+    async def async_set_non_work_hours(self, **kwargs: Any) -> None:
+        """Set Non Work Hours."""
+        start_time: time = kwargs["start_time"]
+        end_time: time = kwargs["end_time"]
+
+        await self.coordinator.async_set_non_work_hours(
+            start_time=start_time.strftime("%H:%M"), end_time=end_time.strftime("%H:%M")
+        )

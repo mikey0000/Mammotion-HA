@@ -383,6 +383,18 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
                 max_run_speed=1.2,
             )
 
+    async def async_set_non_work_hours(self, start_time: str, end_time: str) -> None:
+        """Set non work hours."""
+        await self.async_send_command(
+            "set_plan_unable_time",
+            sub_cmd=self.data.state.non_work_hours.sub_cmd
+            if self.data.state.non_work_hours
+            else 0,
+            device_id=self.device.iot_id,
+            unable_end_time=end_time,
+            unable_start_time=start_time,
+        )
+
     async def async_set_rain_detection(self, on_off: bool) -> None:
         """Set rain detection."""
         await self.async_send_command(
@@ -532,13 +544,13 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
             count=0,
         )
 
-    async def async_plan_route(
+    def generate_route_information(
         self, operation_settings: OperationSettings
-    ) -> bool | None:
-        """Plan mow."""
-
-        if self.data.report_data.dev:
-            dev = self.data.report_data.dev
+    ) -> GenerateRouteInformation:
+        """Generate route information."""
+        device = self.data
+        if device.state.report_data.dev:
+            dev = device.state.report_data.dev
             if dev.collector_status.collector_installation_status == 0:
                 operation_settings.is_dump = False
 
@@ -567,16 +579,46 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         if DeviceType.is_luba1(self.device_name):
             route_information.toward_mode = 0
             route_information.toward_included_angle = 0
+        return route_information
+
+    async def async_plan_route(
+        self, device_name: str, operation_settings: OperationSettings
+    ) -> bool | None:
+        """Plan mow."""
+        route_information = self.generate_route_information(operation_settings)
 
         # not sure if this is artificial limit
         # if (
-        #     DeviceType.is_mini_or_x_series(self.device_name)
+        #     DeviceType.is_mini_or_x_series(device_name)
         #     and route_information.toward_mode == 0
         # ):
         #     route_information.toward = 0
 
         return await self.async_send_command(
             "generate_route_information", generate_route_information=route_information
+        )
+
+    async def async_modify_plan_route(
+        self, operation_settings: OperationSettings
+    ) -> bool | None:
+        """Modify plan mow."""
+
+        if work := self.data.state.work:
+            operation_settings.areas = set(work.zone_hashs)
+            operation_settings.toward = work.toward
+            operation_settings.toward_mode = work.toward_mode
+            operation_settings.toward_included_angle = work.toward_included_angle
+            operation_settings.mowing_laps = work.edge_mode
+            operation_settings.job_mode = work.job_mode
+            operation_settings.job_id = work.job_id
+            operation_settings.job_version = work.job_ver
+
+        route_information = self.generate_route_information(operation_settings)
+        if route_information.toward_mode == 0:
+            route_information.toward = 0
+
+        return await self.async_send_command(
+            "modify_route_information", generate_route_information=route_information
         )
 
     async def start_task(self, plan_id: str) -> None:
