@@ -169,7 +169,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
     def is_online(self) -> bool:
         if device := self.manager.get_device_by_name(self.device_name):
             ble = device.ble
-            return device.state.online or ble is not None and ble.client.is_connected
+            return device.state.online or (ble is not None and ble.client.is_connected)
         return False
 
     async def async_refresh_login(self) -> None:

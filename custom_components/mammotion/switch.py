@@ -378,6 +378,10 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
         if last_state and last_state.state == STATE_ON:
             await self.async_turn_on()
 
+    @property
+    def available(self) -> bool:
+        return True
+
 
 @callback
 def async_add_area_entities(
