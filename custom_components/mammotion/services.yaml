@@ -9,6 +9,12 @@ start_mow:
       integration: mammotion
       domain: lawn_mower
   fields:
+    modify:
+      example: true
+      default: false
+      required: false
+      selector:
+        boolean:
     is_mow:
       example: true
       default: true

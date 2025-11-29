@@ -617,6 +617,29 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
             "modify_route_information", generate_route_information=route_information
         )
 
+    async def async_modify_plan_route_test(
+        self, operation_settings: OperationSettings
+    ) -> bool | None:
+        """Modify plan mow."""
+
+        if work := self.data.work:
+            operation_settings.areas = set(operation_settings.areas)
+            operation_settings.toward = operation_settings.toward
+            operation_settings.toward_mode = operation_settings.toward_mode
+            operation_settings.toward_included_angle = (
+                operation_settings.toward_included_angle
+            )
+            operation_settings.mowing_laps = operation_settings.mowing_laps
+            operation_settings.job_mode = work.job_mode
+            operation_settings.job_id = work.job_id
+            operation_settings.job_version = work.job_ver
+
+        route_information = self.generate_route_information(operation_settings)
+
+        return await self.async_send_command(
+            "modify_route_information", generate_route_information=route_information
+        )
+
     async def start_task(self, plan_id: str) -> None:
         """Start task."""
         await self.async_send_command("single_schedule", plan_id=plan_id)

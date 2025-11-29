@@ -33,6 +33,7 @@ SERVICE_START_STOP_BLADES = "start_stop_blades"
 SERVICE_SET_NON_WORK_HOURS = "set_non_work_hours"
 
 START_MOW_SCHEMA = {
+    vol.Optional("modify", default=False): cv.boolean,
     vol.Optional("is_mow", default=True): cv.boolean,
     vol.Optional("is_dump", default=True): cv.boolean,
     vol.Optional("is_edge", default=False): cv.boolean,
@@ -192,7 +193,6 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
         trans_key = "pause_failed"
 
         if kwargs:
-            await self.async_cancel()
             entity_ids = kwargs.get("areas", [])
 
             attributes = [
@@ -202,6 +202,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
                 if (entity_hash := get_entity_attribute(self.hass, entity_id, "hash"))
                 is not None
             ]
+            modify_plan = kwargs.pop("modify", False)
 
             kwargs["areas"] = attributes
             operational_settings = OperationSettings.from_dict(kwargs)
@@ -210,6 +211,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
             LOGGER.debug(kwargs)
         else:
             operational_settings = self.coordinator.operation_settings
+            modify_plan = False
 
         # check if job in progress
         #
@@ -224,8 +226,16 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
             WorkMode.MODE_PAUSE,
             WorkMode.MODE_READY,
             WorkMode.MODE_RETURNING,
+            WorkMode.MODE_WORKING,
         ):
             try:
+                if modify_plan:
+                    await self.coordinator.async_modify_plan_route(operational_settings)
+                    return
+
+                if kwargs:
+                    await self.async_cancel()
+
                 if mode == WorkMode.MODE_RETURNING:
                     trans_key = "dock_cancel_failed"
                     await self.coordinator.async_send_command("cancel_return_to_dock")
