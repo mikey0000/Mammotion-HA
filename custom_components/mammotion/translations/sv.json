@@ -20,7 +20,7 @@
       },
       "reconfigure": {
         "data": {
-          "use_wifi": "Använd Wi-Fi",
+          "use_wifi": "Använd wifi",
           "account_name": "E-post eller kontonummer för Mammotion",
           "password": "Lösenord för Mammotion-konto"
         }
@@ -34,11 +34,11 @@
       },
       "wifi": {
         "data": {
-          "use_wifi": "Använd Wi-Fi (avmarkera och klicka på skicka för att använda Bluetooth)",
+          "use_wifi": "Använd wifi (avmarkera och klicka på skicka för att använda Bluetooth)",
           "account_name": "E-post eller kontonummer för Mammotion",
           "password": "Lösenord för Mammotion-konto"
         },
-        "title": "Anslut till Wi-Fi",
+        "title": "Anslut till wifi",
         "description": "Ange din e-postadress eller kontonummer samt lösenord för ditt Mammotion-konto"
       }
     }
@@ -187,7 +187,7 @@
         "name": "Longitud"
       },
       "rtk_wifi_rssi": {
-        "name": "Wi-Fi RSSI"
+        "name": "Wifi RSSI"
       }
     },
     "button": {
@@ -439,6 +439,10 @@
       "name": "Börja klippa",
       "description": "Starta klippningen med anpassade inställningar.",
       "fields": {
+        "modify": {
+          "name": "Modify existing job",
+          "description": "Whether to modify an existing job or start a new one."
+        },
         "is_mow": {
           "name": "Klipper",
           "description": "Om klippning är aktiv. (Yuka)."
@@ -532,6 +536,20 @@
         "blade_height": {
           "name": "Klipphöjd",
           "description": "Höjd på knivarna."
+        }
+      }
+    },
+    "set_non_work_hours": {
+      "name": "Set non-work hours",
+      "description": "Set the hours when the mower is not working.",
+      "fields": {
+        "start_time": {
+          "name": "Start time",
+          "description": "Start time of the non-work hours."
+        },
+        "end_time": {
+          "name": "End time",
+          "description": "End time of the non-work hours."
         }
       }
     }

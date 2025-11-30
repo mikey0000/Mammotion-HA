@@ -439,6 +439,10 @@
       "name": "Začít sečení",
       "description": "Zahájit sečení s vlastním nastavením.",
       "fields": {
+        "modify": {
+          "name": "Modify existing job",
+          "description": "Whether to modify an existing job or start a new one."
+        },
         "is_mow": {
           "name": "Sečení",
           "description": "Zda je sekání aktivní. (Yuka)."
@@ -532,6 +536,20 @@
         "blade_height": {
           "name": "Výška nožů",
           "description": "Výška nožů."
+        }
+      }
+    },
+    "set_non_work_hours": {
+      "name": "Set non-work hours",
+      "description": "Set the hours when the mower is not working.",
+      "fields": {
+        "start_time": {
+          "name": "Start time",
+          "description": "Start time of the non-work hours."
+        },
+        "end_time": {
+          "name": "End time",
+          "description": "End time of the non-work hours."
         }
       }
     }
