@@ -38,6 +38,7 @@ class CameraAgoraCard extends HTMLElement {
       enableJoystick:
         config.enableJoystick !== undefined ? config.enableJoystick : false,
       speed: config.speed !== undefined ? parseFloat(config.speed) : 0.4,
+      use_wifi: false,
     };
 
     // Prepare shadow DOM container
@@ -1035,6 +1036,7 @@ class CameraAgoraCard extends HTMLElement {
 
     const entityId = this._config.entity;
     const speed = this._config.speed;
+    const use_wifi = this._config.use_wifi;
 
     // Define service and action based on direction
     let service = "mammotion";
@@ -1061,6 +1063,7 @@ class CameraAgoraCard extends HTMLElement {
         this._hass.callService(service, action, {
           entity_id: entityId,
           speed: speed,
+          use_wifi: use_wifi,
         });
         console.log(
           `Sending ${action} command to ${entityId} with speed ${speed}`,

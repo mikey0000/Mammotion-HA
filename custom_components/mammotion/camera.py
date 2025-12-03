@@ -204,6 +204,7 @@ async def async_setup_platform_services(
         # Check if speed parameter exists and validate it
         speed = 0.4  # Default speed
         raw_speed = call.data["speed"]
+        use_wifi = call.data["use_wifi"]
         if raw_speed is not None:
             try:
                 speed_value = float(raw_speed)
@@ -224,7 +225,9 @@ async def async_setup_platform_services(
 
         mower: MammotionMowerData = _get_mower_by_entity_id(entity_id)
         if mower:
-            await mower.reporting_coordinator.async_move_forward(speed=speed)
+            await mower.reporting_coordinator.async_move_forward(
+                speed=speed, use_wifi=use_wifi
+            )
 
     async def handle_move_left(call) -> None:
         entity_id = call.data["entity_id"]
@@ -232,6 +235,7 @@ async def async_setup_platform_services(
         # Check if speed parameter exists and validate it
         speed = 0.4  # Default speed
         raw_speed = call.data["speed"]
+        use_wifi = call.data["use_wifi"]
         if raw_speed is not None:
             try:
                 speed_value = float(raw_speed)
@@ -252,7 +256,9 @@ async def async_setup_platform_services(
 
         mower: MammotionMowerData = _get_mower_by_entity_id(entity_id)
         if mower:
-            await mower.reporting_coordinator.async_move_left(speed=speed)
+            await mower.reporting_coordinator.async_move_left(
+                speed=speed, use_wifi=use_wifi
+            )
 
     async def handle_move_right(call) -> None:
         entity_id = call.data["entity_id"]
@@ -260,6 +266,7 @@ async def async_setup_platform_services(
         # Check if speed parameter exists and validate it
         speed = 0.4  # Default speed
         raw_speed = call.data["speed"]
+        use_wifi = call.data["use_wifi"]
         if raw_speed is not None:
             try:
                 speed_value = float(raw_speed)
@@ -280,7 +287,9 @@ async def async_setup_platform_services(
 
         mower: MammotionMowerData = _get_mower_by_entity_id(entity_id)
         if mower:
-            await mower.reporting_coordinator.async_move_right(speed=speed)
+            await mower.reporting_coordinator.async_move_right(
+                speed=speed, use_wifi=use_wifi
+            )
 
     async def handle_move_backward(call) -> None:
         entity_id = call.data["entity_id"]
@@ -288,6 +297,7 @@ async def async_setup_platform_services(
         # Check if speed parameter exists and validate it
         speed = 0.4  # Default speed
         raw_speed = call.data["speed"]
+        use_wifi = call.data["use_wifi"]
         if raw_speed is not None:
             try:
                 speed_value = float(raw_speed)
@@ -308,7 +318,9 @@ async def async_setup_platform_services(
 
         mower: MammotionMowerData = _get_mower_by_entity_id(entity_id)
         if mower:
-            await mower.reporting_coordinator.async_move_back(speed=speed)
+            await mower.reporting_coordinator.async_move_back(
+                speed=speed, use_wifi=use_wifi
+            )
 
     hass.services.async_register("mammotion", "refresh_stream", handle_refresh_stream)
     hass.services.async_register("mammotion", "start_video", handle_start_video)

@@ -30,7 +30,7 @@ from pymammotion.aliyun.model.dev_by_account_response import Device
 from pymammotion.data.model import GenerateRouteInformation
 from pymammotion.data.model.device import MowerInfo, MowingDevice, RTKDevice
 from pymammotion.data.model.device_config import OperationSettings, create_path_order
-from pymammotion.data.model.hash_list import AreaHashNameList
+from pymammotion.data.model.hash_list import AreaHashNameList, SvgMessage
 from pymammotion.data.model.report_info import Maintain
 from pymammotion.data.mqtt.event import DeviceNotificationEventParams, ThingEventMessage
 from pymammotion.data.mqtt.properties import OTAProgressItems, ThingPropertiesMessage
@@ -455,38 +455,38 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         """Cancel task."""
         await self.send_command_and_update("cancel_job")
 
-    async def async_move_forward(self, speed: float) -> None:
+    async def async_move_forward(self, speed: float, use_wifi: bool = False) -> None:
         """Move forward."""
         device = self.manager.get_device_by_name(self.device_name)
 
-        if device.preference is ConnectionPreference.WIFI:
+        if device.preference is ConnectionPreference.WIFI and not use_wifi:
             await self.async_send_bluetooth_command("move_forward", linear=speed)
         else:
             await self.async_send_command("move_forward", linear=speed)
 
-    async def async_move_left(self, speed: float) -> None:
+    async def async_move_left(self, speed: float, use_wifi: bool = False) -> None:
         """Move left."""
         device = self.manager.get_device_by_name(self.device_name)
 
-        if device.preference is ConnectionPreference.WIFI:
+        if device.preference is ConnectionPreference.WIFI and not use_wifi:
             await self.async_send_bluetooth_command("move_left", angular=speed)
         else:
             await self.async_send_command("move_left", linear=speed)
 
-    async def async_move_right(self, speed: float) -> None:
+    async def async_move_right(self, speed: float, use_wifi: bool = False) -> None:
         """Move right."""
         device = self.manager.get_device_by_name(self.device_name)
 
-        if device.preference is ConnectionPreference.WIFI:
+        if device.preference is ConnectionPreference.WIFI and not use_wifi:
             await self.async_send_bluetooth_command("move_right", angular=speed)
         else:
             await self.async_send_command("move_right", linear=speed)
 
-    async def async_move_back(self, speed: float) -> None:
+    async def async_move_back(self, speed: float, use_wifi: bool = False) -> None:
         """Move back."""
         device = self.manager.get_device_by_name(self.device_name)
 
-        if device.preference is ConnectionPreference.WIFI:
+        if device.preference is ConnectionPreference.WIFI and not use_wifi:
             await self.async_send_bluetooth_command("move_back", linear=speed)
         else:
             await self.async_send_command("move_back", linear=speed)
@@ -541,6 +541,12 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
             no_change_period=4000,
             count=0,
         )
+
+    async def send_svg_command(self, command_str: str, **kwargs: Any) -> None:
+        """Send command and update."""
+        svg_message = SvgMessage()
+
+        return await self.async_send_command("send_svg_data", svg_message=svg_message)
 
     def generate_route_information(
         self, operation_settings: OperationSettings
