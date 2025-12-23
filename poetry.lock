@@ -40,18 +40,6 @@ files = [
 pycares = ">=4.0.0"
 
 [[package]]
-name = "aiofiles"
-version = "24.1.0"
-description = "File support for asyncio."
-optional = false
-python-versions = ">=3.8"
-groups = ["main"]
-files = [
-    {file = "aiofiles-24.1.0-py3-none-any.whl", hash = "sha256:b4ec55f4195e3eb5d7abd1bf7e061763e864dd4954231fb8539a0ef8bb8260e5"},
-    {file = "aiofiles-24.1.0.tar.gz", hash = "sha256:22a075c9e5a3810f0c2e48f3008c94d68c65d763b9b03857924c99e57355166c"},
-]
-
-[[package]]
 name = "aiohappyeyeballs"
 version = "2.6.1"
 description = "Happy Eyeballs for asyncio"
@@ -293,92 +281,6 @@ files = [
 ]
 
 [[package]]
-name = "alibabacloud-credentials"
-version = "1.0.1"
-description = "The alibabacloud credentials module of alibabaCloud Python SDK."
-optional = false
-python-versions = ">=3.7"
-groups = ["main"]
-files = [
-    {file = "alibabacloud-credentials-1.0.1.tar.gz", hash = "sha256:fa6c5f7cfa28fb51a59686aada8e96bba91687aa79d884534df1594bc6ad27f8"},
-]
-
-[package.dependencies]
-aiofiles = ">=22.1.0,<25.0.0"
-alibabacloud_credentials_api = ">=1.0.0,<2.0.0"
-alibabacloud-tea = ">=0.4.0"
-APScheduler = ">=3.10.0,<4.0.0"
-
-[[package]]
-name = "alibabacloud-credentials-api"
-version = "1.0.0"
-description = "Alibaba Cloud Gateway SPI SDK Library for Python"
-optional = false
-python-versions = ">=3.7"
-groups = ["main"]
-files = [
-    {file = "alibabacloud-credentials-api-1.0.0.tar.gz", hash = "sha256:8c340038d904f0218d7214a8f4088c31912bfcf279af2cbc7d9be4897a97dd2f"},
-]
-
-[[package]]
-name = "alibabacloud-darabonba-array"
-version = "0.1.0"
-description = "Alibaba Cloud Darabonba Array SDK Library for Python"
-optional = false
-python-versions = ">=3.6"
-groups = ["main"]
-files = [
-    {file = "alibabacloud_darabonba_array-0.1.0.tar.gz", hash = "sha256:7f9a7c632518ff4f0cebb0d4e825a48c12e7cf0b9016ea25054dd73732e155aa"},
-]
-
-[[package]]
-name = "alibabacloud-darabonba-encode-util"
-version = "0.0.2"
-description = "Darabonba Util Library for Alibaba Cloud Python SDK"
-optional = false
-python-versions = ">=3.6"
-groups = ["main"]
-files = [
-    {file = "alibabacloud_darabonba_encode_util-0.0.2.tar.gz", hash = "sha256:f1c484f276d60450fa49b4b2987194e741fcb2f7faae7f287c0ae65abc85fd4d"},
-]
-
-[[package]]
-name = "alibabacloud-darabonba-map"
-version = "0.0.1"
-description = "Alibaba Cloud Darabonba Map SDK Library for Python"
-optional = false
-python-versions = ">=3.6"
-groups = ["main"]
-files = [
-    {file = "alibabacloud_darabonba_map-0.0.1.tar.gz", hash = "sha256:adb17384658a1a8f72418f1838d4b6a5fd2566bfd392a3ef06d9dbb0a595a23f"},
-]
-
-[[package]]
-name = "alibabacloud-darabonba-number"
-version = "0.0.4"
-description = "Alibaba Cloud Darabonba Number SDK Library for Python"
-optional = false
-python-versions = ">=3.6"
-groups = ["main"]
-files = [
-    {file = "alibabacloud_darabonba_number-0.0.4.tar.gz", hash = "sha256:c017fd5fb20bffb91a12a330be050524ae99add164662cb5466e85981faf3f34"},
-]
-
-[[package]]
-name = "alibabacloud-darabonba-signature-util"
-version = "0.0.4"
-description = "Darabonba Util Library for Alibaba Cloud Python SDK"
-optional = false
-python-versions = ">=3.6"
-groups = ["main"]
-files = [
-    {file = "alibabacloud_darabonba_signature_util-0.0.4.tar.gz", hash = "sha256:71d79b2ae65957bcfbf699ced894fda782b32f9635f1616635533e5a90d5feb0"},
-]
-
-[package.dependencies]
-cryptography = ">=3.0.0"
-
-[[package]]
 name = "alibabacloud-iot-api-gateway"
 version = "0.0.4"
 description = "Alibaba Cloud IotApiGateway SDK Library for Python"
@@ -392,21 +294,6 @@ files = [
 [package.dependencies]
 alibabacloud_apigateway_util = ">=0.0.2,<1.0.0"
 alibabacloud_tea_util = ">=0.2.0,<1.0.0"
-
-[[package]]
-name = "alibabacloud-openapi-util"
-version = "0.2.2"
-description = "Aliyun Tea OpenApi Library for Python"
-optional = false
-python-versions = "*"
-groups = ["main"]
-files = [
-    {file = "alibabacloud_openapi_util-0.2.2.tar.gz", hash = "sha256:ebbc3906f554cb4bf8f513e43e8a33e8b6a3d4a0ef13617a0e14c3dda8ef52a8"},
-]
-
-[package.dependencies]
-alibabacloud_tea_util = ">=0.0.2"
-cryptography = ">=3.0.0"
 
 [[package]]
 name = "alibabacloud-tea"
@@ -436,42 +323,6 @@ files = [
 
 [package.dependencies]
 alibabacloud-tea = ">=0.3.3"
-
-[[package]]
-name = "alibabacloud-url"
-version = "0.0.1"
-description = "Alibaba Cloud Tea url Library for Python"
-optional = false
-python-versions = "*"
-groups = ["main"]
-files = [
-    {file = "alibabacloud_url-0.0.1.tar.gz", hash = "sha256:982fd3b955737c9313a025a03bb5083ccc21d85d8f7ce297187f3ccf855371d4"},
-]
-
-[package.dependencies]
-alibabacloud-tea = "*"
-
-[[package]]
-name = "alicloud-gateway-iot"
-version = "1.0.1"
-description = "Alibaba Cloud IOT SDK Library for Python"
-optional = false
-python-versions = ">=3.6"
-groups = ["main"]
-files = [
-    {file = "alicloud-gateway-iot-1.0.1.tar.gz", hash = "sha256:b13c2fbe450986041ed744ff96ed7a9371398434636aeacffce34076a8826bef"},
-]
-
-[package.dependencies]
-alibabacloud_credentials = ">=0.3.5"
-alibabacloud_darabonba_array = ">=0.1.0,<1.0.0"
-alibabacloud_darabonba_encode_util = ">=0.0.2,<1.0.0"
-alibabacloud_darabonba_map = ">=0.0.1,<1.0.0"
-alibabacloud_darabonba_number = ">=0.0.4,<1.0.0"
-alibabacloud_darabonba_signature_util = ">=0.0.4,<1.0.0"
-alibabacloud_openapi_util = ">=0.2.1,<1.0.0"
-alibabacloud_tea_util = ">=0.3.8,<1.0.0"
-alibabacloud_url = ">=0.0.1,<1.0.0"
 
 [[package]]
 name = "annotatedyaml"
@@ -534,34 +385,6 @@ sniffio = ">=1.1"
 doc = ["Sphinx (>=8.2,<9.0)", "packaging", "sphinx-autodoc-typehints (>=1.2.0)", "sphinx_rtd_theme"]
 test = ["anyio[trio]", "blockbuster (>=1.5.23)", "coverage[toml] (>=7)", "exceptiongroup (>=1.2.0)", "hypothesis (>=4.0)", "psutil (>=5.9)", "pytest (>=7.0)", "trustme", "truststore (>=0.9.1) ; python_version >= \"3.10\"", "uvloop (>=0.21) ; platform_python_implementation == \"CPython\" and platform_system != \"Windows\" and python_version < \"3.14\""]
 trio = ["trio (>=0.26.1)"]
-
-[[package]]
-name = "apscheduler"
-version = "3.11.0"
-description = "In-process task scheduler with Cron-like capabilities"
-optional = false
-python-versions = ">=3.8"
-groups = ["main"]
-files = [
-    {file = "APScheduler-3.11.0-py3-none-any.whl", hash = "sha256:fc134ca32e50f5eadcc4938e3a4545ab19131435e851abb40b34d63d5141c6da"},
-    {file = "apscheduler-3.11.0.tar.gz", hash = "sha256:4c622d250b0955a65d5d0eb91c33e6d43fd879834bf541e0a18661ae60460133"},
-]
-
-[package.dependencies]
-tzlocal = ">=3.0"
-
-[package.extras]
-doc = ["packaging", "sphinx", "sphinx-rtd-theme (>=1.3.0)"]
-etcd = ["etcd3", "protobuf (<=3.21.0)"]
-gevent = ["gevent"]
-mongodb = ["pymongo (>=3.0)"]
-redis = ["redis (>=3.0)"]
-rethinkdb = ["rethinkdb (>=2.4.0)"]
-sqlalchemy = ["sqlalchemy (>=1.4)"]
-test = ["APScheduler[etcd,mongodb,redis,rethinkdb,sqlalchemy,tornado,zookeeper]", "PySide6 ; platform_python_implementation == \"CPython\" and python_version < \"3.14\"", "anyio (>=4.5.2)", "gevent ; python_version < \"3.14\"", "pytest", "pytz", "twisted ; python_version < \"3.14\""]
-tornado = ["tornado (>=4.3)"]
-twisted = ["twisted"]
-zookeeper = ["kazoo"]
 
 [[package]]
 name = "astral"
@@ -2088,20 +1911,6 @@ pyopenssl = ">=0.13"
 docs = ["sphinx (>=4.3.0)", "sphinx-rtd-theme (>=1.0)"]
 
 [[package]]
-name = "jsonic"
-version = "1.0.0"
-description = "Utilities for handling streams of JSON objects"
-optional = false
-python-versions = "*"
-groups = ["main"]
-files = [
-    {file = "jsonic-1.0.0.tar.gz", hash = "sha256:ca009a3bb33b303db724b48a00fdff391a7dbc9fb0da4d244c024d41b6f59503"},
-]
-
-[package.dependencies]
-six = ">=1.10.0"
-
-[[package]]
 name = "libcst"
 version = "1.7.0"
 description = "A concrete syntax tree with AST-like properties for Python 3.0 through 3.13 programs."
@@ -3036,18 +2845,6 @@ files = [
 psutil = "*"
 
 [[package]]
-name = "py-jsonic"
-version = "0.0.2"
-description = "lightweight utility for serializing/deserializing python objects to/from JSON"
-optional = false
-python-versions = ">=3.6"
-groups = ["main"]
-files = [
-    {file = "py-jsonic-0.0.2.tar.gz", hash = "sha256:8445c7e098878905401eaab0245f69600a0421c09afb3742e8d272728fa7cbd8"},
-    {file = "py_jsonic-0.0.2-py3-none-any.whl", hash = "sha256:d31094cba61e247ab49d9dddd4e43e57305343e2d8ee73099825607e7da10cdf"},
-]
-
-[[package]]
 name = "pycares"
 version = "4.6.1"
 description = "Python interface for c-ares"
@@ -3212,34 +3009,30 @@ testutils = ["gitpython (>3)"]
 
 [[package]]
 name = "pymammotion"
-version = "0.5.65"
+version = "0.5.68"
 description = ""
 optional = false
 python-versions = "<4.0,>=3.12"
 groups = ["main"]
 files = [
-    {file = "pymammotion-0.5.65-py3-none-any.whl", hash = "sha256:3d72b997590e1b519a44c7471e461b45e28d4359748aedf62ab5e34c0aaa5199"},
-    {file = "pymammotion-0.5.65.tar.gz", hash = "sha256:bd8dfc8e5e580c9f0f684ecd8cfe3f201a72dbede2f3777978b4a960de634bd4"},
+    {file = "pymammotion-0.5.68-py3-none-any.whl", hash = "sha256:2da48bb36730a6b4d991e460b72c8b888d043f9d3c650844cdff9f0bbbaa90d5"},
+    {file = "pymammotion-0.5.68.tar.gz", hash = "sha256:8354b1b51c2c36f1049af5b65409fb38d5015b24ec01b9efe0239b595b77bb59"},
 ]
 
 [package.dependencies]
 aiohttp = ">=3.9.1"
 alibabacloud-apigateway-util = ">=0.0.2,<0.0.3"
 alibabacloud-iot-api-gateway = ">=0.0.4,<0.0.5"
-alicloud-gateway-iot = ">=1.0.0,<2"
-async-timeout = ">=4.0.3,<5"
 betterproto2 = ">=0.9.1"
 bleak = ">=0.21.0"
 bleak-retry-connector = ">=3.5.0"
 crcmod = ">=1.7,<2.0"
 cryptography = ">=43.0.1"
-jsonic = ">=1.0.0,<2"
 mashumaro = ">=3.13,<4.0"
 numpy = ">=1.26.0"
 orjson = ">=3.9.15,<4"
 paho-mqtt = ">=2.1.0,<3"
 protobuf = ">=4.23.1"
-py-jsonic = ">=0.0.2,<0.0.3"
 pyjwt = ">=2.10.1"
 sdp-transform = ">=1.1.0"
 shapely = ">=2.1.2"
@@ -3933,24 +3726,6 @@ files = [
     {file = "tzdata-2025.2-py2.py3-none-any.whl", hash = "sha256:1a403fada01ff9221ca8044d701868fa132215d84beb92242d9acd2147f667a8"},
     {file = "tzdata-2025.2.tar.gz", hash = "sha256:b60a638fcc0daffadf82fe0f57e53d06bdec2f36c4df66280ae79bce6bd6f2b9"},
 ]
-
-[[package]]
-name = "tzlocal"
-version = "5.3.1"
-description = "tzinfo object for the local timezone"
-optional = false
-python-versions = ">=3.9"
-groups = ["main"]
-files = [
-    {file = "tzlocal-5.3.1-py3-none-any.whl", hash = "sha256:eb1a66c3ef5847adf7a834f1be0800581b683b5608e74f86ecbcef8ab91bb85d"},
-    {file = "tzlocal-5.3.1.tar.gz", hash = "sha256:cceffc7edecefea1f595541dbd6e990cb1ea3d19bf01b2809f362a03dd7921fd"},
-]
-
-[package.dependencies]
-tzdata = {version = "*", markers = "platform_system == \"Windows\""}
-
-[package.extras]
-devenv = ["check-manifest", "pytest (>=4.3)", "pytest-cov", "pytest-mock (>=3.3)", "zest.releaser"]
 
 [[package]]
 name = "uart-devices"
@@ -4654,4 +4429,4 @@ ifaddr = ">=0.1.7"
 [metadata]
 lock-version = "2.1"
 python-versions = "~3.13.0"
-content-hash = "2a2ef0efb268f3e537461e24ab7facab6348c23caa0a8bd0988460d4a9ac0b13"
+content-hash = "6c1c6947f45fe59b8c38b00e519c8645f4ffa090659d276363c71177e5037deb"
