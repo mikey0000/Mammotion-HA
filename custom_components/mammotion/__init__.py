@@ -6,8 +6,8 @@ from aiohttp import ClientConnectorError
 from homeassistant.components import bluetooth
 from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_PASSWORD, Platform
-from homeassistant.core import HomeAssistant
+from homeassistant.const import CONF_PASSWORD, EVENT_HOMEASSISTANT_STOP, Platform
+from homeassistant.core import Event, HomeAssistant
 from homeassistant.exceptions import ConfigEntryError, ConfigEntryNotReady
 from homeassistant.helpers.device_registry import DeviceEntry
 from pymammotion import CloudIOTGateway
@@ -263,6 +263,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
     mammotion_devices.RTK = mammotion_rtk
     mammotion_devices.mowers = mammotion_mowers
     entry.runtime_data = mammotion_devices
+
+    async def shutdown_mammotion(_: Event | None = None):
+        await mammotion.stop()
+
+    entry.async_on_unload(
+        hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP), shutdown_mammotion
+    )
+    entry.async_on_unload(shutdown_mammotion)
+
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     # Record the path to the static files needed for WebRTC
