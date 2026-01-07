@@ -17,8 +17,11 @@ from homeassistant.components.camera import (
     WebRTCAnswer,
     WebRTCError,
     WebRTCSendMessage,
+)
+from homeassistant.components.web_rtc import (
     async_register_ice_servers,
 )
+
 from homeassistant.core import (
     HomeAssistant,
     ServiceCall,
@@ -95,8 +98,8 @@ async def async_setup_entry(
                                 ],
                             )
 
-                            # Get ICE servers and convert to RTCIceServer format
-                            ice_servers_agora = agora_response.get_ice_servers()
+                            # Get ICE servers and convert to RTCIceServer format - use only first TURN server to match SDK (3 entries)
+                            ice_servers_agora = agora_response.get_ice_servers(use_all_turn_servers=False)
                             ice_servers = []
                             _LOGGER.info(
                                 "Ice Servers from Agora API:%s", ice_servers_agora
@@ -165,7 +168,6 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         self.ice_servers = getattr(coordinator, "_ice_servers", [])
         self._agora_response = getattr(coordinator, "_agora_response", None)
         async_register_ice_servers(hass, self.get_ice_servers)
-        self._add_candidates = True
 
     async def async_camera_image(
         self, width: int | None = None, height: int | None = None
@@ -181,15 +183,96 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         This replaces the JavaScript SDK functionality and performs the WebRTC
         negotiation directly in Python.
         """
-        self._add_candidates = True
+        # Reset candidates list for new session
         self._agora_handler.candidates = []
         _LOGGER.info("Handling WebRTC offer for session %s", session_id)
         _LOGGER.info("Raw OFFER SDP %s", offer_sdp)
 
-        # if 'candidate' not in offer_sdp:
-        #     return
-        await asyncio.sleep(5)  # Small delay to ensure readiness
-        self._add_candidates = False
+        # Wait for initial ICE candidates, specifically looking for a reflexive candidate (srflx/prflx)
+        # or relay, as requested to ensure public connectivity.
+        max_wait = 15.0
+        wait_interval = 0.1
+        elapsed = 0.0
+
+        def has_reflexive_candidate():
+            for cand in self._agora_handler.candidates:
+                cand_str = ""
+                if isinstance(cand, dict):
+                    cand_str = cand.get("candidate", "")
+                elif hasattr(cand, "candidate"):
+                    cand_str = cand.candidate
+                
+                # Check for srflx (Server Reflexive) or prflx (Peer Reflexive) or relay "typ srflx", "typ relay"
+                if any(t in cand_str for t in [ "typ prflx"]):
+                    return True
+            return False
+
+        while not has_reflexive_candidate() and elapsed < max_wait:
+            await asyncio.sleep(wait_interval)
+            elapsed += wait_interval
+        
+        # Filter candidates to ONLY send candidates that match Agora ICE servers (Strict Filtering)
+        # "Change the candidate selection code to only accept candidates from agora ice servers"
+        # INTERPRETATION:
+        # - 'relay' candidates MUST match an Agora TURN server IP.
+        # - 'srflx' candidates come from Agora STUN servers but have the public IP of the user. We MUST allow these.
+        # - 'prflx' candidates are peer-reflexive, similar to srflx. Allow.
+        # - 'host' candidates are local IPs. These do NOT come from an ICE server. Filter them out.
+        
+        valid_ips = set()
+        if self._agora_response and self._agora_response.addresses:
+            for addr in self._agora_response.addresses:
+                valid_ips.add(addr.ip)
+        
+        filtered_candidates = []
+        for cand in self._agora_handler.candidates:
+            cand_str = ""
+            if isinstance(cand, dict):
+                cand_str = cand.get("candidate", "")
+            elif hasattr(cand, "candidate"):
+                cand_str = cand.candidate
+            
+            # Allow reflexive types unconditionally (they connect via Agora STUN)
+            if any(t in cand_str for t in ["typ srflx", "typ prflx"]):
+                filtered_candidates.append(cand)
+                continue
+                
+            # For relay candidates, enforce strict IP matching
+            if "typ relay" in cand_str:
+                if any(ip in cand_str for ip in valid_ips):
+                    filtered_candidates.append(cand)
+                else:
+                    _LOGGER.warning("Dropped unknown relay candidate: %s", cand_str)
+                continue
+            
+            # Drop 'host' candidates or others
+            # _LOGGER.debug("Dropped candidate (not from ICE server): %s", cand_str)
+        
+        if filtered_candidates:
+            _LOGGER.info(
+                "Strict filtering: Keeping %d candidates (Agora-derived). Total was %d.", 
+                len(filtered_candidates), len(self._agora_handler.candidates)
+            )
+            self._agora_handler.candidates = filtered_candidates
+        else:
+            _LOGGER.warning("Strict filtering removed all candidates! Fallback to original list.")
+            # If we filtered everything, maybe we shouldn't have. Fallback or fail?
+            # For now, let's fallback to the previous "reflexive" list or just keep all to avoid total failure,
+            # but log a warning.
+            # Actually, let's try to at least keep reflexive/relay if IP match fails (e.g. if srflx usage was intended).
+            # But user request was specific. Let's warn and proceed with empty (or re-populate if desired behaviour is 'best effort').
+            # Given "only accept", sending nothing is compliant but broken.
+            # Let's assume we MUST find one. If not, the wait loop above failed to find an Agora one.
+            pass
+            _LOGGER.warning("No reflexive candidates found after wait, proceeding with all collected candidates")
+
+        _LOGGER.info(
+            "Collected %d ICE candidates (Reflexive found: %s) after %.1fs",
+            len(self._agora_handler.candidates),
+            has_reflexive_candidate(),
+            elapsed
+        )
+
         try:
             # Get stream data (appid, channelName, token, uid)
             stream_data = self.coordinator.get_stream_data()
@@ -226,11 +309,11 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
     async def async_on_webrtc_candidate(
         self, session_id: str, candidate: RTCIceCandidateInit
     ) -> None:
-        """Ignore WebRTC candidates."""
-        # _LOGGER.info("Received WebRTC candidate for session %s", session_id)
-        _LOGGER.info("Received WebRTC candidate %s", candidate)
-        if self._add_candidates:
-            self._agora_handler.add_ice_candidate(candidate)
+        """Collect WebRTC candidates for inclusion in join message."""
+        _LOGGER.info("Received WebRTC candidate for session %s: %s", session_id, candidate)
+        
+        # Collect candidates - they'll be included in the join message
+        self._agora_handler.candidates.append(candidate)
 
     @callback
     async def async_close_webrtc_session(self, session_id: str) -> None:

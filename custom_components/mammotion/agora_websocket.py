@@ -18,6 +18,7 @@ from sdp_transform import parse as sdp_parse
 from webrtc_models import RTCIceCandidateInit
 from websockets.asyncio.client import ClientConnection, connect
 from websockets.exceptions import WebSocketException
+from .agora_sdp import parse_offer_to_ortc, generate_answer_from_ortc
 
 from .agora_api import AgoraResponse
 from .agora_rtc_capabilities import (
@@ -130,43 +131,14 @@ class AgoraWebSocketHandler:
         _LOGGER.debug("Starting Agora WebSocket connection for session %s", session_id)
         _LOGGER.info("Agora data: %s", agora_data)
 
-        # Wait for at least 2 ICE candidates before proceeding
-        max_wait_time = 10  # seconds
-        wait_interval = 0.1  # seconds
-        elapsed = 0.0
-
-        while len(self.candidates) < 2 and elapsed < max_wait_time:
-            _LOGGER.debug(
-                "Waiting for ICE candidates... Currently have %d, need at least 2",
-                len(self.candidates),
-            )
-            await asyncio.sleep(wait_interval)
-            elapsed += wait_interval
-
-        if len(self.candidates) < 2:
-            _LOGGER.warning(
-                "Timed out waiting for ICE candidates. Only received %d candidate(s)",
-                len(self.candidates),
-            )
-        else:
-            _LOGGER.info(
-                "Received %d ICE candidates, proceeding with connection",
-                len(self.candidates),
-            )
-
-        # Parse offer SDP for capabilities
-        sdp_info = self._parse_offer_sdp(offer_sdp)
-        if not sdp_info:
+        # Parse offer SDP for capabilities parse_offer_to_ortc
+        stored_sdp_info = self._parse_offer_sdp(offer_sdp)
+        ortc_info = parse_offer_to_ortc(offer_sdp)
+        if not ortc_info:
             _LOGGER.error("Failed to parse offer SDP")
             return None
 
-        _LOGGER.info("Parsed offer SDP: %s", sdp_info)
-
-        # Incorporate runtime ICE candidates into offer SDP
-        if len(self.candidates) >= 1:
-            offer_sdp = self._add_candidates_to_sdp(offer_sdp, self.candidates)
-            _LOGGER.info("Added %d candidates to offer SDP", len(self.candidates))
-        _LOGGER.info("Offer SDP with candidates: %s", offer_sdp)
+        _LOGGER.info("Offer SDP: %s", offer_sdp)
         # Try each gateway address (flag 4096) with timeout
         # Use gateway addresses specifically for WebSocket connection
         gateway_addresses = agora_response.get_gateway_addresses()
@@ -189,16 +161,19 @@ class AgoraWebSocketHandler:
                         self._connection_state = "CONNECTED"
                         _LOGGER.info("Connected to Agora WebSocket: %s", ws_url)
 
+                        # Store SDP info for later use in trickle ICE
+                        self._sdp_info = ortc_info
+
                         # Send join message
                         join_message = self._create_join_message(
-                            agora_data, offer_sdp, sdp_info, agora_response, session_id
+                            agora_data, offer_sdp, stored_sdp_info, ortc_info, agora_response, session_id
                         )
                         await websocket.send(json.dumps(join_message))
                         _LOGGER.info("Sent join message to Agora %s", join_message)
 
                         # Handle responses
                         return await self._handle_websocket_messages(
-                            websocket, session_id, sdp_info
+                            websocket, session_id, stored_sdp_info, agora_response
                         )
 
             except asyncio.TimeoutError:
@@ -216,7 +191,7 @@ class AgoraWebSocketHandler:
         return None
 
     async def _handle_websocket_messages(
-        self, websocket: ClientConnection, session_id: str, sdp_info: SdpInfo
+        self, websocket: ClientConnection, session_id: str, sdp_info: SdpInfo, agora_response: AgoraResponse = None
     ) -> str | None:
         """Handle incoming WebSocket messages."""
         try:
@@ -243,7 +218,7 @@ class AgoraWebSocketHandler:
 
                     # Check for successful join response
                     if response.get("_result") == "success":
-                        return await self._handle_join_success(response, sdp_info)
+                        return await self._handle_join_success(response, sdp_info, agora_response)
 
                 except json.JSONDecodeError as ex:
                     _LOGGER.error("Failed to parse Agora message: %s", ex)
@@ -259,11 +234,15 @@ class AgoraWebSocketHandler:
         return self._generate_fallback_sdp()
 
     async def _handle_join_success(
-        self, response: dict[str, Any], sdp_info: SdpInfo
+        self, response: dict[str, Any], sdp_info: SdpInfo, agora_response: AgoraResponse = None
     ) -> str | None:
         """Handle successful join response and generate answer SDP."""
         message = response.get("_message", {})
         ortc = message.get("ortc", {})
+
+        # Mark as joined so trickle ICE can start
+        self._joined = True
+        _LOGGER.info("Join successful - trickle ICE now enabled")
 
         # Send set_client_role after successful connection
         await self._send_set_client_role(role="audience", level=1)
@@ -275,8 +254,39 @@ class AgoraWebSocketHandler:
 
         _LOGGER.info("ORTC parameters: %s", ortc)
 
-        # Generate answer SDP from ORTC parameters
-        answer_sdp = self._generate_answer_sdp(ortc, sdp_info)
+        # Inject fingerprint from Agora Response (Auth) to ensure we have the correct server certificates.
+        # This fixes the "bytes sent but not received" issue where DTLS fails due to missing/mismatched fingerprints.
+        if agora_response:
+             _LOGGER.info("Syncing fingerprints from Agora Auth Response")
+             dtls_params = ortc.setdefault("dtlsParameters", {})
+             current_fps = dtls_params.get("fingerprints", [])
+             seen_fp_values = {f.get("fingerprint").lower() for f in current_fps if f.get("fingerprint")}
+             
+             injected_count = 0
+             for addr in agora_response.addresses:
+                 if addr.fingerprint:
+                     # Parse algorithm and value if formatted as "algo val"
+                     fp_val = addr.fingerprint
+                     algo = "sha-256" 
+                     if " " in fp_val:
+                         parts = fp_val.split()
+                         if len(parts) == 2:
+                             algo = parts[0]
+                             fp_val = parts[1]
+                     
+                     if fp_val.lower() not in seen_fp_values:
+                         current_fps.append({"hashFunction": algo, "fingerprint": fp_val})
+                         seen_fp_values.add(fp_val.lower())
+                         injected_count += 1
+             
+             if injected_count > 0:
+                 dtls_params["fingerprints"] = current_fps
+                 _LOGGER.info("Injected %d new fingerprints from Auth Response", injected_count)
+
+        # Generate answer SDP from ORTC parameters.
+        # We force 'active' role here to match Agora SDK behavior for the audience role,
+        # ensuring the browser behaves as the DTLS server and Agora as the DTLS client.
+        answer_sdp = generate_answer_from_ortc(ortc, sdp_info.parsed_sdp, force_setup="active")
         if answer_sdp:
             _LOGGER.info("Generated answer SDP from Agora ORTC parameters")
             _LOGGER.info("Generated SDP: %s", answer_sdp)
@@ -373,7 +383,8 @@ class AgoraWebSocketHandler:
         self,
         agora_data: StreamSubscriptionResponse,
         offer_sdp: str,
-        sdp_info: SdpInfo,
+        stored_sdp_info: SdpInfo,
+        ortc_info: dict[str, Any],
         agora_response: AgoraResponse,
         session_id: str,
     ) -> dict[str, Any]:
@@ -424,41 +435,44 @@ class AgoraWebSocketHandler:
                     }
                 },
                 "join_ts": int(time.time() * 1000),
-                "ortc": {
-                    "iceParameters": {
-                        "iceUfrag": sdp_info.ice_ufrag,
-                        "icePwd": sdp_info.ice_pwd,
-                    },
-                    "dtlsParameters": {
-                        "fingerprints": [
-                            {
-                                "hashFunction": "sha-256",
-                                "fingerprint": sdp_info.fingerprint,
-                            }
-                        ]
-                    },
-                    "rtpCapabilities": {
-                        "send": {
-                            "audioCodecs": [],
-                            "audioExtensions": [],
-                            "videoCodecs": [],
-                            "videoExtensions": [],
-                        },
-                        "recv": {
-                            "audioCodecs": [],
-                            "audioExtensions": [],
-                            "videoCodecs": get_video_codecs_recv(),
-                            "videoExtensions": [],
-                        },
-                        "sendrecv": {
-                            "audioCodecs": get_audio_codecs(),
-                            "audioExtensions": get_audio_extensions(),
-                            "videoCodecs": get_video_codecs_sendrecv(),
-                            "videoExtensions": get_video_extensions(),
-                        },
-                    },
-                    "version": "2",
-                },
+                "ortc": ortc_info
+                # "ortc": {
+                #     "iceParameters": {
+                #         "iceUfrag": sdp_info.ice_ufrag,
+                #         "icePwd": sdp_info.ice_pwd,
+                #         "candidates": self._convert_candidates_to_ortc(),
+                #     },
+                #     "dtlsParameters": {
+                #         "fingerprints": [
+                #             {
+                #                 "hashFunction": "sha-256",
+                #                 "fingerprint": sdp_info.fingerprint,
+                #             }
+                #         ],
+                #         "role": "client",
+                #     },
+                #     "rtpCapabilities": {
+                #         "send": {
+                #             "audioCodecs": [],
+                #             "audioExtensions": [],
+                #             "videoCodecs": [],
+                #             "videoExtensions": [],
+                #         },
+                #         "recv": {
+                #             "audioCodecs": [],
+                #             "audioExtensions": [],
+                #             "videoCodecs": get_video_codecs_recv(),
+                #             "videoExtensions": [],
+                #         },
+                #         "sendrecv": {
+                #             "audioCodecs": get_audio_codecs(),
+                #             "audioExtensions": get_audio_extensions(),
+                #             "videoCodecs": get_video_codecs_sendrecv(),
+                #             "videoExtensions": get_video_extensions(),
+                #         },
+                #     },
+                #     "version": "2",
+                # },
             },
         }
 
@@ -497,7 +511,7 @@ class AgoraWebSocketHandler:
         codec: str = "vp8",
         stream_type: str = "video",
         mode: str = "live",
-        p2p_id: int = 4,
+        p2p_id: int = 1,
         twcc: bool = True,
         rtx: bool = True,
         extend: str = "",
@@ -510,7 +524,7 @@ class AgoraWebSocketHandler:
             codec: Video codec (default: "vp8")
             stream_type: Stream type (default: "video")
             mode: Mode (default: "live")
-            p2p_id: P2P ID (default: 4)
+            p2p_id: P2P ID (default: 1)
             twcc: Enable transport-wide congestion control
             rtx: Enable retransmission
             extend: Extended info
@@ -539,6 +553,54 @@ class AgoraWebSocketHandler:
 
         _LOGGER.info("Sending subscribe message: %s", message)
         await self._websocket.send(json.dumps(message))
+
+    def _convert_candidates_to_ortc(self) -> list[dict[str, Any]]:
+        """Convert collected ICE candidates to ORTC format for join message.
+
+        Returns:
+            List of candidate dictionaries in ORTC format
+
+        """
+        ortc_candidates = []
+        
+        for candidate in self.candidates:
+            cand_str = candidate.candidate
+            if not cand_str:
+                continue
+
+            # Remove \"candidate:\" prefix if present
+            if cand_str.startswith("candidate:"):
+                cand_str = cand_str[10:]
+
+            parts = cand_str.split()
+            if len(parts) < 8:
+                _LOGGER.warning("Invalid candidate format: %s", candidate.candidate)
+                continue
+
+            try:
+                foundation = parts[0]
+                protocol = parts[2]
+                priority = int(parts[3])
+                ip = parts[4]
+                port = int(parts[5])
+                cand_type = parts[7]
+
+                # Build candidate object in ORTC format
+                ortc_candidates.append({
+                    "foundation": foundation,
+                    "ip": ip,
+                    "port": port,
+                    "priority": priority,
+                    "protocol": protocol,
+                    "type": cand_type,
+                })
+
+            except (ValueError, IndexError) as ex:
+                _LOGGER.error("Failed to parse candidate %s: %s", candidate.candidate, ex)
+                continue
+
+        _LOGGER.info("Converted %d candidates to ORTC format", len(ortc_candidates))
+        return ortc_candidates
 
     @staticmethod
     def _add_candidates_to_sdp(sdp: str, candidates: list[RTCIceCandidateInit]) -> str:
@@ -895,25 +957,21 @@ class AgoraWebSocketHandler:
             bundle_mids = bundle_group.get("mids", "0 1") if bundle_group else "0 1"
 
             # Determine answer setup role based on offer
-            def answer_setup_for_offer(offer_setup: str) -> str:
-                if offer_setup == "actpass":
-                    return "active"  # We choose to be active
-                if offer_setup == "active":
-                    return "passive"  # Must be passive
-                if offer_setup == "passive":
-                    return "active"  # Must be active
-                return "active"  # default
-
-            answer_setup = answer_setup_for_offer(sdp_info.setup_role)
+            # Working SDK Answer shows setup:active
+            answer_setup = "active"
 
             # build base sdp header
+            # f"o=- {sdp_info.parsed_sdp['origin']['sessionId']} {sdp_info.parsed_sdp['origin']['sessionVersion']} IN IP4 127.0.0.1",
             sdp_lines = [
                 "v=0",
-                f"o=- {sdp_info.parsed_sdp['origin']['sessionId']} {sdp_info.parsed_sdp['origin']['sessionVersion']} IN IP4 127.0.0.1",
-                "s=-",
+                "o=- 0 0 IN IP4 127.0.0.1",
+                "s=AgoraGateway",
                 "t=0 0",
                 f"a=group:BUNDLE {bundle_mids}",
             ]
+
+            # Add ice-lite to session level as seen in working SDK
+            sdp_lines.append("a=ice-lite")
 
             # Add extmap-allow-mixed if present in answer
             if sdp_info.extmap_allow_mixed:
@@ -942,9 +1000,8 @@ class AgoraWebSocketHandler:
                 payloads_str = " ".join(payload_types)
 
                 # media header
-                sdp_lines.append("a=ice-lite")
                 sdp_lines.append(f"m={mtype} 9 UDP/TLS/RTP/SAVPF {payloads_str}")
-                sdp_lines.append("c=IN IP4 127.0.0.1")
+                sdp_lines.append("c=IN IP4 0.0.0.0")
                 sdp_lines.append("a=rtcp:9 IN IP4 0.0.0.0")
                 sdp_lines.append(f"a=ice-ufrag:{ice_ufrag}")
                 sdp_lines.append(f"a=ice-pwd:{ice_pwd}")
@@ -1016,11 +1073,9 @@ class AgoraWebSocketHandler:
                             )
                             sdp_lines.append(f"a=fmtp:{pt} {param_str}")
 
-                # send SSRC if answer sends
-                if "send" in answer_dir:
-                    local_ssrc = random.randint(1, 2**32 - 1)
-                    local_cname = ortc.get("cname") or f"pc-{secrets.token_hex(6)}"
-                    sdp_lines.append(f"a=ssrc:{local_ssrc} cname:{local_cname}")
+                # Working SDK answer DOES NOT include a=ssrc for audience/receiver section
+                # Omit SSRC for receiver role
+                
 
                 # append candidates for this media: specific mid then generic ones
                 # try exact mid key, also accept numeric mline index as key
