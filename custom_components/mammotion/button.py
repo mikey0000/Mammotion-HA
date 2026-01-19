@@ -11,6 +11,7 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pymammotion.data.model.hash_list import Plan
+from pymammotion.utility.device_type import DeviceType
 
 from . import MammotionConfigEntry
 from .const import DOMAIN
@@ -124,6 +125,14 @@ async def async_setup_entry(
             MammotionButtonSensorEntity(mower.reporting_coordinator, entity_description)
             for entity_description in BUTTON_SENSORS
         )
+
+        if not DeviceType.is_luba1(mower.device.device_name):
+            async_add_entities(
+                MammotionButtonSensorEntity(
+                    mower.reporting_coordinator, entity_description
+                )
+                for entity_description in BUTTON_LUBA_PRO_YUKA
+            )
 
 
 class MammotionButtonSensorEntity(MammotionBaseEntity, ButtonEntity):
