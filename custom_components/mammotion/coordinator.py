@@ -123,6 +123,11 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
             ),
         )
 
+        device = self.manager.get_device_by_name(self.device_name)
+
+        if self.data is None:
+            self.data = device.state
+
     @abstractmethod
     def get_coordinator_data(self, device: MammotionMowerDeviceManager) -> DataT:
         """Get coordinator data."""
@@ -796,8 +801,6 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
     async def _async_setup(self) -> None:
         device = self.manager.get_device_by_name(self.device_name)
 
-        if self.data is None:
-            self.data = device.state
         if cloud := device.cloud:
             cloud.set_notification_callback(self._async_update_notification)
         elif ble := device.ble:
@@ -978,6 +981,10 @@ class MammotionMaintenanceUpdateCoordinator(MammotionBaseUpdateCoordinator[Maint
             update_interval=MAINTENANCE_INTERVAL,
         )
 
+        device = self.manager.get_device_by_name(self.device_name)
+        if self.data is None:
+            self.data = device.state.report_data.maintenance
+
     def get_coordinator_data(self, device: MammotionMowerDeviceManager) -> Maintain:
         """Get coordinator data."""
         return device.state.report_data.maintenance
@@ -1006,9 +1013,6 @@ class MammotionMaintenanceUpdateCoordinator(MammotionBaseUpdateCoordinator[Maint
     async def _async_setup(self) -> None:
         """Setup maintenance coordinator."""
         await super()._async_setup()
-        device = self.manager.get_device_by_name(self.device_name)
-        if self.data is None:
-            self.data = device.state.report_data.maintenance
 
 
 class MammotionDeviceVersionUpdateCoordinator(
@@ -1031,6 +1035,10 @@ class MammotionDeviceVersionUpdateCoordinator(
             mammotion=mammotion,
             update_interval=DEFAULT_INTERVAL,
         )
+
+        device = self.manager.get_device_by_name(self.device_name)
+        if self.data is None:
+            self.data = device.state
 
     def get_coordinator_data(self, device: MammotionMowerDeviceManager) -> MowingDevice:
         """Get coordinator data."""
@@ -1090,15 +1098,14 @@ class MammotionDeviceVersionUpdateCoordinator(
     async def _async_setup(self) -> None:
         """Setup device version coordinator."""
         await super()._async_setup()
-        device = self.manager.get_device_by_name(self.device_name)
-        if self.data is None:
-            self.data = device.state
 
         try:
-            if device.state.mower_state.model_id == "":
+            if self.data.mower_state.model_id == "":
                 await self.async_send_command("get_device_product_model")
-            if device.state.mower_state.wifi_mac == "":
+            if self.data.mower_state.wifi_mac == "":
                 await self.async_send_command("get_device_network_info")
+
+            device = self.manager.get_device_by_name(self.device_name)
 
             ota_info = await device.mammotion_http.get_device_ota_firmware(
                 [device.iot_id]
@@ -1131,6 +1138,10 @@ class MammotionMapUpdateCoordinator(MammotionBaseUpdateCoordinator[MowerInfo]):
             mammotion=mammotion,
             update_interval=MAP_INTERVAL_FAST,
         )
+
+        device = self.manager.get_device_by_name(self.device_name)
+        if self.data is None:
+            self.data = device.state.mower_state
 
     def get_coordinator_data(self, device: MammotionMowerDeviceManager) -> MowerInfo:
         """Get coordinator data."""
@@ -1177,8 +1188,6 @@ class MammotionMapUpdateCoordinator(MammotionBaseUpdateCoordinator[MowerInfo]):
         """Setup coordinator with initial call to get map data."""
         await super()._async_setup()
         device = self.manager.get_device_by_name(self.device_name)
-        if self.data is None:
-            self.data = device.state.mower_state
 
         if not device.state.enabled or not device.state.online:
             return
@@ -1214,6 +1223,9 @@ class MammotionDeviceErrorUpdateCoordinator(
             mammotion=mammotion,
             update_interval=DEFAULT_INTERVAL,
         )
+        device = self.manager.get_device_by_name(self.device_name)
+        if self.data is None:
+            self.data = device.state
 
     def get_coordinator_data(self, device: MammotionMowerDeviceManager) -> MowingDevice:
         """Get coordinator data."""
@@ -1322,8 +1334,6 @@ class MammotionDeviceErrorUpdateCoordinator(
         """Setup device version coordinator."""
         await super()._async_setup()
         device = self.manager.get_device_by_name(self.device_name)
-        if self.data is None:
-            self.data = device.state
 
         try:
             # get current errors

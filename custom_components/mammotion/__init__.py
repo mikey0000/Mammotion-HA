@@ -10,6 +10,7 @@ from homeassistant.const import CONF_PASSWORD, EVENT_HOMEASSISTANT_STOP, Platfor
 from homeassistant.core import Event, HomeAssistant
 from homeassistant.exceptions import ConfigEntryError, ConfigEntryNotReady
 from homeassistant.helpers.device_registry import DeviceEntry
+from homeassistant.helpers.event import async_call_later
 from pymammotion import CloudIOTGateway
 from pymammotion.aliyun.model.aep_response import AepResponse
 from pymammotion.aliyun.model.connect_response import ConnectResponse
@@ -197,11 +198,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
             )
             # sometimes device is not there when restoring data
             await report_coordinator.async_restore_data()
-            # other coordinator
-            await maintenance_coordinator.async_config_entry_first_refresh()
             await version_coordinator.async_config_entry_first_refresh()
-            await report_coordinator.async_config_entry_first_refresh()
-            await error_coordinator.async_config_entry_first_refresh()
+            async_call_later(
+                hass, 5, report_coordinator.async_config_entry_first_refresh
+            )
+            async_call_later(
+                hass, 15, maintenance_coordinator.async_config_entry_first_refresh
+            )
+            async_call_later(
+                hass, 20, error_coordinator.async_config_entry_first_refresh
+            )
 
             device_config = DeviceConfig()
             device_limits = device_config.get_working_parameters(
@@ -234,7 +240,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                 )
             )
             try:
-                await map_coordinator.async_request_refresh()
+                async_call_later(hass, 25, map_coordinator.async_request_refresh)
             except:
                 """Do nothing for now."""
 
