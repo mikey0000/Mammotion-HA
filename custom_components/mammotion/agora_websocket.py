@@ -286,7 +286,8 @@ class AgoraWebSocketHandler:
         # Generate answer SDP from ORTC parameters.
         # We force 'active' role here to match Agora SDK behavior for the audience role,
         # ensuring the browser behaves as the DTLS server and Agora as the DTLS client.
-        answer_sdp = generate_answer_from_ortc(ortc, sdp_info.parsed_sdp, force_setup="active")
+        # answer_sdp = generate_answer_from_ortc(ortc, sdp_info.parsed_sdp, force_setup="active")
+        answer_sdp = self._generate_answer_sdp(ortc, sdp_info)
         if answer_sdp:
             _LOGGER.info("Generated answer SDP from Agora ORTC parameters")
             _LOGGER.info("Generated SDP: %s", answer_sdp)
@@ -882,10 +883,17 @@ class AgoraWebSocketHandler:
             _LOGGER.debug("DTLS params: %s", dtls_params)
             _LOGGER.debug("RTP caps: %s", rtp_caps)
 
-            # Extract ICE candidates and credentials from ORTC
+            # Extract ICE credentials from ORTC (these are OUR credentials for the answer)
             ortc_candidates = ice_params.get("candidates", []) or []
             ice_ufrag = ice_params.get("iceUfrag", "") or ""
             ice_pwd = ice_params.get("icePwd", "") or ""
+
+            _LOGGER.info(
+                "Answer SDP will use ICE ufrag: %s, "
+                "and will include %d candidates from Agora response",
+                ice_ufrag,
+                len(ortc_candidates),
+            )
 
             # fallback credentials
             if not ice_ufrag:
@@ -910,25 +918,20 @@ class AgoraWebSocketHandler:
                 fingerprint = f"sha-256 {fallback_fingerprint}"
                 _LOGGER.warning("Using fallback fingerprint")
 
-            # Build candidate lines grouped by mid. '*' = generic (no mid)
+            # Build candidates from ORTC response for initial connectivity
             candidates_by_mid = defaultdict(list)
-
-            udp_candidate_ip = ""
-
-            # Add ORTC-provided candidates from server response
             for i, c in enumerate(ortc_candidates):
                 foundation = c.get("foundation", f"candidate{i}")
                 protocol = c.get("protocol", "udp")
                 priority = f"{c.get('priority', 2103266323)}"
                 ip = c.get("ip", "")
-                if udp_candidate_ip == "" and self.is_ipv4(ip):
-                    udp_candidate_ip = ip
                 port = f"{c.get('port', 0)}"
                 ctype = c.get("type", "host")
                 cand_line = f"a=candidate:{foundation} 1 {protocol} {priority} {ip} {port} typ {ctype}"
                 if c.get("generation") is not None:
                     cand_line += f" generation {c.get('generation')}"
                 candidates_by_mid["*"].append(cand_line)
+                _LOGGER.debug("Built candidate line: %s", cand_line)
 
             # Extract codec lists and extensions from ORTC
             video_codecs = rtp_caps.get("videoCodecs", []) or []
@@ -1001,16 +1004,18 @@ class AgoraWebSocketHandler:
 
                 # media header
                 sdp_lines.append(f"m={mtype} 9 UDP/TLS/RTP/SAVPF {payloads_str}")
-                sdp_lines.append("c=IN IP4 0.0.0.0")
+                sdp_lines.append("c=IN IP4 127.0.0.1")
                 sdp_lines.append("a=rtcp:9 IN IP4 0.0.0.0")
                 sdp_lines.append(f"a=ice-ufrag:{ice_ufrag}")
                 sdp_lines.append(f"a=ice-pwd:{ice_pwd}")
                 sdp_lines.append("a=ice-options:trickle")
-                for cl in candidates_by_mid.get("*", []):
-                    sdp_lines.append(cl)
                 sdp_lines.append(f"a=fingerprint:{fingerprint}")
                 sdp_lines.append(f"a=setup:{answer_setup}")
                 sdp_lines.append(f"a=mid:{mid}")
+
+                # Add candidates from Agora response
+                for cl in candidates_by_mid.get("*", []):
+                    sdp_lines.append(cl)
 
                 # Add RTP extensions - MUST use offer's extension IDs
                 # Build mapping from offer's extension URIs to their IDs
@@ -1075,15 +1080,20 @@ class AgoraWebSocketHandler:
 
                 # Working SDK answer DOES NOT include a=ssrc for audience/receiver section
                 # Omit SSRC for receiver role
-                
 
-                # append candidates for this media: specific mid then generic ones
-                # try exact mid key, also accept numeric mline index as key
-                # specific = candidates_by_mid.get(mid, []) + candidates_by_mid.get(
-                #     str(idx), []
-                # )
-                # for cl in specific:
-                #     sdp_lines.append(cl)
+                # Append candidates from Agora response for trickle ICE initialization
+                # These are the TURN/STUN candidates provided by Agora in the join_success response
+                specific = candidates_by_mid.get(mid, []) + candidates_by_mid.get(
+                    str(idx), []
+                )
+                for cl in specific:
+                    sdp_lines.append(cl)
+
+                if specific:
+                    _LOGGER.info(
+                        "Added %d ICE candidates to media section %s (type=%s)",
+                        len(specific), mid, mtype
+                    )
 
             generated_sdp = "\r\n".join(sdp_lines) + "\r\n"
             _LOGGER.info("Generated SDP lines count: %s", len(sdp_lines))

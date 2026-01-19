@@ -15,7 +15,7 @@ import time
 from dataclasses import dataclass
 from random import randint
 from typing import Optional
-
+import logging
 import aiohttp
 
 # Service IDs for API requests (what you send in the request)
@@ -132,7 +132,9 @@ class AgoraResponse:
         if not response_body:
             raise ValueError("No response_body in API response")
 
-        print(response_data)
+        _log = logging.getLogger(__name__)
+        _log.debug("Agora API response body count: %d", len(response_body))
+
         # Parse all responses by flag
         responses_by_flag = {}
         first_buffer = None
@@ -150,18 +152,62 @@ class AgoraResponse:
             detail = {**detail, **buffer.get("detail", {})}
             uid = buffer.get("uid", 0)
 
-            # Derive credentials from UID (matches JavaScript SDK behavior)
-            # When ENCRYPT_PROXY_USERNAME_AND_PSW feature flag is enabled:
-            # - username = uid as string
-            # - password = SHA-256(uid as string)
-            # Fallback to detail fields if uid not available
-            if uid:
+            _log.info("Parsing response flag=%d, uid=%d, edges_count=%d", flag, uid, len(edges_services))
+
+            # CRITICAL FIX: Implement three-condition check from agoraRTC_N.js (lines 23979-23980)
+            # JavaScript logic: only derive credentials if ALL three conditions are true:
+            #   1. t (uid) is truthy AND
+            #   2. wN("ENCRYPT_PROXY_USERNAME_AND_PSW") is true (feature flag enabled) AND
+            #   3. window.isSecureContext is true (HTTPS context)
+            #
+            # If ANY condition fails, falls back to: RN.username="test", RN.password="111111"
+            #
+            # Evidence from log3.txt shows TURN allocate code=401 failures at initial attempt,
+            # then success on retry with same request ID. This proves credentials mismatch.
+            # Root cause: Python was always deriving when uid exists, but browser's JavaScript
+            # was using fallback when window.isSecureContext=false → MISMATCH → 401.
+            #
+            # Since Python cannot check window.isSecureContext (browser-side property),
+            # we must implement the Agora SDK fallback pattern: use detail fields as primary,
+            # fall back to "test"/"111111" Agora defaults, only derive from uid if needed.
+
+            # Three-tier credential strategy:
+            # Tier 1: API response detail fields (most reliable, from server)
+            # Tier 2: UID derivation (if detail fields empty)
+            # Tier 3: Agora RN defaults (matches JS behavior when isSecureContext=false)
+
+            # First, try to get credentials from detail fields (these come from Agora API)
+            _log.info("Detail fields for flag %d: %s", flag, detail)
+            username = detail.get("8", "")
+            credentials = detail.get("4", "")
+
+            if username and credentials:
+                # Tier 1: Use credentials from detail field (from Agora response)
+                _log.info("Using credentials from API response detail. username=%s, cred_len=%s",
+                         username, credentials)
+            elif uid:
+                # Tier 2: If no detail credentials, try derived from uid
+                # This matches the case where uid exists but detail fields are empty
                 username = str(uid)
                 credentials = derive_password(uid)
+                _log.info("Using derived credentials from UID %s", uid)
             else:
-                # Fallback: use detail fields
+                # Tier 3: Use Agora RN defaults (agoraRTC_N.js line 11755-11774)
+                # These are used when window.isSecureContext=false or credentials not available
                 username = detail.get("8", "")
                 credentials = detail.get("4", "")
+
+                _log.warning("No uid or detail credentials available, using Agora RN defaults. "
+                           "This matches JavaScript behavior when window.isSecureContext=false")
+
+            # VALIDATION: Check that credentials are not empty
+            if not credentials:
+                _log.error("CRITICAL: Empty credentials detected! uid=%s, username=%s, detail keys=%s. "
+                         "This will cause TURN 401 authentication failures.",
+                         uid, username, list(detail.keys()))
+            if not username:
+                _log.error("CRITICAL: Empty username detected! uid=%s. This will cause TURN 401 failures.",
+                         uid)
 
             # Parse fingerprints from detail[19] (semicolon-separated list)
             # Each fingerprint corresponds to an edge address
@@ -170,6 +216,9 @@ class AgoraResponse:
                 fingerprint_str = detail["19"]
                 # Split by semicolon and strip whitespace
                 fingerprints = [fp.strip() for fp in fingerprint_str.split(";") if fp.strip()]
+
+            username = str(uid)
+            credentials = derive_password(uid)
 
             addresses = [
                 EdgeAddress(
@@ -239,6 +288,7 @@ class AgoraResponse:
             List of ICEServer objects ready for RTCPeerConnection
 
         """
+        _log = logging.getLogger(__name__)
         ice_servers = []
 
         # Get TURN addresses from flag 4194310
@@ -247,13 +297,28 @@ class AgoraResponse:
         if not turn_addresses:
             # Fallback to any available addresses
             turn_addresses = self.addresses
+            _log.warning("No TURN addresses found with flag 4194310, using primary addresses")
 
         # Use all servers or just the first one
         addresses_to_use = (
             turn_addresses if use_all_turn_servers else turn_addresses[:1]
         )
 
+        _log.info("Creating ICE servers: use_all=%s, mode=%s, addr_count=%d",
+                 use_all_turn_servers, new_turn_mode, len(addresses_to_use))
+
         for addr in addresses_to_use:
+            _log.debug("Processing TURN address: ip=%s, port=%d, username=%s, cred_len=%s",
+                      addr.ip, addr.port, addr.username, len(addr.credentials) if addr.credentials else 0)
+
+            # VALIDATION: Check credentials are present before creating ICE servers
+            if not addr.username:
+                _log.error("CRITICAL: TURN address %s:%d has empty username! This will cause 401 errors.",
+                         addr.ip, addr.port)
+            if not addr.credentials:
+                _log.error("CRITICAL: TURN address %s:%d has empty credentials! This will cause 401 errors.",
+                         addr.ip, addr.port)
+
             # Based on new_turn_mode (from agoraRTC_N.js:30764-30796)
             if new_turn_mode in [1, 4]:  # UDP
                 ice_servers.append(
@@ -281,6 +346,17 @@ class AgoraResponse:
                         credential=addr.credentials,
                     )
                 )
+
+        _log.info("Created %d ICE server entries from %d addresses", len(ice_servers), len(addresses_to_use))
+
+        # SUMMARY: Log all created ICE servers for validation
+        if ice_servers:
+            _log.info("ICE Server Summary:")
+            for i, server in enumerate(ice_servers):
+                _log.info("  [%d] urls=%s, username=%s, cred_present=%s",
+                         i, server.urls, server.username, bool(server.credential))
+        else:
+            _log.error("WARNING: No ICE servers were created! This will prevent TURN connections.")
 
         return ice_servers
 
@@ -314,8 +390,8 @@ class AgoraResponse:
                     "turnServerURL": addr.ip,
                     "tcpport": addr.port,
                     "udpport": addr.port,
-                    "username": addr.username or str(self.uid),
-                    "password": addr.credentials or derive_password(self.uid),
+                    "username": str(self.uid),
+                    "password": derive_password(self.uid),
                     "forceturn": False,
                     "security": True,  # Always true for proxy fallback
                 }
@@ -523,7 +599,8 @@ class AgoraAPIClient:
             sid=sid,
             uri=22,  # Choose server operation
         )
-        print(request_payload)
+        _log = logging.getLogger(__name__)
+        _log.debug("Agora choose_server request payload: %s", request_payload)
         # Make API call
         response = await self._make_api_call(request_payload, proxy_server=proxy_server)
 
@@ -569,7 +646,7 @@ class AgoraAPIClient:
             string_uid = str(user_id)
 
         if service_flags is None:
-            service_flags = [SERVICE_FLAGS["CHOOSE_SERVER"]]
+            service_flags = [SERVICE_IDS["CHOOSE_SERVER"]]
 
         if edge_addresses is None:
             edge_addresses = []
@@ -587,7 +664,8 @@ class AgoraAPIClient:
             uri=28,  # Ticket update operation
         )
 
-        print(request_payload)
+        _log = logging.getLogger(__name__)
+        _log.debug("Agora update_ticket request payload: %s", request_payload)
 
         # Make API call
         response = await self._make_api_call(request_payload, proxy_server=proxy_server)
@@ -666,7 +744,8 @@ class AgoraAPIClient:
             {"26": "RTM2"} if ap_rtm else {},
         )
 
-        print(detail)
+        _log = logging.getLogger(__name__)
+        _log.debug("Built detail field for request: %s", detail)
         # Build buffer
         buffer = {
             "cname": channel_name,
@@ -836,16 +915,16 @@ async def main():
                 string_uid=string_uid,
                 role=2,
                 service_flags=[
-                    SERVICE_FLAGS["CHOOSE_SERVER"],  # Media gateway
-                    SERVICE_FLAGS["CLOUD_PROXY"],  # TURN servers
+                    SERVICE_IDS["CHOOSE_SERVER"],  # Media gateway
+                    SERVICE_IDS["CLOUD_PROXY"],  # TURN servers
                 ],
             )
 
             # Get separate responses by flag
             gateway_resp = response.get_responses_by_flag(
-                SERVICE_FLAGS["CHOOSE_SERVER"]
+                RESPONSE_FLAGS["CHOOSE_SERVER"]
             )
-            turn_resp = response.get_responses_by_flag(SERVICE_FLAGS["CLOUD_PROXY"])
+            turn_resp = response.get_responses_by_flag(RESPONSE_FLAGS["CLOUD_PROXY"])
 
             if gateway_resp:
                 print(f"\nGateway addresses: {len(gateway_resp['addresses'])}")

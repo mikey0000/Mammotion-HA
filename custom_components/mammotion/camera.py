@@ -194,20 +194,26 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         wait_interval = 0.1
         elapsed = 0.0
 
-        def has_reflexive_candidate():
+        def has_agora_turn_candidate():
+            """Check if any candidate is from Agora TURN servers (srflx, relay, or prflx)."""
             for cand in self._agora_handler.candidates:
                 cand_str = ""
                 if isinstance(cand, dict):
                     cand_str = cand.get("candidate", "")
                 elif hasattr(cand, "candidate"):
                     cand_str = cand.candidate
-                
-                # Check for srflx (Server Reflexive) or prflx (Peer Reflexive) or relay "typ srflx", "typ relay"
-                if any(t in cand_str for t in [ "typ prflx"]):
+
+                # Check for candidates from Agora TURN/STUN servers:
+                # - typ srflx: Server Reflexive (discovered via STUN from Agora)
+                # - typ relay: Relay candidate (routed through Agora TURN)
+                # - typ prflx: Peer Reflexive (similar to srflx)
+                if any(t in cand_str for t in ["typ srflx", "typ relay", "typ prflx"]):
                     return True
             return False
 
-        while not has_reflexive_candidate() and elapsed < max_wait:
+        # Wait for at least one candidate from Agora TURN servers before proceeding
+        # This ensures we have reflexive or relay connectivity for NAT traversal
+        while not has_agora_turn_candidate() and elapsed < max_wait:
             await asyncio.sleep(wait_interval)
             elapsed += wait_interval
         
@@ -233,7 +239,7 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
                 cand_str = cand.candidate
             
             # Allow reflexive types unconditionally (they connect via Agora STUN)
-            if any(t in cand_str for t in ["typ srflx", "typ prflx"]):
+            if any(t in cand_str for t in ["typ srflx", "typ prflx", "typ relay"]):
                 filtered_candidates.append(cand)
                 continue
                 
@@ -269,7 +275,7 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         _LOGGER.info(
             "Collected %d ICE candidates (Reflexive found: %s) after %.1fs",
             len(self._agora_handler.candidates),
-            has_reflexive_candidate(),
+            has_agora_turn_candidate(),
             elapsed
         )
 
