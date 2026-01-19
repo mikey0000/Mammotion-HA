@@ -88,6 +88,14 @@ BUTTON_SENSORS: tuple[MammotionButtonSensorEntityDescription, ...] = (
     # delete_charge_point
 )
 
+BUTTON_LUBA_PRO_YUKA: tuple[MammotionButtonSensorEntityDescription, ...] = (
+    MammotionButtonSensorEntityDescription(
+        key="restart_mower",
+        press_fn=lambda coordinator: coordinator.async_restart_mower(),
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+)
+
 
 async def async_setup_entry(
     hass: HomeAssistant,

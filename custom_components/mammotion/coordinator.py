@@ -650,6 +650,10 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         """Start task."""
         await self.async_send_command("single_schedule", plan_id=plan_id)
 
+    async def async_restart_mower(self) -> None:
+        """Restart mower."""
+        await self.async_send_command("remote_restart")
+
     async def clear_update_failures(self) -> None:
         """Clear update failures."""
         self.update_failures = 0
