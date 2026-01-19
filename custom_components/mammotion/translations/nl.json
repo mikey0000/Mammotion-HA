@@ -20,9 +20,9 @@
       },
       "reconfigure": {
         "data": {
-          "use_wifi": "Gebruik Wi-fi",
+          "use_wifi": "Gebruik Wi-Fi",
           "account_name": "Mammotion e-mailadres of accountnummer",
-          "password": "Mammotion-accountwachtwoord"
+          "password": "Mammotion account wachtwoord"
         }
       },
       "user": {
@@ -34,7 +34,7 @@
       },
       "wifi": {
         "data": {
-          "use_wifi": "Gebruik Wi-fi (haal het vinkje weg en klik \"ga verder\" om Bluetooth te gebruiken)",
+          "use_wifi": "Gebruik Wi-Fi (haal het vinkje weg en klik \"ga verder\" om Bluetooth te gebruiken)",
           "account_name": "Mammotion e-mailadres of accountnummer",
           "password": "Mammotion account wachtwoord"
         },
@@ -118,47 +118,47 @@
       "position_type": {
         "name": "Apparaatpositietype",
         "state": {
-          "AREA_BORDER_ON": "At perimeter",
-          "AREA_INSIDE": "Inside area",
-          "AREA_OUT": "Outside area",
-          "CHANNEL_AREA_OVERLAP": "Path area overlap",
-          "CHANNEL_ON": "On path",
-          "CHARGE_ON": "At charging station",
-          "DUMPING_AREA_INSIDE": "In dump area",
-          "DUMPING_OUTSIDE": "Outside dump area",
-          "ABNORMAL_POSITIONING": "Position error",
-          "NO_AREAS": "No areas defined",
-          "OBS_ON": "At obstacle",
-          "TURN_AREA_INSIDE": "In turn area",
-          "VIRTUAL_INSIDE": "In virtual area"
+          "AREA_BORDER_ON": "Aan grens",
+          "AREA_INSIDE": "Binnen gebied",
+          "AREA_OUT": "Buiten gebied",
+          "CHANNEL_AREA_OVERLAP": "Pad gebied overlapping",
+          "CHANNEL_ON": "Op pad",
+          "CHARGE_ON": "Bij laadstation",
+          "DUMPING_AREA_INSIDE": "In dumping gebied",
+          "DUMPING_OUTSIDE": "Buiten dumping gebied",
+          "ABNORMAL_POSITIONING": "Positie fout",
+          "NO_AREAS": "Geen gebieden gedefinieerd",
+          "OBS_ON": "Aan obstakel",
+          "TURN_AREA_INSIDE": "In draaigebied",
+          "VIRTUAL_INSIDE": "In virtueel gebied"
         }
       },
       "activity_mode": {
         "name": "Activiteitsmodus",
         "state": {
-          "MODE_NOT_ACTIVE": "Not active",
+          "MODE_NOT_ACTIVE": "Niet actief",
           "MODE_ONLINE": "Online",
           "MODE_OFFLINE": "Offline",
-          "MODE_DISABLE": "Disabled",
-          "MODE_INITIALIZATION": "Initializing",
-          "MODE_READY": "Ready",
-          "MODE_WORKING": "Working",
-          "MODE_RETURNING": "Returning",
-          "MODE_CHARGING": "Charging",
-          "MODE_UPDATING": "Updating",
-          "MODE_LOCK": "Locked",
-          "MODE_PAUSE": "Paused",
-          "MODE_MANUAL_MOWING": "Manual mowing",
-          "MODE_UPDATE_SUCCESS": "Update successful",
-          "MODE_OTA_UPGRADE_FAIL": "Update failed",
-          "MODE_JOB_DRAW": "Drawing job",
-          "MODE_OBSTACLE_DRAW": "Drawing obstacles",
-          "MODE_CHANNEL_DRAW": "Drawing channel",
-          "MODE_ERASER_DRAW": "Drawing eraser",
-          "MODE_EDIT_BOUNDARY": "Editing boundary",
-          "MODE_LOCATION_ERROR": "Location error",
-          "MODE_BOUNDARY_JUMP": "Boundary crossed",
-          "MODE_CHARGING_PAUSE": "Charging paused"
+          "MODE_DISABLE": "Gedeactiveerd",
+          "MODE_INITIALIZATION": "Initialiseren",
+          "MODE_READY": "Gereed",
+          "MODE_WORKING": "Bezig",
+          "MODE_RETURNING": "Aan het terugkeren",
+          "MODE_CHARGING": "Aan het opladen",
+          "MODE_UPDATING": "Aan het bijwerken",
+          "MODE_LOCK": "Vergrendeld",
+          "MODE_PAUSE": "Gepauzeerd",
+          "MODE_MANUAL_MOWING": "Handmatig aan het maaien",
+          "MODE_UPDATE_SUCCESS": "Bijwerken is gelukt",
+          "MODE_OTA_UPGRADE_FAIL": "Bijwerken mislukt",
+          "MODE_JOB_DRAW": "Taak aan het tekenen",
+          "MODE_OBSTACLE_DRAW": "Obstakels aan het tekenen",
+          "MODE_CHANNEL_DRAW": "Kanaal aan het tekenen",
+          "MODE_ERASER_DRAW": "Tekening aan het verwijderen",
+          "MODE_EDIT_BOUNDARY": "Grens aan het aanpassen",
+          "MODE_LOCATION_ERROR": "Locatie fout",
+          "MODE_BOUNDARY_JUMP": "Grens overschreden",
+          "MODE_CHARGING_PAUSE": "Opladen gepauzeerd"
         }
       },
       "work_area": {
@@ -175,16 +175,16 @@
         "unit_of_measurement": "cycli"
       },
       "non_work_hours": {
-        "name": "Non-work hours"
+        "name": "Niet-actieve uren"
       },
       "rtk_lora": {
         "name": "LoRa versie"
       },
       "rtk_latitude": {
-        "name": "Latitude"
+        "name": "Breedtegraad"
       },
       "rtk_longitude": {
-        "name": "Longitude"
+        "name": "Lengtegraad"
       },
       "rtk_wifi_rssi": {
         "name": "Wi-Fi RSSI"
@@ -195,7 +195,7 @@
         "name": "Synchroniseer kaarten"
       },
       "start_schedule_sync": {
-        "name": "Synchronize schedules"
+        "name": "Schema's synchroniseren"
       },
       "join_webrtc": {
         "name": "Start camera op maaier"
@@ -225,7 +225,10 @@
         "name": "Kaart- en zone namen wissen"
       },
       "relocate_charging_station": {
-        "name": "Relocate charging station"
+        "name": "Verplaats laadstation"
+      },
+      "restart_mower": {
+        "name": "Restart mower"
       }
     },
     "switch": {
@@ -260,7 +263,7 @@
         "name": "Updates aan/uit zetten"
       },
       "manual_light": {
-        "name": "Manual light on/off"
+        "name": "Handmatig licht aan/uit"
       },
       "night_light": {
         "name": "Nachtverlichting aan/uit"
@@ -440,8 +443,8 @@
       "description": "Begin met maaien met aangepaste instellingen.",
       "fields": {
         "modify": {
-          "name": "Modify existing job",
-          "description": "Whether to modify an existing job or start a new one."
+          "name": "Bestaande taak wijzigen",
+          "description": "Of je een bestaande taak wilt wijzigen of een nieuwe wilt starten."
         },
         "is_mow": {
           "name": "Is aan het maaien",
@@ -526,30 +529,30 @@
       }
     },
     "start_stop_blades": {
-      "name": "Start or stop blades",
-      "description": "Start or stop the blades manually.",
+      "name": "Start of stop de messen",
+      "description": "Start of stop de messen handmatig.",
       "fields": {
         "start_stop": {
           "name": "Start of stop",
-          "description": "Whether blades are on or off."
+          "description": "Of de messen aan of uit staan."
         },
         "blade_height": {
-          "name": "Blade height",
-          "description": "Height of the blade."
+          "name": "Mes hoogte",
+          "description": "Hoogte van de messen."
         }
       }
     },
     "set_non_work_hours": {
-      "name": "Set non-work hours",
-      "description": "Set the hours when the mower is not working.",
+      "name": "Niet-actieve uren instellen",
+      "description": "Stel de uren in wanneer de maaier niet actief is.",
       "fields": {
         "start_time": {
-          "name": "Start time",
-          "description": "Start time of the non-work hours."
+          "name": "Starttijd",
+          "description": "Starttijd van de niet-actieve uren."
         },
         "end_time": {
-          "name": "End time",
-          "description": "End time of the non-work hours."
+          "name": "Eindtijd",
+          "description": "Eindtijd van de niet-actieve uren."
         }
       }
     }

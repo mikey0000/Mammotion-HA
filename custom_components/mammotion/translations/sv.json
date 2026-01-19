@@ -74,7 +74,7 @@
         "name": "Kamera ljusstyrka"
       },
       "wifi_rssi": {
-        "name": "Wifi RSSI"
+        "name": "Wi-Fi RSSI"
       },
       "mnet_rssi": {
         "name": "Mobil RSSI"
@@ -226,6 +226,9 @@
       },
       "relocate_charging_station": {
         "name": "Flytta laddstation"
+      },
+      "restart_mower": {
+        "name": "Restart mower"
       }
     },
     "switch": {
