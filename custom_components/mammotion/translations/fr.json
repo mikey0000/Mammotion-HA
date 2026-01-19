@@ -226,6 +226,9 @@
       },
       "relocate_charging_station": {
         "name": "Déplacer la station de recharge"
+      },
+      "restart_mower": {
+        "name": "Restart mower"
       }
     },
     "switch": {

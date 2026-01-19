@@ -226,6 +226,9 @@
       },
       "relocate_charging_station": {
         "name": "Flyt ladestation"
+      },
+      "restart_mower": {
+        "name": "Restart mower"
       }
     },
     "switch": {
