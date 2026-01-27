@@ -306,8 +306,8 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         device = self.manager.get_device_by_name(self.device_name)
         if ble := device.ble:
             await ble.command(key, **kwargs)
-
             return True
+
         raise DeviceOfflineException("bluetooth command failed", device.iot_id)
 
     async def check_firmware_version(self) -> None:

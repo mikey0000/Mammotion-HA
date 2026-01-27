@@ -1,5 +1,6 @@
 """Base class for entities."""
 
+from homeassistant.components import bluetooth
 from homeassistant.core import callback
 from homeassistant.helpers.device_registry import (
     CONNECTION_BLUETOOTH,
@@ -72,6 +73,22 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionBaseUpdateCoordinator]):
                     format_mac(mower.state.mower_state.wifi_mac),
                 )
             )
+
+        if not mower.ble and connections.__contains__(CONNECTION_BLUETOOTH):
+            ble_mac = next(
+                (mac for conn, mac in connections if conn == CONNECTION_BLUETOOTH),
+                None,
+            )
+
+            if ble_mac and not mower.state.mower_state.ble_mac:
+                mower.state.mower_state.ble_mac = ble_mac
+
+            ble_device = bluetooth.async_ble_device_from_address(
+                self.hass, ble_mac, True
+            )
+            if ble_device:
+                ble = mower.add_ble(ble_device)
+                ble.set_disconnect_strategy(disconnect=True)
 
         return DeviceInfo(
             identifiers={(DOMAIN, self.coordinator.device.device_name)},

@@ -7,7 +7,7 @@ from homeassistant.components import bluetooth
 from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, EVENT_HOMEASSISTANT_STOP, Platform
-from homeassistant.core import Event, HomeAssistant
+from homeassistant.core import Event, HassJob, HomeAssistant
 from homeassistant.exceptions import ConfigEntryError, ConfigEntryNotReady
 from homeassistant.helpers.device_registry import DeviceEntry
 from homeassistant.helpers.event import async_call_later
@@ -200,13 +200,32 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
             await report_coordinator.async_restore_data()
             await version_coordinator.async_config_entry_first_refresh()
             async_call_later(
-                hass, 5, report_coordinator.async_config_entry_first_refresh
+                hass,
+                1,
+                HassJob(
+                    lambda _: report_coordinator.async_config_entry_first_refresh(),
+                    "report-coordinator-refresh",
+                    cancel_on_shutdown=True,
+                ),
             )
             async_call_later(
-                hass, 15, maintenance_coordinator.async_config_entry_first_refresh
+                hass,
+                1,
+                HassJob(
+                    lambda _: maintenance_coordinator.async_config_entry_first_refresh(),
+                    "maintenance-coordinator-refresh",
+                    cancel_on_shutdown=True,
+                ),
             )
+
             async_call_later(
-                hass, 20, error_coordinator.async_config_entry_first_refresh
+                hass,
+                1,
+                HassJob(
+                    lambda _: error_coordinator.async_config_entry_first_refresh(),
+                    "error-coordinator-refresh",
+                    cancel_on_shutdown=True,
+                ),
             )
 
             device_config = DeviceConfig()
@@ -240,7 +259,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                 )
             )
             try:
-                async_call_later(hass, 25, map_coordinator.async_request_refresh)
+                async_call_later(
+                    hass,
+                    1,
+                    HassJob(
+                        lambda _: map_coordinator.async_request_refresh(),
+                        "map-coordinator-refresh",
+                        cancel_on_shutdown=True,
+                    ),
+                )
             except:
                 """Do nothing for now."""
 

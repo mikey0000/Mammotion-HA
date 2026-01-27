@@ -33,12 +33,11 @@ class CameraAgoraCard extends HTMLElement {
 
     //Define custom parameters
     this._config = {
-      ...config,
-      autostart: config.autostart !== undefined ? config.autostart : false,
-      enableJoystick:
-        config.enableJoystick !== undefined ? config.enableJoystick : false,
-      speed: config.speed !== undefined ? parseFloat(config.speed) : 0.4,
+      autostart: false,
+      enableJoystick: false,
       use_wifi: false,
+      ...config,
+      speed: config.speed !== undefined ? parseFloat(config.speed) : 0.4,
     };
 
     // Prepare shadow DOM container
