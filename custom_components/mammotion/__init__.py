@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import datetime
+
 from aiohttp import ClientConnectorError
 from homeassistant.components import bluetooth
 from homeassistant.components.http import StaticPathConfig
@@ -199,30 +201,19 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
             # sometimes device is not there when restoring data
             await report_coordinator.async_restore_data()
             await version_coordinator.async_config_entry_first_refresh()
-            async_call_later(
-                hass,
-                1,
-                HassJob(
-                    lambda _: report_coordinator.async_config_entry_first_refresh(),
-                    "report-coordinator-refresh",
-                    cancel_on_shutdown=True,
-                ),
-            )
-            async_call_later(
-                hass,
-                1,
-                HassJob(
-                    lambda _: maintenance_coordinator.async_config_entry_first_refresh(),
-                    "maintenance-coordinator-refresh",
-                    cancel_on_shutdown=True,
-                ),
-            )
+
+            await report_coordinator.async_config_entry_first_refresh()
+            await maintenance_coordinator.async_config_entry_first_refresh()
+
+            async def _async_refresh_error(_: datetime) -> None:
+                """Call the debouncer at a later time."""
+                await error_coordinator.async_config_entry_first_refresh()
 
             async_call_later(
                 hass,
                 1,
                 HassJob(
-                    lambda _: error_coordinator.async_config_entry_first_refresh(),
+                    _async_refresh_error,
                     "error-coordinator-refresh",
                     cancel_on_shutdown=True,
                 ),
@@ -258,18 +249,20 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                     error_coordinator=error_coordinator,
                 )
             )
-            try:
-                async_call_later(
-                    hass,
-                    1,
-                    HassJob(
-                        lambda _: map_coordinator.async_request_refresh(),
-                        "map-coordinator-refresh",
-                        cancel_on_shutdown=True,
-                    ),
-                )
-            except:
-                """Do nothing for now."""
+
+            async def _async_refresh_map(_: datetime) -> None:
+                """Call the debouncer at a later time."""
+                await map_coordinator.async_config_entry_first_refresh()
+
+            async_call_later(
+                hass,
+                1,
+                HassJob(
+                    _async_refresh_map,
+                    "map-coordinator-refresh",
+                    cancel_on_shutdown=True,
+                ),
+            )
 
         for rtk in mammotion_rtk_devices:
             if rtk in shimed_cloud_devices:

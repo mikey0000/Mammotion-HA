@@ -1002,7 +1002,7 @@ class MammotionMaintenanceUpdateCoordinator(MammotionBaseUpdateCoordinator[Maint
             if ex.iot_id == self.device.iot_id:
                 device = self.manager.get_device_by_name(self.device_name)
                 await self.device_offline(device)
-                return device.state
+                return device.state.report_data.maintenance
         except GatewayTimeoutException:
             """Gateway is timing out again."""
 

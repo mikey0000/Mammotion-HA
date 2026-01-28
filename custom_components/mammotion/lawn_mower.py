@@ -14,6 +14,7 @@ from homeassistant.components.lawn_mower import (
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_platform
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pymammotion.data.model.device_config import OperationSettings
@@ -381,3 +382,25 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
         await self.coordinator.async_set_non_work_hours(
             start_time=start_time.strftime("%H:%M"), end_time=end_time.strftime("%H:%M")
         )
+
+    async def async_added_to_hass(self) -> None:
+        await super().async_added_to_hass()
+
+        # Ensure the entity is actually linked to a device
+        if not self.coordinator.device_name:
+            return
+
+        device_registry = dr.async_get(self.hass)
+
+        device = device_registry.async_get_device(
+            identifiers={(DOMAIN, self.coordinator.device_name)}
+        )
+
+        if device:
+            for conn_type, value in device.connections:
+                if conn_type == dr.CONNECTION_NETWORK_MAC:
+                    self.coordinator.data.mower_state.wifi_mac = (
+                        value  # Restore to your API
+                    )
+                elif conn_type == dr.CONNECTION_BLUETOOTH:
+                    self.coordinator.data.mower_state.ble_mac = value
