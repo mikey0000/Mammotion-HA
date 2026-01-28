@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "Mammotion-HA"
-version = "0.4.29"
+version = "0.4.30"
 description = "Mammotion integration for HACS"
 authors = ["Michael Arthur <michael@jumblesoft.co.nz>", "jLynx <@jlynx>"]
 readme = "README.md"
