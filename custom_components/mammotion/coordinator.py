@@ -476,7 +476,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         if device.preference is ConnectionPreference.WIFI and not use_wifi:
             await self.async_send_bluetooth_command("move_left", angular=speed)
         else:
-            await self.async_send_command("move_left", linear=speed)
+            await self.async_send_command("move_left", angular=speed)
 
     async def async_move_right(self, speed: float, use_wifi: bool = False) -> None:
         """Move right."""
@@ -485,7 +485,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         if device.preference is ConnectionPreference.WIFI and not use_wifi:
             await self.async_send_bluetooth_command("move_right", angular=speed)
         else:
-            await self.async_send_command("move_right", linear=speed)
+            await self.async_send_command("move_right", angular=speed)
 
     async def async_move_back(self, speed: float, use_wifi: bool = False) -> None:
         """Move back."""
