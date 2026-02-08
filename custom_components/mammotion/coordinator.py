@@ -165,7 +165,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
                 await device.cloud.start()
         else:
             if device.cloud:
-                await device.cloud.stop()
+                device.cloud.stop()
                 if device.cloud.mqtt.is_connected():
                     device.cloud.mqtt.disconnect()
             if device.ble:
@@ -185,7 +185,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
     async def device_offline(self, device: MammotionMowerDeviceManager) -> None:
         device.state.online = False
         # if cloud := device.cloud:
-        #     await cloud.stop()
+        #     cloud.stop()
 
         loop = asyncio.get_running_loop()
         loop.call_later(900, lambda: asyncio.create_task(self.clear_update_failures()))
