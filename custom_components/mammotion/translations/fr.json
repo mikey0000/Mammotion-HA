@@ -226,6 +226,9 @@
       },
       "relocate_charging_station": {
         "name": "Déplacer la station de recharge"
+      },
+      "restart_mower": {
+        "name": "Restart mower"
       }
     },
     "switch": {
@@ -439,6 +442,10 @@
       "name": "Commencer à tondre",
       "description": "Démarrer l'opération de tonte avec des paramètres personnalisés.",
       "fields": {
+        "modify": {
+          "name": "Modify existing job",
+          "description": "Whether to modify an existing job or start a new one."
+        },
         "is_mow": {
           "name": "Tonte",
           "description": "Si la tonte est active. (Yuka)."
@@ -532,6 +539,20 @@
         "blade_height": {
           "name": "Hauteur de coupe",
           "description": "Hauteur de coupe."
+        }
+      }
+    },
+    "set_non_work_hours": {
+      "name": "Set non-work hours",
+      "description": "Set the hours when the mower is not working.",
+      "fields": {
+        "start_time": {
+          "name": "Start time",
+          "description": "Start time of the non-work hours."
+        },
+        "end_time": {
+          "name": "End time",
+          "description": "End time of the non-work hours."
         }
       }
     }

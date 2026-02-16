@@ -149,7 +149,6 @@ async def async_setup_entry(
 
     for mower in mammotion_devices:
         added_areas: set[int] = set()
-        # TODO create maps coordinator
         coordinator = mower.reporting_coordinator
 
         update_areas = partial(
@@ -378,6 +377,22 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
         if last_state and last_state.state == STATE_ON:
             await self.async_turn_on()
 
+    async def async_update(self) -> None:
+        """Update the entity state."""
+        self._attr_is_on = (
+            self.entity_description.area in self.coordinator.operation_settings.areas
+        )
+        if (
+            self._attr_extra_state_attributes["hash"]
+            not in self.coordinator.data.map.area.keys()
+        ):
+            await self.async_remove()
+        self.async_write_ha_state()
+
+    @property
+    def available(self) -> bool:
+        return True
+
 
 @callback
 def async_add_area_entities(
@@ -444,6 +459,7 @@ def async_remove_entities(
 ) -> None:
     """Remove area switch sensors from Home Assistant."""
     registry = er.async_get(coordinator.hass)
+
     for area in old_areas:
         entity_id = registry.async_get_entity_id(
             SWITCH_DOMAIN, DOMAIN, f"{coordinator.device_name}_{area}"

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import time
 from typing import Any
 
 import voluptuous as vol
@@ -13,6 +14,7 @@ from homeassistant.components.lawn_mower import (
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_platform
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pymammotion.data.model.device_config import OperationSettings
@@ -20,15 +22,19 @@ from pymammotion.data.model.report_info import DeviceData, ReportData
 from pymammotion.utility.constant.device_constant import WorkMode
 from pymammotion.utility.device_type import DeviceType
 
-from . import MammotionConfigEntry, MammotionReportUpdateCoordinator
+from . import MammotionConfigEntry
 from .const import COMMAND_EXCEPTIONS, DOMAIN, LOGGER
+from .coordinator import MammotionReportUpdateCoordinator
 from .entity import MammotionBaseEntity
 
 SERVICE_START_MOWING = "start_mow"
 SERVICE_CANCEL_JOB = "cancel_job"
 SERVICE_START_STOP_BLADES = "start_stop_blades"
 
+SERVICE_SET_NON_WORK_HOURS = "set_non_work_hours"
+
 START_MOW_SCHEMA = {
+    vol.Optional("modify", default=False): cv.boolean,
     vol.Optional("is_mow", default=True): cv.boolean,
     vol.Optional("is_dump", default=True): cv.boolean,
     vol.Optional("is_edge", default=False): cv.boolean,
@@ -82,6 +88,11 @@ START_STOP_BLADES_SCHEMA = {
     ),
 }
 
+SET_NON_WORK_HOURS_SCHEMA = {
+    vol.Required("start_time"): cv.time,
+    vol.Required("end_time"): cv.time,
+}
+
 
 def get_entity_attribute(
     hass: HomeAssistant, entity_id: str, attribute_name: str
@@ -121,6 +132,12 @@ async def async_setup_entry(
 
     platform.async_register_entity_service(
         SERVICE_START_STOP_BLADES, START_STOP_BLADES_SCHEMA, "async_start_stop_blades"
+    )
+
+    platform.async_register_entity_service(
+        SERVICE_SET_NON_WORK_HOURS,
+        SET_NON_WORK_HOURS_SCHEMA,
+        "async_set_non_work_hours",
     )
 
 
@@ -177,7 +194,6 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
         trans_key = "pause_failed"
 
         if kwargs:
-            await self.async_cancel()
             entity_ids = kwargs.get("areas", [])
 
             attributes = [
@@ -187,6 +203,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
                 if (entity_hash := get_entity_attribute(self.hass, entity_id, "hash"))
                 is not None
             ]
+            modify_plan = kwargs.pop("modify", False)
 
             kwargs["areas"] = attributes
             operational_settings = OperationSettings.from_dict(kwargs)
@@ -195,6 +212,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
             LOGGER.debug(kwargs)
         else:
             operational_settings = self.coordinator.operation_settings
+            modify_plan = False
 
         # check if job in progress
         #
@@ -209,8 +227,16 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
             WorkMode.MODE_PAUSE,
             WorkMode.MODE_READY,
             WorkMode.MODE_RETURNING,
+            WorkMode.MODE_WORKING,
         ):
             try:
+                if modify_plan:
+                    await self.coordinator.async_modify_plan_route(operational_settings)
+                    return
+
+                if kwargs:
+                    await self.async_cancel()
+
                 if mode == WorkMode.MODE_RETURNING:
                     trans_key = "dock_cancel_failed"
                     await self.coordinator.async_send_command("cancel_return_to_dock")
@@ -347,3 +373,34 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
     async def async_start_stop_blades(self, **kwargs: Any) -> None:
         """Start/Stop Blades."""
         await self.coordinator.async_start_stop_blades(**kwargs)
+
+    async def async_set_non_work_hours(self, **kwargs: Any) -> None:
+        """Set Non Work Hours."""
+        start_time: time = kwargs["start_time"]
+        end_time: time = kwargs["end_time"]
+
+        await self.coordinator.async_set_non_work_hours(
+            start_time=start_time.strftime("%H:%M"), end_time=end_time.strftime("%H:%M")
+        )
+
+    async def async_added_to_hass(self) -> None:
+        await super().async_added_to_hass()
+
+        # Ensure the entity is actually linked to a device
+        if not self.coordinator.device_name:
+            return
+
+        device_registry = dr.async_get(self.hass)
+
+        device = device_registry.async_get_device(
+            identifiers={(DOMAIN, self.coordinator.device_name)}
+        )
+
+        if device:
+            for conn_type, value in device.connections:
+                if conn_type == dr.CONNECTION_NETWORK_MAC:
+                    self.coordinator.data.mower_state.wifi_mac = (
+                        value  # Restore to your API
+                    )
+                elif conn_type == dr.CONNECTION_BLUETOOTH:
+                    self.coordinator.data.mower_state.ble_mac = value

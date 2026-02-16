@@ -1,7 +1,7 @@
 {
   "domain": "mammotion",
   "name": "Mammotion",
-  "version": "0.4.17",
+  "version": "0.4.32",
   "issue_tracker": "https://github.com/mikey0000/Mammotion-HA/issues",
   "integration_type": "device",
   "bluetooth": [
@@ -16,17 +16,11 @@
       "connectable": true
     }
   ],
-  "codeowners": [
-    "@mikey0000"
-  ],
+  "codeowners": ["@mikey0000"],
   "config_flow": true,
-  "dependencies": [],
+  "dependencies": ["bluetooth_adapters"],
   "documentation": "https://github.com/mikey0000/Mammotion-HA/wiki",
-  "loggers": [
-    "pymammotion"
-  ],
+  "loggers": ["pymammotion"],
   "iot_class": "local_push",
-  "requirements": [
-    "pymammotion==0.5.69"
-  ]
+  "requirements": ["pymammotion==0.5.70"]
 }

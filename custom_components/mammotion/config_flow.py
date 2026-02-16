@@ -17,7 +17,7 @@ from homeassistant.config_entries import (
     ConfigFlowResult,
     OptionsFlow,
 )
-from homeassistant.const import CONF_PASSWORD
+from homeassistant.const import CONF_ADDRESS, CONF_PASSWORD
 from homeassistant.core import callback
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry as dr
@@ -197,6 +197,7 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
             last_step=False,
             data_schema=vol.Schema(
                 {
+                    vol.Optional(CONF_ADDRESS): vol.In(self._discovered_devices),
                     vol.Optional(
                         CONF_STAY_CONNECTED_BLUETOOTH,
                         default=False,

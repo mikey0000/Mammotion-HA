@@ -21,7 +21,6 @@ from homeassistant.components.camera import (
 from homeassistant.components.web_rtc import (
     async_register_ice_servers,
 )
-
 from homeassistant.core import (
     HomeAssistant,
     ServiceCall,
@@ -99,7 +98,9 @@ async def async_setup_entry(
                             )
 
                             # Get ICE servers and convert to RTCIceServer format - use only first TURN server to match SDK (3 entries)
-                            ice_servers_agora = agora_response.get_ice_servers(use_all_turn_servers=False)
+                            ice_servers_agora = agora_response.get_ice_servers(
+                                use_all_turn_servers=False
+                            )
                             ice_servers = []
                             _LOGGER.info(
                                 "Ice Servers from Agora API:%s", ice_servers_agora
@@ -216,7 +217,7 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         while not has_agora_turn_candidate() and elapsed < max_wait:
             await asyncio.sleep(wait_interval)
             elapsed += wait_interval
-        
+
         # Filter candidates to ONLY send candidates that match Agora ICE servers (Strict Filtering)
         # "Change the candidate selection code to only accept candidates from agora ice servers"
         # INTERPRETATION:
@@ -224,12 +225,12 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         # - 'srflx' candidates come from Agora STUN servers but have the public IP of the user. We MUST allow these.
         # - 'prflx' candidates are peer-reflexive, similar to srflx. Allow.
         # - 'host' candidates are local IPs. These do NOT come from an ICE server. Filter them out.
-        
+
         valid_ips = set()
         if self._agora_response and self._agora_response.addresses:
             for addr in self._agora_response.addresses:
                 valid_ips.add(addr.ip)
-        
+
         filtered_candidates = []
         for cand in self._agora_handler.candidates:
             cand_str = ""
@@ -237,12 +238,12 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
                 cand_str = cand.get("candidate", "")
             elif hasattr(cand, "candidate"):
                 cand_str = cand.candidate
-            
+
             # Allow reflexive types unconditionally (they connect via Agora STUN)
             if any(t in cand_str for t in ["typ srflx", "typ prflx", "typ relay"]):
                 filtered_candidates.append(cand)
                 continue
-                
+
             # For relay candidates, enforce strict IP matching
             if "typ relay" in cand_str:
                 if any(ip in cand_str for ip in valid_ips):
@@ -250,18 +251,21 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
                 else:
                     _LOGGER.warning("Dropped unknown relay candidate: %s", cand_str)
                 continue
-            
+
             # Drop 'host' candidates or others
             # _LOGGER.debug("Dropped candidate (not from ICE server): %s", cand_str)
-        
+
         if filtered_candidates:
             _LOGGER.info(
-                "Strict filtering: Keeping %d candidates (Agora-derived). Total was %d.", 
-                len(filtered_candidates), len(self._agora_handler.candidates)
+                "Strict filtering: Keeping %d candidates (Agora-derived). Total was %d.",
+                len(filtered_candidates),
+                len(self._agora_handler.candidates),
             )
             self._agora_handler.candidates = filtered_candidates
         else:
-            _LOGGER.warning("Strict filtering removed all candidates! Fallback to original list.")
+            _LOGGER.warning(
+                "Strict filtering removed all candidates! Fallback to original list."
+            )
             # If we filtered everything, maybe we shouldn't have. Fallback or fail?
             # For now, let's fallback to the previous "reflexive" list or just keep all to avoid total failure,
             # but log a warning.
@@ -269,14 +273,15 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
             # But user request was specific. Let's warn and proceed with empty (or re-populate if desired behaviour is 'best effort').
             # Given "only accept", sending nothing is compliant but broken.
             # Let's assume we MUST find one. If not, the wait loop above failed to find an Agora one.
-            pass
-            _LOGGER.warning("No reflexive candidates found after wait, proceeding with all collected candidates")
+            _LOGGER.warning(
+                "No reflexive candidates found after wait, proceeding with all collected candidates"
+            )
 
         _LOGGER.info(
             "Collected %d ICE candidates (Reflexive found: %s) after %.1fs",
             len(self._agora_handler.candidates),
             has_agora_turn_candidate(),
-            elapsed
+            elapsed,
         )
 
         try:
@@ -316,8 +321,10 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         self, session_id: str, candidate: RTCIceCandidateInit
     ) -> None:
         """Collect WebRTC candidates for inclusion in join message."""
-        _LOGGER.info("Received WebRTC candidate for session %s: %s", session_id, candidate)
-        
+        _LOGGER.info(
+            "Received WebRTC candidate for session %s: %s", session_id, candidate
+        )
+
         # Collect candidates - they'll be included in the join message
         self._agora_handler.candidates.append(candidate)
 
@@ -430,6 +437,7 @@ async def async_setup_platform_services(
         # Check if speed parameter exists and validate it
         speed = 0.4  # Default speed
         raw_speed = call.data["speed"]
+        use_wifi = call.data["use_wifi"]
         if raw_speed is not None:
             try:
                 speed_value = float(raw_speed)
@@ -450,7 +458,9 @@ async def async_setup_platform_services(
 
         mower: MammotionMowerData = _get_mower_by_entity_id(entity_id)
         if mower:
-            await mower.reporting_coordinator.async_move_forward(speed=speed)
+            await mower.reporting_coordinator.async_move_forward(
+                speed=speed, use_wifi=use_wifi
+            )
 
     async def handle_move_left(call) -> None:
         entity_id = call.data["entity_id"]
@@ -458,6 +468,7 @@ async def async_setup_platform_services(
         # Check if speed parameter exists and validate it
         speed = 0.4  # Default speed
         raw_speed = call.data["speed"]
+        use_wifi = call.data["use_wifi"]
         if raw_speed is not None:
             try:
                 speed_value = float(raw_speed)
@@ -478,7 +489,9 @@ async def async_setup_platform_services(
 
         mower: MammotionMowerData = _get_mower_by_entity_id(entity_id)
         if mower:
-            await mower.reporting_coordinator.async_move_left(speed=speed)
+            await mower.reporting_coordinator.async_move_left(
+                speed=speed, use_wifi=use_wifi
+            )
 
     async def handle_move_right(call) -> None:
         entity_id = call.data["entity_id"]
@@ -486,6 +499,7 @@ async def async_setup_platform_services(
         # Check if speed parameter exists and validate it
         speed = 0.4  # Default speed
         raw_speed = call.data["speed"]
+        use_wifi = call.data["use_wifi"]
         if raw_speed is not None:
             try:
                 speed_value = float(raw_speed)
@@ -506,7 +520,9 @@ async def async_setup_platform_services(
 
         mower: MammotionMowerData = _get_mower_by_entity_id(entity_id)
         if mower:
-            await mower.reporting_coordinator.async_move_right(speed=speed)
+            await mower.reporting_coordinator.async_move_right(
+                speed=speed, use_wifi=use_wifi
+            )
 
     async def handle_move_backward(call) -> None:
         entity_id = call.data["entity_id"]
@@ -514,6 +530,7 @@ async def async_setup_platform_services(
         # Check if speed parameter exists and validate it
         speed = 0.4  # Default speed
         raw_speed = call.data["speed"]
+        use_wifi = call.data["use_wifi"]
         if raw_speed is not None:
             try:
                 speed_value = float(raw_speed)
@@ -534,7 +551,9 @@ async def async_setup_platform_services(
 
         mower: MammotionMowerData = _get_mower_by_entity_id(entity_id)
         if mower:
-            await mower.reporting_coordinator.async_move_back(speed=speed)
+            await mower.reporting_coordinator.async_move_back(
+                speed=speed, use_wifi=use_wifi
+            )
 
     hass.services.async_register("mammotion", "refresh_stream", handle_refresh_stream)
     hass.services.async_register("mammotion", "start_video", handle_start_video)

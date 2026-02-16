@@ -226,6 +226,9 @@
       },
       "relocate_charging_station": {
         "name": "Relocate charging station"
+      },
+      "restart_mower": {
+        "name": "Restart mower"
       }
     },
     "switch": {
@@ -439,6 +442,10 @@
       "name": "Rozpocznij wysiewanie",
       "description": "Rozpocznij operację kojenia z ustawieniami niestandardowymi.",
       "fields": {
+        "modify": {
+          "name": "Modify existing job",
+          "description": "Whether to modify an existing job or start a new one."
+        },
         "is_mow": {
           "name": "Jest siew",
           "description": "Czy koszenie jest aktywne. (Yuka)."
@@ -532,6 +539,20 @@
         "blade_height": {
           "name": "Blade height",
           "description": "Height of the blade."
+        }
+      }
+    },
+    "set_non_work_hours": {
+      "name": "Set non-work hours",
+      "description": "Set the hours when the mower is not working.",
+      "fields": {
+        "start_time": {
+          "name": "Start time",
+          "description": "Start time of the non-work hours."
+        },
+        "end_time": {
+          "name": "End time",
+          "description": "End time of the non-work hours."
         }
       }
     }

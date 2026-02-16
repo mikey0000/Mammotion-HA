@@ -9,6 +9,12 @@ start_mow:
       integration: mammotion
       domain: lawn_mower
   fields:
+    modify:
+      example: true
+      default: false
+      required: false
+      selector:
+        boolean:
     is_mow:
       example: true
       default: true
@@ -215,3 +221,21 @@ start_stop_blades:
           max: 100
           step: 5
           unit_of_measurement: "mm"
+set_non_work_hours:
+  target:
+    entity:
+      integration: mammotion
+      domain: lawn_mower
+  fields:
+    start_time:
+      example: "09:00"
+      default: "09:00"
+      required: true
+      selector:
+        time:
+    end_time:
+      example: "17:00"
+      default: "17:00"
+      required: true
+      selector:
+        time:

@@ -56,13 +56,13 @@
   "entity": {
     "sensor": {
       "error_1_message": {
-        "name": "Last error"
+        "name": "Ultimo errore"
       },
       "error_1_time": {
-        "name": "Last error time"
+        "name": "Data ultimo errore"
       },
       "error_1_code": {
-        "name": "Last error code"
+        "name": "Codice ultimo errore"
       },
       "battery_percent": {
         "name": "Batteria"
@@ -118,47 +118,47 @@
       "position_type": {
         "name": "Tipo di posizionamento",
         "state": {
-          "AREA_BORDER_ON": "At perimeter",
-          "AREA_INSIDE": "Inside area",
-          "AREA_OUT": "Outside area",
-          "CHANNEL_AREA_OVERLAP": "Path area overlap",
-          "CHANNEL_ON": "On path",
-          "CHARGE_ON": "At charging station",
-          "DUMPING_AREA_INSIDE": "In dump area",
-          "DUMPING_OUTSIDE": "Outside dump area",
-          "ABNORMAL_POSITIONING": "Position error",
-          "NO_AREAS": "No areas defined",
-          "OBS_ON": "At obstacle",
-          "TURN_AREA_INSIDE": "In turn area",
-          "VIRTUAL_INSIDE": "In virtual area"
+          "AREA_BORDER_ON": "Sul perimetro",
+          "AREA_INSIDE": "Nell'area",
+          "AREA_OUT": "Fuori dall'area",
+          "CHANNEL_AREA_OVERLAP": "Percorso sovrapposto",
+          "CHANNEL_ON": "Sul percorso",
+          "CHARGE_ON": "Alla stazione di ricarica",
+          "DUMPING_AREA_INSIDE": "Nell'area di scarico",
+          "DUMPING_OUTSIDE": "Fuori dall'area di scarico",
+          "ABNORMAL_POSITIONING": "Errore di posizione",
+          "NO_AREAS": "Nessuna area definita",
+          "OBS_ON": "All'ostacolo",
+          "TURN_AREA_INSIDE": "Nell'area di svolta",
+          "VIRTUAL_INSIDE": "Nell'area virtuale"
         }
       },
       "activity_mode": {
         "name": "Modalità attività",
         "state": {
-          "MODE_NOT_ACTIVE": "Not active",
+          "MODE_NOT_ACTIVE": "Inattivo",
           "MODE_ONLINE": "Online",
           "MODE_OFFLINE": "Offline",
-          "MODE_DISABLE": "Disabled",
-          "MODE_INITIALIZATION": "Initializing",
-          "MODE_READY": "Ready",
-          "MODE_WORKING": "Working",
-          "MODE_RETURNING": "Returning",
-          "MODE_CHARGING": "Charging",
-          "MODE_UPDATING": "Updating",
-          "MODE_LOCK": "Locked",
-          "MODE_PAUSE": "Paused",
-          "MODE_MANUAL_MOWING": "Manual mowing",
-          "MODE_UPDATE_SUCCESS": "Update successful",
-          "MODE_OTA_UPGRADE_FAIL": "Update failed",
-          "MODE_JOB_DRAW": "Drawing job",
-          "MODE_OBSTACLE_DRAW": "Drawing obstacles",
-          "MODE_CHANNEL_DRAW": "Drawing channel",
-          "MODE_ERASER_DRAW": "Drawing eraser",
-          "MODE_EDIT_BOUNDARY": "Editing boundary",
-          "MODE_LOCATION_ERROR": "Location error",
-          "MODE_BOUNDARY_JUMP": "Boundary crossed",
-          "MODE_CHARGING_PAUSE": "Charging paused"
+          "MODE_DISABLE": "Disabilitato",
+          "MODE_INITIALIZATION": "Inizializzazione",
+          "MODE_READY": "Pronto",
+          "MODE_WORKING": "In funzione",
+          "MODE_RETURNING": "Di ritorno",
+          "MODE_CHARGING": "In carica",
+          "MODE_UPDATING": "Aggiornamento",
+          "MODE_LOCK": "Bloccato",
+          "MODE_PAUSE": "In pausa",
+          "MODE_MANUAL_MOWING": "Taglio manuale",
+          "MODE_UPDATE_SUCCESS": "Aggiornamento riuscito",
+          "MODE_OTA_UPGRADE_FAIL": "Aggiornamento fallito",
+          "MODE_JOB_DRAW": "Disegno attività",
+          "MODE_OBSTACLE_DRAW": "Disegno ostacoli",
+          "MODE_CHANNEL_DRAW": "Disegno corridoio",
+          "MODE_ERASER_DRAW": "Cancellino da disegno",
+          "MODE_EDIT_BOUNDARY": "Modifica del confine",
+          "MODE_LOCATION_ERROR": "Errore di posizione",
+          "MODE_BOUNDARY_JUMP": "Confine attraversato",
+          "MODE_CHARGING_PAUSE": "Ricarica in pausa"
         }
       },
       "work_area": {
@@ -175,19 +175,19 @@
         "unit_of_measurement": "Cicli batteria"
       },
       "non_work_hours": {
-        "name": "Non-work hours"
+        "name": "Ore non lavorative"
       },
       "rtk_lora": {
-        "name": "LoRa version"
+        "name": "Versione LoRa"
       },
       "rtk_latitude": {
-        "name": "Latitude"
+        "name": "Latitudine"
       },
       "rtk_longitude": {
-        "name": "Longitude"
+        "name": "Longitudine"
       },
       "rtk_wifi_rssi": {
-        "name": "Wi-Fi RSSI"
+        "name": "WiFi RSSI"
       }
     },
     "button": {
@@ -195,7 +195,7 @@
         "name": "Sincronizza mappe"
       },
       "start_schedule_sync": {
-        "name": "Synchronize schedules"
+        "name": "Sincronizza programmi"
       },
       "join_webrtc": {
         "name": "Avvia telecamera del tosaerba"
@@ -225,7 +225,10 @@
         "name": "Cancella nomi di mappe e aree"
       },
       "relocate_charging_station": {
-        "name": "Relocate charging station"
+        "name": "Riposiziona stazione di ricarica"
+      },
+      "restart_mower": {
+        "name": "Restart mower"
       }
     },
     "switch": {
@@ -260,10 +263,10 @@
         "name": "Attivare/Disattivare Gli aggiornamenti"
       },
       "manual_light": {
-        "name": "Manual light on/off"
+        "name": "Attivazione/disattivazione luce manuale"
       },
       "night_light": {
-        "name": "Night light on/off"
+        "name": "Luce notturna accesa/spenta"
       }
     },
     "select": {
@@ -322,7 +325,7 @@
         }
       },
       "traversal_mode": {
-        "name": "Traversal Mode",
+        "name": "Modalità di attraversamento",
         "state": {
           "direct": "Diretto",
           "follow_perimeter": "Segui il perimetro"
@@ -336,11 +339,11 @@
         }
       },
       "cutter_mode": {
-        "name": "Cutter Speed",
+        "name": "Velocità di taglio",
         "state": {
-          "normal": "Medium",
-          "slow": "Slow",
-          "fast": "Fast"
+          "normal": "Medio",
+          "slow": "Lento",
+          "fast": "Veloce"
         }
       }
     },
@@ -439,6 +442,10 @@
       "name": "Inizia a tagliare",
       "description": "Avvia l'operazione di taglio con impostazioni personalizzate.",
       "fields": {
+        "modify": {
+          "name": "Modify existing job",
+          "description": "Whether to modify an existing job or start a new one."
+        },
         "is_mow": {
           "name": "Sta tagliando",
           "description": "Se la falciatura è attiva. (Yuka)."
@@ -522,16 +529,30 @@
       }
     },
     "start_stop_blades": {
-      "name": "Start or stop blades",
-      "description": "Start or stop the blades manually.",
+      "name": "Avvia o ferma lame",
+      "description": "Avvia o arresta le lame manualmente.",
       "fields": {
         "start_stop": {
-          "name": "Start or stop",
-          "description": "Whether blades are on or off."
+          "name": "Avvia o arresta",
+          "description": "Se le lame sono accese o spente."
         },
         "blade_height": {
-          "name": "Blade height",
-          "description": "Height of the blade."
+          "name": "Altezza della lama",
+          "description": "Altezza della lama."
+        }
+      }
+    },
+    "set_non_work_hours": {
+      "name": "Set non-work hours",
+      "description": "Set the hours when the mower is not working.",
+      "fields": {
+        "start_time": {
+          "name": "Start time",
+          "description": "Start time of the non-work hours."
+        },
+        "end_time": {
+          "name": "End time",
+          "description": "End time of the non-work hours."
         }
       }
     }

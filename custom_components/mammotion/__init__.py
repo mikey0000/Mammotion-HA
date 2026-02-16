@@ -2,14 +2,17 @@
 
 from __future__ import annotations
 
+from datetime import datetime
+
 from aiohttp import ClientConnectorError
 from homeassistant.components import bluetooth
 from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_PASSWORD, Platform
-from homeassistant.core import HomeAssistant
+from homeassistant.const import CONF_PASSWORD, EVENT_HOMEASSISTANT_STOP, Platform
+from homeassistant.core import Event, HassJob, HomeAssistant
 from homeassistant.exceptions import ConfigEntryError, ConfigEntryNotReady
 from homeassistant.helpers.device_registry import DeviceEntry
+from homeassistant.helpers.event import async_call_later
 from pymammotion import CloudIOTGateway
 from pymammotion.aliyun.model.aep_response import AepResponse
 from pymammotion.aliyun.model.connect_response import ConnectResponse
@@ -197,11 +200,24 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
             )
             # sometimes device is not there when restoring data
             await report_coordinator.async_restore_data()
-            # other coordinator
-            await maintenance_coordinator.async_config_entry_first_refresh()
             await version_coordinator.async_config_entry_first_refresh()
+
             await report_coordinator.async_config_entry_first_refresh()
-            await error_coordinator.async_config_entry_first_refresh()
+            await maintenance_coordinator.async_config_entry_first_refresh()
+
+            async def _async_refresh_error(_: datetime) -> None:
+                """Call the debouncer at a later time."""
+                await error_coordinator.async_config_entry_first_refresh()
+
+            async_call_later(
+                hass,
+                1,
+                HassJob(
+                    _async_refresh_error,
+                    "error-coordinator-refresh",
+                    cancel_on_shutdown=True,
+                ),
+            )
 
             device_config = DeviceConfig()
             device_limits = device_config.get_working_parameters(
@@ -233,10 +249,20 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                     error_coordinator=error_coordinator,
                 )
             )
-            try:
-                await map_coordinator.async_request_refresh()
-            except:
-                """Do nothing for now."""
+
+            async def _async_refresh_map(_: datetime) -> None:
+                """Call the debouncer at a later time."""
+                await map_coordinator.async_config_entry_first_refresh()
+
+            async_call_later(
+                hass,
+                1,
+                HassJob(
+                    _async_refresh_map,
+                    "map-coordinator-refresh",
+                    cancel_on_shutdown=True,
+                ),
+            )
 
         for rtk in mammotion_rtk_devices:
             if rtk in shimed_cloud_devices:
@@ -263,6 +289,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
     mammotion_devices.RTK = mammotion_rtk
     mammotion_devices.mowers = mammotion_mowers
     entry.runtime_data = mammotion_devices
+
+    async def shutdown_mammotion(_: Event | None = None):
+        await mammotion.stop()
+
+    entry.async_on_unload(
+        hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, shutdown_mammotion)
+    )
+    entry.async_on_unload(shutdown_mammotion)
+
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     # Record the path to the static files needed for WebRTC

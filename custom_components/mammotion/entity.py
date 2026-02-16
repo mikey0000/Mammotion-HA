@@ -2,6 +2,7 @@
 
 from abc import ABC
 
+from homeassistant.components import bluetooth
 from homeassistant.components.camera import Camera, CameraEntityFeature
 from homeassistant.core import callback
 from homeassistant.helpers.device_registry import (
@@ -75,6 +76,22 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionBaseUpdateCoordinator]):
                     format_mac(mower.state.mower_state.wifi_mac),
                 )
             )
+
+        if not mower.ble and connections.__contains__(CONNECTION_BLUETOOTH):
+            ble_mac = next(
+                (mac for conn, mac in connections if conn == CONNECTION_BLUETOOTH),
+                None,
+            )
+
+            if ble_mac and not mower.state.mower_state.ble_mac:
+                mower.state.mower_state.ble_mac = ble_mac
+
+            ble_device = bluetooth.async_ble_device_from_address(
+                self.hass, ble_mac, True
+            )
+            if ble_device:
+                ble = mower.add_ble(ble_device)
+                ble.set_disconnect_strategy(disconnect=True)
 
         return DeviceInfo(
             identifiers={(DOMAIN, self.coordinator.device.device_name)},
@@ -179,8 +196,8 @@ class MammotionCameraBaseEntity(Camera, ABC):
             if mower.state.mower_state.model_id != "":
                 model_id = mower.state.mower_state.model_id
             if (
-                    mower.state.mqtt_properties is not None
-                    and mower.state.mqtt_properties.params.items.extMod is not None
+                mower.state.mqtt_properties is not None
+                and mower.state.mqtt_properties.params.items.extMod is not None
             ):
                 model_id = mower.state.mqtt_properties.params.items.extMod.value
 
@@ -228,15 +245,14 @@ class MammotionCameraBaseEntity(Camera, ABC):
             connections=connections,
         )
 
-
     @property
     def available(self) -> bool:
         """Return True if entity is available."""
         return (
-                self.coordinator.data is not None
-                and self.coordinator.update_failures
-                <= self.coordinator.config_entry.options.get(
-            CONF_RETRY_COUNT, DEFAULT_RETRY_COUNT
-        )
-                and self.coordinator.is_online()
+            self.coordinator.data is not None
+            and self.coordinator.update_failures
+            <= self.coordinator.config_entry.options.get(
+                CONF_RETRY_COUNT, DEFAULT_RETRY_COUNT
+            )
+            and self.coordinator.is_online()
         )
