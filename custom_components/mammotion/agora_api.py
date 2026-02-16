@@ -11,11 +11,12 @@ to ensure compatibility and parity with client-side behavior.
 import asyncio
 import hashlib
 import json
+import logging
 import time
 from dataclasses import dataclass
 from random import randint
 from typing import Optional
-import logging
+
 import aiohttp
 
 # Service IDs for API requests (what you send in the request)
@@ -152,7 +153,12 @@ class AgoraResponse:
             detail = {**detail, **buffer.get("detail", {})}
             uid = buffer.get("uid", 0)
 
-            _log.info("Parsing response flag=%d, uid=%d, edges_count=%d", flag, uid, len(edges_services))
+            _log.info(
+                "Parsing response flag=%d, uid=%d, edges_count=%d",
+                flag,
+                uid,
+                len(edges_services),
+            )
 
             # CRITICAL FIX: Implement three-condition check from agoraRTC_N.js (lines 23979-23980)
             # JavaScript logic: only derive credentials if ALL three conditions are true:
@@ -183,8 +189,11 @@ class AgoraResponse:
 
             if username and credentials:
                 # Tier 1: Use credentials from detail field (from Agora response)
-                _log.info("Using credentials from API response detail. username=%s, cred_len=%s",
-                         username, credentials)
+                _log.info(
+                    "Using credentials from API response detail. username=%s, cred_len=%s",
+                    username,
+                    credentials,
+                )
             elif uid:
                 # Tier 2: If no detail credentials, try derived from uid
                 # This matches the case where uid exists but detail fields are empty
@@ -197,25 +206,35 @@ class AgoraResponse:
                 username = detail.get("8", "")
                 credentials = detail.get("4", "")
 
-                _log.warning("No uid or detail credentials available, using Agora RN defaults. "
-                           "This matches JavaScript behavior when window.isSecureContext=false")
+                _log.warning(
+                    "No uid or detail credentials available, using Agora RN defaults. "
+                    "This matches JavaScript behavior when window.isSecureContext=false"
+                )
 
             # VALIDATION: Check that credentials are not empty
             if not credentials:
-                _log.error("CRITICAL: Empty credentials detected! uid=%s, username=%s, detail keys=%s. "
-                         "This will cause TURN 401 authentication failures.",
-                         uid, username, list(detail.keys()))
+                _log.error(
+                    "CRITICAL: Empty credentials detected! uid=%s, username=%s, detail keys=%s. "
+                    "This will cause TURN 401 authentication failures.",
+                    uid,
+                    username,
+                    list(detail.keys()),
+                )
             if not username:
-                _log.error("CRITICAL: Empty username detected! uid=%s. This will cause TURN 401 failures.",
-                         uid)
+                _log.error(
+                    "CRITICAL: Empty username detected! uid=%s. This will cause TURN 401 failures.",
+                    uid,
+                )
 
             # Parse fingerprints from detail[19] (semicolon-separated list)
             # Each fingerprint corresponds to an edge address
             fingerprints = []
-            if "19" in detail and detail["19"]:
+            if detail.get("19"):
                 fingerprint_str = detail["19"]
                 # Split by semicolon and strip whitespace
-                fingerprints = [fp.strip() for fp in fingerprint_str.split(";") if fp.strip()]
+                fingerprints = [
+                    fp.strip() for fp in fingerprint_str.split(";") if fp.strip()
+                ]
 
             username = str(uid)
             credentials = derive_password(uid)
@@ -297,27 +316,44 @@ class AgoraResponse:
         if not turn_addresses:
             # Fallback to any available addresses
             turn_addresses = self.addresses
-            _log.warning("No TURN addresses found with flag 4194310, using primary addresses")
+            _log.warning(
+                "No TURN addresses found with flag 4194310, using primary addresses"
+            )
 
         # Use all servers or just the first one
         addresses_to_use = (
             turn_addresses if use_all_turn_servers else turn_addresses[:1]
         )
 
-        _log.info("Creating ICE servers: use_all=%s, mode=%s, addr_count=%d",
-                 use_all_turn_servers, new_turn_mode, len(addresses_to_use))
+        _log.info(
+            "Creating ICE servers: use_all=%s, mode=%s, addr_count=%d",
+            use_all_turn_servers,
+            new_turn_mode,
+            len(addresses_to_use),
+        )
 
         for addr in addresses_to_use:
-            _log.debug("Processing TURN address: ip=%s, port=%d, username=%s, cred_len=%s",
-                      addr.ip, addr.port, addr.username, len(addr.credentials) if addr.credentials else 0)
+            _log.debug(
+                "Processing TURN address: ip=%s, port=%d, username=%s, cred_len=%s",
+                addr.ip,
+                addr.port,
+                addr.username,
+                len(addr.credentials) if addr.credentials else 0,
+            )
 
             # VALIDATION: Check credentials are present before creating ICE servers
             if not addr.username:
-                _log.error("CRITICAL: TURN address %s:%d has empty username! This will cause 401 errors.",
-                         addr.ip, addr.port)
+                _log.error(
+                    "CRITICAL: TURN address %s:%d has empty username! This will cause 401 errors.",
+                    addr.ip,
+                    addr.port,
+                )
             if not addr.credentials:
-                _log.error("CRITICAL: TURN address %s:%d has empty credentials! This will cause 401 errors.",
-                         addr.ip, addr.port)
+                _log.error(
+                    "CRITICAL: TURN address %s:%d has empty credentials! This will cause 401 errors.",
+                    addr.ip,
+                    addr.port,
+                )
 
             # Based on new_turn_mode (from agoraRTC_N.js:30764-30796)
             if new_turn_mode in [1, 4]:  # UDP
@@ -347,16 +383,27 @@ class AgoraResponse:
                     )
                 )
 
-        _log.info("Created %d ICE server entries from %d addresses", len(ice_servers), len(addresses_to_use))
+        _log.info(
+            "Created %d ICE server entries from %d addresses",
+            len(ice_servers),
+            len(addresses_to_use),
+        )
 
         # SUMMARY: Log all created ICE servers for validation
         if ice_servers:
             _log.info("ICE Server Summary:")
             for i, server in enumerate(ice_servers):
-                _log.info("  [%d] urls=%s, username=%s, cred_present=%s",
-                         i, server.urls, server.username, bool(server.credential))
+                _log.info(
+                    "  [%d] urls=%s, username=%s, cred_present=%s",
+                    i,
+                    server.urls,
+                    server.username,
+                    bool(server.credential),
+                )
         else:
-            _log.error("WARNING: No ICE servers were created! This will prevent TURN connections.")
+            _log.error(
+                "WARNING: No ICE servers were created! This will prevent TURN connections."
+            )
 
         return ice_servers
 
@@ -869,20 +916,29 @@ class AgoraAPIClient:
 
 async def main():
     """Example usage of the Agora API client."""
-    # Example parameters
-    # mammotion_http = MammotionHTTP('EMAIL', 'PASSWORD')
-    # mammotion_http.login_info = LoginResponseData.from_dict(json.loads(LOGIN_RESPONSE)
-    # mammotion_http.expires_in = 2591999 + time.time()
-    # stream = await mammotion_http.get_stream_subscription("VIfnsgIQCmHqn4IXXWkQ000000")
-    #print(stream)
 
+    # yuka mini UTpbwGC7vxd4DpNvbFGL000000
+    from pymammotion.http.http import MammotionHTTP
+
+    # Example parameters
+    mammotion_http = MammotionHTTP("EMAIL", "PASSWORD")
+    await mammotion_http.login_v2("EMAIL", "PASSWORD")
+    # mammotion_http.login_info = LoginResponseData.from_dict(json.loads(LOGIN_RESPONSE))
+    # mammotion_http.expires_in = 2591999 + time.time()
+    # VIfnsgIQCmHqn4IXXWkQ000000
+    stream = await mammotion_http.get_stream_subscription_mini_or_x_series(
+        "UTpbwGC7vxd4DpNvbFGL000000", True
+    )
+    print(stream)
+
+    return
     channel_name = "CHANNEL_NAME"
     # user_id = stream.data.uid
     # app_id = stream.data.appid
     # token = stream.data.token
     user_id = 81260392
-    app_id = 'APP_ID'
-    token = 'TOKEN'
+    app_id = "APP_ID"
+    token = "TOKEN"
 
     string_uid = "client_21231"
 

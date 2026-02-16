@@ -1,26 +1,31 @@
 """Agora SDP manipulation logic mimicking agoraRTC_N.js."""
+
 import logging
 from typing import Any
-import re
 
 _LOGGER = logging.getLogger(__name__)
 
+
 class SDPParser:
     """Basic SDP parser to avoid external dependencies, matching Agora JS behavior."""
+
     @staticmethod
     def parse(sdp: str) -> dict[str, Any]:
         parsed = {"media": []}
         current_media = None
-        
+
         for line in sdp.splitlines():
             line = line.strip()
-            if not line: continue
-            
+            if not line:
+                continue
+
             parts = line.split("=", 1)
-            if len(parts) < 2: continue
+            if len(parts) < 2:
+                continue
             ltype, lval = parts
-            
-            if ltype == "v": parsed["version"] = lval
+
+            if ltype == "v":
+                parsed["version"] = lval
             elif ltype == "o":
                 oparts = lval.split()
                 if len(oparts) >= 6:
@@ -30,9 +35,10 @@ class SDPParser:
                         "sessionVersion": oparts[2],
                         "netType": oparts[3],
                         "ipVer": oparts[4],
-                        "address": oparts[5]
+                        "address": oparts[5],
                     }
-            elif ltype == "s": parsed["name"] = lval
+            elif ltype == "s":
+                parsed["name"] = lval
             elif ltype == "m":
                 mparts = lval.split()
                 current_media = {
@@ -40,104 +46,147 @@ class SDPParser:
                     "port": int(mparts[1]),
                     "protocol": mparts[2],
                     "payloads": " ".join(mparts[3:]),
-                    "rtp": [], "fmtp": [], "rtcpFb": [], "ext": [], "fingerprints": [],
-                    "attributes": {}
+                    "rtp": [],
+                    "fmtp": [],
+                    "rtcpFb": [],
+                    "ext": [],
+                    "fingerprints": [],
+                    "attributes": {},
                 }
                 parsed["media"].append(current_media)
             elif ltype == "a":
                 aparts = lval.split(":", 1)
                 attr = aparts[0]
                 val = aparts[1] if len(aparts) > 1 else None
-                
+
                 target = current_media if current_media else parsed
-                
-                if attr == "ice-ufrag": target["iceUfrag"] = val
-                elif attr == "ice-pwd": target["icePwd"] = val
+
+                if attr == "ice-ufrag":
+                    target["iceUfrag"] = val
+                elif attr == "ice-pwd":
+                    target["icePwd"] = val
                 elif attr == "fingerprint":
                     fparts = val.split()
                     fp_obj = {"hash": fparts[0], "fingerprint": fparts[1]}
                     target["fingerprints"] = target.get("fingerprints", [])
                     target["fingerprints"].append(fp_obj)
-                    # Keep backward compatibility for 'fingerprint' key if needed by other code? 
+                    # Keep backward compatibility for 'fingerprint' key if needed by other code?
                     # But parse_offer_to_ortc should use fingerprints list.
                     target["fingerprint"] = fp_obj
-                elif attr == "setup": target["setup"] = val
-                elif attr == "mid": target["mid"] = val
-                elif attr == "direction": target["direction"] = val
-                elif attr == "ice-options": target["iceOptions"] = val
+                elif attr == "setup":
+                    target["setup"] = val
+                elif attr == "mid":
+                    target["mid"] = val
+                elif attr == "direction":
+                    target["direction"] = val
+                elif attr == "ice-options":
+                    target["iceOptions"] = val
                 elif attr == "rtpmap":
                     rparts = val.split(None, 1)
                     pt = int(rparts[0])
                     rmap = rparts[1].split("/")
-                    target["rtp"].append({
-                        "payload": pt, 
-                        "codec": rmap[0], 
-                        "rate": int(rmap[1]) if len(rmap) > 1 else 90000,
-                        "encoding": rmap[2] if len(rmap) > 2 else None
-                    })
+                    target["rtp"].append(
+                        {
+                            "payload": pt,
+                            "codec": rmap[0],
+                            "rate": int(rmap[1]) if len(rmap) > 1 else 90000,
+                            "encoding": rmap[2] if len(rmap) > 2 else None,
+                        }
+                    )
                 elif attr == "fmtp":
                     fparts = val.split(None, 1)
-                    target["fmtp"].append({"payload": int(fparts[0]), "config": fparts[1]})
+                    target["fmtp"].append(
+                        {"payload": int(fparts[0]), "config": fparts[1]}
+                    )
                 elif attr == "rtcp-fb":
                     fbparts = val.split()
-                    target["rtcpFb"].append({
-                        "payload": int(fbparts[0]), 
-                        "type": fbparts[1], 
-                        "subtype": " ".join(fbparts[2:]) if len(fbparts) > 2 else None
-                    })
+                    target["rtcpFb"].append(
+                        {
+                            "payload": int(fbparts[0]),
+                            "type": fbparts[1],
+                            "subtype": " ".join(fbparts[2:])
+                            if len(fbparts) > 2
+                            else None,
+                        }
+                    )
                 elif attr == "extmap":
                     eparts = val.split()
                     target["ext"].append({"value": int(eparts[0]), "uri": eparts[1]})
                 elif attr == "group":
-                    if "groups" not in parsed: parsed["groups"] = []
+                    if "groups" not in parsed:
+                        parsed["groups"] = []
                     gparts = val.split()
-                    parsed["groups"].append({"type": gparts[0], "mids": " ".join(gparts[1:])})
+                    parsed["groups"].append(
+                        {"type": gparts[0], "mids": " ".join(gparts[1:])}
+                    )
                 elif attr == "msid-semantic":
-                    parsed["msidSemantic"] = {"semantic": val.split()[0], "token": val.split()[1] if len(val.split()) > 1 else ""}
+                    parsed["msidSemantic"] = {
+                        "semantic": val.split()[0],
+                        "token": val.split()[1] if len(val.split()) > 1 else "",
+                    }
         return parsed
 
     @staticmethod
     def write(parsed: dict[str, Any]) -> str:
         lines = [f"v={parsed.get('version', 0)}"]
         orig = parsed.get("origin", {})
-        lines.append(f"o={orig.get('username', '-')} {orig.get('sessionId', 0)} {orig.get('sessionVersion', 0)} {orig.get('netType', 'IN')} IP{orig.get('ipVer', 4)} {orig.get('address', '127.0.0.1')}")
+        lines.append(
+            f"o={orig.get('username', '-')} {orig.get('sessionId', 0)} {orig.get('sessionVersion', 0)} {orig.get('netType', 'IN')} IP{orig.get('ipVer', 4)} {orig.get('address', '127.0.0.1')}"
+        )
         lines.append(f"s={parsed.get('name', '-')}")
         lines.append("t=0 0")
         for g in parsed.get("groups", []):
             lines.append(f"a=group:{g['type']} {g['mids']}")
         if "msidSemantic" in parsed:
-            lines.append(f"a=msid-semantic: {parsed['msidSemantic']['semantic']} {parsed['msidSemantic']['token']}")
+            lines.append(
+                f"a=msid-semantic: {parsed['msidSemantic']['semantic']} {parsed['msidSemantic']['token']}"
+            )
         if "icelite" in parsed:
             lines.append("a=ice-lite")
-            
+
         for m in parsed.get("media", []):
             lines.append(f"m={m['type']} {m['port']} {m['protocol']} {m['payloads']}")
             lines.append(f"c=IN IP4 {m.get('connection', {}).get('ip', '0.0.0.0')}")
             if "rtcp" in m:
-                lines.append(f"a=rtcp:{m['rtcp']['port']} IN IP4 {m['rtcp'].address if hasattr(m['rtcp'], 'address') else m['rtcp'].get('address', '0.0.0.0')}")
-            if "iceUfrag" in m: lines.append(f"a=ice-ufrag:{m['iceUfrag']}")
-            if "icePwd" in m: lines.append(f"a=ice-pwd:{m['icePwd']}")
-            if "iceOptions" in m: lines.append(f"a=ice-options:{m['iceOptions']}")
-            if "fingerprint" in m: lines.append(f"a=fingerprint:{m['fingerprint']['hash']} {m['fingerprint']['fingerprint']}")
+                lines.append(
+                    f"a=rtcp:{m['rtcp']['port']} IN IP4 {m['rtcp'].address if hasattr(m['rtcp'], 'address') else m['rtcp'].get('address', '0.0.0.0')}"
+                )
+            if "iceUfrag" in m:
+                lines.append(f"a=ice-ufrag:{m['iceUfrag']}")
+            if "icePwd" in m:
+                lines.append(f"a=ice-pwd:{m['icePwd']}")
+            if "iceOptions" in m:
+                lines.append(f"a=ice-options:{m['iceOptions']}")
+            if "fingerprint" in m and not m.get("fingerprints"):
+                lines.append(
+                    f"a=fingerprint:{m['fingerprint']['hash']} {m['fingerprint']['fingerprint']}"
+                )
             for fp in m.get("fingerprints", []):
                 lines.append(f"a=fingerprint:{fp['hash']} {fp['fingerprint']}")
-            if "setup" in m: lines.append(f"a=setup:{m['setup']}")
-            if "mid" in m: lines.append(f"a=mid:{m['mid']}")
-            if "direction" in m: lines.append(f"a={m['direction']}")
+            if "setup" in m:
+                lines.append(f"a=setup:{m['setup']}")
+            if "mid" in m:
+                lines.append(f"a=mid:{m['mid']}")
+            if "direction" in m:
+                lines.append(f"a={m['direction']}")
             for r in m.get("rtp", []):
                 val = f"{r['payload']} {r['codec']}/{r['rate']}"
-                if r.get('encoding'): val += f"/{r['encoding']}"
+                if r.get("encoding"):
+                    val += f"/{r['encoding']}"
                 lines.append(f"a=rtpmap:{val}")
             for fb in m.get("rtcpFb", []):
                 val = f"{fb['payload']} {fb['type']}"
-                if fb.get('subtype'): val += f" {fb['subtype']}"
+                if fb.get("subtype"):
+                    val += f" {fb['subtype']}"
                 lines.append(f"a=rtcp-fb:{val}")
             for f in m.get("fmtp", []):
                 lines.append(f"a=fmtp:{f['payload']} {f['config']}")
             for e in m.get("ext", []):
                 lines.append(f"a=extmap:{e['value']} {e['uri']}")
-            if "rtcpMux" in m: lines.append("a=rtcp-mux")
-            if "rtcpRsize" in m: lines.append("a=rtcp-rsize")
+            if "rtcpMux" in m:
+                lines.append("a=rtcp-mux")
+            if "rtcpRsize" in m:
+                lines.append("a=rtcp-rsize")
             for s in m.get("ssrcs", []):
                 lines.append(f"a=ssrc:{s['id']} {s['attribute']}:{s['value']}")
             for c in m.get("candidates", []):
@@ -145,12 +194,13 @@ class SDPParser:
                 lines.append(f"a=candidate:{val}")
         return "\r\n".join(lines) + "\r\n"
 
+
 def parse_offer_to_ortc(offer_sdp: str) -> dict[str, Any]:
     """Parse offer SDP to ORTC object (for join_v3 message)."""
     parsed = SDPParser.parse(offer_sdp)
     ice_params = {}
     dtls_params = {}
-    
+
     # vx logic: extracts from FIRST media description found
     for m in parsed.get("media", []):
         if not ice_params and "iceUfrag" in m:
@@ -158,18 +208,18 @@ def parse_offer_to_ortc(offer_sdp: str) -> dict[str, Any]:
         if not dtls_params and m.get("fingerprints"):
             dtls_params = {
                 "fingerprints": [
-                    {"hashFunction": fp["hash"], "fingerprint": fp["fingerprint"]} 
+                    {"hashFunction": fp["hash"], "fingerprint": fp["fingerprint"]}
                     for fp in m["fingerprints"]
                 ]
             }
-    
+
     # Fallback to session level
     if not ice_params and "iceUfrag" in parsed:
         ice_params = {"iceUfrag": parsed["iceUfrag"], "icePwd": parsed["icePwd"]}
     if not dtls_params and parsed.get("fingerprints"):
         dtls_params = {
             "fingerprints": [
-                {"hashFunction": fp["hash"], "fingerprint": fp["fingerprint"]} 
+                {"hashFunction": fp["hash"], "fingerprint": fp["fingerprint"]}
                 for fp in parsed["fingerprints"]
             ]
         }
@@ -178,9 +228,19 @@ def parse_offer_to_ortc(offer_sdp: str) -> dict[str, Any]:
     dtls_params["role"] = "client"
 
     # Rx logic: Extract send/recv/sendrecv capabilities
-    send_caps = {"audioCodecs": [], "audioExtensions": [], "videoCodecs": [], "videoExtensions": []}
-    recv_caps = {"audioCodecs": [], "audioExtensions": [], "videoCodecs": [], "videoExtensions": []}
-    
+    send_caps = {
+        "audioCodecs": [],
+        "audioExtensions": [],
+        "videoCodecs": [],
+        "videoExtensions": [],
+    }
+    recv_caps = {
+        "audioCodecs": [],
+        "audioExtensions": [],
+        "videoCodecs": [],
+        "videoExtensions": [],
+    }
+
     for m in parsed.get("media", []):
         mtype = m.get("type")
         direction = m.get("direction", "sendrecv")
@@ -189,11 +249,19 @@ def parse_offer_to_ortc(offer_sdp: str) -> dict[str, Any]:
             pt = rtp.get("payload")
             codec = {
                 "payloadType": pt,
-                "rtpMap": {"encodingName": rtp.get("codec"), "clockRate": rtp.get("rate"), "encodingParameters": rtp.get("encoding")},
-                "rtcpFeedbacks": [], "fmtp": {"parameters": {}}
+                "rtpMap": {
+                    "encodingName": rtp.get("codec"),
+                    "clockRate": rtp.get("rate"),
+                    "encodingParameters": rtp.get("encoding"),
+                },
+                "rtcpFeedbacks": [],
+                "fmtp": {"parameters": {}},
             }
             for fb in m.get("rtcpFb", []):
-                if fb.get("payload") == pt: codec["rtcpFeedbacks"].append({"type": fb.get("type"), "parameter": fb.get("subtype")})
+                if fb.get("payload") == pt:
+                    codec["rtcpFeedbacks"].append(
+                        {"type": fb.get("type"), "parameter": fb.get("subtype")}
+                    )
             for f in m.get("fmtp", []):
                 if f.get("payload") == pt:
                     for part in f.get("config", "").split(";"):
@@ -201,25 +269,40 @@ def parse_offer_to_ortc(offer_sdp: str) -> dict[str, Any]:
                             k, v = part.split("=", 1)
                             codec["fmtp"]["parameters"][k.strip()] = v.strip()
             codecs.append(codec)
-            
-        extensions = [{"entry": ext.get("value"), "extensionName": ext.get("uri")} for ext in m.get("ext", [])]
-            
-        if direction == "sendonly": targets = [send_caps]
-        elif direction == "recvonly": targets = [recv_caps]
-        else: targets = [send_caps, recv_caps]
-        
+
+        extensions = [
+            {"entry": ext.get("value"), "extensionName": ext.get("uri")}
+            for ext in m.get("ext", [])
+        ]
+
+        if direction == "sendonly":
+            targets = [send_caps]
+        elif direction == "recvonly":
+            targets = [recv_caps]
+        else:
+            targets = [send_caps, recv_caps]
+
         for t in targets:
-            if mtype == "video": t["videoCodecs"].extend(codecs); t["videoExtensions"].extend(extensions)
-            elif mtype == "audio": t["audioCodecs"].extend(codecs); t["audioExtensions"].extend(extensions)
+            if mtype == "video":
+                t["videoCodecs"].extend(codecs)
+                t["videoExtensions"].extend(extensions)
+            elif mtype == "audio":
+                t["audioCodecs"].extend(codecs)
+                t["audioExtensions"].extend(extensions)
 
     return {
         "iceParameters": ice_params,
         "dtlsParameters": dtls_params,
         "rtpCapabilities": {"send": send_caps, "recv": recv_caps},
-        "version": "2"
+        "version": "2",
     }
 
-def generate_answer_from_ortc(ortc_params: dict[str, Any], offer_sdp: dict[str, Any], force_setup: str | None = None) -> str:
+
+def generate_answer_from_ortc(
+    ortc_params: dict[str, Any],
+    offer_sdp: dict[str, Any],
+    force_setup: str | None = None,
+) -> str:
     """Generate answer SDP from ORTC parameters (from join_success)."""
     # ortc_params is from join_success (Agora)
     # offer_sdp is the dict returned by parse_offer_to_ortc(offer_sdp)
@@ -228,28 +311,43 @@ def generate_answer_from_ortc(ortc_params: dict[str, Any], offer_sdp: dict[str, 
     rtp_caps = ortc_params.get("rtpCapabilities", {})
     cname = ortc_params.get("cname", "")
     offer_parsed = offer_sdp
-    
+
     # setup logic from yx(): server -> passive, client -> active, auto -> actpass
     role = dtls.get("role", "server")
-    setup = force_setup or ("passive" if role == "server" else "active" if role == "client" else "actpass")
-    
+    setup = force_setup or (
+        "passive" if role == "server" else "active" if role == "client" else "actpass"
+    )
+
     answer = {
         "version": 0,
-        "origin": {"username": "-", "sessionId": 0, "sessionVersion": 0, "netType": "IN", "ipVer": 4, "address": "127.0.0.1"},
-        "name": "AgoraGateway", 
+        "origin": {
+            "username": "-",
+            "sessionId": 0,
+            "sessionVersion": 0,
+            "netType": "IN",
+            "ipVer": 4,
+            "address": "127.0.0.1",
+        },
+        "name": "AgoraGateway",
         "groups": offer_parsed.get("groups", [{"type": "BUNDLE", "mids": "0 1"}]),
-        "msidSemantic": offer_parsed.get("msidSemantic", {"semantic": "WMS", "token": ""}),
-        "icelite": "ice-lite", 
-        "media": []
+        "msidSemantic": offer_parsed.get(
+            "msidSemantic", {"semantic": "WMS", "token": ""}
+        ),
+        "icelite": "ice-lite",
+        "media": [],
     }
 
     # Match IDs from original offer
-    offer_ext_map = {ext.get("extensionName"): ext.get("entry") for m in offer_parsed.get("media", []) for ext in m.get("ext", [])}
+    offer_ext_map = {
+        ext.get("extensionName"): ext.get("entry")
+        for m in offer_parsed.get("media", [])
+        for ext in m.get("ext", [])
+    }
 
     for idx, offer_m in enumerate(offer_parsed.get("media", [])):
         mtype = offer_m.get("type", "audio")
         mid = offer_m.get("mid", str(idx))
-        
+
         # RTP capabilities can be flat or nested
         caps = rtp_caps
         if "recv" in rtp_caps:
@@ -258,70 +356,103 @@ def generate_answer_from_ortc(ortc_params: dict[str, Any], offer_sdp: dict[str, 
             caps = rtp_caps["sendrecv"]
 
         codecs = caps.get("videoCodecs" if mtype == "video" else "audioCodecs", [])
-        extensions = caps.get("videoExtensions" if mtype == "video" else "audioExtensions", [])
+        extensions = caps.get(
+            "videoExtensions" if mtype == "video" else "audioExtensions", []
+        )
 
         answer_m = {
-            "type": mtype, "port": 9, "protocol": "UDP/TLS/RTP/SAVPF", "payloads": " ".join([str(c.get("payloadType")) for c in codecs]),
-            "connection": {"version": 4, "ip": "0.0.0.0"}, "rtcp": {"port": 9, "netType": "IN", "ipVer": 4, "address": "0.0.0.0"},
-            "iceUfrag": ice.get("iceUfrag"), "icePwd": ice.get("icePwd"), "iceOptions": "trickle",
-            "iceUfrag": ice.get("iceUfrag"), "icePwd": ice.get("icePwd"), "iceOptions": "trickle",
+            "type": mtype,
+            "port": 9,
+            "protocol": "UDP/TLS/RTP/SAVPF",
+            "payloads": " ".join([str(c.get("payloadType")) for c in codecs]),
+            "connection": {"version": 4, "ip": "0.0.0.0"},
+            "rtcp": {"port": 9, "netType": "IN", "ipVer": 4, "address": "0.0.0.0"},
+            "iceUfrag": ice.get("iceUfrag"),
+            "icePwd": ice.get("icePwd"),
+            "iceOptions": "trickle",
             "fingerprints": [],
-            "setup": setup, "mid": mid, "direction": "sendonly", "rtp": [], "rtcpFb": [], "fmtp": [], "ext": [], "rtcpMux": "rtcp-mux", "rtcpRsize": "rtcp-rsize"
+            "setup": setup,
+            "mid": mid,
+            "direction": "sendonly",
+            "rtp": [],
+            "rtcpFb": [],
+            "fmtp": [],
+            "ext": [],
+            "rtcpMux": "rtcp-mux",
+            "rtcpRsize": "rtcp-rsize",
         }
 
         # Handle multiple fingerprints
         dtls_fps = dtls.get("fingerprints", [])
         if not dtls_fps:
             # Fallback if single
-            dtls_fps = [{"hashFunction": "sha-256", "fingerprint": ""}] # Should usually be present
-        
+            dtls_fps = [
+                {"hashFunction": "sha-256", "fingerprint": ""}
+            ]  # Should usually be present
+
         for fp in dtls_fps:
-            answer_m["fingerprints"].append({
-                "hash": fp.get("hashFunction", fp.get("algorithm", "sha-256")), 
-                "fingerprint": fp.get("fingerprint")
-            })
-        
+            answer_m["fingerprints"].append(
+                {
+                    "hash": fp.get("hashFunction", fp.get("algorithm", "sha-256")),
+                    "fingerprint": fp.get("fingerprint"),
+                }
+            )
+
         for c in codecs:
             pt = c.get("payloadType")
-            answer_m["rtp"].append({
-                "payload": pt, 
-                "codec": c["rtpMap"].get("encodingName"), 
-                "rate": c["rtpMap"].get("clockRate"), 
-                "encoding": c["rtpMap"].get("encodingParameters")
-            })
-            for fb in c.get("rtcpFeedbacks", []): 
-                answer_m["rtcpFb"].append({"payload": pt, "type": fb.get("type"), "subtype": fb.get("parameter")})
-            
+            answer_m["rtp"].append(
+                {
+                    "payload": pt,
+                    "codec": c["rtpMap"].get("encodingName"),
+                    "rate": c["rtpMap"].get("clockRate"),
+                    "encoding": c["rtpMap"].get("encodingParameters"),
+                }
+            )
+            for fb in c.get("rtcpFeedbacks", []):
+                answer_m["rtcpFb"].append(
+                    {
+                        "payload": pt,
+                        "type": fb.get("type"),
+                        "subtype": fb.get("parameter"),
+                    }
+                )
+
             # handle fmtp
             fmtp_params = c.get("fmtp", {}).get("parameters", {})
             if fmtp_params:
-                answer_m["fmtp"].append({
-                    "payload": pt, 
-                    "config": ";".join([f"{k}={v}" for k, v in fmtp_params.items()])
-                })
-        
+                answer_m["fmtp"].append(
+                    {
+                        "payload": pt,
+                        "config": ";".join(
+                            [f"{k}={v}" for k, v in fmtp_params.items()]
+                        ),
+                    }
+                )
+
         for ext in extensions:
             uri = ext.get("extensionName")
-            if uri in offer_ext_map: 
+            if uri in offer_ext_map:
                 answer_m["ext"].append({"value": offer_ext_map[uri], "uri": uri})
-        
+
         # Note: Working SDK for audience role does NOT include SSRC lines in the answer
         # if cname: answer_m["ssrcs"] = [{"id": 12345678 if mtype == "audio" else 87654321, "attribute": "cname", "value": cname}]
-        
+
         # Add Candidates from iceParameters.candidates if any
         if "candidates" in ice:
             answer_m["candidates"] = []
             for c in ice["candidates"]:
-                answer_m["candidates"].append({
-                    "foundation": c.get("foundation", "0"),
-                    "component": c.get("component", 1),
-                    "protocol": c.get("protocol", "udp"),
-                    "priority": c.get("priority", 0),
-                    "ip": c.get("ip"),
-                    "port": c.get("port"),
-                    "type": c.get("type")
-                })
-        
+                answer_m["candidates"].append(
+                    {
+                        "foundation": c.get("foundation", "0"),
+                        "component": c.get("component", 1),
+                        "protocol": c.get("protocol", "udp"),
+                        "priority": c.get("priority", 0),
+                        "ip": c.get("ip"),
+                        "port": c.get("port"),
+                        "type": c.get("type"),
+                    }
+                )
+
         answer["media"].append(answer_m)
 
     return SDPParser.write(answer)

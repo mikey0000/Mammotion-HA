@@ -1,0 +1,1846 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Agora WebRTC Test — Unobfuscated Audience Client</title>
+    <style>
+      :root {
+        --bg: #0f1117;
+        --surface: #1a1d27;
+        --border: #2a2d3a;
+        --text: #e1e4ed;
+        --text-dim: #8b8fa3;
+        --accent: #6c5ce7;
+        --success: #00b894;
+        --warn: #fdcb6e;
+        --error: #e17055;
+        --info: #74b9ff;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family:
+          "Inter",
+          -apple-system,
+          BlinkMacSystemFont,
+          sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        padding: 20px;
+      }
+      h1 {
+        font-size: 1.4rem;
+        margin-bottom: 16px;
+        color: var(--accent);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      h1 span {
+        font-size: 0.75rem;
+        color: var(--text-dim);
+        font-weight: 400;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 360px 1fr;
+        gap: 16px;
+        height: calc(100vh - 80px);
+      }
+      .panel {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 16px;
+        overflow-y: auto;
+      }
+      .panel h2 {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-dim);
+        margin-bottom: 12px;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 8px;
+      }
+
+      /* Form */
+      .field {
+        margin-bottom: 10px;
+      }
+      .field label {
+        display: block;
+        font-size: 0.75rem;
+        color: var(--text-dim);
+        margin-bottom: 4px;
+      }
+      .field input,
+      .field textarea {
+        width: 100%;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        color: var(--text);
+        padding: 8px 10px;
+        font-size: 0.85rem;
+        font-family: "JetBrains Mono", "Fira Code", monospace;
+      }
+      .field input:focus,
+      .field textarea:focus {
+        outline: none;
+        border-color: var(--accent);
+      }
+
+      /* Buttons */
+      .btn-row {
+        display: flex;
+        gap: 8px;
+        margin: 12px 0;
+      }
+      button {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+      .btn-connect {
+        background: var(--accent);
+        color: white;
+        flex: 1;
+      }
+      .btn-connect:hover {
+        filter: brightness(1.15);
+      }
+      .btn-connect:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .btn-disconnect {
+        background: var(--error);
+        color: white;
+      }
+      .btn-disconnect:hover {
+        filter: brightness(1.15);
+      }
+      .btn-disconnect:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      /* Status */
+      .status-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+        margin-bottom: 12px;
+      }
+      .status-item {
+        background: var(--bg);
+        border-radius: 6px;
+        padding: 6px 10px;
+        font-size: 0.72rem;
+      }
+      .status-item .label {
+        color: var(--text-dim);
+      }
+      .status-item .value {
+        font-family: monospace;
+        font-weight: 600;
+        margin-top: 2px;
+      }
+      .value.new {
+        color: var(--info);
+      }
+      .value.checking,
+      .value.connecting {
+        color: var(--warn);
+      }
+      .value.connected {
+        color: var(--success);
+      }
+      .value.failed,
+      .value.disconnected,
+      .value.closed {
+        color: var(--error);
+      }
+
+      /* Video */
+      .video-container {
+        background: #000;
+        border-radius: 8px;
+        overflow: hidden;
+        margin-bottom: 12px;
+        aspect-ratio: 4/3;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+      }
+      .video-container video {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+      }
+      .video-overlay {
+        position: absolute;
+        color: var(--text-dim);
+        font-size: 0.85rem;
+      }
+
+      /* Log */
+      #log {
+        font-family: "JetBrains Mono", "Fira Code", monospace;
+        font-size: 0.72rem;
+        line-height: 1.5;
+        white-space: pre-wrap;
+        word-break: break-all;
+        padding: 8px;
+        background: var(--bg);
+        border-radius: 6px;
+        height: calc(100% - 40px);
+        overflow-y: auto;
+      }
+      .log-api {
+        color: var(--info);
+      }
+      .log-ws {
+        color: #a29bfe;
+      }
+      .log-pc {
+        color: var(--success);
+      }
+      .log-dtls {
+        color: var(--warn);
+      }
+      .log-sub {
+        color: #fd79a8;
+      }
+      .log-video {
+        color: #55efc4;
+      }
+      .log-err {
+        color: var(--error);
+      }
+      .log-info {
+        color: var(--text-dim);
+      }
+
+      /* Collapsible */
+      details {
+        margin: 8px 0;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        overflow: hidden;
+      }
+      details summary {
+        padding: 8px 10px;
+        font-size: 0.75rem;
+        cursor: pointer;
+        background: var(--bg);
+        color: var(--text-dim);
+      }
+      details pre {
+        padding: 8px;
+        font-size: 0.7rem;
+        max-height: 300px;
+        overflow: auto;
+        background: var(--surface);
+        white-space: pre-wrap;
+        word-break: break-all;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>
+      🛰️ Agora WebRTC Test
+      <span>Unobfuscated Audience Client — mirrors agora_ws.js flow</span>
+    </h1>
+
+    <div class="grid">
+      <!-- Left panel: config + status -->
+      <div class="panel">
+        <h2>Connection Config</h2>
+
+        <div class="field">
+          <label>App ID</label>
+          <input
+            id="appId"
+            placeholder="e.g. aab8b8f5a8cd4469a63042fcfafe7063"
+          />
+        </div>
+        <div class="field">
+          <label>Channel Name</label>
+          <input
+            id="channelName"
+            placeholder="e.g. VIfnsgIQCmHqn4IXXWkQ000000"
+          />
+        </div>
+        <div class="field">
+          <label>Token</label>
+          <textarea
+            id="token"
+            rows="3"
+            placeholder="Agora token (from stream subscription response)"
+          ></textarea>
+        </div>
+        <div class="field">
+          <label>UID (0 = auto-assign)</label>
+          <input id="uid" type="number" value="0" />
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-connect" id="btnConnect" onclick="startConnect()">
+            Connect (Raw WS)
+          </button>
+          <button
+            class="btn-connect"
+            id="btnConnectSdk"
+            onclick="startConnectSdk()"
+            style="background: #2563eb"
+          >
+            Connect (SDK)
+          </button>
+          <button
+            class="btn-disconnect"
+            id="btnDisconnect"
+            onclick="doDisconnect()"
+            disabled
+          >
+            Disconnect
+          </button>
+        </div>
+
+        <h2>Connection State</h2>
+        <div class="status-grid">
+          <div class="status-item">
+            <div class="label">ICE</div>
+            <div class="value" id="stIce">—</div>
+          </div>
+          <div class="status-item">
+            <div class="label">DTLS</div>
+            <div class="value" id="stDtls">—</div>
+          </div>
+          <div class="status-item">
+            <div class="label">Signaling</div>
+            <div class="value" id="stSignal">—</div>
+          </div>
+          <div class="status-item">
+            <div class="label">Connection</div>
+            <div class="value" id="stConn">—</div>
+          </div>
+        </div>
+
+        <h2>Video</h2>
+        <div class="video-container">
+          <video id="remoteVideo" autoplay playsinline></video>
+          <div
+            id="sdkVideoContainer"
+            style="
+              width: 100%;
+              height: 100%;
+              position: absolute;
+              top: 0;
+              left: 0;
+              display: none;
+            "
+          ></div>
+          <div class="video-overlay" id="videoOverlay">No video stream</div>
+        </div>
+
+        <details id="detailOffer">
+          <summary>Local Offer SDP</summary>
+          <pre id="offerSdp">—</pre>
+        </details>
+        <details id="detailAnswer">
+          <summary>Remote Answer SDP</summary>
+          <pre id="answerSdp">—</pre>
+        </details>
+        <details id="detailOrtc">
+          <summary>ORTC Parameters (from join_success)</summary>
+          <pre id="ortcParams">—</pre>
+        </details>
+      </div>
+
+      <!-- Right panel: log -->
+      <div class="panel">
+        <h2>Event Log</h2>
+        <div id="log"></div>
+      </div>
+    </div>
+
+    <script>
+      // ============================================================
+      // Agora WebRTC Unobfuscated Audience Client
+      // Mirrors the flow from agora_ws.js P2PConnection + signal
+      // ============================================================
+
+      const AGORA_API_URLS = [
+        "https://webrtc2-ap-web-1.agora.io/api/v2/transpond/webrtc?v=2",
+        "https://webrtc2-ap-web-2.agora.io/api/v2/transpond/webrtc?v=2",
+      ];
+
+      // Global state
+      let pc = null; // RTCPeerConnection
+      let ws = null; // WebSocket
+      let initialOffer = null;
+      let localCapabilities = null;
+      let remoteSDP = null;
+      let assignedUid = null;
+      let joinedChannel = null;
+      let cname = null;
+      let rejoinToken = null; // Token for rejoin_v3 on reconnect
+      let pingInterval = null; // Ping-pong keepalive timer (3s)
+      let joinSessionId = null; // Session ID from join
+      let joinCid = null; // Channel ID from join response
+      let joinVid = null; // VID from join response
+      let agoraClient = null; // Agora SDK client (for SDK mode)
+      let sdkMode = false; // Whether using SDK mode
+
+      // ---- Logging ----
+      function log(tag, msg, cls) {
+        const el = document.getElementById("log");
+        const ts = new Date().toLocaleTimeString("en-GB", {
+          hour12: false,
+          fractionalSecondDigits: 3,
+        });
+        const line = document.createElement("div");
+        line.className = cls || "log-info";
+        line.textContent = `${ts} [${tag}] ${msg}`;
+        el.appendChild(line);
+        el.scrollTop = el.scrollHeight;
+      }
+
+      function setStatus(id, val) {
+        const el = document.getElementById(id);
+        el.textContent = val;
+        el.className = "value " + val.toLowerCase().replace(/[^a-z]/g, "");
+      }
+
+      // ---- Crypto: derive_password (SHA-256 of uid string) ----
+      async function derivePassword(uid) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(String(uid));
+        const hash = await crypto.subtle.digest("SHA-256", data);
+        return Array.from(new Uint8Array(hash))
+          .map((b) => b.toString(16).padStart(2, "0"))
+          .join("");
+      }
+
+      // ---- SDP parsing utilities ----
+      function parseOfferToOrtc(sdp) {
+        // Extract ICE ufrag/pwd, DTLS fingerprint, candidates, codecs, extensions from offer SDP
+        const lines = sdp.split("\n").map((l) => l.trim());
+        let iceUfrag = "",
+          icePwd = "",
+          fingerprint = "",
+          fpAlgo = "";
+        const candidates = [];
+        const audioCodecs = [],
+          videoCodecs = [];
+        const audioExtensions = [],
+          videoExtensions = [];
+        let currentMedia = null;
+
+        for (const line of lines) {
+          if (line.startsWith("m=")) {
+            currentMedia = line.startsWith("m=audio")
+              ? "audio"
+              : line.startsWith("m=video")
+                ? "video"
+                : null;
+          }
+          if (line.startsWith("a=ice-ufrag:") && !iceUfrag)
+            iceUfrag = line.split(":")[1];
+          if (line.startsWith("a=ice-pwd:") && !icePwd)
+            icePwd = line.split(":")[1];
+          if (line.startsWith("a=fingerprint:") && !fingerprint) {
+            const parts = line.substring("a=fingerprint:".length).split(" ");
+            fpAlgo = parts[0];
+            fingerprint = parts.slice(1).join(" ");
+          }
+          if (line.startsWith("a=candidate:")) {
+            const parts = line.substring("a=candidate:".length).split(" ");
+            if (parts.length >= 8) {
+              candidates.push({
+                foundation: parts[0],
+                component: parts[1],
+                protocol: parts[2],
+                priority: parts[3],
+                ip: parts[4],
+                port: parts[5],
+                type: parts[7],
+              });
+            }
+          }
+          if (line.startsWith("a=extmap:") && currentMedia) {
+            const match = line.match(/a=extmap:(\d+)\s+(.*)/);
+            if (match) {
+              const ext = {
+                entry: parseInt(match[1]),
+                extensionName: match[2].split(" ")[0],
+              };
+              if (currentMedia === "audio") audioExtensions.push(ext);
+              else videoExtensions.push(ext);
+            }
+          }
+          if (line.startsWith("a=rtpmap:") && currentMedia) {
+            const match = line.match(
+              /a=rtpmap:(\d+)\s+([^\/]+)\/(\d+)(?:\/(\d+))?/,
+            );
+            if (match) {
+              const codec = {
+                payloadType: parseInt(match[1]),
+                rtpMap: {
+                  encodingName: match[2],
+                  clockRate: parseInt(match[3]),
+                },
+                rtcpFeedbacks: [],
+              };
+              if (match[4]) codec.rtpMap.encodingParameters = match[4];
+              if (currentMedia === "audio") audioCodecs.push(codec);
+              else videoCodecs.push(codec);
+            }
+          }
+        }
+
+        // Gather fmtp and rtcp-fb for each codec
+        for (const line of lines) {
+          if (line.startsWith("a=fmtp:")) {
+            const match = line.match(/a=fmtp:(\d+)\s+(.*)/);
+            if (match) {
+              const pt = parseInt(match[1]);
+              const params = {};
+              match[2].split(";").forEach((p) => {
+                const [k, ...v] = p.split("=");
+                if (k.trim()) params[k.trim()] = v.join("=") || null;
+              });
+              const codec = [...audioCodecs, ...videoCodecs].find(
+                (c) => c.payloadType === pt,
+              );
+              if (codec && Object.keys(params).length)
+                codec.fmtp = { parameters: params };
+            }
+          }
+          if (line.startsWith("a=rtcp-fb:")) {
+            const match = line.match(/a=rtcp-fb:(\d+|\*)\s+(.*)/);
+            if (match && match[1] !== "*") {
+              const pt = parseInt(match[1]);
+              const parts = match[2].split(" ");
+              const fb = { type: parts[0] };
+              if (parts.length > 1) fb.parameter = parts.slice(1).join(" ");
+              const codec = [...audioCodecs, ...videoCodecs].find(
+                (c) => c.payloadType === pt,
+              );
+              if (codec) codec.rtcpFeedbacks.push(fb);
+            }
+          }
+        }
+
+        return {
+          iceParameters: { iceUfrag, icePwd, candidates },
+          dtlsParameters: {
+            fingerprints: [{ algorithm: fpAlgo || "sha-256", fingerprint }],
+            role: "client",
+          },
+          rtpCapabilities: {
+            send: {
+              audioCodecs: [],
+              videoCodecs: [],
+              audioExtensions: [],
+              videoExtensions: [],
+            },
+            recv: {
+              audioCodecs: [],
+              videoCodecs: [],
+              audioExtensions: [],
+              videoExtensions: [],
+            },
+            sendrecv: {
+              audioCodecs,
+              videoCodecs,
+              audioExtensions,
+              videoExtensions,
+            },
+          },
+          version: "2",
+        };
+      }
+
+      // Build remote answer SDP from server ORTC params (mirrors RemoteSDP in agora_ws.js)
+      function buildAnswerSdp(serverOrtc, localOffer) {
+        const ice = serverOrtc.iceParameters || {};
+        const dtls = serverOrtc.dtlsParameters || {};
+        const caps = serverOrtc.rtpCapabilities || {};
+        const sendrecv = caps.sendrecv || caps.send || {};
+        const candidates = ice.candidates || [];
+        const fingerprints = dtls.fingerprints || [];
+
+        // Parse local offer to know media order and extensions
+        const offerLines = localOffer.split("\n").map((l) => l.trim());
+        const mediaSections = [];
+        let currentSection = null;
+
+        for (const line of offerLines) {
+          if (line.startsWith("m=")) {
+            if (currentSection) mediaSections.push(currentSection);
+            currentSection = {
+              type: line.startsWith("m=audio") ? "audio" : "video",
+              lines: [line],
+              mid: null,
+              direction: "sendrecv",
+              extensions: [],
+            };
+          } else if (currentSection) {
+            currentSection.lines.push(line);
+            if (line.startsWith("a=mid:"))
+              currentSection.mid = line.split(":")[1];
+            if (line.startsWith("a=sendonly"))
+              currentSection.direction = "sendonly";
+            if (line.startsWith("a=recvonly"))
+              currentSection.direction = "recvonly";
+            if (line.startsWith("a=extmap:")) {
+              const match = line.match(/a=extmap:(\d+)\s+(.*)/);
+              if (match)
+                currentSection.extensions.push({
+                  id: match[1],
+                  uri: match[2].split(" ")[0],
+                });
+            }
+          }
+        }
+        if (currentSection) mediaSections.push(currentSection);
+
+        // Build BUNDLE mids
+        const mids = mediaSections.map((s) => s.mid || "0").join(" ");
+
+        // Fingerprint line
+        let fpLine =
+          "a=fingerprint:sha-256 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00";
+        if (fingerprints.length > 0) {
+          const fp = fingerprints[0];
+          const algo = fp.hashFunction || fp.algorithm || "sha-256";
+          fpLine = `a=fingerprint:${algo} ${fp.fingerprint}`;
+        }
+
+        // Candidate lines
+        const candLines = candidates.map((c) => {
+          const foundation = c.foundation || "candidate0";
+          const protocol = c.protocol || c.transport || "udp";
+          const priority = c.priority || 2103266323;
+          const ip = c.ip || c.address || "";
+          const port = c.port || 0;
+          const type = c.type || "host";
+          return `a=candidate:${foundation} 1 ${protocol} ${priority} ${ip} ${port} typ ${type}`;
+        });
+
+        // Select codecs for each media type from server capabilities
+        const serverAudioCodecs = sendrecv.audioCodecs || [];
+        const serverVideoCodecs = sendrecv.videoCodecs || [];
+        const serverAudioExts = sendrecv.audioExtensions || [];
+        const serverVideoExts = sendrecv.videoExtensions || [];
+
+        const sdpLines = [
+          "v=0",
+          "o=- 0 0 IN IP4 127.0.0.1",
+          "s=AgoraGateway",
+          "t=0 0",
+          `a=group:BUNDLE ${mids}`,
+          "a=ice-lite",
+          "a=extmap-allow-mixed",
+          "a=msid-semantic: WMS",
+        ];
+
+        for (const section of mediaSections) {
+          const isAudio = section.type === "audio";
+          const codecs = isAudio ? serverAudioCodecs : serverVideoCodecs;
+          const serverExts = isAudio ? serverAudioExts : serverVideoExts;
+
+          // Answer direction: complement of offer direction
+          let answerDir = "sendonly"; // if offer is recvonly, answer is sendonly
+          if (section.direction === "sendonly") answerDir = "recvonly";
+          if (section.direction === "sendrecv") answerDir = "sendrecv";
+          if (section.direction === "inactive") answerDir = "inactive";
+
+          const pts = codecs.map((c) => c.payloadType).join(" ");
+          sdpLines.push(`m=${section.type} 9 UDP/TLS/RTP/SAVPF ${pts || "0"}`);
+          sdpLines.push("c=IN IP4 127.0.0.1");
+          sdpLines.push("a=rtcp:9 IN IP4 0.0.0.0");
+          sdpLines.push(`a=ice-ufrag:${ice.iceUfrag || ""}`);
+          sdpLines.push(`a=ice-pwd:${ice.icePwd || ""}`);
+          sdpLines.push("a=ice-options:trickle");
+          sdpLines.push(fpLine);
+          sdpLines.push("a=setup:active"); // Agora gateway is passive (ice-lite), we are active
+
+          sdpLines.push(`a=mid:${section.mid || "0"}`);
+
+          // Add candidates
+          candLines.forEach((cl) => sdpLines.push(cl));
+
+          // Extensions: use offer's extension IDs for matching URIs
+          const offerExtMap = {};
+          section.extensions.forEach((e) => {
+            offerExtMap[e.uri] = e.id;
+          });
+
+          for (const ext of serverExts) {
+            const name = ext.extensionName || ext.uri;
+            if (!name) continue;
+            if (offerExtMap[name]) {
+              sdpLines.push(`a=extmap:${offerExtMap[name]} ${name}`);
+            }
+          }
+
+          sdpLines.push(`a=${answerDir}`);
+          sdpLines.push("a=rtcp-mux");
+          sdpLines.push("a=rtcp-rsize");
+
+          // Codec lines
+          for (const codec of codecs) {
+            const pt = codec.payloadType;
+            const rm = codec.rtpMap || {};
+            const enc = rm.encodingName || "";
+            const cr = rm.clockRate || 90000;
+            const ep = rm.encodingParameters;
+            sdpLines.push(
+              ep
+                ? `a=rtpmap:${pt} ${enc}/${cr}/${ep}`
+                : `a=rtpmap:${pt} ${enc}/${cr}`,
+            );
+
+            // RTCP feedback
+            for (const fb of codec.rtcpFeedbacks || []) {
+              const p = fb.parameter ? ` ${fb.parameter}` : "";
+              sdpLines.push(`a=rtcp-fb:${pt} ${fb.type}${p}`);
+            }
+
+            // fmtp
+            const fmtp = codec.fmtp || {};
+            const params = fmtp.parameters || {};
+            if (Object.keys(params).length) {
+              const paramStr = Object.entries(params)
+                .map(([k, v]) =>
+                  v !== null && v !== undefined ? `${k}=${v}` : k,
+                )
+                .join(";");
+              sdpLines.push(`a=fmtp:${pt} ${paramStr}`);
+            }
+          }
+        }
+
+        return sdpLines.join("\r\n") + "\r\n";
+      }
+
+      // Build answer SDP with receive m-line for subscription (mirrors RemoteSDP.receive)
+      function buildAnswerSdpWithSubscription(
+        currentAnswerSdp,
+        ssrcId,
+        rtxSsrcId,
+        subscriptionCname,
+        serverOrtc,
+      ) {
+        // Add a new video m-line with the received SSRC for the subscribed stream
+        const ice = serverOrtc.iceParameters || {};
+        const dtls = serverOrtc.dtlsParameters || {};
+        const fingerprints = dtls.fingerprints || [];
+        const candidates = ice.candidates || [];
+        const caps = serverOrtc.rtpCapabilities || {};
+        const sendrecv = caps.sendrecv || caps.send || {};
+        const serverVideoCodecs = sendrecv.videoCodecs || [];
+
+        let fpLine =
+          "a=fingerprint:sha-256 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00";
+        if (fingerprints.length > 0) {
+          const fp = fingerprints[0];
+          fpLine = `a=fingerprint:${fp.hashFunction || fp.algorithm || "sha-256"} ${fp.fingerprint}`;
+        }
+
+        const candLines = candidates.map((c) => {
+          const foundation = c.foundation || "candidate0";
+          const protocol = c.protocol || c.transport || "udp";
+          const priority = c.priority || 2103266323;
+          return `a=candidate:${foundation} 1 ${protocol} ${priority} ${c.ip || ""} ${c.port || 0} typ ${c.type || "host"}`;
+        });
+
+        // Count existing m-lines to get next mid
+        const existingMids = (currentAnswerSdp.match(/a=mid:\d+/g) || [])
+          .length;
+        const newMid = existingMids;
+
+        // Update BUNDLE group
+        const lines = currentAnswerSdp.split("\r\n");
+        const updatedLines = [];
+        for (const line of lines) {
+          if (line.startsWith("a=group:BUNDLE")) {
+            updatedLines.push(line + " " + newMid);
+          } else {
+            updatedLines.push(line);
+          }
+        }
+
+        // Remove trailing empty line to append new m-section
+        while (
+          updatedLines.length &&
+          updatedLines[updatedLines.length - 1] === ""
+        )
+          updatedLines.pop();
+
+        const pts = serverVideoCodecs.map((c) => c.payloadType).join(" ");
+        updatedLines.push(`m=video 9 UDP/TLS/RTP/SAVPF ${pts || "0"}`);
+        updatedLines.push("c=IN IP4 127.0.0.1");
+        updatedLines.push("a=rtcp:9 IN IP4 0.0.0.0");
+        updatedLines.push(`a=ice-ufrag:${ice.iceUfrag || ""}`);
+        updatedLines.push(`a=ice-pwd:${ice.icePwd || ""}`);
+        updatedLines.push("a=ice-options:trickle");
+        updatedLines.push(fpLine);
+        updatedLines.push("a=setup:active");
+        updatedLines.push(`a=mid:${newMid}`);
+        candLines.forEach((cl) => updatedLines.push(cl));
+        updatedLines.push("a=recvonly");
+        updatedLines.push("a=rtcp-mux");
+        updatedLines.push("a=rtcp-rsize");
+
+        // Add codec lines
+        for (const codec of serverVideoCodecs) {
+          const pt = codec.payloadType;
+          const rm = codec.rtpMap || {};
+          const enc = rm.encodingName || "";
+          const cr = rm.clockRate || 90000;
+          const ep = rm.encodingParameters;
+          updatedLines.push(
+            ep
+              ? `a=rtpmap:${pt} ${enc}/${cr}/${ep}`
+              : `a=rtpmap:${pt} ${enc}/${cr}`,
+          );
+          for (const fb of codec.rtcpFeedbacks || []) {
+            const p = fb.parameter ? ` ${fb.parameter}` : "";
+            updatedLines.push(`a=rtcp-fb:${pt} ${fb.type}${p}`);
+          }
+          const fmtp = codec.fmtp || {};
+          const params = fmtp.parameters || {};
+          if (Object.keys(params).length) {
+            const paramStr = Object.entries(params)
+              .map(([k, v]) =>
+                v !== null && v !== undefined ? `${k}=${v}` : k,
+              )
+              .join(";");
+            updatedLines.push(`a=fmtp:${pt} ${paramStr}`);
+          }
+        }
+
+        // Add SSRC attributes for the stream
+        if (ssrcId) {
+          const cn = subscriptionCname || "agora";
+          updatedLines.push(`a=ssrc:${ssrcId} cname:${cn}`);
+          updatedLines.push(`a=ssrc:${ssrcId} msid:${cn} video-${ssrcId}`);
+          updatedLines.push(`a=ssrc:${ssrcId} mslabel:${cn}`);
+          updatedLines.push(`a=ssrc:${ssrcId} label:video-${ssrcId}`);
+
+          if (rtxSsrcId) {
+            updatedLines.push(`a=ssrc:${rtxSsrcId} cname:${cn}`);
+            updatedLines.push(`a=ssrc-group:FID ${ssrcId} ${rtxSsrcId}`);
+          }
+        }
+
+        updatedLines.push("");
+        return updatedLines.join("\r\n");
+      }
+
+      // ---- Step 1: Agora API Discovery ----
+      async function agoraApiDiscovery(appId, channelName, token, uid) {
+        log("API", "Starting Agora API discovery...", "log-api");
+
+        const sid = Math.random().toString(36).substring(2, 18).toUpperCase();
+        const clientTs = Date.now();
+        const opid = Math.floor(Math.random() * 1e12);
+
+        const payload = {
+          appid: appId,
+          client_ts: clientTs,
+          opid,
+          sid,
+          request_bodies: [
+            {
+              uri: 22,
+              buffer: {
+                cname: channelName,
+                detail: { 11: "CN,GLOBAL", 17: "2", 22: "CN,GLOBAL" },
+                key: token,
+                service_ids: [11, 26],
+                uid: uid,
+              },
+            },
+          ],
+        };
+
+        log("API", `Request payload: sid=${sid}, uid=${uid}`, "log-api");
+
+        for (const apiUrl of AGORA_API_URLS) {
+          try {
+            log("API", `Trying ${apiUrl}...`, "log-api");
+
+            // Build multipart form body
+            const boundary =
+              "----AgoraFormBoundary" + Math.random().toString(36).substring(2);
+            let body = `--${boundary}\r\n`;
+            body += `Content-Disposition: form-data; name="request"\r\n\r\n`;
+            body += JSON.stringify(payload);
+            body += `\r\n--${boundary}--\r\n`;
+
+            const resp = await fetch(apiUrl, {
+              method: "POST",
+              headers: {
+                "Content-Type": `multipart/form-data; boundary=${boundary}`,
+              },
+              body,
+            });
+
+            if (!resp.ok) {
+              log("API", `HTTP ${resp.status} from ${apiUrl}`, "log-err");
+              continue;
+            }
+
+            const data = await resp.json();
+            log("API", `Response received, parsing...`, "log-api");
+            log(
+              "API",
+              `Response bodies: ${data.response_body?.length || 0}`,
+              "log-api",
+            );
+
+            // Parse response
+            const result = {
+              gateways: [],
+              turnServers: [],
+              uid: 0,
+              responses: {},
+            };
+
+            for (const rb of data.response_body || []) {
+              const buffer = rb.buffer || {};
+              const code = buffer.code;
+              if (code !== 0) {
+                log("API", `API error code: ${code}`, "log-err");
+                continue;
+              }
+
+              const flag = buffer.flag || 0;
+              const edges = buffer.edges_services || [];
+              const detail = {
+                ...(data.detail || {}),
+                ...(buffer.detail || {}),
+              };
+              const ticket = buffer.cert || "";
+              const respUid = buffer.uid || 0;
+              const cid = buffer.cid || 0;
+              const cname = buffer.cname || "";
+
+              log(
+                "API",
+                `Flag=${flag}, uid=${respUid}, edges=${edges.length}, cid=${cid}`,
+                "log-api",
+              );
+
+              // Parse fingerprints from detail[19]
+              const fingerprints = [];
+              if (detail["19"]) {
+                detail["19"]
+                  .split(";")
+                  .filter((f) => f.trim())
+                  .forEach((f) => fingerprints.push(f.trim()));
+              }
+
+              // Parse credentials
+              let username = detail["8"] || "";
+              let credentials = detail["4"] || "";
+              if (!username && respUid) username = String(respUid);
+              if (!credentials && respUid)
+                credentials = await derivePassword(respUid);
+
+              const addresses = edges.map((e, i) => ({
+                ip: e.ip,
+                port: e.port,
+                username,
+                credentials,
+                ticket,
+                fingerprint: fingerprints[i] || null,
+              }));
+
+              result.responses[flag] = {
+                code,
+                flag,
+                uid: respUid,
+                cid,
+                cname,
+                ticket,
+                detail,
+                addresses,
+                fingerprints,
+              };
+
+              if (flag === 4096) {
+                result.gateways = addresses;
+                result.uid = respUid;
+                result.cid = cid;
+                result.cname = cname;
+                result.ticket = ticket;
+                result.detail = detail;
+                result.server_ts = data.enter_ts || Date.now();
+                result.opid = data.opid || opid;
+
+                addresses.forEach((a) =>
+                  log("API", `Gateway: ${a.ip}:${a.port}`, "log-api"),
+                );
+              }
+              if (flag === 4194310 || flag === 4194304 || flag === 1048576) {
+                result.turnServers.push(...addresses);
+                addresses.forEach((a) =>
+                  log(
+                    "API",
+                    `TURN: ${a.ip}:${a.port} (flag=${flag})`,
+                    "log-api",
+                  ),
+                );
+              }
+            }
+
+            if (result.gateways.length === 0) {
+              log("API", "No gateway addresses found!", "log-err");
+              continue;
+            }
+
+            log(
+              "API",
+              `Discovery complete: ${result.gateways.length} gateways, ${result.turnServers.length} TURN servers, assigned uid=${result.uid}`,
+              "log-api",
+            );
+            return result;
+          } catch (err) {
+            log("API", `Error: ${err.message}`, "log-err");
+            continue;
+          }
+        }
+
+        throw new Error("All Agora API servers failed");
+      }
+
+      // ---- Step 2: Create PeerConnection + initial offer ----
+      async function setupPeerConnection(apiResult) {
+        log("PC", "Creating RTCPeerConnection...", "log-pc");
+
+        // Build ICE servers from TURN addresses (mirrors resolvePCConfiguration)
+        const iceServers = [];
+        for (const turn of apiResult.turnServers) {
+          // UDP
+          iceServers.push({
+            urls: `turn:${turn.ip}:${turn.port}?transport=udp`,
+            username: turn.username || "",
+            credential: turn.credentials || "",
+          });
+          // TCP (port + 90, matching Agora convention)
+          iceServers.push({
+            urls: `turn:${turn.ip}:${parseInt(turn.port) + 90}?transport=tcp`,
+            username: turn.username || "",
+            credential: turn.credentials || "",
+          });
+        }
+
+        // Also add gateway as STUN candidate
+        for (const gw of apiResult.gateways) {
+          iceServers.push({ urls: `stun:${gw.ip}:${gw.port}` });
+        }
+
+        log("PC", `ICE servers configured: ${iceServers.length}`, "log-pc");
+        iceServers.forEach((s) =>
+          log(
+            "PC",
+            `  ${Array.isArray(s.urls) ? s.urls[0] : s.urls}`,
+            "log-pc",
+          ),
+        );
+
+        const config = {
+          iceServers,
+          iceTransportPolicy: "all",
+          bundlePolicy: "max-bundle",
+          rtcpMuxPolicy: "require",
+        };
+
+        pc = new RTCPeerConnection(config);
+
+        // Bind state events
+        pc.oniceconnectionstatechange = () => {
+          const state = pc.iceConnectionState;
+          log("PC", `ICE connection state: ${state}`, "log-pc");
+          setStatus("stIce", state);
+        };
+        pc.onconnectionstatechange = () => {
+          const state = pc.connectionState;
+          log("PC", `Connection state: ${state}`, "log-pc");
+          setStatus("stConn", state);
+        };
+        pc.onsignalingstatechange = () => {
+          log("PC", `Signaling state: ${pc.signalingState}`, "log-pc");
+          setStatus("stSignal", pc.signalingState);
+        };
+        pc.onicegatheringstatechange = () => {
+          log("PC", `ICE gathering state: ${pc.iceGatheringState}`, "log-pc");
+        };
+        pc.onicecandidate = (ev) => {
+          if (ev.candidate) {
+            log(
+              "PC",
+              `Local ICE candidate: ${ev.candidate.candidate.substring(0, 80)}...`,
+              "log-pc",
+            );
+          } else {
+            log("PC", "ICE gathering complete (null candidate)", "log-pc");
+          }
+        };
+        pc.ontrack = (ev) => {
+          log(
+            "VIDEO",
+            `Track received! kind=${ev.track.kind}, id=${ev.track.id}`,
+            "log-video",
+          );
+          if (ev.track.kind === "video") {
+            const video = document.getElementById("remoteVideo");
+            video.srcObject = ev.streams[0] || new MediaStream([ev.track]);
+            document.getElementById("videoOverlay").style.display = "none";
+            log("VIDEO", "Video stream attached to player", "log-video");
+          }
+        };
+
+        // Monitor DTLS state via SCTP/DTLS transport (Chrome-specific)
+        const dtlsInterval = setInterval(() => {
+          if (!pc) {
+            clearInterval(dtlsInterval);
+            return;
+          }
+          try {
+            const senders = pc.getSenders();
+            const receivers = pc.getReceivers();
+            const transports = [...senders, ...receivers]
+              .map((s) => s.transport)
+              .filter(Boolean);
+            if (transports.length > 0 && transports[0].iceTransport) {
+              const dtlsState = transports[0].state;
+              const iceState = transports[0].iceTransport.state;
+              setStatus("stDtls", dtlsState || "—");
+              if (dtlsState === "connected") {
+                log("DTLS", "DTLS transport connected!", "log-dtls");
+                clearInterval(dtlsInterval);
+              } else if (dtlsState === "failed") {
+                log("DTLS", "DTLS transport FAILED", "log-err");
+                clearInterval(dtlsInterval);
+              }
+            }
+          } catch (e) {
+            /* transport not ready yet */
+          }
+        }, 500);
+
+        // Add transceivers for receiving (mirrors establish())
+        pc.addTransceiver("video", { direction: "recvonly" });
+        pc.addTransceiver("audio", { direction: "recvonly" });
+        log("PC", "Added video + audio transceivers (recvonly)", "log-pc");
+
+        // Create initial offer
+        const offer = await pc.createOffer();
+        initialOffer = offer;
+        log(
+          "PC",
+          `Initial offer created (${offer.sdp.length} bytes)`,
+          "log-pc",
+        );
+        document.getElementById("offerSdp").textContent = offer.sdp;
+
+        // Extract ORTC from offer
+        const ortc = parseOfferToOrtc(offer.sdp);
+        localCapabilities = ortc;
+        log(
+          "PC",
+          `ORTC extracted: ${ortc.rtpCapabilities.sendrecv.audioCodecs.length} audio codecs, ${ortc.rtpCapabilities.sendrecv.videoCodecs.length} video codecs`,
+          "log-pc",
+        );
+
+        return ortc;
+      }
+
+      // ---- Step 3: WebSocket connect + join ----
+      async function connectWebSocket(apiResult, ortc) {
+        const gw = apiResult.gateways[0];
+        const ipDashed = gw.ip.replace(/\./g, "-");
+        const wsUrl = `wss://${ipDashed}.edge.agora.io:${gw.port}`;
+
+        log("WS", `Connecting to ${wsUrl}...`, "log-ws");
+
+        return new Promise((resolve, reject) => {
+          ws = new WebSocket(wsUrl);
+
+          const timeout = setTimeout(() => {
+            ws.close();
+            reject(new Error("WebSocket connection timeout"));
+          }, 10000);
+
+          ws.onopen = () => {
+            clearTimeout(timeout);
+            log("WS", `Connected to ${wsUrl}`, "log-ws");
+
+            // Build join_v3 message (mirrors getJoinMessage)
+            const appId = document.getElementById("appId").value.trim();
+            const channelName = document
+              .getElementById("channelName")
+              .value.trim();
+            const token = document.getElementById("token").value.trim();
+            const sessionId = crypto
+              .randomUUID()
+              .replace(/-/g, "")
+              .toUpperCase();
+
+            // Build ap_response from discovery response (mirrors to_ap_response)
+            const gwResp = apiResult.responses[4096] || {};
+            const apResponse = {
+              code: gwResp.code || 0,
+              server_ts: apiResult.server_ts || Date.now(),
+              uid: apiResult.uid,
+              cid: gwResp.cid || 0,
+              cname: gwResp.cname || channelName,
+              detail: gwResp.detail || {},
+              flag: 4096,
+              opid: apiResult.opid || 0,
+              cert: gwResp.ticket || "",
+              ticket: gwResp.ticket || "",
+            };
+
+            const joinMsg = {
+              _id: Math.random().toString(36).substring(2, 8),
+              _type: "join_v3",
+              _message: {
+                p2p_id: 1,
+                session_id: sessionId,
+                app_id: appId,
+                channel_key: token,
+                channel_name: channelName,
+                sdk_version: "4.24.0",
+                browser: navigator.userAgent,
+                process_id: "process-" + crypto.randomUUID(),
+                mode: "live",
+                codec: "vp8",
+                role: "audience",
+                has_changed_gateway: false,
+                ap_response: apResponse,
+                extend: "",
+                details: {},
+                features: { rejoin: true },
+                attributes: {
+                  userAttributes: {
+                    enableAudioMetadata: false,
+                    enableAudioPts: false,
+                    enablePublishedUserList: true,
+                    maxSubscription: 50,
+                    enableUserLicenseCheck: true,
+                    enableRTX: true,
+                    enableInstantVideo: false,
+                    enableDataStream2: false,
+                    enableAutFeedback: true,
+                    enableUserAutoRebalanceCheck: true,
+                    enableXR: true,
+                    enableLossbasedBwe: true,
+                    enableAutCC: true,
+                    enablePreallocPC: false,
+                    enablePubTWCC: false,
+                    enableSubTWCC: true,
+                    enablePubRTX: true,
+                    enableSubRTX: true,
+                  },
+                },
+                join_ts: Date.now(),
+                ortc,
+              },
+            };
+
+            log(
+              "WS",
+              `Sending join_v3 (session=${sessionId.substring(0, 8)}...)`,
+              "log-ws",
+            );
+            ws.send(JSON.stringify(joinMsg));
+          };
+
+          ws.onmessage = async (event) => {
+            try {
+              const msg = JSON.parse(event.data);
+              const type = msg._type || "";
+              const result = msg._result || "";
+              const message = msg._message || {};
+
+              log("WS", `← ${type || result} (id=${msg._id || "?"})`, "log-ws");
+
+              // Join success
+              if (result === "success" && message.ortc) {
+                log("WS", "Join successful!", "log-ws");
+                assignedUid = message.uid || apiResult.uid;
+                joinedChannel = message.cname || "";
+
+                // Store rejoin token for reconnection (mirrors agoraRTC_N.js)
+                rejoinToken = message.rejoin_token || null;
+                joinCid = message.cid || 0;
+                joinVid = Number(message.vid || 0);
+                if (rejoinToken) {
+                  log(
+                    "WS",
+                    `Stored rejoin_token: ${rejoinToken.substring(0, 20)}...`,
+                    "log-ws",
+                  );
+                }
+
+                log(
+                  "WS",
+                  `Assigned UID: ${assignedUid}, channel: ${joinedChannel}`,
+                  "log-ws",
+                );
+
+                const serverOrtc = message.ortc;
+                document.getElementById("ortcParams").textContent =
+                  JSON.stringify(serverOrtc, null, 2);
+                log(
+                  "WS",
+                  `Server ORTC: ICE ufrag=${serverOrtc.iceParameters?.iceUfrag}, candidates=${serverOrtc.iceParameters?.candidates?.length || 0}`,
+                  "log-ws",
+                );
+                log(
+                  "WS",
+                  `Server ORTC: DTLS fingerprints=${serverOrtc.dtlsParameters?.fingerprints?.length || 0}`,
+                  "log-ws",
+                );
+
+                // Inject fingerprints from gateway addresses
+                if (apiResult.gateways.length > 0) {
+                  const dtlsParams = (serverOrtc.dtlsParameters =
+                    serverOrtc.dtlsParameters || {});
+                  const fps = (dtlsParams.fingerprints =
+                    dtlsParams.fingerprints || []);
+                  const seen = new Set(
+                    fps.map((f) => (f.fingerprint || "").toLowerCase()),
+                  );
+                  for (const gw of apiResult.gateways) {
+                    if (
+                      gw.fingerprint &&
+                      !seen.has(gw.fingerprint.toLowerCase())
+                    ) {
+                      let algo = "sha-256",
+                        fpVal = gw.fingerprint;
+                      if (fpVal.includes(" ")) {
+                        const p = fpVal.split(" ");
+                        algo = p[0];
+                        fpVal = p[1];
+                      }
+                      fps.push({
+                        hashFunction: algo,
+                        algorithm: algo,
+                        fingerprint: fpVal,
+                      });
+                      seen.add(fpVal.toLowerCase());
+                      log(
+                        "WS",
+                        `Injected gateway fingerprint: ${fpVal.substring(0, 20)}...`,
+                        "log-ws",
+                      );
+                    }
+                  }
+                }
+
+                // Send set_client_role
+                const roleMsg = {
+                  _id: Math.random().toString(36).substring(2, 8),
+                  _type: "set_client_role",
+                  _message: {
+                    role: "audience",
+                    level: 1,
+                    client_ts: Date.now(),
+                  },
+                };
+                ws.send(JSON.stringify(roleMsg));
+                log("WS", "Sent set_client_role (audience)", "log-ws");
+
+                // ---- Step 4: Set up PeerConnection with server ORTC ----
+                await setupConnection(serverOrtc);
+
+                // Start ping-pong keepalive (every 3s, matching Agora SDK)
+                if (pingInterval) clearInterval(pingInterval);
+                pingInterval = setInterval(() => {
+                  if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(
+                      JSON.stringify({
+                        _id: Math.random().toString(36).substring(2, 8),
+                        _type: "ping",
+                      }),
+                    );
+                  }
+                }, 3000);
+                log(
+                  "WS",
+                  "Started ping-pong keepalive (3s interval)",
+                  "log-ws",
+                );
+
+                resolve(serverOrtc);
+              }
+
+              // User online
+              if (type === "on_user_online") {
+                log("WS", `User online: uid=${message.uid}`, "log-ws");
+              }
+
+              // Video stream added
+              if (type === "on_add_video_stream") {
+                const streamUid = message.uid;
+                const ssrcId = message.ssrcId;
+                const rtxSsrcId = message.rtxSsrcId;
+                const streamCname = message.cname;
+                log(
+                  "SUB",
+                  `Video stream added: uid=${streamUid}, ssrcId=${ssrcId}, rtxSsrcId=${rtxSsrcId}`,
+                  "log-sub",
+                );
+
+                // Auto-subscribe
+                await subscribeToStream(
+                  streamUid,
+                  ssrcId,
+                  rtxSsrcId,
+                  streamCname,
+                );
+              }
+
+              // Audio stream added
+              if (type === "on_add_audio_stream") {
+                log(
+                  "SUB",
+                  `Audio stream added: uid=${message.uid}, ssrcId=${message.ssrcId}`,
+                  "log-sub",
+                );
+              }
+
+              // RTP capability change
+              if (type === "on_rtp_capability_change") {
+                log(
+                  "WS",
+                  `RTP capability change: video_codec=${JSON.stringify(message.video_codec)}`,
+                  "log-ws",
+                );
+              }
+
+              // Subscribe response
+              if (type === "on_subscribe_success") {
+                log(
+                  "SUB",
+                  `Subscribe success for stream ${message.stream_id}`,
+                  "log-sub",
+                );
+              }
+
+              // Mute/unmute
+              if (type === "on_mute" || type === "on_unmute") {
+                log(
+                  "WS",
+                  `${type}: uid=${message.uid}, ${message.audio ? "audio" : ""}${message.video ? "video" : ""}`,
+                  "log-ws",
+                );
+              }
+
+              // P2P lost
+              if (type === "on_p2p_lost") {
+                log(
+                  "WS",
+                  `P2P lost: ${message.error_str || "unknown"}`,
+                  "log-err",
+                );
+              }
+
+              // Token privilege will expire — send renew_token
+              if (type === "on_token_privilege_will_expire") {
+                log("TOKEN", "⚠️ Token will expire soon!", "log-ws");
+                const currentToken = document
+                  .getElementById("token")
+                  .value.trim();
+                if (ws && ws.readyState === WebSocket.OPEN && currentToken) {
+                  ws.send(
+                    JSON.stringify({
+                      _id: Math.random().toString(36).substring(2, 8),
+                      _type: "renew_token",
+                      _message: { token: currentToken },
+                    }),
+                  );
+                  log("TOKEN", "Sent renew_token with current token", "log-ws");
+                }
+              }
+
+              // Token privilege did expire
+              if (type === "on_token_privilege_did_expire") {
+                log(
+                  "TOKEN",
+                  "❌ Token expired! Update token field and reconnect.",
+                  "log-err",
+                );
+              }
+
+              // Ping response (no-op, just confirms keepalive)
+              if (result === "success" && !message.ortc && msg._id) {
+                // Ping-pong response, connection alive
+              }
+
+              // Error
+              if (type === "error") {
+                log("WS", `Error: ${JSON.stringify(message)}`, "log-err");
+              }
+            } catch (err) {
+              log("WS", `Message parse error: ${err.message}`, "log-err");
+            }
+          };
+
+          ws.onerror = (ev) => {
+            clearTimeout(timeout);
+            log("WS", `WebSocket error`, "log-err");
+            reject(new Error("WebSocket error"));
+          };
+
+          ws.onclose = (ev) => {
+            log(
+              "WS",
+              `WebSocket closed: code=${ev.code}, reason=${ev.reason || "none"}`,
+              "log-ws",
+            );
+          };
+        });
+      }
+
+      // ---- Step 4: Set SDP on PeerConnection (mirrors P2PConnection.connect) ----
+      async function setupConnection(serverOrtc) {
+        log("PC", "Setting up SDP exchange...", "log-pc");
+
+        // Build answer SDP from server ORTC
+        const answerSdp = buildAnswerSdp(serverOrtc, initialOffer.sdp);
+        log("PC", `Answer SDP built (${answerSdp.length} bytes)`, "log-pc");
+        document.getElementById("answerSdp").textContent = answerSdp;
+
+        // Store for later use in subscription
+        remoteSDP = { sdp: answerSdp, serverOrtc };
+
+        // Set local description (offer)
+        await pc.setLocalDescription({ type: "offer", sdp: initialOffer.sdp });
+        log("PC", "Set local description (offer)", "log-pc");
+
+        // Set remote description (answer from server)
+        await pc.setRemoteDescription({ type: "answer", sdp: answerSdp });
+        log("PC", "Set remote description (answer)", "log-pc");
+
+        log(
+          "PC",
+          `ICE state: ${pc.iceConnectionState}, Connection: ${pc.connectionState}`,
+          "log-pc",
+        );
+      }
+
+      // ---- Step 5: Subscribe to video stream ----
+      async function subscribeToStream(
+        streamUid,
+        ssrcId,
+        rtxSsrcId,
+        streamCname,
+      ) {
+        log("SUB", `Subscribing to stream uid=${streamUid}...`, "log-sub");
+
+        // Send subscribe message — the server starts sending media over
+        // the already-negotiated DTLS/SRTP connection. No SDP renegotiation needed;
+        // the initial offer already has a recvonly video transceiver.
+        // pc.ontrack fires when media arrives.
+        const subMsg = {
+          _id: Math.random().toString(36).substring(2, 8),
+          _type: "subscribe",
+          _message: {
+            stream_id: streamUid,
+            stream_type: "video",
+            mode: "live",
+            codec: "vp8",
+            p2p_id: 1,
+            twcc: true,
+            rtx: true,
+            extend: "",
+            ssrcId: ssrcId,
+          },
+        };
+
+        ws.send(JSON.stringify(subMsg));
+        log(
+          "SUB",
+          `Sent subscribe for uid=${streamUid}, ssrcId=${ssrcId}. Waiting for track via pc.ontrack...`,
+          "log-sub",
+        );
+      }
+
+      // ---- Main flow ----
+      async function startConnect() {
+        const appId = document.getElementById("appId").value.trim();
+        const channelName = document.getElementById("channelName").value.trim();
+        const token = document.getElementById("token").value.trim();
+        const uid = parseInt(document.getElementById("uid").value) || 0;
+
+        if (!appId || !channelName || !token) {
+          log(
+            "ERR",
+            "Please fill in App ID, Channel Name, and Token",
+            "log-err",
+          );
+          return;
+        }
+
+        document.getElementById("btnConnect").disabled = true;
+        document.getElementById("btnConnectSdk").disabled = true;
+        document.getElementById("btnDisconnect").disabled = false;
+        document.getElementById("log").innerHTML = "";
+
+        try {
+          // Step 1: API Discovery
+          const apiResult = await agoraApiDiscovery(
+            appId,
+            channelName,
+            token,
+            uid,
+          );
+
+          // Step 2: Create PeerConnection + initial offer
+          const ortc = await setupPeerConnection(apiResult);
+
+          // Step 3: WebSocket connect + join (handles steps 4+5 via callbacks)
+          await connectWebSocket(apiResult, ortc);
+
+          log(
+            "INFO",
+            "✅ Connection flow complete — waiting for ICE/DTLS...",
+            "log-info",
+          );
+        } catch (err) {
+          log("ERR", `Connection failed: ${err.message}`, "log-err");
+          console.error(err);
+          document.getElementById("btnConnect").disabled = false;
+        }
+      }
+
+      // ============================================================
+      // SDK-based connection (mirrors agora-client.js)
+      // Uses AgoraRTC.createClient — SDK handles all WebRTC internally
+      // ============================================================
+      async function startConnectSdk() {
+        const appId = document.getElementById("appId").value.trim();
+        const channelName = document.getElementById("channelName").value.trim();
+        const token = document.getElementById("token").value.trim() || null;
+        const uid = parseInt(document.getElementById("uid").value) || 0;
+
+        if (!appId || !channelName) {
+          log("ERR", "App ID and Channel Name are required", "log-err");
+          return;
+        }
+
+        document.getElementById("btnConnect").disabled = true;
+        document.getElementById("btnConnectSdk").disabled = true;
+        document.getElementById("btnDisconnect").disabled = false;
+        sdkMode = true;
+
+        try {
+          // Load Agora SDK if not already loaded
+          if (!window.AgoraRTC) {
+            log("SDK", "Loading Agora RTC SDK...", "log-api");
+            await new Promise((resolve, reject) => {
+              const script = document.createElement("script");
+              script.src =
+                "https://download.agora.io/sdk/release/AgoraRTC_N.js";
+              script.onload = resolve;
+              script.onerror = () =>
+                reject(new Error("Failed to load Agora SDK"));
+              document.head.appendChild(script);
+            });
+            log("SDK", "Agora RTC SDK loaded", "log-api");
+          }
+
+          // Create client (same config as agora-client.js)
+          const client = window.AgoraRTC.createClient({
+            mode: "live",
+            codec: "vp8",
+          });
+          agoraClient = client;
+
+          // Handle remote user publishing a track
+          client.on("user-published", async (user, mediaType) => {
+            log("SDK", `User ${user.uid} published ${mediaType}`, "log-video");
+            await client.subscribe(user, mediaType);
+            log("SDK", `Subscribed to ${user.uid} ${mediaType}`, "log-video");
+
+            if (mediaType === "video") {
+              const container = document.getElementById("sdkVideoContainer");
+              container.style.display = "block";
+              container.innerHTML = ""; // Clear previous
+              document.getElementById("videoOverlay").style.display = "none";
+              document.getElementById("remoteVideo").style.display = "none";
+
+              // Create a div for the video and let SDK render into it
+              const playerDiv = document.createElement("div");
+              playerDiv.id = `player-${user.uid}`;
+              playerDiv.style.width = "100%";
+              playerDiv.style.height = "100%";
+              container.appendChild(playerDiv);
+
+              user.videoTrack.play(playerDiv);
+              log("SDK", `Video playing for uid=${user.uid}`, "log-video");
+            }
+            if (mediaType === "audio") {
+              user.audioTrack.play();
+              log("SDK", `Audio playing for uid=${user.uid}`, "log-video");
+            }
+          });
+
+          client.on("user-unpublished", (user, mediaType) => {
+            log(
+              "SDK",
+              `User ${user.uid} unpublished ${mediaType}`,
+              "log-video",
+            );
+            if (mediaType === "video") {
+              const playerDiv = document.getElementById(`player-${user.uid}`);
+              if (playerDiv) playerDiv.remove();
+            }
+          });
+
+          client.on("user-joined", (user) => {
+            log("SDK", `User ${user.uid} joined`, "log-ws");
+          });
+
+          client.on("user-left", (user) => {
+            log("SDK", `User ${user.uid} left`, "log-ws");
+          });
+
+          client.on("connection-state-change", (cur, prev) => {
+            log("SDK", `Connection: ${prev} → ${cur}`, "log-pc");
+            setStatus("stConn", cur);
+            if (cur === "CONNECTED") {
+              setStatus("stIce", "connected");
+              setStatus("stSignal", "stable");
+            }
+          });
+
+          client.on("token-privilege-will-expire", () => {
+            log("SDK", "⚠️ Token will expire soon!", "log-ws");
+          });
+
+          client.on("token-privilege-did-expire", () => {
+            log("SDK", "❌ Token expired!", "log-err");
+          });
+
+          // Set role to host (matching agora-client.js)
+          client.setClientRole("host");
+
+          log(
+            "SDK",
+            `Joining: appId=${appId}, channel=${channelName}, uid=${uid}`,
+            "log-api",
+          );
+          const assignedUid = await client.join(
+            appId,
+            channelName,
+            token,
+            uid || null,
+          );
+          log("SDK", `Joined! Assigned UID: ${assignedUid}`, "log-ws");
+          setStatus("stConn", "CONNECTED");
+        } catch (err) {
+          log("SDK", `Connection failed: ${err.message}`, "log-err");
+          console.error(err);
+          sdkMode = false;
+          document.getElementById("btnConnect").disabled = false;
+          document.getElementById("btnConnectSdk").disabled = false;
+          document.getElementById("btnDisconnect").disabled = true;
+        }
+      }
+
+      function doDisconnect() {
+        log("INFO", "Disconnecting...", "log-info");
+
+        // SDK mode cleanup
+        if (sdkMode && agoraClient) {
+          agoraClient.leave().catch((e) => console.warn("SDK leave error:", e));
+          agoraClient = null;
+          sdkMode = false;
+          const container = document.getElementById("sdkVideoContainer");
+          container.innerHTML = "";
+          container.style.display = "none";
+          document.getElementById("remoteVideo").style.display = "";
+        }
+
+        // Stop ping-pong keepalive
+        if (pingInterval) {
+          clearInterval(pingInterval);
+          pingInterval = null;
+        }
+
+        if (ws) {
+          try {
+            ws.close();
+          } catch (e) {}
+          ws = null;
+        }
+        if (pc) {
+          try {
+            pc.close();
+          } catch (e) {}
+          pc = null;
+        }
+
+        initialOffer = null;
+        localCapabilities = null;
+        remoteSDP = null;
+        rejoinToken = null;
+        joinSessionId = null;
+        joinCid = null;
+        joinVid = null;
+
+        setStatus("stIce", "—");
+        setStatus("stDtls", "—");
+        setStatus("stSignal", "—");
+        setStatus("stConn", "—");
+
+        document.getElementById("videoOverlay").style.display = "";
+        document.getElementById("remoteVideo").srcObject = null;
+        document.getElementById("btnConnect").disabled = false;
+        document.getElementById("btnConnectSdk").disabled = false;
+        document.getElementById("btnDisconnect").disabled = true;
+
+        log("INFO", "Disconnected", "log-info");
+      }
+
+      // Save/restore form fields from localStorage
+      window.addEventListener("load", () => {
+        ["appId", "channelName", "token", "uid"].forEach((id) => {
+          const saved = localStorage.getItem("agora_" + id);
+          if (saved) document.getElementById(id).value = saved;
+        });
+      });
+      window.addEventListener("beforeunload", () => {
+        ["appId", "channelName", "token", "uid"].forEach((id) => {
+          localStorage.setItem(
+            "agora_" + id,
+            document.getElementById(id).value,
+          );
+        });
+      });
+    </script>
+  </body>
+</html>
