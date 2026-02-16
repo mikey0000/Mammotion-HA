@@ -595,7 +595,7 @@ class AgoraAPIClient:
         channel_name: str,
         user_id: int,
         string_uid: Optional[str] = None,
-        role: int = 2,
+        role: int = 1,
         area_code: str = "CN,GLOBAL",
         service_flags: Optional[list[int]] = None,
         sid: Optional[str] = None,
@@ -753,7 +753,7 @@ class AgoraAPIClient:
         service_flags: list[int],
         sid: str,
         uri: int,
-        role: int = 2,
+        role: int = 1,
         area_code: str = "CN,GLOBAL",
         edge_addresses: Optional[list[dict]] = None,
     ) -> dict:
@@ -953,7 +953,7 @@ async def main():
                 channel_name=channel_name,
                 user_id=user_id,
                 string_uid=string_uid,
-                role=2,  # 2 = audience
+                role=1,  # 2 = audience
             )
 
             print(f"Successfully got {len(response.addresses)} edge addresses:")
@@ -969,7 +969,7 @@ async def main():
                 channel_name=channel_name,
                 user_id=user_id,
                 string_uid=string_uid,
-                role=2,
+                role=1,
                 service_flags=[
                     SERVICE_IDS["CHOOSE_SERVER"],  # Media gateway
                     SERVICE_IDS["CLOUD_PROXY"],  # TURN servers

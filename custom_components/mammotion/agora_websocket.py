@@ -417,7 +417,7 @@ class AgoraWebSocketHandler:
             _LOGGER.info("Stored rejoin_token: %s...", self._rejoin_token[:20])
 
         # Send set_client_role after successful connection
-        await self._send_set_client_role(role="audience", level=1)
+        await self._send_set_client_role(role="host", level=0)
 
         if not ortc:
             _LOGGER.error("No ORTC parameters in join success response")
@@ -587,7 +587,7 @@ class AgoraWebSocketHandler:
                 "process_id": process_id,
                 "mode": "live",
                 "codec": "vp8",
-                "role": "audience",
+                "role": "host",
                 "has_changed_gateway": False,
                 "ap_response": agora_response.to_ap_response(4096),
                 "extend": "",

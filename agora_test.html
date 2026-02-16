@@ -872,7 +872,7 @@
               uri: 22,
               buffer: {
                 cname: channelName,
-                detail: { 11: "CN,GLOBAL", 17: "2", 22: "CN,GLOBAL" },
+                detail: { 11: "CN,GLOBAL", 17: "1", 22: "CN,GLOBAL" },
                 key: token,
                 service_ids: [11, 26],
                 uid: uid,
@@ -1235,7 +1235,7 @@
                 process_id: "process-" + crypto.randomUUID(),
                 mode: "live",
                 codec: "vp8",
-                role: "audience",
+                role: "host",
                 has_changed_gateway: false,
                 ap_response: apResponse,
                 extend: "",
@@ -1364,13 +1364,13 @@
                   _id: Math.random().toString(36).substring(2, 8),
                   _type: "set_client_role",
                   _message: {
-                    role: "audience",
-                    level: 1,
+                    role: "host",
+                    level: 0,
                     client_ts: Date.now(),
                   },
                 };
                 ws.send(JSON.stringify(roleMsg));
-                log("WS", "Sent set_client_role (audience)", "log-ws");
+                log("WS", "Sent set_client_role (host)", "log-ws");
 
                 // ---- Step 4: Set up PeerConnection with server ORTC ----
                 await setupConnection(serverOrtc);
