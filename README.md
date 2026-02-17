@@ -30,7 +30,7 @@ This integration allows you to control and monitor Mammotion products, e.g robot
 ## Prerequisites 📋
 
 > [!WARNING]
-> **Home Assistant Minimum Version 2025.3.0**
+> **Home Assistant Minimum Version 2026.1.0**
 
 - A second account with your mower/s shared to it for using Wi-Fi (If you use your primary accouunt it will log you out of your mobile app)
 - (Optional)[Bluetooth proxy for Home Assistant](https://esphome.io/components/bluetooth_proxy.html)
