@@ -116,6 +116,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         self._stream_data: Response[StreamSubscriptionResponse] | None = (
             None  # Stream data [Agora]
         )
+        self._stream_expiry: datetime.datetime | None = None
         self.commands = MammotionCommand(
             device.device_name,
             int(
@@ -132,11 +133,47 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
     def get_coordinator_data(self, device: MammotionMowerDeviceManager) -> DataT:
         """Get coordinator data."""
 
+    async def async_check_stream_expiry(self) -> None:
+        """Check if stream token is expired and refresh if needed."""
+        now = datetime.datetime.now()
+        if (
+            self._stream_data is None
+            or self._stream_expiry is None
+            or now >= self._stream_expiry
+        ):
+            LOGGER.debug(
+                "Stream token expired or missing (expiry=%s, now=%s). Refreshing...",
+                self._stream_expiry,
+                now,
+            )
+            try:
+                # Refresh stream data
+                stream_data = await self.manager.get_stream_subscription(
+                    self.device_name, self.device.iot_id
+                )
+                self.set_stream_data(stream_data)
+                LOGGER.debug("Stream token refreshed successfully")
+            except Exception as ex:
+                LOGGER.error("Failed to refresh stream token: %s", ex)
+
     def set_stream_data(
         self, stream_data: Response[StreamSubscriptionResponse]
     ) -> None:
         """Set stream data."""
         self._stream_data = stream_data
+        if stream_data and stream_data.data:
+            # availableTime is in seconds, typically 3600
+            # We subtract 60 seconds buffer to be safe
+            available_time = getattr(stream_data.data, "availableTime", 3600)
+            if available_time:
+                self._stream_expiry = datetime.datetime.now() + timedelta(
+                    seconds=int(available_time) - 60
+                )
+                LOGGER.debug(
+                    "Set stream expiry to %s (availableTime=%s)",
+                    self._stream_expiry,
+                    available_time,
+                )
 
     def get_stream_data(self) -> Response[StreamSubscriptionResponse]:
         """Return stream data."""

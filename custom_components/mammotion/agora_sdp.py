@@ -196,13 +196,64 @@ class SDPParser:
 
 
 def parse_offer_to_ortc(offer_sdp: str) -> dict[str, Any]:
-    """Parse offer SDP to ORTC object (for join_v3 message)."""
+    """Parse offer SDP to ORTC object, matching Agora SDK getOrtc logic."""
     parsed = SDPParser.parse(offer_sdp)
     ice_params = {}
     dtls_params = {}
 
-    # vx logic: extracts from FIRST media description found
+    # Helper: Check if codec can be sent
+    def can_send(codec_obj: dict) -> bool:
+        name = codec_obj["rtpMap"]["encodingName"].upper()
+        params = codec_obj.get("fmtp", {}).get("parameters", {})
+
+        if name == "H265":
+            return False
+        if name == "VP9":
+            # Profile 0 and 2 are sendable, 1 and 3 are not
+            pid = params.get("profile-id")
+            if pid in ("1", "3"):
+                return False
+        if name == "AV1":
+            # Profile 1 is recv only
+            if params.get("profile") == "1":
+                return False
+        return True
+
+    # Global/Session level parameters
+    if "iceUfrag" in parsed:
+        ice_params = {"iceUfrag": parsed["iceUfrag"], "icePwd": parsed["icePwd"]}
+    if parsed.get("fingerprints"):
+        dtls_params = {
+            "fingerprints": [
+                {"hashFunction": fp["hash"], "fingerprint": fp["fingerprint"]}
+                for fp in parsed["fingerprints"]
+            ]
+        }
+
+    # Iterate media sections to extract params and build caps
+    caps = {
+        "send": {
+            "audioCodecs": [],
+            "audioExtensions": [],
+            "videoCodecs": [],
+            "videoExtensions": [],
+        },
+        "recv": {
+            "audioCodecs": [],
+            "audioExtensions": [],
+            "videoCodecs": [],
+            "videoExtensions": [],
+        },
+        "sendrecv": {
+            "audioCodecs": [],
+            "audioExtensions": [],
+            "videoCodecs": [],
+            "videoExtensions": [],
+        },
+    }
+
     for m in parsed.get("media", []):
+        # Extract ICE/DTLS from first media section if not found globally
         if not ice_params and "iceUfrag" in m:
             ice_params = {"iceUfrag": m["iceUfrag"], "icePwd": m["icePwd"]}
         if not dtls_params and m.get("fingerprints"):
@@ -213,38 +264,10 @@ def parse_offer_to_ortc(offer_sdp: str) -> dict[str, Any]:
                 ]
             }
 
-    # Fallback to session level
-    if not ice_params and "iceUfrag" in parsed:
-        ice_params = {"iceUfrag": parsed["iceUfrag"], "icePwd": parsed["icePwd"]}
-    if not dtls_params and parsed.get("fingerprints"):
-        dtls_params = {
-            "fingerprints": [
-                {"hashFunction": fp["hash"], "fingerprint": fp["fingerprint"]}
-                for fp in parsed["fingerprints"]
-            ]
-        }
-
-    # Role determination in join_v3 (client for audience)
-    dtls_params["role"] = "client"
-
-    # Rx logic: Extract send/recv/sendrecv capabilities
-    send_caps = {
-        "audioCodecs": [],
-        "audioExtensions": [],
-        "videoCodecs": [],
-        "videoExtensions": [],
-    }
-    recv_caps = {
-        "audioCodecs": [],
-        "audioExtensions": [],
-        "videoCodecs": [],
-        "videoExtensions": [],
-    }
-
-    for m in parsed.get("media", []):
         mtype = m.get("type")
-        direction = m.get("direction", "sendrecv")
         codecs = []
+
+        # Parse codecs
         for rtp in m.get("rtp", []):
             pt = rtp.get("payload")
             codec = {
@@ -252,48 +275,72 @@ def parse_offer_to_ortc(offer_sdp: str) -> dict[str, Any]:
                 "rtpMap": {
                     "encodingName": rtp.get("codec"),
                     "clockRate": rtp.get("rate"),
-                    "encodingParameters": rtp.get("encoding"),
                 },
                 "rtcpFeedbacks": [],
                 "fmtp": {"parameters": {}},
             }
+            if rtp.get("encoding"):
+                codec["rtpMap"]["encodingParameters"] = int(rtp.get("encoding"))
+
+            # Feedbacks
             for fb in m.get("rtcpFb", []):
                 if fb.get("payload") == pt:
-                    codec["rtcpFeedbacks"].append(
-                        {"type": fb.get("type"), "parameter": fb.get("subtype")}
-                    )
+                    fb_obj = {"type": fb.get("type")}
+                    if fb.get("subtype"):
+                        fb_obj["parameter"] = fb.get("subtype")
+                    codec["rtcpFeedbacks"].append(fb_obj)
+
+            # Add forced rrtr if missing
+            if not any(fb["type"] == "rrtr" for fb in codec["rtcpFeedbacks"]):
+                codec["rtcpFeedbacks"].append({"type": "rrtr"})
+
+            # FMTP
             for f in m.get("fmtp", []):
                 if f.get("payload") == pt:
                     for part in f.get("config", "").split(";"):
                         if "=" in part:
                             k, v = part.split("=", 1)
                             codec["fmtp"]["parameters"][k.strip()] = v.strip()
+                        elif part.strip():
+                            # Handle flags or key-only params if any (less common in fmtp but possible)
+                            # JS logic: params[k.trim()] = v ? v.trim() : null;
+                            codec["fmtp"]["parameters"][part.strip()] = None
             codecs.append(codec)
 
+        # Parse extensions
         extensions = [
             {"entry": ext.get("value"), "extensionName": ext.get("uri")}
             for ext in m.get("ext", [])
         ]
 
-        if direction == "sendonly":
-            targets = [send_caps]
-        elif direction == "recvonly":
-            targets = [recv_caps]
-        else:
-            targets = [send_caps, recv_caps]
+        # Distribute codecs based on can_send logic
+        for codec in codecs:
+            is_send = can_send(codec)
+            is_recv = True  # Assumption: browser can recv what it offers
 
-        for t in targets:
-            if mtype == "video":
-                t["videoCodecs"].extend(codecs)
-                t["videoExtensions"].extend(extensions)
-            elif mtype == "audio":
-                t["audioCodecs"].extend(codecs)
-                t["audioExtensions"].extend(extensions)
+            target_lists = []
+            if is_send and is_recv:
+                target_lists.append(caps["sendrecv"])
+            elif is_recv:
+                target_lists.append(caps["recv"])
+
+            for t in target_lists:
+                if mtype == "audio":
+                    t["audioCodecs"].append(codec)
+                elif mtype == "video":
+                    t["videoCodecs"].append(codec)
+
+        # Extensions usually go to sendrecv
+        target_ext = caps["sendrecv"]
+        if mtype == "audio":
+            target_ext["audioExtensions"].extend(extensions)
+        elif mtype == "video":
+            target_ext["videoExtensions"].extend(extensions)
 
     return {
         "iceParameters": ice_params,
         "dtlsParameters": dtls_params,
-        "rtpCapabilities": {"send": send_caps, "recv": recv_caps},
+        "rtpCapabilities": caps,
         "version": "2",
     }
 

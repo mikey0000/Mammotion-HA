@@ -77,7 +77,7 @@ async def async_setup_entry(
                 stream_data = await mower.api.get_stream_subscription(
                     mower.device.device_name, mower.device.iot_id
                 )
-                mower.reporting_coordinator._stream_data = stream_data
+                mower.reporting_coordinator.set_stream_data(stream_data)
 
                 if stream_data is not None:
                     _LOGGER.debug("Received stream data: %s", stream_data)
@@ -187,7 +187,7 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         # Reset candidates list for new session
         self._agora_handler.candidates = []
         _LOGGER.info("Handling WebRTC offer for session %s", session_id)
-        _LOGGER.info("Raw OFFER SDP %s", offer_sdp)
+        # _LOGGER.info("Raw OFFER SDP %s", offer_sdp)
 
         # Wait for initial ICE candidates, specifically looking for a reflexive candidate (srflx/prflx)
         # or relay, as requested to ensure public connectivity.
@@ -214,9 +214,9 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
 
         # Wait for at least one candidate from Agora TURN servers before proceeding
         # This ensures we have reflexive or relay connectivity for NAT traversal
-        while not has_agora_turn_candidate() and elapsed < max_wait:
-            await asyncio.sleep(wait_interval)
-            elapsed += wait_interval
+        # while not has_agora_turn_candidate() and elapsed < max_wait:
+        #     await asyncio.sleep(wait_interval)
+        #     elapsed += wait_interval
 
         # Filter candidates to ONLY send candidates that match Agora ICE servers (Strict Filtering)
         # "Change the candidate selection code to only accept candidates from agora ice servers"
@@ -285,7 +285,11 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         )
 
         try:
+            # Check for stream token expiry before using it
+            await self.coordinator.async_check_stream_expiry()
+
             # Get stream data (appid, channelName, token, uid)
+            await self.coordinator.join_webrtc_channel()
             stream_data = self.coordinator.get_stream_data()
             if not stream_data or stream_data.data is None:
                 _LOGGER.error("No stream data available for WebRTC offer")

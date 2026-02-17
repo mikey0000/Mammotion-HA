@@ -404,6 +404,8 @@
       let joinVid = null; // VID from join response
       let agoraClient = null; // Agora SDK client (for SDK mode)
       let sdkMode = false; // Whether using SDK mode
+      let onlineUsers = new Set(); // Track online user UIDs
+      let pendingStreams = {}; // Track video streams pending subscription { uid: { ssrcId, rtxSsrcId, cname, subscribed } }
 
       // ---- Logging ----
       function log(tag, msg, cls) {
@@ -436,141 +438,205 @@
       }
 
       // ---- SDP parsing utilities ----
-      function parseOfferToOrtc(sdp) {
-        // Extract ICE ufrag/pwd, DTLS fingerprint, candidates, codecs, extensions from offer SDP
-        const lines = sdp.split("\n").map((l) => l.trim());
-        let iceUfrag = "",
-          icePwd = "",
-          fingerprint = "",
-          fpAlgo = "";
-        const candidates = [];
-        const audioCodecs = [],
-          videoCodecs = [];
-        const audioExtensions = [],
-          videoExtensions = [];
-        let currentMedia = null;
+      function getOrtc(sdp) {
+        // Helper to parse key-value parameters (e.g., fmtp)
+        function parseParams(str) {
+          const params = {};
+          str.split(";").forEach((pair) => {
+            const [k, v] = pair.split("=");
+            if (k) params[k.trim()] = v ? v.trim() : null;
+          });
+          return params;
+        }
+
+        // Helper to check if a codec can be sent (logic inferred from SDK/ORTC analysis)
+        function canSend(codec) {
+          const name = codec.rtpMap.encodingName.toUpperCase();
+          const params =
+            codec.fmtp && codec.fmtp.parameters ? codec.fmtp.parameters : {};
+
+          if (name === "H265") return false;
+          if (name === "VP9") {
+            // Profile 0 and 2 are sendable, 1 and 3 are not
+            if (params["profile-id"] === "1" || params["profile-id"] === "3")
+              return false;
+          }
+          if (name === "AV1") {
+            // Profile 1 is recv only
+            if (params["profile"] === "1") return false;
+          }
+          return true;
+        }
+
+        const lines = sdp
+          .replace(/\r\n/g, "\n")
+          .split("\n")
+          .map((l) => l.trim());
+
+        // Global parameters
+        let iceUfrag = "";
+        let icePwd = "";
+        let fingerprint = null;
+
+        // Media sections
+        const mediaSections = []; // { type: 'audio'|'video', codecs: [], extensions: [], payloadTypes: [] }
+        let currentSection = null;
 
         for (const line of lines) {
-          if (line.startsWith("m=")) {
-            currentMedia = line.startsWith("m=audio")
-              ? "audio"
-              : line.startsWith("m=video")
-                ? "video"
-                : null;
-          }
-          if (line.startsWith("a=ice-ufrag:") && !iceUfrag)
-            iceUfrag = line.split(":")[1];
-          if (line.startsWith("a=ice-pwd:") && !icePwd)
-            icePwd = line.split(":")[1];
-          if (line.startsWith("a=fingerprint:") && !fingerprint) {
+          if (line.startsWith("a=ice-ufrag:")) iceUfrag = line.split(":")[1];
+          if (line.startsWith("a=ice-pwd:")) icePwd = line.split(":")[1];
+          if (line.startsWith("a=fingerprint:")) {
             const parts = line.substring("a=fingerprint:".length).split(" ");
-            fpAlgo = parts[0];
-            fingerprint = parts.slice(1).join(" ");
+            fingerprint = { hashFunction: parts[0], fingerprint: parts[1] };
           }
-          if (line.startsWith("a=candidate:")) {
-            const parts = line.substring("a=candidate:".length).split(" ");
-            if (parts.length >= 8) {
-              candidates.push({
-                foundation: parts[0],
-                component: parts[1],
-                protocol: parts[2],
-                priority: parts[3],
-                ip: parts[4],
-                port: parts[5],
-                type: parts[7],
-              });
-            }
+
+          if (line.startsWith("m=")) {
+            const parts = line.split(" ");
+            const type = parts[0].split("=")[1]; // m=video -> video
+            currentSection = {
+              type,
+              codecs: [],
+              extensions: [],
+              payloadTypes: parts.slice(3).map(Number),
+            };
+            mediaSections.push(currentSection);
           }
-          if (line.startsWith("a=extmap:") && currentMedia) {
-            const match = line.match(/a=extmap:(\d+)\s+(.*)/);
-            if (match) {
-              const ext = {
-                entry: parseInt(match[1]),
-                extensionName: match[2].split(" ")[0],
-              };
-              if (currentMedia === "audio") audioExtensions.push(ext);
-              else videoExtensions.push(ext);
-            }
-          }
-          if (line.startsWith("a=rtpmap:") && currentMedia) {
+
+          if (!currentSection) continue;
+
+          if (line.startsWith("a=rtpmap:")) {
             const match = line.match(
-              /a=rtpmap:(\d+)\s+([^\/]+)\/(\d+)(?:\/(\d+))?/,
+              /a=rtpmap:(\d+) ([^/]+)\/(\d+)(?:\/(\d+))?/,
             );
             if (match) {
-              const codec = {
-                payloadType: parseInt(match[1]),
-                rtpMap: {
-                  encodingName: match[2],
-                  clockRate: parseInt(match[3]),
-                },
-                rtcpFeedbacks: [],
-              };
-              if (match[4]) codec.rtpMap.encodingParameters = match[4];
-              if (currentMedia === "audio") audioCodecs.push(codec);
-              else videoCodecs.push(codec);
+              const pt = parseInt(match[1]);
+              const name = match[2];
+              const clock = parseInt(match[3]);
+              const channels = match[4] ? parseInt(match[4]) : undefined;
+
+              // Only parse if this PT is in the m= line definition
+              if (currentSection.payloadTypes.includes(pt)) {
+                let codec = currentSection.codecs.find(
+                  (c) => c.payloadType === pt,
+                );
+                if (!codec) {
+                  codec = {
+                    payloadType: pt,
+                    rtpMap: {},
+                    rtcpFeedbacks: [],
+                    fmtp: {},
+                  };
+                  currentSection.codecs.push(codec);
+                }
+                codec.rtpMap = { encodingName: name, clockRate: clock };
+                if (channels) codec.rtpMap.encodingParameters = channels;
+              }
             }
           }
-        }
 
-        // Gather fmtp and rtcp-fb for each codec
-        for (const line of lines) {
           if (line.startsWith("a=fmtp:")) {
-            const match = line.match(/a=fmtp:(\d+)\s+(.*)/);
+            const match = line.match(/a=fmtp:(\d+) (.+)/);
             if (match) {
               const pt = parseInt(match[1]);
-              const params = {};
-              match[2].split(";").forEach((p) => {
-                const [k, ...v] = p.split("=");
-                if (k.trim()) params[k.trim()] = v.join("=") || null;
-              });
-              const codec = [...audioCodecs, ...videoCodecs].find(
+              const params = parseParams(match[2]);
+              const codec = currentSection.codecs.find(
                 (c) => c.payloadType === pt,
               );
-              if (codec && Object.keys(params).length)
-                codec.fmtp = { parameters: params };
+              if (codec) {
+                if (!codec.fmtp) codec.fmtp = {};
+                codec.fmtp.parameters = params;
+              }
             }
           }
+
           if (line.startsWith("a=rtcp-fb:")) {
-            const match = line.match(/a=rtcp-fb:(\d+|\*)\s+(.*)/);
-            if (match && match[1] !== "*") {
+            const match = line.match(/a=rtcp-fb:(\d+) ([^ ]+)(?: (.+))?/);
+            if (match) {
               const pt = parseInt(match[1]);
-              const parts = match[2].split(" ");
-              const fb = { type: parts[0] };
-              if (parts.length > 1) fb.parameter = parts.slice(1).join(" ");
-              const codec = [...audioCodecs, ...videoCodecs].find(
+              const type = match[2];
+              const param = match[3];
+              const codec = currentSection.codecs.find(
                 (c) => c.payloadType === pt,
               );
-              if (codec) codec.rtcpFeedbacks.push(fb);
+              if (codec) {
+                const fb = { type };
+                if (param) fb.parameter = param;
+                codec.rtcpFeedbacks.push(fb);
+              }
+            }
+          }
+
+          if (line.startsWith("a=extmap:")) {
+            const match = line.match(/a=extmap:(\d+) (.+)/);
+            if (match) {
+              currentSection.extensions.push({
+                entry: parseInt(match[1]),
+                extensionName: match[2].trim(),
+              });
             }
           }
         }
 
+        // Post-processing to match SDK structure
+        const caps = {
+          send: {
+            audioCodecs: [],
+            audioExtensions: [],
+            videoCodecs: [],
+            videoExtensions: [],
+          },
+          recv: {
+            audioCodecs: [],
+            audioExtensions: [],
+            videoCodecs: [],
+            videoExtensions: [],
+          },
+          sendrecv: {
+            audioCodecs: [],
+            audioExtensions: [],
+            videoCodecs: [],
+            videoExtensions: [],
+          },
+        };
+
+        mediaSections.forEach((section) => {
+          section.codecs.forEach((codec) => {
+            // Add forced rrtr feedback to all recv/sendrecv codecs if missing
+            const hasRrtr = codec.rtcpFeedbacks.some(
+              (fb) => fb.type === "rrtr",
+            );
+            if (!hasRrtr) {
+              codec.rtcpFeedbacks.push({ type: "rrtr" });
+            }
+
+            const send = canSend(codec);
+            const recv = true; // Assumption: browser can recv what it offers
+
+            if (send && recv) {
+              if (section.type === "audio")
+                caps.sendrecv.audioCodecs.push(codec);
+              else caps.sendrecv.videoCodecs.push(codec);
+            } else if (recv) {
+              if (section.type === "audio") caps.recv.audioCodecs.push(codec);
+              else caps.recv.videoCodecs.push(codec);
+            }
+          });
+
+          const targetExtensions = caps.sendrecv;
+          if (section.type === "audio")
+            targetExtensions.audioExtensions.push(...section.extensions);
+          else targetExtensions.videoExtensions.push(...section.extensions);
+        });
+
         return {
-          iceParameters: { iceUfrag, icePwd, candidates },
+          iceParameters: {
+            iceUfrag: iceUfrag,
+            icePwd: icePwd,
+          },
           dtlsParameters: {
-            fingerprints: [{ algorithm: fpAlgo || "sha-256", fingerprint }],
-            role: "client",
+            fingerprints: fingerprint ? [fingerprint] : [],
           },
-          rtpCapabilities: {
-            send: {
-              audioCodecs: [],
-              videoCodecs: [],
-              audioExtensions: [],
-              videoExtensions: [],
-            },
-            recv: {
-              audioCodecs: [],
-              videoCodecs: [],
-              audioExtensions: [],
-              videoExtensions: [],
-            },
-            sendrecv: {
-              audioCodecs,
-              videoCodecs,
-              audioExtensions,
-              videoExtensions,
-            },
-          },
+          rtpCapabilities: caps,
           version: "2",
         };
       }
@@ -627,7 +693,7 @@
           "a=fingerprint:sha-256 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00";
         if (fingerprints.length > 0) {
           const fp = fingerprints[0];
-          const algo = fp.hashFunction || fp.algorithm || "sha-256";
+          const algo = fp.algorithm || fp.hashFunction || "sha-256";
           fpLine = `a=fingerprint:${algo} ${fp.fingerprint}`;
         }
 
@@ -725,6 +791,10 @@
             // fmtp
             const fmtp = codec.fmtp || {};
             const params = fmtp.parameters || {};
+            if (enc.toLowerCase() === "opus") {
+              params.stereo = "1";
+              params["sprop-stereo"] = "1";
+            }
             if (Object.keys(params).length) {
               const paramStr = Object.entries(params)
                 .map(([k, v]) =>
@@ -760,7 +830,7 @@
           "a=fingerprint:sha-256 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00";
         if (fingerprints.length > 0) {
           const fp = fingerprints[0];
-          fpLine = `a=fingerprint:${fp.hashFunction || fp.algorithm || "sha-256"} ${fp.fingerprint}`;
+          fpLine = `a=fingerprint:${fp.algorithm || fp.hashFunction || "sha-256"} ${fp.fingerprint}`;
         }
 
         const candLines = candidates.map((c) => {
@@ -958,12 +1028,32 @@
                   .forEach((f) => fingerprints.push(f.trim()));
               }
 
-              // Parse credentials
-              let username = detail["8"] || "";
-              let credentials = detail["4"] || "";
-              if (!username && respUid) username = String(respUid);
-              if (!credentials && respUid)
+              // Parse credentials — match SDK dx() function at agoraRTC_N.js:23979-23980
+              // The SDK checks three conditions:
+              //   1. uid is truthy
+              //   2. wN("ENCRYPT_PROXY_USERNAME_AND_PSW") is true (always true, default at line 11949)
+              //   3. window.isSecureContext is true (true for HTTPS, false for http:// or file://)
+              // If ALL conditions pass: username = uid.toString(), password = SHA-256(uid.toString())
+              // If ANY condition fails: username = "test", password = "111111" (RN defaults line 11755-11774)
+              let username, credentials;
+              if (respUid && window.isSecureContext) {
+                username = String(respUid);
                 credentials = await derivePassword(respUid);
+                log(
+                  "API",
+                  `TURN credentials: uid-derived (isSecureContext=true), username=${username}`,
+                  "log-api",
+                );
+              } else {
+                // Agora RN defaults — used when isSecureContext=false or no uid
+                username = "test";
+                credentials = "111111";
+                log(
+                  "API",
+                  `TURN credentials: RN defaults (isSecureContext=${window.isSecureContext}, uid=${respUid}), username=${username}`,
+                  "log-api",
+                );
+              }
 
               const addresses = edges.map((e, i) => ({
                 ip: e.ip,
@@ -1036,25 +1126,62 @@
       async function setupPeerConnection(apiResult) {
         log("PC", "Creating RTCPeerConnection...", "log-pc");
 
-        // Build ICE servers from TURN addresses (mirrors resolvePCConfiguration)
+        // Build ICE servers from TURN addresses
+        // Mirrors turnServerConfigToIceServers (agoraRTC_N.js:30736-30758)
+        // SDK uses e.udpport for UDP, e.tcpport for TCP, and e.password for credential
+        // The dx() function (line 23974-23981) sets both tcpport and udpport to e.port
+        // SDK defaults (RN): udpport=3478, tcpport=3433
         const iceServers = [];
         for (const turn of apiResult.turnServers) {
-          // UDP
+          const udpPort = turn.port; // SDK sets udpport = e.port in dx()
+          const tcpPort = turn.port; // SDK sets tcpport = e.port in dx()
+          const ipDashed = turn.ip.replace(/\./g, "-");
+
+          // UDP TURN (matches SDK line 30744-30748)
           iceServers.push({
-            urls: `turn:${turn.ip}:${turn.port}?transport=udp`,
+            urls: `turn:${turn.ip}:${udpPort}?transport=udp`,
             username: turn.username || "",
             credential: turn.credentials || "",
+            credentialType: "password",
           });
-          // TCP (port + 90, matching Agora convention)
+          // TCP TURN (matches SDK line 30750-30754)
           iceServers.push({
-            urls: `turn:${turn.ip}:${parseInt(turn.port) + 90}?transport=tcp`,
+            urls: `turn:${turn.ip}:${tcpPort}?transport=tcp`,
             username: turn.username || "",
             credential: turn.credentials || "",
+            credentialType: "password",
+          });
+          // TLS TURN (matches SDK line 30739-30743, security mode)
+          iceServers.push({
+            urls: `turns:${ipDashed}.edge.agora.io:443?transport=tcp`,
+            username: turn.username || "",
+            credential: turn.credentials || "",
+            credentialType: "password",
           });
         }
 
-        // Also add gateway as STUN candidate
+        // Also add gateway-derived TURN servers (matches SDK serversFromGateway)
+        // agoraRTC_N.js:25523-25529: username=uid.toString(), password=token
+        // ports = gateway port + 30
         for (const gw of apiResult.gateways) {
+          const gwTurnPort = parseInt(gw.port) + 30;
+          const token = document.getElementById("token").value.trim();
+          const gwUsername = String(apiResult.uid);
+          // UDP
+          iceServers.push({
+            urls: `turn:${gw.ip}:${gwTurnPort}?transport=udp`,
+            username: gwUsername,
+            credential: token,
+            credentialType: "password",
+          });
+          // TCP
+          iceServers.push({
+            urls: `turn:${gw.ip}:${gwTurnPort}?transport=tcp`,
+            username: gwUsername,
+            credential: token,
+            credentialType: "password",
+          });
+          // Also add gateway as STUN candidate
           iceServers.push({ urls: `stun:${gw.ip}:${gw.port}` });
         }
 
@@ -1062,7 +1189,7 @@
         iceServers.forEach((s) =>
           log(
             "PC",
-            `  ${Array.isArray(s.urls) ? s.urls[0] : s.urls}`,
+            `  ${Array.isArray(s.urls) ? s.urls[0] : s.urls} user=${s.username || "(none)"} cred=${s.credential ? s.credential.substring(0, 8) + "..." : "(none)"}`,
             "log-pc",
           ),
         );
@@ -1163,8 +1290,26 @@
         );
         document.getElementById("offerSdp").textContent = offer.sdp;
 
-        // Extract ORTC from offer
-        const ortc = parseOfferToOrtc(offer.sdp);
+        // Create dummy PC to probe capabilities similar to SDK
+        // const dummyPc = new RTCPeerConnection();
+        // dummyPc.addTransceiver("video", { direction: "sendonly" });
+        // dummyPc.addTransceiver("audio", { direction: "sendonly" });
+        // dummyPc.addTransceiver("video", { direction: "recvonly" });
+        // dummyPc.addTransceiver("audio", { direction: "recvonly" });
+        // const dummyOffer = await dummyPc.createOffer();
+        // dummyPc.close();
+
+        // Extract ORTC parts
+        // const dummyOrtc = getOrtc(dummyOffer.sdp); // For capabilities
+        const mainOrtc = getOrtc(offer.sdp); // For ICE/DTLS
+
+        const ortc = {
+          iceParameters: mainOrtc.iceParameters,
+          dtlsParameters: mainOrtc.dtlsParameters,
+          rtpCapabilities: mainOrtc.rtpCapabilities,
+          version: "2",
+        };
+
         localCapabilities = ortc;
         log(
           "PC",
@@ -1177,104 +1322,203 @@
 
       // ---- Step 3: WebSocket connect + join ----
       async function connectWebSocket(apiResult, ortc) {
-        const gw = apiResult.gateways[0];
-        const ipDashed = gw.ip.replace(/\./g, "-");
-        const wsUrl = `wss://${ipDashed}.edge.agora.io:${gw.port}`;
+        const gateways = apiResult.gateways || [];
+        if (gateways.length === 0) {
+          throw new Error("No gateway addresses available");
+        }
 
-        log("WS", `Connecting to ${wsUrl}...`, "log-ws");
+        log(
+          "WS",
+          `Attempting connection to ${gateways.length} gateway(s)...`,
+          "log-ws",
+        );
 
-        return new Promise((resolve, reject) => {
-          ws = new WebSocket(wsUrl);
+        let wsInstance = null;
+        let usedGateway = null;
 
-          const timeout = setTimeout(() => {
-            ws.close();
-            reject(new Error("WebSocket connection timeout"));
-          }, 10000);
-
-          ws.onopen = () => {
-            clearTimeout(timeout);
-            log("WS", `Connected to ${wsUrl}`, "log-ws");
-
-            // Build join_v3 message (mirrors getJoinMessage)
-            const appId = document.getElementById("appId").value.trim();
-            const channelName = document
-              .getElementById("channelName")
-              .value.trim();
-            const token = document.getElementById("token").value.trim();
-            const sessionId = crypto
-              .randomUUID()
-              .replace(/-/g, "")
-              .toUpperCase();
-
-            // Build ap_response from discovery response (mirrors to_ap_response)
-            const gwResp = apiResult.responses[4096] || {};
-            const apResponse = {
-              code: gwResp.code || 0,
-              server_ts: apiResult.server_ts || Date.now(),
-              uid: apiResult.uid,
-              cid: gwResp.cid || 0,
-              cname: gwResp.cname || channelName,
-              detail: gwResp.detail || {},
-              flag: 4096,
-              opid: apiResult.opid || 0,
-              cert: gwResp.ticket || "",
-              ticket: gwResp.ticket || "",
+        try {
+          // Phase 1: Race standard ports
+          log("WS", "Racing standard ports...", "log-ws");
+          const standardTargets = gateways.map((gw) => ({
+            url: `wss://${gw.ip.replace(/\./g, "-")}.edge.agora.io:${gw.port}`,
+            gw,
+          }));
+          const winner = await raceConnections(standardTargets, 5000);
+          wsInstance = winner.ws;
+          usedGateway = winner.gw;
+          log("WS", `✅ Connected to ${winner.url}`, "log-ws");
+        } catch (e) {
+          log(
+            "WS",
+            "Standard ports failed/timed out, trying fallback tunneling...",
+            "log-ws",
+          );
+          // Phase 2: Race fallback ports
+          const fallbackTargets = gateways.map((gw) => {
+            const fallbackPort = Number(gw.port) + 150;
+            return {
+              url: `wss://${gw.ip.replace(/\./g, "-")}.edge.agora.io/ws/?p=${fallbackPort}`,
+              gw,
             };
-
-            const joinMsg = {
-              _id: Math.random().toString(36).substring(2, 8),
-              _type: "join_v3",
-              _message: {
-                p2p_id: 1,
-                session_id: sessionId,
-                app_id: appId,
-                channel_key: token,
-                channel_name: channelName,
-                sdk_version: "4.24.0",
-                browser: navigator.userAgent,
-                process_id: "process-" + crypto.randomUUID(),
-                mode: "live",
-                codec: "vp8",
-                role: "host",
-                has_changed_gateway: false,
-                ap_response: apResponse,
-                extend: "",
-                details: {},
-                features: { rejoin: true },
-                attributes: {
-                  userAttributes: {
-                    enableAudioMetadata: false,
-                    enableAudioPts: false,
-                    enablePublishedUserList: true,
-                    maxSubscription: 50,
-                    enableUserLicenseCheck: true,
-                    enableRTX: true,
-                    enableInstantVideo: false,
-                    enableDataStream2: false,
-                    enableAutFeedback: true,
-                    enableUserAutoRebalanceCheck: true,
-                    enableXR: true,
-                    enableLossbasedBwe: true,
-                    enableAutCC: true,
-                    enablePreallocPC: false,
-                    enablePubTWCC: false,
-                    enableSubTWCC: true,
-                    enablePubRTX: true,
-                    enableSubRTX: true,
-                  },
-                },
-                join_ts: Date.now(),
-                ortc,
-              },
-            };
-
-            log(
-              "WS",
-              `Sending join_v3 (session=${sessionId.substring(0, 8)}...)`,
-              "log-ws",
+          });
+          try {
+            const winner = await raceConnections(fallbackTargets, 10000);
+            wsInstance = winner.ws;
+            usedGateway = winner.gw;
+            log("WS", `✅ Connected via fallback ${winner.url}`, "log-ws");
+          } catch (err) {
+            throw new Error(
+              "Failed to connect to any gateway (standard or fallback).",
             );
-            ws.send(JSON.stringify(joinMsg));
+          }
+        }
+
+        ws = wsInstance; // Assign global
+
+        // Perform Join
+        log("WS", "Sending Join...", "log-ws");
+        return await performJoin(ws, apiResult, ortc, usedGateway);
+      }
+
+      function raceConnections(targets, timeoutMs) {
+        return new Promise((resolve, reject) => {
+          let pending = targets.length;
+          const sockets = [];
+          let solved = false;
+
+          const timer = setTimeout(() => {
+            if (solved) return;
+            solved = true;
+            sockets.forEach((s) => s.close());
+            reject(new Error("Connection race timeout"));
+          }, timeoutMs);
+
+          targets.forEach(({ url, gw }) => {
+            const s = new WebSocket(url);
+            sockets.push(s);
+            s.binaryType = "arraybuffer";
+
+            s.onopen = () => {
+              if (solved) {
+                s.close();
+                return;
+              }
+              solved = true;
+              clearTimeout(timer);
+              // Close losers and cleanup winner
+              sockets.forEach((other) => {
+                if (other !== s) other.close();
+              });
+              s.onopen = null;
+              s.onclose = null;
+              s.onerror = null;
+              resolve({ ws: s, url, gw });
+            };
+
+            const fail = () => {
+              if (solved) return;
+              pending--;
+              if (pending === 0 && !solved) {
+                solved = true;
+                clearTimeout(timer);
+                reject(new Error("All connections failed"));
+              }
+            };
+            s.onerror = fail;
+            s.onclose = fail;
+          });
+        });
+      }
+
+      // Helper function to perform Join on specified socket
+      // (Replaces tryConnectToGateway)
+      function performJoin(wsInstance, apiResult, ortc, gw) {
+        return new Promise((resolve, reject) => {
+          ws = wsInstance;
+          const wsUrl = ws.url;
+
+          // Build join_v3 message (mirrors getJoinMessage)
+
+          // Build join_v3 message (mirrors getJoinMessage)
+          const appId = document.getElementById("appId").value.trim();
+          const channelName = document
+            .getElementById("channelName")
+            .value.trim();
+          const token = document.getElementById("token").value.trim();
+          const sessionId = crypto.randomUUID().replace(/-/g, "").toUpperCase();
+
+          // Build ap_response from discovery response (mirrors to_ap_response)
+          const gwResp = apiResult.responses[4096] || {};
+          const apResponse = {
+            code: gwResp.code || 0,
+            server_ts: apiResult.server_ts || Date.now(),
+            uid: apiResult.uid,
+            cid: gwResp.cid || 0,
+            cname: gwResp.cname || channelName,
+            detail: gwResp.detail || {},
+            flag: 4096,
+            opid: apiResult.opid || 0,
+            cert: gwResp.ticket || "",
+            ticket: gwResp.ticket || "",
           };
+
+          const joinMsg = {
+            _id: Math.random().toString(36).substring(2, 8),
+            _type: "join_v3",
+            _message: {
+              p2p_id: 1,
+              session_id: sessionId,
+              app_id: appId,
+              channel_key: token,
+              channel_name: channelName,
+              sdk_version: "4.24.2",
+              browser: navigator.userAgent,
+              process_id: "process-" + crypto.randomUUID(),
+              mode: "live",
+              codec: "vp8",
+              role: "host",
+              has_changed_gateway: false,
+              ap_response: apResponse,
+              extend: "",
+              details: {},
+              features: { rejoin: true },
+              attributes: {
+                userAttributes: {
+                  enableAudioMetadata: false,
+                  enableAudioPts: false,
+                  enablePublishedUserList: true,
+                  maxSubscription: 50,
+                  enableUserLicenseCheck: true,
+                  enableVosFallback: false,
+                  enableRTX: true,
+                  enableInstantVideo: false,
+                  enableDataStream2: false,
+                  enableDualStreamFlag: false,
+                  enableAutFeedback: true,
+                  enableUserAutoRebalanceCheck: true,
+                  enableXR: true,
+                  enableLossbasedBwe: true,
+                  enableNetworkQualityProbe: false,
+                  enableAutCC: true,
+                  enablePreallocPC: false,
+                  enablePubTWCC: false,
+                  enableQualityFallback: false,
+                  enableSubTWCC: true,
+                  enablePubRTX: true,
+                  enableSubRTX: true,
+                },
+              },
+              join_ts: Date.now(),
+              ortc,
+            },
+          };
+
+          log(
+            "WS",
+            `Sending join_v3 (session=${sessionId.substring(0, 8)}...)`,
+            "log-ws",
+          );
+          ws.send(JSON.stringify(joinMsg));
 
           ws.onmessage = async (event) => {
             try {
@@ -1359,18 +1603,8 @@
                   }
                 }
 
-                // Send set_client_role
-                const roleMsg = {
-                  _id: Math.random().toString(36).substring(2, 8),
-                  _type: "set_client_role",
-                  _message: {
-                    role: "host",
-                    level: 0,
-                    client_ts: Date.now(),
-                  },
-                };
-                ws.send(JSON.stringify(roleMsg));
-                log("WS", "Sent set_client_role (host)", "log-ws");
+                // ws.send(JSON.stringify(roleMsg));
+                // log("WS", "Sent set_client_role (host)", "log-ws");
 
                 // ---- Step 4: Set up PeerConnection with server ORTC ----
                 await setupConnection(serverOrtc);
@@ -1396,12 +1630,34 @@
                 resolve(serverOrtc);
               }
 
-              // User online
+              // User online — check if we have a pending video stream to subscribe to
               if (type === "on_user_online") {
-                log("WS", `User online: uid=${message.uid}`, "log-ws");
+                const onlineUid = message.uid;
+                log("WS", `User online: uid=${onlineUid}`, "log-ws");
+                onlineUsers.add(onlineUid);
+
+                // If we already have a pending video stream for this user, subscribe now
+                if (
+                  pendingStreams[onlineUid] &&
+                  !pendingStreams[onlineUid].subscribed
+                ) {
+                  const s = pendingStreams[onlineUid];
+                  s.subscribed = true;
+                  log(
+                    "SUB",
+                    `User ${onlineUid} is online and has pending video stream, subscribing now`,
+                    "log-sub",
+                  );
+                  await subscribeToStream(
+                    onlineUid,
+                    s.ssrcId,
+                    s.rtxSsrcId,
+                    s.cname,
+                  );
+                }
               }
 
-              // Video stream added
+              // Video stream added — store and subscribe if user is already online
               if (type === "on_add_video_stream") {
                 const streamUid = message.uid;
                 const ssrcId = message.ssrcId;
@@ -1413,13 +1669,56 @@
                   "log-sub",
                 );
 
-                // Auto-subscribe
-                await subscribeToStream(
-                  streamUid,
+                // Store the pending stream
+                pendingStreams[streamUid] = {
                   ssrcId,
                   rtxSsrcId,
-                  streamCname,
+                  cname: streamCname,
+                  subscribed: false,
+                };
+
+                // Only subscribe if the user is already online
+                if (onlineUsers.has(streamUid)) {
+                  pendingStreams[streamUid].subscribed = true;
+                  log(
+                    "SUB",
+                    `User ${streamUid} already online, subscribing to video stream now`,
+                    "log-sub",
+                  );
+                  await subscribeToStream(
+                    streamUid,
+                    ssrcId,
+                    rtxSsrcId,
+                    streamCname,
+                  );
+                } else {
+                  log(
+                    "SUB",
+                    `User ${streamUid} not yet online, deferring subscribe until on_user_online`,
+                    "log-sub",
+                  );
+                }
+              }
+
+              // User offline — unsubscribe and clean up
+              if (type === "on_user_offline") {
+                const offlineUid = message.uid;
+                const reason = message.reason || "unknown";
+                log(
+                  "WS",
+                  `User offline: uid=${offlineUid}, reason=${reason}`,
+                  "log-ws",
                 );
+                onlineUsers.delete(offlineUid);
+
+                // Unsubscribe if we had an active subscription
+                if (
+                  pendingStreams[offlineUid] &&
+                  pendingStreams[offlineUid].subscribed
+                ) {
+                  await unsubscribeFromStream(offlineUid);
+                }
+                delete pendingStreams[offlineUid];
               }
 
               // Audio stream added
@@ -1509,7 +1808,6 @@
           };
 
           ws.onerror = (ev) => {
-            clearTimeout(timeout);
             log("WS", `WebSocket error`, "log-err");
             reject(new Error("WebSocket error"));
           };
@@ -1586,6 +1884,24 @@
           `Sent subscribe for uid=${streamUid}, ssrcId=${ssrcId}. Waiting for track via pc.ontrack...`,
           "log-sub",
         );
+      }
+
+      // ---- Step 6: Unsubscribe from video stream ----
+      async function unsubscribeFromStream(streamUid) {
+        log("SUB", `Unsubscribing from stream uid=${streamUid}...`, "log-sub");
+
+        const unsubMsg = {
+          _id: Math.random().toString(36).substring(2, 8),
+          _type: "unsubscribe",
+          _message: {
+            p2p_id: 1,
+            ortc: [],
+            stream_id: streamUid,
+          },
+        };
+
+        ws.send(JSON.stringify(unsubMsg));
+        log("SUB", `Sent unsubscribe for uid=${streamUid}`, "log-sub");
       }
 
       // ---- Main flow ----
@@ -1676,6 +1992,9 @@
           const client = window.AgoraRTC.createClient({
             mode: "live",
             codec: "vp8",
+            disableLog: false,
+            enableLogUpload: false, // Disable log upload
+            role: "host",
           });
           agoraClient = client;
 
@@ -1811,6 +2130,8 @@
         joinSessionId = null;
         joinCid = null;
         joinVid = null;
+        onlineUsers = new Set();
+        pendingStreams = {};
 
         setStatus("stIce", "—");
         setStatus("stDtls", "—");

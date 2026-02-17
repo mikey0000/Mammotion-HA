@@ -117,6 +117,7 @@ class AgoraWebSocketHandler:
             "error": self._handle_error,
             "on_rtp_capability_change": self._handle_rtp_capability_change,
             "on_user_online": self._handle_user_online,
+            "on_user_offline": self._handle_user_offline,
             "on_add_video_stream": self._handle_add_video_stream,
         }
 
@@ -151,7 +152,7 @@ class AgoraWebSocketHandler:
             _LOGGER.error("Failed to parse offer SDP")
             return None
 
-        _LOGGER.info("Offer SDP: %s", offer_sdp)
+        # _LOGGER.info("Offer SDP: %s", offer_sdp)
         # Try each gateway address (flag 4096) with timeout
         # Use gateway addresses specifically for WebSocket connection
         gateway_addresses = agora_response.get_gateway_addresses()
@@ -338,13 +339,6 @@ class AgoraWebSocketHandler:
                     elif message_type == "on_token_privilege_did_expire":
                         _LOGGER.error("Token expired! Connection may drop.")
 
-                    # Handle user online
-                    elif message_type == "on_user_online":
-                        uid = msg_body.get("uid")
-                        if uid:
-                            self._online_users.add(uid)
-                            _LOGGER.info("[msg_loop] User online: %s", uid)
-
                 except json.JSONDecodeError as ex:
                     _LOGGER.error("[msg_loop] Failed to parse message: %s", ex)
 
@@ -417,7 +411,7 @@ class AgoraWebSocketHandler:
             _LOGGER.info("Stored rejoin_token: %s...", self._rejoin_token[:20])
 
         # Send set_client_role after successful connection
-        await self._send_set_client_role(role="host", level=0)
+        # await self._send_set_client_role(role="host", level=0)
 
         if not ortc:
             _LOGGER.error("No ORTC parameters in join success response")
@@ -470,7 +464,7 @@ class AgoraWebSocketHandler:
         answer_sdp = self._generate_answer_sdp(ortc, sdp_info)
         if answer_sdp:
             _LOGGER.info("Generated answer SDP from Agora ORTC parameters")
-            _LOGGER.info("Generated SDP: %s", answer_sdp)
+            # _LOGGER.info("Generated SDP: %s", answer_sdp)
 
             # Store answer SDP for later retrieval
             self._answer_sdp = answer_sdp
@@ -524,23 +518,47 @@ class AgoraWebSocketHandler:
         )
 
     async def _handle_user_online(self, response: dict[str, Any]) -> None:
-        """Handle user online notification."""
+        """Handle user online notification.
+
+        When a user comes online, check if we already have a pending video
+        stream for them (on_add_video_stream may arrive before on_user_online).
+        If so, auto-subscribe now.
+        """
         message = response.get("_message", {})
         uid = message.get("uid")
         if uid:
             self._online_users.add(uid)
             _LOGGER.info("User %s came online", uid)
 
+            # Check if we already have a pending video stream for this user
+            if uid in self._video_streams and self._websocket:
+                stream_info = self._video_streams[uid]
+                if not stream_info.get("subscribed"):
+                    _LOGGER.info(
+                        "User %s is online and has pending video stream, subscribing now",
+                        uid,
+                    )
+                    stream_info["subscribed"] = True
+                    await self._send_subscribe(
+                        stream_id=uid,
+                        ssrc_id=stream_info["ssrcId"],
+                        codec="vp8",
+                    )
+
     async def _handle_add_video_stream(self, response: dict[str, Any]) -> None:
-        """Handle add video stream notification and auto-subscribe."""
+        """Handle add video stream notification and auto-subscribe.
+
+        The message type 'on_add_video_stream' itself implies this is a video
+        stream — do not require an additional 'video' boolean field.
+        If the user is already online, subscribe immediately.
+        """
         message = response.get("_message", {})
         uid = message.get("uid")
         ssrc_id = message.get("ssrcId")
         rtx_ssrc_id = message.get("rtxSsrcId")
         cname = message.get("cname")
-        is_video = message.get("video", False)
 
-        if uid and is_video:
+        if uid:
             _LOGGER.info(
                 "Video stream added - uid: %s, ssrcId: %s, rtxSsrcId: %s, cname: %s",
                 uid,
@@ -554,11 +572,64 @@ class AgoraWebSocketHandler:
                 "ssrcId": ssrc_id,
                 "rtxSsrcId": rtx_ssrc_id,
                 "cname": cname,
+                "subscribed": False,
             }
 
-            # Auto-subscribe to the video stream
-            if self._websocket:
+            # Auto-subscribe if user is already online
+            if uid in self._online_users and self._websocket:
+                _LOGGER.info(
+                    "User %s already online, subscribing to video stream now", uid
+                )
+                self._video_streams[uid]["subscribed"] = True
                 await self._send_subscribe(stream_id=uid, ssrc_id=ssrc_id, codec="vp8")
+
+    async def _handle_user_offline(self, response: dict[str, Any]) -> None:
+        """Handle user offline notification.
+
+        Send unsubscribe for the user's stream and clean up tracking state.
+        """
+        message = response.get("_message", {})
+        uid = message.get("uid")
+        reason = message.get("reason", "unknown")
+        if uid:
+            _LOGGER.info("User %s went offline (reason: %s)", uid, reason)
+            self._online_users.discard(uid)
+
+            # Unsubscribe if we had an active subscription
+            if uid in self._video_streams:
+                if self._video_streams[uid].get("subscribed") and self._websocket:
+                    await self._send_unsubscribe(stream_id=uid)
+                del self._video_streams[uid]
+
+    async def _send_unsubscribe(
+        self,
+        stream_id: int,
+        p2p_id: int = 1,
+    ) -> None:
+        """Send unsubscribe message to Agora.
+
+        Args:
+            stream_id: Stream ID (the uid of the remote user)
+            p2p_id: P2P ID (default: 1)
+
+        """
+        if not self._websocket:
+            _LOGGER.error("Cannot send unsubscribe: websocket not connected")
+            return
+
+        message_id = secrets.token_hex(3)
+        message = {
+            "_id": message_id,
+            "_type": "unsubscribe",
+            "_message": {
+                "p2p_id": p2p_id,
+                "ortc": [],
+                "stream_id": stream_id,
+            },
+        }
+
+        _LOGGER.info("Sending unsubscribe message: %s", message)
+        await self._websocket.send(json.dumps(message))
 
     def _create_join_message(
         self,
@@ -1288,8 +1359,8 @@ class AgoraWebSocketHandler:
                     )
 
             generated_sdp = "\r\n".join(sdp_lines) + "\r\n"
-            _LOGGER.info("Generated SDP lines count: %s", len(sdp_lines))
-            _LOGGER.debug("Generated SDP content: %s", generated_sdp)
+            # _LOGGER.info("Generated SDP lines count: %s", len(sdp_lines))
+            # _LOGGER.debug("Generated SDP content: %s", generated_sdp)
 
             if self._validate_sdp(generated_sdp):
                 return generated_sdp
@@ -1405,7 +1476,7 @@ class AgoraWebSocketHandler:
         ]
 
         generated_sdp = "\r\n".join(sdp_lines) + "\r\n"
-        _LOGGER.debug("Generated fallback SDP: %s", generated_sdp)
+        # _LOGGER.debug("Generated fallback SDP: %s", generated_sdp)
 
         # Validate fallback SDP
         if self._validate_sdp(generated_sdp):

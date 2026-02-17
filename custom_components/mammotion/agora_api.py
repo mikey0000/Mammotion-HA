@@ -160,72 +160,10 @@ class AgoraResponse:
                 len(edges_services),
             )
 
-            # CRITICAL FIX: Implement three-condition check from agoraRTC_N.js (lines 23979-23980)
-            # JavaScript logic: only derive credentials if ALL three conditions are true:
-            #   1. t (uid) is truthy AND
-            #   2. wN("ENCRYPT_PROXY_USERNAME_AND_PSW") is true (feature flag enabled) AND
-            #   3. window.isSecureContext is true (HTTPS context)
-            #
-            # If ANY condition fails, falls back to: RN.username="test", RN.password="111111"
-            #
-            # Evidence from log3.txt shows TURN allocate code=401 failures at initial attempt,
-            # then success on retry with same request ID. This proves credentials mismatch.
-            # Root cause: Python was always deriving when uid exists, but browser's JavaScript
-            # was using fallback when window.isSecureContext=false → MISMATCH → 401.
-            #
-            # Since Python cannot check window.isSecureContext (browser-side property),
-            # we must implement the Agora SDK fallback pattern: use detail fields as primary,
-            # fall back to "test"/"111111" Agora defaults, only derive from uid if needed.
-
-            # Three-tier credential strategy:
-            # Tier 1: API response detail fields (most reliable, from server)
-            # Tier 2: UID derivation (if detail fields empty)
-            # Tier 3: Agora RN defaults (matches JS behavior when isSecureContext=false)
-
-            # First, try to get credentials from detail fields (these come from Agora API)
-            _log.info("Detail fields for flag %d: %s", flag, detail)
-            username = detail.get("8", "")
-            credentials = detail.get("4", "")
-
-            if username and credentials:
-                # Tier 1: Use credentials from detail field (from Agora response)
-                _log.info(
-                    "Using credentials from API response detail. username=%s, cred_len=%s",
-                    username,
-                    credentials,
-                )
-            elif uid:
-                # Tier 2: If no detail credentials, try derived from uid
-                # This matches the case where uid exists but detail fields are empty
-                username = str(uid)
-                credentials = derive_password(uid)
-                _log.info("Using derived credentials from UID %s", uid)
-            else:
-                # Tier 3: Use Agora RN defaults (agoraRTC_N.js line 11755-11774)
-                # These are used when window.isSecureContext=false or credentials not available
-                username = detail.get("8", "")
-                credentials = detail.get("4", "")
-
-                _log.warning(
-                    "No uid or detail credentials available, using Agora RN defaults. "
-                    "This matches JavaScript behavior when window.isSecureContext=false"
-                )
-
-            # VALIDATION: Check that credentials are not empty
-            if not credentials:
-                _log.error(
-                    "CRITICAL: Empty credentials detected! uid=%s, username=%s, detail keys=%s. "
-                    "This will cause TURN 401 authentication failures.",
-                    uid,
-                    username,
-                    list(detail.keys()),
-                )
-            if not username:
-                _log.error(
-                    "CRITICAL: Empty username detected! uid=%s. This will cause TURN 401 failures.",
-                    uid,
-                )
-
+            # Note: We intentionally ignore the 'detail' fields for credentials (detail.8/detail.4)
+            # to match Agora SDK behavior which uses UID-derived credentials in secure contexts.
+            # Using detail fields causes TURN 401 failures because the server expects UID hash.
+            # The actual derivation happens below (lines 239-240).
             # Parse fingerprints from detail[19] (semicolon-separated list)
             # Each fingerprint corresponds to an edge address
             fingerprints = []
