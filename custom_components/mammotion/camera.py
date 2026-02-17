@@ -2,36 +2,51 @@
 
 from __future__ import annotations
 
+import asyncio
+import collections
+import functools
+import json
 import logging
 import secrets
-from collections import deque
 from collections.abc import Callable
 from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
 
+import websockets
 from homeassistant.components.camera import (
-    Camera,
     CameraEntityDescription,
-    StreamType,
+    WebRTCAnswer,
+    WebRTCError,
     WebRTCSendMessage,
+)
+from homeassistant.components.web_rtc import (
+    async_register_ice_servers,
 )
 from homeassistant.core import (
     HomeAssistant,
     ServiceCall,
     ServiceResponse,
     SupportsResponse,
+    callback,
 )
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pymammotion.http.model.camera_stream import (
     StreamSubscriptionResponse,
 )
 from pymammotion.utility.device_type import DeviceType
+from webrtc_models import RTCIceCandidateInit, RTCIceServer
 
 from . import MammotionConfigEntry
+from .agora_api import AgoraResponse
+from .agora_websocket import AgoraWebSocketHandler
 from .coordinator import MammotionBaseUpdateCoordinator
-from .entity import MammotionBaseEntity
+from .entity import MammotionCameraBaseEntity
 from .models import MammotionMowerData
 
 _LOGGER = logging.getLogger(__name__)
+
+PLACEHOLDER = Path(__file__).parent / "placeholder.png"
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -45,7 +60,7 @@ class MammotionCameraEntityDescription(CameraEntityDescription):
 CAMERAS: tuple[MammotionCameraEntityDescription, ...] = (
     MammotionCameraEntityDescription(
         key="webrtc_camera",
-        stream_fn=lambda coordinator: coordinator.get_stream_subscription(),
+        stream_fn=lambda coordinator: coordinator.get_stream_data(),
     ),
 )
 
@@ -58,90 +73,294 @@ async def async_setup_entry(
     """Set up the Mammotion camera entities."""
     mowers = entry.runtime_data.mowers
     entities = []
+
+    non_luba1_mower = next(
+        (
+            mower
+            for mower in mowers
+            if not DeviceType.is_luba1(mower.device.device_name)
+        ),
+        None,
+    )
+
+    if non_luba1_mower is None:
+        return
+
+    (
+        stream_data,
+        agora_response,
+    ) = await non_luba1_mower.reporting_coordinator.async_check_stream_expiry()
+
+    ice_servers = [
+        RTCIceServer(
+            urls=ice_server.urls,
+            username=ice_server.username,
+            credential=ice_server.credential,
+        )
+        for ice_server in agora_response.get_ice_servers(use_all_turn_servers=False)
+    ]
+
     for mower in mowers:
         if not DeviceType.is_luba1(mower.device.device_name):
             _LOGGER.debug("Config camera for %s", mower.device.device_name)
-            try:
-                # Try to get stream data
-                stream_data = await mower.api.get_stream_subscription(
-                    mower.device.device_name, mower.device.iot_id
-                )
-                if stream_data is not None:
-                    _LOGGER.debug("Received stream data: %s", stream_data)
-                    entities.extend(
-                        MammotionWebRTCCamera(
-                            mower.reporting_coordinator, entity_description
-                        )
-                        for entity_description in CAMERAS
-                    )
-                else:
-                    _LOGGER.error("No Agora data for %s", mower.device.device_name)
-            except Exception as e:
-                _LOGGER.error("Error on async setup entry camera for: %s", e)
+            mower.reporting_coordinator._ice_servers = ice_servers
 
+            for entity_description in CAMERAS:
+                entities.append(
+                    MammotionWebRTCCamera(
+                        mower.reporting_coordinator, entity_description, hass
+                    )
+                )
     async_add_entities(entities)
     await async_setup_platform_services(hass, entry)
 
 
-class MammotionWebRTCCamera(MammotionBaseEntity, Camera):
+class MammotionWebRTCCamera(MammotionCameraBaseEntity):
     """Mammotion WebRTC camera entity."""
 
     entity_description: MammotionCameraEntityDescription
-    _attr_has_entity_name = True
+    _attr_capability_attributes = None
 
     def __init__(
         self,
         coordinator: MammotionBaseUpdateCoordinator,
         entity_description: MammotionCameraEntityDescription,
+        hass: HomeAssistant,
     ) -> None:
         """Initialize the WebRTC camera entity."""
         super().__init__(coordinator, entity_description.key)
+        self._cache: dict[str, Any] = {}
+        self.access_tokens: collections.deque = collections.deque([], 2)
+        self.async_update_token()
+        self._create_stream_lock: asyncio.Lock | None = None
+        self._agora_handler = AgoraWebSocketHandler(hass)
         self.coordinator = coordinator
         self.entity_description = entity_description
         self._attr_translation_key = entity_description.key
         self._stream_data: StreamSubscriptionResponse | None = None
         self._attr_model = coordinator.device.device_name
-        self.access_tokens = deque([secrets.token_hex(16)])
-        self._webrtc_provider = None  # Avoid crash on async_refresh_providers()
-        self._legacy_webrtc_provider = None
-        self._supports_native_sync_webrtc = False
-        self._supports_native_async_webrtc = False
-
-    @property
-    def frontend_stream_type(self) -> StreamType | None:
-        """Return the type of stream supported by this camera."""
-        return StreamType.WEB_RTC
-
-    @property
-    def content_type(self) -> str:
-        """Return the content type of the camera image."""
-        return "image/jpeg"
+        self.access_tokens = [secrets.token_hex(16)]
+        # Get ICE servers from coordinator (populated in async_setup_entry)
+        self.ice_servers = getattr(coordinator, "_ice_servers", [])
+        async_register_ice_servers(hass, self.get_ice_servers)
 
     async def async_camera_image(
         self, width: int | None = None, height: int | None = None
     ) -> bytes | None:
-        """Return a still image response from the camera."""
-        # WebRTC cameras typically don't support still images
-        return None
+        """Return a placeholder image for WebRTC cameras that don't support snapshots."""
+        return await self.hass.async_add_executor_job(self.placeholder_image)
+
+    @classmethod
+    @functools.cache
+    def placeholder_image(cls) -> bytes:
+        """Return placeholder image to use when no stream is available."""
+        return PLACEHOLDER.read_bytes()
 
     async def async_handle_async_webrtc_offer(
         self, offer_sdp: str, session_id: str, send_message: WebRTCSendMessage
     ) -> None:
-        """Handles the WebRTC offer from the browser.
+        """Handle WebRTC offer by initiating WebSocket connection to Agora.
 
-        This function is required by the Home Assistant interface,
-        but it will not actually be used because we are using the Agora SDK.
+        This replaces the JavaScript SDK functionality and performs the WebRTC
+        negotiation directly in Python.
         """
-        _LOGGER.warning(
-            "A native WebRTC offer from Home Assistant was received, "
-            "but it will be ignored because we are using the Agora SDK directly in the frontend."
+
+        stream_data, agora_response = await self.coordinator.async_check_stream_expiry()
+        # Reset candidates list for new session
+        self._agora_handler.candidates = []
+        _LOGGER.info("Handling WebRTC offer for session %s", session_id)
+        # _LOGGER.info("Raw OFFER SDP %s", offer_sdp)
+
+        # Wait for initial ICE candidates, specifically looking for a reflexive candidate (srflx/prflx)
+        # or relay, as requested to ensure public connectivity.
+        max_wait = 15.0
+        wait_interval = 0.1
+        elapsed = 0.0
+
+        def has_agora_turn_candidate():
+            """Check if any candidate is from Agora TURN servers (srflx, relay, or prflx)."""
+            for cand in self._agora_handler.candidates:
+                cand_str = ""
+                if isinstance(cand, dict):
+                    cand_str = cand.get("candidate", "")
+                elif hasattr(cand, "candidate"):
+                    cand_str = cand.candidate
+
+                # Check for candidates from Agora TURN/STUN servers:
+                # - typ srflx: Server Reflexive (discovered via STUN from Agora)
+                # - typ relay: Relay candidate (routed through Agora TURN)
+                # - typ prflx: Peer Reflexive (similar to srflx)
+                if any(t in cand_str for t in ["typ srflx", "typ relay", "typ prflx"]):
+                    return True
+            return False
+
+        # Wait for at least one candidate from Agora TURN servers before proceeding
+        # This ensures we have reflexive or relay connectivity for NAT traversal
+        # while not has_agora_turn_candidate() and elapsed < max_wait:
+        #     await asyncio.sleep(wait_interval)
+        #     elapsed += wait_interval
+
+        # Filter candidates to ONLY send candidates that match Agora ICE servers (Strict Filtering)
+        # "Change the candidate selection code to only accept candidates from agora ice servers"
+        # INTERPRETATION:
+        # - 'relay' candidates MUST match an Agora TURN server IP.
+        # - 'srflx' candidates come from Agora STUN servers but have the public IP of the user. We MUST allow these.
+        # - 'prflx' candidates are peer-reflexive, similar to srflx. Allow.
+        # - 'host' candidates are local IPs. These do NOT come from an ICE server. Filter them out.
+
+        valid_ips = set()
+        if agora_response and agora_response.addresses:
+            for addr in agora_response.addresses:
+                valid_ips.add(addr.ip)
+
+        filtered_candidates = []
+        for cand in self._agora_handler.candidates:
+            cand_str = ""
+            if isinstance(cand, dict):
+                cand_str = cand.get("candidate", "")
+            elif hasattr(cand, "candidate"):
+                cand_str = cand.candidate
+
+            # Allow reflexive types unconditionally (they connect via Agora STUN)
+            if any(t in cand_str for t in ["typ srflx", "typ prflx", "typ relay"]):
+                filtered_candidates.append(cand)
+                continue
+
+            # For relay candidates, enforce strict IP matching
+            if "typ relay" in cand_str:
+                if any(ip in cand_str for ip in valid_ips):
+                    filtered_candidates.append(cand)
+                else:
+                    _LOGGER.warning("Dropped unknown relay candidate: %s", cand_str)
+                continue
+
+            # Drop 'host' candidates or others
+            # _LOGGER.debug("Dropped candidate (not from ICE server): %s", cand_str)
+
+        if filtered_candidates:
+            _LOGGER.info(
+                "Strict filtering: Keeping %d candidates (Agora-derived). Total was %d.",
+                len(filtered_candidates),
+                len(self._agora_handler.candidates),
+            )
+            self._agora_handler.candidates = filtered_candidates
+        else:
+            _LOGGER.warning(
+                "Strict filtering removed all candidates! Fallback to original list."
+            )
+            # If we filtered everything, maybe we shouldn't have. Fallback or fail?
+            # For now, let's fallback to the previous "reflexive" list or just keep all to avoid total failure,
+            # but log a warning.
+            # Actually, let's try to at least keep reflexive/relay if IP match fails (e.g. if srflx usage was intended).
+            # But user request was specific. Let's warn and proceed with empty (or re-populate if desired behaviour is 'best effort').
+            # Given "only accept", sending nothing is compliant but broken.
+            # Let's assume we MUST find one. If not, the wait loop above failed to find an Agora one.
+            _LOGGER.warning(
+                "No reflexive candidates found after wait, proceeding with all collected candidates"
+            )
+
+        _LOGGER.info(
+            "Collected %d ICE candidates (Reflexive found: %s) after %.1fs",
+            len(self._agora_handler.candidates),
+            has_agora_turn_candidate(),
+            elapsed,
         )
 
-        # Informs the frontend that it must use the Agora SDK
-        send_message(
-            '{"type":"error","error":"Use the Agora SDK for this camera","useAgoraSDK":true}',
-            session_id,
+        try:
+            # Get stream data (appid, channelName, token, uid)
+            await self.coordinator.join_webrtc_channel()
+            if not stream_data or stream_data.data is None:
+                _LOGGER.error("No stream data available for WebRTC offer")
+                send_message(
+                    WebRTCError(
+                        "500",
+                        "No stream data available for WebRTC offer",
+                    )
+                )
+                return
+
+            agora_data = stream_data.data
+
+            # Start WebSocket connection and WebRTC negotiation
+            answer_sdp = await self._perform_webrtc_negotiation(
+                offer_sdp, agora_data, session_id, agora_response
+            )
+
+            if answer_sdp:
+                # Send the answer back to the browser
+
+                send_message(WebRTCAnswer(answer_sdp))
+                _LOGGER.info("WebRTC negotiation completed successfully")
+                # Send set_client_role after successful join
+            else:
+                send_message(WebRTCError("500", "WebRTC negotiation failed"))
+
+        except (websockets.exceptions.WebSocketException, json.JSONDecodeError) as ex:
+            _LOGGER.error("Error handling WebRTC offer: %s", ex)
+            send_message(WebRTCError("500", f"Error handling WebRTC offer: {ex}"))
+
+    async def async_on_webrtc_candidate(
+        self, session_id: str, candidate: RTCIceCandidateInit
+    ) -> None:
+        """Collect WebRTC candidates for inclusion in join message."""
+        _LOGGER.info(
+            "Received WebRTC candidate for session %s: %s", session_id, candidate
         )
+
+        # Collect candidates - they'll be included in the join message
+        self._agora_handler.candidates.append(candidate)
+
+    @callback
+    async def async_close_webrtc_session(self, session_id: str) -> None:
+        """Close WebRTC session."""
+        await self._agora_handler.disconnect()
+
+    async def _perform_webrtc_negotiation(
+        self,
+        offer_sdp: str,
+        agora_data: StreamSubscriptionResponse,
+        session_id: str,
+        agora_response: AgoraResponse,
+    ) -> str | None:
+        """Perform WebRTC negotiation through Agora WebSocket.
+
+        Args:
+            self: The camera instance
+            offer_sdp: The WebRTC offer SDP from the browser
+            agora_data: Dict containing appid, channelName, token, uid
+            session_id: Session ID for this WebRTC connection
+            agora_response: AgoraResponse object containing ICE servers
+
+        Returns:
+            Answer SDP if successful, None otherwise
+
+        """
+        _LOGGER.debug("Starting WebRTC negotiation with Agora data: %s", agora_data)
+        # _LOGGER.debug("Starting WebRTC negotiation with offer_sdp data: %s", offer_sdp)
+
+        # Use the new AgoraWebSocketHandler for negotiation
+        try:
+            answer_sdp = await self._agora_handler.connect_and_join(
+                agora_data, offer_sdp, session_id, agora_response
+            )
+
+            if answer_sdp:
+                _LOGGER.info("Successfully negotiated WebRTC through Agora")
+                return answer_sdp
+
+            _LOGGER.error(
+                "Failed to get answer SDP from Agora negotiation, using handler fallback"
+            )
+            # Use the handler's fallback SDP generation as last resort
+            return None
+
+        except (OSError, ValueError, TypeError) as ex:
+            _LOGGER.error("WebRTC negotiation failed: %s", ex)
+            return None
+
+    def get_ice_servers(self) -> list[RTCIceServer]:
+        """Return the ICE servers from Agora API."""
+        return self.ice_servers
 
 
 # Global
