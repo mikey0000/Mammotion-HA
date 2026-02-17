@@ -4,11 +4,13 @@ from __future__ import annotations
 
 import asyncio
 import collections
+import functools
 import json
 import logging
 import secrets
 from collections.abc import Callable
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 import websockets
@@ -36,12 +38,15 @@ from pymammotion.utility.device_type import DeviceType
 from webrtc_models import RTCIceCandidateInit, RTCIceServer
 
 from . import MammotionConfigEntry
+from .agora_api import AgoraResponse
 from .agora_websocket import AgoraWebSocketHandler
 from .coordinator import MammotionBaseUpdateCoordinator
 from .entity import MammotionCameraBaseEntity
 from .models import MammotionMowerData
 
 _LOGGER = logging.getLogger(__name__)
+
+PLACEHOLDER = Path(__file__).parent / "placeholder.png"
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -68,18 +73,44 @@ async def async_setup_entry(
     """Set up the Mammotion camera entities."""
     mowers = entry.runtime_data.mowers
     entities = []
+
+    non_luba1_mower = next(
+        (
+            mower
+            for mower in mowers
+            if not DeviceType.is_luba1(mower.device.device_name)
+        ),
+        None,
+    )
+
+    if non_luba1_mower is None:
+        return
+
+    (
+        stream_data,
+        agora_response,
+    ) = await non_luba1_mower.reporting_coordinator.async_check_stream_expiry()
+
+    ice_servers = [
+        RTCIceServer(
+            urls=ice_server.urls,
+            username=ice_server.username,
+            credential=ice_server.credential,
+        )
+        for ice_server in agora_response.get_ice_servers(use_all_turn_servers=False)
+    ]
+
     for mower in mowers:
         if not DeviceType.is_luba1(mower.device.device_name):
             _LOGGER.debug("Config camera for %s", mower.device.device_name)
-            try:
-                # Try to get stream data
-                stream_data = await mower.api.get_stream_subscription(
-                    mower.device.device_name, mower.device.iot_id
-                )
-                mower.reporting_coordinator.set_stream_data(stream_data)
-            except Exception as e:
-                _LOGGER.error("Error on async setup entry camera for: %s", e)
+            mower.reporting_coordinator._ice_servers = ice_servers
 
+            for entity_description in CAMERAS:
+                entities.append(
+                    MammotionWebRTCCamera(
+                        mower.reporting_coordinator, entity_description, hass
+                    )
+                )
     async_add_entities(entities)
     await async_setup_platform_services(hass, entry)
 
@@ -111,14 +142,19 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         self.access_tokens = [secrets.token_hex(16)]
         # Get ICE servers from coordinator (populated in async_setup_entry)
         self.ice_servers = getattr(coordinator, "_ice_servers", [])
-        self._agora_response = getattr(coordinator, "_agora_response", None)
         async_register_ice_servers(hass, self.get_ice_servers)
 
     async def async_camera_image(
         self, width: int | None = None, height: int | None = None
     ) -> bytes | None:
         """Return a placeholder image for WebRTC cameras that don't support snapshots."""
-        return None
+        return await self.hass.async_add_executor_job(self.placeholder_image)
+
+    @classmethod
+    @functools.cache
+    def placeholder_image(cls) -> bytes:
+        """Return placeholder image to use when no stream is available."""
+        return PLACEHOLDER.read_bytes()
 
     async def async_handle_async_webrtc_offer(
         self, offer_sdp: str, session_id: str, send_message: WebRTCSendMessage
@@ -128,6 +164,8 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         This replaces the JavaScript SDK functionality and performs the WebRTC
         negotiation directly in Python.
         """
+
+        stream_data, agora_response = await self.coordinator.async_check_stream_expiry()
         # Reset candidates list for new session
         self._agora_handler.candidates = []
         _LOGGER.info("Handling WebRTC offer for session %s", session_id)
@@ -171,8 +209,8 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         # - 'host' candidates are local IPs. These do NOT come from an ICE server. Filter them out.
 
         valid_ips = set()
-        if self._agora_response and self._agora_response.addresses:
-            for addr in self._agora_response.addresses:
+        if agora_response and agora_response.addresses:
+            for addr in agora_response.addresses:
                 valid_ips.add(addr.ip)
 
         filtered_candidates = []
@@ -229,12 +267,8 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         )
 
         try:
-            # Check for stream token expiry before using it
-            await self.coordinator.async_check_stream_expiry()
-
             # Get stream data (appid, channelName, token, uid)
             await self.coordinator.join_webrtc_channel()
-            stream_data = self.coordinator.get_stream_data()
             if not stream_data or stream_data.data is None:
                 _LOGGER.error("No stream data available for WebRTC offer")
                 send_message(
@@ -249,7 +283,7 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
 
             # Start WebSocket connection and WebRTC negotiation
             answer_sdp = await self._perform_webrtc_negotiation(
-                offer_sdp, agora_data, session_id
+                offer_sdp, agora_data, session_id, agora_response
             )
 
             if answer_sdp:
@@ -282,7 +316,11 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         await self._agora_handler.disconnect()
 
     async def _perform_webrtc_negotiation(
-        self, offer_sdp: str, agora_data: StreamSubscriptionResponse, session_id: str
+        self,
+        offer_sdp: str,
+        agora_data: StreamSubscriptionResponse,
+        session_id: str,
+        agora_response: AgoraResponse,
     ) -> str | None:
         """Perform WebRTC negotiation through Agora WebSocket.
 
@@ -291,6 +329,7 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
             offer_sdp: The WebRTC offer SDP from the browser
             agora_data: Dict containing appid, channelName, token, uid
             session_id: Session ID for this WebRTC connection
+            agora_response: AgoraResponse object containing ICE servers
 
         Returns:
             Answer SDP if successful, None otherwise
@@ -302,7 +341,7 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         # Use the new AgoraWebSocketHandler for negotiation
         try:
             answer_sdp = await self._agora_handler.connect_and_join(
-                agora_data, offer_sdp, session_id, agora_response=self._agora_response
+                agora_data, offer_sdp, session_id, agora_response
             )
 
             if answer_sdp:

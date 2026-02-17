@@ -52,7 +52,7 @@ from pymammotion.utility.constant import WorkMode
 from pymammotion.utility.device_type import DeviceType
 from webrtc_models import RTCIceServer
 
-from .agora_api import SERVICE_IDS, AgoraAPIClient
+from .agora_api import SERVICE_IDS, AgoraAPIClient, AgoraResponse
 from .config import MammotionConfigStore
 from .const import (
     COMMAND_EXCEPTIONS,
@@ -118,7 +118,6 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         self._stream_data: Response[StreamSubscriptionResponse] | None = (
             None  # Stream data [Agora]
         )
-        self._stream_expiry: datetime.datetime | None = None
         self.commands = MammotionCommand(
             device.device_name,
             int(
@@ -135,93 +134,70 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
     def get_coordinator_data(self, device: MammotionMowerDeviceManager) -> DataT:
         """Get coordinator data."""
 
-    async def async_check_stream_expiry(self) -> None:
+    async def async_check_stream_expiry(
+        self,
+    ) -> tuple[StreamSubscriptionResponse, AgoraResponse]:
         """Check if stream token is expired and refresh if needed."""
-        now = datetime.datetime.now()
-        if (
-            self._stream_data is None
-            or self._stream_expiry is None
-            or now >= self._stream_expiry
-        ):
-            LOGGER.debug(
-                "Stream token expired or missing (expiry=%s, now=%s). Refreshing...",
-                self._stream_expiry,
-                now,
+        try:
+            # Refresh stream data
+            stream_data = await self.manager.get_stream_subscription(
+                self.device_name, self.device.iot_id
             )
-            try:
-                # Refresh stream data
-                stream_data = await self.manager.get_stream_subscription(
-                    self.device_name, self.device.iot_id
-                )
-                self.set_stream_data(stream_data)
+            self.set_stream_data(stream_data)
 
-                if stream_data is not None:
-                    LOGGER.debug("Received stream data: %s", stream_data)
+            if stream_data is not None:
+                LOGGER.debug("Received stream data: %s", stream_data)
 
-                    # Get ICE servers from Agora API
-                    try:
-                        subscription = stream_data.data.to_dict()
-                        async with AgoraAPIClient() as agora_client:
-                            agora_response = await agora_client.choose_server(
-                                app_id=subscription["appid"],
-                                token=subscription["token"],
-                                channel_name=subscription["channelName"],
-                                user_id=int(subscription["uid"]),
-                                service_flags=[
-                                    SERVICE_IDS["CHOOSE_SERVER"],  # Gateway addresses
-                                    SERVICE_IDS["CLOUD_PROXY_FALLBACK"],  # TURN servers
-                                ],
+                # Get ICE servers from Agora API
+                try:
+                    subscription = stream_data.data.to_dict()
+                    async with AgoraAPIClient() as agora_client:
+                        agora_response = await agora_client.choose_server(
+                            app_id=subscription["appid"],
+                            token=subscription["token"],
+                            channel_name=subscription["channelName"],
+                            user_id=int(subscription["uid"]),
+                            service_flags=[
+                                SERVICE_IDS["CHOOSE_SERVER"],  # Gateway addresses
+                                SERVICE_IDS["CLOUD_PROXY_FALLBACK"],  # TURN servers
+                            ],
+                        )
+
+                        # Get ICE servers and convert to RTCIceServer format - use only first TURN server to match SDK (3 entries)
+                        ice_servers_agora = agora_response.get_ice_servers(
+                            use_all_turn_servers=False
+                        )
+                        LOGGER.info("Ice Servers from Agora API:%s", ice_servers_agora)
+                        ice_servers = [
+                            RTCIceServer(
+                                urls=ice_server.urls,
+                                username=ice_server.username,
+                                credential=ice_server.credential,
                             )
+                            for ice_server in ice_servers_agora
+                        ]
 
-                            # Get ICE servers and convert to RTCIceServer format - use only first TURN server to match SDK (3 entries)
-                            ice_servers_agora = agora_response.get_ice_servers(
-                                use_all_turn_servers=False
-                            )
-                            LOGGER.info(
-                                "Ice Servers from Agora API:%s", ice_servers_agora
-                            )
-                            ice_servers = [
-                                RTCIceServer(
-                                    urls=ice_server.urls,
-                                    username=ice_server.username,
-                                    credential=ice_server.credential,
-                                )
-                                for ice_server in ice_servers_agora
-                            ]
+                        # Store ICE servers in coordinator
+                        self._ice_servers = ice_servers
+                        self._agora_response = agora_response
+                        LOGGER.info(
+                            "Retrieved %d ICE servers from Agora API",
+                            len(ice_servers),
+                        )
+                except Exception as e:
+                    LOGGER.error("Failed to get ICE servers from Agora API: %s", e)
+                    self._ice_servers = []
 
-                            # Store ICE servers in coordinator
-                            self._ice_servers = ice_servers
-                            self._agora_response = agora_response
-                            LOGGER.info(
-                                "Retrieved %d ICE servers from Agora API",
-                                len(ice_servers),
-                            )
-                    except Exception as e:
-                        LOGGER.error("Failed to get ICE servers from Agora API: %s", e)
-                        self._ice_servers = []
-
-                LOGGER.debug("Stream token refreshed successfully")
-            except Exception as ex:
-                LOGGER.error("Failed to refresh stream token: %s", ex)
+            LOGGER.debug("Stream token refreshed successfully")
+        except Exception as ex:
+            LOGGER.error("Failed to refresh stream token: %s", ex)
+        return stream_data, agora_response
 
     def set_stream_data(
         self, stream_data: Response[StreamSubscriptionResponse]
     ) -> None:
         """Set stream data."""
         self._stream_data = stream_data
-        if stream_data and stream_data.data:
-            # availableTime is in seconds, typically 3600
-            # We subtract 60 seconds buffer to be safe
-            available_time = getattr(stream_data.data, "availableTime", 3600)
-            if available_time:
-                self._stream_expiry = datetime.datetime.now() + timedelta(
-                    seconds=int(available_time) - 60
-                )
-                LOGGER.debug(
-                    "Set stream expiry to %s (availableTime=%s)",
-                    self._stream_expiry,
-                    available_time,
-                )
 
     def get_stream_data(self) -> Response[StreamSubscriptionResponse]:
         """Return stream data."""
