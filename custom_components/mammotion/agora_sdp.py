@@ -143,6 +143,8 @@ class SDPParser:
             )
         if "icelite" in parsed:
             lines.append("a=ice-lite")
+        if "extmapAllowMixed" in parsed:
+            lines.append("a=extmap-allow-mixed")
 
         for m in parsed.get("media", []):
             lines.append(f"m={m['type']} {m['port']} {m['protocol']} {m['payloads']}")
@@ -382,6 +384,7 @@ def generate_answer_from_ortc(
         ),
         "icelite": "ice-lite",
         "media": [],
+        "extmapAllowMixed": "extmap-allow-mixed",
     }
 
     # Match IDs from original offer
@@ -466,13 +469,24 @@ def generate_answer_from_ortc(
 
             # handle fmtp
             fmtp_params = c.get("fmtp", {}).get("parameters", {})
+
+            # Match JS: Force stereo for opus
+            if c["rtpMap"].get("encodingName", "").lower() == "opus":
+                fmtp_params["stereo"] = "1"
+                fmtp_params["sprop-stereo"] = "1"
+
             if fmtp_params:
+                config_parts = []
+                for k, v in fmtp_params.items():
+                    if v is not None:
+                        config_parts.append(f"{k}={v}")
+                    else:
+                        config_parts.append(k)
+
                 answer_m["fmtp"].append(
                     {
                         "payload": pt,
-                        "config": ";".join(
-                            [f"{k}={v}" for k, v in fmtp_params.items()]
-                        ),
+                        "config": ";".join(config_parts),
                     }
                 )
 

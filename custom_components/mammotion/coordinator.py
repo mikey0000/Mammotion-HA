@@ -50,7 +50,9 @@ from pymammotion.mammotion.devices.mammotion_cloud import MammotionCloud
 from pymammotion.proto import RptAct, RptInfoType, SystemUpdateBufMsg
 from pymammotion.utility.constant import WorkMode
 from pymammotion.utility.device_type import DeviceType
+from webrtc_models import RTCIceServer
 
+from .agora_api import SERVICE_IDS, AgoraAPIClient
 from .config import MammotionConfigStore
 from .const import (
     COMMAND_EXCEPTIONS,
@@ -152,6 +154,52 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
                     self.device_name, self.device.iot_id
                 )
                 self.set_stream_data(stream_data)
+
+                if stream_data is not None:
+                    LOGGER.debug("Received stream data: %s", stream_data)
+
+                    # Get ICE servers from Agora API
+                    try:
+                        subscription = stream_data.data.to_dict()
+                        async with AgoraAPIClient() as agora_client:
+                            agora_response = await agora_client.choose_server(
+                                app_id=subscription["appid"],
+                                token=subscription["token"],
+                                channel_name=subscription["channelName"],
+                                user_id=int(subscription["uid"]),
+                                service_flags=[
+                                    SERVICE_IDS["CHOOSE_SERVER"],  # Gateway addresses
+                                    SERVICE_IDS["CLOUD_PROXY_FALLBACK"],  # TURN servers
+                                ],
+                            )
+
+                            # Get ICE servers and convert to RTCIceServer format - use only first TURN server to match SDK (3 entries)
+                            ice_servers_agora = agora_response.get_ice_servers(
+                                use_all_turn_servers=False
+                            )
+                            LOGGER.info(
+                                "Ice Servers from Agora API:%s", ice_servers_agora
+                            )
+                            ice_servers = [
+                                RTCIceServer(
+                                    urls=ice_server.urls,
+                                    username=ice_server.username,
+                                    credential=ice_server.credential,
+                                )
+                                for ice_server in ice_servers_agora
+                            ]
+
+                            # Store ICE servers in coordinator
+                            self._ice_servers = ice_servers
+                            self._agora_response = agora_response
+                            LOGGER.info(
+                                "Retrieved %d ICE servers from Agora API",
+                                len(ice_servers),
+                            )
+                    except Exception as e:
+                        LOGGER.error("Failed to get ICE servers from Agora API: %s", e)
+                        self._ice_servers = []
+
                 LOGGER.debug("Stream token refreshed successfully")
             except Exception as ex:
                 LOGGER.error("Failed to refresh stream token: %s", ex)

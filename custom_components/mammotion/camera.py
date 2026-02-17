@@ -36,7 +36,6 @@ from pymammotion.utility.device_type import DeviceType
 from webrtc_models import RTCIceCandidateInit, RTCIceServer
 
 from . import MammotionConfigEntry
-from .agora_api import SERVICE_IDS, AgoraAPIClient
 from .agora_websocket import AgoraWebSocketHandler
 from .coordinator import MammotionBaseUpdateCoordinator
 from .entity import MammotionCameraBaseEntity
@@ -78,61 +77,6 @@ async def async_setup_entry(
                     mower.device.device_name, mower.device.iot_id
                 )
                 mower.reporting_coordinator.set_stream_data(stream_data)
-
-                if stream_data is not None:
-                    _LOGGER.debug("Received stream data: %s", stream_data)
-
-                    # Get ICE servers from Agora API
-                    try:
-                        subscription = stream_data.data.to_dict()
-                        async with AgoraAPIClient() as agora_client:
-                            agora_response = await agora_client.choose_server(
-                                app_id=subscription["appid"],
-                                token=subscription["token"],
-                                channel_name=subscription["channelName"],
-                                user_id=int(subscription["uid"]),
-                                service_flags=[
-                                    SERVICE_IDS["CHOOSE_SERVER"],  # Gateway addresses
-                                    SERVICE_IDS["CLOUD_PROXY_FALLBACK"],  # TURN servers
-                                ],
-                            )
-
-                            # Get ICE servers and convert to RTCIceServer format - use only first TURN server to match SDK (3 entries)
-                            ice_servers_agora = agora_response.get_ice_servers(
-                                use_all_turn_servers=False
-                            )
-                            ice_servers = []
-                            _LOGGER.info(
-                                "Ice Servers from Agora API:%s", ice_servers_agora
-                            )
-                            for ice_server in ice_servers_agora:
-                                ice_servers.append(
-                                    RTCIceServer(
-                                        urls=ice_server.urls,
-                                        username=ice_server.username,
-                                        credential=ice_server.credential,
-                                    )
-                                )
-
-                            # Store ICE servers in coordinator
-                            mower.reporting_coordinator._ice_servers = ice_servers
-                            mower.reporting_coordinator._agora_response = agora_response
-                            _LOGGER.info(
-                                "Retrieved %d ICE servers from Agora API",
-                                len(ice_servers),
-                            )
-                    except Exception as e:
-                        _LOGGER.error("Failed to get ICE servers from Agora API: %s", e)
-                        mower.reporting_coordinator._ice_servers = []
-
-                    entities.extend(
-                        MammotionWebRTCCamera(
-                            mower.reporting_coordinator, entity_description, hass
-                        )
-                        for entity_description in CAMERAS
-                    )
-                else:
-                    _LOGGER.error("No Agora data for %s", mower.device.device_name)
             except Exception as e:
                 _LOGGER.error("Error on async setup entry camera for: %s", e)
 
@@ -369,12 +313,11 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
                 "Failed to get answer SDP from Agora negotiation, using handler fallback"
             )
             # Use the handler's fallback SDP generation as last resort
-            return self._agora_handler._generate_fallback_sdp()
+            return None
 
         except (OSError, ValueError, TypeError) as ex:
             _LOGGER.error("WebRTC negotiation failed: %s", ex)
-            _LOGGER.warning("Using fallback SDP due to exception")
-            return self._agora_handler._generate_fallback_sdp()
+            return None
 
     def get_ice_servers(self) -> list[RTCIceServer]:
         """Return the ICE servers from Agora API."""
