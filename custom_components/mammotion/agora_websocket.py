@@ -688,43 +688,6 @@ class AgoraWebSocketHandler:
                 },
                 "join_ts": int(time.time() * 1000),
                 "ortc": ortc_info,
-                # "ortc": {
-                #     "iceParameters": {
-                #         "iceUfrag": sdp_info.ice_ufrag,
-                #         "icePwd": sdp_info.ice_pwd,
-                #         "candidates": self._convert_candidates_to_ortc(),
-                #     },
-                #     "dtlsParameters": {
-                #         "fingerprints": [
-                #             {
-                #                 "hashFunction": "sha-256",
-                #                 "fingerprint": sdp_info.fingerprint,
-                #             }
-                #         ],
-                #         "role": "client",
-                #     },
-                #     "rtpCapabilities": {
-                #         "send": {
-                #             "audioCodecs": [],
-                #             "audioExtensions": [],
-                #             "videoCodecs": [],
-                #             "videoExtensions": [],
-                #         },
-                #         "recv": {
-                #             "audioCodecs": [],
-                #             "audioExtensions": [],
-                #             "videoCodecs": get_video_codecs_recv(),
-                #             "videoExtensions": [],
-                #         },
-                #         "sendrecv": {
-                #             "audioCodecs": get_audio_codecs(),
-                #             "audioExtensions": get_audio_extensions(),
-                #             "videoCodecs": get_video_codecs_sendrecv(),
-                #             "videoExtensions": get_video_extensions(),
-                #         },
-                #     },
-                #     "version": "2",
-                # },
             },
         }
 
