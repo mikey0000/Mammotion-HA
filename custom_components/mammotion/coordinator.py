@@ -136,8 +136,11 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
 
     async def async_check_stream_expiry(
         self,
-    ) -> tuple[StreamSubscriptionResponse, AgoraResponse]:
+    ) -> tuple[StreamSubscriptionResponse | None, AgoraResponse | None]:
         """Check if stream token is expired and refresh if needed."""
+        stream_data = None
+        agora_response = None
+
         try:
             # Refresh stream data
             stream_data = await self.manager.get_stream_subscription(

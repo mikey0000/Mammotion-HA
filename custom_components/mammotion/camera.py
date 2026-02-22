@@ -73,6 +73,7 @@ async def async_setup_entry(
     """Set up the Mammotion camera entities."""
     mowers = entry.runtime_data.mowers
     entities = []
+    ice_servers = []
 
     non_luba1_mower = next(
         (
@@ -91,14 +92,15 @@ async def async_setup_entry(
         agora_response,
     ) = await non_luba1_mower.reporting_coordinator.async_check_stream_expiry()
 
-    ice_servers = [
-        RTCIceServer(
-            urls=ice_server.urls,
-            username=ice_server.username,
-            credential=ice_server.credential,
-        )
-        for ice_server in agora_response.get_ice_servers(use_all_turn_servers=False)
-    ]
+    if agora_response is not None:
+        ice_servers = [
+            RTCIceServer(
+                urls=ice_server.urls,
+                username=ice_server.username,
+                credential=ice_server.credential,
+            )
+            for ice_server in agora_response.get_ice_servers(use_all_turn_servers=False)
+        ]
 
     for mower in mowers:
         if not DeviceType.is_luba1(mower.device.device_name):
