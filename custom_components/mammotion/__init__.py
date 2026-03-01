@@ -27,7 +27,7 @@ from pymammotion.aliyun.model.session_by_authcode_response import (
 )
 from pymammotion.data.model.account import Credentials
 from pymammotion.http.http import MammotionHTTP
-from pymammotion.http.model.http import LoginResponseData, Response
+from pymammotion.http.model.http import LoginResponseData, MQTTConnection, Response
 from pymammotion.http.model.response_factory import response_factory
 from pymammotion.mammotion.devices.mammotion import ConnectionPreference, Mammotion
 from pymammotion.utility.device_config import DeviceConfig
@@ -410,7 +410,11 @@ async def check_and_restore_cloud(
     if mammotion_device_records:
         mammotion_http.device_records = mammotion_device_records
     if mammotion_mqtt:
-        mammotion_http.mqtt_credentials = mammotion_mqtt
+        mammotion_http.mqtt_credentials = (
+            MQTTConnection.from_dict(mammotion_mqtt)
+            if isinstance(mammotion_mqtt, dict)
+            else mammotion_mqtt
+        )
     if mammotion_jwt:
         mammotion_http.jwt_info = mammotion_jwt
     mammotion_http.login_info = (
