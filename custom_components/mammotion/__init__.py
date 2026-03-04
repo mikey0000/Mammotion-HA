@@ -13,6 +13,7 @@ from homeassistant.core import Event, HassJob, HomeAssistant
 from homeassistant.exceptions import ConfigEntryError, ConfigEntryNotReady
 from homeassistant.helpers.device_registry import DeviceEntry
 from homeassistant.helpers.event import async_call_later
+from mashumaro import MissingField
 from pymammotion import CloudIOTGateway
 from pymammotion.aliyun.model.aep_response import AepResponse
 from pymammotion.aliyun.model.connect_response import ConnectResponse
@@ -409,12 +410,16 @@ async def check_and_restore_cloud(
         mammotion_http.device_info = mammotion_device_list
     if mammotion_device_records:
         mammotion_http.device_records = mammotion_device_records
-    if mammotion_mqtt:
-        mammotion_http.mqtt_credentials = (
-            MQTTConnection.from_dict(mammotion_mqtt)
-            if isinstance(mammotion_mqtt, dict)
-            else mammotion_mqtt
-        )
+    try:
+        if mammotion_mqtt:
+            mammotion_http.mqtt_credentials = (
+                MQTTConnection.from_dict(mammotion_mqtt)
+                if isinstance(mammotion_mqtt, dict)
+                else mammotion_mqtt
+            )
+    except MissingField:
+        mammotion_http.mqtt_credentials = None
+
     if mammotion_jwt:
         mammotion_http.jwt_info = mammotion_jwt
     mammotion_http.login_info = (
