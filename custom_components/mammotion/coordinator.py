@@ -148,7 +148,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
             )
             self.set_stream_data(stream_data)
 
-            if stream_data is not None:
+            if stream_data is not None and stream_data.data is not None:
                 LOGGER.debug("Received stream data: %s", stream_data)
 
                 # Get ICE servers from Agora API

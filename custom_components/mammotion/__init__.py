@@ -253,7 +253,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
 
             async def _async_refresh_map(_: datetime) -> None:
                 """Call the debouncer at a later time."""
-                await map_coordinator.async_config_entry_first_refresh()
+                await map_coordinator.async_request_refresh()
 
             async_call_later(
                 hass,
