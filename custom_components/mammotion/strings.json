@@ -48,7 +48,8 @@
       "init": {
         "data": {
           "title": "Update Configuration",
-          "stay_connected_bluetooth": "Keep Bluetooth connected"
+          "stay_connected_bluetooth": "Keep Bluetooth connected",
+          "movement_use_wifi": "Send movement commands over Wi-Fi"
         }
       }
     }

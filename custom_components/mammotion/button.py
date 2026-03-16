@@ -14,7 +14,7 @@ from pymammotion.data.model.hash_list import Plan
 from pymammotion.utility.device_type import DeviceType
 
 from . import MammotionConfigEntry
-from .const import DOMAIN
+from .const import CONF_MOVEMENT_USE_WIFI, DOMAIN
 from .coordinator import (
     MammotionBaseUpdateCoordinator,
     MammotionReportUpdateCoordinator,
@@ -59,19 +59,31 @@ BUTTON_SENSORS: tuple[MammotionButtonSensorEntityDescription, ...] = (
     ),
     MammotionButtonSensorEntityDescription(
         key="emergency_nudge_forward",
-        press_fn=lambda coordinator: coordinator.async_move_forward(0.4),
+        press_fn=lambda coordinator: coordinator.async_move_forward(
+            0.4,
+            coordinator.config_entry.options.get(CONF_MOVEMENT_USE_WIFI, False),
+        ),
     ),
     MammotionButtonSensorEntityDescription(
         key="emergency_nudge_left",
-        press_fn=lambda coordinator: coordinator.async_move_left(0.4),
+        press_fn=lambda coordinator: coordinator.async_move_left(
+            0.4,
+            coordinator.config_entry.options.get(CONF_MOVEMENT_USE_WIFI, False),
+        ),
     ),
     MammotionButtonSensorEntityDescription(
         key="emergency_nudge_right",
-        press_fn=lambda coordinator: coordinator.async_move_right(0.4),
+        press_fn=lambda coordinator: coordinator.async_move_right(
+            0.4,
+            coordinator.config_entry.options.get(CONF_MOVEMENT_USE_WIFI, False),
+        ),
     ),
     MammotionButtonSensorEntityDescription(
         key="emergency_nudge_back",
-        press_fn=lambda coordinator: coordinator.async_move_back(0.4),
+        press_fn=lambda coordinator: coordinator.async_move_back(
+            0.4,
+            coordinator.config_entry.options.get(CONF_MOVEMENT_USE_WIFI, False),
+        ),
     ),
     MammotionButtonSensorEntityDescription(
         key="cancel_task",

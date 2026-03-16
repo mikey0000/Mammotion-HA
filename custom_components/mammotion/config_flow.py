@@ -31,6 +31,7 @@ from .const import (
     CONF_ACCOUNTNAME,
     CONF_BLE_DEVICES,
     CONF_DEVICE_NAME,
+    CONF_MOVEMENT_USE_WIFI,
     CONF_STAY_CONNECTED_BLUETOOTH,
     CONF_USE_WIFI,
     DEVICE_SUPPORT,
@@ -363,6 +364,7 @@ class MammotionConfigFlowHandler(OptionsFlow):
         self.stay_connected_bluetooth = config_entry.options.get(
             CONF_STAY_CONNECTED_BLUETOOTH, False
         )
+        self.movement_use_wifi = config_entry.options.get(CONF_MOVEMENT_USE_WIFI, False)
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
@@ -376,7 +378,11 @@ class MammotionConfigFlowHandler(OptionsFlow):
                 vol.Optional(
                     CONF_STAY_CONNECTED_BLUETOOTH,
                     default=self.stay_connected_bluetooth,
-                ): cv.boolean
+                ): cv.boolean,
+                vol.Optional(
+                    CONF_MOVEMENT_USE_WIFI,
+                    default=self.movement_use_wifi,
+                ): cv.boolean,
             }
         )
 

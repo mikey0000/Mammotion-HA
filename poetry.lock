@@ -264,6 +264,21 @@ isal = ["isal (>=1.6.1)"]
 zlib-ng = ["zlib_ng (>=0.4.3)"]
 
 [[package]]
+name = "aiomqtt"
+version = "2.5.1"
+description = "The idiomatic asyncio MQTT client"
+optional = false
+python-versions = "<4.0,>=3.8"
+groups = ["main"]
+files = [
+    {file = "aiomqtt-2.5.1-py3-none-any.whl", hash = "sha256:fd58c3593160e4d475d90ce911cdfc4239cd64de96b0ba22edf6c86bd7afa278"},
+    {file = "aiomqtt-2.5.1.tar.gz", hash = "sha256:25a0a47d157e8f158d2da1110ea4786c0615518751e94f7b04976c977a8ff20d"},
+]
+
+[package.dependencies]
+paho-mqtt = ">=2.1.0,<3.0.0"
+
+[[package]]
 name = "aiooui"
 version = "0.1.9"
 description = "Async OUI lookups"
@@ -3518,18 +3533,19 @@ testutils = ["gitpython (>3)"]
 
 [[package]]
 name = "pymammotion"
-version = "0.5.76"
+version = "0.6.1"
 description = ""
 optional = false
 python-versions = "<4.0,>=3.12"
 groups = ["main"]
 files = [
-    {file = "pymammotion-0.5.76-py3-none-any.whl", hash = "sha256:d9c9fa4baa6c7fe5862dc67bee7ec68bd8cea33ac2b949144730ae1012698cbb"},
-    {file = "pymammotion-0.5.76.tar.gz", hash = "sha256:04673f67b267702de6f521087056b4198ab82ba23aeef3fcab66f7aeee7b4a34"},
+    {file = "pymammotion-0.6.1-py3-none-any.whl", hash = "sha256:e3b767a5b7388ca56126c66f14481e7e716750ecea0e8b432846dcf6825b09ed"},
+    {file = "pymammotion-0.6.1.tar.gz", hash = "sha256:497d3fb8a685fdff441f73865638aede4c6829cc1427775cc32c6cebfd8a326b"},
 ]
 
 [package.dependencies]
 aiohttp = ">=3.9.1"
+aiomqtt = ">=2.5.1"
 alibabacloud-apigateway-util = ">=0.0.2,<0.0.3"
 alibabacloud-iot-api-gateway = ">=0.0.4,<0.0.5"
 betterproto2 = ">=0.9.1"
@@ -5222,4 +5238,4 @@ ifaddr = ">=0.1.7"
 [metadata]
 lock-version = "2.1"
 python-versions = "~3.13.2"
-content-hash = "00e94b9e23beaa5c56ae375fdf1a369403d8649602f11598dcbc2040def77d66"
+content-hash = "79f6a5ed1df00a7512505189597b6011ed3a54164abd705721fb299ca19c13ba"
