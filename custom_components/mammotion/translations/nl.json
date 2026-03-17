@@ -48,7 +48,8 @@
       "init": {
         "data": {
           "title": "Configuratie bijwerken",
-          "stay_connected_bluetooth": "Houd Bluetooth verbonden"
+          "stay_connected_bluetooth": "Houd Bluetooth verbonden",
+          "movement_use_wifi": "Bewegingsopdrachten via Wi-Fi verzenden"
         }
       }
     }

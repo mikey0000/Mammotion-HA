@@ -206,19 +206,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
             await report_coordinator.async_config_entry_first_refresh()
             await maintenance_coordinator.async_config_entry_first_refresh()
 
-            async def _async_refresh_error(_: datetime) -> None:
-                """Call the debouncer at a later time."""
-                await error_coordinator.async_config_entry_first_refresh()
-
-            async_call_later(
-                hass,
-                1,
-                HassJob(
-                    _async_refresh_error,
-                    "error-coordinator-refresh",
-                    cancel_on_shutdown=True,
-                ),
-            )
+            await error_coordinator.async_config_entry_first_refresh()
 
             device_config = DeviceConfig()
             device_limits = device_config.get_working_parameters(

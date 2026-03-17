@@ -48,7 +48,8 @@
       "init": {
         "data": {
           "title": "Opdater konfiguration",
-          "stay_connected_bluetooth": "Hold Bluetooth-forbindelsen"
+          "stay_connected_bluetooth": "Hold Bluetooth-forbindelsen",
+          "movement_use_wifi": "Send bevægelseskommandoer via Wi-Fi"
         }
       }
     }

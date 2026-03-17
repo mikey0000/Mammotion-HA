@@ -48,7 +48,8 @@
       "init": {
         "data": {
           "title": "Aktualizuj konfigurację",
-          "stay_connected_bluetooth": "Użyj połączenia Bluetooth"
+          "stay_connected_bluetooth": "Użyj połączenia Bluetooth",
+          "movement_use_wifi": "Wysyłaj polecenia ruchu przez Wi-Fi"
         }
       }
     }

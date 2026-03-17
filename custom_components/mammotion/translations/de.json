@@ -48,7 +48,8 @@
       "init": {
         "data": {
           "title": "Aktualisiere die Konfiguration",
-          "stay_connected_bluetooth": "Bluetooth-Verbindung aufrechterhalten"
+          "stay_connected_bluetooth": "Bluetooth-Verbindung aufrechterhalten",
+          "movement_use_wifi": "Bewegungsbefehle über Wi-Fi senden"
         }
       }
     }

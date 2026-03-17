@@ -48,7 +48,8 @@
       "init": {
         "data": {
           "title": "Uppdatera konfigurationen",
-          "stay_connected_bluetooth": "Behåll Bluetooth anslutningen aktiv"
+          "stay_connected_bluetooth": "Behåll Bluetooth anslutningen aktiv",
+          "movement_use_wifi": "Skicka rörelsekommandon via Wi-Fi"
         }
       }
     }

@@ -315,8 +315,9 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
             LOGGER.error(f"Gateway timeout exception: {ex.iot_id}")
             self.update_failures = 0
             return False
-        except (DeviceOfflineException, NoConnectionException) as ex:
+        except (DeviceOfflineException, NoConnectionException):
             """Device is offline try bluetooth if we have it."""
+            await self.device_offline(device)
             try:
                 if ble := device.ble:
                     # if we don't do this it will stay connected and no longer update over wifi
@@ -324,7 +325,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
                     await ble.queue_command(command, **kwargs)
 
                     return True
-                raise DeviceOfflineException(ex.args[0], self.device.iot_id)
+                return False
             except COMMAND_EXCEPTIONS as exc:
                 raise HomeAssistantError(
                     translation_domain=DOMAIN, translation_key="command_failed"
@@ -361,6 +362,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         except (DeviceOfflineException, NoConnectionException) as ex:
             """Device is offline try bluetooth if we have it."""
             LOGGER.error(f"Device offline: {ex.iot_id}")
+            await self.device_offline(device)
         return False
 
     async def async_send_bluetooth_command(

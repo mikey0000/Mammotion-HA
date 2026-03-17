@@ -48,7 +48,8 @@
       "init": {
         "data": {
           "title": "Actualizarea configurației",
-          "stay_connected_bluetooth": "Mențineți bluetooth-ul conectat"
+          "stay_connected_bluetooth": "Mențineți bluetooth-ul conectat",
+          "movement_use_wifi": "Trimiteți comenzi de mișcare prin Wi-Fi"
         }
       }
     }

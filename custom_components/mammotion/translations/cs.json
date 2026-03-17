@@ -48,7 +48,8 @@
       "init": {
         "data": {
           "title": "Aktualizovat konfiguraci",
-          "stay_connected_bluetooth": "Udržovat připojení Bluetooth"
+          "stay_connected_bluetooth": "Udržovat připojení Bluetooth",
+          "movement_use_wifi": "Odesílat příkazy pohybu přes Wi-Fi"
         }
       }
     }

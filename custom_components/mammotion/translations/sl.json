@@ -48,7 +48,8 @@
       "init": {
         "data": {
           "title": "Posodobi nastavitev",
-          "stay_connected_bluetooth": "Ohrani bluetooth povezavo"
+          "stay_connected_bluetooth": "Ohrani bluetooth povezavo",
+          "movement_use_wifi": "Pošiljaj ukaze gibanja prek Wi-Fi"
         }
       }
     }
