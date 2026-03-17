@@ -19,7 +19,7 @@ from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from mashumaro.exceptions import InvalidFieldValue
-from pymammotion.aliyun.cloud_gateway import (
+from pymammotion.aliyun.exceptions import (
     DeviceOfflineException,
     FailedRequestException,
     GatewayTimeoutException,
