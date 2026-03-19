@@ -175,6 +175,12 @@
         "name": "Baterijski cikli",
         "unit_of_measurement": "Cikli polnjenja baterije"
       },
+      "blade_used_time": {
+        "name": "Čas uporabe rezila"
+      },
+      "blade_used_warn_time": {
+        "name": "Čas opozorila obrabe rezila"
+      },
       "non_work_hours": {
         "name": "Non-work hours"
       },

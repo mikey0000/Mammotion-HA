@@ -175,6 +175,12 @@
         "name": "Cicluri baterie",
         "unit_of_measurement": "cycles"
       },
+      "blade_used_time": {
+        "name": "Timp de utilizare a lamei"
+      },
+      "blade_used_warn_time": {
+        "name": "Timp de avertizare uzură lamă"
+      },
       "non_work_hours": {
         "name": "Non-work hours"
       },

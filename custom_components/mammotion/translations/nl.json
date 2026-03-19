@@ -175,6 +175,12 @@
         "name": "Batterijcycli",
         "unit_of_measurement": "cycli"
       },
+      "blade_used_time": {
+        "name": "Mesgebruikstijd"
+      },
+      "blade_used_warn_time": {
+        "name": "Mes slijtage waarschuwingstijd"
+      },
       "non_work_hours": {
         "name": "Niet-actieve uren"
       },

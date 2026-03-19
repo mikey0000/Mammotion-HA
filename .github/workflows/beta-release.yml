@@ -1,0 +1,126 @@
+name: Beta Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  beta-release:
+    name: Create Beta Release
+    runs-on: ubuntu-latest
+    # Skip if the commit was made by the bot (version bump commit)
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: latest
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Determine beta version
+        id: version
+        run: |
+          # Get current base version from manifest.json, stripping any existing beta suffix
+          BASE_VERSION=$(jq -r .version custom_components/mammotion/manifest.json | sed 's/-beta[0-9]*$//')
+
+          # Find the next available beta number by checking existing tags
+          BETA_NUM=1
+          while git tag --list "v${BASE_VERSION}-beta${BETA_NUM}" | grep -q .; do
+            BETA_NUM=$((BETA_NUM + 1))
+          done
+
+          BETA_VERSION="${BASE_VERSION}-beta${BETA_NUM}"
+          echo "beta_version=${BETA_VERSION}" >> $GITHUB_OUTPUT
+          echo "tag=v${BETA_VERSION}" >> $GITHUB_OUTPUT
+          echo "Next beta version: ${BETA_VERSION}"
+
+      - name: Update manifest.json
+        run: |
+          jq --arg version "${{ steps.version.outputs.beta_version }}" \
+            '.version = $version' custom_components/mammotion/manifest.json \
+            > /tmp/manifest.json
+          mv /tmp/manifest.json custom_components/mammotion/manifest.json
+
+      - name: Update pyproject.toml
+        run: |
+          sed -i 's/^version = ".*"/version = "${{ steps.version.outputs.beta_version }}"/' pyproject.toml
+
+      - name: Run poetry lock
+        run: poetry lock --no-update
+
+      - name: Commit and push version bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add custom_components/mammotion/manifest.json pyproject.toml poetry.lock
+          git commit -m "chore: bump version to ${{ steps.version.outputs.beta_version }} [skip ci]"
+          git push
+
+      - name: Create and push tag
+        run: |
+          git tag ${{ steps.version.outputs.tag }}
+          git push origin ${{ steps.version.outputs.tag }}
+
+      - name: Get previous release tag
+        id: previous_tag
+        run: |
+          previous=$(git tag --sort=-v:refname | grep -v "beta" | head -1)
+          if [ -z "$previous" ]; then
+            previous=$(git rev-list --max-parents=0 HEAD)
+          fi
+          echo "previous_tag=${previous}" >> $GITHUB_OUTPUT
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          {
+            echo 'changelog<<EOF'
+            git log --pretty=format:"- %h - %an: %s" \
+              "${{ steps.previous_tag.outputs.previous_tag }}".."${{ steps.version.outputs.tag }}" \
+              | grep -v "\[skip ci\]" || echo "- No user-facing changes"
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create pre-release
+        uses: comnoco/create-release-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          release_name: Beta Release ${{ steps.version.outputs.tag }}
+          body: |
+            # Mammotion - Home Assistant Integration ${{ steps.version.outputs.tag }} (Beta)
+
+            [![Discord](https://img.shields.io/discord/1247286396297678879)](https://discord.gg/vpZdWhJX8x)
+
+            > ⚠️ **This is a beta release.** To install via HACS, enable "Show beta versions" in your HACS settings.
+
+            ## Changes since last stable release
+
+            ${{ steps.changelog.outputs.changelog }}
+
+            ## Installation via HACS
+
+            1. In HACS, go to **Settings** and enable **"Show beta versions"**.
+            2. Find the Mammotion integration and install the beta version.
+            3. Restart Home Assistant.
+
+            ## Feedback and Support
+
+            If you encounter any issues, please:
+            - [Open an issue](https://github.com/${{ github.repository }}/issues) on GitHub
+            - [Join our Discord](https://discord.gg/vpZdWhJX8x) for community support
+
+            **Full Changelog**: https://github.com/${{ github.repository }}/compare/${{ steps.previous_tag.outputs.previous_tag }}...${{ steps.version.outputs.tag }}
+          draft: false
+          prerelease: true

@@ -175,6 +175,12 @@
         "name": "Cykle baterii",
         "unit_of_measurement": "cykle"
       },
+      "blade_used_time": {
+        "name": "Czas użycia ostrza"
+      },
+      "blade_used_warn_time": {
+        "name": "Czas ostrzeżenia o zużyciu ostrza"
+      },
       "non_work_hours": {
         "name": "Non-work hours"
       },

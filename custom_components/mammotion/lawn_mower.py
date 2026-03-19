@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from copy import copy
 from datetime import time
 from typing import Any
 
@@ -194,8 +195,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
         trans_key = "pause_failed"
 
         if kwargs:
-            entity_ids = kwargs.get("areas", [])
-
+            entity_ids = kwargs.pop("areas", [])
             attributes = [
                 # TODO this should not need to be cast.
                 int(entity_hash)
@@ -205,8 +205,12 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
             ]
             modify_plan = kwargs.pop("modify", False)
 
-            kwargs["areas"] = attributes
-            operational_settings = OperationSettings.from_dict(kwargs)
+            # Merge onto coordinator's restored settings so UI-configured values
+            # (speed, blade_height, etc.) are preserved when not explicitly provided.
+            operational_settings = copy(self.coordinator.operation_settings)
+            operational_settings.areas = set(attributes)
+            for key, value in kwargs.items():
+                setattr(operational_settings, key, value)
             if DeviceType.is_yuka(self.coordinator.device_name):
                 operational_settings.blade_height = -10
             LOGGER.debug(kwargs)

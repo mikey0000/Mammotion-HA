@@ -175,6 +175,12 @@
         "name": "Battericyklusser",
         "unit_of_measurement": "Cyklusser"
       },
+      "blade_used_time": {
+        "name": "Knivbrugstid"
+      },
+      "blade_used_warn_time": {
+        "name": "Knivslitage advarseltid"
+      },
       "non_work_hours": {
         "name": "Non-work hours"
       },

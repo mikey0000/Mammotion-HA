@@ -175,6 +175,12 @@
         "name": "Batteriezyklen",
         "unit_of_measurement": "Zyklen"
       },
+      "blade_used_time": {
+        "name": "Messernutzungszeit"
+      },
+      "blade_used_warn_time": {
+        "name": "Messerverschleiß-Warnzeit"
+      },
       "non_work_hours": {
         "name": "Arbeitsfreie Zeit"
       },

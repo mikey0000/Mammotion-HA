@@ -175,6 +175,12 @@
         "name": "Battery cycles",
         "unit_of_measurement": "cycles"
       },
+      "blade_used_time": {
+        "name": "Blade used time"
+      },
+      "blade_used_warn_time": {
+        "name": "Blade wear warning time"
+      },
       "non_work_hours": {
         "name": "Non-work hours"
       },

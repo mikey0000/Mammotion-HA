@@ -326,6 +326,14 @@ class MammotionConfigSwitchEntity(MammotionBaseEntity, SwitchEntity, RestoreEnti
         self.entity_description.set_fn(self.coordinator, False)
         self.async_write_ha_state()
 
+    async def async_added_to_hass(self) -> None:
+        """Run when entity about to be added."""
+        await super().async_added_to_hass()
+        if not (last_state := await self.async_get_last_state()):
+            return
+        self._attr_is_on = last_state.state == STATE_ON
+        self.entity_description.set_fn(self.coordinator, self._attr_is_on)
+
     async def async_update(self) -> None:
         """Update the entity state."""
 
@@ -373,6 +381,7 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
 
     async def async_added_to_hass(self) -> None:
         """Call when entity about to be added to hass."""
+        await super().async_added_to_hass()
         last_state = await self.async_get_last_state()
         if last_state and last_state.state == STATE_ON:
             await self.async_turn_on()

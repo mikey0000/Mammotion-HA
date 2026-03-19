@@ -164,6 +164,24 @@ LUBA_2_YUKA_ONLY_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
         suggested_unit_of_measurement=UnitOfTime.HOURS,
     ),
+    MammotionSensorEntityDescription(
+        key="blade_used_time",
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.DURATION,
+        native_unit_of_measurement=UnitOfTime.SECONDS,
+        value_fn=lambda mower_data: mower_data.report_data.maintenance.blade_used_time.blade_used_time,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        suggested_unit_of_measurement=UnitOfTime.HOURS,
+    ),
+    MammotionSensorEntityDescription(
+        key="blade_used_warn_time",
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.DURATION,
+        native_unit_of_measurement=UnitOfTime.SECONDS,
+        value_fn=lambda mower_data: mower_data.report_data.maintenance.blade_used_time.blade_used_warn_time,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        suggested_unit_of_measurement=UnitOfTime.HOURS,
+    ),
 )
 
 MINI_SERIES_EXCLUDED_TYPES: tuple[MammotionSensorEntityDescription, ...] = (

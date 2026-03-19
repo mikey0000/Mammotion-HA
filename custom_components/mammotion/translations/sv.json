@@ -175,6 +175,12 @@
         "name": "Battericykler",
         "unit_of_measurement": "cykler"
       },
+      "blade_used_time": {
+        "name": "Bladanvändningstid"
+      },
+      "blade_used_warn_time": {
+        "name": "Bladslitagevarningstid"
+      },
       "non_work_hours": {
         "name": "Non-work hours"
       },

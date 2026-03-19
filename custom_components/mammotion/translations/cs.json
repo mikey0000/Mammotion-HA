@@ -175,6 +175,12 @@
         "name": "Cykly baterie",
         "unit_of_measurement": "cyklů"
       },
+      "blade_used_time": {
+        "name": "Čas použití nože"
+      },
+      "blade_used_warn_time": {
+        "name": "Čas varování opotřebení nože"
+      },
       "non_work_hours": {
         "name": "Non-work hours"
       },

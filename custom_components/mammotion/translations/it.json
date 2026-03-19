@@ -175,6 +175,12 @@
         "name": "Cicli della batteria",
         "unit_of_measurement": "Cicli batteria"
       },
+      "blade_used_time": {
+        "name": "Tempo di utilizzo della lama"
+      },
+      "blade_used_warn_time": {
+        "name": "Tempo di avviso usura lama"
+      },
       "non_work_hours": {
         "name": "Ore non lavorative"
       },
