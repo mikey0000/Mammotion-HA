@@ -61,7 +61,7 @@ jobs:
           sed -i 's/^version = ".*"/version = "${{ steps.version.outputs.beta_version }}"/' pyproject.toml
 
       - name: Run poetry lock
-        run: poetry lock --no-update
+        run: poetry lock
 
       - name: Commit and push version bump
         run: |
