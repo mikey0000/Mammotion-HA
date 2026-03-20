@@ -562,6 +562,20 @@
           "description": "End time of the non-work hours."
         }
       }
+    },
+    "set_blade_warning_time": {
+      "name": "Ustaw czas ostrzeżenia dla noża",
+      "description": "Ustaw czas ostrzeżenia o wymianie noża w godzinach.",
+      "fields": {
+        "hours": {
+          "name": "Godziny",
+          "description": "Próg ostrzeżenia w godzinach przed zalecaną wymianą noża."
+        }
+      }
+    },
+    "reset_blade_time": {
+      "name": "Resetuj czas noża",
+      "description": "Resetuj licznik czasu użytkowania noża."
     }
   },
   "exceptions": {

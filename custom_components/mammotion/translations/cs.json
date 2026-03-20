@@ -562,6 +562,20 @@
           "description": "End time of the non-work hours."
         }
       }
+    },
+    "set_blade_warning_time": {
+      "name": "Nastavit čas varování nože",
+      "description": "Nastavit čas varování pro výměnu nože v hodinách.",
+      "fields": {
+        "hours": {
+          "name": "Hodiny",
+          "description": "Práh varování v hodinách před doporučenou výměnou nože."
+        }
+      }
+    },
+    "reset_blade_time": {
+      "name": "Resetovat čas nože",
+      "description": "Resetovat čítač doby používání nože."
     }
   },
   "exceptions": {

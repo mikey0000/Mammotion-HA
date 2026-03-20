@@ -562,6 +562,20 @@
           "description": "End time of the non-work hours."
         }
       }
+    },
+    "set_blade_warning_time": {
+      "name": "Klingenwarnzeit festlegen",
+      "description": "Warnzeit für den Klingenaustausch in Stunden festlegen.",
+      "fields": {
+        "hours": {
+          "name": "Stunden",
+          "description": "Warnschwelle in Stunden, ab wann ein Klingenaustausch empfohlen wird."
+        }
+      }
+    },
+    "reset_blade_time": {
+      "name": "Klingenzeit zurücksetzen",
+      "description": "Den Zähler für die Klingennutzungszeit zurücksetzen."
     }
   },
   "exceptions": {

@@ -562,6 +562,20 @@
           "description": "End time of the non-work hours."
         }
       }
+    },
+    "set_blade_warning_time": {
+      "name": "Angiv advarselstid for klinge",
+      "description": "Angiv advarselstiden for udskiftning af klinge i timer.",
+      "fields": {
+        "hours": {
+          "name": "Timer",
+          "description": "Advarselstærskel i timer inden anbefalet klingeudskiftning."
+        }
+      }
+    },
+    "reset_blade_time": {
+      "name": "Nulstil klingetid",
+      "description": "Nulstil tælleren for klingebrug."
     }
   },
   "exceptions": {

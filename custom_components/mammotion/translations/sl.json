@@ -562,6 +562,20 @@
           "description": "End time of the non-work hours."
         }
       }
+    },
+    "set_blade_warning_time": {
+      "name": "Nastavi čas opozorila rezila",
+      "description": "Nastavite čas opozorila za zamenjavo rezila v urah.",
+      "fields": {
+        "hours": {
+          "name": "Ure",
+          "description": "Prag opozorila v urah pred priporočeno zamenjavo rezila."
+        }
+      }
+    },
+    "reset_blade_time": {
+      "name": "Ponastavi čas rezila",
+      "description": "Ponastavi števec časa uporabe rezila."
     }
   },
   "exceptions": {

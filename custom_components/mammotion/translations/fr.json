@@ -562,6 +562,20 @@
           "description": "End time of the non-work hours."
         }
       }
+    },
+    "set_blade_warning_time": {
+      "name": "Définir le temps d'avertissement de lame",
+      "description": "Définir le temps d'avertissement de remplacement de lame en heures.",
+      "fields": {
+        "hours": {
+          "name": "Heures",
+          "description": "Seuil d'avertissement en heures avant le remplacement recommandé de la lame."
+        }
+      }
+    },
+    "reset_blade_time": {
+      "name": "Réinitialiser le temps de lame",
+      "description": "Réinitialiser le compteur de temps d'utilisation de la lame."
     }
   },
   "exceptions": {

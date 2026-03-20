@@ -562,6 +562,20 @@
           "description": "End time of the non-work hours."
         }
       }
+    },
+    "set_blade_warning_time": {
+      "name": "Imposta tempo di avviso lama",
+      "description": "Imposta il tempo di avviso per la sostituzione della lama in ore.",
+      "fields": {
+        "hours": {
+          "name": "Ore",
+          "description": "Soglia di avviso in ore prima della sostituzione raccomandata della lama."
+        }
+      }
+    },
+    "reset_blade_time": {
+      "name": "Reimposta tempo lama",
+      "description": "Reimposta il contatore del tempo di utilizzo della lama."
     }
   },
   "exceptions": {

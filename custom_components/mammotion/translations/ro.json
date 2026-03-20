@@ -562,6 +562,20 @@
           "description": "End time of the non-work hours."
         }
       }
+    },
+    "set_blade_warning_time": {
+      "name": "Setați timpul de avertizare al lamei",
+      "description": "Setați timpul de avertizare pentru înlocuirea lamei în ore.",
+      "fields": {
+        "hours": {
+          "name": "Ore",
+          "description": "Pragul de avertizare în ore înainte de înlocuirea recomandată a lamei."
+        }
+      }
+    },
+    "reset_blade_time": {
+      "name": "Resetați timpul lamei",
+      "description": "Resetați contorul de timp de utilizare a lamei."
     }
   },
   "exceptions": {

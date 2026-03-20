@@ -428,6 +428,20 @@
           "description": "List of areas to mow (represented as integers)."
         }
       }
+    },
+    "set_blade_warning_time": {
+      "name": "Set blade warning time",
+      "description": "Set the blade replacement warning time in hours.",
+      "fields": {
+        "hours": {
+          "name": "Hours",
+          "description": "Warning threshold in hours before blade replacement is recommended."
+        }
+      }
+    },
+    "reset_blade_time": {
+      "name": "Reset blade time",
+      "description": "Reset the blade usage time counter."
     }
   },
   "exceptions": {

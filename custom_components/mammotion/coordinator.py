@@ -464,6 +464,14 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
             unable_start_time=start_time,
         )
 
+    async def async_set_blade_warning_time(self, hours: int) -> None:
+        """Set blade warning time in hours."""
+        await self.async_send_command("set_blade_warning_time", hours=hours)
+
+    async def async_reset_blade_time(self) -> None:
+        """Reset blade used time."""
+        await self.async_send_command("reset_blade_time")
+
     async def async_set_rain_detection(self, on_off: bool) -> None:
         """Set rain detection."""
         await self.async_send_command(

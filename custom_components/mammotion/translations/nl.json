@@ -562,6 +562,20 @@
           "description": "Eindtijd van de niet-actieve uren."
         }
       }
+    },
+    "set_blade_warning_time": {
+      "name": "Meswaartijd instellen",
+      "description": "Stel de waarschuwingstijd voor mesvervanging in uren in.",
+      "fields": {
+        "hours": {
+          "name": "Uren",
+          "description": "Waarschuwingsdrempel in uren voor aanbevolen mesvervanging."
+        }
+      }
+    },
+    "reset_blade_time": {
+      "name": "Mestijd resetten",
+      "description": "Reset de teller voor de gebruikstijd van het mes."
     }
   },
   "exceptions": {

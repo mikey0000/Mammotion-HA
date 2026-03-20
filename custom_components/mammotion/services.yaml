@@ -239,3 +239,23 @@ set_non_work_hours:
       required: true
       selector:
         time:
+set_blade_warning_time:
+  target:
+    entity:
+      integration: mammotion
+      domain: lawn_mower
+  fields:
+    hours:
+      example: 50
+      default: 50
+      required: true
+      selector:
+        number:
+          min: 1
+          max: 9999
+          unit_of_measurement: "h"
+reset_blade_time:
+  target:
+    entity:
+      integration: mammotion
+      domain: lawn_mower

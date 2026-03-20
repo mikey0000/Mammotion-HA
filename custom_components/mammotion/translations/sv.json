@@ -562,6 +562,20 @@
           "description": "End time of the non-work hours."
         }
       }
+    },
+    "set_blade_warning_time": {
+      "name": "Ange varningstid för blad",
+      "description": "Ange varningstiden för bladbyte i timmar.",
+      "fields": {
+        "hours": {
+          "name": "Timmar",
+          "description": "Varningströskel i timmar innan bladbyte rekommenderas."
+        }
+      }
+    },
+    "reset_blade_time": {
+      "name": "Återställ bladtid",
+      "description": "Återställ räknaren för bladanvändningstid."
     }
   },
   "exceptions": {
