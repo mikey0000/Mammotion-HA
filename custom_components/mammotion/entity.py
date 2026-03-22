@@ -170,7 +170,9 @@ class MammotionBaseRTKEntity(CoordinatorEntity[MammotionRTKCoordinator]):
         super()._handle_coordinator_update()
 
 
-class MammotionCameraBaseEntity(Camera, ABC):
+class MammotionCameraBaseEntity(
+    CoordinatorEntity[MammotionBaseUpdateCoordinator], Camera, ABC
+):
     """Devices that support cameras."""
 
     _attr_has_entity_name = True
@@ -180,8 +182,7 @@ class MammotionCameraBaseEntity(Camera, ABC):
 
     def __init__(self, coordinator: MammotionBaseUpdateCoordinator, key: str) -> None:
         """Initialize the Lawn Mower."""
-        super().__init__()
-        self.coordinator = coordinator
+        super().__init__(coordinator)
         self._attr_unique_id = f"{coordinator.device_name}_{key}"
 
     @property

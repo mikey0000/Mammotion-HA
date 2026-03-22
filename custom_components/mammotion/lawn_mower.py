@@ -31,8 +31,8 @@ SERVICE_START_MOWING = "start_mow"
 SERVICE_CANCEL_JOB = "cancel_job"
 SERVICE_START_STOP_BLADES = "start_stop_blades"
 SERVICE_SET_NON_WORK_HOURS = "set_non_work_hours"
-SERVICE_SET_BLADE_WARNING_TIME = "set_blade_warning_time"
 SERVICE_RESET_BLADE_TIME = "reset_blade_time"
+SERVICE_SET_BLADE_WARNING_TIME = "set_blade_warning_time"
 
 START_MOW_SCHEMA = {
     vol.Optional("modify", default=False): cv.boolean,
@@ -146,15 +146,15 @@ async def async_setup_entry(
     )
 
     platform.async_register_entity_service(
-        SERVICE_SET_BLADE_WARNING_TIME,
-        SET_BLADE_WARNING_TIME_SCHEMA,
-        "async_set_blade_warning_time",
-    )
-
-    platform.async_register_entity_service(
         SERVICE_RESET_BLADE_TIME,
         None,
         "async_reset_blade_time",
+    )
+
+    platform.async_register_entity_service(
+        SERVICE_SET_BLADE_WARNING_TIME,
+        SET_BLADE_WARNING_TIME_SCHEMA,
+        "async_set_blade_warning_time",
     )
 
 
@@ -403,17 +403,17 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
             start_time=start_time.strftime("%H:%M"), end_time=end_time.strftime("%H:%M")
         )
 
-    async def async_set_blade_warning_time(self, **kwargs: Any) -> None:
-        """Set blade warning time."""
-        if DeviceType.is_luba1(self.coordinator.device_name):
-            return
-        await self.coordinator.async_set_blade_warning_time(hours=kwargs["hours"])
+    async def async_reset_blade_time(self) -> None:
+        """Reset blade used time to zero."""
+	if DeviceType.is_luba1(self.coordinator.device_name):
+	    return
+	await self.coordinator.async_reset_blade_time()
 
-    async def async_reset_blade_time(self, **kwargs: Any) -> None:
-        """Reset blade used time."""
+    async def async_set_blade_warning_time(self, hours: int) -> None:
+        """Set blade replacement warning threshold in hours."""
         if DeviceType.is_luba1(self.coordinator.device_name):
             return
-        await self.coordinator.async_reset_blade_time()
+	await self.coordinator.async_set_blade_warning_time(hours=hours)
 
     async def async_added_to_hass(self) -> None:
         await super().async_added_to_hass()

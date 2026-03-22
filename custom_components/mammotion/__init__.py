@@ -207,6 +207,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
             await maintenance_coordinator.async_config_entry_first_refresh()
 
             await error_coordinator.async_config_entry_first_refresh()
+            await map_coordinator._async_setup()
 
             device_config = DeviceConfig()
             device_limits = device_config.get_working_parameters(
@@ -258,7 +259,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                 mqtt_client = mammotion_mqtt_client
             else:
                 mqtt_client = aliyun_mqtt_client
-            rtk_coordinator = MammotionRTKCoordinator(hass, entry, rtk, mqtt_client)
+            rtk_coordinator = MammotionRTKCoordinator(
+                hass, entry, rtk, mqtt_client, mammotion
+            )
             await rtk_coordinator.async_config_entry_first_refresh()
             mammotion_rtk.append(
                 MammotionRTKData(

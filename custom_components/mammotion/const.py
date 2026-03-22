@@ -60,7 +60,6 @@ NO_REQUEST_MODES = (
     WorkMode.MODE_ERASER_DRAW,
     WorkMode.MODE_UPDATING,
     WorkMode.MODE_EDIT_BOUNDARY,
-    WorkMode.MODE_UPDATING,
     WorkMode.MODE_LOCK,
     WorkMode.MODE_MANUAL_MOWING,
 )
