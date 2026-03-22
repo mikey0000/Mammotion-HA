@@ -405,15 +405,15 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
 
     async def async_reset_blade_time(self) -> None:
         """Reset blade used time to zero."""
-	if DeviceType.is_luba1(self.coordinator.device_name):
-	    return
-	await self.coordinator.async_reset_blade_time()
+        if DeviceType.is_luba1(self.coordinator.device_name):
+            return
+        await self.coordinator.async_reset_blade_time()
 
     async def async_set_blade_warning_time(self, hours: int) -> None:
         """Set blade replacement warning threshold in hours."""
         if DeviceType.is_luba1(self.coordinator.device_name):
             return
-	await self.coordinator.async_set_blade_warning_time(hours=hours)
+        await self.coordinator.async_set_blade_warning_time(hours=hours)
 
     async def async_added_to_hass(self) -> None:
         await super().async_added_to_hass()
