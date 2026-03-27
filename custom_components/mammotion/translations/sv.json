@@ -361,9 +361,6 @@
       "blade_height": {
         "name": "Bladens höjd"
       },
-      "blade_height_inches": {
-        "name": "Bladhöjd (tum)"
-      },
       "working_speed": {
         "name": "Arbetshastighet"
       },

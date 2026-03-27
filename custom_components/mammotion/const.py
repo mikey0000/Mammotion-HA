@@ -9,6 +9,7 @@ from bleak_retry_connector import BleakNotFoundError
 from pymammotion.aliyun.cloud_gateway import CheckSessionException, SetupException
 from pymammotion.http.model.http import UnauthorizedException
 from pymammotion.mammotion.devices.mammotion_bluetooth import CharacteristicMissingError
+from pymammotion.transport.base import NoTransportAvailableError
 from pymammotion.utility.constant import WorkMode
 
 DOMAIN: Final = "mammotion"
@@ -25,6 +26,7 @@ COMMAND_EXCEPTIONS = (
     BleakNotFoundError,
     CharacteristicMissingError,
     BleakError,
+    NoTransportAvailableError,
     TimeoutError,
 )
 

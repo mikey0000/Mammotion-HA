@@ -19,6 +19,7 @@ class MammotionMowerData:
     """Data for a mower information."""
 
     name: str
+    unique_name: str
     api: Mammotion
     maintenance_coordinator: MammotionMaintenanceUpdateCoordinator
     reporting_coordinator: MammotionReportUpdateCoordinator
@@ -34,6 +35,7 @@ class MammotionRTKData:
     """Data for RTK information."""
 
     name: str
+    unique_name: str
     api: Mammotion
     coordinator: MammotionRTKCoordinator
     device: Device

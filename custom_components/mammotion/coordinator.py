@@ -28,6 +28,7 @@ from pymammotion.aliyun.exceptions import (
     SetupException,
 )
 from pymammotion.aliyun.model.dev_by_account_response import Device
+from pymammotion.client import MammotionClient
 from pymammotion.data.model import GenerateRouteInformation
 from pymammotion.data.model.device import MowerInfo, MowingDevice, RTKDevice
 from pymammotion.data.model.device_config import OperationSettings, create_path_order
@@ -42,13 +43,13 @@ from pymammotion.http.model.camera_stream import (
 from pymammotion.http.model.http import CheckDeviceVersion, ErrorInfo, Response
 from pymammotion.http.model.rtk import RTK
 from pymammotion.mammotion.commands.mammotion_command import MammotionCommand
-from pymammotion.mammotion.devices import MammotionMowerDeviceManager
-from pymammotion.mammotion.devices.mammotion import (
-    ConnectionPreference,
-    Mammotion,
-)
-from pymammotion.mammotion.devices.mammotion_cloud import MammotionCloud
 from pymammotion.proto import RptAct, RptInfoType, SystemUpdateBufMsg
+from pymammotion.transport.base import (
+    CommandTimeoutError,
+    ConcurrentRequestError,
+    NoTransportAvailableError,
+    TransportType,
+)
 from pymammotion.utility.constant import WorkMode
 from pymammotion.utility.device_type import DeviceType
 from webrtc_models import RTCIceServer
@@ -58,17 +59,8 @@ from .config import MammotionConfigStore
 from .const import (
     COMMAND_EXCEPTIONS,
     CONF_ACCOUNTNAME,
-    CONF_AEP_DATA,
-    CONF_AUTH_DATA,
     CONF_CONNECT_DATA,
-    CONF_DEVICE_DATA,
     CONF_MAMMOTION_DATA,
-    CONF_MAMMOTION_DEVICE_LIST,
-    CONF_MAMMOTION_DEVICE_RECORDS,
-    CONF_MAMMOTION_JWT_INFO,
-    CONF_MAMMOTION_MQTT,
-    CONF_REGION_DATA,
-    CONF_SESSION_DATA,
     DOMAIN,
     EXPIRED_CREDENTIAL_EXCEPTIONS,
     LOGGER,
@@ -76,8 +68,6 @@ from .const import (
 )
 
 if TYPE_CHECKING:
-    from pymammotion.mammotion.devices.mammotion import MammotionDeviceManager
-
     from . import MammotionConfigEntry
 
 
@@ -99,8 +89,9 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         hass: HomeAssistant,
         config_entry: MammotionConfigEntry,
         device: Device,
-        mammotion: Mammotion,
+        mammotion: MammotionClient,
         update_interval: timedelta,
+        unique_name: str | None = None,
     ) -> None:
         """Initialize global mammotion data updater."""
         super().__init__(
@@ -111,30 +102,35 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
             config_entry=config_entry,
         )
         assert config_entry.unique_id
-        self.account = self.config_entry.data[CONF_ACCOUNTNAME]
-        self.password = self.config_entry.data[CONF_PASSWORD]
+        self.account = self.config_entry.data.get(CONF_ACCOUNTNAME, "")
+        self.password = self.config_entry.data.get(CONF_PASSWORD, "")
         self.device: Device = device
         self.device_name = device.device_name
-        self.manager: Mammotion = mammotion
+        self.unique_name = (
+            unique_name if unique_name is not None else device.device_name
+        )
+        self.manager: MammotionClient = mammotion
         self._operation_settings = OperationSettings()
         self.update_failures = 0
         self._stream_data: Response[StreamSubscriptionResponse] | None = (
             None  # Stream data [Agora]
         )
-        self.commands = MammotionCommand(
-            device.device_name,
-            int(
-                config_entry.data[CONF_MAMMOTION_DATA].data.userInformation.userAccount
-            ),
-        )
+        _mammotion_data = config_entry.data.get(CONF_MAMMOTION_DATA) or {}
+        try:
+            _user_account = int(
+                _mammotion_data["data"]["userInformation"]["userAccount"]
+            )
+        except (KeyError, TypeError, ValueError):
+            _user_account = 0
+        self.commands = MammotionCommand(device.device_name, _user_account)
 
         device = self.manager.get_device_by_name(self.device_name)
 
         if self.data is None:
-            self.data = device.state
+            self.data = device
 
     @abstractmethod
-    def get_coordinator_data(self, device: MammotionMowerDeviceManager) -> DataT:
+    def get_coordinator_data(self, device: MowingDevice) -> DataT:
         """Get coordinator data."""
 
     async def async_check_stream_expiry(
@@ -211,49 +207,63 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
 
     async def join_webrtc_channel(self) -> None:
         """Start stream command."""
-        device = self.manager.get_device_by_name(self.device_name)
+        handle = self.manager.mower(self.device_name)
+        if handle is None:
+            return
         command = self.commands.device_agora_join_channel_with_position(enter_state=1)
-        await self.async_send_cloud_command(device.iot_id, command)
+        await self.async_send_cloud_command(handle.iot_id, command)
 
     async def leave_webrtc_channel(self) -> None:
         """End stream command."""
-        device = self.manager.get_device_by_name(self.device_name)
+        handle = self.manager.mower(self.device_name)
+        if handle is None:
+            return
         command = self.commands.device_agora_join_channel_with_position(enter_state=0)
-        await self.async_send_cloud_command(device.iot_id, command)
+        await self.async_send_cloud_command(handle.iot_id, command)
 
     async def set_scheduled_updates(self, enabled: bool) -> None:
         device = self.manager.get_device_by_name(self.device_name)
-        device.state.enabled = enabled
-        if device.state.enabled:
+        if device is None:
+            return
+        device.enabled = enabled
+        handle = self.manager.mower(self.device_name)
+        if handle is None:
+            return
+        if enabled:
             self.update_failures = 0
-            if not device.state.online:
-                device.state.online = True
-            if device.cloud and device.cloud.stopped:
-                await device.cloud.start()
+            if not device.online:
+                device.online = True
+            for t_type in (
+                TransportType.CLOUD_ALIYUN,
+                TransportType.CLOUD_MAMMOTION,
+                TransportType.BLE,
+            ):
+                await handle.connect_transport(t_type)
         else:
-            if device.cloud:
-                device.cloud.stop()
-                if device.cloud.mqtt.is_connected():
-                    device.cloud.mqtt.disconnect()
-            if device.ble:
-                await device.ble.stop()
+            for t_type in (
+                TransportType.CLOUD_ALIYUN,
+                TransportType.CLOUD_MAMMOTION,
+                TransportType.BLE,
+            ):
+                await handle.disconnect_transport(t_type)
 
     def is_online(self) -> bool:
-        if device := self.manager.get_device_by_name(self.device_name):
-            ble = device.ble
-            ble_connected = ble is not None and hasattr(ble, "client") and ble.client is not None and ble.client.is_connected
-            return device.state.online or ble_connected
-        return False
+        handle = self.manager.mower(self.device_name)
+        if handle is None:
+            return False
+        device = self.manager.get_device_by_name(self.device_name)
+        if device is None:
+            return False
+        ble_connected = handle.is_transport_connected(TransportType.BLE)
+        return device.online or ble_connected
 
     async def async_refresh_login(self) -> None:
         """Refresh login credentials asynchronously."""
         await self.manager.refresh_login(self.account)
         self.store_cloud_credentials()
 
-    async def device_offline(self, device: MammotionMowerDeviceManager) -> None:
-        device.state.online = False
-        # if cloud := device.cloud:
-        #     cloud.stop()
+    async def device_offline(self, device: MowingDevice) -> None:
+        device.online = False
 
         async_call_later(
             self.hass,
@@ -263,43 +273,24 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
 
     def store_cloud_credentials(self) -> None:
         """Store cloud credentials in config entry."""
-        # config_updates = {}
-
         if config_entry := self.config_entry:
-            account = config_entry.data.get(CONF_ACCOUNTNAME, "")
-            mammotion_cloud = (
-                self.manager.mqtt_list.get(f"{account}_aliyun")
-                if self.manager.mqtt_list.get(f"{account}_aliyun")
-                else self.manager.mqtt_list.get(f"{account}_mammotion")
+            cache = self.manager.to_cache()
+            if not cache:
+                return
+            # Translate library key "connect_response" → HA key CONF_CONNECT_DATA
+            translated = {
+                (CONF_CONNECT_DATA if k == "connect_response" else k): v
+                for k, v in cache.items()
+            }
+            self.hass.config_entries.async_update_entry(
+                config_entry, data={**config_entry.data, **translated}
             )
 
-            cloud_client = mammotion_cloud.cloud_client if mammotion_cloud else None
-
-            if cloud_client is not None:
-                config_updates = {
-                    **config_entry.data,
-                    CONF_CONNECT_DATA: cloud_client.connect_response,
-                    CONF_AUTH_DATA: cloud_client.login_by_oauth_response,
-                    CONF_REGION_DATA: cloud_client.region_response,
-                    CONF_AEP_DATA: cloud_client.aep_response,
-                    CONF_SESSION_DATA: cloud_client.session_by_authcode_response,
-                    CONF_DEVICE_DATA: cloud_client.devices_by_account_response,
-                    CONF_MAMMOTION_DATA: cloud_client.mammotion_http.response,
-                    CONF_MAMMOTION_MQTT: cloud_client.mammotion_http.mqtt_credentials,
-                    CONF_MAMMOTION_DEVICE_LIST: cloud_client.mammotion_http.device_info,
-                    CONF_MAMMOTION_DEVICE_RECORDS: cloud_client.mammotion_http.device_records,
-                    CONF_MAMMOTION_JWT_INFO: cloud_client.mammotion_http.jwt_info,
-                }
-                self.hass.config_entries.async_update_entry(
-                    config_entry, data=config_updates
-                )
-
     async def async_send_command(self, command: str, **kwargs: Any) -> bool | None:
-        """Send command."""
-        if not self.manager.get_device_by_name(self.device_name).state.online:
-            return False
-
+        """Send command via MammotionClient command queue."""
         device = self.manager.get_device_by_name(self.device_name)
+        if device is None or not device.online:
+            return False
 
         try:
             await self.manager.send_command_with_args(
@@ -318,30 +309,38 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
             return False
         except (DeviceOfflineException, NoConnectionException):
             await self.device_offline(device)
+            # Fall back to BLE if the cloud path is unavailable
             try:
-                if ble := device.ble:
-                    # if we don't do this it will stay connected and no longer update over wifi
-                    ble.set_disconnect_strategy(disconnect=True)
-                    await ble.queue_command(command, **kwargs)
-                    return True
-                return False
+                await self.manager.send_command_with_args(
+                    self.device_name, command, prefer_ble=True, **kwargs
+                )
+                return True
             except COMMAND_EXCEPTIONS as exc:
                 raise HomeAssistantError(
                     translation_domain=DOMAIN, translation_key="command_failed"
                 ) from exc
+        except NoTransportAvailableError:
+            LOGGER.warning(
+                "No transport connected yet for %s, command '%s' skipped",
+                self.device_name,
+                command,
+            )
+            return False
         return False
 
     async def async_send_cloud_command(
         self, iot_id: str, command: bytes
     ) -> bool | None:
-        """Send command."""
-        if not self.manager.get_device_by_name(self.device_name).state.online:
+        """Send a raw cloud command via the device's active transport."""
+        device = self.manager.get_device_by_name(self.device_name)
+        if device is None or not device.online:
+            return False
+        handle = self.manager.mower(self.device_name)
+        if handle is None:
             return False
 
-        device = self.manager.get_device_by_name(self.device_name)
-
         try:
-            await device.cloud_client.send_cloud_command(iot_id, command)
+            await handle.send_raw(command)
             self.update_failures = 0
             return True
         except FailedRequestException:
@@ -362,41 +361,51 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
     async def async_send_bluetooth_command(
         self, key: str, **kwargs: Any
     ) -> bool | None:
-        """Send command."""
-        device = self.manager.get_device_by_name(self.device_name)
-        if ble := device.ble:
-            await ble.command(key, **kwargs)
+        """Send command via BLE transport."""
+        try:
+            await self.manager.send_command_with_args(
+                self.device_name, key, prefer_ble=True, **kwargs
+            )
             return True
-
-        raise DeviceOfflineException("bluetooth command failed", device.iot_id)
+        except COMMAND_EXCEPTIONS as exc:
+            raise DeviceOfflineException(
+                "bluetooth command failed", self.device.iot_id
+            ) from exc
 
     async def check_firmware_version(self) -> None:
         """Check if firmware version is updated."""
-        if mower := self.manager.mower(self.device_name):
-            device_registry = dr.async_get(self.hass)
-            device_entry = device_registry.async_get_device(
-                identifiers={(DOMAIN, self.device_name)}
+        device = self.manager.get_device_by_name(self.device_name)
+        if device is None:
+            return
+        device_registry = dr.async_get(self.hass)
+        device_entry = device_registry.async_get_device(
+            identifiers={(DOMAIN, self.device_name)}
+        )
+        if device_entry is None:
+            return
+
+        new_swversion = device.device_firmwares.device_version
+
+        if new_swversion is not None and new_swversion != device_entry.sw_version:
+            device_registry.async_update_device(
+                device_entry.id, sw_version=new_swversion
             )
-            if device_entry is None:
-                return
 
-            new_swversion = mower.device_firmwares.device_version
-
-            if new_swversion is not None and new_swversion != device_entry.sw_version:
-                device_registry.async_update_device(
-                    device_entry.id, sw_version=new_swversion
-                )
-
-            if model_id := mower.mower_state.model_id:
-                if model_id is not None and model_id != device_entry.model_id:
-                    device_registry.async_update_device(
-                        device_entry.id, model_id=model_id
-                    )
+        if model_id := device.mower_state.model_id:
+            if model_id is not None and model_id != device_entry.model_id:
+                device_registry.async_update_device(device_entry.id, model_id=model_id)
 
     async def update_firmware(self, version: str) -> None:
-        """Update firmware."""
+        """Update firmware and clear cached version info so it is re-fetched after the upgrade."""
+        handle = self.manager.mower(self.device_name)
+        if handle is None:
+            return
         device = self.manager.get_device_by_name(self.device_name)
-        await device.mammotion_http.start_ota_upgrade(device.iot_id, version)
+        if device is not None:
+            device.clear_version_info()
+        http = self.manager.mammotion_http
+        if http is not None:
+            await http.start_ota_upgrade(handle.iot_id, version)
 
     async def async_sync_maps(self) -> None:
         """Get map data from the device."""
@@ -410,7 +419,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
 
     async def async_sync_schedule(self) -> None:
         try:
-            await self.manager.start_schedule_sync(self.device_name)
+            await self.async_send_command("read_plan", sub_cmd=2, plan_index=0)
         except EXPIRED_CREDENTIAL_EXCEPTIONS:
             self.update_failures += 1
             await self.async_refresh_login()
@@ -537,44 +546,51 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         await self.send_command_and_update("cancel_job")
 
     async def async_move_forward(self, speed: float, use_wifi: bool = False) -> None:
-        """Move forward."""
-        device = self.manager.get_device_by_name(self.device_name)
-
-        if device.preference is ConnectionPreference.WIFI and not use_wifi:
-            await self.async_send_bluetooth_command("move_forward", linear=speed)
-        else:
-            await self.async_send_command("move_forward", linear=speed)
+        """Move forward. Prefer BLE unless use_wifi=True (lower latency for manual control)."""
+        await self.manager.send_command_with_args(
+            self.device_name, "move_forward", prefer_ble=not use_wifi, linear=speed
+        )
 
     async def async_move_left(self, speed: float, use_wifi: bool = False) -> None:
-        """Move left."""
-        device = self.manager.get_device_by_name(self.device_name)
-
-        if device.preference is ConnectionPreference.WIFI and not use_wifi:
-            await self.async_send_bluetooth_command("move_left", angular=speed)
-        else:
-            await self.async_send_command("move_left", angular=speed)
+        """Move left. Prefer BLE unless use_wifi=True."""
+        await self.manager.send_command_with_args(
+            self.device_name, "move_left", prefer_ble=not use_wifi, angular=speed
+        )
 
     async def async_move_right(self, speed: float, use_wifi: bool = False) -> None:
-        """Move right."""
-        device = self.manager.get_device_by_name(self.device_name)
-
-        if device.preference is ConnectionPreference.WIFI and not use_wifi:
-            await self.async_send_bluetooth_command("move_right", angular=speed)
-        else:
-            await self.async_send_command("move_right", angular=speed)
+        """Move right. Prefer BLE unless use_wifi=True."""
+        await self.manager.send_command_with_args(
+            self.device_name, "move_right", prefer_ble=not use_wifi, angular=speed
+        )
 
     async def async_move_back(self, speed: float, use_wifi: bool = False) -> None:
-        """Move back."""
-        device = self.manager.get_device_by_name(self.device_name)
-
-        if device.preference is ConnectionPreference.WIFI and not use_wifi:
-            await self.async_send_bluetooth_command("move_back", linear=speed)
-        else:
-            await self.async_send_command("move_back", linear=speed)
+        """Move back. Prefer BLE unless use_wifi=True."""
+        await self.manager.send_command_with_args(
+            self.device_name, "move_back", prefer_ble=not use_wifi, linear=speed
+        )
 
     async def async_rtk_dock_location(self) -> None:
         """RTK and dock location."""
-        await self.async_send_command("read_write_device", rw_id=5, rw=1, context=1)
+        expected_field = (
+            "bidire_comm_cmd"
+            if DeviceType.is_luba_pro(self.device_name)
+            else "nav_sys_param_cmd"
+        )
+        try:
+            await self.manager.send_command_and_wait(
+                self.device_name,
+                "read_write_device",
+                expected_field,
+                rw_id=5,
+                rw=1,
+                context=1,
+            )
+        except (CommandTimeoutError, ConcurrentRequestError) as ex:
+            LOGGER.debug(
+                "RTK dock location command timed out or conflicted for %s: %s",
+                self.device_name,
+                ex,
+            )
 
     async def async_get_area_list(self) -> None:
         """Mowing area List."""
@@ -713,14 +729,15 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         await self.async_send_command("remote_restart")
 
     async def clear_update_failures(self) -> None:
-        """Clear update failures."""
+        """Clear update failures and reconnect transports if needed."""
         self.update_failures = 0
         device = self.manager.get_device_by_name(self.device_name)
-        if not device.state.online:
-            device.state.online = True
-        if cloud := device.cloud:
-            if cloud.stopped:
-                await cloud.start()
+        if device is not None and not device.online:
+            device.online = True
+        handle = self.manager.mower(self.device_name)
+        if handle is not None:
+            for t_type in (TransportType.CLOUD_ALIYUN, TransportType.CLOUD_MAMMOTION):
+                await handle.connect_transport(t_type)
 
     @property
     def operation_settings(self) -> OperationSettings:
@@ -741,20 +758,26 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         )
         restored_data: Mapping[str, Any] | None = await store.async_load()
 
+        handle = self.manager.mower(self.device_name)
+
         if restored_data is None:
-            self.data = MowingDevice()
-            self.manager.get_device_by_name(self.device_name).state = self.data
+            empty = MowingDevice()
+            self.data = empty
+            if handle is not None:
+                handle.restore_device(empty)
             return
 
         try:
             if restored_data is not None:
                 mower_state = MowingDevice().from_dict(restored_data)
-                if device := self.manager.get_device_by_name(self.device_name):
-                    device.state = mower_state
+                if handle is not None:
+                    handle.restore_device(mower_state)
+                    self.data = mower_state
         except InvalidFieldValue:
-            """invalid"""
-            self.data = MowingDevice()
-            self.manager.get_device_by_name(self.device_name).state = self.data
+            empty = MowingDevice()
+            self.data = empty
+            if handle is not None:
+                handle.restore_device(empty)
 
     async def async_save_data(self, data: MowingDevice) -> None:
         """Get map data from the device."""
@@ -763,78 +786,52 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
 
     async def _async_update_data(self) -> DataT | None:
         """Update data from the device."""
-        if device := self.manager.get_device_by_name(self.device_name):
-            if not device.state.enabled or (
-                not device.state.online
-                and device.preference is ConnectionPreference.WIFI
+        device = self.manager.get_device_by_name(self.device_name)
+        if device is None:
+            return None
+
+        if not device.enabled:
+            return self.get_coordinator_data(device)
+
+        handle = self.manager.mower(self.device_name)
+
+        if not device.online and (handle is None or not handle.prefer_ble):
+            return self.get_coordinator_data(device)
+
+        # Update BLE device address from HA bluetooth scanner if available
+        if (
+            device.mower_state.ble_mac != ""
+            and handle is not None
+            and handle.prefer_ble
+        ):
+            if ble_device := bluetooth.async_ble_device_from_address(
+                self.hass, device.mower_state.ble_mac.upper(), True
             ):
-                if cloud := device.cloud:
-                    if not device.state.enabled and cloud.mqtt.is_connected():
-                        cloud.mqtt.disconnect()
-                if ble := device.ble:
-                    if not device.state.enabled:
-                        if ble.client is not None and ble.client.is_connected:
-                            await ble.client.disconnect()
-                return self.get_coordinator_data(device)
+                await self.manager.update_ble_device(self.device_name, ble_device)
 
-            if (
-                device.state.mower_state.ble_mac != ""
-                and device.preference is ConnectionPreference.BLUETOOTH
-            ):
-                if ble_device := bluetooth.async_ble_device_from_address(
-                    self.hass, device.state.mower_state.ble_mac.upper(), True
-                ):
-                    if ble := device.ble:
-                        ble.update_device(ble_device)
-                    else:
-                        device.add_ble(ble_device)
-
-            # don't query the mower while users are doing map changes or its updating.
-            if device.state.report_data.dev.sys_status in NO_REQUEST_MODES:
-                # MQTT we are likely to get an update, BLE we are not
-                if (
-                    device.preference is ConnectionPreference.BLUETOOTH
-                    or device.state.report_data.dev.sys_status == WorkMode.MODE_LOCK
-                ):
-                    async_call_later(
-                        self.hass,
-                        300,
-                        lambda _: self.hass.async_create_task(
-                            self.async_send_command("get_report_cfg")
-                        ),
-                    )
-                return self.get_coordinator_data(device)
-
-            if (
-                self.update_failures > 5
-                and device.preference is ConnectionPreference.WIFI
+        # Don't query the mower while users are doing map changes or it's updating
+        if device.report_data.dev.sys_status in NO_REQUEST_MODES:
+            if handle is not None and (
+                handle.prefer_ble
+                or device.report_data.dev.sys_status == WorkMode.MODE_LOCK
             ):
                 async_call_later(
                     self.hass,
-                    60,
-                    lambda _: self.hass.async_create_task(self.clear_update_failures()),
+                    300,
+                    lambda _: self.hass.async_create_task(
+                        self.async_send_command("get_report_cfg")
+                    ),
                 )
+            return self.get_coordinator_data(device)
 
-                return self.get_coordinator_data(device)
+        if self.update_failures > 5:
+            async_call_later(
+                self.hass,
+                60,
+                lambda _: self.hass.async_create_task(self.clear_update_failures()),
+            )
+            return self.get_coordinator_data(device)
 
-            # last_sent_times = []
-            # if cloud := device.cloud:
-            #     last_sent_times.append(cloud.command_sent_time)
-            # if ble := device.ble:
-            #     last_sent_times.append(ble.command_sent_time)
-            #
-            # seconds_check = (
-            #     self.update_interval.seconds
-            #     if self.update_interval != WORKING_INTERVAL
-            #     else DEFAULT_INTERVAL
-            # )
-            #
-            # if self.update_interval and any(
-            #     t > time.time() - seconds_check for t in last_sent_times
-            # ):
-            #     return self.get_coordinator_data(device)
-
-            return None
         return None
 
     async def _async_update_notification(self, res: tuple[str, Any | None]) -> None:
@@ -852,21 +849,13 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         """Update data from incoming event messages."""
 
     async def _async_setup(self) -> None:
-        device = self.manager.get_device_by_name(self.device_name)
+        handle = self.manager.mower(self.device_name)
+        if handle is not None:
+            handle.subscribe_state_changed(self._on_state_changed)
 
-        if cloud := device.cloud:
-            cloud.set_notification_callback(self._async_update_notification)
-        if ble := device.ble:
-            ble.set_notification_callback(self._async_update_notification)
-
-        device.state_manager.properties_callback.add_subscribers(
-            self._async_update_properties
-        )
-        device.state_manager.status_callback.add_subscribers(self._async_update_status)
-
-        device.state_manager.device_event_callback.add_subscribers(
-            self._async_update_event_message
-        )
+    async def _on_state_changed(self, snapshot: Any) -> None:
+        """Trigger a coordinator refresh when device state changes."""
+        self.hass.async_create_task(self.async_request_refresh())
 
     def find_entity_by_attribute_in_registry(self, attribute_name, attribute_value):
         """Find an entity using the entity registry based on attributes."""
@@ -915,7 +904,8 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
         hass: HomeAssistant,
         config_entry: MammotionConfigEntry,
         device: Device,
-        mammotion: Mammotion,
+        mammotion: MammotionClient,
+        unique_name: str | None = None,
     ) -> None:
         """Initialize global mammotion data updater."""
         super().__init__(
@@ -924,11 +914,12 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
             device=device,
             mammotion=mammotion,
             update_interval=REPORT_INTERVAL,
+            unique_name=unique_name,
         )
 
-    def get_coordinator_data(self, device: MammotionMowerDeviceManager) -> MowingDevice:
+    def get_coordinator_data(self, device: MowingDevice) -> MowingDevice:
         """Get coordinator data."""
-        return device.state
+        return device
 
     async def _async_update_data(self) -> MowingDevice:
         """Get data from the device."""
@@ -938,36 +929,20 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
         device = self.manager.get_device_by_name(self.device_name)
         if device is None:
             LOGGER.debug("device not found")
-            return data
+            return self.data
 
         try:
             await self.async_send_command("get_report_cfg")
 
         except DeviceOfflineException as ex:
-            """Device is offline."""
             if ex.iot_id == self.device.iot_id:
                 device = self.manager.get_device_by_name(self.device_name)
                 await self.device_offline(device)
-                return device.state
+                return device
 
         LOGGER.debug("Updated Mammotion device %s", self.device_name)
-        LOGGER.debug("================= Debug Log =================")
-        if device.preference is ConnectionPreference.BLUETOOTH:
-            if device.ble:
-                LOGGER.debug(
-                    "Mammotion device data: %s",
-                    device.ble._raw_data,
-                )
-        if device.preference is ConnectionPreference.WIFI:
-            if device.cloud:
-                LOGGER.debug(
-                    "Mammotion device data: %s",
-                    device.cloud._raw_data,
-                )
-        LOGGER.debug("==================================")
-
         self.update_failures = 0
-        data = self.manager.get_device_by_name(self.device_name).state
+        data = self.manager.get_device_by_name(self.device_name)
         await self.async_save_data(data)
 
         if data.report_data.dev.sys_status in (
@@ -980,14 +955,13 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
 
         return data
 
-    # TODO filter by device
     async def _async_update_notification(self, res: tuple[str, Any | None]) -> None:
         """Update data from incoming messages."""
         if res[0] == "sys" and res[1] is not None:
             sys_msg = betterproto2.which_one_of(res[1], "SubSysMsg")
             if sys_msg[0] == "toapp_report_data":
-                if mower := self.manager.mower(self.device_name):
-                    self.async_set_updated_data(mower)
+                if device := self.manager.get_device_by_name(self.device_name):
+                    self.async_set_updated_data(device)
 
     async def _async_update_properties(
         self, properties: ThingPropertiesMessage
@@ -997,20 +971,18 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
             return
         if not self.data.online:
             await self.set_scheduled_updates(True)
-        if mower := self.manager.mower(self.device_name):
-            self.async_set_updated_data(mower)
+        if device := self.manager.get_device_by_name(self.device_name):
+            self.async_set_updated_data(device)
 
     async def _async_update_status(self, status: ThingStatusMessage) -> None:
         """Update data from incoming status messages."""
         if not self.data.enabled:
             return
         if status.params.status.value == StatusType.CONNECTED:
-            # Device just came online — request fresh report data immediately
-            # rather than waiting for the next scheduled poll interval.
             await self.set_scheduled_updates(True)
             self.hass.async_create_task(self.async_request_refresh())
-        if mower := self.manager.mower(self.device_name):
-            self.async_set_updated_data(mower)
+        if device := self.manager.get_device_by_name(self.device_name):
+            self.async_set_updated_data(device)
 
     async def _async_update_event_message(self, event: ThingEventMessage) -> None:
         """Update data from incoming event messages."""
@@ -1018,8 +990,8 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
             return
         if not self.data.online:
             await self.set_scheduled_updates(True)
-        if mower := self.manager.mower(self.device_name):
-            self.async_set_updated_data(mower)
+        if device := self.manager.get_device_by_name(self.device_name):
+            self.async_set_updated_data(device)
 
 
 class MammotionMaintenanceUpdateCoordinator(MammotionBaseUpdateCoordinator[Maintain]):
@@ -1030,7 +1002,8 @@ class MammotionMaintenanceUpdateCoordinator(MammotionBaseUpdateCoordinator[Maint
         hass: HomeAssistant,
         config_entry: MammotionConfigEntry,
         device: Device,
-        mammotion: Mammotion,
+        mammotion: MammotionClient,
+        unique_name: str | None = None,
     ) -> None:
         """Initialize global mammotion data updater."""
         super().__init__(
@@ -1039,15 +1012,16 @@ class MammotionMaintenanceUpdateCoordinator(MammotionBaseUpdateCoordinator[Maint
             device=device,
             mammotion=mammotion,
             update_interval=MAINTENANCE_INTERVAL,
+            unique_name=unique_name,
         )
 
-        device = self.manager.get_device_by_name(self.device_name)
+        mowing_device = self.manager.get_device_by_name(self.device_name)
         if self.data is None:
-            self.data = device.state.report_data.maintenance
+            self.data = mowing_device.report_data.maintenance
 
-    def get_coordinator_data(self, device: MammotionMowerDeviceManager) -> Maintain:
+    def get_coordinator_data(self, device: MowingDevice) -> Maintain:
         """Get coordinator data."""
-        return device.state.report_data.maintenance
+        return device.report_data.maintenance
 
     async def _async_update_data(self) -> Maintain:
         """Get data from the device."""
@@ -1058,17 +1032,16 @@ class MammotionMaintenanceUpdateCoordinator(MammotionBaseUpdateCoordinator[Maint
             await self.async_send_command("get_maintenance")
 
         except DeviceOfflineException as ex:
-            """Device is offline try bluetooth if we have it."""
             if ex.iot_id == self.device.iot_id:
                 device = self.manager.get_device_by_name(self.device_name)
                 await self.device_offline(device)
-                return device.state.report_data.maintenance
+                return device.report_data.maintenance
         except GatewayTimeoutException:
-            """Gateway is timing out again."""
+            pass
 
         return self.manager.get_device_by_name(
             self.device.device_name
-        ).state.report_data.maintenance
+        ).report_data.maintenance
 
     async def _async_setup(self) -> None:
         """Setup maintenance coordinator."""
@@ -1085,7 +1058,8 @@ class MammotionDeviceVersionUpdateCoordinator(
         hass: HomeAssistant,
         config_entry: MammotionConfigEntry,
         device: Device,
-        mammotion: Mammotion,
+        mammotion: MammotionClient,
+        unique_name: str | None = None,
     ) -> None:
         """Initialize global mammotion data updater."""
         super().__init__(
@@ -1094,15 +1068,16 @@ class MammotionDeviceVersionUpdateCoordinator(
             device=device,
             mammotion=mammotion,
             update_interval=DEFAULT_INTERVAL,
+            unique_name=unique_name,
         )
 
-        device = self.manager.get_device_by_name(self.device_name)
+        mowing_device = self.manager.get_device_by_name(self.device_name)
         if self.data is None:
-            self.data = device.state
+            self.data = mowing_device
 
-    def get_coordinator_data(self, device: MammotionMowerDeviceManager) -> MowingDevice:
+    def get_coordinator_data(self, device: MowingDevice) -> MowingDevice:
         """Get coordinator data."""
-        return device.state
+        return device
 
     async def _async_update_properties(
         self, properties: ThingPropertiesMessage
@@ -1123,61 +1098,127 @@ class MammotionDeviceVersionUpdateCoordinator(
         if data := await super()._async_update_data():
             return data
         device = self.manager.get_device_by_name(self.device_name)
-        command_list = [
-            "get_device_version_main",
-            "get_device_version_info",
-            "get_device_base_info",
-            "get_device_product_model",
-        ]
-        for command in command_list:
-            try:
-                await self.async_send_command(command)
+        handle = self.manager.mower(self.device_name)
 
+        checks: list[tuple[str, str, bool]] = [
+            (
+                "get_device_version_main",
+                "toapp_devinfo_resp",
+                bool(device.mower_state.swversion),
+            ),
+            (
+                "get_device_version_info",
+                "toapp_dev_fw_info",
+                bool(device.device_firmwares.main_controller),
+            ),
+            (
+                "get_device_base_info",
+                "toapp_devinfo_resp",
+                bool(device.device_firmwares.device_version),
+            ),
+            (
+                "get_device_product_model",
+                "device_product_type_info",
+                bool(device.mower_state.model_id),
+            ),
+        ]
+        for command, expected_field, already_set in checks:
+            if already_set:
+                continue
+            try:
+                await self.manager.send_command_and_wait(
+                    self.device_name, command, expected_field
+                )
             except DeviceOfflineException as ex:
-                """Device is offline bluetooth has been attempted."""
                 if ex.iot_id == self.device.iot_id:
                     await self.device_offline(device)
-                    return device.state
+                    return device
             except GatewayTimeoutException:
-                """Gateway is timing out again."""
+                pass
+            except (CommandTimeoutError, ConcurrentRequestError):
+                pass
 
         await self.check_firmware_version()
 
-        ota_info = await device.mammotion_http.get_device_ota_firmware([device.iot_id])
-        LOGGER.debug("OTA info: %s", ota_info.data)
-        if check_versions := ota_info.data:
-            for check_version in check_versions:
-                if check_version.device_id == device.iot_id:
-                    device.state.update_check = check_version
+        if handle is not None:
+            http = self.manager.mammotion_http
+            if http is not None:
+                ota_info = await http.get_device_ota_firmware([handle.iot_id])
+                LOGGER.debug("OTA info: %s", ota_info.data)
+                if check_versions := ota_info.data:
+                    for check_version in check_versions:
+                        if check_version.device_id == handle.iot_id:
+                            device.update_check = check_version
 
-        if device.state.mower_state.model_id != "":
+        if device.mower_state.model_id != "":
             self.update_interval = DEVICE_VERSION_INTERVAL
 
-        return device.state
+        return device
 
     async def _async_setup(self) -> None:
         """Setup device version coordinator."""
         await super()._async_setup()
 
         try:
-            if self.data.mower_state.model_id == "":
-                await self.async_send_command("get_device_product_model")
-            if self.data.mower_state.wifi_mac == "":
+            device = self.manager.get_device_by_name(self.device_name)
+            if device is None:
+                return
+
+            checks: list[tuple[str, str, bool]] = [
+                (
+                    "get_device_version_main",
+                    "toapp_devinfo_resp",
+                    bool(device.mower_state.swversion),
+                ),
+                (
+                    "get_device_version_info",
+                    "toapp_dev_fw_info",
+                    bool(device.device_firmwares.main_controller),
+                ),
+                (
+                    "get_device_base_info",
+                    "toapp_devinfo_resp",
+                    bool(device.device_firmwares.device_version),
+                ),
+                (
+                    "get_device_product_model",
+                    "device_product_type_info",
+                    bool(device.mower_state.model_id),
+                ),
+            ]
+            for command, expected_field, already_set in checks:
+                if already_set:
+                    continue
+                try:
+                    await self.manager.send_command_and_wait(
+                        self.device_name, command, expected_field
+                    )
+                except (
+                    CommandTimeoutError,
+                    ConcurrentRequestError,
+                    NoTransportAvailableError,
+                ):
+                    pass
+                except (DeviceOfflineException, GatewayTimeoutException):
+                    pass
+
+            if not device.mower_state.wifi_mac:
                 await self.async_send_command("get_device_network_info")
 
-            device = self.manager.get_device_by_name(self.device_name)
-
-            ota_info = await device.mammotion_http.get_device_ota_firmware(
-                [device.iot_id]
-            )
-            if check_versions := ota_info.data:
-                for check_version in check_versions:
-                    if check_version.device_id == device.iot_id:
-                        device.state.update_check = check_version
+            handle = self.manager.mower(self.device_name)
+            if handle is not None:
+                http = self.manager.mammotion_http
+                if http is not None:
+                    ota_info = await http.get_device_ota_firmware([handle.iot_id])
+                    device = self.manager.get_device_by_name(self.device_name)
+                    if check_versions := ota_info.data:
+                        for check_version in check_versions:
+                            if check_version.device_id == handle.iot_id:
+                                device.update_check = check_version
 
             self.async_set_updated_data(self.data)
         except DeviceOfflineException:
-            """Device is offline bluetooth has been attempted."""
+            pass
 
 
 class MammotionMapUpdateCoordinator(MammotionBaseUpdateCoordinator[MowerInfo]):
@@ -1188,7 +1229,8 @@ class MammotionMapUpdateCoordinator(MammotionBaseUpdateCoordinator[MowerInfo]):
         hass: HomeAssistant,
         config_entry: MammotionConfigEntry,
         device: Device,
-        mammotion: Mammotion,
+        mammotion: MammotionClient,
+        unique_name: str | None = None,
     ) -> None:
         """Initialize global mammotion data updater."""
         super().__init__(
@@ -1197,15 +1239,16 @@ class MammotionMapUpdateCoordinator(MammotionBaseUpdateCoordinator[MowerInfo]):
             device=device,
             mammotion=mammotion,
             update_interval=MAP_INTERVAL_FAST,
+            unique_name=unique_name,
         )
 
-        device = self.manager.get_device_by_name(self.device_name)
+        mowing_device = self.manager.get_device_by_name(self.device_name)
         if self.data is None:
-            self.data = device.state.mower_state
+            self.data = mowing_device.mower_state
 
-    def get_coordinator_data(self, device: MammotionMowerDeviceManager) -> MowerInfo:
+    def get_coordinator_data(self, device: MowingDevice) -> MowerInfo:
         """Get coordinator data."""
-        return device.state.mower_state
+        return device.mower_state
 
     def _map_callback(self) -> None:
         """Trigger a resync when the bol hash changes."""
@@ -1219,15 +1262,12 @@ class MammotionMapUpdateCoordinator(MammotionBaseUpdateCoordinator[MowerInfo]):
 
         try:
             if (
-                round(device.state.location.RTK.latitude, 0) == 0
-                or round(device.state.location.dock.latitude, 0) == 0
+                round(device.location.RTK.latitude, 0) == 0
+                or round(device.location.dock.latitude, 0) == 0
             ):
                 await self.async_rtk_dock_location()
 
-            if (
-                len(device.state.map.hashlist) == 0
-                or len(device.state.map.missing_hashlist()) > 0
-            ):
+            if len(device.map.hashlist) == 0 or len(device.map.missing_hashlist()) > 0:
                 if self.update_interval == MAP_INTERVAL:
                     self.update_interval = MAP_INTERVAL_FAST
                 await self.manager.start_map_sync(self.device_name)
@@ -1235,32 +1275,37 @@ class MammotionMapUpdateCoordinator(MammotionBaseUpdateCoordinator[MowerInfo]):
                 self.update_interval = MAP_INTERVAL
 
         except DeviceOfflineException as ex:
-            """Device is offline try bluetooth if we have it."""
             if ex.iot_id == self.device.iot_id:
                 await self.device_offline(device)
-                return device.state.mower_state
+                return device.mower_state
         except GatewayTimeoutException:
-            """Gateway is timing out again."""
+            pass
+        except (ConcurrentRequestError, NoTransportAvailableError):
+            pass
 
-        return self.manager.get_device_by_name(self.device_name).state.mower_state
+        return self.manager.get_device_by_name(self.device_name).mower_state
 
     async def _async_setup(self) -> None:
         """Setup coordinator with initial call to get map data."""
         await super()._async_setup()
         device = self.manager.get_device_by_name(self.device_name)
 
-        if not device.state.enabled or not device.state.online:
+        if not device.enabled or not device.online:
             return
         try:
             await self.async_rtk_dock_location()
             if not DeviceType.is_luba1(self.device_name):
                 await self.async_get_area_list()
         except DeviceOfflineException as ex:
-            """Device is offline try bluetooth if we have it."""
             if ex.iot_id == self.device.iot_id:
                 await self.device_offline(device)
         except GatewayTimeoutException:
-            """Gateway is timing out again."""
+            pass
+        except NoTransportAvailableError:
+            LOGGER.warning(
+                "No transport connected yet for %s, map data will be fetched on next update",
+                self.device_name,
+            )
 
 
 class MammotionDeviceErrorUpdateCoordinator(
@@ -1273,7 +1318,8 @@ class MammotionDeviceErrorUpdateCoordinator(
         hass: HomeAssistant,
         config_entry: MammotionConfigEntry,
         device: Device,
-        mammotion: Mammotion,
+        mammotion: MammotionClient,
+        unique_name: str | None = None,
     ) -> None:
         """Initialize global mammotion data updater."""
         super().__init__(
@@ -1282,14 +1328,15 @@ class MammotionDeviceErrorUpdateCoordinator(
             device=device,
             mammotion=mammotion,
             update_interval=DEFAULT_INTERVAL,
+            unique_name=unique_name,
         )
-        device = self.manager.get_device_by_name(self.device_name)
+        mowing_device = self.manager.get_device_by_name(self.device_name)
         if self.data is None:
-            self.data = device.state
+            self.data = mowing_device
 
-    def get_coordinator_data(self, device: MammotionMowerDeviceManager) -> MowingDevice:
+    def get_coordinator_data(self, device: MowingDevice) -> MowingDevice:
         """Get coordinator data."""
-        return device.state
+        return device
 
     async def _async_update_event_message(self, event: ThingEventMessage) -> None:
         if (
@@ -1302,8 +1349,8 @@ class MammotionDeviceErrorUpdateCoordinator(
                 warning_event = json.loads(event_params.value.data)
                 LOGGER.debug("warning event %s", warning_event)
                 await self._async_update_data()
-                if mower := self.manager.mower(self.device_name):
-                    self.async_set_updated_data(mower)
+                if device := self.manager.get_device_by_name(self.device_name):
+                    self.async_set_updated_data(device)
             except json.JSONDecodeError:
                 """Failed to parse warning event."""
 
@@ -1314,8 +1361,8 @@ class MammotionDeviceErrorUpdateCoordinator(
             if sys_msg[0] == "system_update_buf" and sys_msg[1] is not None:
                 buffer_list: SystemUpdateBufMsg = sys_msg[1]
                 if buffer_list.update_buf_data[0] == 2:
-                    if mower := self.manager.mower(self.device_name):
-                        self.async_set_updated_data(mower)
+                    if device := self.manager.get_device_by_name(self.device_name):
+                        self.async_set_updated_data(device)
 
     def get_error_code(self, number: int) -> int:
         """Get error code from an error code list."""
@@ -1373,40 +1420,83 @@ class MammotionDeviceErrorUpdateCoordinator(
             return data
         device = self.manager.get_device_by_name(self.device_name)
 
+        expected_field = (
+            "bidire_comm_cmd"
+            if DeviceType.is_luba_pro(self.device_name)
+            else "nav_sys_param_cmd"
+        )
         try:
-            await self.async_send_command("read_write_device", rw_id=5, rw=1, context=2)
-            await self.async_send_command("read_write_device", rw_id=5, rw=1, context=3)
-            if not device.state.errors.error_codes:
-                device.state.errors.error_codes = (
-                    await device.mammotion_http.get_all_error_codes()
-                )
+            await self.manager.send_command_and_wait(
+                self.device_name,
+                "read_write_device",
+                expected_field,
+                rw_id=5,
+                rw=1,
+                context=2,
+            )
+            await self.manager.send_command_and_wait(
+                self.device_name,
+                "read_write_device",
+                expected_field,
+                rw_id=5,
+                rw=1,
+                context=3,
+            )
+            if not device.errors.error_codes:
+                http = self.manager.mammotion_http
+                if http is not None:
+                    device.errors.error_codes = await http.get_all_error_codes()
         except DeviceOfflineException as ex:
-            """Device is offline bluetooth has been attempted."""
             if ex.iot_id == self.device.iot_id:
                 await self.device_offline(device)
-                return device.state
+                return device
         except GatewayTimeoutException:
-            """Gateway is timing out again."""
+            pass
+        except (CommandTimeoutError, ConcurrentRequestError, NoTransportAvailableError):
+            pass
 
-        return device.state
+        return device
 
     async def _async_setup(self) -> None:
         """Setup device version coordinator."""
         await super()._async_setup()
         device = self.manager.get_device_by_name(self.device_name)
 
+        expected_field = (
+            "bidire_comm_cmd"
+            if DeviceType.is_luba_pro(self.device_name)
+            else "nav_sys_param_cmd"
+        )
         try:
-            # get current errors
-            await self.async_send_command("read_write_device", rw_id=5, rw=1, context=2)
-            await self.async_send_command("read_write_device", rw_id=5, rw=1, context=3)
-            if not device.state.errors.error_codes:
-                device.state.errors.error_codes = (
-                    await device.mammotion_http.get_all_error_codes()
-                )
+            await self.manager.send_command_and_wait(
+                self.device_name,
+                "read_write_device",
+                expected_field,
+                rw_id=5,
+                rw=1,
+                context=2,
+            )
+            await self.manager.send_command_and_wait(
+                self.device_name,
+                "read_write_device",
+                expected_field,
+                rw_id=5,
+                rw=1,
+                context=3,
+            )
+            if not device.errors.error_codes:
+                http = self.manager.mammotion_http
+                if http is not None:
+                    device.errors.error_codes = await http.get_all_error_codes()
 
             self.async_set_updated_data(self.data)
         except DeviceOfflineException:
-            """Device is offline bluetooth has been attempted."""
+            pass
+        except (CommandTimeoutError, ConcurrentRequestError, NoTransportAvailableError):
+            LOGGER.warning(
+                "No transport connected yet for %s, error/maintenance data will be fetched on next update",
+                self.device_name,
+            )
 
 
 class MammotionRTKCoordinator(DataUpdateCoordinator[RTKDevice]):
@@ -1417,8 +1507,8 @@ class MammotionRTKCoordinator(DataUpdateCoordinator[RTKDevice]):
         hass: HomeAssistant,
         config_entry: MammotionConfigEntry,
         device: Device,
-        cloud: MammotionCloud,
-        manager: MammotionDeviceManager,
+        manager: MammotionClient,
+        unique_name: str | None = None,
     ) -> None:
         """Initialize global mammotion data updater."""
         super().__init__(
@@ -1433,74 +1523,54 @@ class MammotionRTKCoordinator(DataUpdateCoordinator[RTKDevice]):
         self.password = self.config_entry.data[CONF_PASSWORD]
         self.device: Device = device
         self.device_name = device.device_name
-        self.cloud: MammotionCloud = cloud
+        self.unique_name = (
+            unique_name if unique_name is not None else device.device_name
+        )
         self.manager = manager
         self.data: RTKDevice = RTKDevice(
             name=self.device_name,
             iot_id=self.device.iot_id,
             product_key=self.device.product_key,
         )
-        self.cloud.mqtt_message_event.add_subscribers(self._on_mqtt_message)
-        self.cloud.mqtt_properties_event.add_subscribers(self._on_mqtt_properties)
 
     async def async_refresh_login(self) -> None:
         """Refresh login credentials asynchronously."""
         await self.manager.refresh_login(self.account)
 
-    async def _on_mqtt_message(self, event: ThingEventMessage) -> None:
-        if event.params.iot_id != self.data.iot_id:
-            return
-        # set data based on mqtt protobuf messages to set lat lon
-
-    async def _on_mqtt_properties(self, properties: ThingPropertiesMessage) -> None:
-        if properties.params.iot_id != self.data.iot_id:
-            return
-        if ota_progress := properties.params.items.otaProgress:
-            ota_progress.value = OTAProgressItems.from_dict(ota_progress.value)
-            self.data.update_check.progress = ota_progress.value.progress
-            self.data.update_check.isupgrading = True
-            if ota_progress.value.progress == 100:
-                self.data.update_check.isupgrading = False
-                self.data.update_check.upgradeable = False
-                self.data.device_version = ota_progress.value.version
-            self.async_set_updated_data(self.data)
-
     async def _async_update_data(self):
         """Update RTK data."""
+        cloud = self.manager.cloud_gateway
+        http = self.manager.mammotion_http
         try:
-            response = await self.cloud.cloud_client.get_device_properties(
-                self.device.iot_id
-            )
-            if response.code == 200:
-                data = response.data
-                if ota_progress := data.otaProgress:
-                    self.data.update_check = CheckDeviceVersion.from_dict(
-                        ota_progress.value
-                    )
-                if network_info := data.networkInfo:
-                    network = json.loads(network_info.value)
-                    self.data.wifi_rssi = network["wifi_rssi"]
-                    self.data.wifi_sta_mac = network["wifi_sta_mac"]
-                    self.data.bt_mac = network["bt_mac"]
-                if coordinate := data.coordinate:
-                    coord_val = json.loads(coordinate.value)
-                    if self.data.lat == 0:
-                        self.data.lat = coord_val["lat"]
-                    if self.data.lon == 0:
-                        self.data.lon = coord_val["lon"]
-                if device_version := data.deviceVersion:
-                    self.data.device_version = device_version.value
+            if cloud is not None:
+                response = await cloud.get_device_properties(self.device.iot_id)
+                if response.code == 200:
+                    data = response.data
+                    if ota_progress := data.otaProgress:
+                        self.data.update_check = CheckDeviceVersion.from_dict(
+                            ota_progress.value
+                        )
+                    if network_info := data.networkInfo:
+                        network = json.loads(network_info.value)
+                        self.data.wifi_rssi = network["wifi_rssi"]
+                        self.data.wifi_sta_mac = network["wifi_sta_mac"]
+                        self.data.bt_mac = network["bt_mac"]
+                    if coordinate := data.coordinate:
+                        coord_val = json.loads(coordinate.value)
+                        if self.data.lat == 0:
+                            self.data.lat = coord_val["lat"]
+                        if self.data.lon == 0:
+                            self.data.lon = coord_val["lon"]
+                    if device_version := data.deviceVersion:
+                        self.data.device_version = device_version.value
             self.data.online = True
 
-            ota_info = (
-                await self.cloud.cloud_client.mammotion_http.get_device_ota_firmware(
-                    [self.data.iot_id]
-                )
-            )
-            if check_versions := ota_info.data:
-                for check_version in check_versions:
-                    if check_version.device_id == self.data.iot_id:
-                        self.data.update_check = check_version
+            if http is not None:
+                ota_info = await http.get_device_ota_firmware([self.data.iot_id])
+                if check_versions := ota_info.data:
+                    for check_version in check_versions:
+                        if check_version.device_id == self.data.iot_id:
+                            self.data.update_check = check_version
             return self.data
         except SetupException:
             await self.async_refresh_login()
@@ -1508,13 +1578,15 @@ class MammotionRTKCoordinator(DataUpdateCoordinator[RTKDevice]):
         except DeviceOfflineException:
             self.data.online = False
         except GatewayTimeoutException:
-            """Gateway is timing out again."""
+            pass
         return self.data
 
     async def _async_setup(self) -> None:
         """Sets up RTK data."""
-
-        rtk_response = await self.cloud.cloud_client.mammotion_http.get_rtk_devices()
+        http = self.manager.mammotion_http
+        if http is None:
+            return
+        rtk_response = await http.get_rtk_devices()
         if rtk_response.code == 0:
             rtk_list = [
                 rtk
@@ -1530,6 +1602,6 @@ class MammotionRTKCoordinator(DataUpdateCoordinator[RTKDevice]):
 
     async def update_firmware(self, version: str) -> None:
         """Update firmware."""
-        await self.cloud.cloud_client.mammotion_http.start_ota_upgrade(
-            self.device.iot_id, version
-        )
+        http = self.manager.mammotion_http
+        if http is not None:
+            await http.start_ota_upgrade(self.device.iot_id, version)

@@ -361,9 +361,6 @@
       "blade_height": {
         "name": "Înălțimea lamelor"
       },
-      "blade_height_inches": {
-        "name": "Înălțimea lamei (inch)"
-      },
       "working_speed": {
         "name": "Viteza de lucru"
       },

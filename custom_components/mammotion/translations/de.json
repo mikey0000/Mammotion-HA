@@ -361,9 +361,6 @@
       "blade_height": {
         "name": "Schnitthöhe"
       },
-      "blade_height_inches": {
-        "name": "Schnitthöhe (Zoll)"
-      },
       "working_speed": {
         "name": "Aufgabengeschwindigkeit"
       },

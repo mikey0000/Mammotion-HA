@@ -361,9 +361,6 @@
       "blade_height": {
         "name": "Altezza della lama"
       },
-      "blade_height_inches": {
-        "name": "Altezza lama (pollici)"
-      },
       "working_speed": {
         "name": "Velocità di lavoro"
       },

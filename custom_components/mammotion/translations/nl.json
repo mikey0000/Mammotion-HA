@@ -361,9 +361,6 @@
       "blade_height": {
         "name": "Mes hoogte"
       },
-      "blade_height_inches": {
-        "name": "Maaihoogte (inches)"
-      },
       "working_speed": {
         "name": "Robot Snelheid"
       },
