@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - refactored-library
 
 jobs:
   beta-release:
