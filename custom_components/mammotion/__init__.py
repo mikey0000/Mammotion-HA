@@ -221,8 +221,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
 
             if not use_wifi:
                 mammotion_device.preference = ConnectionPreference.BLUETOOTH
-                await mammotion_device.cloud.stop()
-                mammotion_device.cloud.mqtt.disconnect() if mammotion_device.cloud.mqtt.is_connected() else None
+                if mammotion_device.cloud:
+                    mammotion_device.cloud.stop()
+                    mammotion_device.cloud.mqtt.disconnect() if mammotion_device.cloud.mqtt.is_connected() else None
                 # not entirely sure this is a good idea
                 mammotion_device.remove_cloud()
 
