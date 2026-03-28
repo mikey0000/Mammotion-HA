@@ -429,11 +429,22 @@ def async_add_area_entities(
         return
 
     switch_entities: list[MammotionConfigAreaSwitchEntity] = []
-    areas = list(map(int, coordinator.data.map.area.keys()))
-    area_name_hashes = [area.hash for area in coordinator.data.map.area_name]
-    area_name = coordinator.data.map.area_name
-    all_current_areas = set(areas) | set(area_name_hashes)
+    area_names = coordinator.data.map.area_name
+    area_name_hashes: set[int] = {area.hash for area in area_names}
+    map_area_hashes: set[int] = {int(k) for k in coordinator.data.map.area.keys()}
+    is_luba1 = DeviceType.is_luba1(coordinator.device_name)
+
+    if is_luba1:
+        # Luba 1 doesn't support get_area_name_list; map.area keys are authoritative
+        all_current_areas = map_area_hashes
+    else:
+        # area_name is authoritative; re-fetch if map has unknown hashes
+        if map_area_hashes - area_name_hashes:
+            coordinator.hass.async_create_task(coordinator.async_get_area_list())
+        all_current_areas = area_name_hashes
+
     new_areas = all_current_areas - added_areas
+    area_counter = len(added_areas)
 
     def set_area_entity(
         coord: MammotionReportUpdateCoordinator, bool_val: bool, value: int
@@ -443,16 +454,15 @@ def async_add_area_entities(
         elif value in coord.operation_settings.areas:
             coord.operation_settings.areas.remove(value)
 
-    for area_id in new_areas:
-        existing_name: AreaHashNameList | None = next(
-            (area for area in area_name if str(area.hash) == str(area_id)),
-            None,
+    for area_id in sorted(new_areas):
+        area_entry: AreaHashNameList | None = next(
+            (area for area in area_names if area.hash == area_id), None
         )
-        name = (
-            existing_name.name
-            if (existing_name and existing_name.name)
-            else f"{area_id}"
-        )
+        if area_entry and area_entry.name:
+            name = area_entry.name
+        else:
+            area_counter += 1
+            name = f"Area {area_counter}"
 
         if name in area_entities_by_name:
             # Same name, new hash — update the existing entity instead of creating one
