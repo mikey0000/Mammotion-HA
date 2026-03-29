@@ -163,7 +163,7 @@ async def async_setup_entry(
         )
 
         update_areas()
-        coordinator.async_add_listener(update_areas)
+        entry.async_on_unload(coordinator.async_add_listener(update_areas))
 
         entities = []
         for entity_description in SWITCH_ENTITIES:
@@ -383,7 +383,8 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
             self.coordinator.operation_settings.areas.discard(old_area)
             self.coordinator.operation_settings.areas.add(new_area_id)
         self._attr_is_on = new_area_id in self.coordinator.operation_settings.areas
-        self.async_write_ha_state()
+        if self.hass is not None:
+            self.async_write_ha_state()
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn the entity on."""
@@ -407,8 +408,10 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
     async def async_update(self) -> None:
         """Update the entity state."""
         self._attr_is_on = self._area in self.coordinator.operation_settings.areas
-        if self._area not in self.coordinator.data.map.area.keys():
+        area_keys = {int(k) for k in self.coordinator.data.map.area.keys()}
+        if self._area not in area_keys:
             await self.async_remove()
+            return
         self.async_write_ha_state()
 
     @property

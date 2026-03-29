@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Any
 import betterproto2
 from homeassistant.components import bluetooth
 from homeassistant.const import CONF_PASSWORD
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HassJob, HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
@@ -254,8 +254,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         device = self.manager.get_device_by_name(self.device_name)
         if device is None:
             return False
-        ble_connected = handle.is_transport_connected(TransportType.BLE)
-        return device.online or ble_connected
+        return handle.availability.is_available
 
     async def async_refresh_login(self) -> None:
         """Refresh login credentials asynchronously."""
@@ -268,7 +267,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         async_call_later(
             self.hass,
             900,
-            lambda _: self.hass.async_create_task(self.clear_update_failures()),
+            HassJob(lambda _: self.clear_update_failures()),
         )
 
     def store_cloud_credentials(self) -> None:
@@ -289,7 +288,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
     async def async_send_command(self, command: str, **kwargs: Any) -> bool | None:
         """Send command via MammotionClient command queue."""
         device = self.manager.get_device_by_name(self.device_name)
-        if device is None or not device.online:
+        if device is None or not self.is_online():
             return False
 
         try:
@@ -333,7 +332,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
     ) -> bool | None:
         """Send a raw cloud command via the device's active transport."""
         device = self.manager.get_device_by_name(self.device_name)
-        if device is None or not device.online:
+        if device is None or not self.is_online():
             return False
         handle = self.manager.mower(self.device_name)
         if handle is None:
@@ -790,7 +789,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
 
         handle = self.manager.mower(self.device_name)
 
-        if not device.online and (handle is None or not handle.prefer_ble):
+        if not self.is_online():
             return self.get_coordinator_data(device)
 
         # Update BLE device address from HA bluetooth scanner if available
@@ -813,9 +812,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
                 async_call_later(
                     self.hass,
                     300,
-                    lambda _: self.hass.async_create_task(
-                        self.async_send_command("get_report_cfg")
-                    ),
+                    HassJob(lambda _: self.async_send_command("get_report_cfg")),
                 )
             return self.get_coordinator_data(device)
 
@@ -823,7 +820,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
             async_call_later(
                 self.hass,
                 60,
-                lambda _: self.hass.async_create_task(self.clear_update_failures()),
+                HassJob(lambda _: self.clear_update_failures()),
             )
             return self.get_coordinator_data(device)
 
@@ -885,7 +882,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
                 )
                 name = area_name.name if area_name is not None else None
         else:
-            LOGGER.error("area not found %s %s", self.device_name, area_hash)
+            LOGGER.warning("area not found %s %s", self.device_name, area_hash)
             return None
 
         return name if name else f"area {area_hash}"
@@ -1233,7 +1230,7 @@ class MammotionMapUpdateCoordinator(MammotionBaseUpdateCoordinator[MowerInfo]):
             config_entry=config_entry,
             device=device,
             mammotion=mammotion,
-            update_interval=MAP_INTERVAL_FAST,
+            update_interval=MAP_INTERVAL,
             unique_name=unique_name,
         )
 
@@ -1414,7 +1411,6 @@ class MammotionDeviceErrorUpdateCoordinator(
         if data := await super()._async_update_data():
             return data
         device = self.manager.get_device_by_name(self.device_name)
-
         try:
             await self.manager.send_command_and_wait(
                 self.device_name,
