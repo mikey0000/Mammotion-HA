@@ -204,9 +204,6 @@
       "start_schedule_sync": {
         "name": "Synchronize schedules"
       },
-      "join_webrtc": {
-        "name": "Start camera on mower"
-      },
       "resync_rtk_dock": {
         "name": "Sync RTK and dock"
       },

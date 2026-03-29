@@ -204,9 +204,6 @@
       "start_schedule_sync": {
         "name": "Schema's synchroniseren"
       },
-      "join_webrtc": {
-        "name": "Start camera op maaier"
-      },
       "resync_rtk_dock": {
         "name": "Synchroniseer RTK en laadstation"
       },

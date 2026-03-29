@@ -204,9 +204,6 @@
       "start_schedule_sync": {
         "name": "Synchronize schedules"
       },
-      "join_webrtc": {
-        "name": "Spustit kameru"
-      },
       "resync_rtk_dock": {
         "name": "Synchronizovat RTK a dok"
       },

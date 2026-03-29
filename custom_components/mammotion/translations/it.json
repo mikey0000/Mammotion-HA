@@ -204,9 +204,6 @@
       "start_schedule_sync": {
         "name": "Sincronizza programmi"
       },
-      "join_webrtc": {
-        "name": "Avvia telecamera del tosaerba"
-      },
       "resync_rtk_dock": {
         "name": "Sincronizza base e RTK"
       },

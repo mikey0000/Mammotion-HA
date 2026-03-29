@@ -204,9 +204,6 @@
       "start_schedule_sync": {
         "name": "Synchronize schedules"
       },
-      "join_webrtc": {
-        "name": "Vklopi kamero na kosilnici"
-      },
       "resync_rtk_dock": {
         "name": "Sinhronizacija položaja RTK in polnilne postaje"
       },

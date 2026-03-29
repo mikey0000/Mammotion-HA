@@ -204,9 +204,6 @@
       "start_schedule_sync": {
         "name": "Synchronize schedules"
       },
-      "join_webrtc": {
-        "name": "Activer la caméra durant la tonte"
-      },
       "resync_rtk_dock": {
         "name": "Synchroniser RTK et base"
       },

@@ -571,16 +571,11 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
 
     async def async_rtk_dock_location(self) -> None:
         """RTK and dock location."""
-        expected_field = (
-            "bidire_comm_cmd"
-            if DeviceType.is_luba_pro(self.device_name)
-            else "nav_sys_param_cmd"
-        )
         try:
             await self.manager.send_command_and_wait(
                 self.device_name,
                 "read_write_device",
-                expected_field,
+                "bidire_comm_cmd",
                 rw_id=5,
                 rw=1,
                 context=1,
@@ -1420,16 +1415,11 @@ class MammotionDeviceErrorUpdateCoordinator(
             return data
         device = self.manager.get_device_by_name(self.device_name)
 
-        expected_field = (
-            "bidire_comm_cmd"
-            if DeviceType.is_luba_pro(self.device_name)
-            else "nav_sys_param_cmd"
-        )
         try:
             await self.manager.send_command_and_wait(
                 self.device_name,
                 "read_write_device",
-                expected_field,
+                "bidire_comm_cmd",
                 rw_id=5,
                 rw=1,
                 context=2,
@@ -1437,7 +1427,7 @@ class MammotionDeviceErrorUpdateCoordinator(
             await self.manager.send_command_and_wait(
                 self.device_name,
                 "read_write_device",
-                expected_field,
+                "bidire_comm_cmd",
                 rw_id=5,
                 rw=1,
                 context=3,
@@ -1462,16 +1452,11 @@ class MammotionDeviceErrorUpdateCoordinator(
         await super()._async_setup()
         device = self.manager.get_device_by_name(self.device_name)
 
-        expected_field = (
-            "bidire_comm_cmd"
-            if DeviceType.is_luba_pro(self.device_name)
-            else "nav_sys_param_cmd"
-        )
         try:
             await self.manager.send_command_and_wait(
                 self.device_name,
                 "read_write_device",
-                expected_field,
+                "bidire_comm_cmd",
                 rw_id=5,
                 rw=1,
                 context=2,
@@ -1479,7 +1464,7 @@ class MammotionDeviceErrorUpdateCoordinator(
             await self.manager.send_command_and_wait(
                 self.device_name,
                 "read_write_device",
-                expected_field,
+                "bidire_comm_cmd",
                 rw_id=5,
                 rw=1,
                 context=3,

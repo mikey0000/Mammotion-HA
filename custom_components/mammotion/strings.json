@@ -130,9 +130,6 @@
       }
     },
     "button": {
-      "join_webrtc": {
-        "name": "Start camera on mower"
-      },
       "start_map_sync": {
         "name": "Sync maps"
       },

@@ -204,9 +204,6 @@
       "start_schedule_sync": {
         "name": "Synchronisiere Zeitplan"
       },
-      "join_webrtc": {
-        "name": "Kamera des Rasenmähers starten"
-      },
       "resync_rtk_dock": {
         "name": "Synchronisiere RTK und Ladestation"
       },

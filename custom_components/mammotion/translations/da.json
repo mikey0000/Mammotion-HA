@@ -204,9 +204,6 @@
       "start_schedule_sync": {
         "name": "Synchronize schedules"
       },
-      "join_webrtc": {
-        "name": "Start kameraet på plæneklipperen"
-      },
       "resync_rtk_dock": {
         "name": "Synkroniser RTK og ladestation"
       },
