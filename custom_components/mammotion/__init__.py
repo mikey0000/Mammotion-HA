@@ -447,7 +447,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: MammotionConfigEntry) -
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
         for mower in entry.runtime_data.mowers:
             try:
-                await mower.api.remove_device(mower.name)
+                mower.api.remove_device(mower.name)
             except TimeoutError:
                 """Do nothing as this sometimes occurs with disconnecting BLE."""
     return unload_ok
