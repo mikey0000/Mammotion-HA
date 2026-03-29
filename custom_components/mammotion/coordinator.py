@@ -251,10 +251,14 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         handle = self.manager.mower(self.device_name)
         if handle is None:
             return False
-        device = self.manager.get_device_by_name(self.device_name)
-        if device is None:
+        if self.manager.get_device_by_name(self.device_name) is None:
             return False
-        return handle.availability.is_available
+        if handle.is_transport_connected(TransportType.BLE):
+            return True
+        mqtt_connected = handle.is_transport_connected(
+            TransportType.CLOUD_ALIYUN
+        ) or handle.is_transport_connected(TransportType.CLOUD_MAMMOTION)
+        return mqtt_connected and not handle.availability.mqtt_reported_offline
 
     async def async_refresh_login(self) -> None:
         """Refresh login credentials asynchronously."""
@@ -267,7 +271,9 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         async_call_later(
             self.hass,
             900,
-            HassJob(lambda _: self.clear_update_failures()),
+            HassJob(
+                lambda _: self.hass.async_create_task(self.clear_update_failures())
+            ),
         )
 
     def store_cloud_credentials(self) -> None:
@@ -820,7 +826,9 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
             async_call_later(
                 self.hass,
                 60,
-                HassJob(lambda _: self.clear_update_failures()),
+                HassJob(
+                    lambda _: self.hass.async_create_task(self.clear_update_failures())
+                ),
             )
             return self.get_coordinator_data(device)
 
@@ -1471,7 +1479,7 @@ class MammotionDeviceErrorUpdateCoordinator(
                     device.errors.error_codes = await http.get_all_error_codes()
 
             self.async_set_updated_data(self.data)
-        except DeviceOfflineException:
+        except (DeviceOfflineException, GatewayTimeoutException):
             pass
         except (CommandTimeoutError, ConcurrentRequestError, NoTransportAvailableError):
             LOGGER.warning(
