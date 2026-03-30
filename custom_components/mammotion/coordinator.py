@@ -25,8 +25,8 @@ from pymammotion.aliyun.exceptions import (
     FailedRequestException,
     GatewayTimeoutException,
     NoConnectionException,
-    SetupException,
 )
+from pymammotion.transport.base import ReLoginRequiredError
 from pymammotion.aliyun.model.dev_by_account_response import Device
 from pymammotion.client import MammotionClient
 from pymammotion.data.model import GenerateRouteInformation
@@ -1561,7 +1561,7 @@ class MammotionRTKCoordinator(DataUpdateCoordinator[RTKDevice]):
                         if check_version.device_id == self.data.iot_id:
                             self.data.update_check = check_version
             return self.data
-        except SetupException:
+        except ReLoginRequiredError:
             await self.async_refresh_login()
             return self.data
         except DeviceOfflineException:
