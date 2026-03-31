@@ -13,7 +13,7 @@ import betterproto2
 from homeassistant.components import bluetooth
 from homeassistant.const import CONF_PASSWORD
 from homeassistant.core import HassJob, HomeAssistant
-from homeassistant.exceptions import HomeAssistantError
+from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.event import async_call_later
@@ -44,10 +44,13 @@ from pymammotion.http.model.rtk import RTK
 from pymammotion.mammotion.commands.mammotion_command import MammotionCommand
 from pymammotion.proto import RptAct, RptInfoType, SystemUpdateBufMsg
 from pymammotion.transport.base import (
+    AuthError,
     CommandTimeoutError,
     ConcurrentRequestError,
+    LoginFailedError,
     NoTransportAvailableError,
     ReLoginRequiredError,
+    SessionExpiredError,
     TransportType,
 )
 from pymammotion.utility.constant import WorkMode
@@ -260,10 +263,66 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         ) or handle.is_transport_connected(TransportType.CLOUD_MAMMOTION)
         return mqtt_connected and not handle.availability.mqtt_reported_offline
 
-    async def async_refresh_login(self) -> None:
-        """Refresh login credentials asynchronously."""
-        await self.manager.refresh_login(self.account)
-        self.store_cloud_credentials()
+    async def async_refresh_login(self, exc: Exception | None = None) -> None:
+        """Refresh login credentials asynchronously.
+
+        LoginFailedError means the client already exhausted all recovery options
+        (targeted refresh → force refresh → full re-login).  Raise ConfigEntryAuthFailed
+        so HA tells the user to reconfigure the integration.
+
+        For other auth errors, selectively refresh the affected transport:
+        - SessionExpiredError: refreshes credentials for the specific transport.
+        - AuthError (generic): performs a full login refresh.
+        - Other/unknown: performs a full login refresh.
+        """
+
+        if isinstance(exc, LoginFailedError):
+            raise ConfigEntryAuthFailed(
+                f"Login failed for Mammotion account: {exc.reason}"
+            ) from exc
+        if (
+            isinstance(exc, SessionExpiredError)
+            and self.manager.token_manager is not None
+        ):
+            await self.manager.token_manager.refresh_aliyun_credentials()
+        elif isinstance(exc, AuthError) and self.manager.token_manager is not None:
+            await self.manager.token_manager.refresh_mqtt_credentials()
+        else:
+            await self.manager.refresh_login(self.account)
+            self.store_cloud_credentials()
+
+    async def async_send_and_wait(
+        self,
+        command: str,
+        expected_field: str,
+        **kwargs: Any,
+    ) -> None:
+        """Send a command and wait for response with standard exception handling.
+
+        Handles credential expiry, gateway/transport timeouts, and device-offline
+        conditions uniformly.  Re-raises DeviceOfflineException after marking the
+        device offline so callers can bail out of their update loops.
+        """
+        try:
+            await self.manager.send_command_and_wait(
+                self.device_name, command, expected_field, **kwargs
+            )
+        except EXPIRED_CREDENTIAL_EXCEPTIONS as exc:
+            self.update_failures += 1
+            await self.async_refresh_login(exc)
+        except DeviceOfflineException as ex:
+            if ex.iot_id == self.device.iot_id:
+                device = self.manager.get_device_by_name(self.device_name)
+                if device is not None:
+                    await self.device_offline(device)
+            raise
+        except (
+            GatewayTimeoutException,
+            CommandTimeoutError,
+            ConcurrentRequestError,
+            NoTransportAvailableError,
+        ):
+            pass
 
     async def device_offline(self, device: MowingDevice) -> None:
         device.online = False
@@ -303,9 +362,9 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
             return True
         except FailedRequestException:
             self.update_failures += 1
-        except EXPIRED_CREDENTIAL_EXCEPTIONS:
+        except EXPIRED_CREDENTIAL_EXCEPTIONS as exc:
             self.update_failures += 1
-            await self.async_refresh_login()
+            await self.async_refresh_login(exc)
         except GatewayTimeoutException as ex:
             LOGGER.error(f"Gateway timeout exception: {ex.iot_id}")
             self.update_failures = 0
@@ -348,9 +407,9 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
             return True
         except FailedRequestException:
             self.update_failures += 1
-        except EXPIRED_CREDENTIAL_EXCEPTIONS:
+        except EXPIRED_CREDENTIAL_EXCEPTIONS as exc:
             self.update_failures += 1
-            await self.async_refresh_login()
+            await self.async_refresh_login(exc)
         except GatewayTimeoutException as ex:
             LOGGER.error(f"Gateway timeout exception: {ex.iot_id}")
             self.update_failures = 0
@@ -414,18 +473,18 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         """Get map data from the device."""
         try:
             await self.manager.start_map_sync(self.device_name)
-        except EXPIRED_CREDENTIAL_EXCEPTIONS:
+        except EXPIRED_CREDENTIAL_EXCEPTIONS as exc:
             self.update_failures += 1
-            await self.async_refresh_login()
+            await self.async_refresh_login(exc)
             if self.update_failures < 5:
                 await self.async_sync_maps()
 
     async def async_sync_schedule(self) -> None:
         try:
             await self.async_send_command("read_plan", sub_cmd=2, plan_index=0)
-        except EXPIRED_CREDENTIAL_EXCEPTIONS:
+        except EXPIRED_CREDENTIAL_EXCEPTIONS as exc:
             self.update_failures += 1
-            await self.async_refresh_login()
+            await self.async_refresh_login(exc)
             if self.update_failures < 5:
                 await self.async_sync_schedule()
 
@@ -574,21 +633,13 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
 
     async def async_rtk_dock_location(self) -> None:
         """RTK and dock location."""
-        try:
-            await self.manager.send_command_and_wait(
-                self.device_name,
-                "read_write_device",
-                "bidire_comm_cmd",
-                rw_id=5,
-                rw=1,
-                context=1,
-            )
-        except (CommandTimeoutError, ConcurrentRequestError) as ex:
-            LOGGER.debug(
-                "RTK dock location command timed out or conflicted for %s: %s",
-                self.device_name,
-                ex,
-            )
+        await self.async_send_and_wait(
+            "read_write_device",
+            "bidire_comm_cmd",
+            rw_id=5,
+            rw=1,
+            context=1,
+        )
 
     async def async_get_area_list(self) -> None:
         """Mowing area List."""
@@ -1127,17 +1178,9 @@ class MammotionDeviceVersionUpdateCoordinator(
             if already_set:
                 continue
             try:
-                await self.manager.send_command_and_wait(
-                    self.device_name, command, expected_field
-                )
-            except DeviceOfflineException as ex:
-                if ex.iot_id == self.device.iot_id:
-                    await self.device_offline(device)
-                    return device
-            except GatewayTimeoutException:
-                pass
-            except (CommandTimeoutError, ConcurrentRequestError):
-                pass
+                await self.async_send_and_wait(command, expected_field)
+            except DeviceOfflineException:
+                return device
 
         await self.check_firmware_version()
 
@@ -1191,16 +1234,8 @@ class MammotionDeviceVersionUpdateCoordinator(
                 if already_set:
                     continue
                 try:
-                    await self.manager.send_command_and_wait(
-                        self.device_name, command, expected_field
-                    )
-                except (
-                    CommandTimeoutError,
-                    ConcurrentRequestError,
-                    NoTransportAvailableError,
-                ):
-                    pass
-                except (DeviceOfflineException, GatewayTimeoutException):
+                    await self.async_send_and_wait(command, expected_field)
+                except DeviceOfflineException:
                     pass
 
             if not device.mower_state.wifi_mac:
@@ -1421,34 +1456,18 @@ class MammotionDeviceErrorUpdateCoordinator(
             return data
         device = self.manager.get_device_by_name(self.device_name)
         try:
-            await self.manager.send_command_and_wait(
-                self.device_name,
-                "read_write_device",
-                "bidire_comm_cmd",
-                rw_id=5,
-                rw=1,
-                context=2,
+            await self.async_send_and_wait(
+                "read_write_device", "bidire_comm_cmd", rw_id=5, rw=1, context=2
             )
-            await self.manager.send_command_and_wait(
-                self.device_name,
-                "read_write_device",
-                "bidire_comm_cmd",
-                rw_id=5,
-                rw=1,
-                context=3,
+            await self.async_send_and_wait(
+                "read_write_device", "bidire_comm_cmd", rw_id=5, rw=1, context=3
             )
             if not device.errors.error_codes:
                 http = self.manager.mammotion_http
                 if http is not None:
                     device.errors.error_codes = await http.get_all_error_codes()
-        except DeviceOfflineException as ex:
-            if ex.iot_id == self.device.iot_id:
-                await self.device_offline(device)
-                return device
-        except GatewayTimeoutException:
-            pass
-        except (CommandTimeoutError, ConcurrentRequestError, NoTransportAvailableError):
-            pass
+        except DeviceOfflineException:
+            return device
 
         return device
 
@@ -1458,21 +1477,11 @@ class MammotionDeviceErrorUpdateCoordinator(
         device = self.manager.get_device_by_name(self.device_name)
 
         try:
-            await self.manager.send_command_and_wait(
-                self.device_name,
-                "read_write_device",
-                "bidire_comm_cmd",
-                rw_id=5,
-                rw=1,
-                context=2,
+            await self.async_send_and_wait(
+                "read_write_device", "bidire_comm_cmd", rw_id=5, rw=1, context=2
             )
-            await self.manager.send_command_and_wait(
-                self.device_name,
-                "read_write_device",
-                "bidire_comm_cmd",
-                rw_id=5,
-                rw=1,
-                context=3,
+            await self.async_send_and_wait(
+                "read_write_device", "bidire_comm_cmd", rw_id=5, rw=1, context=3
             )
             if not device.errors.error_codes:
                 http = self.manager.mammotion_http
@@ -1480,13 +1489,8 @@ class MammotionDeviceErrorUpdateCoordinator(
                     device.errors.error_codes = await http.get_all_error_codes()
 
             self.async_set_updated_data(self.data)
-        except (DeviceOfflineException, GatewayTimeoutException):
+        except DeviceOfflineException:
             pass
-        except (CommandTimeoutError, ConcurrentRequestError, NoTransportAvailableError):
-            LOGGER.warning(
-                "No transport connected yet for %s, error/maintenance data will be fetched on next update",
-                self.device_name,
-            )
 
 
 class MammotionRTKCoordinator(DataUpdateCoordinator[RTKDevice]):
@@ -1523,8 +1527,14 @@ class MammotionRTKCoordinator(DataUpdateCoordinator[RTKDevice]):
             product_key=self.device.product_key,
         )
 
-    async def async_refresh_login(self) -> None:
+    async def async_refresh_login(self, exc: Exception | None = None) -> None:
         """Refresh login credentials asynchronously."""
+        from pymammotion.transport.base import LoginFailedError
+
+        if isinstance(exc, LoginFailedError):
+            raise ConfigEntryAuthFailed(
+                f"Login failed for Mammotion account: {exc.reason}"
+            ) from exc
         await self.manager.refresh_login(self.account)
 
     async def _async_update_data(self):

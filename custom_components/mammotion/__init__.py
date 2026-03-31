@@ -10,7 +10,11 @@ from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, EVENT_HOMEASSISTANT_STOP, Platform
 from homeassistant.core import Event, HassJob, HomeAssistant
-from homeassistant.exceptions import ConfigEntryError, ConfigEntryNotReady
+from homeassistant.exceptions import (
+    ConfigEntryAuthFailed,
+    ConfigEntryError,
+    ConfigEntryNotReady,
+)
 from homeassistant.helpers import aiohttp_client
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.device_registry import DeviceEntry
@@ -19,7 +23,7 @@ from pymammotion.aliyun.model.dev_by_account_response import Device
 from pymammotion.client import MammotionClient
 from pymammotion.data.model.account import Credentials
 from pymammotion.data.model.device import MowingDevice
-from pymammotion.transport.base import TransportType
+from pymammotion.transport.base import LoginFailedError, TransportType
 from pymammotion.utility.device_config import DeviceConfig
 from Tea.exceptions import UnretryableException
 
@@ -128,6 +132,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                 await mammotion.login_and_initiate_cloud(account, password, session)
         except ClientConnectorError as err:
             raise ConfigEntryNotReady(err)
+        except LoginFailedError as err:
+            raise ConfigEntryAuthFailed(err) from err
         except EXPIRED_CREDENTIAL_EXCEPTIONS as exc:
             LOGGER.debug(exc)
             await mammotion.login_and_initiate_cloud(
@@ -448,6 +454,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: MammotionConfigEntry) -
 
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
         for mower in entry.runtime_data.mowers:
+            mower.maintenance_coordinator.store_cloud_credentials()
             try:
                 mower.api.teardown_device_watchers(mower.name)
                 mower.api.remove_device(mower.name)
