@@ -26,7 +26,6 @@ from pymammotion.aliyun.exceptions import (
     GatewayTimeoutException,
     NoConnectionException,
 )
-from pymammotion.transport.base import ReLoginRequiredError
 from pymammotion.aliyun.model.dev_by_account_response import Device
 from pymammotion.client import MammotionClient
 from pymammotion.data.model import GenerateRouteInformation
@@ -48,6 +47,7 @@ from pymammotion.transport.base import (
     CommandTimeoutError,
     ConcurrentRequestError,
     NoTransportAvailableError,
+    ReLoginRequiredError,
     TransportType,
 )
 from pymammotion.utility.constant import WorkMode
@@ -271,9 +271,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         async_call_later(
             self.hass,
             900,
-            HassJob(
-                lambda _: self.hass.async_create_task(self.clear_update_failures())
-            ),
+            HassJob(lambda _: self.clear_update_failures()),
         )
 
     def store_cloud_credentials(self) -> None:
@@ -694,9 +692,14 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         #     and route_information.toward_mode == 0
         # ):
         #     route_information.toward = 0
-
-        return await self.async_send_command(
+        await self.async_send_command(
             "generate_route_information", generate_route_information=route_information
+        )
+        return await self.manager.start_mow_path_saga(
+            self.device_name,
+            zone_hashs=list(operation_settings.areas),
+            route_info=route_information,
+            skip_planning=True,
         )
 
     async def async_modify_plan_route(
@@ -826,9 +829,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
             async_call_later(
                 self.hass,
                 60,
-                HassJob(
-                    lambda _: self.hass.async_create_task(self.clear_update_failures())
-                ),
+                HassJob(lambda _: self.clear_update_failures()),
             )
             return self.get_coordinator_data(device)
 

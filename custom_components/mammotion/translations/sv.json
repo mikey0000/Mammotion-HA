@@ -195,6 +195,16 @@
       },
       "rtk_wifi_rssi": {
         "name": "Wi-Fi RSSI"
+      },
+      "task_area_status": {
+        "name": "Uppgiftsområde {name}",
+        "state": {
+          "NOT_STARTED": "Inte startat",
+          "WAITING": "Väntar",
+          "MOWING": "Klipper",
+          "COMPLETE": "Slutfört",
+          "ABORTED": "Avbrutet"
+        }
       }
     },
     "button": {

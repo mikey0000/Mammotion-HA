@@ -195,6 +195,16 @@
       },
       "rtk_wifi_rssi": {
         "name": "Wi-Fi RSSI"
+      },
+      "task_area_status": {
+        "name": "Obszar zadania {name}",
+        "state": {
+          "NOT_STARTED": "Nie rozpoczęto",
+          "WAITING": "Oczekiwanie",
+          "MOWING": "Koszenie",
+          "COMPLETE": "Ukończono",
+          "ABORTED": "Przerwano"
+        }
       }
     },
     "button": {

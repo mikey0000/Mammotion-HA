@@ -122,6 +122,16 @@
       "work_area": {
         "name": "Work area"
       },
+      "task_area_status": {
+        "name": "Task area {name}",
+        "state": {
+          "NOT_STARTED": "Not started",
+          "WAITING": "Waiting",
+          "MOWING": "Mowing",
+          "COMPLETE": "Complete",
+          "ABORTED": "Aborted"
+        }
+      },
       "rtk_latitude": {
         "name": "RTK latitude"
       },

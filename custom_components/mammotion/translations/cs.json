@@ -195,6 +195,16 @@
       },
       "rtk_wifi_rssi": {
         "name": "WiFi RSSI"
+      },
+      "task_area_status": {
+        "name": "Stav oblasti úkolu {name}",
+        "state": {
+          "NOT_STARTED": "Nezahájeno",
+          "WAITING": "Čeká se",
+          "MOWING": "Sečení",
+          "COMPLETE": "Dokončeno",
+          "ABORTED": "Přerušeno"
+        }
       }
     },
     "button": {

@@ -195,6 +195,16 @@
       },
       "rtk_wifi_rssi": {
         "name": "WiFi RSSI"
+      },
+      "task_area_status": {
+        "name": "Area attività {name}",
+        "state": {
+          "NOT_STARTED": "Non avviato",
+          "WAITING": "In attesa",
+          "MOWING": "In falciatura",
+          "COMPLETE": "Completato",
+          "ABORTED": "Interrotto"
+        }
       }
     },
     "button": {

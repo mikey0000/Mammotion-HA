@@ -195,6 +195,16 @@
       },
       "rtk_wifi_rssi": {
         "name": "Qualité du signal Wi-Fi"
+      },
+      "task_area_status": {
+        "name": "Zone de tâche {name}",
+        "state": {
+          "NOT_STARTED": "Non démarré",
+          "WAITING": "En attente",
+          "MOWING": "En cours de tonte",
+          "COMPLETE": "Terminé",
+          "ABORTED": "Abandonné"
+        }
       }
     },
     "button": {
