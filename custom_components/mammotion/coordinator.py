@@ -251,17 +251,15 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
                 await handle.disconnect_transport(t_type)
 
     def is_online(self) -> bool:
+        device = self.manager.get_device_by_name(self.device_name)
+        if device is None:
+            return False
         handle = self.manager.mower(self.device_name)
         if handle is None:
-            return False
-        if self.manager.get_device_by_name(self.device_name) is None:
-            return False
+            return device.online
         if handle.is_transport_connected(TransportType.BLE):
             return True
-        mqtt_connected = handle.is_transport_connected(
-            TransportType.CLOUD_ALIYUN
-        ) or handle.is_transport_connected(TransportType.CLOUD_MAMMOTION)
-        return mqtt_connected and not handle.availability.mqtt_reported_offline
+        return device.online
 
     async def async_refresh_login(self, exc: Exception | None = None) -> None:
         """Refresh login credentials asynchronously.
@@ -326,12 +324,6 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
 
     async def device_offline(self, device: MowingDevice) -> None:
         device.online = False
-
-        async_call_later(
-            self.hass,
-            900,
-            HassJob(lambda _: self.clear_update_failures()),
-        )
 
     def store_cloud_credentials(self) -> None:
         """Store cloud credentials in config entry."""
@@ -782,16 +774,9 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         """Restart mower."""
         await self.async_send_command("remote_restart")
 
-    async def clear_update_failures(self) -> None:
+    def clear_update_failures(self) -> None:
         """Clear update failures and reconnect transports if needed."""
         self.update_failures = 0
-        device = self.manager.get_device_by_name(self.device_name)
-        if device is not None and not device.online:
-            device.online = True
-        handle = self.manager.mower(self.device_name)
-        if handle is not None:
-            for t_type in (TransportType.CLOUD_ALIYUN, TransportType.CLOUD_MAMMOTION):
-                await handle.connect_transport(t_type)
 
     @property
     def operation_settings(self) -> OperationSettings:
@@ -1002,6 +987,8 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
             WorkMode.MODE_RETURNING,
         ):
             self.update_interval = WORKING_INTERVAL
+            # if data.report_data.dev.sys_status == WorkMode.MODE_WORKING:
+            #     await self.manager.get_dynamics_line(self.device_name)
         else:
             self.update_interval = DEFAULT_INTERVAL
 

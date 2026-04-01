@@ -14,7 +14,7 @@ from homeassistant.helpers.device_registry import (
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from pymammotion.data.model.device import RTKDevice
 
-from .const import CONF_RETRY_COUNT, DEFAULT_RETRY_COUNT, DOMAIN
+from .const import DOMAIN
 from .coordinator import MammotionBaseUpdateCoordinator, MammotionRTKCoordinator
 
 
@@ -101,14 +101,7 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionBaseUpdateCoordinator]):
     @property
     def available(self) -> bool:
         """Return True if entity is available."""
-        return (
-            self.coordinator.data is not None
-            and self.coordinator.update_failures
-            <= self.coordinator.config_entry.options.get(
-                CONF_RETRY_COUNT, DEFAULT_RETRY_COUNT
-            )
-            and self.coordinator.is_online()
-        )
+        return self.coordinator.data is not None and self.coordinator.is_online()
 
 
 class MammotionBaseRTKEntity(CoordinatorEntity[MammotionRTKCoordinator]):
@@ -228,11 +221,4 @@ class MammotionCameraBaseEntity(Camera, ABC):
     @property
     def available(self) -> bool:
         """Return True if entity is available."""
-        return (
-            self.coordinator.data is not None
-            and self.coordinator.update_failures
-            <= self.coordinator.config_entry.options.get(
-                CONF_RETRY_COUNT, DEFAULT_RETRY_COUNT
-            )
-            and self.coordinator.is_online()
-        )
+        return self.coordinator.data is not None and self.coordinator.is_online()
