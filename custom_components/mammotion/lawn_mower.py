@@ -36,6 +36,7 @@ SERVICE_RESET_BLADE_TIME = "reset_blade_time"
 SERVICE_SET_BLADE_WARNING_TIME = "set_blade_warning_time"
 SERVICE_GET_GEOJSON = "get_geojson"
 SERVICE_GET_MOW_PATH_GEOJSON = "get_mow_path_geojson"
+SERVICE_GET_MOW_PROGRESS_GEOJSON = "get_mow_progress_geojson"
 
 START_MOW_SCHEMA = {
     vol.Optional("modify", default=False): cv.boolean,
@@ -188,6 +189,12 @@ async def async_setup_entry(
             return {}
         return mower.reporting_coordinator.data.map.generated_mow_path_geojson
 
+    async def handle_get_mow_progress_geojson(call) -> dict[str, Any]:
+        mower = _get_mower_by_entity_id(call.data["entity_id"])
+        if mower is None:
+            return {}
+        return mower.reporting_coordinator.data.map.generated_mow_progress_geojson
+
     hass.services.async_register(
         DOMAIN,
         SERVICE_GET_GEOJSON,
@@ -198,6 +205,12 @@ async def async_setup_entry(
         DOMAIN,
         SERVICE_GET_MOW_PATH_GEOJSON,
         handle_get_mow_path_geojson,
+        supports_response=SupportsResponse.ONLY,
+    )
+    hass.services.async_register(
+        DOMAIN,
+        SERVICE_GET_MOW_PROGRESS_GEOJSON,
+        handle_get_mow_progress_geojson,
         supports_response=SupportsResponse.ONLY,
     )
 
