@@ -771,7 +771,11 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         await self.async_send_command(
             "generate_route_information", generate_route_information=route_information
         )
-        return await self.manager.start_mow_path_saga(
+        return True
+
+    async def async_get_plan_route(self, operation_settings: OperationSettings) -> None:
+        route_information = self.generate_route_information(operation_settings)
+        await self.manager.start_mow_path_saga(
             self.device_name,
             zone_hashs=list(operation_settings.areas),
             route_info=route_information,

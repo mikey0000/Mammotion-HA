@@ -337,6 +337,9 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
                         return
                     if await self.coordinator.async_plan_route(operational_settings):
                         await self.coordinator.async_send_command("start_job")
+                        await self.coordinator.async_get_plan_route(
+                            operational_settings
+                        )
 
             except COMMAND_EXCEPTIONS as exc:
                 raise HomeAssistantError(
