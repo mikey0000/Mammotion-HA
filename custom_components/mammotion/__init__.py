@@ -6,6 +6,12 @@ from datetime import datetime
 
 from aiohttp import ClientConnectorError
 from homeassistant.components import bluetooth
+from homeassistant.components.bluetooth import (
+    BluetoothCallbackMatcher,
+    BluetoothChange,
+    BluetoothScanningMode,
+    BluetoothServiceInfoBleak,
+)
 from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, EVENT_HOMEASSISTANT_STOP, Platform
@@ -160,6 +166,32 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                         ble_device,
                         disconnect_on_idle=not stay_connected_ble,
                     )
+                else:
+                    # Device not currently visible — register a one-shot callback so BLE
+                    # is added the moment HA's bluetooth scanner discovers it.
+                    _device_name = device.device_name
+                    _ble_address = device_ble_address
+
+                    def _ble_discovered(
+                        service_info: BluetoothServiceInfoBleak,
+                        change: BluetoothChange,
+                    ) -> None:
+                        hass.async_create_task(
+                            mammotion.add_ble_to_device(
+                                _device_name,
+                                service_info.device,
+                                disconnect_on_idle=not stay_connected_ble,
+                            )
+                        )
+                        cancel_ble_callback()
+
+                    cancel_ble_callback = bluetooth.async_register_callback(
+                        hass,
+                        _ble_discovered,
+                        BluetoothCallbackMatcher(address=_ble_address.upper()),
+                        BluetoothScanningMode.ACTIVE,
+                    )
+                    entry.async_on_unload(cancel_ble_callback)
 
             unique_name = _get_unique_device_name(hass, entry, device.device_name)
 
