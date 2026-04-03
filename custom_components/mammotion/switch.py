@@ -512,7 +512,7 @@ def async_remove_entities(
 
     for area in old_areas:
         entity_id = registry.async_get_entity_id(
-            SWITCH_DOMAIN, DOMAIN, f"{coordinator.device_name}_{area}"
+            SWITCH_DOMAIN, DOMAIN, f"{coordinator.unique_name}_{area}"
         )
         if entity_id:
             registry.async_remove(entity_id)

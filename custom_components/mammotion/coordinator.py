@@ -1104,6 +1104,10 @@ class MammotionMaintenanceUpdateCoordinator(MammotionBaseUpdateCoordinator[Maint
         if data := await super()._async_update_data():
             return data
 
+        await self.async_send_and_wait(
+            "basestation_info", "response_basestation_info_t"
+        )
+
         try:
             await self.async_send_command("get_maintenance")
 
@@ -1570,6 +1574,7 @@ class MammotionRTKCoordinator(DataUpdateCoordinator[RTKDevice]):
                 response = await cloud.get_device_properties(self.device.iot_id)
                 if response.code == 200:
                     data = response.data
+                    LOGGER.debug("Fetched RTK device data: %s", data)
                     if ota_progress := data.otaProgress:
                         self.data.update_check = CheckDeviceVersion.from_dict(
                             ota_progress.value
