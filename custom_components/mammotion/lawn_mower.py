@@ -12,6 +12,7 @@ from homeassistant.components.lawn_mower import (
     LawnMowerEntity,
     LawnMowerEntityFeature,
 )
+from homeassistant.const import ATTR_ENTITY_ID
 from homeassistant.core import HomeAssistant, SupportsResponse
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import config_validation as cv
@@ -165,6 +166,7 @@ async def async_setup_entry(
         entity_reg = er.async_get(hass)
         entity_entry = entity_reg.async_get(entity_id)
         if entity_entry is None:
+            LOGGER.error("Could not find entity %s", entity_id)
             return None
         return next(
             (
@@ -178,22 +180,25 @@ async def async_setup_entry(
         )
 
     async def handle_get_geojson(call) -> dict[str, Any]:
-        mower = _get_mower_by_entity_id(call.data["entity_id"])
-        if mower is None:
+        entity = _get_mower_by_entity_id(call.data[ATTR_ENTITY_ID])
+        if entity is None:
+            LOGGER.error("Could not find entity %s", call.data[ATTR_ENTITY_ID])
             return {}
-        return mower.reporting_coordinator.data.map.generated_geojson
+        return entity.reporting_coordinator.data.map.generated_geojson
 
     async def handle_get_mow_path_geojson(call) -> dict[str, Any]:
-        mower = _get_mower_by_entity_id(call.data["entity_id"])
-        if mower is None:
+        entity = _get_mower_by_entity_id(call.data[ATTR_ENTITY_ID])
+        if entity is None:
+            LOGGER.error("Could not find entity %s", call.data[ATTR_ENTITY_ID])
             return {}
-        return mower.reporting_coordinator.data.map.generated_mow_path_geojson
+        return entity.reporting_coordinator.data.map.generated_mow_path_geojson
 
     async def handle_get_mow_progress_geojson(call) -> dict[str, Any]:
-        mower = _get_mower_by_entity_id(call.data["entity_id"])
-        if mower is None:
+        entity = _get_mower_by_entity_id(call.data[ATTR_ENTITY_ID])
+        if entity is None:
+            LOGGER.error("Could not find entity %s", call.data[ATTR_ENTITY_ID])
             return {}
-        return mower.reporting_coordinator.data.map.generated_mow_progress_geojson
+        return entity.reporting_coordinator.data.map.generated_mow_progress_geojson
 
     hass.services.async_register(
         DOMAIN,
