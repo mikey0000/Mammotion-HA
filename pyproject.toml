@@ -8,7 +8,7 @@ package-mode = false
 
 [tool.poetry.dependencies]
 python = "~3.13.2"
-pymammotion = "0.7.26"
+pymammotion = "0.7.27"
 homeassistant = "^2026.1.0"
 autotyping = "^24.3.0"
 websockets = "^15.0.1"
