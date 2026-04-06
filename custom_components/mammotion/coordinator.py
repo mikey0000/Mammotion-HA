@@ -51,6 +51,7 @@ from pymammotion.transport.base import (
     NoTransportAvailableError,
     ReLoginRequiredError,
     SessionExpiredError,
+    Subscription,
     TransportType,
 )
 from pymammotion.utility.constant import WorkMode
@@ -126,6 +127,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         except (KeyError, TypeError, ValueError):
             _user_account = 0
         self.commands = MammotionCommand(device.device_name, _user_account)
+        self._subscriptions: list[Subscription] = []
 
         device = self.manager.get_device_by_name(self.device_name)
 
@@ -257,8 +259,14 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         handle = self.manager.mower(self.device_name)
         if handle is None:
             return device.online
-        if handle.is_transport_connected(TransportType.BLE):
+        if handle.is_transport_connected(TransportType.CLOUD_MAMMOTION) or (
+            handle.is_transport_connected(TransportType.CLOUD_ALIYUN)
+            and not handle.availability.mqtt_reported_offline
+        ):
             return True
+        if handle.has_transport(TransportType.BLE):
+            if handle.is_transport_connected(TransportType.BLE):
+                return True
         return not handle.availability.mqtt_reported_offline
 
     async def async_refresh_login(self, exc: Exception | None = None) -> None:
@@ -312,7 +320,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
             if ex.iot_id == self.device.iot_id:
                 device = self.manager.get_device_by_name(self.device_name)
                 if device is not None:
-                    await self.device_offline(device)
+                    self.device_offline(device)
             raise
         except (
             GatewayTimeoutException,
@@ -322,7 +330,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         ):
             pass
 
-    async def device_offline(self, device: MowingDevice) -> None:
+    def device_offline(self, device: MowingDevice) -> None:
         device.online = False
 
     def store_cloud_credentials(self) -> None:
@@ -362,7 +370,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
             self.update_failures = 0
             return False
         except (DeviceOfflineException, NoConnectionException):
-            await self.device_offline(device)
+            self.device_offline(device)
             # Fall back to BLE if the cloud path is unavailable
             try:
                 await self.manager.send_command_with_args(
@@ -374,7 +382,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
                     translation_domain=DOMAIN, translation_key="command_failed"
                 ) from exc
         except NoTransportAvailableError:
-            LOGGER.warning(
+            LOGGER.debug(
                 "No transport connected yet for %s, command '%s' skipped",
                 self.device_name,
                 command,
@@ -408,7 +416,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
             return False
         except (DeviceOfflineException, NoConnectionException) as ex:
             LOGGER.error(f"Device offline: {ex.iot_id}")
-            await self.device_offline(device)
+            self.device_offline(device)
             return False
         return False
 
@@ -925,7 +933,45 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
     async def _async_setup(self) -> None:
         handle = self.manager.mower(self.device_name)
         if handle is not None:
-            handle.subscribe_state_changed(self._on_state_changed)
+            self._subscriptions.extend(
+                [
+                    handle.subscribe_state_changed(
+                        self._guarded(self._on_state_changed)
+                    ),
+                    handle.subscribe_device_status(
+                        self._guarded(self._async_update_status)
+                    ),
+                    handle.subscribe_device_properties(
+                        self._guarded(self._async_update_properties)
+                    ),
+                    handle.subscribe_device_event(
+                        self._guarded(self._async_update_event_message)
+                    ),
+                ]
+            )
+
+    def _guarded(self, method: Any) -> Any:
+        """Wrap a callback so it silently skips when HA is shutting down.
+
+        During shutdown aiohttp's websocket layer may already be closing.
+        Pushing state updates at that point raises ClientConnectionResetError
+        inside shielded futures and logs noisy tracebacks.  Checking
+        hass.is_stopping before every push prevents the error entirely.
+        """
+
+        async def _wrapper(*args: Any, **kwargs: Any) -> None:
+            if self.hass.is_stopping:
+                return
+            await method(*args, **kwargs)
+
+        return _wrapper
+
+    async def async_shutdown(self) -> None:
+        """Cancel all RAII subscriptions and delegate to HA coordinator shutdown."""
+        for sub in self._subscriptions:
+            sub.cancel()
+        self._subscriptions.clear()
+        await super().async_shutdown()
 
     async def _on_state_changed(self, snapshot: Any) -> None:
         """Trigger a coordinator refresh when device state changes."""
@@ -1011,7 +1057,7 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
         except DeviceOfflineException as ex:
             if ex.iot_id == self.device.iot_id:
                 device = self.manager.get_device_by_name(self.device_name)
-                await self.device_offline(device)
+                self.device_offline(device)
                 return device
 
         LOGGER.debug("Updated Mammotion device %s", self.device_name)
@@ -1045,7 +1091,7 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
         """Update data from incoming properties messages."""
         if not self.data.enabled:
             return
-        if not self.data.online:
+        if not self.is_online():
             await self.set_scheduled_updates(True)
         if device := self.manager.get_device_by_name(self.device_name):
             self.async_set_updated_data(device)
@@ -1064,7 +1110,7 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
         """Update data from incoming event messages."""
         if not self.data.enabled:
             return
-        if not self.data.online:
+        if not self.is_online():
             await self.set_scheduled_updates(True)
         if device := self.manager.get_device_by_name(self.device_name):
             self.async_set_updated_data(device)
@@ -1114,7 +1160,7 @@ class MammotionMaintenanceUpdateCoordinator(MammotionBaseUpdateCoordinator[Maint
         except DeviceOfflineException as ex:
             if ex.iot_id == self.device.iot_id:
                 device = self.manager.get_device_by_name(self.device_name)
-                await self.device_offline(device)
+                self.device_offline(device)
                 return device.report_data.maintenance
         except GatewayTimeoutException:
             pass
@@ -1340,7 +1386,7 @@ class MammotionMapUpdateCoordinator(MammotionBaseUpdateCoordinator[MowerInfo]):
 
         except DeviceOfflineException as ex:
             if ex.iot_id == self.device.iot_id:
-                await self.device_offline(device)
+                self.device_offline(device)
                 return device.mower_state
         except GatewayTimeoutException:
             pass
@@ -1362,11 +1408,11 @@ class MammotionMapUpdateCoordinator(MammotionBaseUpdateCoordinator[MowerInfo]):
                 await self.async_get_area_list()
         except DeviceOfflineException as ex:
             if ex.iot_id == self.device.iot_id:
-                await self.device_offline(device)
+                self.device_offline(device)
         except GatewayTimeoutException:
             pass
         except NoTransportAvailableError:
-            LOGGER.warning(
+            LOGGER.debug(
                 "No transport connected yet for %s, map data will be fetched on next update",
                 self.device_name,
             )
