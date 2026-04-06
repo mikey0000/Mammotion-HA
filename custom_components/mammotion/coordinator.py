@@ -259,7 +259,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
             return device.online
         if handle.is_transport_connected(TransportType.BLE):
             return True
-        return device.online
+        return not handle.availability.mqtt_reported_offline
 
     async def async_refresh_login(self, exc: Exception | None = None) -> None:
         """Refresh login credentials asynchronously.
