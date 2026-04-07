@@ -899,10 +899,14 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
                 handle.prefer_ble
                 or device.report_data.dev.sys_status == WorkMode.MODE_LOCK
             ):
+
+                async def get_report_cfg(_: Any) -> None:
+                    await self.async_send_command("get_report_cfg")
+
                 async_call_later(
                     self.hass,
                     300,
-                    HassJob(lambda _: self.async_send_command("get_report_cfg")),
+                    HassJob(get_report_cfg, cancel_on_shutdown=True),
                 )
             return self.get_coordinator_data(device)
 
@@ -1150,11 +1154,11 @@ class MammotionMaintenanceUpdateCoordinator(MammotionBaseUpdateCoordinator[Maint
         if data := await super()._async_update_data():
             return data
 
-        await self.async_send_and_wait(
-            "basestation_info", "response_basestation_info_t"
-        )
-
         try:
+            if DeviceType.value_of_str(self.device_name).is_support_rtk_service():
+                await self.async_send_and_wait(
+                    "basestation_info", "response_basestation_info_t"
+                )
             await self.async_send_command("get_maintenance")
 
         except DeviceOfflineException as ex:
@@ -1600,6 +1604,7 @@ class MammotionRTKCoordinator(DataUpdateCoordinator[RTKDevice]):
             iot_id=self.device.iot_id,
             product_key=self.device.product_key,
         )
+        self._subscriptions: list[Subscription] = []
 
     async def async_refresh_login(self, exc: Exception | None = None) -> None:
         """Refresh login credentials asynchronously."""
@@ -1632,9 +1637,10 @@ class MammotionRTKCoordinator(DataUpdateCoordinator[RTKDevice]):
                         self.data.bt_mac = network["bt_mac"]
                     if coordinate := data.coordinate:
                         coord_val = json.loads(coordinate.value)
-                        if self.data.lat == 0:
+                        LOGGER.debug("Raw RTK coordinate payload: %s", coord_val)
+                        if coord_val["lat"] != 0:
                             self.data.lat = coord_val["lat"]
-                        if self.data.lon == 0:
+                        if coord_val["lon"] != 0:
                             self.data.lon = coord_val["lon"]
                     if device_version := data.deviceVersion:
                         self.data.device_version = device_version.value
@@ -1656,6 +1662,59 @@ class MammotionRTKCoordinator(DataUpdateCoordinator[RTKDevice]):
             pass
         return self.data
 
+    async def async_shutdown(self) -> None:
+        """Cancel all RAII subscriptions and delegate to HA coordinator shutdown."""
+        for sub in self._subscriptions:
+            sub.cancel()
+        self._subscriptions.clear()
+        await super().async_shutdown()
+
+    async def _async_update_properties(
+        self, properties: ThingPropertiesMessage
+    ) -> None:
+        """Handle thing/properties push from MQTT for the RTK device."""
+        if ota_progress := properties.params.items.otaProgress:
+            ota_progress.value = OTAProgressItems.from_dict(ota_progress.value)
+            self.data.update_check.progress = ota_progress.value.progress
+            self.data.update_check.isupgrading = True
+            if ota_progress.value.progress == 100:
+                self.data.update_check.isupgrading = False
+                self.data.update_check.upgradeable = False
+                self.data.device_version = ota_progress.value.version
+            self.async_set_updated_data(self.data)
+            return
+
+        if network_info := properties.params.items.networkInfo:
+            try:
+                network = json.loads(network_info.value)
+                self.data.wifi_rssi = network.get("wifi_rssi", self.data.wifi_rssi)
+                self.data.wifi_sta_mac = network.get(
+                    "wifi_sta_mac", self.data.wifi_sta_mac
+                )
+                self.data.bt_mac = network.get("bt_mac", self.data.bt_mac)
+            except (json.JSONDecodeError, TypeError):
+                pass
+
+        if coordinate := properties.params.items.coordinate:
+            try:
+                coord_val = json.loads(coordinate.value)
+                if coord_val.get("lat", 0) != 0:
+                    self.data.lat = coord_val["lat"]
+                if coord_val.get("lon", 0) != 0:
+                    self.data.lon = coord_val["lon"]
+            except (json.JSONDecodeError, TypeError):
+                pass
+
+        if device_version := properties.params.items.deviceVersion:
+            self.data.device_version = device_version.value
+
+        self.async_set_updated_data(self.data)
+
+    async def _async_update_status(self, msg: ThingStatusMessage) -> None:
+        """Handle thing/status online/offline push for the RTK device."""
+        self.data.online = msg.params.status.value is StatusType.CONNECTED
+        self.async_set_updated_data(self.data)
+
     async def _async_setup(self) -> None:
         """Sets up RTK data."""
         http = self.manager.mammotion_http
@@ -1674,6 +1733,15 @@ class MammotionRTKCoordinator(DataUpdateCoordinator[RTKDevice]):
             except StopIteration:
                 """Failed to get RTK device."""
                 return
+
+        handle = self.manager.mower(self.device_name)
+        if handle is not None:
+            self._subscriptions.extend(
+                [
+                    handle.subscribe_device_properties(self._async_update_properties),
+                    handle.subscribe_device_status(self._async_update_status),
+                ]
+            )
 
     async def update_firmware(self, version: str) -> None:
         """Update firmware."""
