@@ -326,8 +326,8 @@
       "cutting_angle_mode": {
         "name": "Cutting path angle mode",
         "state": {
-          "relative_angle": "Optimal angle",
-          "absolute_angle": "North angle",
+          "relative_angle": "Relative angle",
+          "absolute_angle": "Absolute angle",
           "random_angle": "Random angle"
         }
       },
@@ -416,8 +416,8 @@
     },
     "toward_mode": {
       "options": {
-        "0": "Optimal angle",
-        "1": "North angle",
+        "0": "Relative angle",
+        "1": "Absolute angle",
         "2": "Random angle"
       }
     },
