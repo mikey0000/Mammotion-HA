@@ -514,10 +514,11 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
 
     async def async_set_non_work_hours(self, start_time: str, end_time: str) -> None:
         """Set non work hours."""
+        if start_time == end_time:
+            await self.async_send_command("job_do_not_disturb_del")
+            return
         await self.async_send_command(
-            "set_plan_unable_time",
-            sub_cmd=self.data.non_work_hours.sub_cmd if self.data.non_work_hours else 0,
-            device_id=self.device.iot_id,
+            "job_do_not_disturb",
             unable_end_time=end_time,
             unable_start_time=start_time,
         )
@@ -1154,6 +1155,10 @@ class MammotionMaintenanceUpdateCoordinator(MammotionBaseUpdateCoordinator[Maint
                     "basestation_info", "response_basestation_info_t"
                 )
             await self.async_send_command("get_maintenance")
+
+            await self.async_send_and_wait(
+                "read_job_do_not_disturb", "todev_unable_time_set"
+            )
 
         except DeviceOfflineException as ex:
             if ex.iot_id == self.device.iot_id:
