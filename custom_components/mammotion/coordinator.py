@@ -310,6 +310,10 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         conditions uniformly.  Re-raises DeviceOfflineException after marking the
         device offline so callers can bail out of their update loops.
         """
+        device = self.manager.get_device_by_name(self.device_name)
+        if device is None or not self.is_online():
+            return
+
         try:
             await self.manager.send_command_and_wait(
                 self.device_name, command, expected_field, **kwargs
