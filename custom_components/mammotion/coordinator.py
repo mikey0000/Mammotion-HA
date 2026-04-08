@@ -259,8 +259,9 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         handle = self.manager.mower(self.device_name)
         if handle is None:
             return device.online
-        if handle.is_transport_connected(TransportType.CLOUD_MAMMOTION) or (
-            handle.is_transport_connected(TransportType.CLOUD_ALIYUN)
+        if (
+            handle.is_transport_connected(TransportType.CLOUD_MAMMOTION)
+            or (handle.is_transport_connected(TransportType.CLOUD_ALIYUN))
             and not handle.availability.mqtt_reported_offline
         ):
             return True
