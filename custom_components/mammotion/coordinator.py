@@ -1013,8 +1013,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
                 )
                 name = area_name.name if area_name is not None else None
         else:
-            LOGGER.warning("area not found %s %s", self.device_name, area_hash)
-            return None
+            return "path"
 
         return name if name else f"area {area_hash}"
 
