@@ -424,15 +424,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         self, key: str, **kwargs: Any
     ) -> bool | None:
         """Send command via BLE transport."""
-        try:
-            await self.manager.send_command_with_args(
-                self.device_name, key, prefer_ble=True, **kwargs
-            )
-            return True
-        except COMMAND_EXCEPTIONS as exc:
-            raise DeviceOfflineException(
-                "bluetooth command failed", self.device.iot_id
-            ) from exc
+        await self.async_send_command(key, prefer_ble=True, **kwargs)
 
     async def check_firmware_version(self) -> None:
         """Check if firmware version is updated."""
@@ -624,6 +616,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         if handle is None:
             return
         if handle.has_transport(TransportType.BLE):
+            await handle.connect_transport(TransportType.BLE)
             return
         ble_device = bluetooth.async_ble_device_from_address(
             self.hass, ble_mac.upper(), True
@@ -636,32 +629,32 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         """Move forward. Prefer BLE unless use_wifi=True (lower latency for manual control)."""
         if not use_wifi:
             await self._async_ensure_ble_client()
-        await self.manager.send_command_with_args(
-            self.device_name, "move_forward", prefer_ble=not use_wifi, linear=speed
+        await self.async_send_command(
+            "move_forward", prefer_ble=not use_wifi, linear=speed
         )
 
     async def async_move_left(self, speed: float, use_wifi: bool = False) -> None:
         """Move left. Prefer BLE unless use_wifi=True."""
         if not use_wifi:
             await self._async_ensure_ble_client()
-        await self.manager.send_command_with_args(
-            self.device_name, "move_left", prefer_ble=not use_wifi, angular=speed
+        await self.async_send_command(
+            "move_left", prefer_ble=not use_wifi, angular=speed
         )
 
     async def async_move_right(self, speed: float, use_wifi: bool = False) -> None:
         """Move right. Prefer BLE unless use_wifi=True."""
         if not use_wifi:
             await self._async_ensure_ble_client()
-        await self.manager.send_command_with_args(
-            self.device_name, "move_right", prefer_ble=not use_wifi, angular=speed
+        await self.async_send_command(
+            "move_right", prefer_ble=not use_wifi, angular=speed
         )
 
     async def async_move_back(self, speed: float, use_wifi: bool = False) -> None:
         """Move back. Prefer BLE unless use_wifi=True."""
         if not use_wifi:
             await self._async_ensure_ble_client()
-        await self.manager.send_command_with_args(
-            self.device_name, "move_back", prefer_ble=not use_wifi, linear=speed
+        await self.async_send_command(
+            "move_back", prefer_ble=not use_wifi, linear=speed
         )
 
     async def async_rtk_dock_location(self) -> None:
