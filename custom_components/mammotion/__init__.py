@@ -366,6 +366,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
+    return True
+
 
 def _build_device_list(
     mammotion: MammotionClient,
