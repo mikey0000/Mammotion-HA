@@ -123,7 +123,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
     mammotion_mowers: list[MammotionMowerData] = []
     mammotion_devices: MammotionDevices = MammotionDevices([], [])
     mammotion_rtk: list[MammotionRTKData] = []
-    mammotion_rtk_devices: list[Device] = []
 
     if account and password:
         credentials = Credentials()
@@ -366,26 +365,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
     entry.async_on_unload(shutdown_mammotion)
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-
-    # Record the path to the static files needed for WebRTC
-    if hasattr(hass, "http"):
-        await hass.http.async_register_static_paths(
-            [
-                StaticPathConfig(
-                    "/mammotion_webrtc",
-                    hass.config.path("custom_components/mammotion/www"),
-                    cache_headers=False,
-                )
-            ]
-        )
-
-    # Make sure the 'www' folder exists
-    import os
-
-    www_dir = hass.config.path("custom_components/mammotion/www")
-    os.makedirs(www_dir, exist_ok=True)
-
-    return True
 
 
 def _build_device_list(
