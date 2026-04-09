@@ -122,6 +122,16 @@
       "work_area": {
         "name": "Work area"
       },
+      "task_area_status": {
+        "name": "Task area {name}",
+        "state": {
+          "NOT_STARTED": "Not started",
+          "WAITING": "Waiting",
+          "MOWING": "Mowing",
+          "COMPLETE": "Complete",
+          "ABORTED": "Aborted"
+        }
+      },
       "rtk_latitude": {
         "name": "RTK latitude"
       },
@@ -130,9 +140,6 @@
       }
     },
     "button": {
-      "join_webrtc": {
-        "name": "Start camera on mower"
-      },
       "start_map_sync": {
         "name": "Sync maps"
       },
@@ -258,9 +265,6 @@
       },
       "blade_height": {
         "name": "Blade height"
-      },
-      "blade_height_inches": {
-        "name": "Blade height (inches)"
       },
       "working_speed": {
         "name": "Working speed"

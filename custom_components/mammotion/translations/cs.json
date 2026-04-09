@@ -195,6 +195,16 @@
       },
       "rtk_wifi_rssi": {
         "name": "WiFi RSSI"
+      },
+      "task_area_status": {
+        "name": "Stav oblasti úkolu {name}",
+        "state": {
+          "NOT_STARTED": "Nezahájeno",
+          "WAITING": "Čeká se",
+          "MOWING": "Sečení",
+          "COMPLETE": "Dokončeno",
+          "ABORTED": "Přerušeno"
+        }
       }
     },
     "button": {
@@ -203,9 +213,6 @@
       },
       "start_schedule_sync": {
         "name": "Synchronize schedules"
-      },
-      "join_webrtc": {
-        "name": "Spustit kameru"
       },
       "resync_rtk_dock": {
         "name": "Synchronizovat RTK a dok"
@@ -360,9 +367,6 @@
       },
       "blade_height": {
         "name": "Výška nožů"
-      },
-      "blade_height_inches": {
-        "name": "Výška nožů (palce)"
       },
       "working_speed": {
         "name": "Pracovní rychlost"

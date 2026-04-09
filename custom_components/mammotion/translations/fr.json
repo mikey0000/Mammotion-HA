@@ -195,6 +195,16 @@
       },
       "rtk_wifi_rssi": {
         "name": "Qualité du signal Wi-Fi"
+      },
+      "task_area_status": {
+        "name": "Zone de tâche {name}",
+        "state": {
+          "NOT_STARTED": "Non démarré",
+          "WAITING": "En attente",
+          "MOWING": "En cours de tonte",
+          "COMPLETE": "Terminé",
+          "ABORTED": "Abandonné"
+        }
       }
     },
     "button": {
@@ -203,9 +213,6 @@
       },
       "start_schedule_sync": {
         "name": "Synchronize schedules"
-      },
-      "join_webrtc": {
-        "name": "Activer la caméra durant la tonte"
       },
       "resync_rtk_dock": {
         "name": "Synchroniser RTK et base"
@@ -360,9 +367,6 @@
       },
       "blade_height": {
         "name": "Hauteur des lames"
-      },
-      "blade_height_inches": {
-        "name": "Hauteur des lames (en pouces)"
       },
       "working_speed": {
         "name": "Vitesse de fonctionnement"

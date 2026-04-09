@@ -195,6 +195,16 @@
       },
       "rtk_wifi_rssi": {
         "name": "Wi-Fi RSSI"
+      },
+      "task_area_status": {
+        "name": "Taakgebied {name}",
+        "state": {
+          "NOT_STARTED": "Niet gestart",
+          "WAITING": "Wachtend",
+          "MOWING": "Aan het maaien",
+          "COMPLETE": "Voltooid",
+          "ABORTED": "Afgebroken"
+        }
       }
     },
     "button": {
@@ -203,9 +213,6 @@
       },
       "start_schedule_sync": {
         "name": "Schema's synchroniseren"
-      },
-      "join_webrtc": {
-        "name": "Start camera op maaier"
       },
       "resync_rtk_dock": {
         "name": "Synchroniseer RTK en laadstation"
@@ -360,9 +367,6 @@
       },
       "blade_height": {
         "name": "Mes hoogte"
-      },
-      "blade_height_inches": {
-        "name": "Maaihoogte (inches)"
       },
       "working_speed": {
         "name": "Robot Snelheid"

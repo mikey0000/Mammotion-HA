@@ -195,6 +195,16 @@
       },
       "rtk_wifi_rssi": {
         "name": "Wi-Fi RSSI"
+      },
+      "task_area_status": {
+        "name": "Področje naloge {name}",
+        "state": {
+          "NOT_STARTED": "Ni začeto",
+          "WAITING": "Čaka",
+          "MOWING": "Košnja",
+          "COMPLETE": "Dokončano",
+          "ABORTED": "Prekinjeno"
+        }
       }
     },
     "button": {
@@ -203,9 +213,6 @@
       },
       "start_schedule_sync": {
         "name": "Synchronize schedules"
-      },
-      "join_webrtc": {
-        "name": "Vklopi kamero na kosilnici"
       },
       "resync_rtk_dock": {
         "name": "Sinhronizacija položaja RTK in polnilne postaje"
@@ -360,9 +367,6 @@
       },
       "blade_height": {
         "name": "Višina nožev"
-      },
-      "blade_height_inches": {
-        "name": "Višina rezila (palci)"
       },
       "working_speed": {
         "name": "Hitrost košnje"

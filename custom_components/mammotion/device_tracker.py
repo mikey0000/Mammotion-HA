@@ -45,7 +45,7 @@ class MammotionTracker(MammotionBaseEntity, TrackerEntity, RestoreEntity):
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return entity specific state attributes."""
         return {
-            ATTR_DIRECTION: self.coordinator.manager.mower(
+            ATTR_DIRECTION: self.coordinator.manager.get_device_by_name(
                 self.coordinator.device_name
             ).location.orientation
         }
@@ -53,14 +53,14 @@ class MammotionTracker(MammotionBaseEntity, TrackerEntity, RestoreEntity):
     @property
     def latitude(self) -> float | None:
         """Return latitude value of the device."""
-        return self.coordinator.manager.mower(
+        return self.coordinator.manager.get_device_by_name(
             self.coordinator.device_name
         ).location.device.latitude
 
     @property
     def longitude(self) -> float | None:
         """Return longitude value of the device."""
-        return self.coordinator.manager.mower(
+        return self.coordinator.manager.get_device_by_name(
             self.coordinator.device_name
         ).location.device.longitude
 

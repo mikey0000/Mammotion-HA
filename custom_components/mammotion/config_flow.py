@@ -19,12 +19,11 @@ from homeassistant.config_entries import (
 )
 from homeassistant.const import CONF_ADDRESS, CONF_PASSWORD
 from homeassistant.core import callback
+from homeassistant.helpers import aiohttp_client
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.device_registry import CONNECTION_BLUETOOTH, format_mac
-from pymammotion.aliyun.cloud_gateway import CloudIOTGateway
-from pymammotion.http.http import MammotionHTTP
-from pymammotion.mammotion.devices.mammotion import Mammotion
+from pymammotion.client import MammotionClient
 
 from .const import (
     CONF_ACCOUNT_ID,
@@ -47,7 +46,6 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
         """Initialize the config flow."""
         self._config: dict = {}
         self._stay_connected = False
-        self._cloud_client: CloudIOTGateway | None = None
         self._discovered_device: BLEDevice | None = None
         self._discovered_devices: dict[str, str] = {}
 
@@ -217,16 +215,22 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
         ):
             account = user_input.get(CONF_ACCOUNTNAME, "")
             password = user_input.get(CONF_PASSWORD, "")
-            mammotion_http = MammotionHTTP(account, password)
-
+            temp_client = MammotionClient()
             try:
-                await mammotion_http.login_v2(account, password)
-                if mammotion_http.login_info is None:
-                    return self.async_abort(reason=str(mammotion_http.msg))
-            except HTTPException as err:
+                session = aiohttp_client.async_get_clientsession(self.hass)
+                await temp_client.login_and_initiate_cloud(account, password, session)
+                if (
+                    temp_client.mammotion_http is None
+                    or temp_client.mammotion_http.login_info is None
+                ):
+                    return self.async_abort(reason="login_failed")
+                user_account = (
+                    temp_client.mammotion_http.login_info.userInformation.userAccount
+                )
+            except (HTTPException, Exception) as err:
                 return self.async_abort(reason=str(err))
-
-            user_account = mammotion_http.login_info.userInformation.userAccount
+            finally:
+                await temp_client.stop()
 
             await self.async_set_unique_id(user_account, raise_on_progress=False)
             self._abort_if_unique_id_configured()
@@ -263,50 +267,6 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
         }
 
         return self.async_show_form(step_id="wifi", data_schema=vol.Schema(schema))
-
-    async def async_step_wifi_confirm(
-        self, user_input: dict[str, Any]
-    ) -> ConfigFlowResult:
-        """Confirm device discovery."""
-        mammotion = Mammotion()
-
-        if user_input is not None:
-            account = user_input.get(CONF_ACCOUNTNAME)
-            password = user_input.get(CONF_PASSWORD)
-
-            if self._cloud_client is None:
-                try:
-                    if mammotion.mqtt_list.get(
-                        f"{account}_aliyun"
-                    ) and mammotion.mqtt_list.get(f"{account}_mammotion"):
-                        self._cloud_client = await Mammotion().login(account, password)
-                    else:
-                        self._cloud_client = (
-                            mammotion.mqtt_list.get(f"{account}_aliyun").cloud_client
-                            if mammotion.mqtt_list.get(f"{account}_aliyun")
-                            else mammotion.mqtt_list.get(
-                                f"{account}_mammotion"
-                            ).cloud_client
-                        )
-                except HTTPException as err:
-                    return self.async_abort(reason=str(err))
-            user_account = (
-                self._cloud_client.mammotion_http.login_info.userInformation.userAccount
-            )
-
-            await self.async_set_unique_id(user_account, raise_on_progress=False)
-            self._abort_if_unique_id_configured()
-
-            return self.async_create_entry(
-                title=user_account,
-                data={
-                    CONF_ACCOUNTNAME: account,
-                    CONF_PASSWORD: password,
-                    CONF_USE_WIFI: user_input.get(CONF_USE_WIFI, True),
-                    **self._config,
-                },
-                options={CONF_STAY_CONNECTED_BLUETOOTH: self._stay_connected},
-            )
 
     @staticmethod
     @callback

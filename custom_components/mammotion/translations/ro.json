@@ -195,6 +195,16 @@
       },
       "rtk_wifi_rssi": {
         "name": "Wi-Fi RSSI"
+      },
+      "task_area_status": {
+        "name": "Zona de sarcină {name}",
+        "state": {
+          "NOT_STARTED": "Neînceput",
+          "WAITING": "În așteptare",
+          "MOWING": "Cosire",
+          "COMPLETE": "Finalizat",
+          "ABORTED": "Abandonat"
+        }
       }
     },
     "button": {
@@ -203,9 +213,6 @@
       },
       "start_schedule_sync": {
         "name": "Synchronize schedules"
-      },
-      "join_webrtc": {
-        "name": "Start camera on mower"
       },
       "resync_rtk_dock": {
         "name": "Sincronizați RTK și docul"
@@ -360,9 +367,6 @@
       },
       "blade_height": {
         "name": "Înălțimea lamelor"
-      },
-      "blade_height_inches": {
-        "name": "Înălțimea lamei (inch)"
       },
       "working_speed": {
         "name": "Viteza de lucru"

@@ -107,13 +107,17 @@ class AgoraWebSocketHandler:
         self._uid: int = 0
         self._vid: int = 0
         self._agora_data: StreamSubscriptionResponse | None = None
+        # Stored for WebSocket restart after p2p_lost / STUN timeout
+        self._offer_sdp: str | None = None
+        self._agora_response: AgoraResponse | None = None
         self._setup_message_handlers()
 
     def _setup_message_handlers(self) -> None:
         """Set up message handlers for different WebSocket message types."""
         self._message_handlers = {
             "answer": self._handle_answer,
-            "on_p2p_lost": self._handle_p2p_lost,
+            "on_p2p_ok": self._handle_p2p_ok,
+            # "on_p2p_lost": self._handle_p2p_lost,
             "error": self._handle_error,
             "on_rtp_capability_change": self._handle_rtp_capability_change,
             "on_user_online": self._handle_user_online,
@@ -141,9 +145,11 @@ class AgoraWebSocketHandler:
         _LOGGER.debug("Starting Agora WebSocket connection for session %s", session_id)
         _LOGGER.info("Agora data: %s", agora_data)
 
-        # Store for later use in token refresh / rejoin
+        # Store for later use in token refresh / rejoin / restart
         self._agora_data = agora_data
         self._session_id = session_id
+        self._offer_sdp = offer_sdp
+        self._agora_response = agora_response
 
         # Parse offer SDP for capabilities parse_offer_to_ortc
         stored_sdp_info = self._parse_offer_sdp(offer_sdp)
@@ -317,6 +323,11 @@ class AgoraWebSocketHandler:
 
                     # Ping response — no-op, just confirms keepalive
                     if message_result == "success" and not msg_body.get("ortc"):
+                        _LOGGER.debug(
+                            "[msg_loop] success ack for type=%s id=%s",
+                            message_type,
+                            response.get("_id"),
+                        )
                         continue
 
                     # Log all messages (non-ping)
@@ -483,18 +494,40 @@ class AgoraWebSocketHandler:
             return sdp
         return None
 
+    async def _handle_p2p_ok(self, response: dict[str, Any]) -> None:
+        """Handle P2P connection established confirmation.
+
+        Agora sends this when the proxy/P2P path is confirmed.
+        The uid in the message should match our own uid from the join response.
+        """
+        message = response.get("_message", {})
+        uid = message.get("uid")
+        proxy = message.get("proxy", False)
+        _LOGGER.info("P2P connection established (proxy=%s, uid=%s)", proxy, uid)
+        if uid and self._uid and uid != self._uid:
+            _LOGGER.warning(
+                "on_p2p_ok uid mismatch: expected %s, got %s",
+                self._uid,
+                uid,
+            )
+
     async def _handle_p2p_lost(self, response: dict[str, Any]) -> None:
-        """Handle P2P connection lost message."""
+        """Handle P2P connection lost message.
+
+        Schedules a WebSocket restart. The restart runs as a separate task so
+        it doesn't block (or cancel) the current message loop — the message
+        loop will exit on its own once the underlying socket is closed.
+        """
         error_code = response.get("error_code")
         error_str = response.get("error_str", "Unknown error")
-        _LOGGER.warning("P2P connection lost: %s (code: %s)", error_str, error_code)
-
-        # Handle specific error codes
-        if error_code == 1 and "stun timeout" in error_str.lower():
-            _LOGGER.info("STUN timeout detected, connection may need refreshing")
-            # This could trigger a reconnection attempt
+        _LOGGER.warning(
+            "P2P connection lost: %s (code: %s) — scheduling WebSocket restart",
+            error_str,
+            error_code,
+        )
 
         self._connection_state = "DISCONNECTED"
+        self.hass.async_create_task(self._restart_websocket())
 
     async def _handle_error(self, response: dict[str, Any]) -> None:
         """Handle error message."""
@@ -587,6 +620,10 @@ class AgoraWebSocketHandler:
         """Handle user offline notification.
 
         Send unsubscribe for the user's stream and clean up tracking state.
+        If the other peer (device) leaves while our uid is still connected,
+        refresh the token so we are ready when it rejoins.
+        If our own uid leaves, the viewer has stopped watching — do nothing
+        further (disconnect() will have been called by the caller).
         """
         message = response.get("_message", {})
         uid = message.get("uid")
@@ -600,6 +637,16 @@ class AgoraWebSocketHandler:
                 if self._video_streams[uid].get("subscribed") and self._websocket:
                     await self._send_unsubscribe(stream_id=uid)
                 del self._video_streams[uid]
+
+            # If the other peer left but we are still in the channel,
+            # renew the token so it is fresh when the device rejoins.
+            if uid != self._uid and self._websocket:
+                _LOGGER.info(
+                    "Peer %s left the channel while our uid %s is still connected — refreshing token",
+                    uid,
+                    self._uid,
+                )
+                await self._send_renew_token()
 
     async def _send_unsubscribe(
         self,
@@ -1594,6 +1641,53 @@ class AgoraWebSocketHandler:
     def is_connected(self) -> bool:
         """Return whether WebSocket is connected."""
         return self._connection_state == "CONNECTED"
+
+    async def _restart_websocket(self) -> None:
+        """Restart the WebSocket connection after p2p_lost or STUN timeout.
+
+        Cancels the ping loop, closes the current socket (which causes the
+        message loop to exit naturally), then re-runs connect_and_join with
+        the stored parameters and renews the token.
+        """
+        _LOGGER.info("Restarting WebSocket connection...")
+
+        if self._ping_task and not self._ping_task.done():
+            self._ping_task.cancel()
+            self._ping_task = None
+
+        if self._websocket:
+            try:
+                await self._websocket.close()
+            except Exception:  # noqa: BLE001
+                pass
+            self._websocket = None
+
+        self._connection_state = "DISCONNECTED"
+        self._online_users.clear()
+        self._video_streams.clear()
+
+        if not (
+            self._agora_data
+            and self._offer_sdp
+            and self._session_id
+            and self._agora_response
+        ):
+            _LOGGER.warning("Cannot restart WebSocket: missing connection parameters")
+            return
+
+        _LOGGER.info("Reconnecting to Agora WebSocket...")
+        answer_sdp = await self.connect_and_join(
+            self._agora_data,
+            self._offer_sdp,
+            self._session_id,
+            self._agora_response,
+        )
+
+        if answer_sdp:
+            _LOGGER.info("WebSocket restarted successfully, renewing token")
+            await self._send_renew_token()
+        else:
+            _LOGGER.error("WebSocket restart failed — could not rejoin channel")
 
     async def disconnect(self) -> None:
         """Disconnect from WebSocket and clean up background tasks."""

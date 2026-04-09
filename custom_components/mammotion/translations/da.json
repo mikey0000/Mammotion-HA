@@ -195,6 +195,16 @@
       },
       "rtk_wifi_rssi": {
         "name": "Wi-Fi RSSI"
+      },
+      "task_area_status": {
+        "name": "Opgaveområde {name}",
+        "state": {
+          "NOT_STARTED": "Ikke startet",
+          "WAITING": "Venter",
+          "MOWING": "Klipper",
+          "COMPLETE": "Fuldført",
+          "ABORTED": "Afbrudt"
+        }
       }
     },
     "button": {
@@ -203,9 +213,6 @@
       },
       "start_schedule_sync": {
         "name": "Synchronize schedules"
-      },
-      "join_webrtc": {
-        "name": "Start kameraet på plæneklipperen"
       },
       "resync_rtk_dock": {
         "name": "Synkroniser RTK og ladestation"
@@ -360,9 +367,6 @@
       },
       "blade_height": {
         "name": "Klinge højde"
-      },
-      "blade_height_inches": {
-        "name": "Bladhøjde (tommer)"
       },
       "working_speed": {
         "name": "Arbejdshastighed"

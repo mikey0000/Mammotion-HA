@@ -6,9 +6,11 @@ from typing import Final
 
 from bleak.exc import BleakError
 from bleak_retry_connector import BleakNotFoundError
-from pymammotion.aliyun.cloud_gateway import CheckSessionException, SetupException
+from pymammotion.aliyun.exceptions import CheckSessionException
 from pymammotion.http.model.http import UnauthorizedException
 from pymammotion.mammotion.devices.mammotion_bluetooth import CharacteristicMissingError
+from pymammotion.transport import AuthError
+from pymammotion.transport.base import LoginFailedError, NoTransportAvailableError
 from pymammotion.utility.constant import WorkMode
 
 DOMAIN: Final = "mammotion"
@@ -25,13 +27,15 @@ COMMAND_EXCEPTIONS = (
     BleakNotFoundError,
     CharacteristicMissingError,
     BleakError,
+    NoTransportAvailableError,
     TimeoutError,
 )
 
 EXPIRED_CREDENTIAL_EXCEPTIONS = (
     CheckSessionException,
-    SetupException,
+    AuthError,
     UnauthorizedException,
+    LoginFailedError,
 )
 
 CONF_STAY_CONNECTED_BLUETOOTH: Final = "stay_connected_bluetooth"

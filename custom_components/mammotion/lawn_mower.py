@@ -12,11 +12,13 @@ from homeassistant.components.lawn_mower import (
     LawnMowerEntity,
     LawnMowerEntityFeature,
 )
-from homeassistant.core import HomeAssistant
+from homeassistant.const import ATTR_ENTITY_ID
+from homeassistant.core import HomeAssistant, SupportsResponse
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_platform
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pymammotion.data.model.report_info import DeviceData, ReportData
 from pymammotion.utility.constant.device_constant import WorkMode
@@ -33,6 +35,9 @@ SERVICE_START_STOP_BLADES = "start_stop_blades"
 SERVICE_SET_NON_WORK_HOURS = "set_non_work_hours"
 SERVICE_RESET_BLADE_TIME = "reset_blade_time"
 SERVICE_SET_BLADE_WARNING_TIME = "set_blade_warning_time"
+SERVICE_GET_GEOJSON = "get_geojson"
+SERVICE_GET_MOW_PATH_GEOJSON = "get_mow_path_geojson"
+SERVICE_GET_MOW_PROGRESS_GEOJSON = "get_mow_progress_geojson"
 
 START_MOW_SCHEMA = {
     vol.Optional("modify", default=False): cv.boolean,
@@ -155,6 +160,63 @@ async def async_setup_entry(
         SERVICE_SET_BLADE_WARNING_TIME,
         SET_BLADE_WARNING_TIME_SCHEMA,
         "async_set_blade_warning_time",
+    )
+
+    def _get_mower_by_entity_id(entity_id: str):
+        entity_reg = er.async_get(hass)
+        entity_entry = entity_reg.async_get(entity_id)
+        if entity_entry is None:
+            LOGGER.error("Could not find entity %s", entity_id)
+            return None
+        return next(
+            (
+                m
+                for m in (entry.runtime_data.mowers if entry.runtime_data else [])
+                if entity_entry.unique_id.startswith(
+                    m.reporting_coordinator.unique_name
+                )
+            ),
+            None,
+        )
+
+    async def handle_get_geojson(call) -> dict[str, Any]:
+        entity = _get_mower_by_entity_id(call.data[ATTR_ENTITY_ID])
+        if entity is None:
+            LOGGER.error("Could not find entity %s", call.data[ATTR_ENTITY_ID])
+            return {}
+        return entity.reporting_coordinator.data.map.generated_geojson
+
+    async def handle_get_mow_path_geojson(call) -> dict[str, Any]:
+        entity = _get_mower_by_entity_id(call.data[ATTR_ENTITY_ID])
+        if entity is None:
+            LOGGER.error("Could not find entity %s", call.data[ATTR_ENTITY_ID])
+            return {}
+        return entity.reporting_coordinator.data.map.generated_mow_path_geojson
+
+    async def handle_get_mow_progress_geojson(call) -> dict[str, Any]:
+        entity = _get_mower_by_entity_id(call.data[ATTR_ENTITY_ID])
+        if entity is None:
+            LOGGER.error("Could not find entity %s", call.data[ATTR_ENTITY_ID])
+            return {}
+        return entity.reporting_coordinator.data.map.generated_mow_progress_geojson
+
+    hass.services.async_register(
+        DOMAIN,
+        SERVICE_GET_GEOJSON,
+        handle_get_geojson,
+        supports_response=SupportsResponse.ONLY,
+    )
+    hass.services.async_register(
+        DOMAIN,
+        SERVICE_GET_MOW_PATH_GEOJSON,
+        handle_get_mow_path_geojson,
+        supports_response=SupportsResponse.ONLY,
+    )
+    hass.services.async_register(
+        DOMAIN,
+        SERVICE_GET_MOW_PROGRESS_GEOJSON,
+        handle_get_mow_progress_geojson,
+        supports_response=SupportsResponse.ONLY,
     )
 
 
@@ -280,6 +342,9 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
                         return
                     if await self.coordinator.async_plan_route(operational_settings):
                         await self.coordinator.async_send_command("start_job")
+                        await self.coordinator.async_get_plan_route(
+                            operational_settings
+                        )
 
             except COMMAND_EXCEPTIONS as exc:
                 raise HomeAssistantError(

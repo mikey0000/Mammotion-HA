@@ -195,6 +195,16 @@
       },
       "rtk_wifi_rssi": {
         "name": "Wi-Fi RSSI"
+      },
+      "task_area_status": {
+        "name": "Aufgabenbereich {name}",
+        "state": {
+          "NOT_STARTED": "Nicht gestartet",
+          "WAITING": "Wartend",
+          "MOWING": "Mäht",
+          "COMPLETE": "Abgeschlossen",
+          "ABORTED": "Abgebrochen"
+        }
       }
     },
     "button": {
@@ -203,9 +213,6 @@
       },
       "start_schedule_sync": {
         "name": "Synchronisiere Zeitplan"
-      },
-      "join_webrtc": {
-        "name": "Kamera des Rasenmähers starten"
       },
       "resync_rtk_dock": {
         "name": "Synchronisiere RTK und Ladestation"
@@ -360,9 +367,6 @@
       },
       "blade_height": {
         "name": "Schnitthöhe"
-      },
-      "blade_height_inches": {
-        "name": "Schnitthöhe (Zoll)"
       },
       "working_speed": {
         "name": "Aufgabengeschwindigkeit"
