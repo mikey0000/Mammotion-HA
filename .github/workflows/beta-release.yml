@@ -7,11 +7,32 @@ on:
       - refactored-library
 
 jobs:
+  check-tag:
+    name: Check if commit is already tagged
+    runs-on: ubuntu-latest
+    outputs:
+      is_tagged: ${{ steps.check.outputs.is_tagged }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check for existing tag
+        id: check
+        run: |
+          if git tag --points-at HEAD | grep -q .; then
+            echo "Commit already has a tag — skipping beta release"
+            echo "is_tagged=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_tagged=false" >> $GITHUB_OUTPUT
+          fi
+
   beta-release:
     name: Create Beta Release
     runs-on: ubuntu-latest
-    # Skip if the commit was made by the bot (version bump commit)
-    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    # Skip if the commit was made by the bot (version bump commit) or if it already has a tag
+    if: "!contains(github.event.head_commit.message, '[skip ci]') && needs.check-tag.outputs.is_tagged != 'true'"
+    needs: check-tag
     permissions:
       contents: write
     steps:
