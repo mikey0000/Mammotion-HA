@@ -219,16 +219,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
             await error_coordinator.async_config_entry_first_refresh()
             await map_coordinator._async_setup()
 
-            device_config = DeviceConfig()
-            device_limits = device_config.get_working_parameters(
-                version_coordinator.data.mower_state.sub_model_id
-            )
-            if device_limits is None:
-                device_limits = device_config.get_working_parameters(device.product_key)
-
-            if device_limits is None:
-                device_limits = device_config.get_best_default(device.product_key)
-
             if not use_wifi:
                 mammotion.set_prefer_ble(device.device_name, prefer_ble=True)
                 handle = mammotion.mower(device.device_name)
@@ -244,7 +234,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                     name=device.device_name,
                     unique_name=unique_name,
                     device=device,
-                    device_limits=device_limits,
                     api=mammotion,
                     maintenance_coordinator=maintenance_coordinator,
                     reporting_coordinator=report_coordinator,
@@ -328,19 +317,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
             await error_coordinator.async_config_entry_first_refresh()
             await map_coordinator._async_setup()
 
-            device_config = DeviceConfig()
-            device_limits = device_config.get_working_parameters(
-                version_coordinator.data.mower_state.sub_model_id
-            )
-            if device_limits is None:
-                device_limits = device_config.get_best_default("")
-
             mammotion_mowers.append(
                 MammotionMowerData(
                     name=device_name,
                     unique_name=unique_name,
                     device=synthetic_device,
-                    device_limits=device_limits,
                     api=mammotion,
                     maintenance_coordinator=maintenance_coordinator,
                     reporting_coordinator=report_coordinator,

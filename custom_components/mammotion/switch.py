@@ -441,10 +441,12 @@ def async_add_area_entities(
         # Luba 1 doesn't support get_area_name_list; map.area keys are authoritative
         all_current_areas = map_area_hashes
     else:
-        # area_name is authoritative; re-fetch if map has unknown hashes
+        # Trigger a re-fetch if map has hashes that aren't yet named.
         if map_area_hashes - area_name_hashes:
             coordinator.hass.async_create_task(coordinator.async_get_area_list())
-        all_current_areas = area_name_hashes
+        # Include ALL known hashes so unnamed areas are still added with a generated
+        # name (the loop below handles the None-name case with "Area N" fallback).
+        all_current_areas = area_name_hashes | map_area_hashes
 
     new_areas = all_current_areas - added_areas
     area_counter = len(added_areas)

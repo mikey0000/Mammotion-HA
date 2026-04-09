@@ -18,6 +18,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pymammotion.data.model.device_limits import DeviceLimits
+from pymammotion.utility.device_config import DeviceConfig
 from pymammotion.utility.device_type import DeviceType
 
 from . import MammotionConfigEntry
@@ -140,8 +141,9 @@ async def async_setup_entry(
     mammotion_devices = entry.runtime_data.mowers
 
     for mower in mammotion_devices:
-        limits = mower.device_limits
-
+        limits = DeviceConfig().get_working_parameters(mower.device.product_key)
+        if handle := mower.api.get_device_by_name(mower.name):
+            limits = handle.device_limits
         entities: list[MammotionConfigNumberEntity] = []
 
         for entity_description in NUMBER_WORKING_ENTITIES:
