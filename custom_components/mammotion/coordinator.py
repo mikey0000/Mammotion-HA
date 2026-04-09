@@ -259,12 +259,6 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         handle = self.manager.mower(self.device_name)
         if handle is None:
             return device.online
-        if (
-            handle.is_transport_connected(TransportType.CLOUD_MAMMOTION)
-            or (handle.is_transport_connected(TransportType.CLOUD_ALIYUN))
-            and not handle.availability.mqtt_reported_offline
-        ):
-            return True
         if handle.has_transport(TransportType.BLE):
             if handle.is_transport_connected(TransportType.BLE):
                 return True
@@ -321,11 +315,10 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         except EXPIRED_CREDENTIAL_EXCEPTIONS as exc:
             self.update_failures += 1
             await self.async_refresh_login(exc)
-        except DeviceOfflineException as ex:
-            if ex.iot_id == self.device.iot_id:
-                device = self.manager.get_device_by_name(self.device_name)
-                if device is not None:
-                    self.device_offline(device)
+        except DeviceOfflineException:
+            device = self.manager.get_device_by_name(self.device_name)
+            if device is not None:
+                self.device_offline(device)
             raise
         except (
             GatewayTimeoutException,
@@ -335,7 +328,8 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         ):
             pass
 
-    def device_offline(self, device: MowingDevice) -> None:
+    @staticmethod
+    def device_offline(device: MowingDevice) -> None:
         device.online = False
 
     def store_cloud_credentials(self) -> None:
@@ -1053,14 +1047,7 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
             LOGGER.debug("device not found")
             return self.data
 
-        try:
-            await self.async_send_command("get_report_cfg")
-
-        except DeviceOfflineException as ex:
-            if ex.iot_id == self.device.iot_id:
-                device = self.manager.get_device_by_name(self.device_name)
-                self.device_offline(device)
-                return device
+        await self.async_send_command("get_report_cfg")
 
         LOGGER.debug("Updated Mammotion device %s", self.device_name)
         self.update_failures = 0
