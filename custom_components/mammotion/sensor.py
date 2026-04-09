@@ -53,31 +53,22 @@ class MowerDataFormatter:
 
     @staticmethod
     def parse_time_string(time_str: str) -> time:
-        """Convert time string (e.g., '1330') to time object.
+        """Convert a minutes-from-midnight string to a time object.
 
         Args:
-            time_str: Time in format 'HHMM' (e.g., '1330' for 1:30 PM)
+            time_str: Integer minutes from midnight as a string (e.g., '1320' for 22:00).
 
         Returns:
             time object
 
         """
-        if not time_str or len(time_str) < 3:
+        if not time_str:
             return time(0, 0)
-
-        # Pad with leading zeros if needed
-        time_str = time_str.zfill(4)
-
-        hour = int(time_str[:2])
-        minute = int(time_str[2:4])
-
-        # Handle 24-hour format
-        if hour >= 24:
-            hour = 0
-        if minute >= 60:
-            minute = 0
-
-        return time(hour, minute)
+        try:
+            total_minutes = int(time_str)
+        except ValueError:
+            return time(0, 0)
+        return time(total_minutes // 60 % 24, total_minutes % 60)
 
     @staticmethod
     def format_time(time_str: str) -> str:

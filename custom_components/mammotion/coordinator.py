@@ -511,14 +511,23 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
             )
 
     async def async_set_non_work_hours(self, start_time: str, end_time: str) -> None:
-        """Set non work hours."""
+        """Set non work hours.
+
+        start_time and end_time are in HH:MM format (24-hour).
+        The proto field expects minutes-from-midnight as a string (e.g. "1320" for 22:00).
+        """
         if start_time == end_time:
             await self.async_send_command("job_do_not_disturb_del")
             return
+
+        def _to_minutes(hhmm: str) -> str:
+            h, m = hhmm.split(":")
+            return str(int(h) * 60 + int(m))
+
         await self.async_send_command(
             "job_do_not_disturb",
-            unable_end_time=end_time,
-            unable_start_time=start_time,
+            unable_end_time=_to_minutes(end_time),
+            unable_start_time=_to_minutes(start_time),
         )
 
     async def async_set_blade_warning_time(self, hours: int) -> None:
