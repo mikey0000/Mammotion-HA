@@ -27,4 +27,6 @@ async def async_get_config_entry_diagnostics(
     for device in mammotion_rtk_devices:
         data[device.name] = asdict(device.coordinator.data)
 
+    # data['entry'] = entry.as_dict()
+
     return async_redact_data(data, TO_REDACT)
