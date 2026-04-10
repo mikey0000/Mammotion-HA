@@ -536,6 +536,10 @@
         "areas": {
           "name": "Selecția zonei",
           "description": "Lista zonelor care trebuie aruncate (reprezentate ca întregi)."
+        },
+        "plan_only": {
+          "name": "Doar planificare",
+          "description": "Generați planul de tuns fără a porni sarcina."
         }
       }
     },

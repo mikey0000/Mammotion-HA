@@ -536,6 +536,10 @@
         "areas": {
           "name": "Bereiche",
           "description": "Auswahl der zu mähenden Bereiche."
+        },
+        "plan_only": {
+          "name": "Nur planen",
+          "description": "Mähplan erstellen, ohne den Auftrag zu starten."
         }
       }
     },

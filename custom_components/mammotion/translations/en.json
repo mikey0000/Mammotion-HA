@@ -536,6 +536,10 @@
         "areas": {
           "name": "Area selection",
           "description": "List of areas to mow (represented as integers)."
+        },
+        "plan_only": {
+          "name": "Plan only",
+          "description": "Generate the mowing plan without starting the job."
         }
       }
     },

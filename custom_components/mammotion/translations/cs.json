@@ -536,6 +536,10 @@
         "areas": {
           "name": "Výběr oblasti",
           "description": "Seznam oblastí k sečení (reprezentovaný jako celá čísla)."
+        },
+        "plan_only": {
+          "name": "Pouze plánování",
+          "description": "Vygenerujte plán sečení bez spuštění úlohy."
         }
       }
     },

@@ -41,6 +41,7 @@ SERVICE_GET_MOW_PROGRESS_GEOJSON = "get_mow_progress_geojson"
 
 START_MOW_SCHEMA = {
     vol.Optional("modify", default=False): cv.boolean,
+    vol.Optional("plan_only", default=False): cv.boolean,
     vol.Optional("is_mow", default=True): cv.boolean,
     vol.Optional("is_dump", default=True): cv.boolean,
     vol.Optional("is_edge", default=False): cv.boolean,
@@ -126,9 +127,10 @@ async def async_setup_entry(
     """Set up the Mammotion Lawn Mower config entry."""
     mammotion_devices = entry.runtime_data.mowers
 
-    entities = []
-    for mower in mammotion_devices:
-        entities.append(MammotionLawnMowerEntity(mower.reporting_coordinator))
+    entities = [
+        MammotionLawnMowerEntity(mower.reporting_coordinator)
+        for mower in mammotion_devices
+    ]
 
     async_add_entities(entities)
 
@@ -282,6 +284,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
                 is not None
             ]
             modify_plan = kwargs.pop("modify", False)
+            plan_only = kwargs.pop("plan_only", False)
 
             # Merge onto coordinator's restored settings so UI-configured values
             # (speed, blade_height, etc.) are preserved when not explicitly provided.
@@ -292,9 +295,11 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
             if DeviceType.is_yuka(self.coordinator.device_name):
                 operational_settings.blade_height = -10
             LOGGER.debug(kwargs)
+            LOGGER.debug(operational_settings)
         else:
             operational_settings = self.coordinator.operation_settings
             modify_plan = False
+            plan_only = False
 
         # check if job in progress
         #
@@ -338,10 +343,12 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
                         await self.coordinator.async_send_command(
                             "query_generate_route_information"
                         )
-                        await self.coordinator.async_send_command("start_job")
+                        if not plan_only:
+                            await self.coordinator.async_send_command("start_job")
                         return
                     if await self.coordinator.async_plan_route(operational_settings):
-                        await self.coordinator.async_send_command("start_job")
+                        if not plan_only:
+                            await self.coordinator.async_send_command("start_job")
                         await self.coordinator.async_get_plan_route(
                             operational_settings
                         )

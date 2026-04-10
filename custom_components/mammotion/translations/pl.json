@@ -536,6 +536,10 @@
         "areas": {
           "name": "Wybór obszaru",
           "description": "Wykaz obszarów do mow (reprezentowanych jako liczby całkowite)."
+        },
+        "plan_only": {
+          "name": "Tylko planowanie",
+          "description": "Wygeneruj plan koszenia bez uruchamiania zadania."
         }
       }
     },

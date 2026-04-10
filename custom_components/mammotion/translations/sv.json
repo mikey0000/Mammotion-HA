@@ -536,6 +536,10 @@
         "areas": {
           "name": "Val av område",
           "description": "Lista över områden att klippa (representeras som heltal)."
+        },
+        "plan_only": {
+          "name": "Planera endast",
+          "description": "Generera klippplanen utan att starta uppgiften."
         }
       }
     },

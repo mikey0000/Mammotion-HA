@@ -536,6 +536,10 @@
         "areas": {
           "name": "Selezione Area",
           "description": "Elenco di aree da tagliare(rappresentati come interi)."
+        },
+        "plan_only": {
+          "name": "Solo pianificazione",
+          "description": "Genera il piano di taglio senza avviare il lavoro."
         }
       }
     },

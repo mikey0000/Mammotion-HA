@@ -536,6 +536,10 @@
         "areas": {
           "name": "Zones",
           "description": "Liste des zones à tondre (représentées sous forme d'entiers)."
+        },
+        "plan_only": {
+          "name": "Planification uniquement",
+          "description": "Générer le plan de tonte sans démarrer le travail."
         }
       }
     },

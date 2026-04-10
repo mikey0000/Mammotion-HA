@@ -536,6 +536,10 @@
         "areas": {
           "name": "Gebiedselectie",
           "description": "Lijst van te maaien gebieden (weergegeven als geheel getal)."
+        },
+        "plan_only": {
+          "name": "Alleen plannen",
+          "description": "Genereer het maaiplan zonder de taak te starten."
         }
       }
     },

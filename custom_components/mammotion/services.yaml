@@ -199,6 +199,11 @@ start_mow:
           multiple: true
           integration: mammotion
           domain: switch
+    plan_only:
+      required: false
+      default: false
+      selector:
+        boolean:
 start_stop_blades:
   target:
     entity:
