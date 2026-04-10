@@ -193,7 +193,7 @@ start_mow:
           max: 100
           unit_of_measurement: "%"
     areas:
-      required: true
+      required: false
       selector:
         entity:
           multiple: true

@@ -82,7 +82,7 @@ START_MOW_SCHEMA = {
     vol.Optional("start_progress", default=0): vol.All(
         vol.Coerce(int), vol.Range(min=0, max=100)
     ),
-    vol.Required("areas"): vol.All(
+    vol.Optional("areas", default=[]): vol.All(
         cv.ensure_list, [cv.entity_id]
     ),  # This assumes `areas` are entity IDs from the integration
 }
