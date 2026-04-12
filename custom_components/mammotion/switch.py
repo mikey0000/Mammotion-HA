@@ -2,6 +2,7 @@
 
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
+from dataclasses import replace as dataclass_replace
 from functools import partial
 from typing import Any
 
@@ -374,6 +375,16 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
         self._attr_extra_state_attributes = {"hash": self._area}
         self._attr_is_on = self._area in self.coordinator.operation_settings.areas
 
+    def update_name(self, new_name: str) -> None:
+        """Update the display name when the device provides a real name for this area."""
+        self.entity_description = dataclass_replace(
+            self.entity_description,
+            name=new_name,
+            translation_placeholders={"name": new_name},
+        )
+        if self.hass is not None:
+            self.async_write_ha_state()
+
     def update_area(self, new_area_id: int) -> None:
         """Update the area hash when the device reports a new hash for the same named area."""
         old_area = self._area
@@ -408,7 +419,11 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
     async def async_update(self) -> None:
         """Update the entity state."""
         self._attr_is_on = self._area in self.coordinator.operation_settings.areas
-        area_keys = {int(k) for k in self.coordinator.data.map.area.keys()}
+        area_keys: set[int] = {
+            int(k)
+            for k in self.coordinator.data.map.area.keys()
+            if str(k).lstrip("-").isdigit()
+        }
         if self._area not in area_keys:
             await self.async_remove()
             return
@@ -434,7 +449,9 @@ def async_add_area_entities(
     switch_entities: list[MammotionConfigAreaSwitchEntity] = []
     area_names = coordinator.data.map.area_name
     area_name_hashes: set[int] = {area.hash for area in area_names}
-    map_area_hashes: set[int] = {int(k) for k in coordinator.data.map.area.keys()}
+    map_area_hashes: set[int] = {
+        int(k) for k in coordinator.data.map.area.keys() if str(k).lstrip("-").isdigit()
+    }
     is_luba1 = DeviceType.is_luba1(coordinator.device_name)
 
     if is_luba1:
@@ -449,7 +466,16 @@ def async_add_area_entities(
         all_current_areas = area_name_hashes | map_area_hashes
 
     new_areas = all_current_areas - added_areas
-    area_counter = len(added_areas)
+    # Find the highest "Area N" number already in use so new auto-names don't
+    # collide with existing entities after deletions shrink len(added_areas).
+    area_counter = max(
+        (
+            int(name.split()[-1])
+            for name in area_entities_by_name
+            if name.startswith("Area ") and name.split()[-1].isdigit()
+        ),
+        default=0,
+    )
 
     def set_area_entity(
         coord: MammotionReportUpdateCoordinator, bool_val: bool, value: int
@@ -489,6 +515,24 @@ def async_add_area_entities(
         switch_entities.append(entity)
         area_entities_by_name[name] = entity
         added_areas.add(area_id)
+
+    # Check already-tracked areas for name updates (e.g. unnamed → real name).
+    entities_by_hash: dict[int, tuple[str, MammotionConfigAreaSwitchEntity]] = {
+        e._area: (current_name, e) for current_name, e in area_entities_by_name.items()
+    }
+    for area_id in list(added_areas):
+        area_entry = next((a for a in area_names if a.hash == area_id), None)
+        if not (area_entry and area_entry.name):
+            continue
+        new_name = area_entry.name
+        if area_id not in entities_by_hash:
+            continue
+        current_name, entity = entities_by_hash[area_id]
+        if current_name == new_name:
+            continue
+        del area_entities_by_name[current_name]
+        entity.update_name(new_name)
+        area_entities_by_name[new_name] = entity
 
     old_areas = added_areas - all_current_areas
     if old_areas:
