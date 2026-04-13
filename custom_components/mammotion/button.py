@@ -2,6 +2,7 @@
 
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
+from dataclasses import replace as dataclass_replace
 from functools import partial
 
 from homeassistant.components.button import DOMAIN as BUTTON_DOMAIN
@@ -115,6 +116,7 @@ async def async_setup_entry(
 
     for mower in mammotion_devices:
         added_tasks: set[str] = set()
+        task_entities_by_id: dict[str, MammotionTaskButtonSensorEntity] = {}
 
         coordinator = mower.reporting_coordinator
 
@@ -122,6 +124,7 @@ async def async_setup_entry(
             async_add_task_entities,
             coordinator,
             added_tasks,
+            task_entities_by_id,
             async_add_entities,
         )
 
@@ -180,6 +183,16 @@ class MammotionTaskButtonSensorEntity(MammotionBaseEntity, ButtonEntity):
         self._attr_translation_key = entity_description.key
         self._attr_extra_state_attributes = {"task_id": entity_description.plan_id}
 
+    def update_name(self, new_name: str) -> None:
+        """Update the display name when the plan's task_name changes."""
+        self.entity_description = dataclass_replace(
+            self.entity_description,
+            name=new_name,
+            translation_placeholders={"name": new_name},
+        )
+        if self.hass is not None:
+            self.async_write_ha_state()
+
     async def async_press(self) -> None:
         """Trigger a one-time task."""
         await self.entity_description.press_fn(
@@ -187,13 +200,31 @@ class MammotionTaskButtonSensorEntity(MammotionBaseEntity, ButtonEntity):
         )
 
 
+def _update_task_names(
+    coordinator: MammotionReportUpdateCoordinator,
+    added_tasks: set[str],
+    task_entities_by_id: dict[str, "MammotionTaskButtonSensorEntity"],
+) -> None:
+    """Rename task button entities whose plan task_name has changed."""
+    for task_id in added_tasks:
+        plan: Plan | None = coordinator.data.map.plan.get(task_id)
+        if plan is None:
+            continue
+        entity = task_entities_by_id.get(task_id)
+        if entity is None:
+            continue
+        if entity.entity_description.name != plan.task_name:
+            entity.update_name(plan.task_name)
+
+
 @callback
 def async_add_task_entities(
     coordinator: MammotionReportUpdateCoordinator,
     added_tasks: set[str],
+    task_entities_by_id: dict[str, "MammotionTaskButtonSensorEntity"],
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Handle addition of mowing areas."""
+    """Handle addition of mowing task buttons."""
 
     if coordinator.data is None:
         return
@@ -225,19 +256,21 @@ def async_add_task_entities(
                 name=existing_plan.task_name,
                 press_fn=lambda coord, value: (coord.start_task(value)),
             )
-            button_entities.append(
-                MammotionTaskButtonSensorEntity(
-                    coordinator,
-                    base_plan_button_entity,
-                )
+            entity = MammotionTaskButtonSensorEntity(
+                coordinator, base_plan_button_entity
             )
+            button_entities.append(entity)
+            task_entities_by_id[task_id] = entity
             added_tasks.add(task_id)
+
+    _update_task_names(coordinator, added_tasks, task_entities_by_id)
 
     old_tasks = set(tasks) - added_tasks
     if old_tasks:
         async_remove_entities(coordinator, old_tasks)
         for plan in old_tasks:
             added_tasks.remove(plan)
+            task_entities_by_id.pop(plan, None)
     if button_entities:
         async_add_entities(button_entities)
 
