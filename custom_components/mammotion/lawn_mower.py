@@ -108,6 +108,7 @@ SET_BLADE_WARNING_TIME_SCHEMA = {
 def get_entity_attribute(
     hass: HomeAssistant, entity_id: str, attribute_name: str
 ) -> str | None:
+    """Return a named attribute from a HA entity state, or None if unavailable."""
     # Get the state object of the entity
     entity = hass.states.get(entity_id)
 
@@ -289,7 +290,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
             # Merge onto coordinator's restored settings so UI-configured values
             # (speed, blade_height, etc.) are preserved when not explicitly provided.
             operational_settings = copy(self.coordinator.operation_settings)
-            operational_settings.areas = set(attributes)
+            operational_settings.areas = list(dict.fromkeys(attributes))
             for key, value in kwargs.items():
                 setattr(operational_settings, key, value)
             if DeviceType.is_yuka(self.coordinator.device_name):
@@ -488,6 +489,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
         await self.coordinator.async_set_blade_warning_time(hours=hours)
 
     async def async_added_to_hass(self) -> None:
+        """Register callbacks and verify device linkage after HA setup."""
         await super().async_added_to_hass()
 
         # Ensure the entity is actually linked to a device

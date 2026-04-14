@@ -210,6 +210,7 @@ class MammotionSwitchEntity(MammotionBaseEntity, SwitchEntity, RestoreEntity):
         coordinator: MammotionBaseUpdateCoordinator,
         entity_description: MammotionAsyncSwitchEntityDescription,
     ) -> None:
+        """Initialize the switch entity."""
         super().__init__(coordinator, entity_description.key)
         self.coordinator = coordinator
         self.entity_description = entity_description
@@ -273,6 +274,7 @@ class MammotionUpdateSwitchEntity(MammotionBaseEntity, SwitchEntity, RestoreEnti
         coordinator: MammotionBaseUpdateCoordinator,
         entity_description: MammotionAsyncSwitchEntityDescription,
     ) -> None:
+        """Initialize the update switch entity."""
         super().__init__(coordinator, entity_description.key)
         self.coordinator = coordinator
         self.entity_description = entity_description
@@ -309,6 +311,8 @@ class MammotionUpdateSwitchEntity(MammotionBaseEntity, SwitchEntity, RestoreEnti
 
 
 class MammotionConfigSwitchEntity(MammotionBaseEntity, SwitchEntity, RestoreEntity):
+    """Mammotion config switch entity."""
+
     entity_description: MammotionConfigSwitchEntityDescription
     _attr_has_entity_name = True
     _attr_entity_category = EntityCategory.CONFIG
@@ -391,8 +395,9 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
         self._area = new_area_id
         self._attr_extra_state_attributes = {"hash": new_area_id}
         if old_area in self.coordinator.operation_settings.areas:
-            self.coordinator.operation_settings.areas.discard(old_area)
-            self.coordinator.operation_settings.areas.add(new_area_id)
+            self.coordinator.operation_settings.areas.remove(old_area)
+            if new_area_id not in self.coordinator.operation_settings.areas:
+                self.coordinator.operation_settings.areas.append(new_area_id)
         self._attr_is_on = new_area_id in self.coordinator.operation_settings.areas
         if self.hass is not None:
             self.async_write_ha_state()
@@ -481,7 +486,8 @@ def async_add_area_entities(
         coord: MammotionReportUpdateCoordinator, bool_val: bool, value: int
     ) -> None:
         if bool_val:
-            coord.operation_settings.areas.add(value)
+            if value not in coord.operation_settings.areas:
+                coord.operation_settings.areas.append(value)
         elif value in coord.operation_settings.areas:
             coord.operation_settings.areas.remove(value)
 

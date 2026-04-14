@@ -227,6 +227,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         await self.async_send_cloud_command(handle.iot_id, command)
 
     async def set_scheduled_updates(self, enabled: bool) -> None:
+        """Enable or disable scheduled polling updates for this device."""
         device = self.manager.get_device_by_name(self.device_name)
         if device is None:
             return
@@ -253,6 +254,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
                 await handle.disconnect_transport(t_type)
 
     def is_online(self) -> bool:
+        """Return True if the device currently has an active transport connection."""
         device = self.manager.get_device_by_name(self.device_name)
         if device is None:
             return False
@@ -330,6 +332,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
 
     @staticmethod
     def device_offline(device: MowingDevice) -> None:
+        """Mark the device as offline in its state model."""
         device.online = False
 
     def store_cloud_credentials(self) -> None:
@@ -471,6 +474,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
                 await self.async_sync_maps()
 
     async def async_sync_schedule(self) -> None:
+        """Sync scheduled mowing plans from the device."""
         try:
             await self.async_send_command("read_plan", sub_cmd=2, plan_index=0)
         except EXPIRED_CREDENTIAL_EXCEPTIONS as exc:
@@ -784,6 +788,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         return True
 
     async def async_get_plan_route(self, operation_settings: OperationSettings) -> None:
+        """Fetch the previously generated mow path from the device without replanning."""
         route_information = self.generate_route_information(operation_settings)
         await self.manager.start_mow_path_saga(
             self.device_name,
@@ -798,7 +803,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         """Modify plan mow."""
 
         if work := self.data.work:
-            operation_settings.areas = set(work.zone_hashs)
+            operation_settings.areas = list(dict.fromkeys(work.zone_hashs))
             operation_settings.toward = work.toward
             operation_settings.toward_mode = work.toward_mode
             operation_settings.toward_included_angle = work.toward_included_angle
@@ -831,6 +836,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         return self._operation_settings
 
     async def async_modify_plan_if_mowing(self):
+        """Re-plan the current mow route if the device is actively mowing."""
         if (
             int(self.data.report_data.work.bp_hash) in self.data.work.zone_hashs
             and (self.data.report_data.work.area >> 16) != 100
@@ -1570,7 +1576,7 @@ class MammotionDeviceErrorUpdateCoordinator(
 
 
 class MammotionRTKCoordinator(DataUpdateCoordinator[RTKDevice]):
-    """Mammotion DataUpdateCoordinator."""
+    """Mammotion DataUpdateCoordinator for RTK base station devices."""
 
     def __init__(
         self,
