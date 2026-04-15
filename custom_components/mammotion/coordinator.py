@@ -1155,10 +1155,6 @@ class MammotionMaintenanceUpdateCoordinator(MammotionBaseUpdateCoordinator[Maint
             return data
 
         try:
-            if DeviceType.value_of_str(self.device_name).is_support_rtk_service():
-                await self.async_send_and_wait(
-                    "basestation_info", "response_basestation_info_t"
-                )
             await self.async_send_command("get_maintenance")
 
             await self.async_send_and_wait(
