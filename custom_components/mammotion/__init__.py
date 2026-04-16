@@ -25,6 +25,7 @@ from homeassistant.helpers import aiohttp_client
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.device_registry import DeviceEntry
 from homeassistant.helpers.event import async_call_later
+from pymammotion.aliyun.exceptions import TooManyRequestsException
 from pymammotion.aliyun.model.dev_by_account_response import Device
 from pymammotion.client import MammotionClient
 from pymammotion.data.model.account import Credentials
@@ -211,13 +212,36 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
             )
             # sometimes device is not there when restoring data
             await report_coordinator.async_restore_data()
-            await version_coordinator.async_config_entry_first_refresh()
+            try:
+                await report_coordinator.async_config_entry_first_refresh()
+            except TooManyRequestsException as err:
+                raise ConfigEntryNotReady(
+                    "Aliyun cloud rate limited — will retry with backoff"
+                ) from err
 
-            await report_coordinator.async_config_entry_first_refresh()
-            await maintenance_coordinator.async_config_entry_first_refresh()
+            async def _deferred_setup() -> None:
+                """Load non-critical coordinators in the background."""
+                for coro in (
+                    version_coordinator.async_config_entry_first_refresh(),
+                    maintenance_coordinator.async_config_entry_first_refresh(),
+                    error_coordinator.async_config_entry_first_refresh(),
+                    map_coordinator._async_setup(),
+                ):
+                    try:
+                        await coro
+                    except TooManyRequestsException:
+                        LOGGER.debug(
+                            "Rate limited during deferred setup, will catch up on next poll"
+                        )
+                    except Exception:
+                        LOGGER.debug(
+                            "Non-critical coordinator setup error, will retry on next poll",
+                            exc_info=True,
+                        )
 
-            await error_coordinator.async_config_entry_first_refresh()
-            await map_coordinator._async_setup()
+            entry.async_create_background_task(
+                hass, _deferred_setup(), "mammotion_deferred_setup"
+            )
 
             if not use_wifi:
                 mammotion.set_prefer_ble(device.device_name, prefer_ble=True)
@@ -262,7 +286,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
             rtk_coordinator = MammotionRTKCoordinator(
                 hass, entry, rtk, mammotion, unique_name=rtk_unique_name
             )
-            await rtk_coordinator.async_config_entry_first_refresh()
+            try:
+                await rtk_coordinator.async_config_entry_first_refresh()
+            except TooManyRequestsException as err:
+                raise ConfigEntryNotReady(
+                    "Aliyun cloud rate limited — will retry with backoff"
+                ) from err
             mammotion_rtk.append(
                 MammotionRTKData(
                     name=rtk.device_name,
@@ -311,11 +340,36 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
             )
 
             await report_coordinator.async_restore_data()
-            await version_coordinator.async_config_entry_first_refresh()
-            await report_coordinator.async_config_entry_first_refresh()
-            await maintenance_coordinator.async_config_entry_first_refresh()
-            await error_coordinator.async_config_entry_first_refresh()
-            await map_coordinator._async_setup()
+            try:
+                await report_coordinator.async_config_entry_first_refresh()
+            except TooManyRequestsException as err:
+                raise ConfigEntryNotReady(
+                    "Aliyun cloud rate limited — will retry with backoff"
+                ) from err
+
+            async def _deferred_setup_ble() -> None:
+                """Load non-critical coordinators in the background."""
+                for coro in (
+                    version_coordinator.async_config_entry_first_refresh(),
+                    maintenance_coordinator.async_config_entry_first_refresh(),
+                    error_coordinator.async_config_entry_first_refresh(),
+                    map_coordinator._async_setup(),
+                ):
+                    try:
+                        await coro
+                    except TooManyRequestsException:
+                        LOGGER.debug(
+                            "Rate limited during deferred setup, will catch up on next poll"
+                        )
+                    except Exception:
+                        LOGGER.debug(
+                            "Non-critical coordinator setup error, will retry on next poll",
+                            exc_info=True,
+                        )
+
+            entry.async_create_background_task(
+                hass, _deferred_setup_ble(), "mammotion_deferred_setup_ble"
+            )
 
             mammotion_mowers.append(
                 MammotionMowerData(

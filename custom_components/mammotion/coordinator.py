@@ -25,6 +25,7 @@ from pymammotion.aliyun.exceptions import (
     FailedRequestException,
     GatewayTimeoutException,
     NoConnectionException,
+    TooManyRequestsException,
 )
 from pymammotion.aliyun.model.dev_by_account_response import Device
 from pymammotion.client import MammotionClient
@@ -76,9 +77,9 @@ if TYPE_CHECKING:
 
 
 MAINTENANCE_INTERVAL = timedelta(minutes=60)
-DEFAULT_INTERVAL = timedelta(minutes=1)
-WORKING_INTERVAL = timedelta(seconds=5)
-REPORT_INTERVAL = timedelta(minutes=1)
+DEFAULT_INTERVAL = timedelta(minutes=10)
+WORKING_INTERVAL = timedelta(minutes=2)
+REPORT_INTERVAL = timedelta(minutes=5)
 DEVICE_VERSION_INTERVAL = timedelta(days=1)
 MAP_INTERVAL_FAST = timedelta(minutes=1)
 MAP_INTERVAL = timedelta(minutes=30)
@@ -314,6 +315,8 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
             await self.manager.send_command_and_wait(
                 self.device_name, command, expected_field, **kwargs
             )
+        except TooManyRequestsException:
+            pass
         except EXPIRED_CREDENTIAL_EXCEPTIONS as exc:
             self.update_failures += 1
             await self.async_refresh_login(exc)
@@ -362,6 +365,8 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
             )
             self.update_failures = 0
             return True
+        except TooManyRequestsException:
+            return False
         except FailedRequestException:
             self.update_failures += 1
         except EXPIRED_CREDENTIAL_EXCEPTIONS as exc:
@@ -1062,7 +1067,9 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
             LOGGER.debug("device not found")
             return self.data
 
-        await self.async_send_command("get_report_cfg")
+        await self.async_send_and_wait(
+            "get_report_cfg", "toapp_report_data"
+        )
 
         LOGGER.debug("Updated Mammotion device %s", self.device_name)
         self.update_failures = 0
@@ -1166,7 +1173,7 @@ class MammotionMaintenanceUpdateCoordinator(MammotionBaseUpdateCoordinator[Maint
                 device = self.manager.get_device_by_name(self.device_name)
                 self.device_offline(device)
                 return device.report_data.maintenance
-        except GatewayTimeoutException:
+        except (GatewayTimeoutException, TooManyRequestsException):
             pass
 
         return self.manager.get_device_by_name(
@@ -1257,7 +1264,7 @@ class MammotionDeviceVersionUpdateCoordinator(
                 continue
             try:
                 await self.async_send_and_wait(command, expected_field)
-            except DeviceOfflineException:
+            except (DeviceOfflineException, TooManyRequestsException):
                 return device
 
         await self.check_firmware_version()
@@ -1313,7 +1320,7 @@ class MammotionDeviceVersionUpdateCoordinator(
                     continue
                 try:
                     await self.async_send_and_wait(command, expected_field)
-                except DeviceOfflineException:
+                except (DeviceOfflineException, TooManyRequestsException):
                     pass
 
             if not device.mower_state.wifi_mac:
@@ -1331,7 +1338,7 @@ class MammotionDeviceVersionUpdateCoordinator(
                                 device.update_check = check_version
 
             self.async_set_updated_data(self.data)
-        except DeviceOfflineException:
+        except (DeviceOfflineException, TooManyRequestsException):
             pass
 
 
@@ -1413,7 +1420,7 @@ class MammotionMapUpdateCoordinator(MammotionBaseUpdateCoordinator[MowerInfo]):
         except DeviceOfflineException as ex:
             if ex.iot_id == self.device.iot_id:
                 self.device_offline(device)
-        except GatewayTimeoutException:
+        except (GatewayTimeoutException, TooManyRequestsException):
             pass
         except NoTransportAvailableError:
             LOGGER.debug(
@@ -1544,7 +1551,7 @@ class MammotionDeviceErrorUpdateCoordinator(
                 http = self.manager.mammotion_http
                 if http is not None:
                     device.errors.error_codes = await http.get_all_error_codes()
-        except DeviceOfflineException:
+        except (DeviceOfflineException, TooManyRequestsException):
             return device
 
         return device
@@ -1567,7 +1574,7 @@ class MammotionDeviceErrorUpdateCoordinator(
                     device.errors.error_codes = await http.get_all_error_codes()
 
             self.async_set_updated_data(self.data)
-        except DeviceOfflineException:
+        except (DeviceOfflineException, TooManyRequestsException):
             pass
 
 
@@ -1658,7 +1665,7 @@ class MammotionRTKCoordinator(DataUpdateCoordinator[RTKDevice]):
             return self.data
         except DeviceOfflineException:
             self.data.online = False
-        except GatewayTimeoutException:
+        except (GatewayTimeoutException, TooManyRequestsException):
             pass
         return self.data
 
