@@ -22,5 +22,5 @@
   "documentation": "https://github.com/mikey0000/Mammotion-HA/wiki",
   "loggers": ["pymammotion"],
   "iot_class": "local_push",
-  "requirements": ["pymammotion @ git+https://github.com/willbeeching/PyMammotion.git@711399e"]
+  "requirements": ["pymammotion @ git+https://github.com/willbeeching/PyMammotion.git@f7f7642"]
 }

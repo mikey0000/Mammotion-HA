@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from aiohttp import ClientConnectorError
+from aiohttp import ClientConnectorError, ClientError
 from homeassistant.components import bluetooth
 from homeassistant.components.bluetooth import (
     BluetoothCallbackMatcher,
@@ -220,15 +220,22 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                 ) from err
 
             async def _deferred_setup() -> None:
-                """Load non-critical coordinators in the background."""
-                for coro in (
-                    version_coordinator.async_config_entry_first_refresh(),
-                    maintenance_coordinator.async_config_entry_first_refresh(),
-                    error_coordinator.async_config_entry_first_refresh(),
-                    map_coordinator._async_setup(),
+                """Load non-critical coordinators in the background.
+
+                The coroutines are instantiated lazily via factory callables so
+                that if the background task is cancelled (e.g. the entry is
+                unloaded mid-setup) we don't leave un-awaited coroutines
+                dangling, which would emit ``RuntimeWarning: coroutine was
+                never awaited``.
+                """
+                for factory in (
+                    version_coordinator.async_config_entry_first_refresh,
+                    maintenance_coordinator.async_config_entry_first_refresh,
+                    error_coordinator.async_config_entry_first_refresh,
+                    map_coordinator._async_setup,
                 ):
                     try:
-                        await coro
+                        await factory()
                     except TooManyRequestsException:
                         LOGGER.debug(
                             "Rate limited during deferred setup, will catch up on next poll"
@@ -292,6 +299,19 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                 raise ConfigEntryNotReady(
                     "Aliyun cloud rate limited — will retry with backoff"
                 ) from err
+            except ClientError as err:
+                # The RTK metadata endpoint (domestic.mammotion.com/.../rtk/devices)
+                # sits behind Mammotion's own CDN and occasionally degrades to
+                # "200 OK with empty Content-Type" or "503 text/html" under
+                # load.  pymammotion's tolerant reader absorbs the former
+                # into an empty Response; this handler catches the rest so a
+                # flaky edge doesn't abort the whole integration load.  The
+                # RTK coordinator will retry on its own polling cycle.
+                LOGGER.debug(
+                    "RTK first-refresh failed (%s) — proceeding without RTK data; "
+                    "coordinator will retry on its next poll",
+                    err,
+                )
             mammotion_rtk.append(
                 MammotionRTKData(
                     name=rtk.device_name,
@@ -348,15 +368,19 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                 ) from err
 
             async def _deferred_setup_ble() -> None:
-                """Load non-critical coordinators in the background."""
-                for coro in (
-                    version_coordinator.async_config_entry_first_refresh(),
-                    maintenance_coordinator.async_config_entry_first_refresh(),
-                    error_coordinator.async_config_entry_first_refresh(),
-                    map_coordinator._async_setup(),
+                """Load non-critical coordinators in the background.
+
+                See ``_deferred_setup`` above — factory callables avoid the
+                ``RuntimeWarning: coroutine was never awaited`` on cancel.
+                """
+                for factory in (
+                    version_coordinator.async_config_entry_first_refresh,
+                    maintenance_coordinator.async_config_entry_first_refresh,
+                    error_coordinator.async_config_entry_first_refresh,
+                    map_coordinator._async_setup,
                 ):
                     try:
-                        await coro
+                        await factory()
                     except TooManyRequestsException:
                         LOGGER.debug(
                             "Rate limited during deferred setup, will catch up on next poll"
