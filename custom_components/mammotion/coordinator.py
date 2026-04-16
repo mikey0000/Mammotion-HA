@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import datetime
 import json
+import time
 from abc import abstractmethod
 from collections.abc import Mapping
 from datetime import timedelta
@@ -85,6 +86,11 @@ MAP_INTERVAL_FAST = timedelta(minutes=1)
 MAP_INTERVAL = timedelta(minutes=30)
 RTK_INTERVAL = timedelta(hours=5)
 
+# Multiple of `update_interval` with no successful contact after which we
+# consider the mower to have silently dropped off the cloud even if the
+# Aliyun broker has not yet flagged it offline (zombie MQTT session).
+STALE_CONTACT_MULTIPLIER = 3
+
 
 class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
     """Mammotion DataUpdateCoordinator."""
@@ -117,6 +123,12 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         self.manager: MammotionClient = mammotion
         self._operation_settings = OperationSettings()
         self.update_failures = 0
+        # Last time we received any mower-level acknowledgement (command
+        # response or unsolicited push). Used to detect zombie MQTT sessions
+        # where the broker still believes the device is connected but the
+        # mower has actually fallen off the network.
+        self._last_successful_contact: float | None = None
+        self._consecutive_silent_failures = 0
         self._stream_data: Response[StreamSubscriptionResponse] | None = (
             None  # Stream data [Agora]
         )
@@ -254,6 +266,36 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
             ):
                 await handle.disconnect_transport(t_type)
 
+    def mark_successful_contact(self) -> None:
+        """Record that we just heard back from the mower.
+
+        Called from command-response handlers and unsolicited MQTT push
+        callbacks; resets the consecutive silent-failure counter.
+        """
+        self._last_successful_contact = time.monotonic()
+        self._consecutive_silent_failures = 0
+
+    def seconds_since_last_contact(self) -> float | None:
+        """Return seconds since last mower-level contact, or ``None`` if never."""
+        if self._last_successful_contact is None:
+            return None
+        return time.monotonic() - self._last_successful_contact
+
+    def _contact_is_stale(self) -> bool:
+        """Return True if we haven't heard from the mower in too long.
+
+        ``too long`` is defined as ``STALE_CONTACT_MULTIPLIER * update_interval``.
+        Returns ``False`` before the first successful contact (defer to the
+        broker's own online/offline signal during initial setup).
+        """
+        age = self.seconds_since_last_contact()
+        if age is None:
+            return False
+        interval = self.update_interval
+        if interval is None:
+            return False
+        return age > interval.total_seconds() * STALE_CONTACT_MULTIPLIER
+
     def is_online(self) -> bool:
         """Return True if the device currently has an active transport connection."""
         device = self.manager.get_device_by_name(self.device_name)
@@ -265,7 +307,15 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         if handle.has_transport(TransportType.BLE):
             if handle.is_transport_connected(TransportType.BLE):
                 return True
-        return not handle.availability.mqtt_reported_offline
+        if handle.availability.mqtt_reported_offline:
+            return False
+        # Broker hasn't flagged the mower offline, but if we haven't actually
+        # had a successful exchange for multiple update intervals the MQTT
+        # session is almost certainly zombie — treat the mower as offline so
+        # entities go unavailable rather than showing stale state.
+        if self._contact_is_stale():
+            return False
+        return True
 
     async def async_refresh_login(self, exc: Exception | None = None) -> None:
         """Refresh login credentials asynchronously.
@@ -315,6 +365,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
             await self.manager.send_command_and_wait(
                 self.device_name, command, expected_field, **kwargs
             )
+            self.mark_successful_contact()
         except TooManyRequestsException:
             pass
         except EXPIRED_CREDENTIAL_EXCEPTIONS as exc:
@@ -330,8 +381,19 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
             CommandTimeoutError,
             ConcurrentRequestError,
             NoTransportAvailableError,
-        ):
-            pass
+        ) as exc:
+            self._consecutive_silent_failures += 1
+            age = self.seconds_since_last_contact()
+            LOGGER.warning(
+                "Silent %s for %s command '%s' (expected '%s'); "
+                "consecutive silent failures=%d; last successful contact: %s",
+                type(exc).__name__,
+                self.device_name,
+                command,
+                expected_field,
+                self._consecutive_silent_failures,
+                f"{int(age)}s ago" if age is not None else "never",
+            )
 
     @staticmethod
     def device_offline(device: MowingDevice) -> None:
@@ -1090,6 +1152,7 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
 
     async def _async_update_notification(self, res: tuple[str, Any | None]) -> None:
         """Update data from incoming messages."""
+        self.mark_successful_contact()
         if res[0] == "sys" and res[1] is not None:
             sys_msg = betterproto2.which_one_of(res[1], "SubSysMsg")
             if sys_msg[0] == "toapp_report_data":
@@ -1100,6 +1163,7 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
         self, properties: ThingPropertiesMessage
     ) -> None:
         """Update data from incoming properties messages."""
+        self.mark_successful_contact()
         if not self.data.enabled:
             return
         if not self.is_online():
@@ -1109,6 +1173,7 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
 
     async def _async_update_status(self, status: ThingStatusMessage) -> None:
         """Update data from incoming status messages."""
+        self.mark_successful_contact()
         if not self.data.enabled:
             return
         if status.params.status.value == StatusType.CONNECTED:
@@ -1119,6 +1184,7 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
 
     async def _async_update_event_message(self, event: ThingEventMessage) -> None:
         """Update data from incoming event messages."""
+        self.mark_successful_contact()
         if not self.data.enabled:
             return
         if not self.is_online():
