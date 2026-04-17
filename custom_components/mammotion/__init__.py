@@ -25,6 +25,7 @@ from homeassistant.helpers import aiohttp_client
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.device_registry import DeviceEntry
 from homeassistant.helpers.event import async_call_later
+from homeassistant.loader import async_get_integration
 from pymammotion.aliyun.model.dev_by_account_response import Device
 from pymammotion.client import MammotionClient
 from pymammotion.data.model.account import Credentials
@@ -104,7 +105,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
     """Set up Mammotion from a config entry."""
 
     addresses = entry.data.get(CONF_BLE_DEVICES, {})
-    mammotion = MammotionClient()
+    integration = await async_get_integration(hass, DOMAIN)
+    mammotion = MammotionClient(ha_version=integration.version)
     account = entry.data.get(CONF_ACCOUNTNAME)
     password = entry.data.get(CONF_PASSWORD)
 

@@ -23,6 +23,7 @@ from homeassistant.helpers import aiohttp_client
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.device_registry import CONNECTION_BLUETOOTH, format_mac
+from homeassistant.loader import async_get_integration
 from pymammotion.client import MammotionClient
 
 from .const import (
@@ -215,7 +216,8 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
         ):
             account = user_input.get(CONF_ACCOUNTNAME, "")
             password = user_input.get(CONF_PASSWORD, "")
-            temp_client = MammotionClient()
+            integration = await async_get_integration(self.hass, DOMAIN)
+            temp_client = MammotionClient(ha_version=integration.version)
             try:
                 session = aiohttp_client.async_get_clientsession(self.hass)
                 await temp_client.login_and_initiate_cloud(account, password, session)
