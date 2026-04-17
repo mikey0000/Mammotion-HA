@@ -29,7 +29,7 @@ from pymammotion.aliyun.exceptions import (
 from pymammotion.aliyun.model.dev_by_account_response import Device
 from pymammotion.client import MammotionClient
 from pymammotion.data.model import GenerateRouteInformation
-from pymammotion.data.model.device import MowerInfo, MowingDevice, RTKDevice
+from pymammotion.data.model.device import MowerInfo, MowingDevice, RTKBaseStationDevice
 from pymammotion.data.model.device_config import OperationSettings, create_path_order
 from pymammotion.data.model.hash_list import AreaHashNameList, SvgMessage
 from pymammotion.data.model.report_info import Maintain
@@ -40,9 +40,9 @@ from pymammotion.http.model.camera_stream import (
     StreamSubscriptionResponse,
 )
 from pymammotion.http.model.http import CheckDeviceVersion, ErrorInfo, Response
-from pymammotion.http.model.rtk import RTK
 from pymammotion.mammotion.commands.mammotion_command import MammotionCommand
 from pymammotion.proto import RptAct, RptInfoType, SystemUpdateBufMsg
+from pymammotion.state.device_state import DeviceSnapshot
 from pymammotion.transport.base import (
     AuthError,
     CommandTimeoutError,
@@ -76,11 +76,10 @@ if TYPE_CHECKING:
 
 
 MAINTENANCE_INTERVAL = timedelta(minutes=60)
-DEFAULT_INTERVAL = timedelta(minutes=1)
-WORKING_INTERVAL = timedelta(seconds=5)
-REPORT_INTERVAL = timedelta(minutes=1)
+DEFAULT_INTERVAL = timedelta(minutes=5)
+WORKING_INTERVAL = timedelta(seconds=15)
+REPORT_INTERVAL = timedelta(minutes=5)
 DEVICE_VERSION_INTERVAL = timedelta(days=1)
-MAP_INTERVAL_FAST = timedelta(minutes=1)
 MAP_INTERVAL = timedelta(minutes=30)
 RTK_INTERVAL = timedelta(hours=5)
 
@@ -1382,11 +1381,7 @@ class MammotionMapUpdateCoordinator(MammotionBaseUpdateCoordinator[MowerInfo]):
                 await self.async_rtk_dock_location()
 
             if len(device.map.hashlist) == 0 or len(device.map.missing_hashlist()) > 0:
-                if self.update_interval == MAP_INTERVAL:
-                    self.update_interval = MAP_INTERVAL_FAST
                 await self.manager.start_map_sync(self.device_name)
-            elif self.update_interval == MAP_INTERVAL_FAST:
-                self.update_interval = MAP_INTERVAL
 
         except DeviceOfflineException as ex:
             if ex.iot_id == self.device.iot_id:
@@ -1571,7 +1566,7 @@ class MammotionDeviceErrorUpdateCoordinator(
             pass
 
 
-class MammotionRTKCoordinator(DataUpdateCoordinator[RTKDevice]):
+class MammotionRTKCoordinator(MammotionBaseUpdateCoordinator[RTKBaseStationDevice]):
     """Mammotion DataUpdateCoordinator for RTK base station devices."""
 
     def __init__(
@@ -1579,87 +1574,60 @@ class MammotionRTKCoordinator(DataUpdateCoordinator[RTKDevice]):
         hass: HomeAssistant,
         config_entry: MammotionConfigEntry,
         device: Device,
-        manager: MammotionClient,
+        mammotion: MammotionClient,
         unique_name: str | None = None,
     ) -> None:
-        """Initialize global mammotion data updater."""
+        """Initialize rtk mammotion data updater."""
         super().__init__(
             hass=hass,
-            logger=LOGGER,
-            name=DOMAIN,
-            update_interval=RTK_INTERVAL,
             config_entry=config_entry,
+            device=device,
+            mammotion=mammotion,
+            update_interval=RTK_INTERVAL,
+            unique_name=unique_name,
         )
-        assert config_entry.unique_id
-        self.account = self.config_entry.data[CONF_ACCOUNTNAME]
-        self.password = self.config_entry.data[CONF_PASSWORD]
-        self.device: Device = device
-        self.device_name = device.device_name
-        self.unique_name = (
-            unique_name if unique_name is not None else device.device_name
-        )
-        self.manager = manager
-        self.data: RTKDevice = RTKDevice(
-            name=self.device_name,
-            iot_id=self.device.iot_id,
-            product_key=self.device.product_key,
-        )
-        self._subscriptions: list[Subscription] = []
+        rtk_device = self.manager.rtk_device(self.device_name)
+        if self.data is None:
+            self.data = rtk_device
 
-    async def async_refresh_login(self, exc: Exception | None = None) -> None:
-        """Refresh login credentials asynchronously."""
-        from pymammotion.transport.base import LoginFailedError
+    async def get_coordinator_data(
+        self, device: RTKBaseStationDevice
+    ) -> RTKBaseStationDevice:
+        return self.data
 
-        if isinstance(exc, LoginFailedError):
-            raise ConfigEntryAuthFailed(
-                f"Login failed for Mammotion account: {exc.reason}"
-            ) from exc
-        await self.manager.refresh_login(self.account)
+    async def _async_update_data(self) -> RTKBaseStationDevice:
+        """Return current RTK state from the device handle's state machine.
 
-    async def _async_update_data(self):
-        """Update RTK data."""
-        cloud = self.manager.cloud_gateway
+        The state machine is kept up to date automatically by:
+        - LubaMsg protobuf frames → RTKStateReducer.apply()
+        - thing/properties JSON pushes → RTKStateReducer.apply_properties()
+        - thing/status pushes → DeviceHandle.on_status_message()
+
+        The only remaining polling work is the OTA firmware check, which is
+        not pushed via MQTT and must be fetched from the HTTP API.
+        """
+        handle = self.manager.rtk_device(self.device_name)
+        if handle is None:
+            return self.data
+
+        self.data = handle.snapshot.raw  # type: ignore[assignment]
+
+        # await self.async_send_command(
+        #     "basestation_info"
+        # )
         http = self.manager.mammotion_http
-        try:
-            if cloud is not None:
-                response = await cloud.get_device_properties(self.device.iot_id)
-                if response.code == 200:
-                    data = response.data
-                    LOGGER.debug("Fetched RTK device data: %s", data)
-                    if ota_progress := data.otaProgress:
-                        self.data.update_check = CheckDeviceVersion.from_dict(
-                            ota_progress.value
-                        )
-                    if network_info := data.networkInfo:
-                        network = json.loads(network_info.value)
-                        self.data.wifi_rssi = network["wifi_rssi"]
-                        self.data.wifi_sta_mac = network["wifi_sta_mac"]
-                        self.data.bt_mac = network["bt_mac"]
-                    if coordinate := data.coordinate:
-                        coord_val = json.loads(coordinate.value)
-                        LOGGER.debug("Raw RTK coordinate payload: %s", coord_val)
-                        if coord_val["lat"] != 0:
-                            self.data.lat = coord_val["lat"]
-                        if coord_val["lon"] != 0:
-                            self.data.lon = coord_val["lon"]
-                    if device_version := data.deviceVersion:
-                        self.data.device_version = device_version.value
-            self.data.online = True
-
-            if http is not None:
-                ota_info = await http.get_device_ota_firmware([self.data.iot_id])
+        if http is not None:
+            try:
+                ota_info = await http.get_device_ota_firmware([self.device.iot_id])
                 if check_versions := ota_info.data:
                     for check_version in check_versions:
-                        if check_version.device_id == self.data.iot_id:
+                        if check_version.device_id == self.device.iot_id:
                             self.data.update_check = check_version
-            return self.data
-        except ReLoginRequiredError:
-            await self.async_refresh_login()
-            return self.data
-        except DeviceOfflineException:
-            self.data.online = False
-        except GatewayTimeoutException:
-            pass
+            except ReLoginRequiredError:
+                await self.async_refresh_login()
+            except (DeviceOfflineException, GatewayTimeoutException):
+                pass
+
         return self.data
 
     async def async_shutdown(self) -> None:
@@ -1669,10 +1637,21 @@ class MammotionRTKCoordinator(DataUpdateCoordinator[RTKDevice]):
         self._subscriptions.clear()
         await super().async_shutdown()
 
-    async def _async_update_properties(
+    async def _on_state_changed(self, snapshot: DeviceSnapshot) -> None:
+        """Propagate a state machine snapshot change to HA."""
+        self.data = snapshot.raw  # type: ignore[assignment]
+        self.async_set_updated_data(self.data)
+
+    async def _async_handle_ota_progress(
         self, properties: ThingPropertiesMessage
     ) -> None:
-        """Handle thing/properties push from MQTT for the RTK device."""
+        """Handle OTA progress property pushes for the RTK device.
+
+        networkInfo, coordinate, and deviceVersion are handled automatically
+        by RTKStateReducer.apply_properties() inside DeviceHandle — no manual
+        JSON parsing needed here.  Only OTA progress requires coordinator-level
+        logic because it drives the update entity's isupgrading/progress state.
+        """
         if ota_progress := properties.params.items.otaProgress:
             ota_progress.value = OTAProgressItems.from_dict(ota_progress.value)
             self.data.update_check.progress = ota_progress.value.progress
@@ -1682,66 +1661,58 @@ class MammotionRTKCoordinator(DataUpdateCoordinator[RTKDevice]):
                 self.data.update_check.upgradeable = False
                 self.data.device_version = ota_progress.value.version
             self.async_set_updated_data(self.data)
-            return
-
-        if network_info := properties.params.items.networkInfo:
-            try:
-                network = json.loads(network_info.value)
-                self.data.wifi_rssi = network.get("wifi_rssi", self.data.wifi_rssi)
-                self.data.wifi_sta_mac = network.get(
-                    "wifi_sta_mac", self.data.wifi_sta_mac
-                )
-                self.data.bt_mac = network.get("bt_mac", self.data.bt_mac)
-            except (json.JSONDecodeError, TypeError):
-                pass
-
-        if coordinate := properties.params.items.coordinate:
-            try:
-                coord_val = json.loads(coordinate.value)
-                if coord_val.get("lat", 0) != 0:
-                    self.data.lat = coord_val["lat"]
-                if coord_val.get("lon", 0) != 0:
-                    self.data.lon = coord_val["lon"]
-            except (json.JSONDecodeError, TypeError):
-                pass
-
-        if device_version := properties.params.items.deviceVersion:
-            self.data.device_version = device_version.value
-
-        self.async_set_updated_data(self.data)
-
-    async def _async_update_status(self, msg: ThingStatusMessage) -> None:
-        """Handle thing/status online/offline push for the RTK device."""
-        self.data.online = msg.params.status.value is StatusType.CONNECTED
-        self.async_set_updated_data(self.data)
 
     async def _async_setup(self) -> None:
-        """Sets up RTK data."""
-        http = self.manager.mammotion_http
-        if http is None:
-            return
-        rtk_response = await http.get_rtk_devices()
-        if rtk_response.code == 0:
-            rtk_list = [
-                rtk
-                for rtk in rtk_response.data
-                if self.device.device_name == rtk.device_name
-            ]
-            try:
-                rtk_device: RTK = next(iter(rtk_list))
-                self.data.lora_version = rtk_device.lora
-            except StopIteration:
-                """Failed to get RTK device."""
-                return
+        """Set up RTK device subscriptions and fetch one-time HTTP data."""
+        handle = self.manager.rtk_device(self.device_name)
 
-        handle = self.manager.mower(self.device_name)
-        if handle is not None:
-            self._subscriptions.extend(
-                [
-                    handle.subscribe_device_properties(self._async_update_properties),
-                    handle.subscribe_device_status(self._async_update_status),
-                ]
+        self.data.product_key = self.device.product_key
+        self.data.iot_id = self.device.iot_id
+
+        if handle is None:
+            return
+
+        # Fetch lora version — only available via HTTP, not MQTT/protobuf.
+        await self.manager.fetch_rtk_lora_info(self.device_name)
+
+        if self.manager.cloud_gateway is not None and DeviceType.is_aliyun_product_key(
+            self.data.product_key
+        ):
+            response = await self.manager.cloud_gateway.get_device_properties(
+                self.device.iot_id
             )
+            if response.code == 200:
+                data = response.data
+                LOGGER.debug("Fetched RTK device data: %s", data)
+                if ota_progress := data.otaProgress:
+                    self.data.update_check = CheckDeviceVersion.from_dict(
+                        ota_progress.value
+                    )
+                if network_info := data.networkInfo:
+                    network = json.loads(network_info.value)
+                    self.data.wifi_rssi = network["wifi_rssi"]
+                    self.data.wifi_sta_mac = network["wifi_sta_mac"]
+                    self.data.bt_mac = network["bt_mac"]
+                if coordinate := data.coordinate:
+                    coord_val = json.loads(coordinate.value)
+                    LOGGER.debug("Raw RTK coordinate payload: %s", coord_val)
+                    if coord_val["lat"] != 0:
+                        self.data.lat = coord_val["lat"]
+                    if coord_val["lon"] != 0:
+                        self.data.lon = coord_val["lon"]
+                if device_version := data.deviceVersion:
+                    self.data.device_version = device_version.value
+        self.data.online = True
+
+        # Seed self.data from the now-populated handle state.
+        self.data = handle.snapshot.raw  # type: ignore[assignment]
+
+        self._subscriptions.extend(
+            [
+                handle.subscribe_state_changed(self._on_state_changed),
+                handle.subscribe_device_properties(self._async_handle_ota_progress),
+            ]
+        )
 
     async def update_firmware(self, version: str) -> None:
         """Update firmware."""

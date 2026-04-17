@@ -12,7 +12,7 @@ from homeassistant.helpers.device_registry import (
     format_mac,
 )
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from pymammotion.data.model.device import RTKDevice
+from pymammotion.data.model.device import RTKBaseStationDevice
 
 from .const import DOMAIN
 from .coordinator import MammotionBaseUpdateCoordinator, MammotionRTKCoordinator
@@ -116,7 +116,7 @@ class MammotionBaseRTKEntity(CoordinatorEntity[MammotionRTKCoordinator]):
 
     @property
     def device_info(self) -> DeviceInfo:
-        rtk_device: RTKDevice = self.coordinator.data
+        rtk_device: RTKBaseStationDevice = self.coordinator.data
 
         return DeviceInfo(
             identifiers={(DOMAIN, self.coordinator.unique_name)},

@@ -27,7 +27,7 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import StateType
-from pymammotion.data.model.device import MowingDevice, RTKDevice
+from pymammotion.data.model.device import MowingDevice, RTKBaseStationDevice
 from pymammotion.data.model.enums import RTKStatus, TaskAreaStatus
 from pymammotion.utility.constant.device_constant import (
     PosType,
@@ -104,7 +104,7 @@ class MammotionSensorEntityDescription(SensorEntityDescription):
 class MammotionRTKSensorEntityDescription(SensorEntityDescription):
     """Describes Mammotion RTK sensor entity."""
 
-    value_fn: Callable[[RTKDevice], StateType]
+    value_fn: Callable[[RTKBaseStationDevice], StateType]
 
 
 @dataclass(frozen=True, kw_only=True)
