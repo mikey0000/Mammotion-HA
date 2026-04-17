@@ -77,8 +77,8 @@ if TYPE_CHECKING:
 
 MAINTENANCE_INTERVAL = timedelta(minutes=60)
 DEFAULT_INTERVAL = timedelta(minutes=5)
-WORKING_INTERVAL = timedelta(seconds=15)
-REPORT_INTERVAL = timedelta(minutes=5)
+WORKING_INTERVAL = timedelta(minutes=5)
+REPORT_INTERVAL = timedelta(minutes=30)
 DEVICE_VERSION_INTERVAL = timedelta(days=1)
 MAP_INTERVAL = timedelta(minutes=30)
 RTK_INTERVAL = timedelta(hours=5)
@@ -781,8 +781,10 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         #     and route_information.toward_mode == 0
         # ):
         #     route_information.toward = 0
-        await self.async_send_command(
-            "generate_route_information", generate_route_information=route_information
+        await self.async_send_and_wait(
+            "generate_route_information",
+            "bidire_reqconver_path",
+            generate_route_information=route_information,
         )
         return True
 
@@ -900,21 +902,8 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
             ):
                 await self.manager.update_ble_device(self.device_name, ble_device)
 
-        # Don't query the mower while users are doing map changes or it's updating
+        # Don't query the mower while users are doing map changes or it's updating.
         if device.report_data.dev.sys_status in NO_REQUEST_MODES:
-            if handle is not None and (
-                handle.prefer_ble
-                or device.report_data.dev.sys_status == WorkMode.MODE_LOCK
-            ):
-
-                async def get_report_cfg(_: Any) -> None:
-                    await self.async_send_command("get_report_cfg")
-
-                async_call_later(
-                    self.hass,
-                    300,
-                    HassJob(get_report_cfg, cancel_on_shutdown=True),
-                )
             return self.get_coordinator_data(device)
 
         if self.update_failures > 5:
@@ -985,8 +974,16 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         await super().async_shutdown()
 
     async def _on_state_changed(self, snapshot: Any) -> None:
-        """Trigger a coordinator refresh when device state changes."""
-        self.hass.async_create_task(self.async_request_refresh())
+        """Push updated device data to HA without triggering a full refresh.
+
+        Triggering async_request_refresh() here caused a feedback loop: every
+        incoming report mutates state, which would trigger a refresh, which
+        sends another get_report_cfg, producing more reports.  Pushing the
+        data update directly keeps entities in sync without re-issuing commands.
+        """
+        device = self.manager.get_device_by_name(self.device_name)
+        if device is not None:
+            self.async_set_updated_data(self.get_coordinator_data(device))
 
     def find_entity_by_attribute_in_registry(self, attribute_name, attribute_value):
         """Find an entity using the entity registry based on attributes."""
