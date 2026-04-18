@@ -413,7 +413,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
 
     mammotion.setup_all_mower_watchers()
 
-    async def shutdown_mammotion(_: Event | None = None):
+    async def shutdown_mammotion(_: Event | None = None) -> None:
         await mammotion.stop()
 
     entry.async_on_unload(

@@ -15,7 +15,8 @@ import logging
 import time
 from dataclasses import dataclass
 from random import randint
-from typing import Optional
+from types import TracebackType
+from typing import Any, Optional
 
 import aiohttp
 
@@ -517,11 +518,16 @@ class AgoraAPIClient:
         self.session = session
         self._own_session = session is None
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> "AgoraAPIClient":
         """Context manager entry."""
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None,
+    ) -> None:
         """Context manager exit - close session if we created it."""
         if self._own_session and self.session:
             await self.session.close()
@@ -659,7 +665,7 @@ class AgoraAPIClient:
         return AgoraResponse.from_api_response(response)
 
     @staticmethod
-    def merge_objects(*objects):
+    def merge_objects(*objects: dict[Any, Any] | None) -> dict[Any, Any]:
         """Merge multiple dictionaries, filtering out None values.
 
         Python equivalent of the JavaScript mF function used in Agora SDK.
@@ -672,7 +678,7 @@ class AgoraAPIClient:
             Merged dictionary with None values filtered out
 
         """
-        result = {}
+        result: dict[Any, Any] = {}
         for obj in objects:
             if obj is not None:
                 # Merge object, filtering out None values (equivalent to undefined in JS)

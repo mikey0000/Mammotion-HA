@@ -13,7 +13,7 @@ from homeassistant.components.lawn_mower import (
     LawnMowerEntityFeature,
 )
 from homeassistant.const import ATTR_ENTITY_ID
-from homeassistant.core import HomeAssistant, SupportsResponse
+from homeassistant.core import HomeAssistant, ServiceCall, SupportsResponse
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry as dr
@@ -28,6 +28,7 @@ from . import MammotionConfigEntry
 from .const import COMMAND_EXCEPTIONS, DOMAIN, LOGGER
 from .coordinator import MammotionReportUpdateCoordinator
 from .entity import MammotionBaseEntity
+from .models import MammotionMowerData
 
 SERVICE_START_MOWING = "start_mow"
 SERVICE_CANCEL_JOB = "cancel_job"
@@ -165,7 +166,7 @@ async def async_setup_entry(
         "async_set_blade_warning_time",
     )
 
-    def _get_mower_by_entity_id(entity_id: str):
+    def _get_mower_by_entity_id(entity_id: str) -> MammotionMowerData | None:
         entity_reg = er.async_get(hass)
         entity_entry = entity_reg.async_get(entity_id)
         if entity_entry is None:
@@ -182,21 +183,21 @@ async def async_setup_entry(
             None,
         )
 
-    async def handle_get_geojson(call) -> dict[str, Any]:
+    async def handle_get_geojson(call: ServiceCall) -> dict[str, Any]:
         entity = _get_mower_by_entity_id(call.data[ATTR_ENTITY_ID])
         if entity is None:
             LOGGER.error("Could not find entity %s", call.data[ATTR_ENTITY_ID])
             return {}
         return entity.reporting_coordinator.data.map.generated_geojson
 
-    async def handle_get_mow_path_geojson(call) -> dict[str, Any]:
+    async def handle_get_mow_path_geojson(call: ServiceCall) -> dict[str, Any]:
         entity = _get_mower_by_entity_id(call.data[ATTR_ENTITY_ID])
         if entity is None:
             LOGGER.error("Could not find entity %s", call.data[ATTR_ENTITY_ID])
             return {}
         return entity.reporting_coordinator.data.map.generated_mow_path_geojson
 
-    async def handle_get_mow_progress_geojson(call) -> dict[str, Any]:
+    async def handle_get_mow_progress_geojson(call: ServiceCall) -> dict[str, Any]:
         entity = _get_mower_by_entity_id(call.data[ATTR_ENTITY_ID])
         if entity is None:
             LOGGER.error("Could not find entity %s", call.data[ATTR_ENTITY_ID])

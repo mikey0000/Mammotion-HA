@@ -835,7 +835,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         """Return operation settings for planning."""
         return self._operation_settings
 
-    async def async_modify_plan_if_mowing(self):
+    async def async_modify_plan_if_mowing(self) -> None:
         """Re-plan the current mow route if the device is actively mowing."""
         if (
             int(self.data.report_data.work.bp_hash) in self.data.work.zone_hashs
@@ -984,7 +984,9 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         if device is not None:
             self.async_set_updated_data(self.get_coordinator_data(device))
 
-    def find_entity_by_attribute_in_registry(self, attribute_name, attribute_value):
+    def find_entity_by_attribute_in_registry(
+        self, attribute_name: str, attribute_value: Any
+    ) -> tuple[str | None, er.RegistryEntry | None]:
         """Find an entity using the entity registry based on attributes."""
         entity_registry = er.async_get(self.hass)
 
@@ -1218,7 +1220,7 @@ class MammotionDeviceVersionUpdateCoordinator(
                 self.data.device_firmwares.device_version = ota_progress.value.version
             self.async_set_updated_data(self.data)
 
-    async def _async_update_data(self):
+    async def _async_update_data(self) -> MowingDevice:
         """Get data from the device."""
         if data := await super()._async_update_data():
             return data
@@ -1363,7 +1365,7 @@ class MammotionMapUpdateCoordinator(MammotionBaseUpdateCoordinator[MowerInfo]):
         """Trigger a resync when the bol hash changes."""
         # TODO setup callback to get bol hash data
 
-    async def _async_update_data(self):
+    async def _async_update_data(self) -> MowerInfo:
         """Get data from the device."""
         if data := await super()._async_update_data():
             return data
@@ -1519,7 +1521,7 @@ class MammotionDeviceErrorUpdateCoordinator(
             """Failed to get error message."""
             return "Error message not found"
 
-    async def _async_update_data(self):
+    async def _async_update_data(self) -> MowingDevice:
         """Get data from the device."""
         if data := await super()._async_update_data():
             return data
