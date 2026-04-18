@@ -11,6 +11,9 @@ from homeassistant.helpers.device_registry import (
     DeviceInfo,
     format_mac,
 )
+from homeassistant.helpers.device_registry import (
+    async_get as async_get_device_registry,
+)
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from pymammotion.data.model.device import RTKBaseStationDevice
 
@@ -87,6 +90,42 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionBaseUpdateCoordinator]):
             connections=connections,
         )
 
+    async def async_added_to_hass(self) -> None:
+        """Handle entity added to hass."""
+        await super().async_added_to_hass()
+        self._cleanup_stale_connections()
+
+    @callback
+    def _cleanup_stale_connections(self) -> None:
+        """Replace device registry connections with only the valid mower state values."""
+        mower = self.coordinator.manager.get_device_by_name(
+            self.coordinator.device_name
+        )
+        if mower is None:
+            return
+
+        device_registry = async_get_device_registry(self.hass)
+        device = device_registry.async_get_device(
+            identifiers={(DOMAIN, self.coordinator.unique_name)}
+        )
+        if device is None:
+            return
+
+        new_connections: set[tuple[str, str]] = set()
+        if mower.mower_state.ble_mac != "":
+            new_connections.add(
+                (CONNECTION_BLUETOOTH, format_mac(mower.mower_state.ble_mac))
+            )
+        if mower.mower_state.wifi_mac != "":
+            new_connections.add(
+                (CONNECTION_NETWORK_MAC, format_mac(mower.mower_state.wifi_mac))
+            )
+
+        if new_connections:
+            device_registry.async_update_device(
+                device.id, new_connections=new_connections
+            )
+
     @callback
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
@@ -131,7 +170,7 @@ class MammotionBaseRTKEntity(CoordinatorEntity[MammotionRTKCoordinator]):
             suggested_area="Garden",
             connections={
                 (CONNECTION_BLUETOOTH, rtk_device.bt_mac),
-                (CONNECTION_NETWORK_MAC, rtk_device.wifi_sta_mac),
+                (CONNECTION_NETWORK_MAC, rtk_device.wifi_mac),
             },
         )
 
@@ -143,6 +182,36 @@ class MammotionBaseRTKEntity(CoordinatorEntity[MammotionRTKCoordinator]):
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
         super()._handle_coordinator_update()
+
+    async def async_added_to_hass(self) -> None:
+        """Handle entity added to hass."""
+        await super().async_added_to_hass()
+        self._cleanup_stale_connections()
+
+    @callback
+    def _cleanup_stale_connections(self) -> None:
+        """Replace device registry connections with only the valid mower state values."""
+        rtk = self.coordinator.manager.get_device_by_name(self.coordinator.device_name)
+        if rtk is None:
+            return
+
+        device_registry = async_get_device_registry(self.hass)
+        device = device_registry.async_get_device(
+            identifiers={(DOMAIN, self.coordinator.unique_name)}
+        )
+        if device is None:
+            return
+
+        new_connections: set[tuple[str, str]] = set()
+        if rtk.bt_mac != "":
+            new_connections.add((CONNECTION_BLUETOOTH, format_mac(rtk.bt_mac)))
+        if rtk.wifi_mac != "":
+            new_connections.add((CONNECTION_NETWORK_MAC, format_mac(rtk.wifi_mac)))
+
+        if new_connections:
+            device_registry.async_update_device(
+                device.id, new_connections=new_connections
+            )
 
 
 class MammotionCameraBaseEntity(Camera, ABC):

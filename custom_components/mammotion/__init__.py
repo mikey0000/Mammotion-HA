@@ -101,6 +101,100 @@ def _get_unique_device_name(
         counter += 1
 
 
+async def _attach_ble_to_mower(
+    hass: HomeAssistant,
+    entry: MammotionConfigEntry,
+    mammotion: MammotionClient,
+    device: Device,
+    ble_address: str,
+    *,
+    stay_connected_ble: bool,
+) -> None:
+    """Attach a BLE transport to a mower device, or register a one-shot callback."""
+    mowing_device = mammotion.get_device_by_name(device.device_name)
+    if mowing_device is not None:
+        mowing_device.mower_state.ble_mac = ble_address
+
+    ble_device = bluetooth.async_ble_device_from_address(
+        hass, ble_address.upper(), True
+    )
+    if ble_device:
+        await mammotion.add_ble_to_device(
+            device.device_name,
+            ble_device,
+            disconnect_on_idle=not stay_connected_ble,
+        )
+        return
+
+    _device_name = device.device_name
+
+    def _ble_discovered(
+        service_info: BluetoothServiceInfoBleak,
+        change: BluetoothChange,
+    ) -> None:
+        hass.async_create_task(
+            mammotion.add_ble_to_device(
+                _device_name,
+                service_info.device,
+                disconnect_on_idle=not stay_connected_ble,
+            )
+        )
+        cancel_ble_callback()
+
+    cancel_ble_callback = bluetooth.async_register_callback(
+        hass,
+        _ble_discovered,
+        BluetoothCallbackMatcher(address=ble_address.upper()),
+        BluetoothScanningMode.ACTIVE,
+    )
+    entry.async_on_unload(cancel_ble_callback)
+
+
+async def _attach_ble_to_rtk(
+    hass: HomeAssistant,
+    entry: MammotionConfigEntry,
+    mammotion: MammotionClient,
+    rtk: Device,
+    ble_address: str,
+    *,
+    stay_connected_ble: bool,
+) -> None:
+    """Attach a BLE transport to an RTK base station, or register a one-shot callback."""
+    ble_device = bluetooth.async_ble_device_from_address(
+        hass, ble_address.upper(), True
+    )
+    if ble_device:
+        await mammotion.add_ble_to_device(
+            rtk.device_name,
+            ble_device,
+            disconnect_on_idle=not stay_connected_ble,
+        )
+        return
+
+    _device_name = rtk.device_name
+
+    def _ble_discovered(
+        service_info: BluetoothServiceInfoBleak,
+        change: BluetoothChange,
+    ) -> None:
+        hass.async_create_task(
+            mammotion.add_ble_to_device(
+                _device_name,
+                service_info.device,
+                disconnect_on_idle=not stay_connected_ble,
+            )
+        )
+        cancel_ble_callback()
+
+    cancel_ble_callback = bluetooth.async_register_callback(
+        hass,
+        _ble_discovered,
+        BluetoothCallbackMatcher(address=ble_address.upper()),
+        BluetoothScanningMode.ACTIVE,
+    )
+    entry.async_on_unload(cancel_ble_callback)
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) -> bool:
     """Set up Mammotion from a config entry."""
 
@@ -155,44 +249,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
 
         for device in mower_devices:
             if device_ble_address := addresses.get(device.device_name, None):
-                mowing_device = mammotion.get_device_by_name(device.device_name)
-                if mowing_device is not None:
-                    mowing_device.mower_state.ble_mac = device_ble_address
-                ble_device = bluetooth.async_ble_device_from_address(
-                    hass, device_ble_address.upper(), True
+                await _attach_ble_to_mower(
+                    hass,
+                    entry,
+                    mammotion,
+                    device,
+                    device_ble_address,
+                    stay_connected_ble=stay_connected_ble,
                 )
-                if ble_device:
-                    await mammotion.add_ble_to_device(
-                        device.device_name,
-                        ble_device,
-                        disconnect_on_idle=not stay_connected_ble,
-                    )
-                else:
-                    # Device not currently visible — register a one-shot callback so BLE
-                    # is added the moment HA's bluetooth scanner discovers it.
-                    _device_name = device.device_name
-                    _ble_address = device_ble_address
-
-                    def _ble_discovered(
-                        service_info: BluetoothServiceInfoBleak,
-                        change: BluetoothChange,
-                    ) -> None:
-                        hass.async_create_task(
-                            mammotion.add_ble_to_device(
-                                _device_name,
-                                service_info.device,
-                                disconnect_on_idle=not stay_connected_ble,
-                            )
-                        )
-                        cancel_ble_callback()
-
-                    cancel_ble_callback = bluetooth.async_register_callback(
-                        hass,
-                        _ble_discovered,
-                        BluetoothCallbackMatcher(address=_ble_address.upper()),
-                        BluetoothScanningMode.ACTIVE,
-                    )
-                    entry.async_on_unload(cancel_ble_callback)
 
             unique_name = _get_unique_device_name(hass, entry, device.device_name)
 
@@ -260,6 +324,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
             )
 
         for rtk in mammotion_rtk_devices:
+            if rtk_ble_address := addresses.get(rtk.device_name, None):
+                await _attach_ble_to_rtk(
+                    hass,
+                    entry,
+                    mammotion,
+                    rtk,
+                    rtk_ble_address,
+                    stay_connected_ble=stay_connected_ble,
+                )
+
             rtk_unique_name = _get_unique_device_name(hass, entry, rtk.device_name)
             rtk_coordinator = MammotionRTKCoordinator(
                 hass, entry, rtk, mammotion, unique_name=rtk_unique_name

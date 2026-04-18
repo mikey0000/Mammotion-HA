@@ -320,7 +320,6 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
             device = self.manager.get_device_by_name(self.device_name)
             if device is not None:
                 self.device_offline(device)
-            raise
         except (
             GatewayTimeoutException,
             CommandTimeoutError,
@@ -330,7 +329,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
             pass
 
     @staticmethod
-    def device_offline(device: MowingDevice) -> None:
+    def device_offline(device: MowingDevice | RTKBaseStationDevice) -> None:
         """Mark the device as offline in its state model."""
         device.online = False
 
@@ -1607,11 +1606,9 @@ class MammotionRTKCoordinator(MammotionBaseUpdateCoordinator[RTKBaseStationDevic
         if handle is None:
             return self.data
 
-        self.data = handle.snapshot.raw  # type: ignore[assignment]
+        await self.async_send_command("send_todev_ble_sync", sync_type=3)
+        await self.async_send_and_wait("basestation_info", "to_app")
 
-        # await self.async_send_command(
-        #     "basestation_info"
-        # )
         http = self.manager.mammotion_http
         if http is not None:
             try:
@@ -1672,12 +1669,10 @@ class MammotionRTKCoordinator(MammotionBaseUpdateCoordinator[RTKBaseStationDevic
         # Fetch lora version — only available via HTTP, not MQTT/protobuf.
         await self.manager.fetch_rtk_lora_info(self.device_name)
 
-        if self.manager.cloud_gateway is not None and DeviceType.is_aliyun_product_key(
+        if (gateway := self.manager.cloud_gateway) and DeviceType.is_aliyun_product_key(
             self.data.product_key
         ):
-            response = await self.manager.cloud_gateway.get_device_properties(
-                self.device.iot_id
-            )
+            response = await gateway.get_device_properties(self.device.iot_id)
             if response.code == 200:
                 data = response.data
                 LOGGER.debug("Fetched RTK device data: %s", data)
@@ -1688,7 +1683,7 @@ class MammotionRTKCoordinator(MammotionBaseUpdateCoordinator[RTKBaseStationDevic
                 if network_info := data.networkInfo:
                     network = json.loads(network_info.value)
                     self.data.wifi_rssi = network["wifi_rssi"]
-                    self.data.wifi_sta_mac = network["wifi_sta_mac"]
+                    self.data.wifi_mac = network["wifi_sta_mac"]
                     self.data.bt_mac = network["bt_mac"]
                 if coordinate := data.coordinate:
                     coord_val = json.loads(coordinate.value)
@@ -1699,6 +1694,13 @@ class MammotionRTKCoordinator(MammotionBaseUpdateCoordinator[RTKBaseStationDevic
                         self.data.lon = coord_val["lon"]
                 if device_version := data.deviceVersion:
                     self.data.device_version = device_version.value
+
+            await gateway.get_device_status(self.device.iot_id)
+            await self.async_send_command("send_todev_ble_sync", sync_type=3)
+            await self.async_send_and_wait("basestation_info", "to_app")
+            await self.async_send_and_wait(
+                "get_device_network_info", "toapp_networkinfo_rsp"
+            )
         self.data.online = True
 
         # Seed self.data from the now-populated handle state.

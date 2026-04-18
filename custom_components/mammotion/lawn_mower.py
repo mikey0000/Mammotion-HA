@@ -505,8 +505,6 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
         if device:
             for conn_type, value in device.connections:
                 if conn_type == dr.CONNECTION_NETWORK_MAC:
-                    self.coordinator.data.mower_state.wifi_mac = (
-                        value  # Restore to your API
-                    )
+                    self.coordinator.data.mower_state.wifi_mac = value
                 elif conn_type == dr.CONNECTION_BLUETOOTH:
                     self.coordinator.data.mower_state.ble_mac = value
