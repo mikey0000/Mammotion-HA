@@ -8,7 +8,8 @@
       "bluetooth_and_account_mismatch": "Bluetooth-enhed blev ikke fundet på din konto",
       "no_longer_present": "Enheden er ikke længere til stede",
       "not_supported": "Enheden understøttes ikke",
-      "reconfigure_successful": "Omkonfiguration lykkedes"
+      "reconfigure_successful": "Omkonfiguration lykkedes",
+      "api_limit_exceeded": "API-anmodningsgrænsen er overskredet. Prøv igen senere."
     },
     "flow_title": "{name}",
     "step": {
@@ -607,6 +608,9 @@
     },
     "command_failed": {
       "message": "Kunne ikke sende kommando til plæneklipperen."
+    },
+    "api_limit_exceeded": {
+      "message": "API-anmodningsgrænsen er overskredet."
     }
   }
 }

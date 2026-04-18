@@ -24,6 +24,7 @@ from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.device_registry import CONNECTION_BLUETOOTH, format_mac
 from homeassistant.loader import async_get_integration
+from pymammotion.aliyun.exceptions import TooManyRequestsException
 from pymammotion.client import MammotionClient
 
 from .const import (
@@ -229,6 +230,8 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                 user_account = (
                     temp_client.mammotion_http.login_info.userInformation.userAccount
                 )
+            except TooManyRequestsException:
+                return self.async_abort(reason="api_limit_exceeded")
             except (HTTPException, Exception) as err:
                 return self.async_abort(reason=str(err))
             finally:

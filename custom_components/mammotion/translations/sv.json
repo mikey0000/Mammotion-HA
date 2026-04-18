@@ -8,7 +8,8 @@
       "bluetooth_and_account_mismatch": "Ingen Bluetooth-enheten funnen på ditt konto",
       "no_longer_present": "Enheten finns inte längre",
       "not_supported": "Enheten stöds inte",
-      "reconfigure_successful": "Omkonfigurering lyckades"
+      "reconfigure_successful": "Omkonfigurering lyckades",
+      "api_limit_exceeded": "API-anropsgränsen har överskridits. Försök igen senare."
     },
     "flow_title": "{name}",
     "step": {
@@ -607,6 +608,9 @@
     },
     "command_failed": {
       "message": "Det gick inte att skicka kommandot till gräsklipparen."
+    },
+    "api_limit_exceeded": {
+      "message": "API-anropsgränsen har överskridits."
     }
   }
 }

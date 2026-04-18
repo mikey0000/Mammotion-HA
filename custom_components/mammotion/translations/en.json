@@ -8,7 +8,8 @@
       "bluetooth_and_account_mismatch": "Bluetooth device not found in your account",
       "no_longer_present": "Device is no longer present",
       "not_supported": "Device not supported",
-      "reconfigure_successful": "Re-configure successful"
+      "reconfigure_successful": "Re-configure successful",
+      "api_limit_exceeded": "API rate limit has been exceeded. Please try again later."
     },
     "flow_title": "{name}",
     "step": {
@@ -607,6 +608,9 @@
     },
     "command_failed": {
       "message": "Failed to send command to the mower."
+    },
+    "api_limit_exceeded": {
+      "message": "API rate limit has been exceeded."
     }
   }
 }

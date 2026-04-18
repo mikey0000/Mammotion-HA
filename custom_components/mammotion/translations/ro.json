@@ -8,7 +8,8 @@
       "bluetooth_and_account_mismatch": "Bluetooth dispozitiv nu a fost găsit în cont",
       "no_longer_present": "Echipamentul nu mai este prezent",
       "not_supported": "Dispozitivul nu este suportat",
-      "reconfigure_successful": "Reconfigurare reușită"
+      "reconfigure_successful": "Reconfigurare reușită",
+      "api_limit_exceeded": "Limita de solicitări API a fost depășită. Vă rugăm să încercați din nou mai târziu."
     },
     "flow_title": "{name}",
     "step": {
@@ -607,6 +608,9 @@
     },
     "command_failed": {
       "message": "Nu s-a reușit trimiterea comenzii către mașina de tuns iarba."
+    },
+    "api_limit_exceeded": {
+      "message": "Limita de solicitări API a fost depăşită."
     }
   }
 }

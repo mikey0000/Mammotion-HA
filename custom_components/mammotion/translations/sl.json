@@ -8,7 +8,8 @@
       "bluetooth_and_account_mismatch": "V vašem računu ni bluetooth naprav",
       "no_longer_present": "Naprava ni več prisotna",
       "not_supported": "Naprava ni podprta",
-      "reconfigure_successful": "Ponastavitev uspešna"
+      "reconfigure_successful": "Ponastavitev uspešna",
+      "api_limit_exceeded": "Prekoračena je bila omejitev API-ja. Poskusite znova pozneje."
     },
     "flow_title": "{name}",
     "step": {
@@ -607,6 +608,9 @@
     },
     "command_failed": {
       "message": "Ukaza ni bilo možno poslati."
+    },
+    "api_limit_exceeded": {
+      "message": "Prekočena je bila omejitev API-ja."
     }
   }
 }

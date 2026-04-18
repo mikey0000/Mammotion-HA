@@ -8,7 +8,8 @@
       "bluetooth_and_account_mismatch": "Bluetooth-apparaat niet gevonden in uw account",
       "no_longer_present": "Het apparaat is niet langer aanwezig",
       "not_supported": "Apparaat wordt niet ondersteund",
-      "reconfigure_successful": "Opnieuw instellen gelukt"
+      "reconfigure_successful": "Opnieuw instellen gelukt",
+      "api_limit_exceeded": "De API-limiet is overschreden. Probeer het later opnieuw."
     },
     "flow_title": "{name}",
     "step": {
@@ -607,6 +608,9 @@
     },
     "command_failed": {
       "message": "Verzenden van de opdracht naar de maaier is mislukt."
+    },
+    "api_limit_exceeded": {
+      "message": "De API-limiet is overschreden."
     }
   }
 }

@@ -8,7 +8,8 @@
       "bluetooth_and_account_mismatch": "Na Twoim koncie nie znaleziono żadnego urządzenia Bluetooth",
       "no_longer_present": "Urządzenie nie jest już dostępne",
       "not_supported": "Urządzenie nie jest obsługiwane",
-      "reconfigure_successful": "Ponowna konfiguracja zakończona powodzeniem"
+      "reconfigure_successful": "Ponowna konfiguracja zakończona powodzeniem",
+      "api_limit_exceeded": "Przekroczono limit API. Spróbuj ponownie później."
     },
     "flow_title": "{name}",
     "step": {
@@ -607,6 +608,9 @@
     },
     "command_failed": {
       "message": "Nie udało się wysłać polecenia do kosiarki."
+    },
+    "api_limit_exceeded": {
+      "message": "Przekroczono limit API."
     }
   }
 }

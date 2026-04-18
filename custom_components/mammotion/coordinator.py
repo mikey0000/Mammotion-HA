@@ -25,6 +25,7 @@ from pymammotion.aliyun.exceptions import (
     FailedRequestException,
     GatewayTimeoutException,
     NoConnectionException,
+    TooManyRequestsException,
 )
 from pymammotion.aliyun.model.dev_by_account_response import Device
 from pymammotion.client import MammotionClient
@@ -320,6 +321,10 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
             device = self.manager.get_device_by_name(self.device_name)
             if device is not None:
                 self.device_offline(device)
+        except TooManyRequestsException as exc:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key="api_limit_exceeded"
+            ) from exc
         except (
             GatewayTimeoutException,
             CommandTimeoutError,
@@ -418,6 +423,10 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
             LOGGER.error(f"Device offline: {ex.iot_id}")
             self.device_offline(device)
             return False
+        except TooManyRequestsException as exc:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key="api_limit_exceeded"
+            ) from exc
         return False
 
     async def async_send_bluetooth_command(

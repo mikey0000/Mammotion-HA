@@ -8,7 +8,8 @@
       "bluetooth_and_account_mismatch": "Dispositivo Bluetooth non trovato nel tuo account",
       "no_longer_present": "Il dispositivo non è più presente",
       "not_supported": "Dispositivo non supportato",
-      "reconfigure_successful": "Riconfigurazione avvenuta con successo"
+      "reconfigure_successful": "Riconfigurazione avvenuta con successo",
+      "api_limit_exceeded": "Il limite di frequenza dell'API è stato superato. Si prega di riprovare più tardi."
     },
     "flow_title": "{name}",
     "step": {
@@ -607,6 +608,9 @@
     },
     "command_failed": {
       "message": "Impossibile inviare il comando al rasaerba."
+    },
+    "api_limit_exceeded": {
+      "message": "Il limite di frequenza dell'API è stato superato."
     }
   }
 }

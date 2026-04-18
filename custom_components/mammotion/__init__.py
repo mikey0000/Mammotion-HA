@@ -26,6 +26,7 @@ from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.device_registry import DeviceEntry
 from homeassistant.helpers.event import async_call_later
 from homeassistant.loader import async_get_integration
+from pymammotion.aliyun.exceptions import TooManyRequestsException
 from pymammotion.aliyun.model.dev_by_account_response import Device
 from pymammotion.client import MammotionClient
 from pymammotion.data.model.account import Credentials
@@ -240,6 +241,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
             await mammotion.login_and_initiate_cloud(
                 account, password, aiohttp_client.async_get_clientsession(hass)
             )
+        except TooManyRequestsException as err:
+            raise ConfigEntryError(
+                translation_domain=DOMAIN, translation_key="api_limit_exceeded"
+            ) from err
         except UnretryableException as err:
             raise ConfigEntryError(err)
 

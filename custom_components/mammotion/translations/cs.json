@@ -8,7 +8,8 @@
       "bluetooth_and_account_mismatch": "Zařízení Bluetooth nebylo ve vašem účtu nalezeno",
       "no_longer_present": "Zařízení již není k dispozici",
       "not_supported": "Zařízení není podporováno",
-      "reconfigure_successful": "Rekonfigurace úspěšná"
+      "reconfigure_successful": "Rekonfigurace úspěšná",
+      "api_limit_exceeded": "Byl překročen limit požadavků API. Zkuste to prosím znovu později."
     },
     "flow_title": "{name}",
     "step": {
@@ -607,6 +608,9 @@
     },
     "command_failed": {
       "message": "Nepodařilo se odeslat příkaz sekačce."
+    },
+    "api_limit_exceeded": {
+      "message": "Byl překročen limit požadavků API."
     }
   }
 }
