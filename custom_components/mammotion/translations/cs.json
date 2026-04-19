@@ -50,6 +50,7 @@
         "data": {
           "title": "Aktualizovat konfiguraci",
           "stay_connected_bluetooth": "Udržovat připojení Bluetooth",
+          "prefer_ble_over_wifi": "Upřednostňovat Bluetooth před Wi-Fi, je-li dostupné",
           "movement_use_wifi": "Odesílat příkazy pohybu přes Wi-Fi"
         }
       }

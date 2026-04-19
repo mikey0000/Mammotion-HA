@@ -50,6 +50,7 @@
         "data": {
           "title": "Aktualizuj konfigurację",
           "stay_connected_bluetooth": "Użyj połączenia Bluetooth",
+          "prefer_ble_over_wifi": "Preferuj Bluetooth zamiast Wi-Fi, gdy dostępne",
           "movement_use_wifi": "Wysyłaj polecenia ruchu przez Wi-Fi"
         }
       }

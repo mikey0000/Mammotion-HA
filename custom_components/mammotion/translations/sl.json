@@ -50,6 +50,7 @@
         "data": {
           "title": "Posodobi nastavitev",
           "stay_connected_bluetooth": "Ohrani bluetooth povezavo",
+          "prefer_ble_over_wifi": "Daj prednost Bluetooth pred Wi-Fi, ko je na voljo",
           "movement_use_wifi": "Pošiljaj ukaze gibanja prek Wi-Fi"
         }
       }

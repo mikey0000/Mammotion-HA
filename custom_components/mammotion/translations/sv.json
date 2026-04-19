@@ -50,6 +50,7 @@
         "data": {
           "title": "Uppdatera konfigurationen",
           "stay_connected_bluetooth": "Behåll Bluetooth anslutningen aktiv",
+          "prefer_ble_over_wifi": "Föredra Bluetooth framför Wi-Fi när tillgängligt",
           "movement_use_wifi": "Skicka rörelsekommandon via Wi-Fi"
         }
       }

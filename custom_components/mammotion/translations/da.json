@@ -50,6 +50,7 @@
         "data": {
           "title": "Opdater konfiguration",
           "stay_connected_bluetooth": "Hold Bluetooth-forbindelsen",
+          "prefer_ble_over_wifi": "Foretræk Bluetooth frem for Wi-Fi, når det er tilgængeligt",
           "movement_use_wifi": "Send bevægelseskommandoer via Wi-Fi"
         }
       }

@@ -48,6 +48,7 @@ from .const import (
     CONF_MAMMOTION_DEVICE_RECORDS,
     CONF_MAMMOTION_JWT_INFO,
     CONF_MAMMOTION_MQTT,
+    CONF_PREFER_BLE,
     CONF_REGION_DATA,
     CONF_SESSION_DATA,
     CONF_STAY_CONNECTED_BLUETOOTH,
@@ -214,6 +215,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
         )
 
     stay_connected_ble = entry.options.get(CONF_STAY_CONNECTED_BLUETOOTH, False)
+    prefer_ble = entry.options.get(CONF_PREFER_BLE, False)
 
     use_wifi = entry.data.get(CONF_USE_WIFI, True)
 
@@ -299,6 +301,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                         TransportType.CLOUD_MAMMOTION,
                     ):
                         await handle.disconnect_transport(t_type)
+            elif prefer_ble:
+                mammotion.set_prefer_ble(device.device_name, prefer_ble=True)
 
             mammotion_mowers.append(
                 MammotionMowerData(

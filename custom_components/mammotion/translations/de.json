@@ -50,6 +50,7 @@
         "data": {
           "title": "Aktualisiere die Konfiguration",
           "stay_connected_bluetooth": "Bluetooth-Verbindung aufrechterhalten",
+          "prefer_ble_over_wifi": "Bluetooth gegenüber Wi-Fi bevorzugen, wenn verfügbar",
           "movement_use_wifi": "Bewegungsbefehle über Wi-Fi senden"
         }
       }

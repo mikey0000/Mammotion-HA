@@ -39,6 +39,7 @@ EXPIRED_CREDENTIAL_EXCEPTIONS = (
 )
 
 CONF_STAY_CONNECTED_BLUETOOTH: Final = "stay_connected_bluetooth"
+CONF_PREFER_BLE: Final = "prefer_ble_over_wifi"
 CONF_MOVEMENT_USE_WIFI: Final = "movement_use_wifi"
 CONF_ACCOUNTNAME: Final = "account_name"
 CONF_ACCOUNT_ID: Final = "mammotion_account_id"

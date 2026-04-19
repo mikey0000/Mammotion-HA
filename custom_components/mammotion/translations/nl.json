@@ -50,6 +50,7 @@
         "data": {
           "title": "Configuratie bijwerken",
           "stay_connected_bluetooth": "Houd Bluetooth verbonden",
+          "prefer_ble_over_wifi": "Bluetooth verkiezen boven Wi-Fi indien beschikbaar",
           "movement_use_wifi": "Bewegingsopdrachten via Wi-Fi verzenden"
         }
       }
