@@ -7,7 +7,7 @@ import json
 from abc import abstractmethod
 from collections.abc import Mapping
 from datetime import timedelta
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 import betterproto2
 from homeassistant.components import bluetooth
@@ -990,11 +990,9 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         self._subscriptions.clear()
         await super().async_shutdown()
 
-    async def _on_state_changed(self, snapshot: Any) -> None:
+    async def _on_state_changed(self, snapshot: DeviceSnapshot) -> None:
         """Push updated device data to HA."""
-        device = self.manager.get_device_by_name(self.device_name)
-        if device is not None:
-            self.async_set_updated_data(self.get_coordinator_data(device))
+        self.async_set_updated_data(snapshot.raw)
 
     def find_entity_by_attribute_in_registry(
         self, attribute_name: str, attribute_value: Any
@@ -1092,11 +1090,8 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
 
     async def _async_update_notification(self, res: tuple[str, Any | None]) -> None:
         """Update data from incoming messages."""
-        if res[0] == "sys" and res[1] is not None:
-            sys_msg = betterproto2.which_one_of(res[1], "SubSysMsg")
-            if sys_msg[0] == "toapp_report_data":
-                if device := self.manager.get_device_by_name(self.device_name):
-                    self.async_set_updated_data(device)
+        if device := self.manager.get_device_by_name(self.device_name):
+            self.async_set_updated_data(device)
 
     async def _async_update_properties(
         self, properties: ThingPropertiesMessage
@@ -1672,8 +1667,7 @@ class MammotionRTKCoordinator(MammotionBaseUpdateCoordinator[RTKBaseStationDevic
 
     async def _on_state_changed(self, snapshot: DeviceSnapshot) -> None:
         """Propagate a state machine snapshot change to HA."""
-        self.data = snapshot.raw  # type: ignore[assignment]
-        self.async_set_updated_data(self.data)
+        self.async_set_updated_data(cast(RTKBaseStationDevice, snapshot.raw))
 
     async def _async_handle_ota_progress(
         self, properties: ThingPropertiesMessage

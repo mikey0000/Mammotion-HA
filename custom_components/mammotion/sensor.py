@@ -386,7 +386,9 @@ SENSOR_ERROR_TYPES: tuple[MammotionErrorSensorEntityDescription, ...] = (
         state_class=None,
         native_unit_of_measurement=None,
         device_class=None,
-        value_fn=lambda coordinator, mower_data: coordinator.get_error_message(1),
+        value_fn=lambda coordinator, mower_data: (
+            msg[:255] if (msg := coordinator.get_error_message(1)) is not None else None
+        ),
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     MammotionErrorSensorEntityDescription(

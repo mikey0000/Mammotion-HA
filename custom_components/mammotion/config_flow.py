@@ -26,6 +26,7 @@ from homeassistant.helpers.device_registry import CONNECTION_BLUETOOTH, format_m
 from homeassistant.loader import async_get_integration
 from pymammotion.aliyun.exceptions import TooManyRequestsException
 from pymammotion.client import MammotionClient
+from pymammotion.transport.base import TransportType
 
 from .const import (
     CONF_ACCOUNT_ID,
@@ -327,6 +328,7 @@ class MammotionConfigFlowHandler(OptionsFlow):
 
     def __init__(self, config_entry: ConfigEntry) -> None:
         """Initialize options flow."""
+        self._config_entry = config_entry
         self.stay_connected_bluetooth = config_entry.options.get(
             CONF_STAY_CONNECTED_BLUETOOTH, False
         )
@@ -338,6 +340,22 @@ class MammotionConfigFlowHandler(OptionsFlow):
     ) -> ConfigFlowResult:
         """Manage the options for the custom component."""
         if user_input:
+            new_prefer_ble = user_input.get(CONF_PREFER_BLE, False)
+            new_stay_connected = user_input.get(CONF_STAY_CONNECTED_BLUETOOTH, False)
+
+            if (
+                runtime := getattr(self._config_entry, "runtime_data", None)
+            ) is not None:
+                for mower in runtime.mowers:
+                    mower.api.set_prefer_ble(mower.name, prefer_ble=new_prefer_ble)
+                    handle = mower.api.mower(mower.name)
+                    if handle is not None:
+                        ble = handle._transports.get(TransportType.BLE)
+                        if ble is not None:
+                            ble.set_disconnect_strategy(
+                                disconnect=not new_stay_connected
+                            )
+
             return self.async_create_entry(data=user_input)
 
         options_schema = vol.Schema(
