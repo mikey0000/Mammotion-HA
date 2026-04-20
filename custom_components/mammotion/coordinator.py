@@ -283,16 +283,25 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
             raise ConfigEntryAuthFailed(
                 f"Login failed for Mammotion account: {exc.reason}"
             ) from exc
-        if (
-            isinstance(exc, SessionExpiredError)
-            and self.manager.token_manager is not None
-        ):
-            await self.manager.token_manager.refresh_aliyun_credentials()
-        elif isinstance(exc, AuthError) and self.manager.token_manager is not None:
-            await self.manager.token_manager.refresh_mqtt_credentials()
-        else:
-            await self.manager.refresh_login(self.account)
-            self.store_cloud_credentials()
+        try:
+            if (
+                isinstance(exc, SessionExpiredError)
+                and self.manager.token_manager is not None
+            ):
+                await self.manager.token_manager.refresh_aliyun_credentials()
+            elif isinstance(exc, AuthError) and self.manager.token_manager is not None:
+                await self.manager.token_manager.refresh_mqtt_credentials()
+            else:
+                await self.manager.refresh_login(self.account)
+                self.store_cloud_credentials()
+        except ReLoginRequiredError:
+            try:
+                await self.manager.refresh_login(self.account)
+                self.store_cloud_credentials()
+            except LoginFailedError as err:
+                raise ConfigEntryAuthFailed(
+                    f"Login failed for Mammotion account: {err.reason}"
+                ) from err
 
     async def async_send_and_wait(
         self,
@@ -982,13 +991,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         await super().async_shutdown()
 
     async def _on_state_changed(self, snapshot: Any) -> None:
-        """Push updated device data to HA without triggering a full refresh.
-
-        Triggering async_request_refresh() here caused a feedback loop: every
-        incoming report mutates state, which would trigger a refresh, which
-        sends another get_report_cfg, producing more reports.  Pushing the
-        data update directly keeps entities in sync without re-issuing commands.
-        """
+        """Push updated device data to HA."""
         device = self.manager.get_device_by_name(self.device_name)
         if device is not None:
             self.async_set_updated_data(self.get_coordinator_data(device))
@@ -1535,26 +1538,51 @@ class MammotionDeviceErrorUpdateCoordinator(
         if data := await super()._async_update_data():
             return data
         device = self.manager.get_device_by_name(self.device_name)
-        try:
+        if device.report_data.dev.sys_status in (
+            WorkMode.MODE_WORKING,
+            WorkMode.MODE_RETURNING,
+            WorkMode.MODE_LOCK,
+        ):
+            try:
+                await self.async_send_and_wait(
+                    "read_write_device", "bidire_comm_cmd", rw_id=5, rw=1, context=2
+                )
+                await self.async_send_and_wait(
+                    "read_write_device", "bidire_comm_cmd", rw_id=5, rw=1, context=3
+                )
+                if not device.errors.error_codes:
+                    http = self.manager.mammotion_http
+                    if http is not None:
+                        device.errors.error_codes = await http.get_all_error_codes()
+            except DeviceOfflineException:
+                return device
+
+        return device
+
+    async def _on_sys_status_changed(self, sys_status: WorkMode) -> None:
+        """Handle sys status changed."""
+        if sys_status in (
+            WorkMode.MODE_WORKING,
+            WorkMode.MODE_RETURNING,
+            WorkMode.MODE_LOCK,
+            WorkMode.MODE_PAUSE,
+        ):
             await self.async_send_and_wait(
                 "read_write_device", "bidire_comm_cmd", rw_id=5, rw=1, context=2
             )
             await self.async_send_and_wait(
                 "read_write_device", "bidire_comm_cmd", rw_id=5, rw=1, context=3
             )
-            if not device.errors.error_codes:
-                http = self.manager.mammotion_http
-                if http is not None:
-                    device.errors.error_codes = await http.get_all_error_codes()
-        except DeviceOfflineException:
-            return device
-
-        return device
 
     async def _async_setup(self) -> None:
         """Setup device version coordinator."""
         await super()._async_setup()
         device = self.manager.get_device_by_name(self.device_name)
+        if handle := self.manager.mower(self.device_name):
+            handle.watch_field(
+                lambda s: s.raw.report_data.dev.sys_status,
+                self._on_sys_status_changed,
+            )
 
         try:
             await self.async_send_and_wait(
