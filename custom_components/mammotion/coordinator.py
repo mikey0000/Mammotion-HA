@@ -30,7 +30,12 @@ from pymammotion.aliyun.exceptions import (
 from pymammotion.aliyun.model.dev_by_account_response import Device
 from pymammotion.client import MammotionClient
 from pymammotion.data.model import GenerateRouteInformation
-from pymammotion.data.model.device import MowerInfo, MowingDevice, RTKBaseStationDevice
+from pymammotion.data.model.device import (
+    MowerDevice,
+    MowerInfo,
+    MowingDevice,
+    RTKBaseStationDevice,
+)
 from pymammotion.data.model.device_config import OperationSettings, create_path_order
 from pymammotion.data.model.hash_list import AreaHashNameList, SvgMessage
 from pymammotion.data.model.report_info import Maintain
@@ -77,10 +82,10 @@ if TYPE_CHECKING:
 
 
 MAINTENANCE_INTERVAL = timedelta(minutes=60)
-DEFAULT_INTERVAL = timedelta(minutes=5)
+DEFAULT_INTERVAL = timedelta(minutes=30)
 WORKING_INTERVAL = timedelta(minutes=5)
 REPORT_INTERVAL = timedelta(minutes=30)
-DEVICE_VERSION_INTERVAL = timedelta(days=1)
+DEVICE_VERSION_INTERVAL = timedelta(weeks=1)
 MAP_INTERVAL = timedelta(minutes=30)
 RTK_INTERVAL = timedelta(hours=5)
 
@@ -1153,6 +1158,10 @@ class MammotionMaintenanceUpdateCoordinator(MammotionBaseUpdateCoordinator[Maint
         """Get coordinator data."""
         return device.report_data.maintenance
 
+    async def _on_state_changed(self, snapshot: DeviceSnapshot) -> None:
+        data = cast(MowerDevice, snapshot.raw)
+        self.async_set_updated_data(data.report_data.maintenance)
+
     async def _async_update_data(self) -> Maintain:
         """Get data from the device."""
         if data := await super()._async_update_data():
@@ -1533,24 +1542,13 @@ class MammotionDeviceErrorUpdateCoordinator(
         if data := await super()._async_update_data():
             return data
         device = self.manager.get_device_by_name(self.device_name)
-        if device.report_data.dev.sys_status in (
-            WorkMode.MODE_WORKING,
-            WorkMode.MODE_RETURNING,
-            WorkMode.MODE_LOCK,
-        ):
-            try:
-                await self.async_send_and_wait(
-                    "read_write_device", "bidire_comm_cmd", rw_id=5, rw=1, context=2
-                )
-                await self.async_send_and_wait(
-                    "read_write_device", "bidire_comm_cmd", rw_id=5, rw=1, context=3
-                )
-                if not device.errors.error_codes:
-                    http = self.manager.mammotion_http
-                    if http is not None:
-                        device.errors.error_codes = await http.get_all_error_codes()
-            except DeviceOfflineException:
-                return device
+        try:
+            if not device.errors.error_codes:
+                http = self.manager.mammotion_http
+                if http is not None:
+                    device.errors.error_codes = await http.get_all_error_codes()
+        except DeviceOfflineException:
+            return device
 
         return device
 
@@ -1665,11 +1663,7 @@ class MammotionRTKCoordinator(MammotionBaseUpdateCoordinator[RTKBaseStationDevic
         self._subscriptions.clear()
         await super().async_shutdown()
 
-    async def _on_state_changed(self, snapshot: DeviceSnapshot) -> None:
-        """Propagate a state machine snapshot change to HA."""
-        self.async_set_updated_data(cast(RTKBaseStationDevice, snapshot.raw))
-
-    async def _async_handle_ota_progress(
+    async def _async_update_properties(
         self, properties: ThingPropertiesMessage
     ) -> None:
         """Handle OTA progress property pushes for the RTK device.
@@ -1738,13 +1732,6 @@ class MammotionRTKCoordinator(MammotionBaseUpdateCoordinator[RTKBaseStationDevic
 
         # Seed self.data from the now-populated handle state.
         self.data = handle.snapshot.raw  # type: ignore[assignment]
-
-        self._subscriptions.extend(
-            [
-                handle.subscribe_state_changed(self._on_state_changed),
-                handle.subscribe_device_properties(self._async_handle_ota_progress),
-            ]
-        )
 
     async def update_firmware(self, version: str) -> None:
         """Update firmware."""
