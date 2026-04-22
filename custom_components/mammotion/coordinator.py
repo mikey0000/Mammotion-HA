@@ -83,7 +83,6 @@ if TYPE_CHECKING:
 
 MAINTENANCE_INTERVAL = timedelta(minutes=60)
 DEFAULT_INTERVAL = timedelta(minutes=30)
-WORKING_INTERVAL = timedelta(minutes=5)
 REPORT_INTERVAL = timedelta(minutes=30)
 DEVICE_VERSION_INTERVAL = timedelta(weeks=1)
 MAP_INTERVAL = timedelta(minutes=30)
@@ -727,7 +726,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
     async def send_command_and_update(self, command_str: str, **kwargs: Any) -> None:
         """Send command and update."""
         await self.async_send_command(command_str, **kwargs)
-        await self.async_request_iot_sync()
+        await self.async_request_iot_sync_continuous()
 
     async def async_request_iot_sync(self, stop: bool = False) -> None:
         """Sync specific info from device."""
@@ -741,11 +740,54 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
                 RptInfoType.RIT_MAINTAIN,
                 RptInfoType.RIT_BASESTATION_INFO,
                 RptInfoType.RIT_VIO,
+                RptInfoType.RIT_CONNECT,
+                RptInfoType.RIT_FW_INFO,
+                RptInfoType.RIT_VISION_POINT,
+                RptInfoType.RIT_VISION_STATISTIC,
+                RptInfoType.RIT_CUTTER_INFO,
+                RptInfoType.RIT_RTK,
             ],
             timeout=10000,
             period=3000,
             no_change_period=4000,
+            count=1,
+        )
+
+    async def async_request_iot_sync_continuous(
+        self, stop: bool = False, period=1000, no_change_period=4000
+    ) -> None:
+        """Sync specific info from device."""
+        await self.async_send_command(
+            "request_iot_sys",
+            rpt_act=RptAct.RPT_STOP if stop else RptAct.RPT_START,
+            rpt_info_type=[
+                RptInfoType.RIT_DEV_STA,
+                RptInfoType.RIT_DEV_LOCAL,
+                RptInfoType.RIT_WORK,
+                RptInfoType.RIT_MAINTAIN,
+                RptInfoType.RIT_BASESTATION_INFO,
+                RptInfoType.RIT_VIO,
+            ],
+            timeout=10000,
+            period=period,
+            no_change_period=no_change_period,
             count=0,
+        )
+
+    async def async_request_iot_sync_continuous_stop(self) -> None:
+        """Stop sync specific info from device."""
+        await self.async_send_command(
+            "request_iot_sys",
+            rpt_act=RptAct.RPT_STOP,
+            rpt_info_type=[
+                RptInfoType.RIT_DEV_STA,
+                RptInfoType.RIT_DEV_LOCAL,
+                RptInfoType.RIT_WORK,
+                RptInfoType.RIT_MAINTAIN,
+                RptInfoType.RIT_BASESTATION_INFO,
+                RptInfoType.RIT_VIO,
+            ],
+            count=1,
         )
 
     async def send_svg_command(self, command_str: str, **kwargs: Any) -> None:
@@ -846,7 +888,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         await self.async_send_and_wait(
             "single_schedule", "todev_planjob_set", plan_id=plan_id
         )
-        await self.async_request_iot_sync()
+        await self.async_request_iot_sync_continuous()
 
     async def async_restart_mower(self) -> None:
         """Restart mower."""
@@ -1077,24 +1119,12 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
             LOGGER.debug("device not found")
             return self.data
 
-        await self.async_send_command("get_report_cfg")
-
         LOGGER.debug("Updated Mammotion device %s", self.device_name)
         self.update_failures = 0
-        data = self.manager.get_device_by_name(self.device_name)
-        await self.async_save_data(data)
-
-        if data.report_data.dev.sys_status in (
-            WorkMode.MODE_WORKING,
-            WorkMode.MODE_RETURNING,
-        ):
-            self.update_interval = WORKING_INTERVAL
-            # if data.report_data.dev.sys_status == WorkMode.MODE_WORKING:
-            #     await self.manager.get_dynamics_line(self.device_name)
-        else:
-            self.update_interval = DEFAULT_INTERVAL
-
-        return data
+        if data := self.manager.get_device_by_name(self.device_name):
+            await self.async_save_data(data)
+            return data
+        return self.data
 
     async def _async_update_notification(self, res: tuple[str, Any | None]) -> None:
         """Update data from incoming messages."""
@@ -1130,6 +1160,10 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
             await self.set_scheduled_updates(True)
         if device := self.manager.get_device_by_name(self.device_name):
             self.async_set_updated_data(device)
+
+    async def _async_setup(self):
+        await super()._async_setup()
+        await self.async_request_iot_sync()
 
 
 class MammotionMaintenanceUpdateCoordinator(MammotionBaseUpdateCoordinator[Maintain]):
