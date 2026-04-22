@@ -317,6 +317,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
             WorkMode.MODE_READY,
             WorkMode.MODE_RETURNING,
             WorkMode.MODE_WORKING,
+            WorkMode.MODE_INITIALIZATION,
         ):
             try:
                 if modify_plan:
@@ -339,7 +340,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
                         await self.coordinator.async_send_and_wait(
                             "query_generate_route_information", "bidire_reqconver_path"
                         )
-                if mode == WorkMode.MODE_READY:
+                if mode == WorkMode.MODE_READY or mode == WorkMode.MODE_INITIALIZATION:
                     trans_key = "start_failed"
                     if breakpoint_info != 0:
                         await self.coordinator.async_send_and_wait(
