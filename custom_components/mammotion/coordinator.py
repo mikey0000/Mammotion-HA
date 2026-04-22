@@ -843,7 +843,10 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
 
     async def start_task(self, plan_id: str) -> None:
         """Start task."""
-        await self.async_send_command("single_schedule", plan_id=plan_id)
+        await self.async_send_and_wait(
+            "single_schedule", "todev_planjob_set", plan_id=plan_id
+        )
+        await self.async_request_iot_sync()
 
     async def async_restart_mower(self) -> None:
         """Restart mower."""
