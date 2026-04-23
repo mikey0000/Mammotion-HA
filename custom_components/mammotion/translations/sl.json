@@ -115,7 +115,7 @@
       "l2_satellites": {
         "name": "L2 sateliti (skupaj)"
       },
-      "position_mode": {
+      "positioning_mode": {
         "name": "Položaj RTK postaje"
       },
       "position_type": {
@@ -134,6 +134,15 @@
           "OBS_ON": "At obstacle",
           "TURN_AREA_INSIDE": "In turn area",
           "VIRTUAL_INSIDE": "In virtual area"
+        }
+      },
+      "visual_positioning_status": {
+        "name": "Stanje vizualnega pozicioniranja",
+        "state": {
+          "SIGNAL_NONE": "Brez",
+          "SIGNAL_INIT": "Inicializacija",
+          "SIGNAL_GOOD": "Dobro",
+          "SIGNAL_BAD": "Slabo"
         }
       },
       "activity_mode": {
@@ -165,7 +174,7 @@
         }
       },
       "work_area": {
-        "name": "Področja dela"
+        "name": "Trenutna lokacija"
       },
       "maintenance_distance": {
         "name": "Skupno opravljena pot"
@@ -197,6 +206,26 @@
       },
       "rtk_wifi_rssi": {
         "name": "Wi-Fi RSSI"
+      },
+      "rtk_sats_num": {
+        "name": "Sateliti"
+      },
+      "position_mode": {
+        "name": "Način pozicioniranja",
+        "state": {
+          "RTK_OVER_DATALINK": "Antena prek DataLink",
+          "RTK_OVER_INTERNET": "Antena prek interneta",
+          "INAVI_NET_RTK": "iNavi NetRTK",
+          "INAVI_RTK_BOX": "iNavi RTK škatla"
+        }
+      },
+      "rtk_app_connect_type": {
+        "name": "Vrsta povezave",
+        "state": {
+          "UNKNOWN": "Neznano",
+          "CON_BLE": "BLE",
+          "CON_WIFI": "Wi-Fi"
+        }
       },
       "task_area_status": {
         "name": "Področje naloge {name}",

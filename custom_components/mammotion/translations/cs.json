@@ -115,7 +115,7 @@
       "l2_satellites": {
         "name": "Satelity L2 (společný výhled)"
       },
-      "position_mode": {
+      "positioning_mode": {
         "name": "Poloha RTK"
       },
       "position_type": {
@@ -134,6 +134,15 @@
           "OBS_ON": "At obstacle",
           "TURN_AREA_INSIDE": "In turn area",
           "VIRTUAL_INSIDE": "In virtual area"
+        }
+      },
+      "visual_positioning_status": {
+        "name": "Stav vizuálního polohování",
+        "state": {
+          "SIGNAL_NONE": "Žádný",
+          "SIGNAL_INIT": "Inicializace",
+          "SIGNAL_GOOD": "Dobrý",
+          "SIGNAL_BAD": "Špatný"
         }
       },
       "activity_mode": {
@@ -165,7 +174,7 @@
         }
       },
       "work_area": {
-        "name": "Pracovní oblast"
+        "name": "Aktuální poloha"
       },
       "maintenance_distance": {
         "name": "Celková vzdálenost"
@@ -197,6 +206,26 @@
       },
       "rtk_wifi_rssi": {
         "name": "WiFi RSSI"
+      },
+      "rtk_sats_num": {
+        "name": "Satelity"
+      },
+      "position_mode": {
+        "name": "Režim polohování",
+        "state": {
+          "RTK_OVER_DATALINK": "Antena přes DataLink",
+          "RTK_OVER_INTERNET": "Antena přes internet",
+          "INAVI_NET_RTK": "iNavi NetRTK",
+          "INAVI_RTK_BOX": "iNavi RTK Box"
+        }
+      },
+      "rtk_app_connect_type": {
+        "name": "Typ připojení",
+        "state": {
+          "UNKNOWN": "Neznámý",
+          "CON_BLE": "BLE",
+          "CON_WIFI": "Wi-Fi"
+        }
       },
       "task_area_status": {
         "name": "Stav oblasti úkolu {name}",

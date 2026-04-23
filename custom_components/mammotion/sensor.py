@@ -29,8 +29,11 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import StateType
 from pymammotion.data.model.device import MowingDevice, RTKBaseStationDevice
 from pymammotion.data.model.enums import RTKStatus, TaskAreaStatus
+from pymammotion.utility.constant import VioState
 from pymammotion.utility.constant.device_constant import (
+    AppConnectType,
     PosType,
+    RTKPositionMode,
     camera_brightness,
     device_connection,
     device_mode,
@@ -139,6 +142,16 @@ LUBA_2_YUKA_ONLY_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.ENUM,
         value_fn=lambda mower_data: camera_brightness(
             mower_data.report_data.vision_info.brightness
+        ),
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    MammotionSensorEntityDescription(
+        key="visual_positioning_status",
+        state_class=None,
+        device_class=SensorDeviceClass.ENUM,
+        native_unit_of_measurement=None,
+        value_fn=lambda mower_data: str(
+            VioState(mower_data.report_data.vision_info.vio_state).name
         ),
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
@@ -327,13 +340,22 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     MammotionSensorEntityDescription(
-        key="position_mode",
+        key="positioning_mode",
         state_class=None,
         device_class=SensorDeviceClass.ENUM,
         native_unit_of_measurement=None,
         value_fn=lambda mower_data: str(
             RTKStatus.from_value(mower_data.report_data.rtk.status)
         ),
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    MammotionSensorEntityDescription(
+        key="position_mode",
+        state_class=None,
+        device_class=SensorDeviceClass.ENUM,
+        value_fn=lambda mower_data: RTKPositionMode(
+            mower_data.report_data.basestation_info.rtk_status
+        ).name,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     MammotionSensorEntityDescription(
@@ -439,6 +461,26 @@ RTK_SENSOR_TYPES: tuple[MammotionRTKSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.SIGNAL_STRENGTH,
         native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
         value_fn=lambda rtk_data: rtk_data.wifi_rssi,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    MammotionRTKSensorEntityDescription(
+        key="rtk_sats_num",
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=lambda rtk_data: rtk_data.sats_num,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    MammotionRTKSensorEntityDescription(
+        key="position_mode",
+        state_class=None,
+        device_class=SensorDeviceClass.ENUM,
+        value_fn=lambda rtk_data: RTKPositionMode(rtk_data.rtk_status).name,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    MammotionRTKSensorEntityDescription(
+        key="rtk_app_connect_type",
+        state_class=None,
+        device_class=SensorDeviceClass.ENUM,
+        value_fn=lambda rtk_data: AppConnectType(rtk_data.app_connect_type).name,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
 )

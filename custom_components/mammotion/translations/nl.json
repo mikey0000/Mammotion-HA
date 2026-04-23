@@ -115,7 +115,7 @@
       "l2_satellites": {
         "name": "L2 Satellieten (Samen kijkend)"
       },
-      "position_mode": {
+      "positioning_mode": {
         "name": "RTK-positie"
       },
       "position_type": {
@@ -134,6 +134,15 @@
           "OBS_ON": "Aan obstakel",
           "TURN_AREA_INSIDE": "In draaigebied",
           "VIRTUAL_INSIDE": "In virtueel gebied"
+        }
+      },
+      "visual_positioning_status": {
+        "name": "Status visuele positionering",
+        "state": {
+          "SIGNAL_NONE": "Geen",
+          "SIGNAL_INIT": "Initialiseren",
+          "SIGNAL_GOOD": "Goed",
+          "SIGNAL_BAD": "Slecht"
         }
       },
       "activity_mode": {
@@ -165,7 +174,7 @@
         }
       },
       "work_area": {
-        "name": "Werkgebied"
+        "name": "Huidige locatie"
       },
       "maintenance_distance": {
         "name": "Totale kilometerstand"
@@ -197,6 +206,26 @@
       },
       "rtk_wifi_rssi": {
         "name": "Wi-Fi RSSI"
+      },
+      "rtk_sats_num": {
+        "name": "Satellieten"
+      },
+      "position_mode": {
+        "name": "Positioneringsmodus",
+        "state": {
+          "RTK_OVER_DATALINK": "Antenne via DataLink",
+          "RTK_OVER_INTERNET": "Antenne via internet",
+          "INAVI_NET_RTK": "iNavi NetRTK",
+          "INAVI_RTK_BOX": "iNavi RTK-box"
+        }
+      },
+      "rtk_app_connect_type": {
+        "name": "Verbindingstype",
+        "state": {
+          "UNKNOWN": "Onbekend",
+          "CON_BLE": "BLE",
+          "CON_WIFI": "Wi-Fi"
+        }
       },
       "task_area_status": {
         "name": "Taakgebied {name}",

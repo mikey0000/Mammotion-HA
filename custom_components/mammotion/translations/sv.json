@@ -115,7 +115,7 @@
       "l2_satellites": {
         "name": "L2-satelliter (samvisning)"
       },
-      "position_mode": {
+      "positioning_mode": {
         "name": "RTK position"
       },
       "position_type": {
@@ -134,6 +134,15 @@
           "OBS_ON": "At obstacle",
           "TURN_AREA_INSIDE": "In turn area",
           "VIRTUAL_INSIDE": "In virtual area"
+        }
+      },
+      "visual_positioning_status": {
+        "name": "Visuell positioneringsstatus",
+        "state": {
+          "SIGNAL_NONE": "Ingen",
+          "SIGNAL_INIT": "Initialiserar",
+          "SIGNAL_GOOD": "Bra",
+          "SIGNAL_BAD": "Dålig"
         }
       },
       "activity_mode": {
@@ -165,7 +174,7 @@
         }
       },
       "work_area": {
-        "name": "Arbetsområde"
+        "name": "Aktuell plats"
       },
       "maintenance_distance": {
         "name": "Total körsträcka"
@@ -197,6 +206,26 @@
       },
       "rtk_wifi_rssi": {
         "name": "Wi-Fi RSSI"
+      },
+      "rtk_sats_num": {
+        "name": "Satelliter"
+      },
+      "position_mode": {
+        "name": "Positioneringsläge",
+        "state": {
+          "RTK_OVER_DATALINK": "Antenn över DataLink",
+          "RTK_OVER_INTERNET": "Antenn över internet",
+          "INAVI_NET_RTK": "iNavi NetRTK",
+          "INAVI_RTK_BOX": "iNavi RTK-box"
+        }
+      },
+      "rtk_app_connect_type": {
+        "name": "Anslutningstyp",
+        "state": {
+          "UNKNOWN": "Okänd",
+          "CON_BLE": "BLE",
+          "CON_WIFI": "Wi-Fi"
+        }
       },
       "task_area_status": {
         "name": "Uppgiftsområde {name}",

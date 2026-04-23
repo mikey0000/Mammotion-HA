@@ -115,7 +115,7 @@
       "l2_satellites": {
         "name": "Sateliți L2 (vedere în comun)"
       },
-      "position_mode": {
+      "positioning_mode": {
         "name": "Poziția RTK"
       },
       "position_type": {
@@ -134,6 +134,15 @@
           "OBS_ON": "At obstacle",
           "TURN_AREA_INSIDE": "In turn area",
           "VIRTUAL_INSIDE": "In virtual area"
+        }
+      },
+      "visual_positioning_status": {
+        "name": "Stare poziționare vizuală",
+        "state": {
+          "SIGNAL_NONE": "Niciunul",
+          "SIGNAL_INIT": "Inițializare",
+          "SIGNAL_GOOD": "Bun",
+          "SIGNAL_BAD": "Slab"
         }
       },
       "activity_mode": {
@@ -165,7 +174,7 @@
         }
       },
       "work_area": {
-        "name": "Zona de lucru tip de hașură"
+        "name": "Locație curentă"
       },
       "maintenance_distance": {
         "name": "Kilometraj total"
@@ -197,6 +206,26 @@
       },
       "rtk_wifi_rssi": {
         "name": "Wi-Fi RSSI"
+      },
+      "rtk_sats_num": {
+        "name": "Sateliți"
+      },
+      "position_mode": {
+        "name": "Mod de poziționare",
+        "state": {
+          "RTK_OVER_DATALINK": "Antenă prin DataLink",
+          "RTK_OVER_INTERNET": "Antenă prin Internet",
+          "INAVI_NET_RTK": "iNavi NetRTK",
+          "INAVI_RTK_BOX": "Cutie iNavi RTK"
+        }
+      },
+      "rtk_app_connect_type": {
+        "name": "Tip de conexiune",
+        "state": {
+          "UNKNOWN": "Necunoscut",
+          "CON_BLE": "BLE",
+          "CON_WIFI": "Wi-Fi"
+        }
       },
       "task_area_status": {
         "name": "Zona de sarcină {name}",

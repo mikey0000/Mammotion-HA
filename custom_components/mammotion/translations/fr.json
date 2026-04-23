@@ -115,7 +115,7 @@
       "l2_satellites": {
         "name": "Satellites L2 (Co-Visionnage)"
       },
-      "position_mode": {
+      "positioning_mode": {
         "name": "Position RTK"
       },
       "position_type": {
@@ -134,6 +134,15 @@
           "OBS_ON": "At obstacle",
           "TURN_AREA_INSIDE": "In turn area",
           "VIRTUAL_INSIDE": "In virtual area"
+        }
+      },
+      "visual_positioning_status": {
+        "name": "État du positionnement visuel",
+        "state": {
+          "SIGNAL_NONE": "Aucun",
+          "SIGNAL_INIT": "Initialisation",
+          "SIGNAL_GOOD": "Bon",
+          "SIGNAL_BAD": "Mauvais"
         }
       },
       "activity_mode": {
@@ -165,7 +174,7 @@
         }
       },
       "work_area": {
-        "name": "Zone de travail"
+        "name": "Emplacement actuel"
       },
       "maintenance_distance": {
         "name": "Kilométrage total"
@@ -197,6 +206,26 @@
       },
       "rtk_wifi_rssi": {
         "name": "Qualité du signal Wi-Fi"
+      },
+      "rtk_sats_num": {
+        "name": "Satellites"
+      },
+      "position_mode": {
+        "name": "Mode de positionnement",
+        "state": {
+          "RTK_OVER_DATALINK": "Antenne par DataLink",
+          "RTK_OVER_INTERNET": "Antenne sur Internet",
+          "INAVI_NET_RTK": "iNavi NetRTK",
+          "INAVI_RTK_BOX": "Boîtier iNavi RTK"
+        }
+      },
+      "rtk_app_connect_type": {
+        "name": "Type de connexion",
+        "state": {
+          "UNKNOWN": "Inconnu",
+          "CON_BLE": "BLE",
+          "CON_WIFI": "Wi-Fi"
+        }
       },
       "task_area_status": {
         "name": "Zone de tâche {name}",

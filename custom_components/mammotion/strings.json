@@ -112,17 +112,43 @@
       "l2_satellites": {
         "name": "L2 Satellites (Co-Viewing)"
       },
-      "position_mode": {
+      "positioning_mode": {
         "name": "RTK position"
+      },
+      "position_mode": {
+        "name": "Position mode",
+        "state": {
+          "RTK_OVER_DATALINK": "Antenna Over Datalink",
+          "RTK_OVER_INTERNET": "Antenna Over Internet",
+          "INAVI_NET_RTK": "iNavi NetRTK",
+          "INAVI_RTK_BOX": "iNavi RTK Box"
+        }
+      },
+      "rtk_app_connect_type": {
+        "name": "App Connection Type",
+        "state": {
+          "UNKNOWN": "Unknown",
+          "CON_BLE": "BLE",
+          "CON_WIFI": "Wi-Fi"
+        }
       },
       "position_type": {
         "name": "Device position type"
+      },
+      "visual_positioning_status": {
+        "name": "Visual positioning status",
+        "state": {
+          "SIGNAL_NONE": "None",
+          "SIGNAL_INIT": "Initialising",
+          "SIGNAL_GOOD": "Good",
+          "SIGNAL_BAD": "Bad"
+        }
       },
       "activity_mode": {
         "name": "Activity mode"
       },
       "work_area": {
-        "name": "Work area"
+        "name": "Current location"
       },
       "task_area_status": {
         "name": "Task area {name}",

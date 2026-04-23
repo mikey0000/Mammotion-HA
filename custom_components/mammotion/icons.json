@@ -53,7 +53,7 @@
       "l2_satellites": {
         "default": "mdi:satellite-variant"
       },
-      "position_mode": {
+      "positioning_mode": {
         "default": "mdi:map-marker"
       },
       "connect_type": {
