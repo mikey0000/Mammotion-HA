@@ -347,6 +347,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
             rtk_coordinator = MammotionRTKCoordinator(
                 hass, entry, rtk, mammotion, unique_name=rtk_unique_name
             )
+            await rtk_coordinator.async_restore_data()
             await rtk_coordinator.async_config_entry_first_refresh()
             mammotion_rtk.append(
                 MammotionRTKData(

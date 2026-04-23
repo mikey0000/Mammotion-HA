@@ -33,6 +33,7 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionBaseUpdateCoordinator]):
 
     @property
     def device_info(self) -> DeviceInfo:
+        """Return the HA device-registry info for this mower entity."""
         mower = self.coordinator.manager.get_device_by_name(
             self.coordinator.device_name
         )
@@ -47,13 +48,6 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionBaseUpdateCoordinator]):
                 and mower.mqtt_properties.params.items.extMod is not None
             ):
                 model_id = mower.mqtt_properties.params.items.extMod.value
-
-        nick_name = self.coordinator.device.nick_name
-        device_name = (
-            self.coordinator.device_name
-            if nick_name is None or nick_name == ""
-            else self.coordinator.device.nick_name
-        )
 
         connections: set[tuple[str, str]] = set()
 
@@ -83,7 +77,7 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionBaseUpdateCoordinator]):
             manufacturer="Mammotion",
             serial_number=self.coordinator.device_name.split("-", 1)[-1],
             model_id=model_id,
-            name=device_name,
+            name=self.coordinator.device_name,
             sw_version=swversion,
             model=self.coordinator.device.product_model or model_id,
             suggested_area="Garden",
@@ -121,10 +115,12 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionBaseUpdateCoordinator]):
                 (CONNECTION_NETWORK_MAC, format_mac(mower.mower_state.wifi_mac))
             )
 
-        if new_connections:
-            device_registry.async_update_device(
-                device.id, new_connections=new_connections
-            )
+        nick_name = self.coordinator.device.nick_name
+        device_registry.async_update_device(
+            device.id,
+            new_connections=new_connections,
+            name_by_user=nick_name if nick_name else None,
+        )
 
     @callback
     def _handle_coordinator_update(self) -> None:
@@ -155,15 +151,14 @@ class MammotionBaseRTKEntity(CoordinatorEntity[MammotionRTKCoordinator]):
 
     @property
     def device_info(self) -> DeviceInfo:
+        """Return the HA device-registry info for this RTK base station entity."""
         rtk_device: RTKBaseStationDevice = self.coordinator.data
 
         return DeviceInfo(
             identifiers={(DOMAIN, self.coordinator.unique_name)},
-            name=rtk_device.name
-            if self.coordinator.device.nick_name is None
-            else self.coordinator.device.nick_name,
+            name=self.coordinator.device_name,
             manufacturer="Mammotion",
-            serial_number=rtk_device.name,
+            serial_number=self.coordinator.device_name,
             model=rtk_device.name,
             model_id=self.coordinator.device.product_key,
             sw_version=self.coordinator.data.device_version,
@@ -176,6 +171,7 @@ class MammotionBaseRTKEntity(CoordinatorEntity[MammotionRTKCoordinator]):
 
     @property
     def available(self) -> bool:
+        """Return True when the RTK base station reports itself online."""
         return self.coordinator.data.online
 
     @callback
@@ -208,10 +204,12 @@ class MammotionBaseRTKEntity(CoordinatorEntity[MammotionRTKCoordinator]):
         if rtk.wifi_mac != "":
             new_connections.add((CONNECTION_NETWORK_MAC, format_mac(rtk.wifi_mac)))
 
-        if new_connections:
-            device_registry.async_update_device(
-                device.id, new_connections=new_connections
-            )
+        nick_name = self.coordinator.device.nick_name
+        device_registry.async_update_device(
+            device.id,
+            new_connections=new_connections,
+            name_by_user=nick_name if nick_name else None,
+        )
 
 
 class MammotionCameraBaseEntity(Camera, ABC):
@@ -230,6 +228,7 @@ class MammotionCameraBaseEntity(Camera, ABC):
 
     @property
     def device_info(self) -> DeviceInfo:
+        """Return the HA device-registry info for this mower entity."""
         mower = self.coordinator.manager.get_device_by_name(
             self.coordinator.device_name
         )
@@ -244,13 +243,6 @@ class MammotionCameraBaseEntity(Camera, ABC):
                 and mower.mqtt_properties.params.items.extMod is not None
             ):
                 model_id = mower.mqtt_properties.params.items.extMod.value
-
-        nick_name = self.coordinator.device.nick_name
-        device_name = (
-            self.coordinator.device_name
-            if nick_name is None or nick_name == ""
-            else self.coordinator.device.nick_name
-        )
 
         connections: set[tuple[str, str]] = set()
 
@@ -280,7 +272,7 @@ class MammotionCameraBaseEntity(Camera, ABC):
             manufacturer="Mammotion",
             serial_number=self.coordinator.device_name.split("-", 1)[-1],
             model_id=model_id,
-            name=device_name,
+            name=self.coordinator.device_name,
             sw_version=swversion,
             model=self.coordinator.device.product_model or model_id,
             suggested_area="Garden",
