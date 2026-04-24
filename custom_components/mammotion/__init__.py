@@ -359,7 +359,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
             )
 
             synthetic_device = _create_ble_only_device(device_name)
-            unique_name = _get_unique_device_name(hass, entry, device_name)
+            unique_name = device_name
 
             maintenance_coordinator = MammotionMaintenanceUpdateCoordinator(
                 hass, entry, synthetic_device, mammotion, unique_name=unique_name

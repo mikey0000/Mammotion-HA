@@ -236,26 +236,11 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         if device is None:
             return
         device.enabled = enabled
-        handle = self.manager.mower(self.device_name)
-        if handle is None:
-            return
         if enabled:
             self.update_failures = 0
             if not device.online:
                 device.online = True
-            for t_type in (
-                TransportType.CLOUD_ALIYUN,
-                TransportType.CLOUD_MAMMOTION,
-                TransportType.BLE,
-            ):
-                await handle.connect_transport(t_type)
-        else:
-            for t_type in (
-                TransportType.CLOUD_ALIYUN,
-                TransportType.CLOUD_MAMMOTION,
-                TransportType.BLE,
-            ):
-                await handle.disconnect_transport(t_type)
+        await self.manager.set_scheduled_updates(self.device_name, enabled=enabled)
 
     def is_online(self) -> bool:
         """Return True if the device currently has an active transport connection."""
@@ -554,10 +539,6 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
             unable_start_time=_to_minutes(start_time),
         )
 
-    async def async_set_blade_warning_time(self, hours: int) -> None:
-        """Set blade warning time in hours."""
-        await self.async_send_command("set_blade_warning_time", hours=hours)
-
     async def async_reset_blade_time(self) -> None:
         """Reset blade used time."""
         await self.async_send_command("reset_blade_time")
@@ -617,7 +598,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         await self.async_send_command("reset_blade_time")
 
     async def async_set_blade_warning_time(self, hours: int) -> None:
-        """Set blade replacement warning threshold in hours."""
+        """Set the blade warning time in hours."""
         await self.async_send_command("set_blade_warning_time", hours=hours)
 
     async def async_set_speed(self, speed: float) -> None:
@@ -1712,7 +1693,7 @@ class MammotionRTKCoordinator(MammotionBaseUpdateCoordinator[RTKBaseStationDevic
         self._subscriptions.clear()
         await super().async_shutdown()
 
-    async def _async_update_notification(self):
+    async def _async_update_notification(self, res: tuple[str, Any | None]) -> None:
         """Handle update notifications for the RTK device."""
         if rtk_device := self.manager.rtk_device(self.device_name):
             self.async_set_updated_data(
