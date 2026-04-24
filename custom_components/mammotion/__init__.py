@@ -84,34 +84,6 @@ PLATFORMS: list[Platform] = [
 type MammotionConfigEntry = ConfigEntry[MammotionDevices]
 
 
-def _get_unique_device_name(
-    hass: HomeAssistant,
-    entry: MammotionConfigEntry,
-    device_name: str,
-) -> str:
-    """Return a HA-unique device name, appending _2/_3/… when another entry already owns it."""
-    account = entry.data.get(CONF_ACCOUNTNAME)
-    device_registry = dr.async_get(hass)
-
-    def _same_account_owns(existing_device: dr.DeviceEntry) -> bool:
-        for entry_id in existing_device.config_entries:
-            config_entry = hass.config_entries.async_get_entry(entry_id)
-            if config_entry and config_entry.data.get(CONF_ACCOUNTNAME) == account:
-                return True
-        return False
-
-    existing = device_registry.async_get_device(identifiers={(DOMAIN, device_name)})
-    if existing is None or _same_account_owns(existing):
-        return device_name
-    counter = 2
-    while True:
-        candidate = f"{device_name}_{counter}"
-        existing = device_registry.async_get_device(identifiers={(DOMAIN, candidate)})
-        if existing is None or _same_account_owns(existing):
-            return candidate
-        counter += 1
-
-
 async def _attach_ble_to_mower(
     hass: HomeAssistant,
     entry: MammotionConfigEntry,
@@ -274,7 +246,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                     stay_connected_ble=stay_connected_ble,
                 )
 
-            unique_name = _get_unique_device_name(hass, entry, device.device_name)
+            unique_name = device.device_name
 
             maintenance_coordinator = MammotionMaintenanceUpdateCoordinator(
                 hass, entry, device, mammotion, unique_name=unique_name
