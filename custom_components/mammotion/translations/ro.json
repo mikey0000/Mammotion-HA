@@ -142,7 +142,8 @@
           "SIGNAL_NONE": "Niciunul",
           "SIGNAL_INIT": "Inițializare",
           "SIGNAL_GOOD": "Bun",
-          "SIGNAL_BAD": "Slab"
+          "SIGNAL_BAD": "Slab",
+          "SIGNAL_UNKNOWN": "Necunoscut"
         }
       },
       "activity_mode": {

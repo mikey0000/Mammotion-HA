@@ -150,9 +150,9 @@ LUBA_2_YUKA_ONLY_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         state_class=None,
         device_class=SensorDeviceClass.ENUM,
         native_unit_of_measurement=None,
-        value_fn=lambda mower_data: str(
-            VioState(mower_data.report_data.vision_info.vio_state).name
-        ),
+        value_fn=lambda mower_data: VioState(
+            mower_data.report_data.vision_info.vio_state
+        ).name,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     MammotionSensorEntityDescription(

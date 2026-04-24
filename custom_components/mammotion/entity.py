@@ -128,11 +128,6 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionBaseUpdateCoordinator]):
         # self._update_attr()
         super()._handle_coordinator_update()
 
-    # @abstractmethod
-    # @callback
-    # def _update_attr(self) -> None:
-    #     """Update the attribute of the entity."""
-
     @property
     def available(self) -> bool:
         """Return True if entity is available."""

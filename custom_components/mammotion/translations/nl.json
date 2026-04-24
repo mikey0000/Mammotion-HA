@@ -142,7 +142,8 @@
           "SIGNAL_NONE": "Geen",
           "SIGNAL_INIT": "Initialiseren",
           "SIGNAL_GOOD": "Goed",
-          "SIGNAL_BAD": "Slecht"
+          "SIGNAL_BAD": "Slecht",
+          "SIGNAL_UNKNOWN": "Onbekend"
         }
       },
       "activity_mode": {

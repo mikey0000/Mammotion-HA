@@ -340,7 +340,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
                         await self.coordinator.async_send_and_wait(
                             "query_generate_route_information", "bidire_reqconver_path"
                         )
-                if mode == WorkMode.MODE_READY or mode == WorkMode.MODE_INITIALIZATION:
+                if mode in (WorkMode.MODE_READY, WorkMode.MODE_INITIALIZATION):
                     trans_key = "start_failed"
                     if breakpoint_info != 0:
                         await self.coordinator.async_send_and_wait(
@@ -351,10 +351,9 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
                         return
                     if await self.coordinator.async_plan_route(operational_settings):
                         if not plan_only:
-                            await self.coordinator.async_send_command("start_job")
-                        await self.coordinator.async_get_plan_route(
-                            operational_settings
-                        )
+                            await self.coordinator.async_send_and_wait(
+                                "start_job", "zone_start_precent_t"
+                            )
 
             except COMMAND_EXCEPTIONS as exc:
                 raise HomeAssistantError(

@@ -142,7 +142,8 @@
           "SIGNAL_NONE": "Ingen",
           "SIGNAL_INIT": "Initialiserer",
           "SIGNAL_GOOD": "God",
-          "SIGNAL_BAD": "Dårlig"
+          "SIGNAL_BAD": "Dårlig",
+          "SIGNAL_UNKNOWN": "Ukendt"
         }
       },
       "activity_mode": {

@@ -142,7 +142,8 @@
           "SIGNAL_NONE": "Žádný",
           "SIGNAL_INIT": "Inicializace",
           "SIGNAL_GOOD": "Dobrý",
-          "SIGNAL_BAD": "Špatný"
+          "SIGNAL_BAD": "Špatný",
+          "SIGNAL_UNKNOWN": "Neznámý"
         }
       },
       "activity_mode": {

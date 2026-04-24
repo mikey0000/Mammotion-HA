@@ -142,7 +142,8 @@
           "SIGNAL_NONE": "None",
           "SIGNAL_INIT": "Initialising",
           "SIGNAL_GOOD": "Good",
-          "SIGNAL_BAD": "Bad"
+          "SIGNAL_BAD": "Bad",
+          "SIGNAL_UNKNOWN": "Unknown"
         }
       },
       "activity_mode": {

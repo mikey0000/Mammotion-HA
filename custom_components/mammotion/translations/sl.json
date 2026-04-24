@@ -142,7 +142,8 @@
           "SIGNAL_NONE": "Brez",
           "SIGNAL_INIT": "Inicializacija",
           "SIGNAL_GOOD": "Dobro",
-          "SIGNAL_BAD": "Slabo"
+          "SIGNAL_BAD": "Slabo",
+          "SIGNAL_UNKNOWN": "Neznano"
         }
       },
       "activity_mode": {
