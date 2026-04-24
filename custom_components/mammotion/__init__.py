@@ -324,7 +324,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                     stay_connected_ble=stay_connected_ble,
                 )
 
-            rtk_unique_name = _get_unique_device_name(hass, entry, rtk.device_name)
+            rtk_unique_name = rtk.device_name
             rtk_coordinator = MammotionRTKCoordinator(
                 hass, entry, rtk, mammotion, unique_name=rtk_unique_name
             )
