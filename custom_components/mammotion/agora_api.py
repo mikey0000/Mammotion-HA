@@ -8,7 +8,6 @@ The implementation is based on analysis of the Agora JavaScript SDK (agoraRTC_N.
 to ensure compatibility and parity with client-side behavior.
 """
 
-import asyncio
 import hashlib
 import json
 import logging
@@ -16,7 +15,7 @@ import time
 from dataclasses import dataclass
 from random import randint
 from types import TracebackType
-from typing import Any, Optional
+from typing import Any, cast
 
 import aiohttp
 
@@ -62,14 +61,14 @@ class EdgeAddress:
 
     ip: str
     port: int
-    username: Optional[str] = None
-    credentials: Optional[str] = None
-    ticket: Optional[str] = None
-    fingerprint: Optional[str] = None
+    username: str | None = None
+    credentials: str | None = None
+    ticket: str | None = None
+    fingerprint: str | None = None
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
-        result = {"ip": self.ip, "port": self.port}
+        result: dict[str, Any] = {"ip": self.ip, "port": self.port}
         if self.ticket:
             result["ticket"] = self.ticket
         if self.fingerprint:
@@ -82,12 +81,12 @@ class ICEServer:
     """Represents an RTCIceServer configuration."""
 
     urls: str | list[str]
-    username: Optional[str] = None
-    credential: Optional[str] = None
+    username: str | None = None
+    credential: str | None = None
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for RTCPeerConnection."""
-        result = {"urls": self.urls}
+        result: dict[str, Any] = {"urls": self.urls}
         if self.username:
             result["username"] = self.username
         if self.credential:
@@ -110,13 +109,15 @@ class AgoraResponse:
     cid: int
     cname: str
     server_ts: int
-    detail: dict
+    detail: dict[str, Any]
     flag: int
     opid: int
-    responses: dict = None  # Multi-flag responses: {flag: response_dict}
+    responses: dict[int, dict[str, Any]] | None = (
+        None  # Multi-flag responses: {flag: response_dict}
+    )
 
     @classmethod
-    def from_api_response(cls, response_data: dict) -> "AgoraResponse":
+    def from_api_response(cls, response_data: dict[str, Any]) -> AgoraResponse:
         """Parse API response into AgoraResponse object.
 
         Handles both single and multiple service flag responses.
@@ -348,10 +349,10 @@ class AgoraResponse:
 
     def get_turn_server_config(
         self,
-        gateway_address: Optional[EdgeAddress] = None,
-        token: Optional[str] = None,
+        gateway_address: EdgeAddress | None = None,
+        token: str | None = None,
         use_gateway: bool = True,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Generate complete turnServer configuration matching Agora SDK format.
 
         Returns object with both 'servers' (from flag 4194310) and
@@ -366,7 +367,11 @@ class AgoraResponse:
             Dict with 'mode', 'servers', and 'serversFromGateway' arrays
 
         """
-        config = {"mode": "manual", "servers": [], "serversFromGateway": []}
+        config: dict[str, Any] = {
+            "mode": "manual",
+            "servers": [],
+            "serversFromGateway": [],
+        }
 
         # Build 'servers' array from TURN addresses (flag 4194310)
         turn_addresses = self.get_turn_addresses()
@@ -399,7 +404,7 @@ class AgoraResponse:
 
         return config
 
-    def get_responses_by_flag(self, flag: int) -> Optional[dict]:
+    def get_responses_by_flag(self, flag: int) -> dict[str, Any] | None:
         """Get response data for a specific service flag.
 
         Args:
@@ -423,7 +428,7 @@ class AgoraResponse:
         if self.responses:
             gateway_data = self.responses.get(RESPONSE_FLAGS["CHOOSE_SERVER"])
             if gateway_data:
-                return gateway_data.get("addresses", [])
+                return cast(list[EdgeAddress], gateway_data.get("addresses", []))
         # Fallback to primary addresses if flag 4096 is the main response
         if self.flag == RESPONSE_FLAGS["CHOOSE_SERVER"]:
             return self.addresses
@@ -439,13 +444,13 @@ class AgoraResponse:
         if self.responses:
             turn_data = self.responses.get(RESPONSE_FLAGS["CLOUD_PROXY_FALLBACK"])
             if turn_data:
-                return turn_data.get("addresses", [])
+                return cast(list[EdgeAddress], turn_data.get("addresses", []))
         # Fallback to primary addresses if flag 4194310 is the main response
         if self.flag == RESPONSE_FLAGS["CLOUD_PROXY_FALLBACK"]:
             return self.addresses
         return []
 
-    def to_ap_response(self, flag: Optional[int] = None) -> dict:
+    def to_ap_response(self, flag: int | None = None) -> dict[str, Any]:
         """Format response data for websocket join_v3 ap_response field.
 
         Args:
@@ -507,7 +512,7 @@ class AgoraAPIClient:
         "webrtc2-ap-web-6.agora.io",
     ]
 
-    def __init__(self, session: Optional[aiohttp.ClientSession] = None):
+    def __init__(self, session: aiohttp.ClientSession | None = None):
         """Initialize Agora API client.
 
         Args:
@@ -518,7 +523,7 @@ class AgoraAPIClient:
         self.session = session
         self._own_session = session is None
 
-    async def __aenter__(self) -> "AgoraAPIClient":
+    async def __aenter__(self) -> AgoraAPIClient:
         """Context manager entry."""
         return self
 
@@ -538,12 +543,12 @@ class AgoraAPIClient:
         token: str,
         channel_name: str,
         user_id: int,
-        string_uid: Optional[str] = None,
+        string_uid: str | None = None,
         role: int = 1,
         area_code: str = "CN,GLOBAL",
-        service_flags: Optional[list[int]] = None,
-        sid: Optional[str] = None,
-        proxy_server: Optional[str] = None,
+        service_flags: list[int] | None = None,
+        sid: str | None = None,
+        proxy_server: str | None = None,
     ) -> AgoraResponse:
         """Make a request to choose a server (URI 22).
 
@@ -604,11 +609,11 @@ class AgoraAPIClient:
         token: str,
         channel_name: str,
         user_id: int,
-        string_uid: Optional[str] = None,
-        edge_addresses: Optional[list[dict]] = None,
-        sid: Optional[str] = None,
-        service_flags: Optional[list[int]] = None,
-        proxy_server: Optional[str] = None,
+        string_uid: str | None = None,
+        edge_addresses: list[dict[str, Any]] | None = None,
+        sid: str | None = None,
+        service_flags: list[int] | None = None,
+        proxy_server: str | None = None,
     ) -> AgoraResponse:
         """Make a request to update ticket (URI 28).
 
@@ -641,6 +646,9 @@ class AgoraAPIClient:
 
         if edge_addresses is None:
             edge_addresses = []
+
+        if sid is None:
+            sid = str(randint(0, 2**31 - 1))
 
         # Build request payload
         request_payload = self._build_request_payload(
@@ -699,8 +707,8 @@ class AgoraAPIClient:
         uri: int,
         role: int = 1,
         area_code: str = "CN,GLOBAL",
-        edge_addresses: Optional[list[dict]] = None,
-    ) -> dict:
+        edge_addresses: list[dict[str, Any]] | None = None,
+    ) -> dict[str, Any]:
         """Build the request payload for Agora API.
 
         Args:
@@ -766,8 +774,8 @@ class AgoraAPIClient:
         return request_payload
 
     async def _make_api_call(
-        self, request_payload: dict, proxy_server: Optional[str] = None
-    ) -> dict:
+        self, request_payload: dict[str, Any], proxy_server: str | None = None
+    ) -> dict[str, Any]:
         """Make the actual HTTP API call to Agora endpoint.
 
         Args:
@@ -796,7 +804,7 @@ class AgoraAPIClient:
                         session, domain, request_payload, proxy_server
                     )
                     return response
-                except (aiohttp.ClientError, asyncio.TimeoutError, Exception):
+                except (TimeoutError, aiohttp.ClientError, Exception):
                     continue
 
             # Fall back to backup servers
@@ -806,7 +814,7 @@ class AgoraAPIClient:
                         session, domain, request_payload, proxy_server
                     )
                     return response
-                except (aiohttp.ClientError, asyncio.TimeoutError, Exception):
+                except (TimeoutError, aiohttp.ClientError, Exception):
                     continue
 
             raise Exception("All Agora API servers failed to respond")
@@ -819,9 +827,9 @@ class AgoraAPIClient:
         self,
         session: aiohttp.ClientSession,
         domain: str,
-        request_payload: dict,
-        proxy_server: Optional[str] = None,
-    ) -> dict:
+        request_payload: dict[str, Any],
+        proxy_server: str | None = None,
+    ) -> dict[str, Any]:
         """Call a single Agora endpoint.
 
         Args:
@@ -855,4 +863,4 @@ class AgoraAPIClient:
                 raise Exception(f"HTTP {resp.status}: {await resp.text()}")
 
             response_data = await resp.json()
-            return response_data
+            return cast(dict[str, Any], response_data)

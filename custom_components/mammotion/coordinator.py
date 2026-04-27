@@ -89,7 +89,7 @@ MAP_INTERVAL = timedelta(minutes=30)
 RTK_INTERVAL = timedelta(hours=5)
 
 
-class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
+class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # type: ignore[misc]
     """Mammotion DataUpdateCoordinator."""
 
     def __init__(
@@ -138,7 +138,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         device = self.manager.get_device_by_name(self.device_name)
 
         if self.data is None:
-            self.data = device
+            self.data = device  # type: ignore[assignment]
 
     @abstractmethod
     def get_coordinator_data(self, device: MowingDevice) -> DataT:
@@ -255,7 +255,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         if handle.has_transport(TransportType.BLE):
             if handle.is_transport_connected(TransportType.BLE):
                 return True
-        return not handle.availability.mqtt_reported_offline
+        return bool(not handle.availability.mqtt_reported_offline)
 
     async def async_refresh_login(self, exc: Exception | None = None) -> None:
         """Refresh login credentials asynchronously.
@@ -429,9 +429,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
             ) from exc
         return False
 
-    async def async_send_bluetooth_command(
-        self, key: str, **kwargs: Any
-    ) -> bool | None:
+    async def async_send_bluetooth_command(self, key: str, **kwargs: Any) -> None:
         """Send command via BLE transport."""
         await self.async_send_command(key, prefer_ble=True, **kwargs)
 
@@ -737,7 +735,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         )
 
     async def async_request_iot_sync_continuous(
-        self, stop: bool = False, period=1000, no_change_period=4000
+        self, stop: bool = False, period: int = 1000, no_change_period: int = 4000
     ) -> None:
         """Sync specific info from device."""
         await self.async_send_command(
@@ -777,7 +775,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         """Send command and update."""
         svg_message = SvgMessage()
 
-        return await self.async_send_command("send_svg_data", svg_message=svg_message)
+        await self.async_send_command("send_svg_data", svg_message=svg_message)
 
     def generate_route_information(
         self, operation_settings: OperationSettings
@@ -926,6 +924,10 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
         """Get map data from the device."""
         store = Store(self.hass, version=1, minor_version=2, key=self.device_name)
         await store.async_save(data.to_dict())
+
+    async def remove_saved_data(self):
+        store = Store(self.hass, version=1, minor_version=2, key=self.device_name)
+        await store.async_remove()
 
     async def _async_update_data(self) -> DataT | None:
         """Update data from the device."""
@@ -1144,7 +1146,7 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
         if device := self.manager.get_device_by_name(self.device_name):
             self.async_set_updated_data(device)
 
-    async def _async_setup(self):
+    async def _async_setup(self) -> None:
         await super()._async_setup()
         await self.async_request_iot_sync()
 
@@ -1496,7 +1498,7 @@ class MammotionDeviceErrorUpdateCoordinator(
     def get_error_code(self, number: int) -> int:
         """Get error code from an error code list."""
         try:
-            return abs(next(iter(self.data.errors.err_code_list)))
+            return int(abs(next(iter(self.data.errors.err_code_list))))
         except StopIteration:
             return 0
 

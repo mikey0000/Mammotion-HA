@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+from copy import copy
 from datetime import time
-from typing import Any
+from typing import Any, cast
 
 import voluptuous as vol
 from homeassistant.components.lawn_mower import (
@@ -116,7 +117,7 @@ def get_entity_attribute(
     # Check if the entity exists and has attributes
     if entity and attribute_name in entity.attributes:
         # Return the specific attribute
-        return entity.attributes.get(attribute_name, None)
+        return cast(str | None, entity.attributes.get(attribute_name))
     # Return None if the entity or attribute does not exist
     return None
 
@@ -189,6 +190,10 @@ async def async_setup_entry(
             LOGGER.error("Could not find entity %s", call.data[ATTR_ENTITY_ID])
             return {}
         coordinator = entity.reporting_coordinator
+
+        # if coordinator.data.report_data.dev.sys_status == WorkMode.MODE_WORKING:
+        #     await coordinator.async_request_iot_sync_continuous()
+
         return apply_geojson_offset(
             coordinator.data.map.generated_geojson,
             coordinator.map_offset_lat,
@@ -239,7 +244,7 @@ async def async_setup_entry(
     )
 
 
-class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):
+class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: ignore[misc]
     """Representation of a Mammotion Lawn Mower."""
 
     _attr_supported_features = (

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Any
 
 from aiohttp import ClientConnectorError
 from homeassistant.components import bluetooth
@@ -488,7 +489,7 @@ def store_cloud_credentials(
     )
 
 
-def _load_cached_credentials(entry: MammotionConfigEntry) -> dict:
+def _load_cached_credentials(entry: MammotionConfigEntry) -> dict[str, Any]:
     """Translate HA config-entry keys to library cache keys.
 
     Returns the translated dict when at least one credential path's sentinel
@@ -517,15 +518,18 @@ async def async_unload_entry(hass: HomeAssistant, entry: MammotionConfigEntry) -
         for mower in entry.runtime_data.mowers:
             mower.maintenance_coordinator.store_cloud_credentials()
             try:
+                if handle := mower.api.mower(mower.name):
+                    await handle.stop()
                 mower.api.teardown_device_watchers(mower.name)
                 mower.api.remove_device(mower.name)
+                # await mower.reporting_coordinator.remove_saved_data()
             except TimeoutError:
                 """Do nothing as this sometimes occurs with disconnecting BLE."""
-    return unload_ok
+    return bool(unload_ok)
 
 
 async def async_remove_config_entry_device(
-    hass: HomeAssistant, config_entry: ConfigEntry, device_entry: DeviceEntry
+    hass: HomeAssistant, config_entry: MammotionConfigEntry, device_entry: DeviceEntry
 ) -> bool:
     """Remove a config entry from a device."""
     device_identifier = next(

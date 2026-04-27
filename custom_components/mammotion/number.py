@@ -1,5 +1,6 @@
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
+from typing import Any, cast
 
 from homeassistant.components.number import (
     NumberDeviceClass,
@@ -27,14 +28,14 @@ from .entity import MammotionBaseEntity
 
 
 @dataclass(frozen=True, kw_only=True)
-class MammotionConfigNumberEntityDescription(NumberEntityDescription):
+class MammotionConfigNumberEntityDescription(NumberEntityDescription):  # type: ignore[misc]
     """Describes Mammotion number entity."""
 
-    set_fn: Callable[[MammotionBaseUpdateCoordinator, float], None] = None
-    set_async_fn: Callable[[MammotionBaseUpdateCoordinator, float], Awaitable[None]] = (
-        None
-    )
-    get_fn: Callable[[MammotionBaseUpdateCoordinator], float | None] = None
+    set_fn: Callable[[MammotionBaseUpdateCoordinator[Any], float], None] | None = None
+    set_async_fn: (
+        Callable[[MammotionBaseUpdateCoordinator[Any], float], Awaitable[None]] | None
+    ) = None
+    get_fn: Callable[[MammotionBaseUpdateCoordinator[Any]], float | None] | None = None
 
 
 MAP_OFFSET_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
@@ -207,14 +208,14 @@ async def async_setup_entry(
         async_add_entities(entities)
 
 
-class MammotionConfigNumberEntity(MammotionBaseEntity, RestoreNumber):
+class MammotionConfigNumberEntity(MammotionBaseEntity, RestoreNumber):  # type: ignore[misc]
     entity_description: MammotionConfigNumberEntityDescription
     _attr_has_entity_name = True
     _attr_entity_category = EntityCategory.CONFIG
 
     def __init__(
         self,
-        coordinator: MammotionBaseUpdateCoordinator,
+        coordinator: MammotionBaseUpdateCoordinator[Any],
         entity_description: MammotionConfigNumberEntityDescription,
     ) -> None:
         super().__init__(coordinator, entity_description.key)
@@ -263,7 +264,7 @@ class MammotionWorkingNumberEntity(MammotionConfigNumberEntity):
 
     def __init__(
         self,
-        coordinator: MammotionBaseUpdateCoordinator,
+        coordinator: MammotionBaseUpdateCoordinator[Any],
         entity_description: MammotionConfigNumberEntityDescription,
         limits: DeviceLimits,
     ) -> None:
@@ -288,12 +289,12 @@ class MammotionWorkingNumberEntity(MammotionConfigNumberEntity):
     @property
     def native_min_value(self) -> float:
         """Return the minimum value."""
-        return self._attr_native_min_value
+        return cast(float, self._attr_native_min_value)
 
     @property
     def native_max_value(self) -> float:
         """Return the maximum value."""
-        return self._attr_native_max_value
+        return cast(float, self._attr_native_max_value)
 
     # @property
     # def native_value(self) -> float | None:

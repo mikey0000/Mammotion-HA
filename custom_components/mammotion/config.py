@@ -8,7 +8,7 @@ from pymammotion.http.model.http import ErrorInfo
 from .const import DOMAIN
 
 
-class MammotionConfigStore(Store):
+class MammotionConfigStore(Store):  # type: ignore[misc]
     """A configuration store for Mammotion."""
 
     _STORAGE_VERSION = 1
@@ -26,8 +26,8 @@ class MammotionConfigStore(Store):
                 "err_code_list_time": [],
             }
             error_codes: dict[str, ErrorInfo] | None = old_data.get("error_codes")
-            err_code_list: list | None = old_data.get("err_code_list")
-            err_code_list_time: list | None = old_data.get("err_code_list_time")
+            err_code_list: list[Any] | None = old_data.get("err_code_list")
+            err_code_list_time: list[Any] | None = old_data.get("err_code_list_time")
             if error_codes is not None:
                 old_data["errors"]["error_codes"] = old_data["error_codes"]
                 del old_data["error_codes"]

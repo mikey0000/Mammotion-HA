@@ -1,6 +1,7 @@
 """Base class for entities."""
 
 from abc import ABC
+from typing import Any
 
 from homeassistant.components import bluetooth
 from homeassistant.components.camera import Camera, CameraEntityFeature
@@ -21,12 +22,14 @@ from .const import DOMAIN
 from .coordinator import MammotionBaseUpdateCoordinator, MammotionRTKCoordinator
 
 
-class MammotionBaseEntity(CoordinatorEntity[MammotionBaseUpdateCoordinator]):
+class MammotionBaseEntity(CoordinatorEntity[MammotionBaseUpdateCoordinator[Any]]):  # type: ignore[misc]
     """Representation of a Mammotion Lawn Mower."""
 
     _attr_has_entity_name = True
 
-    def __init__(self, coordinator: MammotionBaseUpdateCoordinator, key: str) -> None:
+    def __init__(
+        self, coordinator: MammotionBaseUpdateCoordinator[Any], key: str
+    ) -> None:
         """Initialize the Lawn Mower."""
         super().__init__(coordinator)
         self._attr_unique_id = f"{coordinator.unique_name}_{key}"
@@ -89,7 +92,7 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionBaseUpdateCoordinator]):
         await super().async_added_to_hass()
         self._cleanup_stale_connections()
 
-    @callback
+    @callback  # type: ignore[misc]
     def _cleanup_stale_connections(self) -> None:
         """Replace device registry connections with only the valid mower state values."""
         mower = self.coordinator.manager.get_device_by_name(
@@ -122,7 +125,7 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionBaseUpdateCoordinator]):
             name_by_user=nick_name if nick_name else None,
         )
 
-    @callback
+    @callback  # type: ignore[misc]
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
         # self._update_attr()
@@ -134,7 +137,7 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionBaseUpdateCoordinator]):
         return self.coordinator.data is not None and self.coordinator.is_online()
 
 
-class MammotionBaseRTKEntity(CoordinatorEntity[MammotionRTKCoordinator]):
+class MammotionBaseRTKEntity(CoordinatorEntity[MammotionRTKCoordinator]):  # type: ignore[misc]
     """Representation of a Mammotion RTK entity."""
 
     _attr_has_entity_name = True
@@ -167,9 +170,9 @@ class MammotionBaseRTKEntity(CoordinatorEntity[MammotionRTKCoordinator]):
     @property
     def available(self) -> bool:
         """Return True when the RTK base station reports itself online."""
-        return self.coordinator.data.online
+        return bool(self.coordinator.data.online)
 
-    @callback
+    @callback  # type: ignore[misc]
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
         super()._handle_coordinator_update()
@@ -179,7 +182,7 @@ class MammotionBaseRTKEntity(CoordinatorEntity[MammotionRTKCoordinator]):
         await super().async_added_to_hass()
         self._cleanup_stale_connections()
 
-    @callback
+    @callback  # type: ignore[misc]
     def _cleanup_stale_connections(self) -> None:
         """Replace device registry connections with only the valid mower state values."""
         rtk = self.coordinator.manager.get_device_by_name(self.coordinator.device_name)
@@ -207,7 +210,7 @@ class MammotionBaseRTKEntity(CoordinatorEntity[MammotionRTKCoordinator]):
         )
 
 
-class MammotionCameraBaseEntity(Camera, ABC):
+class MammotionCameraBaseEntity(Camera, ABC):  # type: ignore[misc]
     """Devices that support cameras."""
 
     _attr_has_entity_name = True
@@ -215,7 +218,9 @@ class MammotionCameraBaseEntity(Camera, ABC):
     _attr_is_streaming = True
     _attr_supported_features = CameraEntityFeature.STREAM
 
-    def __init__(self, coordinator: MammotionBaseUpdateCoordinator, key: str) -> None:
+    def __init__(
+        self, coordinator: MammotionBaseUpdateCoordinator[Any], key: str
+    ) -> None:
         """Initialize the Lawn Mower."""
         super().__init__()
         self.coordinator = coordinator
