@@ -4,12 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Build Commands
 
-- Install dependencies: `poetry install`
-- Run in environment: `poetry run`
-- Type checking: `mypy custom_components/`
-- Format code: `ruff format`
-- Lint code: `ruff check`
-- Run pre-commit: `pre-commit run --all-files`
+- Install dependencies: `uv sync`
+- Run in environment: `uv run`
+- Run tests: `uv run pytest`
+- Type checking: `uv run mypy custom_components/`
+- Format code: `uv run ruff format`
+- Lint code: `uv run ruff check`
+- Run pre-commit: `uv run pre-commit run --all-files`
 
 ## Code Style Guidelines
 

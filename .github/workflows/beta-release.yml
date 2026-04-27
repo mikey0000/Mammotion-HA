@@ -42,17 +42,8 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.13.2"
-
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
-        with:
-          version: latest
-          virtualenvs-create: true
-          virtualenvs-in-project: true
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
 
       - name: Determine beta version
         id: version
@@ -82,14 +73,14 @@ jobs:
         run: |
           sed -i 's/^version = ".*"/version = "${{ steps.version.outputs.beta_version }}"/' pyproject.toml
 
-      - name: Run poetry lock
-        run: poetry lock
+      - name: Update uv.lock
+        run: uv lock
 
       - name: Commit and push version bump
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add custom_components/mammotion/manifest.json pyproject.toml poetry.lock
+          git add custom_components/mammotion/manifest.json pyproject.toml uv.lock
           git commit -m "chore: bump version to ${{ steps.version.outputs.beta_version }} [skip ci]"
           git push
 

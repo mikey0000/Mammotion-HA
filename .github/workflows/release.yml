@@ -18,17 +18,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.13.2"
-
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
-        with:
-          version: latest
-          virtualenvs-create: true
-          virtualenvs-in-project: true
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
 
       - name: Get version from tag
         id: get_version
@@ -37,7 +28,7 @@ jobs:
       - name: Check versions match tag
         run: |
           # Extract version from pyproject.toml
-          PACKAGE_VERSION=$(poetry version -s)
+          PACKAGE_VERSION=$(grep '^version = ' pyproject.toml | head -1 | sed 's/version = "\(.*\)"/\1/')
           # Extract version from manifest.json
           MANIFEST_VERSION=$(jq -r .version custom_components/mammotion/manifest.json)
           # Get version from tag

@@ -414,6 +414,12 @@
       },
       "toward_included_angle": {
         "name": "Kreuzungswinkel"
+      },
+      "map_offset_lat": {
+        "name": "Kartenversatz Breitengrad"
+      },
+      "map_offset_lon": {
+        "name": "Kartenversatz Längengrad"
       }
     },
     "device_tracker": {

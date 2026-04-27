@@ -37,6 +37,31 @@ class MammotionConfigNumberEntityDescription(NumberEntityDescription):
     get_fn: Callable[[MammotionBaseUpdateCoordinator], float | None] = None
 
 
+MAP_OFFSET_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
+    MammotionConfigNumberEntityDescription(
+        key="map_offset_lat",
+        device_class=NumberDeviceClass.DISTANCE,
+        native_unit_of_measurement=UnitOfLength.METERS,
+        step=0.1,
+        min_value=-50,
+        max_value=50,
+        mode=NumberMode.BOX,
+        set_fn=lambda coordinator, value: setattr(coordinator, "map_offset_lat", value),
+        get_fn=lambda coordinator: coordinator.map_offset_lat,
+    ),
+    MammotionConfigNumberEntityDescription(
+        key="map_offset_lon",
+        device_class=NumberDeviceClass.DISTANCE,
+        native_unit_of_measurement=UnitOfLength.METERS,
+        step=0.1,
+        min_value=-50,
+        max_value=50,
+        mode=NumberMode.BOX,
+        set_fn=lambda coordinator, value: setattr(coordinator, "map_offset_lon", value),
+        get_fn=lambda coordinator: coordinator.map_offset_lon,
+    ),
+)
+
 NUMBER_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
     MammotionConfigNumberEntityDescription(
         key="start_progress",
@@ -149,6 +174,12 @@ async def async_setup_entry(
         for entity_description in NUMBER_WORKING_ENTITIES:
             entity = MammotionWorkingNumberEntity(
                 mower.reporting_coordinator, entity_description, limits
+            )
+            entities.append(entity)
+
+        for entity_description in MAP_OFFSET_ENTITIES:
+            entity = MammotionConfigNumberEntity(
+                mower.reporting_coordinator, entity_description
             )
             entities.append(entity)
 

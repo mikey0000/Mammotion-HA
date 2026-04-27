@@ -414,6 +414,12 @@
       },
       "toward_included_angle": {
         "name": "Korsningsvinkel"
+      },
+      "map_offset_lat": {
+        "name": "Kartoffset latitud"
+      },
+      "map_offset_lon": {
+        "name": "Kartoffset longitud"
       }
     },
     "device_tracker": {

@@ -414,6 +414,12 @@
       },
       "toward_included_angle": {
         "name": "Kruishoek"
+      },
+      "map_offset_lat": {
+        "name": "Kaartoffset breedtegraad"
+      },
+      "map_offset_lon": {
+        "name": "Kaartoffset lengtegraad"
       }
     },
     "device_tracker": {

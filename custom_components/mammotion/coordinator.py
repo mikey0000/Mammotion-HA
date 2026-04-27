@@ -132,6 +132,8 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):
             _user_account = 0
         self.commands = MammotionCommand(device.device_name, _user_account)
         self._subscriptions: list[Subscription] = []
+        self.map_offset_lat: float = 0.0
+        self.map_offset_lon: float = 0.0
 
         device = self.manager.get_device_by_name(self.device_name)
 

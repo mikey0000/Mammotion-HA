@@ -414,6 +414,12 @@
       },
       "toward_included_angle": {
         "name": "Úhel křížení"
+      },
+      "map_offset_lat": {
+        "name": "Posun mapy – zeměpisná šířka"
+      },
+      "map_offset_lon": {
+        "name": "Posun mapy – zeměpisná délka"
       }
     },
     "device_tracker": {

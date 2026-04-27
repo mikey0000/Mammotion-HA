@@ -414,6 +414,12 @@
       },
       "toward_included_angle": {
         "name": "Kot prečkanja"
+      },
+      "map_offset_lat": {
+        "name": "Zamik zemljevida širina"
+      },
+      "map_offset_lon": {
+        "name": "Zamik zemljevida dolžina"
       }
     },
     "device_tracker": {

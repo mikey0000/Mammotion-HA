@@ -414,6 +414,12 @@
       },
       "toward_included_angle": {
         "name": "Angolo Di Attraversamento"
+      },
+      "map_offset_lat": {
+        "name": "Offset mappa latitudine"
+      },
+      "map_offset_lon": {
+        "name": "Offset mappa longitudine"
       }
     },
     "device_tracker": {

@@ -1,31 +1,39 @@
-[tool.poetry]
-name = "Mammotion-HA"
-version = "0.5.26"
+[project]
+name = "mammotion-ha"
+version = "0.5.27"
 description = "Mammotion integration for HACS"
-authors = ["Michael Arthur <michael@jumblesoft.co.nz>", "jLynx <@jlynx>"]
+authors = [
+    {name = "Michael Arthur", email = "michael@jumblesoft.co.nz"},
+    {name = "jLynx"},
+]
 readme = "README.md"
-package-mode = false
+requires-python = ">=3.14.2"
+dependencies = [
+    "pymammotion==0.7.81",
+    "homeassistant>=2026.1.0",
+    "autotyping>=24.3.0",
+    "websockets>=15.0.1",
+    "sdp-transform>=1.1.0",
+]
 
-[tool.poetry.dependencies]
-python = "~3.13.2"
-pymammotion = "0.7.80"
-homeassistant = "^2026.1.0"
-autotyping = "^24.3.0"
-websockets = "^15.0.1"
-sdp-transform = "^1.1.0"
+[dependency-groups]
+dev = [
+    "pre-commit>=3.8.0",
+    "pylint>=3.3.9",
+    "ruff>=0.14.3",
+    "mypy>=1.18.2",
+    "pytest>=8.0.0",
+]
 
-[tool.poetry.group.dev.dependencies]
-pre-commit = "^3.8.0"
-pylint = "^3.3.9"
-ruff = "^0.14.3"
-mypy = "^1.18.2"
+[tool.uv]
+package = false
 
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
 
 [tool.pylint.MAIN]
-py-version = "3.13"
+py-version = "3.14"
 
 load-plugins = [
     "pylint.extensions.code_style",

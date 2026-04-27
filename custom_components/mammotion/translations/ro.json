@@ -414,6 +414,12 @@
       },
       "toward_included_angle": {
         "name": "Unghiul de trecere"
+      },
+      "map_offset_lat": {
+        "name": "Decalaj hartă latitudine"
+      },
+      "map_offset_lon": {
+        "name": "Decalaj hartă longitudine"
       }
     },
     "device_tracker": {

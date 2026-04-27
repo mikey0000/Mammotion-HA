@@ -414,6 +414,12 @@
       },
       "toward_included_angle": {
         "name": "Angle de traversée"
+      },
+      "map_offset_lat": {
+        "name": "Décalage carte latitude"
+      },
+      "map_offset_lon": {
+        "name": "Décalage carte longitude"
       }
     },
     "device_tracker": {

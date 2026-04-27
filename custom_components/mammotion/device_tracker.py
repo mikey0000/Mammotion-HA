@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import math
 from typing import Any
 
 from homeassistant.components.device_tracker import SourceType, TrackerEntity
@@ -52,17 +53,29 @@ class MammotionTracker(MammotionBaseEntity, TrackerEntity, RestoreEntity):
 
     @property
     def latitude(self) -> float | None:
-        """Return latitude value of the device."""
-        return self.coordinator.manager.get_device_by_name(
+        """Return latitude value of the device, adjusted by map offset."""
+        lat = self.coordinator.manager.get_device_by_name(
             self.coordinator.device_name
         ).location.device.latitude
+        if lat is None:
+            return None
+        return lat + self.coordinator.map_offset_lat / 111_111.0
 
     @property
     def longitude(self) -> float | None:
-        """Return longitude value of the device."""
-        return self.coordinator.manager.get_device_by_name(
+        """Return longitude value of the device, adjusted by map offset."""
+        lon = self.coordinator.manager.get_device_by_name(
             self.coordinator.device_name
         ).location.device.longitude
+        if lon is None:
+            return None
+        lat = self.latitude
+        if lat is None:
+            return None
+        cos_lat = math.cos(math.radians(lat))
+        if cos_lat == 0:
+            return lon
+        return lon + self.coordinator.map_offset_lon / (111_111.0 * cos_lat)
 
     @property
     def battery_level(self) -> int | None:

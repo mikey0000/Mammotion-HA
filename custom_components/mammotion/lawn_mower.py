@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from copy import copy
 from datetime import time
 from typing import Any
 
@@ -28,6 +27,7 @@ from . import MammotionConfigEntry
 from .const import COMMAND_EXCEPTIONS, DOMAIN, LOGGER
 from .coordinator import MammotionReportUpdateCoordinator
 from .entity import MammotionBaseEntity
+from .geojson_utils import apply_geojson_offset
 from .models import MammotionMowerData
 
 SERVICE_START_MOWING = "start_mow"
@@ -188,21 +188,36 @@ async def async_setup_entry(
         if entity is None:
             LOGGER.error("Could not find entity %s", call.data[ATTR_ENTITY_ID])
             return {}
-        return entity.reporting_coordinator.data.map.generated_geojson
+        coordinator = entity.reporting_coordinator
+        return apply_geojson_offset(
+            coordinator.data.map.generated_geojson,
+            coordinator.map_offset_lat,
+            coordinator.map_offset_lon,
+        )
 
     async def handle_get_mow_path_geojson(call: ServiceCall) -> dict[str, Any]:
         entity = _get_mower_by_entity_id(call.data[ATTR_ENTITY_ID])
         if entity is None:
             LOGGER.error("Could not find entity %s", call.data[ATTR_ENTITY_ID])
             return {}
-        return entity.reporting_coordinator.data.map.generated_mow_path_geojson
+        coordinator = entity.reporting_coordinator
+        return apply_geojson_offset(
+            coordinator.data.map.generated_mow_path_geojson,
+            coordinator.map_offset_lat,
+            coordinator.map_offset_lon,
+        )
 
     async def handle_get_mow_progress_geojson(call: ServiceCall) -> dict[str, Any]:
         entity = _get_mower_by_entity_id(call.data[ATTR_ENTITY_ID])
         if entity is None:
             LOGGER.error("Could not find entity %s", call.data[ATTR_ENTITY_ID])
             return {}
-        return entity.reporting_coordinator.data.map.generated_mow_progress_geojson
+        coordinator = entity.reporting_coordinator
+        return apply_geojson_offset(
+            coordinator.data.map.generated_mow_progress_geojson,
+            coordinator.map_offset_lat,
+            coordinator.map_offset_lon,
+        )
 
     hass.services.async_register(
         DOMAIN,

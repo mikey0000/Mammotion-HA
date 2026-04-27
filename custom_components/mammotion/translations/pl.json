@@ -414,6 +414,12 @@
       },
       "toward_included_angle": {
         "name": "Kąt skrzyżowania"
+      },
+      "map_offset_lat": {
+        "name": "Przesunięcie mapy szerokość"
+      },
+      "map_offset_lon": {
+        "name": "Przesunięcie mapy długość"
       }
     },
     "device_tracker": {

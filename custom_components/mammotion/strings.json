@@ -309,6 +309,12 @@
       },
       "toward_included_angle": {
         "name": "Crossing angle"
+      },
+      "map_offset_lat": {
+        "name": "Map offset latitude"
+      },
+      "map_offset_lon": {
+        "name": "Map offset longitude"
       }
     },
     "device_tracker": {

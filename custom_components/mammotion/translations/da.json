@@ -414,6 +414,12 @@
       },
       "toward_included_angle": {
         "name": "Krydsningsvinkel"
+      },
+      "map_offset_lat": {
+        "name": "Kortforskydning breddegrad"
+      },
+      "map_offset_lon": {
+        "name": "Kortforskydning længdegrad"
       }
     },
     "device_tracker": {

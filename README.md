@@ -66,6 +66,22 @@ See the wiki for how to [get started](https://github.com/mikey0000/Mammotion-HA/
 
 Once the integration is set up, you can control and monitor your Mammotion mower using Home Assistant. 🎉
 
+## Map Position Offset
+
+Satellite map tiles (Google Maps, OpenStreetMap, etc.) are sometimes misaligned relative to RTK GPS coordinates by several metres. Each mower exposes two number entities to correct this:
+
+- **Map offset latitude** — shifts the mower pin north (positive) or south (negative), in metres
+- **Map offset longitude** — shifts the mower pin east (positive) or west (negative), in metres
+
+**How to calibrate:**
+
+1. Add a [Map card](https://www.home-assistant.io/dashboards/map/) and both offset entities to a Lovelace dashboard.
+2. Start the mower so it is moving at a known location you can identify on satellite imagery.
+3. Adjust **Map offset latitude** and **Map offset longitude** until the pin aligns with the mower's real position on the satellite layer.
+4. Values are saved automatically and survive restarts.
+
+Typical offsets are within ±20 m. Positive latitude = north, positive longitude = east.
+
 ## Troubleshooting 🔧
 
 If you encounter any issues with the Mammotion integration, please check the Home Assistant logs for error messages. You can also try the following troubleshooting steps:
