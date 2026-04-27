@@ -353,12 +353,12 @@
         }
       },
       "bypass_mode": {
-        "name": "Obstakels vermijdingsmodus",
+        "name": "Obstakeldetectie",
         "state": {
-          "direct_touch": "Directe aanraking",
+          "direct_touch": "Uit",
           "slow_touch": "Langzame aanraking",
           "less_touch": "Minder aanraking",
-          "no_touch": "Zonder aanraking",
+          "no_touch": "Standaard",
           "sensitive": "Gevoelig"
         }
       },

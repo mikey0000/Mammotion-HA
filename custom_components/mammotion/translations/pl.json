@@ -353,12 +353,12 @@
         }
       },
       "bypass_mode": {
-        "name": "Tryb wykrywania przeszkód",
+        "name": "Wykrywanie przeszkód",
         "state": {
-          "direct_touch": "Bezpośredne dotknięcie",
+          "direct_touch": "Wyłączone",
           "slow_touch": "Wolne dotknięcie",
           "less_touch": "Mniej dotyku",
-          "no_touch": "Brak dotyku",
+          "no_touch": "Standard",
           "sensitive": "Czułe"
         }
       },

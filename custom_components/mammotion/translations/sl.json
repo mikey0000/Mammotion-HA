@@ -353,12 +353,12 @@
         }
       },
       "bypass_mode": {
-        "name": "Način izmikanja oviram",
+        "name": "Zaznavanje ovir",
         "state": {
-          "direct_touch": "Polni dotik",
+          "direct_touch": "Izklopljeno",
           "slow_touch": "Počasni dotik",
           "less_touch": "Manj dotika",
-          "no_touch": "Brez dotika",
+          "no_touch": "Standard",
           "sensitive": "Občutljivo"
         }
       },

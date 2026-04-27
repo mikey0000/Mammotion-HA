@@ -353,12 +353,12 @@
         }
       },
       "bypass_mode": {
-        "name": "Forhindringsundgåelsestilstand",
+        "name": "Forhindringsdetektion",
         "state": {
-          "direct_touch": "Direkte berøring",
+          "direct_touch": "Fra",
           "slow_touch": "Langsom berøring",
           "less_touch": "Mindre berøring",
-          "no_touch": "Ingen berøring",
+          "no_touch": "Standard",
           "sensitive": "Følsom"
         }
       },

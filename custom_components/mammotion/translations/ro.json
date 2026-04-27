@@ -353,12 +353,12 @@
         }
       },
       "bypass_mode": {
-        "name": "Modul de evitare a obstacolelor",
+        "name": "Detectare obstacole",
         "state": {
-          "direct_touch": "Atingere directă",
+          "direct_touch": "Oprit",
           "slow_touch": "Atingere lentă",
           "less_touch": "Mai puțin atins",
-          "no_touch": "Fără atingere",
+          "no_touch": "Standard",
           "sensitive": "Sensibil"
         }
       },

@@ -353,12 +353,12 @@
         }
       },
       "bypass_mode": {
-        "name": "Modalità di prevenzione degli ostacoli",
+        "name": "Rilevamento ostacoli",
         "state": {
-          "direct_touch": "Tocco diretto",
+          "direct_touch": "Disattivato",
           "slow_touch": "Tocco lento",
           "less_touch": "Meno tocco",
-          "no_touch": "Nessun tocco",
+          "no_touch": "Standard",
           "sensitive": "Sensibile"
         }
       },
