@@ -10,9 +10,16 @@ from datetime import timedelta
 from typing import TYPE_CHECKING, Any, cast
 
 import betterproto2
+from habluetooth import BluetoothServiceInfoBleak
+from habluetooth.models import BluetoothScanningMode
 from homeassistant.components import bluetooth
+from homeassistant.components.bluetooth import (
+    BluetoothCallbackMatcher,
+    BluetoothChange,
+    async_register_callback,
+)
 from homeassistant.const import CONF_PASSWORD
-from homeassistant.core import HassJob, HomeAssistant
+from homeassistant.core import CALLBACK_TYPE, HassJob, HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
@@ -630,12 +637,19 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         handle = self.manager.mower(self.device_name)
         if handle is None:
             return
-        if handle.has_transport(TransportType.BLE):
-            await handle.connect_transport(TransportType.BLE)
-            return
+
         ble_device = bluetooth.async_ble_device_from_address(
             self.hass, ble_mac.upper(), True
         )
+
+        if (
+            ble_device is not None
+            and handle.has_transport(TransportType.BLE)
+            and (ble := handle.get_transport(TransportType.BLE))
+        ):
+            if ble == ble_device:
+                return
+
         if ble_device is None:
             return
         await self.manager.add_ble_to_device(self.device_name, ble_device)
@@ -1091,6 +1105,40 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
             unique_name=unique_name,
         )
 
+        self._on_stop: list[CALLBACK_TYPE] = []
+        self.service_info: BluetoothServiceInfoBleak | None = None
+
+    @callback
+    def _async_handle_bluetooth_event(
+        self,
+        service_info: BluetoothServiceInfoBleak,
+        change: BluetoothChange,
+    ) -> None:
+        """Handle a bluetooth event."""
+        self.service_info = service_info
+
+    @callback
+    def _async_start(self) -> None:
+        """Start the callbacks."""
+        if self.data.mower_state.ble_mac != "":
+            self._on_stop.append(
+                async_register_callback(
+                    self.hass,
+                    self._async_handle_bluetooth_event,
+                    BluetoothCallbackMatcher(
+                        address=self.data.mower_state.ble_mac, connectable=True
+                    ),
+                    BluetoothScanningMode.ACTIVE,
+                )
+            )
+
+    @callback
+    def _async_stop(self) -> None:
+        """Stop the callbacks."""
+        for unsub in self._on_stop:
+            unsub()
+        self._on_stop.clear()
+
     def get_coordinator_data(self, device: MowingDevice) -> MowingDevice:
         """Get coordinator data."""
         return device
@@ -1107,10 +1155,13 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
 
         LOGGER.debug("Updated Mammotion device %s", self.device_name)
         self.update_failures = 0
-        if data := self.manager.get_device_by_name(self.device_name):
-            await self.async_save_data(data)
-            return data
-        return self.data
+        await self.async_save_data(device)
+
+        if device.mower_state.ble_mac != "":
+            if self.service_info is not None:
+                await self._async_ensure_ble_client()
+
+        return device
 
     async def _async_update_notification(self, res: tuple[str, Any | None]) -> None:
         """Update data from incoming messages."""

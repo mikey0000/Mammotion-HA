@@ -27,3 +27,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Type annotations required (autotyping hook)
 
 When making changes, follow existing patterns in similar files and follow Home Assistant best practices.
+
+## Home Assistant Integration Rules
+
+- All imports within the integration must be relative (e.g. `from . import Foo`, `from .services import bar`). Never use `from custom_components.mammotion import ...` — HA loads integrations in a way that makes absolute imports from `custom_components` fail at runtime.
