@@ -9,7 +9,8 @@
       "no_longer_present": "L'appareil n'est plus présent",
       "not_supported": "Appareil non pris en charge",
       "reconfigure_successful": "Reconfiguration réussie",
-      "api_limit_exceeded": "La limite de débit de l'API a été dépassée. Veuillez réessayer plus tard."
+      "api_limit_exceeded": "La limite de débit de l'API a été dépassée. Veuillez réessayer plus tard.",
+      "cannot_connect": "Impossible de se connecter au cloud Mammotion. Vérifiez vos identifiants et votre réseau, puis réessayez."
     },
     "flow_title": "{name}",
     "step": {
@@ -648,6 +649,9 @@
     },
     "api_limit_exceeded": {
       "message": "La limite de débit de l'API a été dépassée."
+    },
+    "cloud_setup_failed": {
+      "message": "Impossible de se connecter au cloud Mammotion. Vérifiez votre réseau et essayez de recharger l'intégration."
     }
   }
 }

@@ -9,7 +9,8 @@
       "no_longer_present": "Das Gerät ist nicht länger verfügbar",
       "not_supported": "Das Gerät wird nicht unterstützt",
       "reconfigure_successful": "Die Neukonfiguration war erfolgreich",
-      "api_limit_exceeded": "Das API-Anfragelimit wurde überschritten. Bitte versuchen Sie es später erneut."
+      "api_limit_exceeded": "Das API-Anfragelimit wurde überschritten. Bitte versuchen Sie es später erneut.",
+      "cannot_connect": "Verbindung zur Mammotion-Cloud nicht möglich. Überprüfen Sie Ihre Anmeldedaten und das Netzwerk und versuchen Sie es erneut."
     },
     "flow_title": "{name}",
     "step": {
@@ -648,6 +649,9 @@
     },
     "api_limit_exceeded": {
       "message": "Das API-Anfragelimit wurde überschritten."
+    },
+    "cloud_setup_failed": {
+      "message": "Verbindung zur Mammotion-Cloud nicht möglich. Überprüfen Sie das Netzwerk und versuchen Sie, die Integration neu zu laden."
     }
   }
 }

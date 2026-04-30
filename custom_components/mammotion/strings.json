@@ -9,7 +9,8 @@
       "no_longer_present": "Device is no longer present",
       "not_supported": "Device not supported",
       "reconfigure_successful": "Re-configure successful",
-      "api_limit_exceeded": "API rate limit has been exceeded. Please try again later."
+      "api_limit_exceeded": "API rate limit has been exceeded. Please try again later.",
+      "cannot_connect": "Unable to connect to the Mammotion cloud. Check your credentials and network, then try again."
     },
     "flow_title": "{name}",
     "step": {
@@ -511,6 +512,9 @@
     },
     "api_limit_exceeded": {
       "message": "API rate limit has been exceeded."
+    },
+    "cloud_setup_failed": {
+      "message": "Unable to connect to the Mammotion cloud. Check your network and try reloading the integration."
     }
   }
 }

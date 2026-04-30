@@ -24,7 +24,7 @@ from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.device_registry import CONNECTION_BLUETOOTH, format_mac
 from homeassistant.loader import async_get_integration
-from pymammotion.aliyun.exceptions import TooManyRequestsException
+from pymammotion.aliyun.exceptions import CloudSetupError, TooManyRequestsException
 from pymammotion.client import MammotionClient
 from pymammotion.transport.base import TransportType
 
@@ -234,8 +234,12 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                 )
             except TooManyRequestsException:
                 return self.async_abort(reason="api_limit_exceeded")
+            except CloudSetupError as err:
+                LOGGER.error("Aliyun cloud setup failed during login: %s", err)
+                return self.async_abort(reason="cannot_connect")
             except (HTTPException, Exception) as err:
-                return self.async_abort(reason=str(err))
+                LOGGER.error("Unexpected error during login: %s", err)
+                return self.async_abort(reason="cannot_connect")
             finally:
                 await temp_client.stop()
 
@@ -348,10 +352,9 @@ class MammotionConfigFlowHandler(OptionsFlow):
             ) is not None:
                 for mower in runtime.mowers:
                     mower.api.set_prefer_ble(mower.name, prefer_ble=new_prefer_ble)
-                    handle = mower.api.mower(mower.name)
-                    if handle is not None:
-                        ble = handle._transports.get(TransportType.BLE)
-                        if ble is not None:
+
+                    if handle := mower.api.mower(mower.name):
+                        if ble := handle.get_transport(TransportType.BLE):
                             ble.set_disconnect_strategy(
                                 disconnect=not new_stay_connected
                             )

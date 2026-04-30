@@ -7,18 +7,17 @@ from datetime import time
 from typing import Any, cast
 
 import voluptuous as vol
+from homeassistant.components.lawn_mower import DOMAIN as LAWN_MOWER_DOMAIN
 from homeassistant.components.lawn_mower import (
     LawnMowerActivity,
     LawnMowerEntity,
     LawnMowerEntityFeature,
 )
-from homeassistant.const import ATTR_ENTITY_ID
-from homeassistant.core import HomeAssistant, ServiceCall, SupportsResponse
+from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry as dr
-from homeassistant.helpers import entity_platform
-from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers import service
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pymammotion.data.model.report_info import DeviceData, ReportData
 from pymammotion.utility.constant.device_constant import WorkMode
@@ -28,8 +27,6 @@ from . import MammotionConfigEntry
 from .const import COMMAND_EXCEPTIONS, DOMAIN, LOGGER
 from .coordinator import MammotionReportUpdateCoordinator
 from .entity import MammotionBaseEntity
-from .geojson_utils import apply_geojson_offset
-from .models import MammotionMowerData
 
 SERVICE_START_MOWING = "start_mow"
 SERVICE_CANCEL_JOB = "cancel_job"
@@ -37,9 +34,6 @@ SERVICE_START_STOP_BLADES = "start_stop_blades"
 SERVICE_SET_NON_WORK_HOURS = "set_non_work_hours"
 SERVICE_RESET_BLADE_TIME = "reset_blade_time"
 SERVICE_SET_BLADE_WARNING_TIME = "set_blade_warning_time"
-SERVICE_GET_GEOJSON = "get_geojson"
-SERVICE_GET_MOW_PATH_GEOJSON = "get_mow_path_geojson"
-SERVICE_GET_MOW_PROGRESS_GEOJSON = "get_mow_progress_geojson"
 
 START_MOW_SCHEMA = {
     vol.Optional("modify", default=False): cv.boolean,
@@ -85,9 +79,7 @@ START_MOW_SCHEMA = {
     vol.Optional("start_progress", default=0): vol.All(
         vol.Coerce(int), vol.Range(min=0, max=100)
     ),
-    vol.Optional("areas", default=[]): vol.All(
-        cv.ensure_list, [cv.entity_id]
-    ),  # This assumes `areas` are entity IDs from the integration
+    vol.Optional("areas", default=[]): vol.All(cv.ensure_list, [cv.entity_id]),
 }
 
 START_STOP_BLADES_SCHEMA = {
@@ -137,110 +129,53 @@ async def async_setup_entry(
 
     async_add_entities(entities)
 
-    platform = entity_platform.async_get_current_platform()
-
-    platform.async_register_entity_service(
-        SERVICE_START_MOWING, START_MOW_SCHEMA, "async_start_mowing"
+    service.async_register_platform_entity_service(
+        hass,
+        DOMAIN,
+        SERVICE_START_MOWING,
+        entity_domain=LAWN_MOWER_DOMAIN,
+        schema=START_MOW_SCHEMA,
+        func="async_start_mowing",
     )
-
-    platform.async_register_entity_service(SERVICE_CANCEL_JOB, None, "async_cancel")
-
-    platform.async_register_entity_service(
-        SERVICE_START_STOP_BLADES, START_STOP_BLADES_SCHEMA, "async_start_stop_blades"
+    service.async_register_platform_entity_service(
+        hass,
+        DOMAIN,
+        SERVICE_CANCEL_JOB,
+        entity_domain=LAWN_MOWER_DOMAIN,
+        schema=None,
+        func="async_cancel",
     )
-
-    platform.async_register_entity_service(
+    service.async_register_platform_entity_service(
+        hass,
+        DOMAIN,
+        SERVICE_START_STOP_BLADES,
+        entity_domain=LAWN_MOWER_DOMAIN,
+        schema=START_STOP_BLADES_SCHEMA,
+        func="async_start_stop_blades",
+    )
+    service.async_register_platform_entity_service(
+        hass,
+        DOMAIN,
         SERVICE_SET_NON_WORK_HOURS,
-        SET_NON_WORK_HOURS_SCHEMA,
-        "async_set_non_work_hours",
+        entity_domain=LAWN_MOWER_DOMAIN,
+        schema=SET_NON_WORK_HOURS_SCHEMA,
+        func="async_set_non_work_hours",
     )
-
-    platform.async_register_entity_service(
+    service.async_register_platform_entity_service(
+        hass,
+        DOMAIN,
         SERVICE_RESET_BLADE_TIME,
-        None,
-        "async_reset_blade_time",
+        entity_domain=LAWN_MOWER_DOMAIN,
+        schema=None,
+        func="async_reset_blade_time",
     )
-
-    platform.async_register_entity_service(
+    service.async_register_platform_entity_service(
+        hass,
+        DOMAIN,
         SERVICE_SET_BLADE_WARNING_TIME,
-        SET_BLADE_WARNING_TIME_SCHEMA,
-        "async_set_blade_warning_time",
-    )
-
-    def _get_mower_by_entity_id(entity_id: str) -> MammotionMowerData | None:
-        entity_reg = er.async_get(hass)
-        entity_entry = entity_reg.async_get(entity_id)
-        if entity_entry is None:
-            LOGGER.error("Could not find entity %s", entity_id)
-            return None
-        return next(
-            (
-                m
-                for m in (entry.runtime_data.mowers if entry.runtime_data else [])
-                if entity_entry.unique_id.startswith(
-                    m.reporting_coordinator.unique_name
-                )
-            ),
-            None,
-        )
-
-    async def handle_get_geojson(call: ServiceCall) -> dict[str, Any]:
-        entity = _get_mower_by_entity_id(call.data[ATTR_ENTITY_ID])
-        if entity is None:
-            LOGGER.error("Could not find entity %s", call.data[ATTR_ENTITY_ID])
-            return {}
-        coordinator = entity.reporting_coordinator
-
-        # if coordinator.data.report_data.dev.sys_status == WorkMode.MODE_WORKING:
-        #     await coordinator.async_request_iot_sync_continuous()
-
-        return apply_geojson_offset(
-            coordinator.data.map.generated_geojson,
-            coordinator.map_offset_lat,
-            coordinator.map_offset_lon,
-        )
-
-    async def handle_get_mow_path_geojson(call: ServiceCall) -> dict[str, Any]:
-        entity = _get_mower_by_entity_id(call.data[ATTR_ENTITY_ID])
-        if entity is None:
-            LOGGER.error("Could not find entity %s", call.data[ATTR_ENTITY_ID])
-            return {}
-        coordinator = entity.reporting_coordinator
-        return apply_geojson_offset(
-            coordinator.data.map.generated_mow_path_geojson,
-            coordinator.map_offset_lat,
-            coordinator.map_offset_lon,
-        )
-
-    async def handle_get_mow_progress_geojson(call: ServiceCall) -> dict[str, Any]:
-        entity = _get_mower_by_entity_id(call.data[ATTR_ENTITY_ID])
-        if entity is None:
-            LOGGER.error("Could not find entity %s", call.data[ATTR_ENTITY_ID])
-            return {}
-        coordinator = entity.reporting_coordinator
-        return apply_geojson_offset(
-            coordinator.data.map.generated_mow_progress_geojson,
-            coordinator.map_offset_lat,
-            coordinator.map_offset_lon,
-        )
-
-    hass.services.async_register(
-        DOMAIN,
-        SERVICE_GET_GEOJSON,
-        handle_get_geojson,
-        supports_response=SupportsResponse.ONLY,
-    )
-    hass.services.async_register(
-        DOMAIN,
-        SERVICE_GET_MOW_PATH_GEOJSON,
-        handle_get_mow_path_geojson,
-        supports_response=SupportsResponse.ONLY,
-    )
-    hass.services.async_register(
-        DOMAIN,
-        SERVICE_GET_MOW_PROGRESS_GEOJSON,
-        handle_get_mow_progress_geojson,
-        supports_response=SupportsResponse.ONLY,
+        entity_domain=LAWN_MOWER_DOMAIN,
+        schema=SET_BLADE_WARNING_TIME_SCHEMA,
+        func="async_set_blade_warning_time",
     )
 
 

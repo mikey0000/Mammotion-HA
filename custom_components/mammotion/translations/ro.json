@@ -9,7 +9,8 @@
       "no_longer_present": "Echipamentul nu mai este prezent",
       "not_supported": "Dispozitivul nu este suportat",
       "reconfigure_successful": "Reconfigurare reușită",
-      "api_limit_exceeded": "Limita de solicitări API a fost depășită. Vă rugăm să încercați din nou mai târziu."
+      "api_limit_exceeded": "Limita de solicitări API a fost depășită. Vă rugăm să încercați din nou mai târziu.",
+      "cannot_connect": "Nu se poate conecta la cloud-ul Mammotion. Verificați datele de autentificare și rețeaua, apoi încercați din nou."
     },
     "flow_title": "{name}",
     "step": {
@@ -648,6 +649,9 @@
     },
     "api_limit_exceeded": {
       "message": "Limita de solicitări API a fost depăşită."
+    },
+    "cloud_setup_failed": {
+      "message": "Nu se poate conecta la cloud-ul Mammotion. Verificați rețeaua și încercați să reîncărcați integrarea."
     }
   }
 }

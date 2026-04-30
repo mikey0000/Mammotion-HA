@@ -13,7 +13,6 @@ from homeassistant.components.bluetooth import (
     BluetoothScanningMode,
     BluetoothServiceInfoBleak,
 )
-from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, EVENT_HOMEASSISTANT_STOP, Platform
 from homeassistant.core import Event, HassJob, HomeAssistant
@@ -23,7 +22,6 @@ from homeassistant.exceptions import (
     ConfigEntryNotReady,
 )
 from homeassistant.helpers import aiohttp_client
-from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.device_registry import DeviceEntry
 from homeassistant.helpers.event import async_call_later
 from homeassistant.loader import async_get_integration
@@ -33,7 +31,6 @@ from pymammotion.client import MammotionClient
 from pymammotion.data.model.account import Credentials
 from pymammotion.data.model.device import MowingDevice
 from pymammotion.transport.base import LoginFailedError, TransportType
-from pymammotion.utility.device_config import DeviceConfig
 from Tea.exceptions import UnretryableException
 
 from .const import (
@@ -68,6 +65,7 @@ from .coordinator import (
     MammotionRTKCoordinator,
 )
 from .models import MammotionDevices, MammotionMowerData, MammotionRTKData
+from .services import async_setup_services
 
 PLATFORMS: list[Platform] = [
     Platform.BINARY_SENSOR,
@@ -94,7 +92,7 @@ async def _attach_ble_to_mower(
     *,
     stay_connected_ble: bool,
 ) -> None:
-    """Attach a BLE transport to a mower device, or register a one-shot callback."""
+    """Attach a BLE transport to a mower device and register a persistent update callback."""
     mowing_device = mammotion.get_device_by_name(device.device_name)
     if mowing_device is not None:
         mowing_device.mower_state.ble_mac = ble_address
@@ -108,30 +106,35 @@ async def _attach_ble_to_mower(
             ble_device,
             disconnect_on_idle=not stay_connected_ble,
         )
-        return
 
     _device_name = device.device_name
 
-    def _ble_discovered(
+    def _ble_seen(
         service_info: BluetoothServiceInfoBleak,
         change: BluetoothChange,
     ) -> None:
-        hass.async_create_task(
-            mammotion.add_ble_to_device(
-                _device_name,
-                service_info.device,
-                disconnect_on_idle=not stay_connected_ble,
+        handle = mammotion.mower(_device_name)
+        if handle is not None and handle.has_transport(TransportType.BLE):
+            hass.async_create_task(
+                mammotion.update_ble_device(_device_name, service_info.device)
             )
-        )
-        cancel_ble_callback()
+        else:
+            hass.async_create_task(
+                mammotion.add_ble_to_device(
+                    _device_name,
+                    service_info.device,
+                    disconnect_on_idle=not stay_connected_ble,
+                )
+            )
 
-    cancel_ble_callback = bluetooth.async_register_callback(
-        hass,
-        _ble_discovered,
-        BluetoothCallbackMatcher(address=ble_address.upper()),
-        BluetoothScanningMode.ACTIVE,
+    entry.async_on_unload(
+        bluetooth.async_register_callback(
+            hass,
+            _ble_seen,
+            BluetoothCallbackMatcher(address=ble_address.upper()),
+            BluetoothScanningMode.ACTIVE,
+        )
     )
-    entry.async_on_unload(cancel_ble_callback)
 
 
 async def _attach_ble_to_rtk(
@@ -143,7 +146,7 @@ async def _attach_ble_to_rtk(
     *,
     stay_connected_ble: bool,
 ) -> None:
-    """Attach a BLE transport to an RTK base station, or register a one-shot callback."""
+    """Attach a BLE transport to an RTK base station and register a persistent update callback."""
     ble_device = bluetooth.async_ble_device_from_address(
         hass, ble_address.upper(), True
     )
@@ -153,30 +156,41 @@ async def _attach_ble_to_rtk(
             ble_device,
             disconnect_on_idle=not stay_connected_ble,
         )
-        return
 
     _device_name = rtk.device_name
 
-    def _ble_discovered(
+    def _ble_seen(
         service_info: BluetoothServiceInfoBleak,
         change: BluetoothChange,
     ) -> None:
-        hass.async_create_task(
-            mammotion.add_ble_to_device(
-                _device_name,
-                service_info.device,
-                disconnect_on_idle=not stay_connected_ble,
+        handle = mammotion.mower(_device_name)
+        if handle is not None and handle.has_transport(TransportType.BLE):
+            hass.async_create_task(
+                mammotion.update_ble_device(_device_name, service_info.device)
             )
-        )
-        cancel_ble_callback()
+        else:
+            hass.async_create_task(
+                mammotion.add_ble_to_device(
+                    _device_name,
+                    service_info.device,
+                    disconnect_on_idle=not stay_connected_ble,
+                )
+            )
 
-    cancel_ble_callback = bluetooth.async_register_callback(
-        hass,
-        _ble_discovered,
-        BluetoothCallbackMatcher(address=ble_address.upper()),
-        BluetoothScanningMode.ACTIVE,
+    entry.async_on_unload(
+        bluetooth.async_register_callback(
+            hass,
+            _ble_seen,
+            BluetoothCallbackMatcher(address=ble_address.upper()),
+            BluetoothScanningMode.ACTIVE,
+        )
     )
-    entry.async_on_unload(cancel_ble_callback)
+
+
+async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
+    """Set up the Mammotion integration."""
+    async_setup_services(hass)
+    return True
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) -> bool:
@@ -222,6 +236,26 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
             raise ConfigEntryAuthFailed(err) from err
         except EXPIRED_CREDENTIAL_EXCEPTIONS as exc:
             LOGGER.debug(exc)
+            if cached:
+                # The cached Aliyun gateway data is stale — strip it from the config entry
+                # so the next restart doesn't re-attempt a broken cache restore.
+                LOGGER.warning(
+                    "Aliyun cache is stale (%s) — clearing cached gateway credentials",
+                    exc,
+                )
+                stale_keys = (
+                    CONF_AEP_DATA,
+                    CONF_AUTH_DATA,
+                    CONF_REGION_DATA,
+                    CONF_SESSION_DATA,
+                    CONF_DEVICE_DATA,
+                    CONF_CONNECT_DATA,
+                    CONF_MAMMOTION_DATA,
+                )
+                hass.config_entries.async_update_entry(
+                    entry,
+                    data={k: v for k, v in entry.data.items() if k not in stale_keys},
+                )
             await mammotion.login_and_initiate_cloud(
                 account, password, aiohttp_client.async_get_clientsession(hass)
             )
@@ -526,6 +560,15 @@ async def async_unload_entry(hass: HomeAssistant, entry: MammotionConfigEntry) -
             except TimeoutError:
                 """Do nothing as this sometimes occurs with disconnecting BLE."""
     return bool(unload_ok)
+
+
+async def async_remove_entry(hass: HomeAssistant, entry: MammotionConfigEntry) -> None:
+    """Remove stored data when the integration is deleted."""
+    for mower in entry.runtime_data.mowers:
+        await mower.reporting_coordinator.remove_saved_data()
+
+    if not hass.config_entries.async_entries(DOMAIN):
+        hass.data.pop(DOMAIN, None)
 
 
 async def async_remove_config_entry_device(

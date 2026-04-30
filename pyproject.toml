@@ -1,6 +1,6 @@
 [project]
 name = "mammotion-ha"
-version = "0.5.28"
+version = "0.5.29"
 description = "Mammotion integration for HACS"
 authors = [
     {name = "Michael Arthur", email = "michael@jumblesoft.co.nz"},
@@ -9,7 +9,7 @@ authors = [
 readme = "README.md"
 requires-python = ">=3.14.2"
 dependencies = [
-    "pymammotion==0.7.82",
+    "pymammotion==0.7.84",
     "homeassistant>=2026.1.0",
     "autotyping>=24.3.0",
     "websockets>=15.0.1",
@@ -31,6 +31,15 @@ package = false
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+
+[tool.mypy]
+python_version = "3.14"
+ignore_missing_imports = true
+exclude = ["^\\.venv/"]
+
+[[tool.mypy.overrides]]
+module = "homeassistant.*"
+follow_imports = "skip"
 
 [tool.pylint.MAIN]
 py-version = "3.14"

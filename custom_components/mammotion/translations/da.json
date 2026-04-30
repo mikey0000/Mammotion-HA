@@ -9,7 +9,8 @@
       "no_longer_present": "Enheden er ikke længere til stede",
       "not_supported": "Enheden understøttes ikke",
       "reconfigure_successful": "Omkonfiguration lykkedes",
-      "api_limit_exceeded": "API-anmodningsgrænsen er overskredet. Prøv igen senere."
+      "api_limit_exceeded": "API-anmodningsgrænsen er overskredet. Prøv igen senere.",
+      "cannot_connect": "Kan ikke oprette forbindelse til Mammotion-skyen. Kontroller dine legitimationsoplysninger og netværk, og prøv igen."
     },
     "flow_title": "{name}",
     "step": {
@@ -648,6 +649,9 @@
     },
     "api_limit_exceeded": {
       "message": "API-anmodningsgrænsen er overskredet."
+    },
+    "cloud_setup_failed": {
+      "message": "Kan ikke oprette forbindelse til Mammotion-skyen. Kontroller dit netværk, og prøv at genindlæse integrationen."
     }
   }
 }

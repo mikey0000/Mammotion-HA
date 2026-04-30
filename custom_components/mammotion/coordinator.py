@@ -21,10 +21,10 @@ from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from mashumaro.exceptions import InvalidFieldValue
 from pymammotion.aliyun.exceptions import (
+    CloudSetupError,
     DeviceOfflineException,
     FailedRequestException,
     GatewayTimeoutException,
-    NoConnectionException,
     TooManyRequestsException,
 )
 from pymammotion.aliyun.model.dev_by_account_response import Device
@@ -110,8 +110,8 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             config_entry=config_entry,
         )
         assert config_entry.unique_id
-        self.account = self.config_entry.data.get(CONF_ACCOUNTNAME, "")
-        self.password = self.config_entry.data.get(CONF_PASSWORD, "")
+        self.account = config_entry.data.get(CONF_ACCOUNTNAME, "")
+        self.password = config_entry.data.get(CONF_PASSWORD, "")
         self.device: Device = device
         self.device_name = device.device_name
         self.unique_name = (
@@ -135,10 +135,10 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         self.map_offset_lat: float = 0.0
         self.map_offset_lon: float = 0.0
 
-        device = self.manager.get_device_by_name(self.device_name)
+        mower_device = self.manager.get_device_by_name(self.device_name)
 
         if self.data is None:
-            self.data = device  # type: ignore[assignment]
+            self.data = mower_device
 
     @abstractmethod
     def get_coordinator_data(self, device: MowingDevice) -> DataT:
@@ -251,7 +251,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             return False
         handle = self.manager.mower(self.device_name)
         if handle is None:
-            return device.online
+            return bool(device.online)
         if handle.has_transport(TransportType.BLE):
             if handle.is_transport_connected(TransportType.BLE):
                 return True
@@ -285,14 +285,15 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             else:
                 await self.manager.refresh_login(self.account)
                 self.store_cloud_credentials()
-        except ReLoginRequiredError:
-            try:
-                await self.manager.refresh_login(self.account)
-                self.store_cloud_credentials()
-            except LoginFailedError as err:
-                raise ConfigEntryAuthFailed(
-                    f"Login failed for Mammotion account: {err.reason}"
-                ) from err
+        except CloudSetupError as err:
+            LOGGER.error("Aliyun cloud setup failed during re-login: %s", err)
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key="cloud_setup_failed"
+            ) from err
+        except ReLoginRequiredError as err:
+            raise ConfigEntryAuthFailed(
+                f"Re-authentication required for Mammotion account: {err}"
+            ) from err
 
     async def async_send_and_wait(
         self,
@@ -374,7 +375,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             LOGGER.error(f"Gateway timeout exception: {ex.iot_id}")
             self.update_failures = 0
             return False
-        except (DeviceOfflineException, NoConnectionException):
+        except (DeviceOfflineException, NoTransportAvailableError):
             self.device_offline(device)
             # Fall back to BLE if the cloud path is unavailable
             try:
@@ -419,7 +420,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             LOGGER.error(f"Gateway timeout exception: {ex.iot_id}")
             self.update_failures = 0
             return False
-        except (DeviceOfflineException, NoConnectionException) as ex:
+        except (DeviceOfflineException, NoTransportAvailableError) as ex:
             LOGGER.error(f"Device offline: {ex.iot_id}")
             self.device_offline(device)
             return False
@@ -781,7 +782,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         self, operation_settings: OperationSettings
     ) -> GenerateRouteInformation:
         """Generate route information."""
-        device: MowingDevice = self.data
+        device: MowingDevice = cast(MowingDevice, self.data)
         if device.report_data.dev:
             dev = device.report_data.dev
             if dev.collector_status.collector_installation_status == 0:
@@ -848,7 +849,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
     ) -> bool | None:
         """Modify plan mow."""
 
-        if work := self.data.work:
+        if work := cast(MowingDevice, self.data).work:
             operation_settings.areas = list(dict.fromkeys(work.zone_hashs))
             operation_settings.toward = work.toward
             operation_settings.toward_mode = work.toward_mode
@@ -886,15 +887,16 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
 
     async def async_modify_plan_if_mowing(self) -> None:
         """Re-plan the current mow route if the device is actively mowing."""
+        _mdata = cast(MowingDevice, self.data)
         if (
-            int(self.data.report_data.work.bp_hash) in self.data.work.zone_hashs
-            and (self.data.report_data.work.area >> 16) != 100
+            int(_mdata.report_data.work.bp_hash) in _mdata.work.zone_hashs
+            and (_mdata.report_data.work.area >> 16) != 100
         ):
             await self.async_modify_plan_route(self.operation_settings)
 
     async def async_restore_data(self) -> None:
         """Restore saved data."""
-        store = MammotionConfigStore(
+        store: MammotionConfigStore = MammotionConfigStore(
             self.hass, version=1, minor_version=2, key=self.device_name
         )
         restored_data: Mapping[str, Any] | None = await store.async_load()
@@ -922,10 +924,12 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
 
     async def async_save_data(self, data: MowingDevice) -> None:
         """Get map data from the device."""
-        store = Store(self.hass, version=1, minor_version=2, key=self.device_name)
+        store: Store = Store(
+            self.hass, version=1, minor_version=2, key=self.device_name
+        )
         await store.async_save(data.to_dict())
 
-    async def remove_saved_data(self):
+    async def remove_saved_data(self) -> None:
         store = Store(self.hass, version=1, minor_version=2, key=self.device_name)
         await store.async_remove()
 
@@ -944,11 +948,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             return self.get_coordinator_data(device)
 
         # Update BLE device address from HA bluetooth scanner if available
-        if (
-            device.mower_state.ble_mac != ""
-            and handle is not None
-            and handle.prefer_ble
-        ):
+        if device.mower_state.ble_mac != "" and handle is not None:
             if ble_device := bluetooth.async_ble_device_from_address(
                 self.hass, device.mower_state.ble_mac.upper(), True
             ):
@@ -1051,13 +1051,14 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             return None
 
         name = None
-        if area_data := self.data.map.area.get(area_hash):
+        _mower_data = cast(MowingDevice, self.data)
+        if area_data := _mower_data.map.area.get(area_hash):
             area_frame = area_data.data[0] if len(area_data.data) > 0 else None
             if area_frame is not None:
-                area_name: AreaHashNameList = next(
+                area_name: AreaHashNameList | None = next(
                     (
                         area
-                        for area in self.data.map.area_name
+                        for area in _mower_data.map.area_name
                         if area.hash == area_frame.hash
                     ),
                     None,
@@ -1199,14 +1200,15 @@ class MammotionMaintenanceUpdateCoordinator(MammotionBaseUpdateCoordinator[Maint
         except DeviceOfflineException as ex:
             if ex.iot_id == self.device.iot_id:
                 device = self.manager.get_device_by_name(self.device_name)
+                assert device is not None
                 self.device_offline(device)
                 return device.report_data.maintenance
         except GatewayTimeoutException:
             pass
 
-        return self.manager.get_device_by_name(
-            self.device.device_name
-        ).report_data.maintenance
+        _dev = self.manager.get_device_by_name(self.device.device_name)
+        assert _dev is not None
+        return _dev.report_data.maintenance
 
     async def _async_setup(self) -> None:
         """Setup maintenance coordinator."""
@@ -1249,6 +1251,7 @@ class MammotionDeviceVersionUpdateCoordinator(
         if data := await super()._async_update_data():
             return data
         device = self.manager.get_device_by_name(self.device_name)
+        assert device is not None
         handle = self.manager.mower(self.device_name)
 
         checks: list[tuple[str, str, bool]] = [
@@ -1346,7 +1349,7 @@ class MammotionDeviceVersionUpdateCoordinator(
                 if http is not None:
                     ota_info = await http.get_device_ota_firmware([handle.iot_id])
                     device = self.manager.get_device_by_name(self.device_name)
-                    if check_versions := ota_info.data:
+                    if device is not None and (check_versions := ota_info.data):
                         for check_version in check_versions:
                             if check_version.device_id == handle.iot_id:
                                 device.update_check = check_version
@@ -1394,6 +1397,7 @@ class MammotionMapUpdateCoordinator(MammotionBaseUpdateCoordinator[MowerInfo]):
         if data := await super()._async_update_data():
             return data
         device = self.manager.get_device_by_name(self.device_name)
+        assert device is not None
 
         try:
             if (
@@ -1414,12 +1418,16 @@ class MammotionMapUpdateCoordinator(MammotionBaseUpdateCoordinator[MowerInfo]):
         except (ConcurrentRequestError, NoTransportAvailableError):
             pass
 
-        return self.manager.get_device_by_name(self.device_name).mower_state
+        _d = self.manager.get_device_by_name(self.device_name)
+        assert _d is not None
+        return _d.mower_state
 
     async def _async_setup(self) -> None:
         """Setup coordinator with initial call to get map data."""
         await super()._async_setup()
         device = self.manager.get_device_by_name(self.device_name)
+        if device is None:
+            return
 
         if not device.enabled or not device.online:
             return
@@ -1474,7 +1482,9 @@ class MammotionDeviceErrorUpdateCoordinator(
             hasattr(event.params, "identifier")
             and event.params.identifier == "device_warning_code_event"
         ):
-            event_params: DeviceNotificationEventParams = event.params
+            event_params: DeviceNotificationEventParams = cast(
+                DeviceNotificationEventParams, event.params
+            )
             # '[{"c":-2801,"ct":1,"ft":1731493734000},{"c":-1008,"ct":1,"ft":1731493734000}]'
             try:
                 warning_event = json.loads(event_params.value.data)
@@ -1550,6 +1560,7 @@ class MammotionDeviceErrorUpdateCoordinator(
         if data := await super()._async_update_data():
             return data
         device = self.manager.get_device_by_name(self.device_name)
+        assert device is not None
         try:
             if not device.errors.error_codes:
                 http = self.manager.mammotion_http
@@ -1579,6 +1590,8 @@ class MammotionDeviceErrorUpdateCoordinator(
         """Set up the device-version coordinator."""
         await super()._async_setup()
         device = self.manager.get_device_by_name(self.device_name)
+        if device is None:
+            return
         if handle := self.manager.mower(self.device_name):
             handle.watch_field(
                 lambda s: s.raw.report_data.dev.sys_status,

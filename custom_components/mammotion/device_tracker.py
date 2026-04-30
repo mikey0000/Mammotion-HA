@@ -45,18 +45,22 @@ class MammotionTracker(MammotionBaseEntity, TrackerEntity, RestoreEntity):  # ty
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return entity specific state attributes."""
-        return {
-            ATTR_DIRECTION: self.coordinator.manager.get_device_by_name(
-                self.coordinator.device_name
-            ).location.orientation
-        }
+        device = self.coordinator.manager.get_device_by_name(
+            self.coordinator.device_name
+        )
+        if device is None:
+            return {}
+        return {ATTR_DIRECTION: device.location.orientation}
 
     @property
     def latitude(self) -> float | None:
         """Return latitude value of the device, adjusted by map offset."""
-        lat = self.coordinator.manager.get_device_by_name(
+        device = self.coordinator.manager.get_device_by_name(
             self.coordinator.device_name
-        ).location.device.latitude
+        )
+        if device is None:
+            return None
+        lat = device.location.device.latitude
         if lat is None:
             return None
         return cast(float, lat) + self.coordinator.map_offset_lat / 111_111.0
@@ -64,9 +68,12 @@ class MammotionTracker(MammotionBaseEntity, TrackerEntity, RestoreEntity):  # ty
     @property
     def longitude(self) -> float | None:
         """Return longitude value of the device, adjusted by map offset."""
-        lon = self.coordinator.manager.get_device_by_name(
+        device = self.coordinator.manager.get_device_by_name(
             self.coordinator.device_name
-        ).location.device.longitude
+        )
+        if device is None:
+            return None
+        lon = device.location.device.longitude
         if lon is None:
             return None
         lat = self.latitude

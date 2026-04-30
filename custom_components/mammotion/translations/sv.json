@@ -9,7 +9,8 @@
       "no_longer_present": "Enheten finns inte längre",
       "not_supported": "Enheten stöds inte",
       "reconfigure_successful": "Omkonfigurering lyckades",
-      "api_limit_exceeded": "API-anropsgränsen har överskridits. Försök igen senare."
+      "api_limit_exceeded": "API-anropsgränsen har överskridits. Försök igen senare.",
+      "cannot_connect": "Det går inte att ansluta till Mammotion-molnet. Kontrollera dina inloggningsuppgifter och nätverket och försök igen."
     },
     "flow_title": "{name}",
     "step": {
@@ -648,6 +649,9 @@
     },
     "api_limit_exceeded": {
       "message": "API-anropsgränsen har överskridits."
+    },
+    "cloud_setup_failed": {
+      "message": "Det går inte att ansluta till Mammotion-molnet. Kontrollera nätverket och försök att läsa in integrationen på nytt."
     }
   }
 }

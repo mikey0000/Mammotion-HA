@@ -40,17 +40,21 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionBaseUpdateCoordinator[Any]]
         mower = self.coordinator.manager.get_device_by_name(
             self.coordinator.device_name
         )
-        swversion = mower.device_firmwares.device_version
+        if mower is None:
+            return DeviceInfo(
+                identifiers={(DOMAIN, self.coordinator.unique_name)},
+                name=self.coordinator.device_name,
+            )
 
-        model_id = None
-        if mower is not None:
-            if mower.mower_state.model_id != "":
-                model_id = mower.mower_state.model_id
-            if (
-                mower.mqtt_properties is not None
-                and mower.mqtt_properties.params.items.extMod is not None
-            ):
-                model_id = mower.mqtt_properties.params.items.extMod.value
+        swversion = mower.device_firmwares.device_version
+        model_id: str | None = None
+        if mower.mower_state.model_id != "":
+            model_id = mower.mower_state.model_id
+        if (
+            mower.mqtt_properties is not None
+            and mower.mqtt_properties.params.items.extMod is not None
+        ):
+            model_id = str(mower.mqtt_properties.params.items.extMod.value)
 
         connections: set[tuple[str, str]] = set()
 
@@ -185,9 +189,7 @@ class MammotionBaseRTKEntity(CoordinatorEntity[MammotionRTKCoordinator]):  # typ
     @callback  # type: ignore[misc]
     def _cleanup_stale_connections(self) -> None:
         """Replace device registry connections with only the valid mower state values."""
-        rtk = self.coordinator.manager.get_device_by_name(self.coordinator.device_name)
-        if rtk is None:
-            return
+        rtk_data = self.coordinator.data
 
         device_registry = async_get_device_registry(self.hass)
         device = device_registry.async_get_device(
@@ -197,10 +199,10 @@ class MammotionBaseRTKEntity(CoordinatorEntity[MammotionRTKCoordinator]):  # typ
             return
 
         new_connections: set[tuple[str, str]] = set()
-        if rtk.bt_mac != "":
-            new_connections.add((CONNECTION_BLUETOOTH, format_mac(rtk.bt_mac)))
-        if rtk.wifi_mac != "":
-            new_connections.add((CONNECTION_NETWORK_MAC, format_mac(rtk.wifi_mac)))
+        if rtk_data.bt_mac != "":
+            new_connections.add((CONNECTION_BLUETOOTH, format_mac(rtk_data.bt_mac)))
+        if rtk_data.wifi_mac != "":
+            new_connections.add((CONNECTION_NETWORK_MAC, format_mac(rtk_data.wifi_mac)))
 
         nick_name = self.coordinator.device.nick_name
         device_registry.async_update_device(
@@ -232,17 +234,21 @@ class MammotionCameraBaseEntity(Camera, ABC):  # type: ignore[misc]
         mower = self.coordinator.manager.get_device_by_name(
             self.coordinator.device_name
         )
-        swversion = mower.device_firmwares.device_version
+        if mower is None:
+            return DeviceInfo(
+                identifiers={(DOMAIN, self.coordinator.unique_name)},
+                name=self.coordinator.device_name,
+            )
 
-        model_id = None
-        if mower is not None:
-            if mower.mower_state.model_id != "":
-                model_id = mower.mower_state.model_id
-            if (
-                mower.mqtt_properties is not None
-                and mower.mqtt_properties.params.items.extMod is not None
-            ):
-                model_id = mower.mqtt_properties.params.items.extMod.value
+        swversion = mower.device_firmwares.device_version
+        model_id: str | None = None
+        if mower.mower_state.model_id != "":
+            model_id = mower.mower_state.model_id
+        if (
+            mower.mqtt_properties is not None
+            and mower.mqtt_properties.params.items.extMod is not None
+        ):
+            model_id = str(mower.mqtt_properties.params.items.extMod.value)
 
         connections: set[tuple[str, str]] = set()
 

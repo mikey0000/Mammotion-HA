@@ -9,7 +9,8 @@
       "no_longer_present": "Het apparaat is niet langer aanwezig",
       "not_supported": "Apparaat wordt niet ondersteund",
       "reconfigure_successful": "Opnieuw instellen gelukt",
-      "api_limit_exceeded": "De API-limiet is overschreden. Probeer het later opnieuw."
+      "api_limit_exceeded": "De API-limiet is overschreden. Probeer het later opnieuw.",
+      "cannot_connect": "Kan geen verbinding maken met de Mammotion-cloud. Controleer uw inloggegevens en netwerk en probeer het opnieuw."
     },
     "flow_title": "{name}",
     "step": {
@@ -648,6 +649,9 @@
     },
     "api_limit_exceeded": {
       "message": "De API-limiet is overschreden."
+    },
+    "cloud_setup_failed": {
+      "message": "Kan geen verbinding maken met de Mammotion-cloud. Controleer uw netwerk en probeer de integratie opnieuw te laden."
     }
   }
 }
