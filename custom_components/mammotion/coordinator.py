@@ -10,16 +10,9 @@ from datetime import timedelta
 from typing import TYPE_CHECKING, Any, cast
 
 import betterproto2
-from habluetooth import BluetoothServiceInfoBleak
-from habluetooth.models import BluetoothScanningMode
 from homeassistant.components import bluetooth
-from homeassistant.components.bluetooth import (
-    BluetoothCallbackMatcher,
-    BluetoothChange,
-    async_register_callback,
-)
 from homeassistant.const import CONF_PASSWORD
-from homeassistant.core import CALLBACK_TYPE, HassJob, HomeAssistant, callback
+from homeassistant.core import HassJob, HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
