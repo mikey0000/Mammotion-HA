@@ -5,7 +5,7 @@ from __future__ import annotations
 import datetime
 import json
 from abc import abstractmethod
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from datetime import timedelta
 from typing import TYPE_CHECKING, Any, cast
 
@@ -722,7 +722,6 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
     async def send_command_and_update(self, command_str: str, **kwargs: Any) -> None:
         """Send command and update."""
         await self.async_send_command(command_str, **kwargs)
-        await self.async_request_iot_sync_continuous()
 
     async def async_request_iot_sync(self, stop: bool = False) -> None:
         """Sync specific info from device."""
@@ -884,7 +883,6 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         await self.async_send_and_wait(
             "single_schedule", "todev_planjob_set", plan_id=plan_id
         )
-        await self.async_request_iot_sync_continuous()
 
     async def async_restart_mower(self) -> None:
         """Restart mower."""
@@ -1031,6 +1029,23 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             await method(*args, **kwargs)
 
         return _wrapper
+
+    def subscribe_map_updated(self, handler: Callable[[], None]) -> None:
+        """Subscribe *handler* to map-updated events from the device handle.
+
+        Fires only when ``toapp_all_hash_name`` is received or a ``MapFetchSaga``
+        completes — not on every telemetry tick.  The subscription is kept alive
+        for the lifetime of the coordinator and cancelled on shutdown.
+        """
+        handle = self.manager.mower(self.device_name)
+        if handle is None:
+            return
+
+        async def _on_map_updated() -> None:
+            if not self.hass.is_stopping:
+                handler()
+
+        self._subscriptions.append(handle.subscribe_map_updated(_on_map_updated))
 
     async def async_shutdown(self) -> None:
         """Cancel all RAII subscriptions and delegate to HA coordinator shutdown."""
