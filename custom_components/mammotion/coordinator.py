@@ -15,7 +15,8 @@ from habluetooth.models import BluetoothServiceInfoBleak
 from homeassistant.components import bluetooth
 from homeassistant.components.bluetooth import (
     BluetoothCallbackMatcher,
-    async_register_callback, BluetoothChange,
+    BluetoothChange,
+    async_register_callback,
 )
 from homeassistant.const import CONF_PASSWORD
 from homeassistant.core import CALLBACK_TYPE, HassJob, HomeAssistant, callback
@@ -85,7 +86,6 @@ from .const import (
 
 if TYPE_CHECKING:
     from . import MammotionConfigEntry
-
 
 MAINTENANCE_INTERVAL = timedelta(minutes=60)
 DEFAULT_INTERVAL = timedelta(minutes=30)
@@ -614,11 +614,11 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
 
     async def async_leave_dock(self) -> None:
         """Leave dock."""
-        await self.send_command_and_update("leave_dock")
+        await self.send_command_and_update("leave_dock", "todev_taskctrl_ack")
 
     async def async_cancel_task(self) -> None:
         """Cancel task."""
-        await self.send_command_and_update("cancel_job")
+        await self.send_command_and_update("cancel_job", "todev_taskctrl_ack")
 
     async def _async_ensure_ble_client(self) -> None:
         """Attach a BLE transport if we have an address but no client yet.
@@ -626,6 +626,12 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         Called before movement commands that prefer BLE so that a freshly
         discovered device (or one that was out of range at startup) gets a
         transport without waiting for the next full coordinator refresh.
+
+        Short-circuits when the registered BLETransport already has the same
+        BLEDevice address — avoids re-wiring on every 30 min refresh tick.
+        Per-advertisement freshness is handled by the bluetooth callback in
+        ``__init__.py``; this method only covers the case where no transport
+        was wired (e.g. mower out of range at integration startup).
         """
         device = self.manager.get_device_by_name(self.device_name)
         if device is None:
@@ -640,17 +646,19 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         ble_device = bluetooth.async_ble_device_from_address(
             self.hass, ble_mac.upper(), True
         )
-
-        if (
-            ble_device is not None
-            and handle.has_transport(TransportType.BLE)
-            and (ble := handle.get_transport(TransportType.BLE))
-        ):
-            if ble == ble_device:
-                return
-
         if ble_device is None:
             return
+
+        # If a BLE transport already exists and has the same address cached, do nothing.
+        # The per-advertisement callback (_ble_seen) handles routine refreshes.
+        if (ble := handle.get_transport(TransportType.BLE)) is not None:
+            cached_address = getattr(ble, "ble_address", None)
+            if (
+                cached_address is not None
+                and cached_address.upper() == ble_device.address.upper()
+            ):
+                return
+
         await self.manager.add_ble_to_device(self.device_name, ble_device)
 
     async def async_move_forward(self, speed: float, use_wifi: bool = False) -> None:
@@ -718,9 +726,16 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         }
         """
 
-    async def send_command_and_update(self, command_str: str, **kwargs: Any) -> None:
+    async def send_command_and_update(
+        self, command_str: str, response: str | None = None, **kwargs: Any
+    ) -> None:
         """Send command and update."""
-        await self.async_send_command(command_str, **kwargs)
+        if response is not None:
+            await self.async_send_and_wait(command_str, response, **kwargs)
+            await self.async_request_iot_sync_continuous()
+        else:
+            await self.async_send_command(command_str, **kwargs)
+            await self.async_request_iot_sync_continuous()
 
     async def async_request_iot_sync(self, stop: bool = False) -> None:
         """Sync specific info from device."""
@@ -762,7 +777,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
                 RptInfoType.RIT_BASESTATION_INFO,
                 RptInfoType.RIT_VIO,
             ],
-            timeout=10000,
+            timeout=300,
             period=period,
             no_change_period=no_change_period,
             count=0,
@@ -1128,8 +1143,35 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
         service_info: BluetoothServiceInfoBleak,
         change: BluetoothChange,
     ) -> None:
-        """Handle a bluetooth event."""
+        """Handle a bluetooth advertisement for this mower's MAC.
+
+        Two responsibilities:
+
+        1. Cache the latest ``service_info`` for downstream use (RSSI gates,
+           freshness checks, etc.).
+        2. Push the freshest ``BLEDevice`` into the existing BLETransport so
+           ``bleak_retry_connector``'s ``ble_device_callback`` always has the
+           most recent advertisement.  This is a synchronous pointer-swap
+           (``BLETransport.set_ble_device``) — no event-loop work needed,
+           safe to run in this ``@callback``-decorated handler.
+
+        Initial transport wire-up (``add_ble_to_device``) is handled by
+        :func:`_attach_ble_to_mower` in ``__init__.py``, which has access to
+        the ``stay_connected_ble`` config flag.  Once the transport exists,
+        every subsequent advertisement flows through this fast path.
+        """
         self.service_info = service_info
+
+        handle = self.manager.mower(self.device_name)
+        if handle is None:
+            return
+        ble = handle.get_transport(TransportType.BLE)
+        if ble is None:
+            return
+        # Sync pointer swap.  Returns False when the address hasn't changed —
+        # not currently used here, but kept available for future use (e.g.
+        # logging only on meaningful changes, triggering reconnect on address change).
+        ble.set_ble_device(service_info.device)
 
     @callback
     def _async_start(self) -> None:
@@ -1171,9 +1213,25 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
         self.update_failures = 0
         await self.async_save_data(device)
 
-        if device.mower_state.ble_mac != "":
-            if self.service_info is not None:
-                await self._async_ensure_ble_client()
+        if self.data.mower_state.ble_mac != "" and len(self._on_stop):
+            self._on_stop.append(
+                async_register_callback(
+                    self.hass,
+                    self._async_handle_bluetooth_event,
+                    BluetoothCallbackMatcher(
+                        address=self.data.mower_state.ble_mac, connectable=True
+                    ),
+                    BluetoothScanningMode.ACTIVE,
+                )
+            )
+
+        if handle := self.manager.mower(self.device_name):
+            if device.mower_state.ble_mac != "":
+                if self.service_info is not None or handle.prefer_ble:
+                    await self._async_ensure_ble_client()
+
+            # if handle.prefer_ble and handle.has_transport(TransportType.BLE):
+            #     await handle.connect_transport(TransportType.BLE)
 
         return device
 
@@ -1215,6 +1273,29 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
     async def _async_setup(self) -> None:
         await super()._async_setup()
         await self.async_request_iot_sync()
+
+        # Watch sys_status changes so we can refresh the full status when the
+        # device transitions states.  Skipped when the BLE polling loop is
+        # already feeding a continuous count=0 stream — the stream is fresher
+        # than any count=1 poll we could fire.
+        if (handle := self.manager.mower(self.device_name)) is not None:
+            handle.watch_field(
+                lambda s: s.raw.report_data.dev.sys_status,
+                self._on_sys_status_changed_refresh,
+            )
+
+    async def _on_sys_status_changed_refresh(self, sys_status: int) -> None:
+        """Trigger a one-shot count=1 poll on sys_status transitions when not streaming."""
+        handle = self.manager.mower(self.device_name)
+        if handle is None or handle.ble_stream_active:
+            return
+        try:
+            await self.async_request_iot_sync()
+        except (DeviceOfflineException, NoTransportAvailableError):
+            LOGGER.debug(
+                "report-coordinator [%s]: skipping sys_status refresh — device offline / no transport",
+                self.device_name,
+            )
 
 
 class MammotionMaintenanceUpdateCoordinator(MammotionBaseUpdateCoordinator[Maintain]):

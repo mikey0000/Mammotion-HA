@@ -141,7 +141,6 @@ CONFIG_SWITCH_ENTITIES: tuple[MammotionConfigSwitchEntityDescription, ...] = (
 )
 
 
-# Example setup usage
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: MammotionConfigEntry,

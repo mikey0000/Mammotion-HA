@@ -113,19 +113,23 @@ async def _attach_ble_to_mower(
         service_info: BluetoothServiceInfoBleak,
         change: BluetoothChange,
     ) -> None:
+        """Wire up the BLETransport on the first advertisement we observe.
+
+        Once the transport exists, ``MammotionReportUpdateCoordinator._async_handle_bluetooth_event``
+        owns per-advertisement freshness via a sync ``set_ble_device`` pointer
+        swap.  This callback only handles the initial-attach case (e.g. mower
+        was out of range at integration startup).
+        """
         handle = mammotion.mower(_device_name)
-        if handle is not None and handle.has_transport(TransportType.BLE):
-            hass.async_create_task(
-                mammotion.update_ble_device(_device_name, service_info.device)
+        if handle is None or handle.has_transport(TransportType.BLE):
+            return
+        hass.async_create_task(
+            mammotion.add_ble_to_device(
+                _device_name,
+                service_info.device,
+                disconnect_on_idle=not stay_connected_ble,
             )
-        else:
-            hass.async_create_task(
-                mammotion.add_ble_to_device(
-                    _device_name,
-                    service_info.device,
-                    disconnect_on_idle=not stay_connected_ble,
-                )
-            )
+        )
 
     entry.async_on_unload(
         bluetooth.async_register_callback(
@@ -281,6 +285,25 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                     stay_connected_ble=stay_connected_ble,
                 )
 
+            # Apply transport preference BEFORE the coordinators run their first
+            # refresh — otherwise their setup commands (read_write_device,
+            # version queries, etc.) fire while handle._prefer_ble is still the
+            # default False, and active_transport() sends them over MQTT even
+            # though the user opted into BLE.  See pymammotion handle.send_raw:
+            # ``use_ble = prefer_ble or self._prefer_ble`` only honours the
+            # flag once it's set on the handle.
+            if not use_wifi:
+                mammotion.set_prefer_ble(device.device_name, prefer_ble=True)
+                handle = mammotion.mower(device.device_name)
+                if handle is not None:
+                    for t_type in (
+                        TransportType.CLOUD_ALIYUN,
+                        TransportType.CLOUD_MAMMOTION,
+                    ):
+                        await handle.disconnect_transport(t_type)
+            elif prefer_ble:
+                mammotion.set_prefer_ble(device.device_name, prefer_ble=True)
+
             unique_name = device.device_name
 
             maintenance_coordinator = MammotionMaintenanceUpdateCoordinator(
@@ -307,18 +330,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
 
             await error_coordinator.async_config_entry_first_refresh()
             await map_coordinator._async_setup()
-
-            if not use_wifi:
-                mammotion.set_prefer_ble(device.device_name, prefer_ble=True)
-                handle = mammotion.mower(device.device_name)
-                if handle is not None:
-                    for t_type in (
-                        TransportType.CLOUD_ALIYUN,
-                        TransportType.CLOUD_MAMMOTION,
-                    ):
-                        await handle.disconnect_transport(t_type)
-            elif prefer_ble:
-                mammotion.set_prefer_ble(device.device_name, prefer_ble=True)
 
             mammotion_mowers.append(
                 MammotionMowerData(
