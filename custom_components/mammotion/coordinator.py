@@ -138,6 +138,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             _user_account = 0
         self.commands = MammotionCommand(device.device_name, _user_account)
         self._subscriptions: list[Subscription] = []
+        self._continuous_stream_cancel: CALLBACK_TYPE | None = None
         self.map_offset_lat: float = 0.0
         self.map_offset_lon: float = 0.0
 
@@ -258,8 +259,10 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         handle = self.manager.mower(self.device_name)
         if handle is None:
             return bool(device.online)
-        if handle.has_transport(TransportType.BLE):
-            if handle.is_transport_connected(TransportType.BLE):
+        if handle.has_transport(TransportType.BLE) and (
+            ble := handle.get_transport(TransportType.BLE)
+        ):
+            if ble.is_usable:
                 return True
         return bool(not handle.availability.mqtt_reported_offline)
 
@@ -732,10 +735,9 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         """Send command and update."""
         if response is not None:
             await self.async_send_and_wait(command_str, response, **kwargs)
-            await self.async_request_iot_sync_continuous()
         else:
             await self.async_send_command(command_str, **kwargs)
-            await self.async_request_iot_sync_continuous()
+        await self._start_continuous_stream()
 
     async def async_request_iot_sync(self, stop: bool = False) -> None:
         """Sync specific info from device."""
@@ -762,8 +764,27 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             count=1,
         )
 
+    async def _start_continuous_stream(self, timeout: int = 150_000) -> None:
+        """Start a continuous IoT report stream and schedule an automatic stop.
+
+        Any previous in-flight stop timer is cancelled first so repeated
+        commands don't stack up multiple timers.
+        """
+        if self._continuous_stream_cancel is not None:
+            self._continuous_stream_cancel()
+            self._continuous_stream_cancel = None
+
+        await self.async_request_iot_sync_continuous(timeout=timeout)
+
+        async def _stop(_now: datetime.datetime) -> None:
+            await self.async_request_iot_sync_continuous_stop()
+
+        self._continuous_stream_cancel = async_call_later(
+            self.hass, timeout / 1000, _stop
+        )
+
     async def async_request_iot_sync_continuous(
-        self, stop: bool = False, period: int = 1000, no_change_period: int = 4000
+        self, stop: bool = False, timeout: int = 300_000, no_change_period: int = 4000
     ) -> None:
         """Sync specific info from device."""
         await self.async_send_command(
@@ -777,14 +798,17 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
                 RptInfoType.RIT_BASESTATION_INFO,
                 RptInfoType.RIT_VIO,
             ],
-            timeout=300,
-            period=period,
+            timeout=timeout,
+            period=1000,
             no_change_period=no_change_period,
             count=0,
         )
 
     async def async_request_iot_sync_continuous_stop(self) -> None:
         """Stop sync specific info from device."""
+        if self._continuous_stream_cancel is not None:
+            self._continuous_stream_cancel()
+            self._continuous_stream_cancel = None
         await self.async_send_command(
             "request_iot_sys",
             rpt_act=RptAct.RPT_STOP,
@@ -1213,7 +1237,7 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
         self.update_failures = 0
         await self.async_save_data(device)
 
-        if self.data.mower_state.ble_mac != "" and len(self._on_stop):
+        if self.data.mower_state.ble_mac != "" and len(self._on_stop) == 0:
             self._on_stop.append(
                 async_register_callback(
                     self.hass,
