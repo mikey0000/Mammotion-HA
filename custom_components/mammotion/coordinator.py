@@ -23,6 +23,7 @@ from homeassistant.core import CALLBACK_TYPE, HassJob, HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers.debounce import Debouncer
 from homeassistant.helpers.event import async_call_later
 from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
@@ -54,7 +55,7 @@ from pymammotion.http.model.camera_stream import (
 )
 from pymammotion.http.model.http import ErrorInfo, Response
 from pymammotion.mammotion.commands.mammotion_command import MammotionCommand
-from pymammotion.proto import RptAct, RptInfoType, SystemUpdateBufMsg
+from pymammotion.proto import SystemUpdateBufMsg
 from pymammotion.state.device_state import DeviceSnapshot
 from pymammotion.transport.base import (
     AuthError,
@@ -67,6 +68,7 @@ from pymammotion.transport.base import (
     Subscription,
     TransportType,
 )
+from pymammotion.transport.ble import BLETransport
 from pymammotion.utility.constant import WorkMode
 from pymammotion.utility.device_type import DeviceType
 from webrtc_models import RTCIceServer
@@ -77,6 +79,7 @@ from .const import (
     COMMAND_EXCEPTIONS,
     CONF_ACCOUNTNAME,
     CONF_CONNECT_DATA,
+    CONF_HAS_CLOUD_ACCOUNT,
     CONF_MAMMOTION_DATA,
     DOMAIN,
     EXPIRED_CREDENTIAL_EXCEPTIONS,
@@ -91,7 +94,7 @@ MAINTENANCE_INTERVAL = timedelta(minutes=60)
 DEFAULT_INTERVAL = timedelta(minutes=30)
 REPORT_INTERVAL = timedelta(minutes=30)
 DEVICE_VERSION_INTERVAL = timedelta(weeks=1)
-MAP_INTERVAL = timedelta(minutes=30)
+MAP_INTERVAL = timedelta(minutes=60)
 RTK_INTERVAL = timedelta(hours=5)
 
 
@@ -138,7 +141,6 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             _user_account = 0
         self.commands = MammotionCommand(device.device_name, _user_account)
         self._subscriptions: list[Subscription] = []
-        self._continuous_stream_cancel: CALLBACK_TYPE | None = None
         self.map_offset_lat: float = 0.0
         self.map_offset_lon: float = 0.0
 
@@ -146,6 +148,13 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
 
         if self.data is None:
             self.data = mower_device
+
+    @property
+    def has_cloud_account(self) -> bool:
+        """Return True if cloud login is active for this entry."""
+        if CONF_HAS_CLOUD_ACCOUNT in self.config_entry.data:
+            return bool(self.config_entry.data[CONF_HAS_CLOUD_ACCOUNT])
+        return bool(self.account)
 
     @abstractmethod
     def get_coordinator_data(self, device: MowingDevice) -> DataT:
@@ -278,6 +287,8 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         - AuthError (generic): performs a full login refresh.
         - Other/unknown: performs a full login refresh.
         """
+        if not self.has_cloud_account:
+            return
 
         if isinstance(exc, LoginFailedError):
             raise ConfigEntryAuthFailed(
@@ -737,91 +748,19 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             await self.async_send_and_wait(command_str, response, **kwargs)
         else:
             await self.async_send_command(command_str, **kwargs)
-        await self._start_continuous_stream()
+        await self.async_start_report_stream()
 
-    async def async_request_iot_sync(self, stop: bool = False) -> None:
-        """Sync specific info from device."""
-        await self.async_send_command(
-            "request_iot_sys",
-            rpt_act=RptAct.RPT_STOP if stop else RptAct.RPT_START,
-            rpt_info_type=[
-                RptInfoType.RIT_DEV_STA,
-                RptInfoType.RIT_DEV_LOCAL,
-                RptInfoType.RIT_WORK,
-                RptInfoType.RIT_MAINTAIN,
-                RptInfoType.RIT_BASESTATION_INFO,
-                RptInfoType.RIT_VIO,
-                RptInfoType.RIT_CONNECT,
-                RptInfoType.RIT_FW_INFO,
-                RptInfoType.RIT_VISION_POINT,
-                RptInfoType.RIT_VISION_STATISTIC,
-                RptInfoType.RIT_CUTTER_INFO,
-                RptInfoType.RIT_RTK,
-            ],
-            timeout=10000,
-            period=3000,
-            no_change_period=4000,
-            count=1,
-        )
+    async def async_request_report_snapshot(self) -> None:
+        """Fire a one-shot count=1 snapshot; no-op while BLE stream is active."""
+        await self.manager.request_report_snapshot(self.device_name)
 
-    async def _start_continuous_stream(self, timeout: int = 150_000) -> None:
-        """Start a continuous IoT report stream and schedule an automatic stop.
+    async def async_start_report_stream(self, duration_ms: int = 300_000) -> None:
+        """Start a transient continuous report window via the library."""
+        await self.manager.start_report_stream(self.device_name, duration_ms)
 
-        Any previous in-flight stop timer is cancelled first so repeated
-        commands don't stack up multiple timers.
-        """
-        if self._continuous_stream_cancel is not None:
-            self._continuous_stream_cancel()
-            self._continuous_stream_cancel = None
-
-        await self.async_request_iot_sync_continuous(timeout=timeout)
-
-        async def _stop(_now: datetime.datetime) -> None:
-            await self.async_request_iot_sync_continuous_stop()
-
-        self._continuous_stream_cancel = async_call_later(
-            self.hass, timeout / 1000, _stop
-        )
-
-    async def async_request_iot_sync_continuous(
-        self, stop: bool = False, timeout: int = 300_000, no_change_period: int = 4000
-    ) -> None:
-        """Sync specific info from device."""
-        await self.async_send_command(
-            "request_iot_sys",
-            rpt_act=RptAct.RPT_STOP if stop else RptAct.RPT_START,
-            rpt_info_type=[
-                RptInfoType.RIT_DEV_STA,
-                RptInfoType.RIT_DEV_LOCAL,
-                RptInfoType.RIT_WORK,
-                RptInfoType.RIT_MAINTAIN,
-                RptInfoType.RIT_BASESTATION_INFO,
-                RptInfoType.RIT_VIO,
-            ],
-            timeout=timeout,
-            period=1000,
-            no_change_period=no_change_period,
-            count=0,
-        )
-
-    async def async_request_iot_sync_continuous_stop(self) -> None:
-        """Stop sync specific info from device."""
-        if self._continuous_stream_cancel is not None:
-            self._continuous_stream_cancel()
-            self._continuous_stream_cancel = None
-        await self.async_send_command(
-            "request_iot_sys",
-            rpt_act=RptAct.RPT_STOP,
-            rpt_info_type=[
-                RptInfoType.RIT_DEV_STA,
-                RptInfoType.RIT_DEV_LOCAL,
-                RptInfoType.RIT_WORK,
-                RptInfoType.RIT_MAINTAIN,
-                RptInfoType.RIT_BASESTATION_INFO,
-                RptInfoType.RIT_VIO,
-            ],
-            count=1,
-        )
+    async def async_ensure_fresh_state(self) -> None:
+        """Fire a one-shot snapshot if device state is older than 2 minutes."""
+        await self.manager.ensure_fresh_state(self.device_name, max_age_s=120.0)
 
     async def send_svg_command(self, command_str: str, **kwargs: Any) -> None:
         """Send command and update."""
@@ -1161,6 +1100,15 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
         self._on_stop: list[CALLBACK_TYPE] = []
         self.service_info: BluetoothServiceInfoBleak | None = None
 
+        self.poll_debouncer = Debouncer(
+            hass,
+            LOGGER,
+            cooldown=60,
+            immediate=True,
+            function=self._add_ble_device,
+            background=True,
+        )
+
     @callback
     def _async_handle_bluetooth_event(
         self,
@@ -1186,16 +1134,20 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
         """
         self.service_info = service_info
 
+        self.poll_debouncer.async_schedule_call()
+
+    def _add_ble_device(self) -> None:
+        if not self.service_info:
+            return
         handle = self.manager.mower(self.device_name)
         if handle is None:
             return
         ble = handle.get_transport(TransportType.BLE)
         if ble is None:
-            return
-        # Sync pointer swap.  Returns False when the address hasn't changed —
-        # not currently used here, but kept available for future use (e.g.
-        # logging only on meaningful changes, triggering reconnect on address change).
-        ble.set_ble_device(service_info.device)
+            self.hass.create_task(self._async_ensure_ble_client())
+
+        if ble := handle.get_transport(TransportType.BLE):
+            cast(BLETransport, ble).set_ble_device(self.service_info.device)
 
     @callback
     def _async_start(self) -> None:
@@ -1249,14 +1201,6 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
                 )
             )
 
-        if handle := self.manager.mower(self.device_name):
-            if device.mower_state.ble_mac != "":
-                if self.service_info is not None or handle.prefer_ble:
-                    await self._async_ensure_ble_client()
-
-            # if handle.prefer_ble and handle.has_transport(TransportType.BLE):
-            #     await handle.connect_transport(TransportType.BLE)
-
         return device
 
     async def _async_update_notification(self, res: tuple[str, Any | None]) -> None:
@@ -1296,7 +1240,7 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
 
     async def _async_setup(self) -> None:
         await super()._async_setup()
-        await self.async_request_iot_sync()
+        await self.async_request_report_snapshot()
 
         # Watch sys_status changes so we can refresh the full status when the
         # device transitions states.  Skipped when the BLE polling loop is
@@ -1310,11 +1254,8 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
 
     async def _on_sys_status_changed_refresh(self, sys_status: int) -> None:
         """Trigger a one-shot count=1 poll on sys_status transitions when not streaming."""
-        handle = self.manager.mower(self.device_name)
-        if handle is None or handle.ble_stream_active:
-            return
         try:
-            await self.async_request_iot_sync()
+            await self.async_request_report_snapshot()
         except (DeviceOfflineException, NoTransportAvailableError):
             LOGGER.debug(
                 "report-coordinator [%s]: skipping sys_status refresh — device offline / no transport",
@@ -1456,7 +1397,7 @@ class MammotionDeviceVersionUpdateCoordinator(
 
         await self.check_firmware_version()
 
-        if handle is not None:
+        if handle is not None and self.has_cloud_account:
             http = self.manager.mammotion_http
             if http is not None:
                 ota_info = await http.get_device_ota_firmware([handle.iot_id])
@@ -1514,7 +1455,7 @@ class MammotionDeviceVersionUpdateCoordinator(
                 await self.async_send_command("get_device_network_info")
 
             handle = self.manager.mower(self.device_name)
-            if handle is not None:
+            if handle is not None and self.has_cloud_account:
                 http = self.manager.mammotion_http
                 if http is not None:
                     ota_info = await http.get_device_ota_firmware([handle.iot_id])
@@ -1732,7 +1673,7 @@ class MammotionDeviceErrorUpdateCoordinator(
         device = self.manager.get_device_by_name(self.device_name)
         assert device is not None
         try:
-            if not device.errors.error_codes:
+            if not device.errors.error_codes and self.has_cloud_account:
                 http = self.manager.mammotion_http
                 if http is not None:
                     device.errors.error_codes = await http.get_all_error_codes()
@@ -1775,7 +1716,7 @@ class MammotionDeviceErrorUpdateCoordinator(
             await self.async_send_and_wait(
                 "read_write_device", "bidire_comm_cmd", rw_id=5, rw=1, context=3
             )
-            if not device.errors.error_codes:
+            if not device.errors.error_codes and self.has_cloud_account:
                 http = self.manager.mammotion_http
                 if http is not None:
                     device.errors.error_codes = await http.get_all_error_codes()
@@ -1858,18 +1799,19 @@ class MammotionRTKCoordinator(MammotionBaseUpdateCoordinator[RTKBaseStationDevic
         await self.async_send_command("send_todev_ble_sync", sync_type=3)
         await self.async_send_and_wait("basestation_info", "to_app")
 
-        http = self.manager.mammotion_http
-        if http is not None:
-            try:
-                ota_info = await http.get_device_ota_firmware([self.device.iot_id])
-                if check_versions := ota_info.data:
-                    for check_version in check_versions:
-                        if check_version.device_id == self.device.iot_id:
-                            self.data.update_check = check_version
-            except ReLoginRequiredError:
-                await self.async_refresh_login()
-            except (DeviceOfflineException, GatewayTimeoutException):
-                pass
+        if self.has_cloud_account:
+            http = self.manager.mammotion_http
+            if http is not None:
+                try:
+                    ota_info = await http.get_device_ota_firmware([self.device.iot_id])
+                    if check_versions := ota_info.data:
+                        for check_version in check_versions:
+                            if check_version.device_id == self.device.iot_id:
+                                self.data.update_check = check_version
+                except ReLoginRequiredError:
+                    await self.async_refresh_login()
+                except (DeviceOfflineException, GatewayTimeoutException):
+                    pass
 
         return self.data
 
@@ -1897,20 +1839,21 @@ class MammotionRTKCoordinator(MammotionBaseUpdateCoordinator[RTKBaseStationDevic
             updated.name = self.device.device_name
             snapshot, _ = handle.state_machine.apply(updated, handle.availability)
 
-        # Fetch lora version — only available via HTTP, not MQTT/protobuf.
-        await self.manager.fetch_rtk_lora_info(self.device_name)
+        if self.has_cloud_account:
+            # Fetch lora version — only available via HTTP, not MQTT/protobuf.
+            await self.manager.fetch_rtk_lora_info(self.device_name)
 
-        if (gateway := self.manager.cloud_gateway) and DeviceType.is_aliyun_product_key(
-            self.data.product_key
-        ):
-            await self.manager.fetch_rtk_properties(self.device_name)
-            await gateway.get_device_status(self.device.iot_id)
-            await self.async_send_command("send_todev_ble_sync", sync_type=3)
-            await self.async_request_iot_sync()
-            await self.async_send_and_wait("basestation_info", "to_app")
-            await self.async_send_and_wait(
-                "get_device_network_info", "toapp_networkinfo_rsp"
-            )
+            if (
+                gateway := self.manager.cloud_gateway
+            ) and DeviceType.is_aliyun_product_key(self.data.product_key):
+                await self.manager.fetch_rtk_properties(self.device_name)
+                await gateway.get_device_status(self.device.iot_id)
+        await self.async_send_command("send_todev_ble_sync", sync_type=3)
+        await self.async_request_report_snapshot()
+        await self.async_send_and_wait("basestation_info", "to_app")
+        await self.async_send_and_wait(
+            "get_device_network_info", "toapp_networkinfo_rsp"
+        )
         self.data.online = True
 
     async def update_firmware(self, version: str) -> None:

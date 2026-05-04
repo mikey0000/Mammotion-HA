@@ -14,14 +14,13 @@ from .const import DOMAIN, LOGGER
 from .geojson_utils import apply_geojson_offset
 from .models import MammotionMowerData
 
-
 SERVICE_GET_GEOJSON = "get_geojson"
 SERVICE_GET_MOW_PATH_GEOJSON = "get_mow_path_geojson"
 SERVICE_GET_MOW_PROGRESS_GEOJSON = "get_mow_progress_geojson"
 
-GEOJSON_SCHEMA = vol.Schema({vol.Required(ATTR_ENTITY_ID): cv.entity_id}, extra=vol.ALLOW_EXTRA)
-
-
+GEOJSON_SCHEMA = vol.Schema(
+    {vol.Required(ATTR_ENTITY_ID): cv.entity_id}, extra=vol.ALLOW_EXTRA
+)
 
 
 def _get_mower_by_entity_id(
@@ -65,6 +64,7 @@ def async_setup_services(hass: HomeAssistant) -> None:
             LOGGER.error("Could not find entity %s", call.data[ATTR_ENTITY_ID])
             return {}
         coordinator = mower.reporting_coordinator
+        await coordinator.async_start_report_stream(duration_ms=300_000)
         return apply_geojson_offset(
             coordinator.data.map.generated_geojson,
             coordinator.map_offset_lat,
