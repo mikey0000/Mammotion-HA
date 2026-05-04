@@ -1147,7 +1147,8 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
             self.hass.create_task(self._async_ensure_ble_client())
 
         if ble := handle.get_transport(TransportType.BLE):
-            cast(BLETransport, ble).set_ble_device(self.service_info.device)
+            if not ble.is_connected:
+                cast(BLETransport, ble).set_ble_device(self.service_info.device)
 
     @callback
     def _async_start(self) -> None:
