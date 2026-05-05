@@ -9,8 +9,8 @@
       "no_longer_present": "L'appareil n'est plus présent",
       "not_supported": "Appareil non pris en charge",
       "reconfigure_successful": "Reconfiguration réussie",
-      "api_limit_exceeded": "La limite de débit de l'API a été dépassée. Veuillez réessayer plus tard.",
-      "cannot_connect": "Impossible de se connecter au cloud Mammotion. Vérifiez vos identifiants et votre réseau, puis réessayez."
+      "api_limit_exceeded": "API rate limit has been exceeded. Please try again later.",
+      "cannot_connect": "Unable to connect to the Mammotion cloud. Check your credentials and network, then try again."
     },
     "flow_title": "{name}",
     "step": {
@@ -51,8 +51,8 @@
         "data": {
           "title": "Mettre à jour la configuration",
           "stay_connected_bluetooth": "Garder le Bluetooth connecté",
-          "prefer_ble_over_wifi": "Préférer le Bluetooth au Wi-Fi si disponible",
-          "movement_use_wifi": "Envoyer les commandes de mouvement via Wi-Fi"
+          "prefer_ble_over_wifi": "Prefer Bluetooth over Wi-Fi when available",
+          "movement_use_wifi": "Send movement commands over Wi-Fi"
         }
       }
     }
@@ -117,66 +117,76 @@
         "name": "Satellites L2 (Co-Visionnage)"
       },
       "positioning_mode": {
-        "name": "Position RTK"
+        "name": "RTK position"
       },
       "position_type": {
         "name": "Type de position de l'appareil",
         "state": {
-          "AREA_BORDER_ON": "At perimeter",
-          "AREA_INSIDE": "Inside area",
-          "AREA_OUT": "Outside area",
-          "CHANNEL_AREA_OVERLAP": "Path area overlap",
+          "AREA_BORDER_ON": "En bordure",
+          "AREA_INSIDE": "À l'intérieur de la zone",
+          "AREA_OUT": "En dehors de la zone",
+          "CHANNEL_AREA_OVERLAP": "Chevauchement de la zone du canal",
           "CHANNEL_ON": "On path",
-          "CHARGE_ON": "At charging station",
-          "DUMPING_AREA_INSIDE": "In dump area",
-          "DUMPING_OUTSIDE": "Outside dump area",
-          "ABNORMAL_POSITIONING": "Position error",
-          "NO_AREAS": "No areas defined",
-          "OBS_ON": "At obstacle",
+          "CHARGE_ON": "À la station de charge",
+          "DUMPING_AREA_INSIDE": "Dans la zone de vidage",
+          "DUMPING_OUTSIDE": "En dehors de la zone",
+          "ABNORMAL_POSITIONING": "Erreur de géolocalisation",
+          "NO_AREAS": "Aucune zone définie",
+          "OBS_ON": "Obstacle",
           "TURN_AREA_INSIDE": "In turn area",
           "VIRTUAL_INSIDE": "In virtual area"
         }
       },
       "visual_positioning_status": {
-        "name": "État du positionnement visuel",
+        "name": "Visual positioning status",
         "state": {
-          "SIGNAL_NONE": "Aucun",
-          "SIGNAL_INIT": "Initialisation",
-          "SIGNAL_GOOD": "Bon",
-          "SIGNAL_BAD": "Mauvais",
-          "SIGNAL_UNKNOWN": "Inconnu"
+          "SIGNAL_NONE": "None",
+          "SIGNAL_INIT": "Initialising",
+          "SIGNAL_GOOD": "Good",
+          "SIGNAL_BAD": "Bad",
+          "SIGNAL_UNKNOWN": "Unknown"
         }
       },
       "activity_mode": {
         "name": "Mode activité",
         "state": {
-          "MODE_NOT_ACTIVE": "Not active",
-          "MODE_ONLINE": "Online",
-          "MODE_OFFLINE": "Offline",
-          "MODE_DISABLE": "Disabled",
-          "MODE_INITIALIZATION": "Initializing",
-          "MODE_READY": "Ready",
-          "MODE_WORKING": "Working",
+          "MODE_NOT_ACTIVE": "Inactif",
+          "MODE_ONLINE": "Connecté",
+          "MODE_OFFLINE": "Déconnecté",
+          "MODE_DISABLE": "Désactivé",
+          "MODE_INITIALIZATION": "Prêt",
+          "MODE_READY": "Prêt",
+          "MODE_WORKING": "Tâche en cours",
           "MODE_RETURNING": "Returning",
-          "MODE_CHARGING": "Charging",
-          "MODE_UPDATING": "Updating",
-          "MODE_LOCK": "Locked",
-          "MODE_PAUSE": "Paused",
-          "MODE_MANUAL_MOWING": "Manual mowing",
-          "MODE_UPDATE_SUCCESS": "Update successful",
-          "MODE_OTA_UPGRADE_FAIL": "Update failed",
-          "MODE_JOB_DRAW": "Drawing job",
+          "MODE_CHARGING": "Chargement en cours",
+          "MODE_UPDATING": "Mise à jour",
+          "MODE_LOCK": "Verrouillé",
+          "MODE_PAUSE": "En pause",
+          "MODE_MANUAL_MOWING": "Tonte manuelle",
+          "MODE_UPDATE_SUCCESS": "Échec de la mise à jour",
+          "MODE_OTA_UPGRADE_FAIL": "Échec de la mise à jour",
+          "MODE_JOB_DRAW": "",
           "MODE_OBSTACLE_DRAW": "Drawing obstacles",
           "MODE_CHANNEL_DRAW": "Drawing channel",
           "MODE_ERASER_DRAW": "Drawing eraser",
-          "MODE_EDIT_BOUNDARY": "Editing boundary",
-          "MODE_LOCATION_ERROR": "Location error",
-          "MODE_BOUNDARY_JUMP": "Boundary crossed",
-          "MODE_CHARGING_PAUSE": "Charging paused"
+          "MODE_EDIT_BOUNDARY": "Modification des limites",
+          "MODE_LOCATION_ERROR": "Erreur de géolocalisation",
+          "MODE_BOUNDARY_JUMP": "Limite dépassée",
+          "MODE_CHARGING_PAUSE": "Charge interrompue"
         }
       },
       "work_area": {
-        "name": "Emplacement actuel"
+        "name": "Current location"
+      },
+      "task_area_status": {
+        "name": "Task area {name}",
+        "state": {
+          "NOT_STARTED": "Not started",
+          "WAITING": "Waiting",
+          "MOWING": "Mowing",
+          "COMPLETE": "Complete",
+          "ABORTED": "Aborted"
+        }
       },
       "maintenance_distance": {
         "name": "Kilométrage total"
@@ -189,13 +199,13 @@
         "unit_of_measurement": "cycles"
       },
       "blade_used_time": {
-        "name": "Durée d'utilisation de la lame"
+        "name": "Blade used time"
       },
       "blade_used_warn_time": {
-        "name": "Temps d'avertissement d'usure de la lame"
+        "name": "Blade wear warning time"
       },
       "non_work_hours": {
-        "name": "Non-work hours"
+        "name": "Heures calmes"
       },
       "rtk_lora": {
         "name": "Version LoRa"
@@ -213,30 +223,20 @@
         "name": "Satellites"
       },
       "position_mode": {
-        "name": "Mode de positionnement",
+        "name": "Position mode",
         "state": {
-          "RTK_OVER_DATALINK": "Antenne par DataLink",
-          "RTK_OVER_INTERNET": "Antenne sur Internet",
+          "RTK_OVER_DATALINK": "Antenna Over Datalink",
+          "RTK_OVER_INTERNET": "Antenna Over Internet",
           "INAVI_NET_RTK": "iNavi NetRTK",
-          "INAVI_RTK_BOX": "Boîtier iNavi RTK"
+          "INAVI_RTK_BOX": "iNavi RTK Box"
         }
       },
       "rtk_app_connect_type": {
-        "name": "Type de connexion",
+        "name": "Connection type",
         "state": {
-          "UNKNOWN": "Inconnu",
+          "UNKNOWN": "Unknown",
           "CON_BLE": "BLE",
           "CON_WIFI": "Wi-Fi"
-        }
-      },
-      "task_area_status": {
-        "name": "Zone de tâche {name}",
-        "state": {
-          "NOT_STARTED": "Non démarré",
-          "WAITING": "En attente",
-          "MOWING": "En cours de tonte",
-          "COMPLETE": "Terminé",
-          "ABORTED": "Abandonné"
         }
       }
     },
@@ -245,7 +245,7 @@
         "name": "Synchroniser les cartes"
       },
       "start_schedule_sync": {
-        "name": "Synchronize schedules"
+        "name": "Synchroniser les plannings"
       },
       "resync_rtk_dock": {
         "name": "Synchroniser RTK et base"
@@ -275,7 +275,7 @@
         "name": "Déplacer la station de recharge"
       },
       "restart_mower": {
-        "name": "Restart mower"
+        "name": "Redémarrer la tondeuse"
       }
     },
     "switch": {
@@ -354,9 +354,9 @@
         }
       },
       "bypass_mode": {
-        "name": "Détection d'obstacles",
+        "name": "Obstacle detection",
         "state": {
-          "direct_touch": "Désactivé",
+          "direct_touch": "Off",
           "slow_touch": "Toucher lent",
           "less_touch": "Moins de contact",
           "no_touch": "Standard",
@@ -417,10 +417,10 @@
         "name": "Angle de traversée"
       },
       "map_offset_lat": {
-        "name": "Décalage carte latitude"
+        "name": "Map offset latitude"
       },
       "map_offset_lon": {
-        "name": "Décalage carte longitude"
+        "name": "Map offset longitude"
       }
     },
     "device_tracker": {
@@ -493,8 +493,8 @@
       "description": "Démarrer l'opération de tonte avec des paramètres personnalisés.",
       "fields": {
         "modify": {
-          "name": "Modify existing job",
-          "description": "Whether to modify an existing job or start a new one."
+          "name": "Modifier une tâche existante",
+          "description": "....."
         },
         "is_mow": {
           "name": "Tonte",
@@ -577,8 +577,8 @@
           "description": "Liste des zones à tondre (représentées sous forme d'entiers)."
         },
         "plan_only": {
-          "name": "Planification uniquement",
-          "description": "Générer le plan de tonte sans démarrer le travail."
+          "name": "Plan only",
+          "description": "Generate the mowing plan without starting the job."
         }
       }
     },
@@ -597,32 +597,32 @@
       }
     },
     "set_non_work_hours": {
-      "name": "Set non-work hours",
-      "description": "Set the hours when the mower is not working.",
+      "name": "Définir les heures calmes",
+      "description": "Définissez les heures où la tondeuse ne fonctionne pas.",
       "fields": {
         "start_time": {
-          "name": "Start time",
-          "description": "Start time of the non-work hours."
+          "name": "Début des heures sans tonte",
+          "description": "Début des heures calmes."
         },
         "end_time": {
-          "name": "End time",
-          "description": "End time of the non-work hours."
+          "name": "Heure de fin",
+          "description": "Fin des heures calmes."
         }
       }
     },
     "set_blade_warning_time": {
-      "name": "Définir le temps d'avertissement de lame",
-      "description": "Définir le temps d'avertissement de remplacement de lame en heures.",
+      "name": "Set blade warning time",
+      "description": "Set the blade replacement warning time in hours.",
       "fields": {
         "hours": {
-          "name": "Heures",
-          "description": "Seuil d'avertissement en heures avant le remplacement recommandé de la lame."
+          "name": "Hours",
+          "description": "Warning threshold in hours before blade replacement is recommended."
         }
       }
     },
     "reset_blade_time": {
-      "name": "Réinitialiser le temps de lame",
-      "description": "Réinitialiser le compteur de temps d'utilisation de la lame."
+      "name": "Reset blade time",
+      "description": "Reset the blade usage time counter."
     }
   },
   "exceptions": {
@@ -648,10 +648,10 @@
       "message": "Impossible d'envoyer la commande au robot."
     },
     "api_limit_exceeded": {
-      "message": "La limite de débit de l'API a été dépassée."
+      "message": "API rate limit has been exceeded."
     },
     "cloud_setup_failed": {
-      "message": "Impossible de se connecter au cloud Mammotion. Vérifiez votre réseau et essayez de recharger l'intégration."
+      "message": "Unable to connect to the Mammotion cloud. Check your network and try reloading the integration."
     }
   }
 }

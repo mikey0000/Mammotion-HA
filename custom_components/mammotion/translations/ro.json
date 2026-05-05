@@ -9,8 +9,8 @@
       "no_longer_present": "Echipamentul nu mai este prezent",
       "not_supported": "Dispozitivul nu este suportat",
       "reconfigure_successful": "Reconfigurare reușită",
-      "api_limit_exceeded": "Limita de solicitări API a fost depășită. Vă rugăm să încercați din nou mai târziu.",
-      "cannot_connect": "Nu se poate conecta la cloud-ul Mammotion. Verificați datele de autentificare și rețeaua, apoi încercați din nou."
+      "api_limit_exceeded": "API rate limit has been exceeded. Please try again later.",
+      "cannot_connect": "Unable to connect to the Mammotion cloud. Check your credentials and network, then try again."
     },
     "flow_title": "{name}",
     "step": {
@@ -51,8 +51,8 @@
         "data": {
           "title": "Actualizarea configurației",
           "stay_connected_bluetooth": "Mențineți bluetooth-ul conectat",
-          "prefer_ble_over_wifi": "Preferați Bluetooth față de Wi-Fi când este disponibil",
-          "movement_use_wifi": "Trimiteți comenzi de mișcare prin Wi-Fi"
+          "prefer_ble_over_wifi": "Prefer Bluetooth over Wi-Fi when available",
+          "movement_use_wifi": "Send movement commands over Wi-Fi"
         }
       }
     }
@@ -117,7 +117,7 @@
         "name": "Sateliți L2 (vedere în comun)"
       },
       "positioning_mode": {
-        "name": "Poziția RTK"
+        "name": "RTK position"
       },
       "position_type": {
         "name": "Tipul de poziționare a dispozitivului",
@@ -138,13 +138,13 @@
         }
       },
       "visual_positioning_status": {
-        "name": "Stare poziționare vizuală",
+        "name": "Visual positioning status",
         "state": {
-          "SIGNAL_NONE": "Niciunul",
-          "SIGNAL_INIT": "Inițializare",
-          "SIGNAL_GOOD": "Bun",
-          "SIGNAL_BAD": "Slab",
-          "SIGNAL_UNKNOWN": "Necunoscut"
+          "SIGNAL_NONE": "None",
+          "SIGNAL_INIT": "Initialising",
+          "SIGNAL_GOOD": "Good",
+          "SIGNAL_BAD": "Bad",
+          "SIGNAL_UNKNOWN": "Unknown"
         }
       },
       "activity_mode": {
@@ -176,7 +176,17 @@
         }
       },
       "work_area": {
-        "name": "Locație curentă"
+        "name": "Current location"
+      },
+      "task_area_status": {
+        "name": "Task area {name}",
+        "state": {
+          "NOT_STARTED": "Not started",
+          "WAITING": "Waiting",
+          "MOWING": "Mowing",
+          "COMPLETE": "Complete",
+          "ABORTED": "Aborted"
+        }
       },
       "maintenance_distance": {
         "name": "Kilometraj total"
@@ -189,10 +199,10 @@
         "unit_of_measurement": "cycles"
       },
       "blade_used_time": {
-        "name": "Timp de utilizare a lamei"
+        "name": "Blade used time"
       },
       "blade_used_warn_time": {
-        "name": "Timp de avertizare uzură lamă"
+        "name": "Blade wear warning time"
       },
       "non_work_hours": {
         "name": "Non-work hours"
@@ -210,33 +220,23 @@
         "name": "Wi-Fi RSSI"
       },
       "rtk_sats_num": {
-        "name": "Sateliți"
+        "name": "Satellites"
       },
       "position_mode": {
-        "name": "Mod de poziționare",
+        "name": "Position mode",
         "state": {
-          "RTK_OVER_DATALINK": "Antenă prin DataLink",
-          "RTK_OVER_INTERNET": "Antenă prin Internet",
+          "RTK_OVER_DATALINK": "Antenna Over Datalink",
+          "RTK_OVER_INTERNET": "Antenna Over Internet",
           "INAVI_NET_RTK": "iNavi NetRTK",
-          "INAVI_RTK_BOX": "Cutie iNavi RTK"
+          "INAVI_RTK_BOX": "iNavi RTK Box"
         }
       },
       "rtk_app_connect_type": {
-        "name": "Tip de conexiune",
+        "name": "Connection type",
         "state": {
-          "UNKNOWN": "Necunoscut",
+          "UNKNOWN": "Unknown",
           "CON_BLE": "BLE",
           "CON_WIFI": "Wi-Fi"
-        }
-      },
-      "task_area_status": {
-        "name": "Zona de sarcină {name}",
-        "state": {
-          "NOT_STARTED": "Neînceput",
-          "WAITING": "În așteptare",
-          "MOWING": "Cosire",
-          "COMPLETE": "Finalizat",
-          "ABORTED": "Abandonat"
         }
       }
     },
@@ -354,9 +354,9 @@
         }
       },
       "bypass_mode": {
-        "name": "Detectare obstacole",
+        "name": "Obstacle detection",
         "state": {
-          "direct_touch": "Oprit",
+          "direct_touch": "Off",
           "slow_touch": "Atingere lentă",
           "less_touch": "Mai puțin atins",
           "no_touch": "Standard",
@@ -417,10 +417,10 @@
         "name": "Unghiul de trecere"
       },
       "map_offset_lat": {
-        "name": "Decalaj hartă latitudine"
+        "name": "Map offset latitude"
       },
       "map_offset_lon": {
-        "name": "Decalaj hartă longitudine"
+        "name": "Map offset longitude"
       }
     },
     "device_tracker": {
@@ -577,8 +577,8 @@
           "description": "Lista zonelor care trebuie aruncate (reprezentate ca întregi)."
         },
         "plan_only": {
-          "name": "Doar planificare",
-          "description": "Generați planul de tuns fără a porni sarcina."
+          "name": "Plan only",
+          "description": "Generate the mowing plan without starting the job."
         }
       }
     },
@@ -611,18 +611,18 @@
       }
     },
     "set_blade_warning_time": {
-      "name": "Setați timpul de avertizare al lamei",
-      "description": "Setați timpul de avertizare pentru înlocuirea lamei în ore.",
+      "name": "Set blade warning time",
+      "description": "Set the blade replacement warning time in hours.",
       "fields": {
         "hours": {
-          "name": "Ore",
-          "description": "Pragul de avertizare în ore înainte de înlocuirea recomandată a lamei."
+          "name": "Hours",
+          "description": "Warning threshold in hours before blade replacement is recommended."
         }
       }
     },
     "reset_blade_time": {
-      "name": "Resetați timpul lamei",
-      "description": "Resetați contorul de timp de utilizare a lamei."
+      "name": "Reset blade time",
+      "description": "Reset the blade usage time counter."
     }
   },
   "exceptions": {
@@ -648,10 +648,10 @@
       "message": "Nu s-a reușit trimiterea comenzii către mașina de tuns iarba."
     },
     "api_limit_exceeded": {
-      "message": "Limita de solicitări API a fost depăşită."
+      "message": "API rate limit has been exceeded."
     },
     "cloud_setup_failed": {
-      "message": "Nu se poate conecta la cloud-ul Mammotion. Verificați rețeaua și încercați să reîncărcați integrarea."
+      "message": "Unable to connect to the Mammotion cloud. Check your network and try reloading the integration."
     }
   }
 }
