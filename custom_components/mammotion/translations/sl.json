@@ -5,24 +5,24 @@
       "already_in_progress": "Konfiguracija poteka",
       "no_devices_found": "Ne morem najti naprav",
       "no_devices_found_in_account": "V vašem računu ni naprav",
-      "bluetooth_and_account_mismatch": "V vašem računu ni bluetooth naprav",
+      "bluetooth_and_account_mismatch": "V vašem računu ni Bluetooth naprav",
       "no_longer_present": "Naprava ni več prisotna",
       "not_supported": "Naprava ni podprta",
       "reconfigure_successful": "Ponastavitev uspešna",
-      "api_limit_exceeded": "Prekoračena je bila omejitev API-ja. Poskusite znova pozneje.",
-      "cannot_connect": "Povezava z oblakom Mammotion ni mogoča. Preverite poverilnice in omrežje ter poskusite znova."
+      "api_limit_exceeded": "API rate limit has been exceeded. Please try again later.",
+      "cannot_connect": "Unable to connect to the Mammotion cloud. Check your credentials and network, then try again."
     },
     "flow_title": "{name}",
     "step": {
       "bluetooth_confirm": {
         "description": "Nastavitev {name}",
         "data": {
-          "stay_connected_bluetooth": "Ohranite bluetooth povezavo"
+          "stay_connected_bluetooth": "Ohranite Bluetooth povezavo"
         }
       },
       "reconfigure": {
         "data": {
-          "use_wifi": "Uporabi Wi-fi",
+          "use_wifi": "Uporabi Wi-Fi",
           "account_name": "E-poštni naslov Mammotion ali številka računa",
           "password": "Geslo Mammotion računa"
         }
@@ -30,7 +30,7 @@
       "user": {
         "data": {
           "address": "Naprava",
-          "stay_connected_bluetooth": "Ohranite bluetooth povezavo"
+          "stay_connected_bluetooth": "Ohranite Bluetooth povezavo"
         },
         "description": "Izberite vašo kosilnico"
       },
@@ -40,7 +40,7 @@
           "account_name": "E-poštni naslov Mammotion ali številka računa",
           "password": "Geslo Mammotion računa"
         },
-        "title": "Poveži Wi-fi",
+        "title": "Poveži Wi-Fi",
         "description": "Vnesite e-poštni naslov Mammotion računa ali številko računa in geslo"
       }
     }
@@ -50,9 +50,9 @@
       "init": {
         "data": {
           "title": "Posodobi nastavitev",
-          "stay_connected_bluetooth": "Ohrani bluetooth povezavo",
-          "prefer_ble_over_wifi": "Daj prednost Bluetooth pred Wi-Fi, ko je na voljo",
-          "movement_use_wifi": "Pošiljaj ukaze gibanja prek Wi-Fi"
+          "stay_connected_bluetooth": "Ohrani Bluetooth povezavo",
+          "prefer_ble_over_wifi": "Prefer Bluetooth over Wi-Fi when available",
+          "movement_use_wifi": "Send movement commands over Wi-Fi"
         }
       }
     }
@@ -60,13 +60,13 @@
   "entity": {
     "sensor": {
       "error_1_message": {
-        "name": "Last error"
+        "name": "Zadnja napaka"
       },
       "error_1_time": {
-        "name": "Last error time"
+        "name": "Čas zadnje napake"
       },
       "error_1_code": {
-        "name": "Last error code"
+        "name": "Številka zadnje napake"
       },
       "battery_percent": {
         "name": "Baterija"
@@ -78,7 +78,7 @@
         "name": "Osvetlitev kamere"
       },
       "wifi_rssi": {
-        "name": "Wifi RSSI"
+        "name": "Wi-Fi RSSI"
       },
       "mnet_rssi": {
         "name": "Mobilni RSSI"
@@ -105,7 +105,7 @@
         "name": "Skupni čas"
       },
       "elapsed_time": {
-        "name": "Pretečni čas"
+        "name": "Pretečeni čas"
       },
       "left_time": {
         "name": "Preostali čas"
@@ -117,7 +117,7 @@
         "name": "L2 sateliti (skupaj)"
       },
       "positioning_mode": {
-        "name": "Položaj RTK postaje"
+        "name": "RTK position"
       },
       "position_type": {
         "name": "Vrsta pozicioniranja",
@@ -127,10 +127,10 @@
           "AREA_OUT": "Outside area",
           "CHANNEL_AREA_OVERLAP": "Path area overlap",
           "CHANNEL_ON": "On path",
-          "CHARGE_ON": "At charging station",
+          "CHARGE_ON": "Na polnilni postaji",
           "DUMPING_AREA_INSIDE": "In dump area",
           "DUMPING_OUTSIDE": "Outside dump area",
-          "ABNORMAL_POSITIONING": "Position error",
+          "ABNORMAL_POSITIONING": "Napaka pozicije",
           "NO_AREAS": "No areas defined",
           "OBS_ON": "At obstacle",
           "TURN_AREA_INSIDE": "In turn area",
@@ -138,45 +138,55 @@
         }
       },
       "visual_positioning_status": {
-        "name": "Stanje vizualnega pozicioniranja",
+        "name": "Visual positioning status",
         "state": {
-          "SIGNAL_NONE": "Brez",
-          "SIGNAL_INIT": "Inicializacija",
-          "SIGNAL_GOOD": "Dobro",
-          "SIGNAL_BAD": "Slabo",
-          "SIGNAL_UNKNOWN": "Neznano"
+          "SIGNAL_NONE": "None",
+          "SIGNAL_INIT": "Initialising",
+          "SIGNAL_GOOD": "Good",
+          "SIGNAL_BAD": "Bad",
+          "SIGNAL_UNKNOWN": "Unknown"
         }
       },
       "activity_mode": {
         "name": "Vrsta dejavnosti",
         "state": {
           "MODE_NOT_ACTIVE": "Not active",
-          "MODE_ONLINE": "Online",
-          "MODE_OFFLINE": "Offline",
-          "MODE_DISABLE": "Disabled",
-          "MODE_INITIALIZATION": "Initializing",
-          "MODE_READY": "Ready",
-          "MODE_WORKING": "Working",
+          "MODE_ONLINE": "Povezano",
+          "MODE_OFFLINE": "Ni povezave",
+          "MODE_DISABLE": "Onemogočeno",
+          "MODE_INITIALIZATION": "Inicializacija",
+          "MODE_READY": "V pripravljenosti",
+          "MODE_WORKING": "Deluje",
           "MODE_RETURNING": "Returning",
-          "MODE_CHARGING": "Charging",
-          "MODE_UPDATING": "Updating",
+          "MODE_CHARGING": "Polnjenje",
+          "MODE_UPDATING": "Posodabljanje",
           "MODE_LOCK": "Locked",
           "MODE_PAUSE": "Paused",
-          "MODE_MANUAL_MOWING": "Manual mowing",
-          "MODE_UPDATE_SUCCESS": "Update successful",
-          "MODE_OTA_UPGRADE_FAIL": "Update failed",
+          "MODE_MANUAL_MOWING": "Ročni način košnje",
+          "MODE_UPDATE_SUCCESS": "Posodobitev je uspela",
+          "MODE_OTA_UPGRADE_FAIL": "Posodobitev ni uspela",
           "MODE_JOB_DRAW": "Drawing job",
           "MODE_OBSTACLE_DRAW": "Drawing obstacles",
           "MODE_CHANNEL_DRAW": "Drawing channel",
           "MODE_ERASER_DRAW": "Drawing eraser",
           "MODE_EDIT_BOUNDARY": "Editing boundary",
-          "MODE_LOCATION_ERROR": "Location error",
+          "MODE_LOCATION_ERROR": "Napaka pozicije",
           "MODE_BOUNDARY_JUMP": "Boundary crossed",
           "MODE_CHARGING_PAUSE": "Charging paused"
         }
       },
       "work_area": {
-        "name": "Trenutna lokacija"
+        "name": "Current location"
+      },
+      "task_area_status": {
+        "name": "Task area {name}",
+        "state": {
+          "NOT_STARTED": "Not started",
+          "WAITING": "Waiting",
+          "MOWING": "Mowing",
+          "COMPLETE": "Complete",
+          "ABORTED": "Aborted"
+        }
       },
       "maintenance_distance": {
         "name": "Skupno opravljena pot"
@@ -189,54 +199,44 @@
         "unit_of_measurement": "Cikli polnjenja baterije"
       },
       "blade_used_time": {
-        "name": "Čas uporabe rezila"
+        "name": "Blade used time"
       },
       "blade_used_warn_time": {
-        "name": "Čas opozorila obrabe rezila"
+        "name": "Blade wear warning time"
       },
       "non_work_hours": {
         "name": "Non-work hours"
       },
       "rtk_lora": {
-        "name": "LoRa version"
+        "name": "LoRa verzija"
       },
       "rtk_latitude": {
-        "name": "Latitude"
+        "name": "Geografska širina"
       },
       "rtk_longitude": {
-        "name": "Longitude"
+        "name": "Geografska dolžina"
       },
       "rtk_wifi_rssi": {
         "name": "Wi-Fi RSSI"
       },
       "rtk_sats_num": {
-        "name": "Sateliti"
+        "name": "Satellites"
       },
       "position_mode": {
-        "name": "Način pozicioniranja",
+        "name": "Position mode",
         "state": {
-          "RTK_OVER_DATALINK": "Antena prek DataLink",
-          "RTK_OVER_INTERNET": "Antena prek interneta",
+          "RTK_OVER_DATALINK": "Antenna Over Datalink",
+          "RTK_OVER_INTERNET": "Antenna Over Internet",
           "INAVI_NET_RTK": "iNavi NetRTK",
-          "INAVI_RTK_BOX": "iNavi RTK škatla"
+          "INAVI_RTK_BOX": "iNavi RTK Box"
         }
       },
       "rtk_app_connect_type": {
-        "name": "Vrsta povezave",
+        "name": "Connection type",
         "state": {
-          "UNKNOWN": "Neznano",
+          "UNKNOWN": "Unknown",
           "CON_BLE": "BLE",
           "CON_WIFI": "Wi-Fi"
-        }
-      },
-      "task_area_status": {
-        "name": "Področje naloge {name}",
-        "state": {
-          "NOT_STARTED": "Ni začeto",
-          "WAITING": "Čaka",
-          "MOWING": "Košnja",
-          "COMPLETE": "Dokončano",
-          "ABORTED": "Prekinjeno"
         }
       }
     },
@@ -272,10 +272,10 @@
         "name": "Počisti zemljevide in imena področji"
       },
       "relocate_charging_station": {
-        "name": "Relocate charging station"
+        "name": "Premakni polnilno postajo"
       },
       "restart_mower": {
-        "name": "Restart mower"
+        "name": "Ponovno zaženi kosilnico"
       }
     },
     "switch": {
@@ -295,10 +295,10 @@
         "name": "Način obračanja"
       },
       "rain_tactics": {
-        "name": "Rain detection (during mow) On/Off"
+        "name": "Zaznavanje dežja (med košnjo)"
       },
       "rain_detection": {
-        "name": "Rain detection (Mower) On/Off"
+        "name": "Zaznavanje dežja"
       },
       "side_led": {
         "name": "Stranska LED osvetlitev"
@@ -354,9 +354,9 @@
         }
       },
       "bypass_mode": {
-        "name": "Zaznavanje ovir",
+        "name": "Obstacle detection",
         "state": {
-          "direct_touch": "Izklopljeno",
+          "direct_touch": "Off",
           "slow_touch": "Počasni dotik",
           "less_touch": "Manj dotika",
           "no_touch": "Standard",
@@ -386,11 +386,11 @@
         }
       },
       "cutter_mode": {
-        "name": "Cutter Speed",
+        "name": "Hitrost rezil",
         "state": {
-          "normal": "Medium",
-          "slow": "Slow",
-          "fast": "Fast"
+          "normal": "Normalno",
+          "slow": "Počasi",
+          "fast": "Hitro"
         }
       }
     },
@@ -417,10 +417,10 @@
         "name": "Kot prečkanja"
       },
       "map_offset_lat": {
-        "name": "Zamik zemljevida širina"
+        "name": "Map offset latitude"
       },
       "map_offset_lon": {
-        "name": "Zamik zemljevida dolžina"
+        "name": "Map offset longitude"
       }
     },
     "device_tracker": {
@@ -493,7 +493,7 @@
       "description": "Prični košnjo z dodatnimi nastavitvami",
       "fields": {
         "modify": {
-          "name": "Modify existing job",
+          "name": "Uredi obstoječe opravilo",
           "description": "Whether to modify an existing job or start a new one."
         },
         "is_mow": {
@@ -577,8 +577,8 @@
           "description": "Spisek območij."
         },
         "plan_only": {
-          "name": "Samo načrt",
-          "description": "Ustvari načrt košnje brez zagona naloge."
+          "name": "Plan only",
+          "description": "Generate the mowing plan without starting the job."
         }
       }
     },
@@ -591,38 +591,38 @@
           "description": "Whether blades are on or off."
         },
         "blade_height": {
-          "name": "Blade height",
-          "description": "Height of the blade."
+          "name": "Višina rezil",
+          "description": "Višina rezil kosilnice"
         }
       }
     },
     "set_non_work_hours": {
-      "name": "Set non-work hours",
-      "description": "Set the hours when the mower is not working.",
+      "name": "Nastavi ure nedelovanja",
+      "description": "Nastavi ure ko kosilnica ne bo delovala",
       "fields": {
         "start_time": {
-          "name": "Start time",
-          "description": "Start time of the non-work hours."
+          "name": "Čas začetka",
+          "description": "Začetek nedelovnega časa"
         },
         "end_time": {
-          "name": "End time",
-          "description": "End time of the non-work hours."
+          "name": "Čas zaključka",
+          "description": "Konec nedelovnega časa"
         }
       }
     },
     "set_blade_warning_time": {
-      "name": "Nastavi čas opozorila rezila",
-      "description": "Nastavite čas opozorila za zamenjavo rezila v urah.",
+      "name": "Set blade warning time",
+      "description": "Set the blade replacement warning time in hours.",
       "fields": {
         "hours": {
-          "name": "Ure",
-          "description": "Prag opozorila v urah pred priporočeno zamenjavo rezila."
+          "name": "Hours",
+          "description": "Warning threshold in hours before blade replacement is recommended."
         }
       }
     },
     "reset_blade_time": {
-      "name": "Ponastavi čas rezila",
-      "description": "Ponastavi števec časa uporabe rezila."
+      "name": "Reset blade time",
+      "description": "Reset the blade usage time counter."
     }
   },
   "exceptions": {
@@ -648,10 +648,10 @@
       "message": "Ukaza ni bilo možno poslati."
     },
     "api_limit_exceeded": {
-      "message": "Prekočena je bila omejitev API-ja."
+      "message": "API rate limit has been exceeded."
     },
     "cloud_setup_failed": {
-      "message": "Povezava z oblakom Mammotion ni mogoča. Preverite omrežje in poskusite znova naložiti integracijo."
+      "message": "Unable to connect to the Mammotion cloud. Check your network and try reloading the integration."
     }
   }
 }

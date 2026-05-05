@@ -9,8 +9,8 @@
       "no_longer_present": "Urządzenie nie jest już dostępne",
       "not_supported": "Urządzenie nie jest obsługiwane",
       "reconfigure_successful": "Ponowna konfiguracja zakończona powodzeniem",
-      "api_limit_exceeded": "Przekroczono limit API. Spróbuj ponownie później.",
-      "cannot_connect": "Nie można połączyć się z chmurą Mammotion. Sprawdź dane logowania i sieć, a następnie spróbuj ponownie."
+      "api_limit_exceeded": "API rate limit has been exceeded. Please try again later.",
+      "cannot_connect": "Unable to connect to the Mammotion cloud. Check your credentials and network, then try again."
     },
     "flow_title": "{name}",
     "step": {
@@ -51,8 +51,8 @@
         "data": {
           "title": "Aktualizuj konfigurację",
           "stay_connected_bluetooth": "Użyj połączenia Bluetooth",
-          "prefer_ble_over_wifi": "Preferuj Bluetooth zamiast Wi-Fi, gdy dostępne",
-          "movement_use_wifi": "Wysyłaj polecenia ruchu przez Wi-Fi"
+          "prefer_ble_over_wifi": "Prefer Bluetooth over Wi-Fi when available",
+          "movement_use_wifi": "Send movement commands over Wi-Fi"
         }
       }
     }
@@ -117,7 +117,7 @@
         "name": "Satelity L2 (wspólne oglądanie)"
       },
       "positioning_mode": {
-        "name": "Pozycjonowanie RTK"
+        "name": "RTK position"
       },
       "position_type": {
         "name": "Stan urządzenia",
@@ -138,13 +138,13 @@
         }
       },
       "visual_positioning_status": {
-        "name": "Status pozycjonowania wizualnego",
+        "name": "Visual positioning status",
         "state": {
-          "SIGNAL_NONE": "Brak",
-          "SIGNAL_INIT": "Inicjalizacja",
-          "SIGNAL_GOOD": "Dobry",
-          "SIGNAL_BAD": "Zły",
-          "SIGNAL_UNKNOWN": "Nieznany"
+          "SIGNAL_NONE": "None",
+          "SIGNAL_INIT": "Initialising",
+          "SIGNAL_GOOD": "Good",
+          "SIGNAL_BAD": "Bad",
+          "SIGNAL_UNKNOWN": "Unknown"
         }
       },
       "activity_mode": {
@@ -176,7 +176,17 @@
         }
       },
       "work_area": {
-        "name": "Aktualna lokalizacja"
+        "name": "Current location"
+      },
+      "task_area_status": {
+        "name": "Task area {name}",
+        "state": {
+          "NOT_STARTED": "Not started",
+          "WAITING": "Waiting",
+          "MOWING": "Mowing",
+          "COMPLETE": "Complete",
+          "ABORTED": "Aborted"
+        }
       },
       "maintenance_distance": {
         "name": "Całkowity przebieg"
@@ -189,10 +199,10 @@
         "unit_of_measurement": "cykle"
       },
       "blade_used_time": {
-        "name": "Czas użycia ostrza"
+        "name": "Blade used time"
       },
       "blade_used_warn_time": {
-        "name": "Czas ostrzeżenia o zużyciu ostrza"
+        "name": "Blade wear warning time"
       },
       "non_work_hours": {
         "name": "Non-work hours"
@@ -210,33 +220,23 @@
         "name": "Wi-Fi RSSI"
       },
       "rtk_sats_num": {
-        "name": "Satelity"
+        "name": "Satellites"
       },
       "position_mode": {
-        "name": "Tryb pozycjonowania",
+        "name": "Position mode",
         "state": {
-          "RTK_OVER_DATALINK": "Antena przez DataLink",
-          "RTK_OVER_INTERNET": "Antena przez Internet",
+          "RTK_OVER_DATALINK": "Antenna Over Datalink",
+          "RTK_OVER_INTERNET": "Antenna Over Internet",
           "INAVI_NET_RTK": "iNavi NetRTK",
           "INAVI_RTK_BOX": "iNavi RTK Box"
         }
       },
       "rtk_app_connect_type": {
-        "name": "Typ połączenia",
+        "name": "Connection type",
         "state": {
-          "UNKNOWN": "Nieznany",
+          "UNKNOWN": "Unknown",
           "CON_BLE": "BLE",
           "CON_WIFI": "Wi-Fi"
-        }
-      },
-      "task_area_status": {
-        "name": "Obszar zadania {name}",
-        "state": {
-          "NOT_STARTED": "Nie rozpoczęto",
-          "WAITING": "Oczekiwanie",
-          "MOWING": "Koszenie",
-          "COMPLETE": "Ukończono",
-          "ABORTED": "Przerwano"
         }
       }
     },
@@ -354,9 +354,9 @@
         }
       },
       "bypass_mode": {
-        "name": "Wykrywanie przeszkód",
+        "name": "Obstacle detection",
         "state": {
-          "direct_touch": "Wyłączone",
+          "direct_touch": "Off",
           "slow_touch": "Wolne dotknięcie",
           "less_touch": "Mniej dotyku",
           "no_touch": "Standard",
@@ -417,10 +417,10 @@
         "name": "Kąt skrzyżowania"
       },
       "map_offset_lat": {
-        "name": "Przesunięcie mapy szerokość"
+        "name": "Map offset latitude"
       },
       "map_offset_lon": {
-        "name": "Przesunięcie mapy długość"
+        "name": "Map offset longitude"
       }
     },
     "device_tracker": {
@@ -577,8 +577,8 @@
           "description": "Wykaz obszarów do mow (reprezentowanych jako liczby całkowite)."
         },
         "plan_only": {
-          "name": "Tylko planowanie",
-          "description": "Wygeneruj plan koszenia bez uruchamiania zadania."
+          "name": "Plan only",
+          "description": "Generate the mowing plan without starting the job."
         }
       }
     },
@@ -611,18 +611,18 @@
       }
     },
     "set_blade_warning_time": {
-      "name": "Ustaw czas ostrzeżenia dla noża",
-      "description": "Ustaw czas ostrzeżenia o wymianie noża w godzinach.",
+      "name": "Set blade warning time",
+      "description": "Set the blade replacement warning time in hours.",
       "fields": {
         "hours": {
-          "name": "Godziny",
-          "description": "Próg ostrzeżenia w godzinach przed zalecaną wymianą noża."
+          "name": "Hours",
+          "description": "Warning threshold in hours before blade replacement is recommended."
         }
       }
     },
     "reset_blade_time": {
-      "name": "Resetuj czas noża",
-      "description": "Resetuj licznik czasu użytkowania noża."
+      "name": "Reset blade time",
+      "description": "Reset the blade usage time counter."
     }
   },
   "exceptions": {
@@ -648,10 +648,10 @@
       "message": "Nie udało się wysłać polecenia do kosiarki."
     },
     "api_limit_exceeded": {
-      "message": "Przekroczono limit API."
+      "message": "API rate limit has been exceeded."
     },
     "cloud_setup_failed": {
-      "message": "Nie można połączyć się z chmurą Mammotion. Sprawdź sieć i spróbuj ponownie załadować integrację."
+      "message": "Unable to connect to the Mammotion cloud. Check your network and try reloading the integration."
     }
   }
 }
