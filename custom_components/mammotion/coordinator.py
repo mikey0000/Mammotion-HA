@@ -59,6 +59,7 @@ from pymammotion.proto import MulSex, SystemUpdateBufMsg
 from pymammotion.state.device_state import DeviceSnapshot
 from pymammotion.transport.base import (
     AuthError,
+    BLEUnavailableError,
     CommandTimeoutError,
     ConcurrentRequestError,
     LoginFailedError,
@@ -290,7 +291,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         if not self.has_cloud_account:
             return
 
-        if isinstance(exc, (LoginFailedError, ReLoginRequiredError)):
+        if isinstance(exc, LoginFailedError):
             raise ConfigEntryAuthFailed(
                 f"Login failed for Mammotion account: {exc}"
             ) from exc
@@ -1226,7 +1227,14 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
         if handle := self.manager.mower(self.device_name):
             if ble := handle.get_transport(TransportType.BLE):
                 if ble.is_usable and not ble.is_connected:
-                    await ble.connect()
+                    try:
+                        await ble.connect()
+                    except BLEUnavailableError as exc:
+                        LOGGER.debug(
+                            "BLE unavailable for %s during update — continuing via cloud: %s",
+                            self.device_name,
+                            exc,
+                        )
 
         return device
 
