@@ -314,6 +314,9 @@
       },
       "night_light": {
         "name": "Nattelys til/fra"
+      },
+      "voice_on_off": {
+        "name": "Stemme til/fra"
       }
     },
     "select": {
@@ -392,9 +395,19 @@
           "slow": "Langsom",
           "fast": "Hurtig"
         }
+      },
+      "voice_gender": {
+        "name": "Stemmekøn",
+        "state": {
+          "MAN": "Mand",
+          "WOMAN": "Kvinde"
+        }
       }
     },
     "number": {
+      "voice_volume": {
+        "name": "Stemmestyrke"
+      },
       "start_progress": {
         "name": "Start forløb på"
       },

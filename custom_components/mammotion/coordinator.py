@@ -55,7 +55,7 @@ from pymammotion.http.model.camera_stream import (
 )
 from pymammotion.http.model.http import ErrorInfo, Response
 from pymammotion.mammotion.commands.mammotion_command import MammotionCommand
-from pymammotion.proto import SystemUpdateBufMsg
+from pymammotion.proto import MulSex, SystemUpdateBufMsg
 from pymammotion.state.device_state import DeviceSnapshot
 from pymammotion.transport.base import (
     AuthError,
@@ -92,7 +92,7 @@ if TYPE_CHECKING:
 
 MAINTENANCE_INTERVAL = timedelta(minutes=60)
 DEFAULT_INTERVAL = timedelta(minutes=30)
-REPORT_INTERVAL = timedelta(minutes=30)
+REPORT_INTERVAL = timedelta(minutes=5)
 DEVICE_VERSION_INTERVAL = timedelta(weeks=1)
 MAP_INTERVAL = timedelta(minutes=60)
 RTK_INTERVAL = timedelta(hours=5)
@@ -231,6 +231,22 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
     def get_stream_data(self) -> Response[StreamSubscriptionResponse]:
         """Return stream data."""
         return self._stream_data
+
+    async def join_webrtc_channel(self) -> None:
+        """Start stream command."""
+        handle = self.manager.mower(self.device_name)
+        if handle is None:
+            return
+        command = self.commands.device_agora_join_channel_with_position(enter_state=1)
+        await self.async_send_cloud_command(handle.iot_id, command)
+
+    async def leave_webrtc_channel(self) -> None:
+        """End stream command."""
+        handle = self.manager.mower(self.device_name)
+        if handle is None:
+            return
+        command = self.commands.device_agora_join_channel_with_position(enter_state=0)
+        await self.async_send_cloud_command(handle.iot_id, command)
 
     async def set_scheduled_updates(self, enabled: bool) -> None:
         """Enable or disable scheduled polling updates for this device."""
@@ -492,6 +508,22 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             await self.async_refresh_login(exc)
             if self.update_failures < 5:
                 await self.async_sync_schedule()
+
+    async def async_fetch_audio_config(self) -> None:
+        """Request current audio config (volume, language, gender) from device."""
+        await self.async_send_command("get_car_audio_cfg")
+
+    async def async_set_voice_volume(self, volume: float) -> None:
+        """Set robot voice volume (0–100)."""
+        await self.async_send_command("set_car_volume", volume=int(volume))
+
+    async def async_set_voice_on_off(self, on: bool) -> None:
+        """Turn robot voice on (restores 50%) or off (sets volume to 0)."""
+        await self.async_send_command("set_car_volume", volume=50 if on else 0)
+
+    async def async_set_voice_gender(self, sex: str) -> None:
+        """Set robot voice gender (MAN or WOMAN)."""
+        await self.async_send_command("set_car_volume_sex", sex=MulSex[sex])
 
     async def async_start_stop_blades(
         self, start_stop: bool, blade_height: int = 60
@@ -1190,6 +1222,11 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
                     BluetoothScanningMode.ACTIVE,
                 )
             )
+
+        if handle := self.manager.mower(self.device_name):
+            if ble := handle.get_transport(TransportType.BLE):
+                if ble.is_usable and not ble.is_connected:
+                    await ble.connect()
 
         return device
 

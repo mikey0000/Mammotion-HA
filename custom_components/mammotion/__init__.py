@@ -262,7 +262,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
 
     addresses = entry.data.get(CONF_BLE_DEVICES, {})
     integration = await async_get_integration(hass, DOMAIN)
-    mammotion = MammotionClient(ha_version=integration.version)
+    mammotion = MammotionClient(ha_version=integration.version.split("-")[0])
     account = entry.data.get(CONF_ACCOUNTNAME)
     password = entry.data.get(CONF_PASSWORD)
     use_wifi = entry.data.get(CONF_USE_WIFI, True)

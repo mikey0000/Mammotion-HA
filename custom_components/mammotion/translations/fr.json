@@ -314,6 +314,9 @@
       },
       "night_light": {
         "name": "Éclairage de nuit allumé/éteint"
+      },
+      "voice_on_off": {
+        "name": "Voix activée/désactivée"
       }
     },
     "select": {
@@ -392,9 +395,19 @@
           "slow": "Lente",
           "fast": "Rapide"
         }
+      },
+      "voice_gender": {
+        "name": "Genre de la voix",
+        "state": {
+          "MAN": "Masculin",
+          "WOMAN": "Féminin"
+        }
       }
     },
     "number": {
+      "voice_volume": {
+        "name": "Volume de la voix"
+      },
       "start_progress": {
         "name": "Départ de la progression"
       },

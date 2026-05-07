@@ -63,6 +63,21 @@ MAP_OFFSET_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
     ),
 )
 
+AUDIO_NUMBER_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
+    MammotionConfigNumberEntityDescription(
+        key="voice_volume",
+        native_min_value=0,
+        native_max_value=100,
+        native_step=1,
+        mode=NumberMode.SLIDER,
+        native_unit_of_measurement=PERCENTAGE,
+        set_async_fn=lambda coordinator, value: coordinator.async_set_voice_volume(
+            value
+        ),
+        get_fn=lambda coordinator: coordinator.data.mower_state.audio.volume,
+    ),
+)
+
 NUMBER_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
     MammotionConfigNumberEntityDescription(
         key="start_progress",
@@ -180,6 +195,14 @@ async def async_setup_entry(
                     mower.reporting_coordinator, entity_description, limits
                 )
             )
+
+        if DeviceType.is_luba_pro(mower.device.device_name):
+            for entity_description in AUDIO_NUMBER_ENTITIES:
+                entities.append(
+                    MammotionConfigNumberEntity(
+                        mower.reporting_coordinator, entity_description
+                    )
+                )
 
         for entity_description in MAP_OFFSET_ENTITIES:
             entities.append(

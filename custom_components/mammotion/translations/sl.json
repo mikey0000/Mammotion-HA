@@ -314,6 +314,9 @@
       },
       "night_light": {
         "name": "Night light on/off"
+      },
+      "voice_on_off": {
+        "name": "Glas vklopljeno/izklopljeno"
       }
     },
     "select": {
@@ -392,9 +395,19 @@
           "slow": "Slow",
           "fast": "Fast"
         }
+      },
+      "voice_gender": {
+        "name": "Spol glasu",
+        "state": {
+          "MAN": "Moški",
+          "WOMAN": "Ženski"
+        }
       }
     },
     "number": {
+      "voice_volume": {
+        "name": "Glasnost glasu"
+      },
       "start_progress": {
         "name": "Napredek"
       },

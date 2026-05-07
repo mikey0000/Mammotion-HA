@@ -314,6 +314,9 @@
       },
       "night_light": {
         "name": "Nachtverlichting aan/uit"
+      },
+      "voice_on_off": {
+        "name": "Stem aan/uit"
       }
     },
     "select": {
@@ -392,9 +395,19 @@
           "slow": "Langzaam",
           "fast": "Snel"
         }
+      },
+      "voice_gender": {
+        "name": "Stemgeslacht",
+        "state": {
+          "MAN": "Man",
+          "WOMAN": "Vrouw"
+        }
       }
     },
     "number": {
+      "voice_volume": {
+        "name": "Stemvolume"
+      },
       "start_progress": {
         "name": "Start voortgang"
       },
