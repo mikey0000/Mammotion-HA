@@ -314,6 +314,9 @@
       },
       "night_light": {
         "name": "Noční světlo zapnout/vypnout"
+      },
+      "voice_on_off": {
+        "name": "Hlas zapnuto/vypnuto"
       }
     },
     "select": {
@@ -392,9 +395,19 @@
           "slow": "Pomalý",
           "fast": "Rychlá"
         }
+      },
+      "voice_gender": {
+        "name": "Pohlaví hlasu",
+        "state": {
+          "MAN": "Mužský",
+          "WOMAN": "Ženský"
+        }
       }
     },
     "number": {
+      "voice_volume": {
+        "name": "Hlasitost hlasu"
+      },
       "start_progress": {
         "name": "Pokrok při zahájení"
       },

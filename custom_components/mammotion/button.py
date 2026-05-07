@@ -262,7 +262,7 @@ class MammotionTaskButtonSensorEntity(MammotionBaseEntity, ButtonEntity):
 def _update_task_names(
     coordinator: MammotionReportUpdateCoordinator,
     added_tasks: set[str],
-    task_entities_by_id: dict[str, "MammotionTaskButtonSensorEntity"],
+    task_entities_by_id: dict[str, MammotionTaskButtonSensorEntity],
 ) -> None:
     """Rename task button entities whose plan task_name has changed."""
     for task_id in added_tasks:
@@ -280,7 +280,7 @@ def _update_task_names(
 def async_add_task_entities(
     coordinator: MammotionReportUpdateCoordinator,
     added_tasks: set[str],
-    task_entities_by_id: dict[str, "MammotionTaskButtonSensorEntity"],
+    task_entities_by_id: dict[str, MammotionTaskButtonSensorEntity],
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Handle addition of mowing task buttons."""

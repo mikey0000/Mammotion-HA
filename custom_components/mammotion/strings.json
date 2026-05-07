@@ -267,6 +267,9 @@
       },
       "schedule_updates": {
         "name": "Turn updates on/off"
+      },
+      "voice_on_off": {
+        "name": "Voice on/off"
       }
     },
     "select": {
@@ -323,9 +326,19 @@
           "absolute_angle": "North",
           "random_angle": "Random"
         }
+      },
+      "voice_gender": {
+        "name": "Voice gender",
+        "state": {
+          "MAN": "Male",
+          "WOMAN": "Female"
+        }
       }
     },
     "number": {
+      "voice_volume": {
+        "name": "Voice volume"
+      },
       "start_progress": {
         "name": "Start progress"
       },

@@ -314,6 +314,9 @@
       },
       "night_light": {
         "name": "Nachtlicht an/aus"
+      },
+      "voice_on_off": {
+        "name": "Sprache ein/aus"
       }
     },
     "select": {
@@ -392,9 +395,19 @@
           "slow": "Niedrig",
           "fast": "Hoch"
         }
+      },
+      "voice_gender": {
+        "name": "Stimmengeschlecht",
+        "state": {
+          "MAN": "Männlich",
+          "WOMAN": "Weiblich"
+        }
       }
     },
     "number": {
+      "voice_volume": {
+        "name": "Sprachlautstärke"
+      },
       "start_progress": {
         "name": "Fortschritt beim Start"
       },

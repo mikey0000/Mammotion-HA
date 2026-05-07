@@ -204,7 +204,7 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
 
             if account and password:
                 integration = await async_get_integration(self.hass, DOMAIN)
-                temp_client = MammotionClient(ha_version=integration.version)
+                temp_client = MammotionClient(ha_version=integration.version.split("-")[0])
                 try:
                     session = aiohttp_client.async_get_clientsession(self.hass)
                     await temp_client.login_and_initiate_cloud(
@@ -302,7 +302,7 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
 
             if account and password:
                 integration = await async_get_integration(self.hass, DOMAIN)
-                temp_client = MammotionClient(ha_version=integration.version)
+                temp_client = MammotionClient(ha_version=integration.version.split("-")[0])
                 try:
                     session = aiohttp_client.async_get_clientsession(self.hass)
                     await temp_client.login_and_initiate_cloud(

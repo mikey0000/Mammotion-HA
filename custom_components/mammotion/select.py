@@ -44,6 +44,15 @@ class MammotionAsyncConfigSelectEntityDescription(MammotionBaseEntity, SelectEnt
     set_fn: Callable[[MammotionBaseUpdateCoordinator, str], Awaitable[None]]
 
 
+AUDIO_SELECT_ENTITIES: tuple[MammotionAsyncConfigSelectEntityDescription, ...] = (
+    MammotionAsyncConfigSelectEntityDescription(
+        key="voice_gender",
+        options=["MAN", "WOMAN"],
+        get_fn=lambda coordinator: coordinator.data.mower_state.audio.sex,
+        set_fn=lambda coordinator, value: coordinator.async_set_voice_gender(value),
+    ),
+)
+
 ASYNC_SELECT_ENTITIES: tuple[MammotionAsyncConfigSelectEntityDescription, ...] = (
     MammotionAsyncConfigSelectEntityDescription(
         key="traversal_mode",
@@ -154,6 +163,14 @@ async def async_setup_entry(
                 )
             )
 
+        if DeviceType.is_luba_pro(mower.device.device_name):
+            for entity_description in AUDIO_SELECT_ENTITIES:
+                entities.append(
+                    MammotionAsyncConfigSelectEntity(
+                        mower.reporting_coordinator, entity_description
+                    )
+                )
+
         for entity_description in ASYNC_SELECT_ENTITIES:
             entities.append(
                 MammotionAsyncConfigSelectEntity(
@@ -163,13 +180,19 @@ async def async_setup_entry(
 
         bypass_mode_desc = MammotionConfigSelectEntityDescription(
             key="bypass_mode",
-            options=[s.name for s in DetectionStrategy.for_device(mower.device.device_name)],
+            options=[
+                s.name for s in DetectionStrategy.for_device(mower.device.device_name)
+            ],
             set_fn=lambda coordinator, value: setattr(
-                coordinator.operation_settings, "ultra_wave", DetectionStrategy[value].value
+                coordinator.operation_settings,
+                "ultra_wave",
+                DetectionStrategy[value].value,
             ),
             async_set_fn=lambda coordinator: coordinator.async_modify_plan_if_mowing(),
         )
-        entities.append(MammotionConfigSelectEntity(mower.reporting_coordinator, bypass_mode_desc))
+        entities.append(
+            MammotionConfigSelectEntity(mower.reporting_coordinator, bypass_mode_desc)
+        )
 
         if DeviceType.is_luba1(mower.device.device_name):
             for entity_description in LUBA1_SELECT_ENTITIES:

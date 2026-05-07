@@ -314,6 +314,9 @@
       },
       "night_light": {
         "name": "Night light on/off"
+      },
+      "voice_on_off": {
+        "name": "Głos wł./wył."
       }
     },
     "select": {
@@ -392,9 +395,19 @@
           "slow": "Slow",
           "fast": "Fast"
         }
+      },
+      "voice_gender": {
+        "name": "Płeć głosu",
+        "state": {
+          "MAN": "Męski",
+          "WOMAN": "Żeński"
+        }
       }
     },
     "number": {
+      "voice_volume": {
+        "name": "Głośność głosu"
+      },
       "start_progress": {
         "name": "Rozpocznij koszenie przy x% postępie"
       },

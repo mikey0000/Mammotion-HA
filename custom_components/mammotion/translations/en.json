@@ -350,6 +350,9 @@
       },
       "night_light": {
         "name": "Night light on/off"
+      },
+      "voice_on_off": {
+        "name": "Voice on/off"
       }
     },
     "select": {
@@ -428,9 +431,19 @@
           "slow": "Slow",
           "fast": "Fast"
         }
+      },
+      "voice_gender": {
+        "name": "Voice gender",
+        "state": {
+          "MAN": "Male",
+          "WOMAN": "Female"
+        }
       }
     },
     "number": {
+      "voice_volume": {
+        "name": "Voice volume"
+      },
       "start_progress": {
         "name": "Start progress"
       },

@@ -94,6 +94,17 @@ MINI_AND_X_SERIES_CONFIG_SWITCH_ENTITIES: tuple[
     ),
 )
 
+AUDIO_SWITCH_ENTITIES: tuple[MammotionAsyncSwitchEntityDescription, ...] = (
+    MammotionAsyncSwitchEntityDescription(
+        key="voice_on_off",
+        polling=True,
+        poll_func=lambda coordinator: coordinator.async_fetch_audio_config(),
+        is_on_func=lambda coordinator: coordinator.data.mower_state.audio.volume > 0,
+        set_fn=lambda coordinator, value: coordinator.async_set_voice_on_off(value),
+        entity_category=EntityCategory.CONFIG,
+    ),
+)
+
 SWITCH_ENTITIES: tuple[MammotionAsyncSwitchEntityDescription, ...] = (
     MammotionAsyncSwitchEntityDescription(
         key="side_led",
@@ -169,6 +180,10 @@ async def async_setup_entry(
         for entity_description in SWITCH_ENTITIES:
             entity = MammotionSwitchEntity(coordinator, entity_description)
             entities.append(entity)
+
+        if DeviceType.is_luba_pro(mower.device.device_name):
+            for entity_description in AUDIO_SWITCH_ENTITIES:
+                entities.append(MammotionSwitchEntity(coordinator, entity_description))
 
         for entity_description in CONFIG_SWITCH_ENTITIES:
             config_entity = MammotionConfigSwitchEntity(coordinator, entity_description)

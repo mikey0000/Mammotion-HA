@@ -314,6 +314,9 @@
       },
       "night_light": {
         "name": "Night light on/off"
+      },
+      "voice_on_off": {
+        "name": "Voce pornit/oprit"
       }
     },
     "select": {
@@ -392,9 +395,19 @@
           "slow": "Slow",
           "fast": "Fast"
         }
+      },
+      "voice_gender": {
+        "name": "Genul vocii",
+        "state": {
+          "MAN": "Masculin",
+          "WOMAN": "Feminin"
+        }
       }
     },
     "number": {
+      "voice_volume": {
+        "name": "Volumul vocii"
+      },
       "start_progress": {
         "name": "Progresul la start"
       },

@@ -299,6 +299,18 @@ async def async_setup_platform_services(
             mower.reporting_coordinator.set_stream_data(stream_data)
             mower.reporting_coordinator.async_update_listeners()
 
+    async def handle_start_video(call) -> None:
+        entity_id = call.data["entity_id"]
+        mower: MammotionMowerData = _get_mower_by_entity_id(entity_id)
+        if mower:
+            await mower.reporting_coordinator.join_webrtc_channel()
+
+    async def handle_stop_video(call) -> None:
+        entity_id = call.data["entity_id"]
+        mower: MammotionMowerData = _get_mower_by_entity_id(entity_id)
+        if mower:
+            await mower.reporting_coordinator.leave_webrtc_channel()
+
     async def handle_get_tokens(call: ServiceCall) -> ServiceResponse:
         entity_id = call.data["entity_id"]
         mower: MammotionMowerData = _get_mower_by_entity_id(entity_id)
@@ -436,6 +448,8 @@ async def async_setup_platform_services(
             )
 
     hass.services.async_register("mammotion", "refresh_stream", handle_refresh_stream)
+    hass.services.async_register("mammotion", "start_video", handle_start_video)
+    hass.services.async_register("mammotion", "stop_video", handle_stop_video)
     hass.services.async_register(
         "mammotion",
         "get_tokens",

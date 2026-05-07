@@ -314,6 +314,9 @@
       },
       "night_light": {
         "name": "Nattljus på/av"
+      },
+      "voice_on_off": {
+        "name": "Röst på/av"
       }
     },
     "select": {
@@ -392,9 +395,19 @@
           "slow": "Långsam",
           "fast": "Snabb"
         }
+      },
+      "voice_gender": {
+        "name": "Röstens kön",
+        "state": {
+          "MAN": "Man",
+          "WOMAN": "Kvinna"
+        }
       }
     },
     "number": {
+      "voice_volume": {
+        "name": "Röstvolym"
+      },
       "start_progress": {
         "name": "Starta klippning"
       },
