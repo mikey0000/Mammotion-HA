@@ -276,6 +276,42 @@
       },
       "restart_mower": {
         "name": "Restart mower"
+      },
+      "start_draw_border": {
+        "name": "Start boundary mapping"
+      },
+      "end_draw_border": {
+        "name": "End boundary mapping"
+      },
+      "cancel_current_record": {
+        "name": "Cancel current recording"
+      },
+      "start_draw_barrier": {
+        "name": "Start no-go zone"
+      },
+      "end_draw_barrier": {
+        "name": "End no-go zone"
+      },
+      "start_channel_line": {
+        "name": "Start channel line"
+      },
+      "start_draw_corridor": {
+        "name": "Start corridor"
+      },
+      "end_draw_corridor": {
+        "name": "End corridor"
+      },
+      "give_up_draw_corridor": {
+        "name": "Cancel corridor"
+      },
+      "start_erase": {
+        "name": "Start erase"
+      },
+      "end_erase": {
+        "name": "End erase"
+      },
+      "cancel_erase": {
+        "name": "Cancel erase"
       }
     },
     "switch": {

@@ -94,7 +94,66 @@ BUTTON_SENSORS: tuple[MammotionButtonSensorEntityDescription, ...] = (
         key="relocate_charging_station",
         press_fn=lambda coordinator: coordinator.async_relocate_charging_station(),
     ),
-    # delete_charge_point
+    MammotionButtonSensorEntityDescription(
+        key="start_draw_border",
+        press_fn=lambda coordinator: coordinator.async_start_draw_border(),
+        entity_category=EntityCategory.CONFIG,
+    ),
+    MammotionButtonSensorEntityDescription(
+        key="end_draw_border",
+        press_fn=lambda coordinator: coordinator.async_end_draw_border(),
+        entity_category=EntityCategory.CONFIG,
+    ),
+    MammotionButtonSensorEntityDescription(
+        key="cancel_current_record",
+        press_fn=lambda coordinator: coordinator.async_cancel_current_record(),
+        entity_category=EntityCategory.CONFIG,
+    ),
+    MammotionButtonSensorEntityDescription(
+        key="start_draw_barrier",
+        press_fn=lambda coordinator: coordinator.async_start_draw_barrier(),
+        entity_category=EntityCategory.CONFIG,
+    ),
+    MammotionButtonSensorEntityDescription(
+        key="end_draw_barrier",
+        press_fn=lambda coordinator: coordinator.async_end_draw_barrier(),
+        entity_category=EntityCategory.CONFIG,
+    ),
+    MammotionButtonSensorEntityDescription(
+        key="start_channel_line",
+        press_fn=lambda coordinator: coordinator.async_start_channel_line(),
+        entity_category=EntityCategory.CONFIG,
+    ),
+    MammotionButtonSensorEntityDescription(
+        key="start_draw_corridor",
+        press_fn=lambda coordinator: coordinator.async_start_draw_corridor(),
+        entity_category=EntityCategory.CONFIG,
+    ),
+    MammotionButtonSensorEntityDescription(
+        key="end_draw_corridor",
+        press_fn=lambda coordinator: coordinator.async_end_draw_corridor(),
+        entity_category=EntityCategory.CONFIG,
+    ),
+    MammotionButtonSensorEntityDescription(
+        key="give_up_draw_corridor",
+        press_fn=lambda coordinator: coordinator.async_give_up_draw_corridor(),
+        entity_category=EntityCategory.CONFIG,
+    ),
+    MammotionButtonSensorEntityDescription(
+        key="start_erase",
+        press_fn=lambda coordinator: coordinator.async_start_erase(),
+        entity_category=EntityCategory.CONFIG,
+    ),
+    MammotionButtonSensorEntityDescription(
+        key="end_erase",
+        press_fn=lambda coordinator: coordinator.async_end_erase(),
+        entity_category=EntityCategory.CONFIG,
+    ),
+    MammotionButtonSensorEntityDescription(
+        key="cancel_erase",
+        press_fn=lambda coordinator: coordinator.async_cancel_erase(),
+        entity_category=EntityCategory.CONFIG,
+    ),
 )
 
 BUTTON_LUBA_PRO_YUKA: tuple[MammotionButtonSensorEntityDescription, ...] = (

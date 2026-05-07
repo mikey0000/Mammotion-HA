@@ -493,6 +493,54 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             if self.update_failures < 5:
                 await self.async_sync_schedule()
 
+    async def async_start_draw_border(self) -> None:
+        """Start recording a mowing area boundary."""
+        await self.async_send_command("start_draw_border")
+
+    async def async_end_draw_border(self) -> None:
+        """End recording a mowing area boundary."""
+        await self.async_send_command("end_draw_border", type=0)
+
+    async def async_cancel_current_record(self) -> None:
+        """Cancel the current boundary or obstacle recording without saving."""
+        await self.async_send_command("cancel_current_record")
+
+    async def async_start_draw_barrier(self) -> None:
+        """Start recording a no-go zone."""
+        await self.async_send_command("start_draw_barrier")
+
+    async def async_end_draw_barrier(self) -> None:
+        """End recording a no-go zone."""
+        await self.async_send_command("end_draw_border", type=1)
+
+    async def async_start_channel_line(self) -> None:
+        """Start recording a channel line."""
+        await self.async_send_command("start_channel_line")
+
+    async def async_start_draw_corridor(self) -> None:
+        """Start recording a corridor."""
+        await self.async_send_command("start_draw_corridor")
+
+    async def async_end_draw_corridor(self) -> None:
+        """End recording a corridor."""
+        await self.async_send_command("end_draw_corridor")
+
+    async def async_give_up_draw_corridor(self) -> None:
+        """Cancel corridor recording without saving."""
+        await self.async_send_command("give_up_draw_corridor")
+
+    async def async_start_erase(self) -> None:
+        """Start erasing map elements."""
+        await self.async_send_command("start_erase")
+
+    async def async_end_erase(self) -> None:
+        """Finish erasing map elements."""
+        await self.async_send_command("end_erase")
+
+    async def async_cancel_erase(self) -> None:
+        """Cancel erase operation without applying."""
+        await self.async_send_command("cancel_erase")
+
     async def async_start_stop_blades(
         self, start_stop: bool, blade_height: int = 60
     ) -> None:
