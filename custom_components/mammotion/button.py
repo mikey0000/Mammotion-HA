@@ -12,6 +12,7 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pymammotion.data.model.hash_list import Plan
+from pymammotion.transport.base import TransportType
 from pymammotion.utility.device_type import DeviceType
 
 from . import MammotionConfigEntry
@@ -28,6 +29,7 @@ class MammotionButtonSensorEntityDescription(ButtonEntityDescription):
     """Describes Mammotion button sensor entity."""
 
     press_fn: Callable[[MammotionBaseUpdateCoordinator], Awaitable[None]]
+    available_fn: Callable[[MammotionBaseUpdateCoordinator], bool] | None = None
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -36,6 +38,17 @@ class MammotionTaskButtonSensorEntityDescription(ButtonEntityDescription):
 
     plan_id: str
     press_fn: Callable[[MammotionBaseUpdateCoordinator, str], Awaitable[None]]
+
+
+def _nudge_available(coordinator: MammotionBaseUpdateCoordinator) -> bool:
+    """Return True when movement via BLE or Wi-Fi is possible."""
+    if coordinator.config_entry.options.get(CONF_MOVEMENT_USE_WIFI, False):
+        return True
+    handle = coordinator.manager.mower(coordinator.device_name)
+    if handle is None:
+        return False
+    ble = handle.get_transport(TransportType.BLE)
+    return ble is not None and ble.is_usable
 
 
 BUTTON_SENSORS: tuple[MammotionButtonSensorEntityDescription, ...] = (
@@ -64,6 +77,7 @@ BUTTON_SENSORS: tuple[MammotionButtonSensorEntityDescription, ...] = (
             0.4,
             coordinator.config_entry.options.get(CONF_MOVEMENT_USE_WIFI, False),
         ),
+        available_fn=_nudge_available,
     ),
     MammotionButtonSensorEntityDescription(
         key="emergency_nudge_left",
@@ -71,6 +85,7 @@ BUTTON_SENSORS: tuple[MammotionButtonSensorEntityDescription, ...] = (
             0.4,
             coordinator.config_entry.options.get(CONF_MOVEMENT_USE_WIFI, False),
         ),
+        available_fn=_nudge_available,
     ),
     MammotionButtonSensorEntityDescription(
         key="emergency_nudge_right",
@@ -78,6 +93,7 @@ BUTTON_SENSORS: tuple[MammotionButtonSensorEntityDescription, ...] = (
             0.4,
             coordinator.config_entry.options.get(CONF_MOVEMENT_USE_WIFI, False),
         ),
+        available_fn=_nudge_available,
     ),
     MammotionButtonSensorEntityDescription(
         key="emergency_nudge_back",
@@ -85,6 +101,7 @@ BUTTON_SENSORS: tuple[MammotionButtonSensorEntityDescription, ...] = (
             0.4,
             coordinator.config_entry.options.get(CONF_MOVEMENT_USE_WIFI, False),
         ),
+        available_fn=_nudge_available,
     ),
     MammotionButtonSensorEntityDescription(
         key="cancel_task",
@@ -219,6 +236,15 @@ class MammotionButtonSensorEntity(MammotionBaseEntity, ButtonEntity):
         super().__init__(coordinator, entity_description.key)
         self.entity_description = entity_description
         self._attr_translation_key = entity_description.key
+
+    @property
+    def available(self) -> bool:
+        """Return True if entity is available."""
+        if self.entity_description.available_fn is not None:
+            return super().available and self.entity_description.available_fn(
+                self.coordinator
+            )
+        return super().available
 
     async def async_press(self) -> None:
         """Handle the button press."""

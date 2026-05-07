@@ -30,7 +30,7 @@ from pymammotion.aliyun.model.dev_by_account_response import Device
 from pymammotion.client import MammotionClient
 from pymammotion.data.model.account import Credentials
 from pymammotion.data.model.device import MowingDevice
-from pymammotion.transport.base import LoginFailedError, TransportType
+from pymammotion.transport.base import LoginFailedError, ReLoginRequiredError, TransportType
 from Tea.exceptions import UnretryableException
 
 from .const import (
@@ -149,7 +149,7 @@ async def _async_attempt_login(
                 account, password, aiohttp_client.async_get_clientsession(hass)
             )
             return True
-        except LoginFailedError as retry_err:
+        except (LoginFailedError, ReLoginRequiredError) as retry_err:
             if ble_fallback:
                 LOGGER.warning(
                     "Login failed after cache clear; continuing in BLE-only mode: %s",
