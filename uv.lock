@@ -1221,7 +1221,7 @@ sdist = { url = "https://files.pythonhosted.org/packages/96/e3/42c87871920602a3c
 
 [[package]]
 name = "mammotion-ha"
-version = "0.5.41b1"
+version = "0.5.41b2"
 source = { virtual = "." }
 dependencies = [
     { name = "autotyping" },
