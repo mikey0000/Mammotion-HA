@@ -37,8 +37,6 @@ class MammotionSwitchEntityDescription(SwitchEntityDescription):
 class MammotionAsyncSwitchEntityDescription(MammotionSwitchEntityDescription):
     """Describes Mammotion switch entity."""
 
-    polling: bool = False
-    poll_func: Callable[[MammotionBaseUpdateCoordinator], Awaitable[None]] | None = None
     is_on_func: Callable[[MammotionBaseUpdateCoordinator], bool] | None = None
     set_fn: Callable[[MammotionBaseUpdateCoordinator, bool], Awaitable[None]]
 
@@ -97,8 +95,6 @@ MINI_AND_X_SERIES_CONFIG_SWITCH_ENTITIES: tuple[
 AUDIO_SWITCH_ENTITIES: tuple[MammotionAsyncSwitchEntityDescription, ...] = (
     MammotionAsyncSwitchEntityDescription(
         key="voice_on_off",
-        polling=True,
-        poll_func=lambda coordinator: coordinator.async_fetch_audio_config(),
         is_on_func=lambda coordinator: coordinator.data.mower_state.audio.volume > 0,
         set_fn=lambda coordinator, value: coordinator.async_set_voice_on_off(value),
         entity_category=EntityCategory.CONFIG,
@@ -108,8 +104,6 @@ AUDIO_SWITCH_ENTITIES: tuple[MammotionAsyncSwitchEntityDescription, ...] = (
 SWITCH_ENTITIES: tuple[MammotionAsyncSwitchEntityDescription, ...] = (
     MammotionAsyncSwitchEntityDescription(
         key="side_led",
-        polling=True,
-        poll_func=lambda coordinator: coordinator.async_read_sidelight(),
         is_on_func=lambda coordinator: bool(
             coordinator.data.mower_state.side_led.operate
         ),
@@ -118,8 +112,6 @@ SWITCH_ENTITIES: tuple[MammotionAsyncSwitchEntityDescription, ...] = (
     ),
     MammotionAsyncSwitchEntityDescription(
         key="rain_detection",
-        polling=True,
-        poll_func=lambda coordinator: coordinator.async_read_rain_detection(),
         is_on_func=lambda coordinator: coordinator.data.mower_state.rain_detection,
         set_fn=lambda coordinator, value: coordinator.async_set_rain_detection(value),
         entity_category=EntityCategory.CONFIG,
@@ -258,12 +250,6 @@ class MammotionSwitchEntity(MammotionBaseEntity, SwitchEntity, RestoreEntity):
 
     async def async_update(self) -> None:
         """Update the entity state."""
-        if (
-            self.entity_description.polling
-            and self.entity_description.poll_func is not None
-        ):
-            await self.entity_description.poll_func(self.coordinator)
-
         if self.entity_description.is_on_func is not None:
             self._attr_is_on = self.entity_description.is_on_func(self.coordinator)
             self.async_write_ha_state()

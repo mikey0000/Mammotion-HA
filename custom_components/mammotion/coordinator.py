@@ -501,20 +501,26 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
                 await self.async_sync_schedule()
 
     async def async_fetch_audio_config(self) -> None:
-        """Request current audio config (volume, language, gender) from device."""
-        await self.async_send_command("get_car_audio_cfg")
+        """Read current audio config (volume, language, gender) from device."""
+        await self.async_send_and_wait("get_car_audio_cfg", "audio_cfg")
 
     async def async_set_voice_volume(self, volume: float) -> None:
         """Set robot voice volume (0–100)."""
-        await self.async_send_command("set_car_volume", volume=int(volume))
+        await self.async_send_and_wait(
+            "set_car_volume", "set_audio", volume=int(volume)
+        )
 
     async def async_set_voice_on_off(self, on: bool) -> None:
         """Turn robot voice on (restores 50%) or off (sets volume to 0)."""
-        await self.async_send_command("set_car_volume", volume=50 if on else 0)
+        await self.async_send_and_wait(
+            "set_car_volume", "set_audio", volume=50 if on else 0
+        )
 
     async def async_set_voice_gender(self, sex: str) -> None:
         """Set robot voice gender (MAN or WOMAN)."""
-        await self.async_send_command("set_car_volume_sex", sex=MulSex[sex])
+        await self.async_send_and_wait(
+            "set_car_volume_sex", "set_audio", sex=MulSex[sex]
+        )
 
     async def async_start_stop_blades(
         self, start_stop: bool, blade_height: int = 60
@@ -522,9 +528,13 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         """Start stop blades."""
         if DeviceType.is_luba1(self.device_name):
             if start_stop:
-                await self.async_send_command("set_blade_control", on_off=1)
+                await self.async_send_and_wait(
+                    "set_blade_control", "toapp_knife_status_change", on_off=1
+                )
             else:
-                await self.async_send_command("set_blade_control", on_off=0)
+                await self.async_send_and_wait(
+                    "set_blade_control", "toapp_knife_status_change", on_off=0
+                )
         elif start_stop:
             if DeviceType.is_yuka(self.device_name) or DeviceType.is_yuka_mini(
                 self.device_name
@@ -569,61 +579,122 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
 
     async def async_reset_blade_time(self) -> None:
         """Reset blade used time."""
-        await self.async_send_command("reset_blade_time")
+        await self.async_send_and_wait(
+            "reset_blade_time", "todev_reset_blade_used_time_status"
+        )
+
+    def _rw_expected_field(self) -> str:
+        """Return the expected response field for read_write_device commands.
+
+        Pro/X3 devices route via nav (nav_sys_param_cmd); all others use the
+        sys bidire_comm_cmd channel.
+        """
+        return (
+            "nav_sys_param_cmd"
+            if DeviceType.is_luba_pro(self.device_name)
+            else "bidire_comm_cmd"
+        )
 
     async def async_set_rain_detection(self, on_off: bool) -> None:
         """Set rain detection."""
-        await self.async_send_command(
-            "read_write_device", rw_id=3, context=int(on_off), rw=1
+        await self.async_send_and_wait(
+            "read_write_device",
+            self._rw_expected_field(),
+            rw_id=3,
+            context=int(on_off),
+            rw=1,
         )
 
     async def async_read_rain_detection(self) -> None:
-        """Set rain detection."""
-        await self.async_send_command("read_write_device", rw_id=3, context=1, rw=0)
+        """Read current rain detection state from device."""
+        await self.async_send_and_wait(
+            "read_write_device", self._rw_expected_field(), rw_id=3, context=0, rw=0
+        )
 
     async def async_set_sidelight(self, on_off: int) -> None:
         """Set Sidelight."""
-        await self.async_send_command(
-            "read_and_set_sidelight", is_sidelight=bool(on_off), operate=0
+        await self.async_send_and_wait(
+            "read_and_set_sidelight",
+            "todev_time_ctrl_light",
+            is_sidelight=bool(on_off),
+            operate=0,
         )
-        await self.async_read_sidelight()
 
     async def async_read_sidelight(self) -> None:
-        """Set Sidelight."""
-        await self.async_send_command(
-            "read_and_set_sidelight", is_sidelight=False, operate=1
+        """Read current sidelight state from device."""
+        await self.async_send_and_wait(
+            "read_and_set_sidelight",
+            "todev_time_ctrl_light",
+            is_sidelight=False,
+            operate=1,
         )
 
     async def async_set_manual_light(self, manual_ctrl: bool) -> None:
         """Set manual night light."""
-        await self.async_send_command("set_car_manual_light", manual_ctrl=manual_ctrl)
-        await self.async_send_command("get_car_light", ids=1126)
+        await self.async_send_and_wait(
+            "set_car_manual_light", "set_lamp_rsp", manual_ctrl=manual_ctrl
+        )
+
+    async def async_read_manual_light(self) -> None:
+        """Read current manual light state from device."""
+        await self.async_send_and_wait("get_car_light", "get_lamp_rsp", ids=1126)
 
     async def async_set_night_light(self, night_light: bool) -> None:
         """Set night light."""
-        await self.async_send_command("set_car_light", on_off=night_light)
-        await self.async_send_command("get_car_light", ids=1123)
+        await self.async_send_and_wait(
+            "set_car_light", "set_lamp_rsp", on_off=night_light
+        )
+
+    async def async_read_night_light(self) -> None:
+        """Read current night light state from device."""
+        await self.async_send_and_wait("get_car_light", "get_lamp_rsp", ids=1123)
 
     async def async_set_traversal_mode(self, context: int) -> None:
         """Set traversal mode."""
-        await self.async_send_command("traverse_mode", context=context)
+        await self.async_send_and_wait(
+            "traverse_mode", self._rw_expected_field(), context=context
+        )
+
+    async def async_read_traversal_mode(self) -> None:
+        """Read current traversal mode from device."""
+        await self.async_send_and_wait(
+            "read_write_device", self._rw_expected_field(), rw_id=7, context=0, rw=0
+        )
 
     async def async_set_turning_mode(self, context: int) -> None:
         """Set turning mode."""
-        await self.async_send_command("turning_mode", context=context)
+        await self.async_send_and_wait(
+            "turning_mode", self._rw_expected_field(), context=context
+        )
+
+    async def async_read_turning_mode(self) -> None:
+        """Read current turning mode from device."""
+        await self.async_send_and_wait(
+            "read_write_device", self._rw_expected_field(), rw_id=6, context=0, rw=0
+        )
 
     async def async_blade_height(self, height: int) -> int:
         """Set blade height."""
-        await self.async_send_command("set_blade_height", height=height)
+        await self.async_send_and_wait(
+            "set_blade_height", "toapp_knife_status_change", height=height
+        )
         return height
 
     async def async_set_cutter_speed(self, mode: int) -> None:
         """Set cutter speed."""
-        await self.async_send_command("set_cutter_mode", cutter_mode=mode)
+        await self.async_send_and_wait(
+            "set_cutter_mode", "cutter_mode_ctrl_by_hand", cutter_mode=mode
+        )
+
+    async def async_read_cutter_mode(self) -> None:
+        """Query the current cutter mode and live RPM from the device."""
+        await self.async_send_and_wait("get_cutter_mode", "current_cutter_mode")
 
     async def async_reset_blade_warning_time(self) -> None:
         """Reset blade used time to zero."""
-        await self.async_send_command("reset_blade_time")
+        await self.async_send_and_wait(
+            "reset_blade_time", "todev_reset_blade_used_time_status"
+        )
 
     async def async_set_blade_warning_time(self, hours: int) -> None:
         """Set the blade warning time in hours."""
@@ -631,7 +702,9 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
 
     async def async_set_speed(self, speed: float) -> None:
         """Set working speed."""
-        await self.async_send_command("set_speed", speed=speed)
+        await self.async_send_and_wait(
+            "set_speed", "bidire_speed_read_set", speed=speed
+        )
 
     async def async_leave_dock(self) -> None:
         """Leave dock."""
@@ -1178,7 +1251,7 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
             self.hass.create_task(self._async_ensure_ble_client())
 
         if ble := handle.get_transport(TransportType.BLE):
-            if not ble.is_connected:
+            if not ble.is_connected and self.data.enabled:
                 cast(BLETransport, ble).set_ble_device(self.service_info.device)
                 self.hass.create_task(ble.connect())
 
@@ -1286,6 +1359,25 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
     async def _async_setup(self) -> None:
         await super()._async_setup()
         await self.async_request_report_snapshot()
+
+        try:
+            await self.async_read_rain_detection()
+            await self.async_read_sidelight()
+            await self.async_read_turning_mode()
+            await self.async_read_traversal_mode()
+            if DeviceType.is_mini_or_x_series(self.device_name):
+                await self.async_read_manual_light()
+                await self.async_read_night_light()
+                await self.async_read_cutter_mode()
+            if DeviceType.is_luba_pro(self.device_name):
+                await self.async_fetch_audio_config()
+        except (
+            DeviceOfflineException,
+            NoTransportAvailableError,
+            CommandTimeoutError,
+            ConcurrentRequestError,
+        ):
+            pass
 
         # Watch sys_status changes so we can refresh the full status when the
         # device transitions states.  Skipped when the BLE polling loop is

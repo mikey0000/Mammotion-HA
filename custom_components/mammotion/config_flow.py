@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any
 import voluptuous as vol
 from aiohttp.web_exceptions import HTTPException
 from bleak.backends.device import BLEDevice
-from homeassistant import config_entries
+from homeassistant import config_entries, data_entry_flow
 from homeassistant.components import bluetooth
 from homeassistant.components.bluetooth import (
     BluetoothServiceInfo,
@@ -204,7 +204,9 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
 
             if account and password:
                 integration = await async_get_integration(self.hass, DOMAIN)
-                temp_client = MammotionClient(ha_version=integration.version.split("-")[0])
+                temp_client = MammotionClient(
+                    ha_version=integration.version.split("-")[0]
+                )
                 try:
                     session = aiohttp_client.async_get_clientsession(self.hass)
                     await temp_client.login_and_initiate_cloud(
@@ -237,6 +239,8 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                         )
                 except TooManyRequestsException:
                     return self.async_abort(reason="api_limit_exceeded")
+                except data_entry_flow.AbortFlow:
+                    raise
                 except CloudSetupError as err:
                     LOGGER.error("Aliyun cloud setup failed during login: %s", err)
                     errors["base"] = "cannot_connect"
@@ -302,7 +306,9 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
 
             if account and password:
                 integration = await async_get_integration(self.hass, DOMAIN)
-                temp_client = MammotionClient(ha_version=integration.version.split("-")[0])
+                temp_client = MammotionClient(
+                    ha_version=integration.version.split("-")[0]
+                )
                 try:
                     session = aiohttp_client.async_get_clientsession(self.hass)
                     await temp_client.login_and_initiate_cloud(
@@ -318,6 +324,8 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                         errors["base"] = "login_failed"
                 except TooManyRequestsException:
                     return self.async_abort(reason="api_limit_exceeded")
+                except data_entry_flow.AbortFlow:
+                    raise
                 except (CloudSetupError, HTTPException, Exception) as err:
                     LOGGER.error("Login failed during reconfigure: %s", err)
                     errors["base"] = "cannot_connect"
