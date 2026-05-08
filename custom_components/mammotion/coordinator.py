@@ -56,7 +56,7 @@ from pymammotion.http.model.camera_stream import (
 from pymammotion.http.model.http import ErrorInfo, Response
 from pymammotion.mammotion.commands.mammotion_command import MammotionCommand
 from pymammotion.proto import MulSex, SystemUpdateBufMsg
-from pymammotion.state.device_state import DeviceSnapshot
+from pymammotion.state.device_state import DeviceShutdownEvent, DeviceSnapshot
 from pymammotion.transport.base import (
     AuthError,
     BLEUnavailableError,
@@ -235,19 +235,9 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
 
     async def join_webrtc_channel(self) -> None:
         """Start stream command."""
-        handle = self.manager.mower(self.device_name)
-        if handle is None:
-            return
-        command = self.commands.device_agora_join_channel_with_position(enter_state=1)
-        await self.async_send_cloud_command(handle.iot_id, command)
 
     async def leave_webrtc_channel(self) -> None:
         """End stream command."""
-        handle = self.manager.mower(self.device_name)
-        if handle is None:
-            return
-        command = self.commands.device_agora_join_channel_with_position(enter_state=0)
-        await self.async_send_cloud_command(handle.iot_id, command)
 
     async def set_scheduled_updates(self, enabled: bool) -> None:
         """Enable or disable scheduled polling updates for this device."""
@@ -735,9 +725,11 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         )
 
     async def async_get_area_list(self) -> None:
-        """Mowing area List."""
-        await self.async_send_command(
-            "get_area_name_list", device_id=self.device.iot_id
+        """Fetch area names and wait for the toapp_all_hash_name response."""
+        await self.async_send_and_wait(
+            "get_area_name_list",
+            "toapp_all_hash_name",
+            device_id=self.device.iot_id,
         )
 
     async def async_relocate_charging_station(self) -> None:
@@ -933,7 +925,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
                 handle.restore_device(empty)
 
     async def async_save_data(self, data: MowingDevice) -> None:
-        """Get map data from the device."""
+        """Store data."""
         store: Store = Store(
             self.hass, version=1, minor_version=2, key=self.device_name
         )
@@ -1009,8 +1001,26 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
                     handle.subscribe_device_event(
                         self._guarded(self._async_update_event_message)
                     ),
+                    handle.subscribe_shutdown(self._guarded(self._on_device_shutdown)),
                 ]
             )
+
+    async def _on_device_shutdown(self, event: DeviceShutdownEvent) -> None:
+        """React to a device-initiated power-off notification.
+
+        The handle has already set mqtt_reported_offline=True (blocking further
+        sends) and emitted a state-changed snapshot.  We force an immediate HA
+        state write here so the entity availability reflects the shutdown before
+        the debounce window or the next MQTT heartbeat timeout.
+        """
+        _LOGGER.debug(
+            "%s: device power-off notification (power_type=%d)",
+            self.device_name,
+            event.power_type,
+        )
+        self.async_set_updated_data(
+            self.manager.mower(self.device_name).state_machine.current.raw
+        )
 
     def _guarded(self, method: Any) -> Any:
         """Wrap a callback so it silently skips when HA is shutting down.
@@ -1588,8 +1598,6 @@ class MammotionMapUpdateCoordinator(MammotionBaseUpdateCoordinator[MowerInfo]):
             return
         try:
             await self.async_rtk_dock_location()
-            if not DeviceType.is_luba1(self.device_name):
-                await self.async_get_area_list()
         except DeviceOfflineException as ex:
             if ex.iot_id == self.device.iot_id:
                 self.device_offline(device)

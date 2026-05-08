@@ -24,13 +24,18 @@ from homeassistant.exceptions import (
 from homeassistant.helpers import aiohttp_client
 from homeassistant.helpers.device_registry import DeviceEntry
 from homeassistant.helpers.event import async_call_later
+from homeassistant.helpers.storage import Store
 from homeassistant.loader import async_get_integration
 from pymammotion.aliyun.exceptions import TooManyRequestsException
 from pymammotion.aliyun.model.dev_by_account_response import Device
 from pymammotion.client import MammotionClient
 from pymammotion.data.model.account import Credentials
 from pymammotion.data.model.device import MowingDevice
-from pymammotion.transport.base import LoginFailedError, ReLoginRequiredError, TransportType
+from pymammotion.transport.base import (
+    LoginFailedError,
+    ReLoginRequiredError,
+    TransportType,
+)
 from Tea.exceptions import UnretryableException
 
 from .const import (
@@ -639,10 +644,9 @@ async def async_unload_entry(hass: HomeAssistant, entry: MammotionConfigEntry) -
 
 async def async_remove_entry(hass: HomeAssistant, entry: MammotionConfigEntry) -> None:
     """Remove stored data when the integration is deleted."""
-    for mower in entry.runtime_data.mowers:
-        await mower.reporting_coordinator.remove_saved_data()
-
     if not hass.config_entries.async_entries(DOMAIN):
+        store = Store(hass, version=1, minor_version=2, key=DOMAIN)
+        await store.async_remove()
         hass.data.pop(DOMAIN, None)
 
 
