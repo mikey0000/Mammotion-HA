@@ -661,6 +661,33 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             "read_write_device", self._rw_expected_field(), rw_id=7, context=0, rw=0
         )
 
+    async def async_set_wildlife_safety(self, mode: int) -> None:
+        """Set wildlife safety mode (0=off, 1=stop mowing, 2=low-speed mowing).
+
+        Sends rw_id=13 (status) first, then rw_id=12 (mode).  Both are sent
+        via the device-appropriate channel (_rw_expected_field).
+        """
+        status = 0 if mode == 0 else 1
+        await self.async_send_and_wait(
+            "read_write_device",
+            self._rw_expected_field(),
+            rw_id=13,
+            context=status,
+            rw=1,
+        )
+        await self.async_send_and_wait(
+            "read_write_device", self._rw_expected_field(), rw_id=12, context=mode, rw=1
+        )
+
+    async def async_read_wildlife_safety(self) -> None:
+        """Read current wildlife safety status and mode from device."""
+        await self.async_send_and_wait(
+            "read_write_device", self._rw_expected_field(), rw_id=13, context=0, rw=0
+        )
+        await self.async_send_and_wait(
+            "read_write_device", self._rw_expected_field(), rw_id=12, context=0, rw=0
+        )
+
     async def async_set_turning_mode(self, context: int) -> None:
         """Set turning mode."""
         await self.async_send_and_wait(
@@ -1086,7 +1113,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         state write here so the entity availability reflects the shutdown before
         the debounce window or the next MQTT heartbeat timeout.
         """
-        _LOGGER.debug(
+        LOGGER.debug(
             "%s: device power-off notification (power_type=%d)",
             self.device_name,
             event.power_type,
@@ -1371,6 +1398,7 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
                 await self.async_read_cutter_mode()
             if DeviceType.is_luba_pro(self.device_name):
                 await self.async_fetch_audio_config()
+            await self.async_read_wildlife_safety()
         except (
             DeviceOfflineException,
             NoTransportAvailableError,

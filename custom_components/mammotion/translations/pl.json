@@ -313,7 +313,7 @@
         "name": "Manual light on/off"
       },
       "night_light": {
-        "name": "Night light on/off"
+        "name": "Auto lighting on/off"
       },
       "voice_on_off": {
         "name": "Głos wł./wył."
@@ -401,6 +401,14 @@
         "state": {
           "MAN": "Męski",
           "WOMAN": "Żeński"
+        }
+      },
+      "wildlife_safety": {
+        "name": "Ochrona dzikich zwierząt",
+        "state": {
+          "off": "Wył.",
+          "stop_mowing": "Zatrzymaj koszenie",
+          "low_speed_mowing": "Koszenie z małą prędkością"
         }
       }
     },

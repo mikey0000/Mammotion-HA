@@ -313,7 +313,7 @@
         "name": "Attivazione/disattivazione luce manuale"
       },
       "night_light": {
-        "name": "Luce notturna accesa/spenta"
+        "name": "Illuminazione automatica accesa/spenta"
       },
       "voice_on_off": {
         "name": "Voce on/off"
@@ -401,6 +401,14 @@
         "state": {
           "MAN": "Maschile",
           "WOMAN": "Femminile"
+        }
+      },
+      "wildlife_safety": {
+        "name": "Sicurezza fauna selvatica",
+        "state": {
+          "off": "Disattivato",
+          "stop_mowing": "Ferma falciatura",
+          "low_speed_mowing": "Falciatura a bassa velocità"
         }
       }
     },

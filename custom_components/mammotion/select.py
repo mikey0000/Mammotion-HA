@@ -16,6 +16,7 @@ from pymammotion.data.model.mowing_modes import (
     PathAngleSetting,
     TraversalMode,
     TurningMode,
+    WildlifeSafety,
 )
 from pymammotion.utility.device_type import DeviceType
 
@@ -68,6 +69,18 @@ ASYNC_SELECT_ENTITIES: tuple[MammotionAsyncConfigSelectEntityDescription, ...] =
         get_fn=lambda coordinator: coordinator.data.mower_state.turning_mode,
         set_fn=lambda coordinator, value: coordinator.async_set_turning_mode(
             TurningMode[value].value
+        ),
+    ),
+    MammotionAsyncConfigSelectEntityDescription(
+        key="wildlife_safety",
+        options=[mode.name for mode in WildlifeSafety],
+        get_fn=lambda coordinator: (
+            WildlifeSafety.off.value
+            if coordinator.data.mower_state.animal_protection.status == 0
+            else coordinator.data.mower_state.animal_protection.mode
+        ),
+        set_fn=lambda coordinator, value: coordinator.async_set_wildlife_safety(
+            WildlifeSafety[value].value
         ),
     ),
 )

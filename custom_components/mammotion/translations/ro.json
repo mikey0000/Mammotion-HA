@@ -313,7 +313,7 @@
         "name": "Manual light on/off"
       },
       "night_light": {
-        "name": "Night light on/off"
+        "name": "Auto lighting on/off"
       },
       "voice_on_off": {
         "name": "Voce pornit/oprit"
@@ -401,6 +401,14 @@
         "state": {
           "MAN": "Masculin",
           "WOMAN": "Feminin"
+        }
+      },
+      "wildlife_safety": {
+        "name": "Siguranța faunei",
+        "state": {
+          "off": "Oprit",
+          "stop_mowing": "Oprire cosire",
+          "low_speed_mowing": "Cosire cu viteză redusă"
         }
       }
     },

@@ -313,7 +313,7 @@
         "name": "Manual light on/off"
       },
       "night_light": {
-        "name": "Night light on/off"
+        "name": "Auto lighting on/off"
       },
       "voice_on_off": {
         "name": "Glas vklopljeno/izklopljeno"
@@ -401,6 +401,14 @@
         "state": {
           "MAN": "Moški",
           "WOMAN": "Ženski"
+        }
+      },
+      "wildlife_safety": {
+        "name": "Varnost divjih živali",
+        "state": {
+          "off": "Izklopljeno",
+          "stop_mowing": "Ustavi košnjo",
+          "low_speed_mowing": "Košnja z nizko hitrostjo"
         }
       }
     },

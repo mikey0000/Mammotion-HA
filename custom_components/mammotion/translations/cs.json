@@ -313,7 +313,7 @@
         "name": "Ruční osvětlení zapnuto/vypnuto"
       },
       "night_light": {
-        "name": "Noční světlo zapnout/vypnout"
+        "name": "Automatické osvětlení zapnout/vypnout"
       },
       "voice_on_off": {
         "name": "Hlas zapnuto/vypnuto"
@@ -401,6 +401,14 @@
         "state": {
           "MAN": "Mužský",
           "WOMAN": "Ženský"
+        }
+      },
+      "wildlife_safety": {
+        "name": "Ochrana volně žijících živočichů",
+        "state": {
+          "off": "Vypnuto",
+          "stop_mowing": "Zastavit sekání",
+          "low_speed_mowing": "Sekání nízkou rychlostí"
         }
       }
     },

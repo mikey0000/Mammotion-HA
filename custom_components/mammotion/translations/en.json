@@ -313,7 +313,7 @@
         "name": "Manual light on/off"
       },
       "night_light": {
-        "name": "Night light on/off"
+        "name": "Auto lighting on/off"
       },
       "voice_on_off": {
         "name": "Voice on/off"
@@ -386,6 +386,14 @@
         "state": {
           "multipoint": "Multipoint turn",
           "zero_turn": "Zero turn"
+        }
+      },
+      "wildlife_safety": {
+        "name": "Wildlife Safety",
+        "state": {
+          "off": "Off",
+          "stop_mowing": "Stop Mowing",
+          "low_speed_mowing": "Low-Speed Mowing"
         }
       },
       "cutter_mode": {

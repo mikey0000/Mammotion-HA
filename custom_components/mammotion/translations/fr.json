@@ -313,7 +313,7 @@
         "name": "Allumage/extinction manuelle de la lumière"
       },
       "night_light": {
-        "name": "Éclairage de nuit allumé/éteint"
+        "name": "Éclairage automatique allumé/éteint"
       },
       "voice_on_off": {
         "name": "Voix activée/désactivée"
@@ -401,6 +401,14 @@
         "state": {
           "MAN": "Masculin",
           "WOMAN": "Féminin"
+        }
+      },
+      "wildlife_safety": {
+        "name": "Sécurité faune",
+        "state": {
+          "off": "Désactivé",
+          "stop_mowing": "Arrêter de tondre",
+          "low_speed_mowing": "Tonte à vitesse réduite"
         }
       }
     },

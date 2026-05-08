@@ -313,7 +313,7 @@
         "name": "Manuellt ljus på/av"
       },
       "night_light": {
-        "name": "Nattljus på/av"
+        "name": "Automatisk belysning på/av"
       },
       "voice_on_off": {
         "name": "Röst på/av"
@@ -401,6 +401,14 @@
         "state": {
           "MAN": "Man",
           "WOMAN": "Kvinna"
+        }
+      },
+      "wildlife_safety": {
+        "name": "Djursäkerhet",
+        "state": {
+          "off": "Av",
+          "stop_mowing": "Stoppa klippning",
+          "low_speed_mowing": "Klippning med låg hastighet"
         }
       }
     },

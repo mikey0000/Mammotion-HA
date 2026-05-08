@@ -313,7 +313,7 @@
         "name": "Manuelles Licht an/aus"
       },
       "night_light": {
-        "name": "Nachtlicht an/aus"
+        "name": "Automatische Beleuchtung ein/aus"
       },
       "voice_on_off": {
         "name": "Sprache ein/aus"
@@ -401,6 +401,14 @@
         "state": {
           "MAN": "Männlich",
           "WOMAN": "Weiblich"
+        }
+      },
+      "wildlife_safety": {
+        "name": "Wildtierschutz",
+        "state": {
+          "off": "Aus",
+          "stop_mowing": "Mähen stoppen",
+          "low_speed_mowing": "Langsamfahrt"
         }
       }
     },

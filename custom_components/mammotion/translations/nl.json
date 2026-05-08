@@ -313,7 +313,7 @@
         "name": "Handmatig licht aan/uit"
       },
       "night_light": {
-        "name": "Nachtverlichting aan/uit"
+        "name": "Automatische verlichting aan/uit"
       },
       "voice_on_off": {
         "name": "Stem aan/uit"
@@ -401,6 +401,14 @@
         "state": {
           "MAN": "Man",
           "WOMAN": "Vrouw"
+        }
+      },
+      "wildlife_safety": {
+        "name": "Wildveiligheid",
+        "state": {
+          "off": "Uit",
+          "stop_mowing": "Maaien stoppen",
+          "low_speed_mowing": "Maaien op lage snelheid"
         }
       }
     },
