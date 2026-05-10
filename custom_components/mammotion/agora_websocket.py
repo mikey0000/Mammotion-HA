@@ -217,7 +217,7 @@ class AgoraWebSocketHandler:
                     await websocket.close()
                     self._websocket = None
 
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 _LOGGER.warning(
                     "Connection timeout for edge address %s, trying next", ws_url
                 )
@@ -289,7 +289,7 @@ class AgoraWebSocketHandler:
                     except json.JSONDecodeError as ex:
                         _LOGGER.error("Failed to parse Agora message: %s", ex)
 
-        except asyncio.TimeoutError:
+        except TimeoutError:
             _LOGGER.error("Timeout waiting for join response")
         except WebSocketException as ex:
             _LOGGER.error("WebSocket communication error during join: %s", ex)
@@ -1712,11 +1712,12 @@ class AgoraWebSocketHandler:
         self._connection_state = "DISCONNECTED"
 
     def add_ice_candidate(self, candidate: RTCIceCandidateInit):
+        """Add an ICE candidate to the pending candidates list."""
         self.candidates.append(candidate)
 
     @staticmethod
     def is_ipv4(ip_string):
-        """Checks if a given string is a valid IPv4 address.
+        """Check if a given string is a valid IPv4 address.
 
         Args:
             ip_string (str): The string to validate.

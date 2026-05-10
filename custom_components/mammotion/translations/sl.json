@@ -309,6 +309,12 @@
       "schedule_updates": {
         "name": "Turn Updates On/Off"
       },
+      "bluetooth_enabled": {
+        "name": "Bluetooth"
+      },
+      "cloud_enabled": {
+        "name": "Cloud"
+      },
       "manual_light": {
         "name": "Manual light on/off"
       },

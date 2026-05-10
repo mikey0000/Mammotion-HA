@@ -309,6 +309,12 @@
       "schedule_updates": {
         "name": "Zapnout/Vypnout aktualizace"
       },
+      "bluetooth_enabled": {
+        "name": "Bluetooth"
+      },
+      "cloud_enabled": {
+        "name": "Cloud"
+      },
       "manual_light": {
         "name": "Ruční osvětlení zapnuto/vypnuto"
       },

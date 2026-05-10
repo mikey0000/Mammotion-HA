@@ -309,6 +309,12 @@
       "schedule_updates": {
         "name": "Slå opdateringer til/fra"
       },
+      "bluetooth_enabled": {
+        "name": "Bluetooth"
+      },
+      "cloud_enabled": {
+        "name": "Cloud"
+      },
       "manual_light": {
         "name": "Manuelt lys Tænd/sluk"
       },

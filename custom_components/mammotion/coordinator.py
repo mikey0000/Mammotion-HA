@@ -144,6 +144,8 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         self._subscriptions: list[Subscription] = []
         self.map_offset_lat: float = 0.0
         self.map_offset_lon: float = 0.0
+        self._bluetooth_enabled: bool = True
+        self._cloud_enabled: bool = True
 
         mower_device = self.manager.get_device_by_name(self.device_name)
 
@@ -265,6 +267,35 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             if ble.is_usable:
                 return True
         return bool(not handle.availability.mqtt_reported_offline)
+
+    @property
+    def bluetooth_enabled(self) -> bool:
+        """Return whether Bluetooth transport is enabled."""
+        return self._bluetooth_enabled
+
+    @property
+    def cloud_enabled(self) -> bool:
+        """Return whether Cloud transport is enabled."""
+        return self._cloud_enabled
+
+    async def async_set_bluetooth_enabled(self, enabled: bool) -> None:
+        """Enable or disable Bluetooth transport."""
+        self._bluetooth_enabled = enabled
+        handle = self.manager.mower(self.device_name)
+        if handle is None:
+            return
+        if not enabled:
+            await handle.disconnect_transport(TransportType.BLE)
+
+    async def async_set_cloud_enabled(self, enabled: bool) -> None:
+        """Enable or disable Cloud transport."""
+        self._cloud_enabled = enabled
+        handle = self.manager.mower(self.device_name)
+        if handle is None:
+            return
+        if not enabled:
+            for t_type in (TransportType.CLOUD_ALIYUN, TransportType.CLOUD_MAMMOTION):
+                await handle.disconnect_transport(t_type)
 
     async def async_refresh_login(self, exc: Exception | None = None) -> None:
         """Refresh login credentials asynchronously.
@@ -583,23 +614,24 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             "reset_blade_time", "todev_reset_blade_used_time_status"
         )
 
-    def _rw_expected_field(self) -> str:
-        """Return the expected response field for read_write_device commands.
+    def _rw_expected_field(self, rw_id: int) -> str:
+        """Return the expected response field for a read_write_device command.
 
-        Pro/X3 devices route via nav (nav_sys_param_cmd); all others use the
-        sys bidire_comm_cmd channel.
+        Mirrors the routing in MammotionCommand.read_write_device(): only
+        rw_ids [3, 6, 7, 8, 10, 11] on Pro/X3 devices are sent via the nav
+        adapter (nav_sys_param_cmd).  Every other rw_id — including 12 and 13
+        used for wildlife safety — always goes through allpowerfull_rw() and
+        responds on bidire_comm_cmd, regardless of device type.
         """
-        return (
-            "nav_sys_param_cmd"
-            if DeviceType.is_luba_pro(self.device_name)
-            else "bidire_comm_cmd"
-        )
+        if rw_id in (3, 6, 7, 8, 10, 11) and DeviceType.is_luba_pro(self.device_name):
+            return "nav_sys_param_cmd"
+        return "bidire_comm_cmd"
 
     async def async_set_rain_detection(self, on_off: bool) -> None:
         """Set rain detection."""
         await self.async_send_and_wait(
             "read_write_device",
-            self._rw_expected_field(),
+            self._rw_expected_field(3),
             rw_id=3,
             context=int(on_off),
             rw=1,
@@ -608,7 +640,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
     async def async_read_rain_detection(self) -> None:
         """Read current rain detection state from device."""
         await self.async_send_and_wait(
-            "read_write_device", self._rw_expected_field(), rw_id=3, context=0, rw=0
+            "read_write_device", self._rw_expected_field(3), rw_id=3, context=0, rw=0
         )
 
     async def async_set_sidelight(self, on_off: int) -> None:
@@ -652,13 +684,13 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
     async def async_set_traversal_mode(self, context: int) -> None:
         """Set traversal mode."""
         await self.async_send_and_wait(
-            "traverse_mode", self._rw_expected_field(), context=context
+            "traverse_mode", self._rw_expected_field(7), context=context
         )
 
     async def async_read_traversal_mode(self) -> None:
         """Read current traversal mode from device."""
         await self.async_send_and_wait(
-            "read_write_device", self._rw_expected_field(), rw_id=7, context=0, rw=0
+            "read_write_device", self._rw_expected_field(7), rw_id=7, context=0, rw=0
         )
 
     async def async_set_wildlife_safety(self, mode: int) -> None:
@@ -670,34 +702,38 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         status = 0 if mode == 0 else 1
         await self.async_send_and_wait(
             "read_write_device",
-            self._rw_expected_field(),
+            self._rw_expected_field(13),
             rw_id=13,
             context=status,
             rw=1,
         )
         await self.async_send_and_wait(
-            "read_write_device", self._rw_expected_field(), rw_id=12, context=mode, rw=1
+            "read_write_device",
+            self._rw_expected_field(12),
+            rw_id=12,
+            context=mode,
+            rw=1,
         )
 
     async def async_read_wildlife_safety(self) -> None:
         """Read current wildlife safety status and mode from device."""
         await self.async_send_and_wait(
-            "read_write_device", self._rw_expected_field(), rw_id=13, context=0, rw=0
+            "read_write_device", self._rw_expected_field(13), rw_id=13, context=0, rw=0
         )
         await self.async_send_and_wait(
-            "read_write_device", self._rw_expected_field(), rw_id=12, context=0, rw=0
+            "read_write_device", self._rw_expected_field(12), rw_id=12, context=0, rw=0
         )
 
     async def async_set_turning_mode(self, context: int) -> None:
         """Set turning mode."""
         await self.async_send_and_wait(
-            "turning_mode", self._rw_expected_field(), context=context
+            "turning_mode", self._rw_expected_field(6), context=context
         )
 
     async def async_read_turning_mode(self) -> None:
         """Read current turning mode from device."""
         await self.async_send_and_wait(
-            "read_write_device", self._rw_expected_field(), rw_id=6, context=0, rw=0
+            "read_write_device", self._rw_expected_field(6), rw_id=6, context=0, rw=0
         )
 
     async def async_blade_height(self, height: int) -> int:
@@ -868,7 +904,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         await self.manager.start_report_stream(self.device_name, duration_ms)
 
     async def async_get_reports(self, count: int = 5) -> None:
-        """Get reports from the device"""
+        """Get reports from the device."""
         await self.manager.request_reports(self.device_name, count=count)
 
     async def async_ensure_fresh_state(self) -> None:
@@ -1032,6 +1068,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         await store.async_save(data.to_dict())
 
     async def remove_saved_data(self) -> None:
+        """Remove saved coordinator data from persistent storage."""
         store = Store(self.hass, version=1, minor_version=2, key=self.device_name)
         await store.async_remove()
 
@@ -1278,9 +1315,15 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
             self.hass.create_task(self._async_ensure_ble_client())
 
         if ble := handle.get_transport(TransportType.BLE):
-            if not ble.is_connected and self.data.enabled:
+            if not ble.is_connected and self.data.enabled and self._bluetooth_enabled:
                 cast(BLETransport, ble).set_ble_device(self.service_info.device)
                 self.hass.create_task(ble.connect())
+
+    async def async_set_bluetooth_enabled(self, enabled: bool) -> None:
+        """Enable or disable Bluetooth, reconnecting if re-enabled."""
+        await super().async_set_bluetooth_enabled(enabled)
+        if enabled:
+            self._add_ble_device()
 
     @callback
     def _async_start(self) -> None:
@@ -1336,7 +1379,7 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
 
         if handle := self.manager.mower(self.device_name):
             if ble := handle.get_transport(TransportType.BLE):
-                if ble.is_usable and not ble.is_connected:
+                if ble.is_usable and not ble.is_connected and self._bluetooth_enabled:
                     try:
                         await ble.connect()
                     except BLEUnavailableError as exc:
@@ -1398,7 +1441,7 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
                 await self.async_read_cutter_mode()
             if DeviceType.is_luba_pro(self.device_name):
                 await self.async_fetch_audio_config()
-            await self.async_read_wildlife_safety()
+                await self.async_read_wildlife_safety()
         except (
             DeviceOfflineException,
             NoTransportAvailableError,
@@ -1482,7 +1525,7 @@ class MammotionMaintenanceUpdateCoordinator(MammotionBaseUpdateCoordinator[Maint
         return _dev.report_data.maintenance
 
     async def _async_setup(self) -> None:
-        """Setup maintenance coordinator."""
+        """Set up maintenance coordinator."""
         await super()._async_setup()
 
         if handle := self.manager.mower(self.device_name):
@@ -1587,7 +1630,7 @@ class MammotionDeviceVersionUpdateCoordinator(
         return device
 
     async def _async_setup(self) -> None:
-        """Setup device version coordinator."""
+        """Set up device version coordinator."""
         await super()._async_setup()
 
         try:
@@ -1708,7 +1751,7 @@ class MammotionMapUpdateCoordinator(MammotionBaseUpdateCoordinator[MowerInfo]):
         return _d.mower_state
 
     async def _async_setup(self) -> None:
-        """Setup coordinator with initial call to get map data."""
+        """Set up coordinator with initial call to get map data."""
         await super()._async_setup()
         device = self.manager.get_device_by_name(self.device_name)
         if device is None:

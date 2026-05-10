@@ -11,6 +11,7 @@ class SDPParser:
 
     @staticmethod
     def parse(sdp: str) -> dict[str, Any]:
+        """Parse an SDP string into a structured dictionary."""
         parsed = {"media": []}
         current_media = None
 
@@ -128,6 +129,7 @@ class SDPParser:
 
     @staticmethod
     def write(parsed: dict[str, Any]) -> str:
+        """Serialize a parsed SDP dictionary back into an SDP string."""
         lines = [f"v={parsed.get('version', 0)}"]
         orig = parsed.get("origin", {})
         lines.append(

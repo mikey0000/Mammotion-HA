@@ -1,3 +1,5 @@
+"""Device tracker platform for Mammotion mowers."""
+
 from __future__ import annotations
 
 import logging

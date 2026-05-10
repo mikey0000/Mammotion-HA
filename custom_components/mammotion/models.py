@@ -1,4 +1,4 @@
-"""models"""
+"""Data models for the Mammotion integration."""
 
 from dataclasses import dataclass
 

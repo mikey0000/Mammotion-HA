@@ -293,6 +293,20 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
         CONF_HAS_CLOUD_ACCOUNT, bool(account and password)
     )
 
+    # Wire credential-save callback before login so any re-login triggered
+    # during transport bind setup (e.g. _on_aliyun_auth_failure) is captured.
+    if has_cloud_account:
+
+        async def _on_credentials_updated() -> None:
+            """Persist refreshed credentials to the config entry."""
+            LOGGER.debug(
+                "Credentials refreshed for account %s — persisting to config entry",
+                account,
+            )
+            store_cloud_credentials(hass, entry, mammotion)
+
+        mammotion.on_credentials_updated = _on_credentials_updated
+
     mammotion_mowers: list[MammotionMowerData] = []
     mammotion_devices: MammotionDevices = MammotionDevices([], [])
     mammotion_rtk: list[MammotionRTKData] = []
@@ -630,8 +644,9 @@ async def async_unload_entry(hass: HomeAssistant, entry: MammotionConfigEntry) -
     """Unload a config entry."""
 
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
+        if entry.runtime_data.mowers:
+            store_cloud_credentials(hass, entry, entry.runtime_data.mowers[0].api)
         for mower in entry.runtime_data.mowers:
-            mower.maintenance_coordinator.store_cloud_credentials()
             try:
                 if handle := mower.api.mower(mower.name):
                     await handle.stop()
