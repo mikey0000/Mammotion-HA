@@ -77,7 +77,6 @@ from webrtc_models import RTCIceServer
 from .agora_api import SERVICE_IDS, AgoraAPIClient, AgoraResponse
 from .config import MammotionConfigStore
 from .const import (
-    COMMAND_EXCEPTIONS,
     CONF_ACCOUNTNAME,
     CONF_CONNECT_DATA,
     CONF_HAS_CLOUD_ACCOUNT,
@@ -285,7 +284,10 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         if handle is None:
             return
         if not enabled:
+            handle.set_prefer_ble(value=False)
             await handle.disconnect_transport(TransportType.BLE)
+        else:
+            handle.set_prefer_ble(value=True)
 
     async def async_set_cloud_enabled(self, enabled: bool) -> None:
         """Enable or disable Cloud transport."""
@@ -355,7 +357,11 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
 
         try:
             await self.manager.send_command_and_wait(
-                self.device_name, command, expected_field, **kwargs
+                self.device_name,
+                command,
+                expected_field,
+                prefer_ble=self._bluetooth_enabled,
+                **kwargs,
             )
         except EXPIRED_CREDENTIAL_EXCEPTIONS as exc:
             self.update_failures += 1
@@ -368,11 +374,14 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             raise HomeAssistantError(
                 translation_domain=DOMAIN, translation_key="api_limit_exceeded"
             ) from exc
+        except NoTransportAvailableError as exc:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key="command_failed"
+            ) from exc
         except (
             GatewayTimeoutException,
             CommandTimeoutError,
             ConcurrentRequestError,
-            NoTransportAvailableError,
         ):
             pass
 
@@ -404,7 +413,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
 
         try:
             await self.manager.send_command_with_args(
-                self.device_name, command, **kwargs
+                self.device_name, command, prefer_ble=self._bluetooth_enabled, **kwargs
             )
             self.update_failures = 0
             return True
@@ -417,24 +426,21 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             LOGGER.error(f"Gateway timeout exception: {ex.iot_id}")
             self.update_failures = 0
             return False
-        except (DeviceOfflineException, NoTransportAvailableError):
+        except DeviceOfflineException:
             self.device_offline(device)
-            # Fall back to BLE if the cloud path is unavailable
-            try:
-                await self.manager.send_command_with_args(
-                    self.device_name, command, prefer_ble=True, **kwargs
-                )
-                return True
-            except COMMAND_EXCEPTIONS as exc:
-                raise HomeAssistantError(
-                    translation_domain=DOMAIN, translation_key="command_failed"
-                ) from exc
-        except NoTransportAvailableError:
+        except TooManyRequestsException as exc:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key="api_limit_exceeded"
+            ) from exc
+        except NoTransportAvailableError as exc:
             LOGGER.debug(
                 "No transport connected yet for %s, command '%s' skipped",
                 self.device_name,
                 command,
             )
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key="command_failed"
+            ) from exc
             return False
         return False
 
