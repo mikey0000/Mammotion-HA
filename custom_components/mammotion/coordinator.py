@@ -413,7 +413,10 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
 
         try:
             await self.manager.send_command_with_args(
-                self.device_name, command, prefer_ble=self._bluetooth_enabled, **kwargs
+                self.device_name,
+                command,
+                prefer_ble=kwargs.pop("prefer_ble", self._bluetooth_enabled),
+                **kwargs,
             )
             self.update_failures = 0
             return True
@@ -796,6 +799,10 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         ``__init__.py``; this method only covers the case where no transport
         was wired (e.g. mower out of range at integration startup).
         """
+
+        if not self._bluetooth_enabled:
+            return
+
         device = self.manager.get_device_by_name(self.device_name)
         if device is None:
             return
@@ -1311,7 +1318,7 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
         self.poll_debouncer.async_schedule_call()
 
     def _add_ble_device(self) -> None:
-        if not self.service_info:
+        if not self.service_info or not self._bluetooth_enabled:
             return
         handle = self.manager.mower(self.device_name)
         if handle is None:
@@ -1321,7 +1328,7 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
             self.hass.create_task(self._async_ensure_ble_client())
 
         if ble := handle.get_transport(TransportType.BLE):
-            if not ble.is_connected and self.data.enabled and self._bluetooth_enabled:
+            if not ble.is_connected and self.data.enabled:
                 cast(BLETransport, ble).set_ble_device(self.service_info.device)
                 self.hass.create_task(ble.connect())
 
