@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import datetime
 import json
+import time
 from abc import abstractmethod
 from collections.abc import Callable, Mapping
 from datetime import timedelta
@@ -132,6 +133,8 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         self._stream_data: Response[StreamSubscriptionResponse] | None = (
             None  # Stream data [Agora]
         )
+        self._stream_data_fetched_at: float = 0.0  # monotonic timestamp of last fetch
+        self._STREAM_TOKEN_TTL: float = 300.0  # seconds before we re-fetch
         _mammotion_data = config_entry.data.get(CONF_MAMMOTION_DATA) or {}
         try:
             _user_account = int(
@@ -165,16 +168,28 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
     async def async_check_stream_expiry(
         self,
     ) -> tuple[StreamSubscriptionResponse | None, AgoraResponse | None]:
-        """Check if stream token is expired and refresh if needed."""
+        """Return cached Agora stream data, refreshing only when the token is absent or stale."""
+        now = time.monotonic()
+        token_age = now - self._stream_data_fetched_at
+        cached_data = self._stream_data
+
+        if (
+            cached_data is not None
+            and cached_data.data is not None
+            and token_age < self._STREAM_TOKEN_TTL
+        ):
+            LOGGER.debug("Reusing cached stream token (age=%.0fs)", token_age)
+            return cached_data.data, self._agora_response
+
         stream_data = None
         agora_response = None
 
         try:
-            # Refresh stream data
             stream_data = await self.manager.get_stream_subscription(
                 self.device_name, self.device.iot_id
             )
             self.set_stream_data(stream_data)
+            self._stream_data_fetched_at = time.monotonic()
 
             if stream_data is not None and stream_data.data is not None:
                 LOGGER.debug("Received stream data: %s", stream_data)
@@ -222,7 +237,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             LOGGER.debug("Stream token refreshed successfully")
         except Exception as ex:
             LOGGER.error("Failed to refresh stream token: %s", ex)
-        return stream_data, agora_response
+        return stream_data.data if stream_data is not None else None, agora_response
 
     def set_stream_data(
         self, stream_data: Response[StreamSubscriptionResponse]

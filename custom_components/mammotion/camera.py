@@ -175,7 +175,7 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
 
         try:
             # Get stream data (appid, channelName, token, uid)
-            if not stream_data or stream_data.data is None:
+            if not stream_data:
                 _LOGGER.error("No stream data available for WebRTC offer")
                 send_message(
                     WebRTCError(
@@ -185,7 +185,7 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
                 )
                 return
 
-            agora_data = stream_data.data
+            agora_data = stream_data
 
             # Start WebSocket connection and WebRTC negotiation
             answer_sdp = await self._perform_webrtc_negotiation(
