@@ -299,20 +299,20 @@ class MammotionAsyncConfigSelectEntity(
         self.entity_description = entity_description
         self._attr_translation_key = entity_description.key
         self._attr_options = entity_description.options
-        if callable(entity_description.get_fn):
-            self._attr_current_option = self._attr_options[
-                entity_description.get_fn(self.coordinator)
-            ]
-        else:
-            self._attr_current_option = self._attr_options[0]
+        self._attr_current_option = self._resolve_option()
+
+    def _resolve_option(self) -> str:
+        """Return the current option, falling back to the first if the index is out of range."""
+        if callable(self.entity_description.get_fn):
+            idx = self.entity_description.get_fn(self.coordinator)
+            if 0 <= idx < len(self._attr_options):
+                return self._attr_options[idx]
+        return self._attr_options[0]
 
     @callback
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
-        if callable(self.entity_description.get_fn):
-            self._attr_current_option = self._attr_options[
-                self.entity_description.get_fn(self.coordinator)
-            ]
+        self._attr_current_option = self._resolve_option()
         super()._handle_coordinator_update()
 
     async def async_select_option(self, option: str) -> None:

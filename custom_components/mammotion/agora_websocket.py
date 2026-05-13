@@ -9,6 +9,7 @@ import logging
 import secrets
 import ssl
 import time
+import uuid
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
@@ -110,6 +111,11 @@ class AgoraWebSocketHandler:
         # Stored for WebSocket restart after p2p_lost / STUN timeout
         self._offer_sdp: str | None = None
         self._agora_response: AgoraResponse | None = None
+        self._joined: bool = False
+        # Per-session msid UUIDs for SDP answer (regenerated each connect_and_join)
+        self._msid_stream_id: int = 1
+        self._msid_video_track_id: str = ""
+        self._msid_audio_track_id: str = ""
         self._setup_message_handlers()
 
     def _setup_message_handlers(self) -> None:
@@ -142,8 +148,21 @@ class AgoraWebSocketHandler:
         These candidates will be incorporated into the offer SDP before sending to Agora.
 
         """
+        if self._joined or self._connection_state != "DISCONNECTED":
+            _LOGGER.info(
+                "Already joined (state=%s) — disconnecting before new join for session %s",
+                self._connection_state,
+                session_id,
+            )
+            await self.disconnect()
+
         _LOGGER.debug("Starting Agora WebSocket connection for session %s", session_id)
         _LOGGER.info("Agora data: %s", agora_data)
+
+        # Fresh UUIDs for this session's answer SDP msid attributes
+        self._msid_stream_id = 1
+        self._msid_video_track_id = str(uuid.uuid4())
+        self._msid_audio_track_id = str(uuid.uuid4())
 
         # Store for later use in token refresh / rejoin / restart
         self._agora_data = agora_data
@@ -422,7 +441,7 @@ class AgoraWebSocketHandler:
             _LOGGER.info("Stored rejoin_token: %s...", self._rejoin_token[:20])
 
         # Send set_client_role after successful connection
-        # await self._send_set_client_role(role="host", level=0)
+        await self._send_set_client_role(role="host", level=0)
 
         if not ortc:
             _LOGGER.error("No ORTC parameters in join success response")
@@ -700,7 +719,7 @@ class AgoraWebSocketHandler:
                 "app_id": agora_data.appid,
                 "channel_key": agora_data.token,
                 "channel_name": agora_data.channelName,
-                "sdk_version": "4.24.0",
+                "sdk_version": "4.24.3",
                 "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
                 "process_id": process_id,
                 "mode": "live",
@@ -712,26 +731,29 @@ class AgoraWebSocketHandler:
                 "details": {},
                 "features": {"rejoin": True},
                 "attributes": {
-                    "userAttributes": {
-                        "enableAudioMetadata": False,
-                        "enableAudioPts": False,
-                        "enablePublishedUserList": True,
-                        "maxSubscription": 50,
-                        "enableUserLicenseCheck": True,
-                        "enableRTX": True,
-                        "enableInstantVideo": False,
-                        "enableDataStream2": False,
-                        "enableAutFeedback": True,
-                        "enableUserAutoRebalanceCheck": True,
-                        "enableXR": True,
-                        "enableLossbasedBwe": True,
-                        "enableAutCC": True,
-                        "enablePreallocPC": False,
-                        "enablePubTWCC": False,
-                        "enableSubTWCC": True,
-                        "enablePubRTX": True,
-                        "enableSubRTX": True,
-                    }
+                    "enableAudioMetadata": False,
+                    "enableAudioPts": False,
+                    "enableNetworkQualityProbe": False,
+                    "enablePublishedUserList": True,
+                    "enableUserList": False,
+                    "maxSubscription": 50,
+                    "enableUserLicenseCheck": True,
+                    "enableRTX": True,
+                    "enableInstantVideo": False,
+                    "enableDataStream2": False,
+                    "enableAutFeedback": True,
+                    "enableUserAutoRebalanceCheck": True,
+                    "enableXR": True,
+                    "enableLossbasedBwe": True,
+                    "enableAutCC": True,
+                    "enablePreallocPC": True,
+                    "enablePubTWCC": False,
+                    "enableSubTWCC": True,
+                    "enablePubRTX": True,
+                    "enableSubRTX": True,
+                    "enableVosFallback": False,
+                    "enableQualityFallback": False,
+                    "enableDualStreamFlag": False,
                 },
                 "join_ts": int(time.time() * 1000),
                 "ortc": ortc_info,
@@ -1298,10 +1320,14 @@ class AgoraWebSocketHandler:
                     for ext in sdp_info.video_extensions:
                         offer_ext_map[ext.get("extensionName")] = ext.get("entry")
 
-                # Add extensions using offer's IDs for matching URIs
+                # Add extensions using offer's IDs for matching URIs.
+                # MID is excluded: Agora's edge hardcodes mid=2 for video internally,
+                # but HA's offer has video at mid=1 — if MID extension is negotiated
+                # the browser discards all video RTP due to MID mismatch.
+                _SKIP_EXT_URIS = {"urn:ietf:params:rtp-hdrext:sdes:mid"}
                 for ext in extensions:
                     ext_name = ext.get("extensionName")
-                    if not ext_name:
+                    if not ext_name or ext_name in _SKIP_EXT_URIS:
                         continue
 
                     # Use the offer's extension ID if this extension was in the offer
@@ -1702,6 +1728,12 @@ class AgoraWebSocketHandler:
         # Close WebSocket
         if self._websocket:
             try:
+                if self._joined:
+                    leave_msg = {
+                        "_id": secrets.token_hex(3),
+                        "_type": "leave",
+                    }
+                    await self._websocket.send(json.dumps(leave_msg))
                 await self._websocket.close()
             except Exception:  # noqa: BLE001
                 pass
@@ -1709,7 +1741,10 @@ class AgoraWebSocketHandler:
 
         # Clear token state
         self._rejoin_token = None
+        self._joined = False
         self._connection_state = "DISCONNECTED"
+        self._online_users.clear()
+        self._video_streams.clear()
 
     def add_ice_candidate(self, candidate: RTCIceCandidateInit):
         """Add an ICE candidate to the pending candidates list."""

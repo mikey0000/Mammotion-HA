@@ -231,7 +231,12 @@ def parse_offer_to_ortc(offer_sdp: str) -> dict[str, Any]:
             "fingerprints": [
                 {"hashFunction": fp["hash"], "fingerprint": fp["fingerprint"]}
                 for fp in parsed["fingerprints"]
-            ]
+            ],
+            # Tell Agora the browser is the DTLS server (passive), so Agora acts as
+            # client (active/initiator). Matches JS SDK behaviour — without this,
+            # Agora may default to passive and both sides deadlock waiting for the
+            # other to send the DTLS ClientHello.
+            "role": "server",
         }
 
     # Iterate media sections to extract params and build caps
@@ -265,7 +270,8 @@ def parse_offer_to_ortc(offer_sdp: str) -> dict[str, Any]:
                 "fingerprints": [
                     {"hashFunction": fp["hash"], "fingerprint": fp["fingerprint"]}
                     for fp in m["fingerprints"]
-                ]
+                ],
+                "role": "server",
             }
 
         mtype = m.get("type")

@@ -135,6 +135,7 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         self.access_tokens: collections.deque = collections.deque([], 2)
         self.async_update_token()
         self._create_stream_lock: asyncio.Lock | None = None
+        self._join_lock = asyncio.Lock()
         self._agora_handler = AgoraWebSocketHandler(hass)
         self.coordinator = coordinator
         self.entity_description = entity_description
@@ -167,43 +168,55 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         negotiation directly in Python.
         """
 
-        stream_data, agora_response = await self.coordinator.async_check_stream_expiry()
-        # Reset candidates list for new session
-        self._agora_handler.candidates = []
-        _LOGGER.info("Handling WebRTC offer for session %s", session_id)
-        # _LOGGER.info("Raw OFFER SDP %s", offer_sdp)
-
-        try:
-            # Get stream data (appid, channelName, token, uid)
-            if not stream_data or stream_data.data is None:
-                _LOGGER.error("No stream data available for WebRTC offer")
-                send_message(
-                    WebRTCError(
-                        "500",
-                        "No stream data available for WebRTC offer",
-                    )
-                )
-                return
-
-            agora_data = stream_data.data
-
-            # Start WebSocket connection and WebRTC negotiation
-            answer_sdp = await self._perform_webrtc_negotiation(
-                offer_sdp, agora_data, session_id, agora_response
+        if self._join_lock.locked():
+            _LOGGER.warning(
+                "WebRTC offer already in progress for session %s — ignoring duplicate",
+                session_id,
             )
+            send_message(WebRTCError("409", "WebRTC negotiation already in progress"))
+            return
 
-            if answer_sdp:
-                # Send the answer back to the browser
+        async with self._join_lock:
+            (
+                stream_data,
+                agora_response,
+            ) = await self.coordinator.async_check_stream_expiry(force=True)
+            # Reset candidates list for new session
+            self._agora_handler.candidates = []
+            _LOGGER.info("Handling WebRTC offer for session %s", session_id)
+            # _LOGGER.info("Raw OFFER SDP %s", offer_sdp)
 
-                send_message(WebRTCAnswer(answer_sdp))
-                _LOGGER.info("WebRTC negotiation completed successfully")
-                # Send set_client_role after successful join
-            else:
-                send_message(WebRTCError("500", "WebRTC negotiation failed"))
+            try:
+                # Get stream data (appid, channelName, token, uid)
+                if not stream_data:
+                    _LOGGER.error("No stream data available for WebRTC offer")
+                    send_message(
+                        WebRTCError(
+                            "500",
+                            "No stream data available for WebRTC offer",
+                        )
+                    )
+                    return
 
-        except (websockets.exceptions.WebSocketException, json.JSONDecodeError) as ex:
-            _LOGGER.error("Error handling WebRTC offer: %s", ex)
-            send_message(WebRTCError("500", f"Error handling WebRTC offer: {ex}"))
+                agora_data = stream_data
+
+                # Start WebSocket connection and WebRTC negotiation
+                answer_sdp = await self._perform_webrtc_negotiation(
+                    offer_sdp, agora_data, session_id, agora_response
+                )
+
+                if answer_sdp:
+                    send_message(WebRTCAnswer(answer_sdp))
+                    _LOGGER.info("WebRTC negotiation completed successfully")
+                else:
+                    send_message(WebRTCError("500", "WebRTC negotiation failed"))
+
+            except (
+                websockets.exceptions.WebSocketException,
+                json.JSONDecodeError,
+            ) as ex:
+                _LOGGER.error("Error handling WebRTC offer: %s", ex)
+                send_message(WebRTCError("500", f"Error handling WebRTC offer: {ex}"))
 
     async def async_on_webrtc_candidate(
         self, session_id: str, candidate: RTCIceCandidateInit
