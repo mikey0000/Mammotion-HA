@@ -503,6 +503,14 @@ def async_add_area_entities(
         all_current_areas = area_name_hashes | map_area_hashes
 
     new_areas = all_current_areas - added_areas
+
+    # On HA restart added_areas is empty so the per-session deduplication
+    # cannot catch orphaned registry entries from a previous run.  If the
+    # device assigned new hashes to existing areas the old entries linger and
+    # the user sees two switches for the same logical area (e.g. "Area Pool"
+    # twice).  Clean up any such stale entries before adding new entities.
+    if map_area_hashes and new_areas:
+        _async_clean_stale_area_registry_entries(coordinator, all_current_areas)
     # Find the highest "Area N" number already in use — check case-insensitively
     # so that pymammotion's lowercase "area 1" fallback names are counted too.
     area_counter = max(
@@ -597,6 +605,32 @@ def async_add_area_entities(
 
     if switch_entities:
         async_add_entities(switch_entities)
+
+
+def _async_clean_stale_area_registry_entries(
+    coordinator: MammotionReportUpdateCoordinator,
+    all_current_areas: set[int],
+) -> None:
+    """Remove area entity registry entries whose hashes are no longer on the device.
+
+    Area entity unique_ids follow ``{unique_name}_{hash}`` where the suffix is
+    the numeric area hash.  Any entry whose hash is absent from
+    ``all_current_areas`` is removed so it cannot appear as a ghost duplicate
+    alongside the replacement entity.
+    """
+    registry = er.async_get(coordinator.hass)
+    prefix = f"{coordinator.unique_name}_"
+
+    for entry in list(registry.entities.values()):
+        if entry.domain != SWITCH_DOMAIN or entry.platform != DOMAIN:
+            continue
+        if not entry.unique_id.startswith(prefix):
+            continue
+        suffix = entry.unique_id[len(prefix) :]
+        if not suffix.lstrip("-").isdigit():
+            continue  # non-numeric suffix → not an area entity (e.g. "is_mow")
+        if int(suffix) not in all_current_areas:
+            registry.async_remove(entry.entity_id)
 
 
 def async_remove_entities(

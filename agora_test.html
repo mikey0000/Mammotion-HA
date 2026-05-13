@@ -2112,6 +2112,14 @@
 
         if (ws) {
           try {
+            if (ws.readyState === WebSocket.OPEN) {
+              const leaveMsg = {
+                _id: Math.random().toString(36).substring(2, 8),
+                _type: "leave",
+              };
+              ws.send(JSON.stringify(leaveMsg));
+              log("WS", "→ leave", "log-ws");
+            }
             ws.close();
           } catch (e) {}
           ws = null;

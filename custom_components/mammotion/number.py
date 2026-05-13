@@ -287,6 +287,8 @@ class MammotionConfigNumberEntity(MammotionBaseEntity, RestoreNumber):  # type: 
         self._attr_native_value = value
         if self.entity_description.set_fn is not None:
             self.entity_description.set_fn(self.coordinator, value)
+        if self.entity_description.set_async_fn is not None:
+            await self.entity_description.set_async_fn(self.coordinator, value)
         self.async_write_ha_state()
 
     async def async_added_to_hass(self) -> None:
