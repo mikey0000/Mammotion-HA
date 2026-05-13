@@ -170,7 +170,7 @@
           "MODE_CHANNEL_DRAW": "Erstellt Passage",
           "MODE_ERASER_DRAW": "Erstellt Muster",
           "MODE_EDIT_BOUNDARY": "Bearbeitet Begrenzung",
-          "MODE_LOCATION_ERROR": "Fehler bei der Standortbestimmung",
+          "MODE_LOCATION_ERROR": "Fehler bei Standortbestimmung",
           "MODE_BOUNDARY_JUMP": "Begrennzung überschritten",
           "MODE_CHARGING_PAUSE": "Laden pausiert"
         }
@@ -597,7 +597,7 @@
         },
         "start_progress": {
           "name": "Fortschritt beim Start",
-          "description": "Gibt an, welcher prozentuale Fortschritt beim Start einer Aufgabe festgelegt angenommen."
+          "description": "Gibt an, welcher prozentuale Fortschritt beim Start einer Aufgabe angenommen wird."
         },
         "areas": {
           "name": "Bereiche",
