@@ -1,0 +1,684 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "Az eszköz már konfigurálva van",
+      "already_in_progress": "A konfigurálás már folyamatban van",
+      "no_devices_found": "Nem találhatók eszközök",
+      "no_devices_found_in_account": "Nincs eszköz a fiókodban",
+      "bluetooth_and_account_mismatch": "A Bluetooth-eszköz nem található a fiókodban",
+      "no_longer_present": "Az eszköz már nem érhető el",
+      "not_supported": "Az eszköz nem támogatott",
+      "reconfigure_successful": "Újrakonfigurálás sikeres",
+      "api_limit_exceeded": "Az API sebességkorlátját elérte. Próbáld újra később.",
+      "cannot_connect": "Nem lehet csatlakozni a Mammotion felhőhöz. Ellenőrizd a hitelesítő adatokat és a hálózatot, majd próbáld újra."
+    },
+    "flow_title": "{name}",
+    "step": {
+      "bluetooth_confirm": {
+        "description": "A(z) {name} beállítása",
+        "data": {
+          "stay_connected_bluetooth": "Bluetooth maradjon csatlakoztatva"
+        }
+      },
+      "reconfigure": {
+        "data": {
+          "use_wifi": "Wi-Fi használata",
+          "account_name": "Mammotion e-mail vagy fiókszám",
+          "password": "Mammotion fiók jelszava"
+        }
+      },
+      "user": {
+        "data": {
+          "address": "Eszköz",
+          "stay_connected_bluetooth": "Bluetooth maradjon csatlakoztatva"
+        },
+        "description": "Válaszd ki a fűnyírót"
+      },
+      "wifi": {
+        "data": {
+          "use_wifi": "Wi-Fi használata (pipát ki és küldd el a Bluetooth használatához)",
+          "account_name": "Mammotion e-mail vagy fiókszám",
+          "password": "Mammotion fiók jelszava"
+        },
+        "title": "Csatlakozás Wi-Fi-hez",
+        "description": "Add meg a Mammotion fiók e-mail-címét vagy azonosítóját és a jelszót"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "title": "Konfiguráció frissítése",
+          "stay_connected_bluetooth": "Bluetooth maradjon csatlakoztatva",
+          "prefer_ble_over_wifi": "Bluetooth előnyben részesítése Wi-Fi helyett, ha elérhető",
+          "movement_use_wifi": "Mozgatási parancsok küldése Wi-Fi-n"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "error_1_message": {
+        "name": "Utolsó hiba"
+      },
+      "error_1_time": {
+        "name": "Utolsó hiba ideje"
+      },
+      "error_1_code": {
+        "name": "Utolsó hibakód"
+      },
+      "battery_percent": {
+        "name": "Akkumulátor"
+      },
+      "ble_rssi": {
+        "name": "BLE RSSI"
+      },
+      "camera_brightness": {
+        "name": "Kamera fényereje"
+      },
+      "wifi_rssi": {
+        "name": "Wi-Fi RSSI"
+      },
+      "mnet_rssi": {
+        "name": "Mobil RSSI"
+      },
+      "connect_type": {
+        "name": "Kapcsolat"
+      },
+      "gps_stars": {
+        "name": "Műholdak (robot)"
+      },
+      "blade_height": {
+        "name": "Késmagasság"
+      },
+      "area": {
+        "name": "Terület"
+      },
+      "mowing_speed": {
+        "name": "Nyírási sebesség"
+      },
+      "progress": {
+        "name": "Folyamat"
+      },
+      "total_time": {
+        "name": "Teljes idő"
+      },
+      "elapsed_time": {
+        "name": "Eltelt idő"
+      },
+      "left_time": {
+        "name": "Hátralévő idő"
+      },
+      "l1_satellites": {
+        "name": "L1 műholdak (együtt látott)"
+      },
+      "l2_satellites": {
+        "name": "L2 műholdak (együtt látott)"
+      },
+      "positioning_mode": {
+        "name": "RTK pozíció"
+      },
+      "position_type": {
+        "name": "Eszköz pozíciótípusa",
+        "state": {
+          "AREA_BORDER_ON": "Kerületen",
+          "AREA_INSIDE": "Területen belül",
+          "AREA_OUT": "Területen kívül",
+          "CHANNEL_AREA_OVERLAP": "Útvonalterület átfedés",
+          "CHANNEL_ON": "Útvonalon",
+          "CHARGE_ON": "Töltőállomáson",
+          "DUMPING_AREA_INSIDE": "Ürítőterületen belül",
+          "DUMPING_OUTSIDE": "Ürítőterületen kívül",
+          "ABNORMAL_POSITIONING": "Pozícióhiba",
+          "NO_AREAS": "Nincs terület definiálva",
+          "OBS_ON": "Akadálynál",
+          "TURN_AREA_INSIDE": "Fordulóterületen",
+          "VIRTUAL_INSIDE": "Virtuális területen"
+        }
+      },
+      "visual_positioning_status": {
+        "name": "Vizuális pozicionálás állapota",
+        "state": {
+          "SIGNAL_NONE": "Nincs",
+          "SIGNAL_INIT": "Inicializálás",
+          "SIGNAL_GOOD": "Jó",
+          "SIGNAL_BAD": "Rossz",
+          "SIGNAL_UNKNOWN": "Ismeretlen"
+        }
+      },
+      "activity_mode": {
+        "name": "Működési mód",
+        "state": {
+          "MODE_NOT_ACTIVE": "Nem aktív",
+          "MODE_ONLINE": "Online",
+          "MODE_OFFLINE": "Offline",
+          "MODE_DISABLE": "Letiltva",
+          "MODE_INITIALIZATION": "Inicializálás",
+          "MODE_READY": "Kész",
+          "MODE_WORKING": "Dolgozik",
+          "MODE_RETURNING": "Visszatér",
+          "MODE_CHARGING": "Töltés",
+          "MODE_UPDATING": "Frissítés",
+          "MODE_LOCK": "Zárolva",
+          "MODE_PAUSE": "Szünet",
+          "MODE_MANUAL_MOWING": "Kézi nyírás",
+          "MODE_UPDATE_SUCCESS": "Frissítés sikeres",
+          "MODE_OTA_UPGRADE_FAIL": "Frissítés sikertelen",
+          "MODE_JOB_DRAW": "Rajzolási feladat",
+          "MODE_OBSTACLE_DRAW": "Akadályok rajzolása",
+          "MODE_CHANNEL_DRAW": "Útvonal rajzolása",
+          "MODE_ERASER_DRAW": "Törlőterület rajzolása",
+          "MODE_EDIT_BOUNDARY": "Határ szerkesztése",
+          "MODE_LOCATION_ERROR": "Helymeghatározási hiba",
+          "MODE_BOUNDARY_JUMP": "Határ átlépve",
+          "MODE_CHARGING_PAUSE": "Töltés szünetel"
+        }
+      },
+      "work_area": {
+        "name": "Jelenlegi hely"
+      },
+      "task_area_status": {
+        "name": "Feladatterület {name}",
+        "state": {
+          "NOT_STARTED": "Nem indult",
+          "WAITING": "Várakozik",
+          "MOWING": "Nyírás",
+          "COMPLETE": "Kész",
+          "ABORTED": "Megszakítva"
+        }
+      },
+      "maintenance_distance": {
+        "name": "Összes megtett út"
+      },
+      "maintenance_work_time": {
+        "name": "Összes munkaidő"
+      },
+      "maintenance_bat_cycles": {
+        "name": "Akkuciklusok",
+        "unit_of_measurement": "ciklus"
+      },
+      "blade_used_time": {
+        "name": "Kés használati ideje"
+      },
+      "blade_used_warn_time": {
+        "name": "Késkopás figyelmeztetés ideje"
+      },
+      "non_work_hours": {
+        "name": "Ne zavarj órák"
+      },
+      "rtk_lora": {
+        "name": "LoRa verzió"
+      },
+      "rtk_latitude": {
+        "name": "Szélesség"
+      },
+      "rtk_longitude": {
+        "name": "Hosszúság"
+      },
+      "rtk_wifi_rssi": {
+        "name": "Wi-Fi RSSI"
+      },
+      "rtk_sats_num": {
+        "name": "Műholdak"
+      },
+      "position_mode": {
+        "name": "Pozicionálási mód",
+        "state": {
+          "RTK_OVER_DATALINK": "Antenna adatkapcsolaton",
+          "RTK_OVER_INTERNET": "Antenna interneten",
+          "INAVI_NET_RTK": "iNavi NetRTK",
+          "INAVI_RTK_BOX": "iNavi RTK doboz"
+        }
+      },
+      "rtk_app_connect_type": {
+        "name": "Kapcsolat típusa",
+        "state": {
+          "UNKNOWN": "Ismeretlen",
+          "CON_BLE": "BLE",
+          "CON_WIFI": "Wi-Fi"
+        }
+      }
+    },
+    "button": {
+      "start_map_sync": {
+        "name": "Térképek szinkronizálása"
+      },
+      "start_schedule_sync": {
+        "name": "Ütemezések szinkronizálása"
+      },
+      "resync_rtk_dock": {
+        "name": "RTK és dokk szinkronizálása"
+      },
+      "release_from_dock": {
+        "name": "Kidokkolás"
+      },
+      "emergency_nudge_forward": {
+        "name": "Vészmozgatás előre"
+      },
+      "emergency_nudge_left": {
+        "name": "Vészmozgatás balra"
+      },
+      "emergency_nudge_right": {
+        "name": "Vészmozgatás jobbra"
+      },
+      "emergency_nudge_back": {
+        "name": "Vészmozgatás hátra"
+      },
+      "cancel_task": {
+        "name": "Aktuális feladat törlése"
+      },
+      "clear_all_mapdata": {
+        "name": "Térképek és területnevek törlése"
+      },
+      "relocate_charging_station": {
+        "name": "Töltőállomás áthelyezése"
+      },
+      "restart_mower": {
+        "name": "Fűnyíró újraindítása"
+      }
+    },
+    "switch": {
+      "area": {
+        "name": "Terület {name}"
+      },
+      "blade_status": {
+        "name": "Kések be/ki"
+      },
+      "is_mow": {
+        "name": "Nyírás be/ki"
+      },
+      "is_dump": {
+        "name": "Fűürítés be/ki"
+      },
+      "is_edge": {
+        "name": "Szegélynyírás"
+      },
+      "rain_tactics": {
+        "name": "Esőérzékelés (nyírás közben) be/ki"
+      },
+      "rain_detection": {
+        "name": "Esőérzékelés (fűnyíró) be/ki"
+      },
+      "side_led": {
+        "name": "Oldalsó LED be/ki"
+      },
+      "perimeter_first_on_off": {
+        "name": "Kerület először"
+      },
+      "schedule_updates": {
+        "name": "Frissítések be/ki"
+      },
+      "bluetooth_enabled": {
+        "name": "Bluetooth"
+      },
+      "cloud_enabled": {
+        "name": "Felhő"
+      },
+      "manual_light": {
+        "name": "Kézi fény be/ki"
+      },
+      "night_light": {
+        "name": "Automatikus fény be/ki"
+      },
+      "voice_on_off": {
+        "name": "Beszédhang be/ki"
+      }
+    },
+    "select": {
+      "channel_mode": {
+        "name": "Nyírási útvonal mód",
+        "state": {
+          "single_grid": "Cikcakk útvonal",
+          "double_grid": "Sakktábla útvonal",
+          "segment_grid": "Adaptív cikcakk útvonal",
+          "no_grid": "Csak kerület"
+        }
+      },
+      "mowing_laps": {
+        "name": "Kerületnyírási körök",
+        "state": {
+          "none": "Nincs",
+          "one": "Egy",
+          "two": "Kettő",
+          "three": "Három",
+          "four": "Négy"
+        }
+      },
+      "obstacle_laps": {
+        "name": "Tiltott zóna körök",
+        "state": {
+          "none": "Nincs",
+          "one": "Egy",
+          "two": "Kettő",
+          "three": "Három",
+          "four": "Négy"
+        }
+      },
+      "border_mode": {
+        "name": "Nyírási sorrend",
+        "state": {
+          "border_first": "Kerület először",
+          "grid_first": "Cikcakk / sakktábla először"
+        }
+      },
+      "bypass_mode": {
+        "name": "Akadályészlelés",
+        "state": {
+          "direct_touch": "Ki",
+          "slow_touch": "Lassú érintés",
+          "less_touch": "Kevesebb érintés",
+          "no_touch": "Normál",
+          "sensitive": "Érzékeny"
+        }
+      },
+      "cutting_angle_mode": {
+        "name": "Nyírási szög mód",
+        "state": {
+          "relative_angle": "Optimális szög",
+          "absolute_angle": "Északi szög",
+          "random_angle": "Véletlen szög"
+        }
+      },
+      "traversal_mode": {
+        "name": "Áthaladási mód",
+        "state": {
+          "direct": "Közvetlen",
+          "follow_perimeter": "Kövesse a kerületet"
+        }
+      },
+      "turning_mode": {
+        "name": "Megfordulási mód",
+        "state": {
+          "multipoint": "Többpontos forduló",
+          "zero_turn": "Helyben fordulás"
+        }
+      },
+      "wildlife_safety": {
+        "name": "Vadvédelem",
+        "state": {
+          "off": "Ki",
+          "stop_mowing": "Nyírás leállítása",
+          "low_speed_mowing": "Alacsony sebességű nyírás"
+        }
+      },
+      "cutter_mode": {
+        "name": "Késsebesség",
+        "state": {
+          "normal": "Közepes",
+          "slow": "Lassú",
+          "fast": "Gyors"
+        }
+      },
+      "voice_gender": {
+        "name": "Hang neme",
+        "state": {
+          "MAN": "Férfi",
+          "WOMAN": "Nő"
+        }
+      }
+    },
+    "number": {
+      "voice_volume": {
+        "name": "Hangerő"
+      },
+      "start_progress": {
+        "name": "Kezdési százalék"
+      },
+      "blade_height": {
+        "name": "Késmagasság"
+      },
+      "working_speed": {
+        "name": "Munkasebesség"
+      },
+      "cutting_angle": {
+        "name": "Nyírási szög"
+      },
+      "path_spacing": {
+        "name": "Útvonalköz"
+      },
+      "dumping_interval": {
+        "name": "Ürítési gyakoriság"
+      },
+      "toward_included_angle": {
+        "name": "Keresztezési szög"
+      },
+      "map_offset_lat": {
+        "name": "Térkép szélességi eltolás"
+      },
+      "map_offset_lon": {
+        "name": "Térkép hosszúsági eltolás"
+      }
+    },
+    "device_tracker": {
+      "name": "Eszközkövetés"
+    }
+  },
+  "selector": {
+    "border_mode": {
+      "options": {
+        "0": "Kerület először",
+        "1": "Cikcakk/sakktábla először"
+      }
+    },
+    "ultra_wave": {
+      "options": {
+        "0": "Közvetlen érintés",
+        "1": "Lassú érintés",
+        "2": "Kevesebb érintés",
+        "10": "Érintés nélkül",
+        "11": "Érzékeny"
+      }
+    },
+    "channel_mode": {
+      "options": {
+        "0": "Cikcakk útvonal",
+        "1": "Sakktábla útvonal",
+        "2": "Adaptív cikcakk útvonal",
+        "3": "Csak kerület"
+      }
+    },
+    "rain_tactics": {
+      "options": {
+        "0": "Ki",
+        "1": "Be"
+      }
+    },
+    "toward_mode": {
+      "options": {
+        "0": "Optimális szög",
+        "1": "Északi szög",
+        "2": "Véletlen szög"
+      }
+    },
+    "mowing_laps": {
+      "options": {
+        "0": "Nincs",
+        "1": "Egy kör",
+        "2": "Két kör",
+        "3": "Három kör",
+        "4": "Négy kör"
+      }
+    },
+    "obstacle_laps": {
+      "options": {
+        "0": "Nincs",
+        "1": "Egy kör",
+        "2": "Két kör",
+        "3": "Három kör",
+        "4": "Négy kör"
+      }
+    }
+  },
+  "services": {
+    "cancel_job": {
+      "name": "Aktuális feladat törlése",
+      "description": "Leállítja a fűnyírót és törli az aktuális feladatot."
+    },
+    "start_mow": {
+      "name": "Nyírás indítása",
+      "description": "Nyírás indítása egyéni beállításokkal.",
+      "fields": {
+        "modify": {
+          "name": "Meglévő feladat módosítása",
+          "description": "Meglévő feladat módosítása vagy új indítása."
+        },
+        "is_mow": {
+          "name": "Nyírás",
+          "description": "A nyírás aktív-e. (Yuka)."
+        },
+        "is_dump": {
+          "name": "Ürítés",
+          "description": "A fűürítés aktív-e. (Yuka)."
+        },
+        "is_edge": {
+          "name": "Szegélynyírás",
+          "description": "A szegély mód aktív-e. (Yuka)."
+        },
+        "collect_grass_frequency": {
+          "name": "Fűgyűjtés gyakorisága",
+          "description": "A fűgyűjtés gyakorisága (négyzetméterben). (Yuka)."
+        },
+        "border_mode": {
+          "name": "Nyírási sorrend",
+          "description": "Nyírási útvonal sorrendje (kerület először vagy rács először)."
+        },
+        "job_version": {
+          "name": "Feladatverzió",
+          "description": "Feladatverzió."
+        },
+        "job_id": {
+          "name": "Feladatazonosító",
+          "description": "Feladatazonosító."
+        },
+        "speed": {
+          "name": "Sebesség",
+          "description": "Nyírási sebesség."
+        },
+        "ultra_wave": {
+          "name": "Akadályészlelés",
+          "description": "Akadályelkerülési mód."
+        },
+        "channel_mode": {
+          "name": "Nyírási útvonal mód",
+          "description": "Nyírási útvonal (cikcakk, sakktábla, adaptív cikcakk vagy csak kerület)."
+        },
+        "channel_width": {
+          "name": "Útvonalszélesség",
+          "description": "A nyírási útvonal szélessége (cm-ben)."
+        },
+        "rain_tactics": {
+          "name": "Esőérzékelés",
+          "description": "Esőérzékelés."
+        },
+        "blade_height": {
+          "name": "Késmagasság",
+          "description": "A kés magassága."
+        },
+        "toward": {
+          "name": "Kezdő útvonal szöge",
+          "description": "A nyírás kezdő iránya."
+        },
+        "toward_included_angle": {
+          "name": "Keresztezési szög",
+          "description": "Rács választásakor a második szög (alapértelmezett: 90 fok)."
+        },
+        "toward_mode": {
+          "name": "Nyírási szög mód",
+          "description": "A nyírás szögiránya."
+        },
+        "mowing_laps": {
+          "name": "Kerületnyírási körök",
+          "description": "A nyírási terület kerülete körüli körök száma."
+        },
+        "obstacle_laps": {
+          "name": "Tiltott zóna körök",
+          "description": "A tiltott zónák körüli körök száma."
+        },
+        "start_progress": {
+          "name": "Kezdési százalék",
+          "description": "Kezdő előrehaladási százalék."
+        },
+        "areas": {
+          "name": "Terület kiválasztása",
+          "description": "A nyírandó területek listája (egész számokként)."
+        },
+        "plan_only": {
+          "name": "Csak terv",
+          "description": "Nyírási terv készítése indítás nélkül."
+        }
+      }
+    },
+    "start_stop_blades": {
+      "name": "Kések indítása vagy leállítása",
+      "description": "A kések kézi indítása vagy leállítása.",
+      "fields": {
+        "start_stop": {
+          "name": "Indítás vagy leállítás",
+          "description": "A kések be vagy ki vannak-e kapcsolva."
+        },
+        "blade_height": {
+          "name": "Késmagasság",
+          "description": "A kés magassága."
+        }
+      }
+    },
+    "set_non_work_hours": {
+      "name": "Ne zavarj órák beállítása",
+      "description": "Beállítja az órákat, amikor a fűnyíró nem dolgozik.",
+      "fields": {
+        "start_time": {
+          "name": "Kezdési idő",
+          "description": "A Ne zavarj idő kezdete."
+        },
+        "end_time": {
+          "name": "Befejezési idő",
+          "description": "A Ne zavarj idő vége."
+        }
+      }
+    },
+    "set_blade_warning_time": {
+      "name": "Késfigyelmeztetési idő beállítása",
+      "description": "Beállítja a késcsere figyelmeztetési küszöbét órában.",
+      "fields": {
+        "hours": {
+          "name": "Óra",
+          "description": "Figyelmeztetési küszöb órában a javasolt késcsere előtt."
+        }
+      }
+    },
+    "reset_blade_time": {
+      "name": "Késhasználati idő nullázása",
+      "description": "Késhasználati időszámláló nullázása."
+    }
+  },
+  "exceptions": {
+    "device_not_ready": {
+      "message": "Az eszköz nem áll készen."
+    },
+    "pause_failed": {
+      "message": "Nem sikerült szüneteltetni a fűnyírót."
+    },
+    "resume_failed": {
+      "message": "Nem sikerült folytatni a fűnyírót."
+    },
+    "start_failed": {
+      "message": "Nem sikerült elindítani a fűnyírót."
+    },
+    "dock_failed": {
+      "message": "Nem sikerült dokkra küldeni a fűnyírót."
+    },
+    "dock_cancel_failed": {
+      "message": "Nem sikerült leállítani a dokkba visszatérést."
+    },
+    "command_failed": {
+      "message": "Nem sikerült parancsot küldeni a fűnyírónak."
+    },
+    "api_limit_exceeded": {
+      "message": "Az API sebességkorlátját elérte."
+    },
+    "cloud_setup_failed": {
+      "message": "Nem lehet csatlakozni a Mammotion felhőhöz. Ellenőrizd a hálózatot, és próbáld meg újratölteni az integrációt."
+    }
+  }
+}
