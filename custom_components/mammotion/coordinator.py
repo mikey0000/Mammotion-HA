@@ -272,6 +272,12 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             if not device.online:
                 device.online = True
         await self.manager.set_scheduled_updates(self.device_name, enabled=enabled)
+        handle = self.manager.mower(self.device_name)
+        if handle is not None:
+            if enabled:
+                await handle.restart_keep_alive()
+            else:
+                await handle.stop_polling()
 
     def is_online(self) -> bool:
         """Return True if the device currently has an active transport connection."""
@@ -316,7 +322,11 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         handle = self.manager.mower(self.device_name)
         if handle is None:
             return
-        if not enabled:
+        if enabled:
+            for t_type in (TransportType.CLOUD_ALIYUN, TransportType.CLOUD_MAMMOTION):
+                await handle.connect_transport(t_type)
+            await handle.restart_keep_alive()
+        else:
             for t_type in (TransportType.CLOUD_ALIYUN, TransportType.CLOUD_MAMMOTION):
                 await handle.disconnect_transport(t_type)
 
