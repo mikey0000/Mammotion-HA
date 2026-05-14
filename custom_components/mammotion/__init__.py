@@ -46,12 +46,14 @@ from .const import (
     CONF_CONNECT_DATA,
     CONF_DEVICE_DATA,
     CONF_DEVICE_NAME,
+    CONF_FULL_MAP_FETCH_ENABLED,
     CONF_HAS_CLOUD_ACCOUNT,
     CONF_MAMMOTION_DATA,
     CONF_MAMMOTION_DEVICE_LIST,
     CONF_MAMMOTION_DEVICE_RECORDS,
     CONF_MAMMOTION_JWT_INFO,
     CONF_MAMMOTION_MQTT,
+    CONF_MOW_PATH_FETCH_ENABLED,
     CONF_PREFER_BLE,
     CONF_REGION_DATA,
     CONF_SESSION_DATA,
@@ -179,6 +181,8 @@ async def _async_attempt_login(
             )
             return False
         raise ConfigEntryError(err)
+    except Exception:
+        return False
 
 
 async def _attach_ble_to_mower(
@@ -286,6 +290,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
         hass.config_entries.async_update_entry(entry, options=new_opts)
 
     prefer_ble = entry.options.get(CONF_PREFER_BLE, True)
+    # Cloud-quota gates — default OFF (suppresses MowPathSaga / downgrades
+    # MapFetchSaga to area-names-only when the saga would run over MQTT).
+    # BLE-routed sagas run unaffected on the pymammotion side.
+    mow_path_fetch_enabled = entry.options.get(CONF_MOW_PATH_FETCH_ENABLED, False)
+    full_map_fetch_enabled = entry.options.get(CONF_FULL_MAP_FETCH_ENABLED, False)
 
     # Default to True for older entries that predate this key, as long as they
     # have account credentials configured.
@@ -349,6 +358,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                         await handle.disconnect_transport(t_type)
             elif prefer_ble:
                 mammotion.set_prefer_ble(device.device_name, prefer_ble=True)
+
+            mammotion.set_mow_path_fetch_enabled(
+                device.device_name, enabled=mow_path_fetch_enabled
+            )
+            mammotion.set_full_map_fetch_enabled(
+                device.device_name, enabled=full_map_fetch_enabled
+            )
 
             unique_name = device.device_name
 

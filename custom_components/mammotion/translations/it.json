@@ -52,7 +52,9 @@
           "title": "Aggiorna Configurazione",
           "stay_connected_bluetooth": "Mantieni Bluetooth connesso",
           "prefer_ble_over_wifi": "Preferisci Bluetooth rispetto al Wi-Fi quando disponibile",
-          "movement_use_wifi": "Invia comandi di movimento tramite Wi-Fi"
+          "movement_use_wifi": "Invia comandi di movimento tramite Wi-Fi",
+          "mow_path_fetch_enabled": "Abilita recupero percorso di taglio (cloud)",
+          "full_map_fetch_enabled": "Abilita recupero completo della mappa (cloud) — se disabilitato, vengono recuperati solo i nomi delle aree"
         }
       }
     }

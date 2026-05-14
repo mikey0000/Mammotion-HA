@@ -52,7 +52,9 @@
           "title": "Opdater konfiguration",
           "stay_connected_bluetooth": "Hold Bluetooth-forbindelsen",
           "prefer_ble_over_wifi": "Foretræk Bluetooth frem for Wi-Fi, når det er tilgængeligt",
-          "movement_use_wifi": "Send bevægelseskommandoer via Wi-Fi"
+          "movement_use_wifi": "Send bevægelseskommandoer via Wi-Fi",
+          "mow_path_fetch_enabled": "Aktivér hentning af klippesti (sky)",
+          "full_map_fetch_enabled": "Aktivér fuld korthentning (sky) — når slået fra, hentes kun områdenavne"
         }
       }
     }

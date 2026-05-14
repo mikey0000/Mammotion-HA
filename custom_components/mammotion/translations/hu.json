@@ -52,7 +52,9 @@
           "title": "Konfiguráció frissítése",
           "stay_connected_bluetooth": "Bluetooth maradjon csatlakoztatva",
           "prefer_ble_over_wifi": "Bluetooth előnyben részesítése Wi-Fi helyett, ha elérhető",
-          "movement_use_wifi": "Mozgatási parancsok küldése Wi-Fi-n"
+          "movement_use_wifi": "Mozgatási parancsok küldése Wi-Fi-n",
+          "mow_path_fetch_enabled": "Nyírási útvonal lekérésének engedélyezése (felhő)",
+          "full_map_fetch_enabled": "Teljes térkép lekérésének engedélyezése (felhő) — kikapcsolva csak a területnevek kerülnek lekérésre"
         }
       }
     }

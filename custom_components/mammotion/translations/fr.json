@@ -52,7 +52,9 @@
           "title": "Mettre à jour la configuration",
           "stay_connected_bluetooth": "Garder le Bluetooth connecté",
           "prefer_ble_over_wifi": "Préférer le Bluetooth au Wi-Fi si disponible",
-          "movement_use_wifi": "Envoyer les commandes de mouvement via Wi-Fi"
+          "movement_use_wifi": "Envoyer les commandes de mouvement via Wi-Fi",
+          "mow_path_fetch_enabled": "Activer la récupération du chemin de tonte (cloud)",
+          "full_map_fetch_enabled": "Activer la récupération complète de la carte (cloud) — désactivé, seuls les noms de zones sont récupérés"
         }
       }
     }

@@ -52,7 +52,9 @@
           "title": "Aktualisiere die Konfiguration",
           "stay_connected_bluetooth": "Bluetooth-Verbindung aufrechterhalten",
           "prefer_ble_over_wifi": "Bluetooth gegenüber Wi-Fi bevorzugen, wenn verfügbar",
-          "movement_use_wifi": "Bewegungsbefehle über Wi-Fi senden"
+          "movement_use_wifi": "Bewegungsbefehle über Wi-Fi senden",
+          "mow_path_fetch_enabled": "Mähpfad-Abruf aktivieren (Cloud)",
+          "full_map_fetch_enabled": "Vollständigen Kartenabruf aktivieren (Cloud) — wenn aus, werden nur Bereichsnamen abgerufen"
         }
       }
     }

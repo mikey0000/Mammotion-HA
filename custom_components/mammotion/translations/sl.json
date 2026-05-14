@@ -52,7 +52,9 @@
           "title": "Posodobi nastavitev",
           "stay_connected_bluetooth": "Ohrani bluetooth povezavo",
           "prefer_ble_over_wifi": "Daj prednost Bluetooth pred Wi-Fi, ko je na voljo",
-          "movement_use_wifi": "Pošiljaj ukaze gibanja prek Wi-Fi"
+          "movement_use_wifi": "Pošiljaj ukaze gibanja prek Wi-Fi",
+          "mow_path_fetch_enabled": "Omogoči pridobivanje poti košnje (oblak)",
+          "full_map_fetch_enabled": "Omogoči pridobivanje celotnega zemljevida (oblak) — če izklopljeno, se pridobijo samo imena območij"
         }
       }
     }

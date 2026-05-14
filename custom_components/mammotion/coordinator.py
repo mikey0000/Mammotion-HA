@@ -1493,9 +1493,9 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
 
     async def _async_setup(self) -> None:
         await super()._async_setup()
-        await self.async_request_report_snapshot()
 
         try:
+            await self.async_send_command("send_todev_ble_sync", sync_type=3)
             await self.async_read_rain_detection()
             await self.async_read_sidelight()
             await self.async_read_turning_mode()
@@ -1507,6 +1507,7 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
             if DeviceType.is_luba_pro(self.device_name):
                 await self.async_fetch_audio_config()
                 await self.async_read_wildlife_safety()
+            await self.async_request_report_snapshot()
         except (
             DeviceOfflineException,
             NoTransportAvailableError,
@@ -2119,6 +2120,9 @@ class MammotionRTKCoordinator(MammotionBaseUpdateCoordinator[RTKBaseStationDevic
             updated.iot_id = self.device.iot_id
             updated.name = self.device.device_name
             snapshot, _ = handle.state_machine.apply(updated, handle.availability)
+
+        if self.data.lat != 0:
+            return
 
         if self.has_cloud_account:
             # Fetch lora version — only available via HTTP, not MQTT/protobuf.

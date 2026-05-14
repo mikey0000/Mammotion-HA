@@ -182,6 +182,9 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
                 agora_response,
             ) = await self.coordinator.async_check_stream_expiry(force=True)
             # Reset candidates list for new session
+            await self.coordinator.async_send_command(
+                "send_todev_ble_sync", sync_type=3
+            )
             self._agora_handler.candidates = []
             _LOGGER.info("Handling WebRTC offer for session %s", session_id)
             # _LOGGER.info("Raw OFFER SDP %s", offer_sdp)

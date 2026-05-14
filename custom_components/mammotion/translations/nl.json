@@ -52,7 +52,9 @@
           "title": "Configuratie bijwerken",
           "stay_connected_bluetooth": "Houd Bluetooth verbonden",
           "prefer_ble_over_wifi": "Bluetooth verkiezen boven Wi-Fi indien beschikbaar",
-          "movement_use_wifi": "Bewegingsopdrachten via Wi-Fi verzenden"
+          "movement_use_wifi": "Bewegingsopdrachten via Wi-Fi verzenden",
+          "mow_path_fetch_enabled": "Maaipad ophalen inschakelen (cloud)",
+          "full_map_fetch_enabled": "Volledig kaart ophalen inschakelen (cloud) — wanneer uit worden alleen gebiednamen opgehaald"
         }
       }
     }

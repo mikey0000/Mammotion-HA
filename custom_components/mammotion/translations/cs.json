@@ -52,7 +52,9 @@
           "title": "Aktualizovat konfiguraci",
           "stay_connected_bluetooth": "Udržovat připojení Bluetooth",
           "prefer_ble_over_wifi": "Upřednostňovat Bluetooth před Wi-Fi, je-li dostupné",
-          "movement_use_wifi": "Odesílat příkazy pohybu přes Wi-Fi"
+          "movement_use_wifi": "Odesílat příkazy pohybu přes Wi-Fi",
+          "mow_path_fetch_enabled": "Povolit načítání cesty sekání (cloud)",
+          "full_map_fetch_enabled": "Povolit úplné načítání mapy (cloud) — pokud vypnuto, načítají se pouze názvy oblastí"
         }
       }
     }
