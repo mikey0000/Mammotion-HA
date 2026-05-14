@@ -16,22 +16,87 @@ body:
     validations:
       required: true
     attributes:
-      label: What Mammotion mower are you using?
+      label: What Mammotion device are you using?
+      description: >
+        Pick the exact SKU printed on your box / shown in the Mammotion app.
+        Variant suffixes follow Mammotion's product line:
+        **H** = with UltraSense AI Vision, **X** = with 4G/cellular,
+        **HX** = both AI Vision and 4G.
+        If your model isn't listed, choose "Other / not listed" and put the
+        full model name in the description above.
       options:
-        - Luba 1
-        - Luba 2
-        - Luba 2x
-        - Luba mini
-        - Yuka
-        - Yuka 2
-        - Yuka mini
-  - type: input
+        - Luba 1 AWD 1000
+        - Luba 1 AWD 3000
+        - Luba 1 AWD 5000
+        - Luba 2 AWD 3000X
+        - Luba 2 AWD 3000HX
+        - Luba 2 AWD 5000X
+        - Luba 2 AWD 5000HX
+        - Luba 2 AWD 10000X
+        - Luba 2 AWD 10000HX
+        - Luba 3 AWD 1500
+        - Luba 3 AWD 1500H
+        - Luba 3 AWD 3000
+        - Luba 3 AWD 3000H
+        - Luba 3 AWD 5000
+        - Luba 3 AWD 5000H
+        - Luba mini AWD 800
+        - Luba mini AWD 800H
+        - Luba mini AWD 1500
+        - Luba mini AWD 1500H
+        - Luba mini 2 AWD 1500
+        - Luba mini 2 AWD 1500H
+        - Yuka 1000
+        - Yuka 2000
+        - Yuka 3000
+        - Yuka mini 500
+        - Yuka mini 500H
+        - Yuka mini 600
+        - Yuka mini 600H
+        - Yuka mini 700
+        - Yuka mini 700H
+        - Yuka mini 800
+        - Yuka mini 800H
+        - Yuka mini 2 1000H
+        - Spino E1
+        - Spino S1 Pro
+        - Other / not listed (specify in description)
+  - type: dropdown
     id: integration_version
     validations:
       required: true
     attributes:
       label: What version of the Mammotion integration are you using?
-      placeholder: 4280d63, unsure
+      description: >
+        Pick the exact version installed on your Home Assistant.  If you are
+        on a version older than those listed, choose "Older / not listed" and
+        include the version (or the commit SHA from `manifest.json`'s
+        `version` field) in the description above.  Do **not** select a newer
+        version than what you actually have installed.
+      # BEGIN AUTO-GENERATED VERSION LIST (refreshed by .github/workflows/update-issue-template.yml — do not hand-edit)
+      options:
+        - v0.5.45
+        - v0.5.45-beta5
+        - v0.5.45-beta4
+        - v0.5.45-beta3
+        - v0.5.45-beta2
+        - v0.5.45-beta1
+        - v0.5.44
+        - v0.5.43
+        - v0.5.42
+        - v0.5.42-beta2
+        - v0.5.42-beta1
+        - v0.5.41
+        - v0.5.41-beta2
+        - v0.5.41-beta1
+        - v0.5.40
+        - v0.5.39
+        - v0.5.39-beta2
+        - v0.5.39-beta1
+        - v0.5.38
+        - v0.5.37
+        - Older / not listed (specify in description)
+      # END AUTO-GENERATED VERSION LIST
   - type: input
     id: ha_version
     validations:
