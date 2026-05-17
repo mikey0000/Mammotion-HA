@@ -28,10 +28,18 @@ body:
         - Luba 1 AWD 1000
         - Luba 1 AWD 3000
         - Luba 1 AWD 5000
+        - Luba 2 AWD 1000
+        - Luba 2 AWD 1000H
+        - Luba 2 AWD 3000
+        - Luba 2 AWD 3000H
         - Luba 2 AWD 3000X
         - Luba 2 AWD 3000HX
+        - Luba 2 AWD 5000
+        - Luba 2 AWD 5000H
         - Luba 2 AWD 5000X
         - Luba 2 AWD 5000HX
+        - Luba 2 AWD 10000
+        - Luba 2 AWD 10000H
         - Luba 2 AWD 10000X
         - Luba 2 AWD 10000HX
         - Luba 3 AWD 1500
@@ -44,6 +52,7 @@ body:
         - Luba mini AWD 800H
         - Luba mini AWD 1500
         - Luba mini AWD 1500H
+        - Luba mini AWD LiDAR
         - Luba mini 2 AWD 1500
         - Luba mini 2 AWD 1500H
         - Yuka 1000
@@ -57,6 +66,10 @@ body:
         - Yuka mini 700H
         - Yuka mini 800
         - Yuka mini 800H
+        - Yuka mini 2 500
+        - Yuka mini 2 600
+        - Yuka mini 2 800
+        - Yuka mini 2 1000
         - Yuka mini 2 1000H
         - Spino E1
         - Spino S1 Pro
