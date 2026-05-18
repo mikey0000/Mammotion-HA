@@ -9,8 +9,8 @@
       "no_longer_present": "Il dispositivo non è più presente",
       "not_supported": "Dispositivo non supportato",
       "reconfigure_successful": "Riconfigurazione avvenuta con successo",
-      "api_limit_exceeded": "Il limite di frequenza dell'API è stato superato. Si prega di riprovare più tardi.",
-      "cannot_connect": "Impossibile connettersi al cloud Mammotion. Verifica le credenziali e la rete, quindi riprova."
+      "api_limit_exceeded": "API rate limit has been exceeded. Please try again later.",
+      "cannot_connect": "Unable to connect to the Mammotion cloud. Check your credentials and network, then try again."
     },
     "flow_title": "{name}",
     "step": {
@@ -119,7 +119,7 @@
         "name": "Satelliti L2 (Co-Viewing)"
       },
       "positioning_mode": {
-        "name": "Posizione RTK"
+        "name": "RTK position"
       },
       "position_type": {
         "name": "Tipo di posizionamento",
@@ -140,13 +140,13 @@
         }
       },
       "visual_positioning_status": {
-        "name": "Stato posizionamento visivo",
+        "name": "Visual positioning status",
         "state": {
-          "SIGNAL_NONE": "Nessuno",
-          "SIGNAL_INIT": "Inizializzazione",
-          "SIGNAL_GOOD": "Buono",
-          "SIGNAL_BAD": "Scadente",
-          "SIGNAL_UNKNOWN": "Sconosciuto"
+          "SIGNAL_NONE": "None",
+          "SIGNAL_INIT": "Initialising",
+          "SIGNAL_GOOD": "Good",
+          "SIGNAL_BAD": "Bad",
+          "SIGNAL_UNKNOWN": "Unknown"
         }
       },
       "activity_mode": {
@@ -178,7 +178,17 @@
         }
       },
       "work_area": {
-        "name": "Posizione attuale"
+        "name": "Current location"
+      },
+      "task_area_status": {
+        "name": "Task area {name}",
+        "state": {
+          "NOT_STARTED": "Not started",
+          "WAITING": "Waiting",
+          "MOWING": "Mowing",
+          "COMPLETE": "Complete",
+          "ABORTED": "Aborted"
+        }
       },
       "maintenance_distance": {
         "name": "Chilometraggio totale"
@@ -191,10 +201,10 @@
         "unit_of_measurement": "Cicli batteria"
       },
       "blade_used_time": {
-        "name": "Tempo di utilizzo della lama"
+        "name": "Blade used time"
       },
       "blade_used_warn_time": {
-        "name": "Tempo di avviso usura lama"
+        "name": "Blade wear warning time"
       },
       "non_work_hours": {
         "name": "Ore non lavorative"
@@ -212,33 +222,23 @@
         "name": "WiFi RSSI"
       },
       "rtk_sats_num": {
-        "name": "Satelliti"
+        "name": "Satellites"
       },
       "position_mode": {
-        "name": "Modalità posizionamento",
+        "name": "Position mode",
         "state": {
-          "RTK_OVER_DATALINK": "Antenna su DataLink",
-          "RTK_OVER_INTERNET": "Antenna su Internet",
+          "RTK_OVER_DATALINK": "Antenna Over Datalink",
+          "RTK_OVER_INTERNET": "Antenna Over Internet",
           "INAVI_NET_RTK": "iNavi NetRTK",
-          "INAVI_RTK_BOX": "Scatola iNavi RTK"
+          "INAVI_RTK_BOX": "iNavi RTK Box"
         }
       },
       "rtk_app_connect_type": {
-        "name": "Tipo di connessione",
+        "name": "Connection type",
         "state": {
-          "UNKNOWN": "Sconosciuto",
+          "UNKNOWN": "Unknown",
           "CON_BLE": "BLE",
           "CON_WIFI": "Wi-Fi"
-        }
-      },
-      "task_area_status": {
-        "name": "Area attività {name}",
-        "state": {
-          "NOT_STARTED": "Non avviato",
-          "WAITING": "In attesa",
-          "MOWING": "In falciatura",
-          "COMPLETE": "Completato",
-          "ABORTED": "Interrotto"
         }
       }
     },
@@ -365,9 +365,9 @@
         }
       },
       "bypass_mode": {
-        "name": "Rilevamento ostacoli",
+        "name": "Obstacle detection",
         "state": {
-          "direct_touch": "Disattivato",
+          "direct_touch": "Off",
           "slow_touch": "Tocco lento",
           "less_touch": "Meno tocco",
           "no_touch": "Standard",
@@ -446,10 +446,10 @@
         "name": "Angolo Di Attraversamento"
       },
       "map_offset_lat": {
-        "name": "Offset mappa latitudine"
+        "name": "Map offset latitude"
       },
       "map_offset_lon": {
-        "name": "Offset mappa longitudine"
+        "name": "Map offset longitude"
       }
     },
     "device_tracker": {
@@ -606,8 +606,8 @@
           "description": "Elenco di aree da tagliare(rappresentati come interi)."
         },
         "plan_only": {
-          "name": "Solo pianificazione",
-          "description": "Genera il piano di taglio senza avviare il lavoro."
+          "name": "Plan only",
+          "description": "Generate the mowing plan without starting the job."
         }
       }
     },
@@ -640,18 +640,18 @@
       }
     },
     "set_blade_warning_time": {
-      "name": "Imposta tempo di avviso lama",
-      "description": "Imposta il tempo di avviso per la sostituzione della lama in ore.",
+      "name": "Set blade warning time",
+      "description": "Set the blade replacement warning time in hours.",
       "fields": {
         "hours": {
-          "name": "Ore",
-          "description": "Soglia di avviso in ore prima della sostituzione raccomandata della lama."
+          "name": "Hours",
+          "description": "Warning threshold in hours before blade replacement is recommended."
         }
       }
     },
     "reset_blade_time": {
-      "name": "Reimposta tempo lama",
-      "description": "Reimposta il contatore del tempo di utilizzo della lama."
+      "name": "Reset blade time",
+      "description": "Reset the blade usage time counter."
     }
   },
   "exceptions": {
@@ -677,10 +677,10 @@
       "message": "Impossibile inviare il comando al rasaerba."
     },
     "api_limit_exceeded": {
-      "message": "Il limite di frequenza dell'API è stato superato."
+      "message": "API rate limit has been exceeded."
     },
     "cloud_setup_failed": {
-      "message": "Impossibile connettersi al cloud Mammotion. Verifica la rete e prova a ricaricare l'integrazione."
+      "message": "Unable to connect to the Mammotion cloud. Check your network and try reloading the integration."
     }
   }
 }

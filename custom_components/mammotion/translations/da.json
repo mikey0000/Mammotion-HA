@@ -9,8 +9,8 @@
       "no_longer_present": "Enheden er ikke længere til stede",
       "not_supported": "Enheden understøttes ikke",
       "reconfigure_successful": "Omkonfiguration lykkedes",
-      "api_limit_exceeded": "API-anmodningsgrænsen er overskredet. Prøv igen senere.",
-      "cannot_connect": "Kan ikke oprette forbindelse til Mammotion-skyen. Kontroller dine legitimationsoplysninger og netværk, og prøv igen."
+      "api_limit_exceeded": "API rate limit has been exceeded. Please try again later.",
+      "cannot_connect": "Unable to connect to the Mammotion cloud. Check your credentials and network, then try again."
     },
     "flow_title": "{name}",
     "step": {
@@ -140,13 +140,13 @@
         }
       },
       "visual_positioning_status": {
-        "name": "Visuel positioneringsstatus",
+        "name": "Visual positioning status",
         "state": {
-          "SIGNAL_NONE": "Ingen",
-          "SIGNAL_INIT": "Initialiserer",
-          "SIGNAL_GOOD": "God",
-          "SIGNAL_BAD": "Dårlig",
-          "SIGNAL_UNKNOWN": "Ukendt"
+          "SIGNAL_NONE": "None",
+          "SIGNAL_INIT": "Initialising",
+          "SIGNAL_GOOD": "Good",
+          "SIGNAL_BAD": "Bad",
+          "SIGNAL_UNKNOWN": "Unknown"
         }
       },
       "activity_mode": {
@@ -167,9 +167,9 @@
           "MODE_MANUAL_MOWING": "Manual mowing",
           "MODE_UPDATE_SUCCESS": "Update successful",
           "MODE_OTA_UPGRADE_FAIL": "Update failed",
-          "MODE_JOB_DRAW": "Drawing job",
+          "MODE_JOB_DRAW": "",
           "MODE_OBSTACLE_DRAW": "Drawing obstacles",
-          "MODE_CHANNEL_DRAW": "Drawing channel",
+          "MODE_CHANNEL_DRAW": "Tegning af kanal",
           "MODE_ERASER_DRAW": "Drawing eraser",
           "MODE_EDIT_BOUNDARY": "Editing boundary",
           "MODE_LOCATION_ERROR": "Location error",
@@ -178,7 +178,17 @@
         }
       },
       "work_area": {
-        "name": "Nuværende placering"
+        "name": "Current location"
+      },
+      "task_area_status": {
+        "name": "Task area {name}",
+        "state": {
+          "NOT_STARTED": "Not started",
+          "WAITING": "Waiting",
+          "MOWING": "Mowing",
+          "COMPLETE": "Complete",
+          "ABORTED": "Aborted"
+        }
       },
       "maintenance_distance": {
         "name": "Samlet kilometertal"
@@ -191,10 +201,10 @@
         "unit_of_measurement": "Cyklusser"
       },
       "blade_used_time": {
-        "name": "Knivbrugstid"
+        "name": "Blade used time"
       },
       "blade_used_warn_time": {
-        "name": "Knivslitage advarseltid"
+        "name": "Blade wear warning time"
       },
       "non_work_hours": {
         "name": "Non-work hours"
@@ -212,33 +222,23 @@
         "name": "Wi-Fi RSSI"
       },
       "rtk_sats_num": {
-        "name": "Satellitter"
+        "name": "Satellites"
       },
       "position_mode": {
-        "name": "Positioneringstilstand",
+        "name": "Position mode",
         "state": {
-          "RTK_OVER_DATALINK": "Antenne over Datalink",
-          "RTK_OVER_INTERNET": "Antenne over internet",
+          "RTK_OVER_DATALINK": "Antenna Over Datalink",
+          "RTK_OVER_INTERNET": "Antenna Over Internet",
           "INAVI_NET_RTK": "iNavi NetRTK",
-          "INAVI_RTK_BOX": "iNavi RTK-boks"
+          "INAVI_RTK_BOX": "iNavi RTK Box"
         }
       },
       "rtk_app_connect_type": {
-        "name": "Forbindelsestype",
+        "name": "Connection type",
         "state": {
-          "UNKNOWN": "Ukendt",
+          "UNKNOWN": "Unknown",
           "CON_BLE": "BLE",
           "CON_WIFI": "Wi-Fi"
-        }
-      },
-      "task_area_status": {
-        "name": "Opgaveområde {name}",
-        "state": {
-          "NOT_STARTED": "Ikke startet",
-          "WAITING": "Venter",
-          "MOWING": "Klipper",
-          "COMPLETE": "Fuldført",
-          "ABORTED": "Afbrudt"
         }
       }
     },
@@ -365,9 +365,9 @@
         }
       },
       "bypass_mode": {
-        "name": "Forhindringsdetektion",
+        "name": "Obstacle detection",
         "state": {
-          "direct_touch": "Fra",
+          "direct_touch": "Off",
           "slow_touch": "Langsom berøring",
           "less_touch": "Mindre berøring",
           "no_touch": "Standard",
@@ -446,10 +446,10 @@
         "name": "Krydsningsvinkel"
       },
       "map_offset_lat": {
-        "name": "Kortforskydning breddegrad"
+        "name": "Map offset latitude"
       },
       "map_offset_lon": {
-        "name": "Kortforskydning længdegrad"
+        "name": "Map offset longitude"
       }
     },
     "device_tracker": {
@@ -606,8 +606,8 @@
           "description": "Liste over områder, der skal klippes (repræsenteret som heltal)."
         },
         "plan_only": {
-          "name": "Kun planlægning",
-          "description": "Generer klippeplanen uden at starte jobbet."
+          "name": "Plan only",
+          "description": "Generate the mowing plan without starting the job."
         }
       }
     },
@@ -621,7 +621,7 @@
         },
         "blade_height": {
           "name": "Blad højde",
-          "description": "Højden på klippebordet."
+          "description": "Klingens højde over jord."
         }
       }
     },
@@ -640,18 +640,18 @@
       }
     },
     "set_blade_warning_time": {
-      "name": "Angiv advarselstid for klinge",
-      "description": "Angiv advarselstiden for udskiftning af klinge i timer.",
+      "name": "Set blade warning time",
+      "description": "Set the blade replacement warning time in hours.",
       "fields": {
         "hours": {
-          "name": "Timer",
-          "description": "Advarselstærskel i timer inden anbefalet klingeudskiftning."
+          "name": "Hours",
+          "description": "Warning threshold in hours before blade replacement is recommended."
         }
       }
     },
     "reset_blade_time": {
-      "name": "Nulstil klingetid",
-      "description": "Nulstil tælleren for klingebrug."
+      "name": "Reset blade time",
+      "description": "Reset the blade usage time counter."
     }
   },
   "exceptions": {
@@ -662,7 +662,7 @@
       "message": "Kunne ikke sætte plæneklipperen på pause."
     },
     "resume_failed": {
-      "message": "Kunne ikke genoptage plæneklipperen."
+      "message": "Kunne ikke genoptage klipning."
     },
     "start_failed": {
       "message": "Kunne ikke starte plæneklipperen."
@@ -677,10 +677,10 @@
       "message": "Kunne ikke sende kommando til plæneklipperen."
     },
     "api_limit_exceeded": {
-      "message": "API-anmodningsgrænsen er overskredet."
+      "message": "API rate limit has been exceeded."
     },
     "cloud_setup_failed": {
-      "message": "Kan ikke oprette forbindelse til Mammotion-skyen. Kontroller dit netværk, og prøv at genindlæse integrationen."
+      "message": "Unable to connect to the Mammotion cloud. Check your network and try reloading the integration."
     }
   }
 }

@@ -9,8 +9,8 @@
       "no_longer_present": "Het apparaat is niet langer aanwezig",
       "not_supported": "Apparaat wordt niet ondersteund",
       "reconfigure_successful": "Opnieuw instellen gelukt",
-      "api_limit_exceeded": "De API-limiet is overschreden. Probeer het later opnieuw.",
-      "cannot_connect": "Kan geen verbinding maken met de Mammotion-cloud. Controleer uw inloggegevens en netwerk en probeer het opnieuw."
+      "api_limit_exceeded": "API rate limit has been exceeded. Please try again later.",
+      "cannot_connect": "Unable to connect to the Mammotion cloud. Check your credentials and network, then try again."
     },
     "flow_title": "{name}",
     "step": {
@@ -119,7 +119,7 @@
         "name": "L2 Satellieten (Samen kijkend)"
       },
       "positioning_mode": {
-        "name": "RTK-positie"
+        "name": "RTK position"
       },
       "position_type": {
         "name": "Apparaatpositietype",
@@ -140,13 +140,13 @@
         }
       },
       "visual_positioning_status": {
-        "name": "Status visuele positionering",
+        "name": "Visual positioning status",
         "state": {
-          "SIGNAL_NONE": "Geen",
-          "SIGNAL_INIT": "Initialiseren",
-          "SIGNAL_GOOD": "Goed",
-          "SIGNAL_BAD": "Slecht",
-          "SIGNAL_UNKNOWN": "Onbekend"
+          "SIGNAL_NONE": "None",
+          "SIGNAL_INIT": "Initialising",
+          "SIGNAL_GOOD": "Good",
+          "SIGNAL_BAD": "Bad",
+          "SIGNAL_UNKNOWN": "Unknown"
         }
       },
       "activity_mode": {
@@ -178,7 +178,17 @@
         }
       },
       "work_area": {
-        "name": "Huidige locatie"
+        "name": "Current location"
+      },
+      "task_area_status": {
+        "name": "Task area {name}",
+        "state": {
+          "NOT_STARTED": "Not started",
+          "WAITING": "Waiting",
+          "MOWING": "Mowing",
+          "COMPLETE": "Complete",
+          "ABORTED": "Aborted"
+        }
       },
       "maintenance_distance": {
         "name": "Totale kilometerstand"
@@ -191,10 +201,10 @@
         "unit_of_measurement": "cycli"
       },
       "blade_used_time": {
-        "name": "Mesgebruikstijd"
+        "name": "Blade used time"
       },
       "blade_used_warn_time": {
-        "name": "Mes slijtage waarschuwingstijd"
+        "name": "Blade wear warning time"
       },
       "non_work_hours": {
         "name": "Niet-actieve uren"
@@ -212,33 +222,23 @@
         "name": "Wi-Fi RSSI"
       },
       "rtk_sats_num": {
-        "name": "Satellieten"
+        "name": "Satellites"
       },
       "position_mode": {
-        "name": "Positioneringsmodus",
+        "name": "Position mode",
         "state": {
-          "RTK_OVER_DATALINK": "Antenne via DataLink",
-          "RTK_OVER_INTERNET": "Antenne via internet",
+          "RTK_OVER_DATALINK": "Antenna Over Datalink",
+          "RTK_OVER_INTERNET": "Antenna Over Internet",
           "INAVI_NET_RTK": "iNavi NetRTK",
-          "INAVI_RTK_BOX": "iNavi RTK-box"
+          "INAVI_RTK_BOX": "iNavi RTK Box"
         }
       },
       "rtk_app_connect_type": {
-        "name": "Verbindingstype",
+        "name": "Connection type",
         "state": {
-          "UNKNOWN": "Onbekend",
+          "UNKNOWN": "Unknown",
           "CON_BLE": "BLE",
           "CON_WIFI": "Wi-Fi"
-        }
-      },
-      "task_area_status": {
-        "name": "Taakgebied {name}",
-        "state": {
-          "NOT_STARTED": "Niet gestart",
-          "WAITING": "Wachtend",
-          "MOWING": "Aan het maaien",
-          "COMPLETE": "Voltooid",
-          "ABORTED": "Afgebroken"
         }
       }
     },
@@ -365,12 +365,12 @@
         }
       },
       "bypass_mode": {
-        "name": "Obstakeldetectie",
+        "name": "Obstacle detection",
         "state": {
-          "direct_touch": "Uit",
+          "direct_touch": "Off",
           "slow_touch": "Langzame aanraking",
           "less_touch": "Minder aanraking",
-          "no_touch": "Standaard",
+          "no_touch": "Standard",
           "sensitive": "Gevoelig"
         }
       },
@@ -446,10 +446,10 @@
         "name": "Kruishoek"
       },
       "map_offset_lat": {
-        "name": "Kaartoffset breedtegraad"
+        "name": "Map offset latitude"
       },
       "map_offset_lon": {
-        "name": "Kaartoffset lengtegraad"
+        "name": "Map offset longitude"
       }
     },
     "device_tracker": {
@@ -606,8 +606,8 @@
           "description": "Lijst van te maaien gebieden (weergegeven als geheel getal)."
         },
         "plan_only": {
-          "name": "Alleen plannen",
-          "description": "Genereer het maaiplan zonder de taak te starten."
+          "name": "Plan only",
+          "description": "Generate the mowing plan without starting the job."
         }
       }
     },
@@ -640,18 +640,18 @@
       }
     },
     "set_blade_warning_time": {
-      "name": "Meswaartijd instellen",
-      "description": "Stel de waarschuwingstijd voor mesvervanging in uren in.",
+      "name": "Set blade warning time",
+      "description": "Set the blade replacement warning time in hours.",
       "fields": {
         "hours": {
-          "name": "Uren",
-          "description": "Waarschuwingsdrempel in uren voor aanbevolen mesvervanging."
+          "name": "Hours",
+          "description": "Warning threshold in hours before blade replacement is recommended."
         }
       }
     },
     "reset_blade_time": {
-      "name": "Mestijd resetten",
-      "description": "Reset de teller voor de gebruikstijd van het mes."
+      "name": "Reset blade time",
+      "description": "Reset the blade usage time counter."
     }
   },
   "exceptions": {
@@ -677,10 +677,10 @@
       "message": "Verzenden van de opdracht naar de maaier is mislukt."
     },
     "api_limit_exceeded": {
-      "message": "De API-limiet is overschreden."
+      "message": "API rate limit has been exceeded."
     },
     "cloud_setup_failed": {
-      "message": "Kan geen verbinding maken met de Mammotion-cloud. Controleer uw netwerk en probeer de integratie opnieuw te laden."
+      "message": "Unable to connect to the Mammotion cloud. Check your network and try reloading the integration."
     }
   }
 }

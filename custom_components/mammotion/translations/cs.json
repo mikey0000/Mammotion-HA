@@ -9,8 +9,8 @@
       "no_longer_present": "Zařízení již není k dispozici",
       "not_supported": "Zařízení není podporováno",
       "reconfigure_successful": "Rekonfigurace úspěšná",
-      "api_limit_exceeded": "Byl překročen limit požadavků API. Zkuste to prosím znovu později.",
-      "cannot_connect": "Nelze se připojit ke cloudu Mammotion. Zkontrolujte přihlašovací údaje a síť a zkuste to znovu."
+      "api_limit_exceeded": "API rate limit has been exceeded. Please try again later.",
+      "cannot_connect": "Unable to connect to the Mammotion cloud. Check your credentials and network, then try again."
     },
     "flow_title": "{name}",
     "step": {
@@ -119,13 +119,13 @@
         "name": "Satelity L2 (společný výhled)"
       },
       "positioning_mode": {
-        "name": "Poloha RTK"
+        "name": "RTK position"
       },
       "position_type": {
         "name": "Typ pozice zařízení",
         "state": {
           "AREA_BORDER_ON": "At perimeter",
-          "AREA_INSIDE": "Inside area",
+          "AREA_INSIDE": "V oblasti",
           "AREA_OUT": "Outside area",
           "CHANNEL_AREA_OVERLAP": "Path area overlap",
           "CHANNEL_ON": "On path",
@@ -140,13 +140,13 @@
         }
       },
       "visual_positioning_status": {
-        "name": "Stav vizuálního polohování",
+        "name": "Visual positioning status",
         "state": {
-          "SIGNAL_NONE": "Žádný",
-          "SIGNAL_INIT": "Inicializace",
-          "SIGNAL_GOOD": "Dobrý",
-          "SIGNAL_BAD": "Špatný",
-          "SIGNAL_UNKNOWN": "Neznámý"
+          "SIGNAL_NONE": "None",
+          "SIGNAL_INIT": "Initialising",
+          "SIGNAL_GOOD": "Good",
+          "SIGNAL_BAD": "Bad",
+          "SIGNAL_UNKNOWN": "Unknown"
         }
       },
       "activity_mode": {
@@ -178,7 +178,17 @@
         }
       },
       "work_area": {
-        "name": "Aktuální poloha"
+        "name": "Current location"
+      },
+      "task_area_status": {
+        "name": "Task area {name}",
+        "state": {
+          "NOT_STARTED": "Not started",
+          "WAITING": "Waiting",
+          "MOWING": "Mowing",
+          "COMPLETE": "Complete",
+          "ABORTED": "Aborted"
+        }
       },
       "maintenance_distance": {
         "name": "Celková vzdálenost"
@@ -191,10 +201,10 @@
         "unit_of_measurement": "cyklů"
       },
       "blade_used_time": {
-        "name": "Čas použití nože"
+        "name": "Blade used time"
       },
       "blade_used_warn_time": {
-        "name": "Čas varování opotřebení nože"
+        "name": "Blade wear warning time"
       },
       "non_work_hours": {
         "name": "Non-work hours"
@@ -212,33 +222,23 @@
         "name": "WiFi RSSI"
       },
       "rtk_sats_num": {
-        "name": "Satelity"
+        "name": "Satellites"
       },
       "position_mode": {
-        "name": "Režim polohování",
+        "name": "Position mode",
         "state": {
-          "RTK_OVER_DATALINK": "Antena přes DataLink",
-          "RTK_OVER_INTERNET": "Antena přes internet",
+          "RTK_OVER_DATALINK": "Antenna Over Datalink",
+          "RTK_OVER_INTERNET": "Antenna Over Internet",
           "INAVI_NET_RTK": "iNavi NetRTK",
           "INAVI_RTK_BOX": "iNavi RTK Box"
         }
       },
       "rtk_app_connect_type": {
-        "name": "Typ připojení",
+        "name": "Connection type",
         "state": {
-          "UNKNOWN": "Neznámý",
+          "UNKNOWN": "Unknown",
           "CON_BLE": "BLE",
           "CON_WIFI": "Wi-Fi"
-        }
-      },
-      "task_area_status": {
-        "name": "Stav oblasti úkolu {name}",
-        "state": {
-          "NOT_STARTED": "Nezahájeno",
-          "WAITING": "Čeká se",
-          "MOWING": "Sečení",
-          "COMPLETE": "Dokončeno",
-          "ABORTED": "Přerušeno"
         }
       }
     },
@@ -365,9 +365,9 @@
         }
       },
       "bypass_mode": {
-        "name": "Detekce překážek",
+        "name": "Obstacle detection",
         "state": {
-          "direct_touch": "Vypnuto",
+          "direct_touch": "Off",
           "slow_touch": "Pomalý dotek",
           "less_touch": "Méně dotyků",
           "no_touch": "Standard",
@@ -446,10 +446,10 @@
         "name": "Úhel křížení"
       },
       "map_offset_lat": {
-        "name": "Posun mapy – zeměpisná šířka"
+        "name": "Map offset latitude"
       },
       "map_offset_lon": {
-        "name": "Posun mapy – zeměpisná délka"
+        "name": "Map offset longitude"
       }
     },
     "device_tracker": {
@@ -606,8 +606,8 @@
           "description": "Seznam oblastí k sečení (reprezentovaný jako celá čísla)."
         },
         "plan_only": {
-          "name": "Pouze plánování",
-          "description": "Vygenerujte plán sečení bez spuštění úlohy."
+          "name": "Plan only",
+          "description": "Generate the mowing plan without starting the job."
         }
       }
     },
@@ -640,18 +640,18 @@
       }
     },
     "set_blade_warning_time": {
-      "name": "Nastavit čas varování nože",
-      "description": "Nastavit čas varování pro výměnu nože v hodinách.",
+      "name": "Set blade warning time",
+      "description": "Set the blade replacement warning time in hours.",
       "fields": {
         "hours": {
-          "name": "Hodiny",
-          "description": "Práh varování v hodinách před doporučenou výměnou nože."
+          "name": "Hours",
+          "description": "Warning threshold in hours before blade replacement is recommended."
         }
       }
     },
     "reset_blade_time": {
-      "name": "Resetovat čas nože",
-      "description": "Resetovat čítač doby používání nože."
+      "name": "Reset blade time",
+      "description": "Reset the blade usage time counter."
     }
   },
   "exceptions": {
@@ -677,10 +677,10 @@
       "message": "Nepodařilo se odeslat příkaz sekačce."
     },
     "api_limit_exceeded": {
-      "message": "Byl překročen limit požadavků API."
+      "message": "API rate limit has been exceeded."
     },
     "cloud_setup_failed": {
-      "message": "Nelze se připojit ke cloudu Mammotion. Zkontrolujte síť a zkuste integraci znovu načíst."
+      "message": "Unable to connect to the Mammotion cloud. Check your network and try reloading the integration."
     }
   }
 }

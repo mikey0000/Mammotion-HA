@@ -9,8 +9,8 @@
       "no_longer_present": "Enheten finns inte längre",
       "not_supported": "Enheten stöds inte",
       "reconfigure_successful": "Omkonfigurering lyckades",
-      "api_limit_exceeded": "API-anropsgränsen har överskridits. Försök igen senare.",
-      "cannot_connect": "Det går inte att ansluta till Mammotion-molnet. Kontrollera dina inloggningsuppgifter och nätverket och försök igen."
+      "api_limit_exceeded": "API rate limit has been exceeded. Please try again later.",
+      "cannot_connect": "Unable to connect to the Mammotion cloud. Check your credentials and network, then try again."
     },
     "flow_title": "{name}",
     "step": {
@@ -124,61 +124,71 @@
       "position_type": {
         "name": "Typ av enhet",
         "state": {
-          "AREA_BORDER_ON": "At perimeter",
-          "AREA_INSIDE": "Inside area",
-          "AREA_OUT": "Outside area",
+          "AREA_BORDER_ON": "Vid områdets yttre gräns",
+          "AREA_INSIDE": "Inne i området",
+          "AREA_OUT": "Utanför området",
           "CHANNEL_AREA_OVERLAP": "Path area overlap",
           "CHANNEL_ON": "On path",
-          "CHARGE_ON": "At charging station",
-          "DUMPING_AREA_INSIDE": "In dump area",
-          "DUMPING_OUTSIDE": "Outside dump area",
-          "ABNORMAL_POSITIONING": "Position error",
-          "NO_AREAS": "No areas defined",
-          "OBS_ON": "At obstacle",
-          "TURN_AREA_INSIDE": "In turn area",
-          "VIRTUAL_INSIDE": "In virtual area"
+          "CHARGE_ON": "Vid laddningsstationen",
+          "DUMPING_AREA_INSIDE": "I dumpområde",
+          "DUMPING_OUTSIDE": "Utanför dumpområde",
+          "ABNORMAL_POSITIONING": "Positionsfel",
+          "NO_AREAS": "Inga områden är definierade",
+          "OBS_ON": "Vid hinder",
+          "TURN_AREA_INSIDE": "Inom svängområdet",
+          "VIRTUAL_INSIDE": "I virtuellt område"
         }
       },
       "visual_positioning_status": {
-        "name": "Visuell positioneringsstatus",
+        "name": "Visual positioning status",
         "state": {
-          "SIGNAL_NONE": "Ingen",
-          "SIGNAL_INIT": "Initialiserar",
-          "SIGNAL_GOOD": "Bra",
-          "SIGNAL_BAD": "Dålig",
-          "SIGNAL_UNKNOWN": "Okänd"
+          "SIGNAL_NONE": "None",
+          "SIGNAL_INIT": "Initialising",
+          "SIGNAL_GOOD": "Good",
+          "SIGNAL_BAD": "Bad",
+          "SIGNAL_UNKNOWN": "Unknown"
         }
       },
       "activity_mode": {
         "name": "Aktivitetsläge",
         "state": {
-          "MODE_NOT_ACTIVE": "Not active",
-          "MODE_ONLINE": "Online",
-          "MODE_OFFLINE": "Offline",
-          "MODE_DISABLE": "Disabled",
-          "MODE_INITIALIZATION": "Initializing",
-          "MODE_READY": "Ready",
-          "MODE_WORKING": "Working",
-          "MODE_RETURNING": "Returning",
-          "MODE_CHARGING": "Charging",
-          "MODE_UPDATING": "Updating",
-          "MODE_LOCK": "Locked",
-          "MODE_PAUSE": "Paused",
-          "MODE_MANUAL_MOWING": "Manual mowing",
-          "MODE_UPDATE_SUCCESS": "Update successful",
-          "MODE_OTA_UPGRADE_FAIL": "Update failed",
+          "MODE_NOT_ACTIVE": "Ej aktiv",
+          "MODE_ONLINE": "Uppkopplad",
+          "MODE_OFFLINE": "Nedkopplad",
+          "MODE_DISABLE": "Deaktiverad",
+          "MODE_INITIALIZATION": "Initierar…",
+          "MODE_READY": "Klar",
+          "MODE_WORKING": "Arbetar",
+          "MODE_RETURNING": "Återvänder",
+          "MODE_CHARGING": "Laddar",
+          "MODE_UPDATING": "Uppdatering",
+          "MODE_LOCK": "Låst",
+          "MODE_PAUSE": "Pausad",
+          "MODE_MANUAL_MOWING": "Manuell klippning",
+          "MODE_UPDATE_SUCCESS": "Uppdatering lyckades",
+          "MODE_OTA_UPGRADE_FAIL": "Uppdatering misslyckades",
           "MODE_JOB_DRAW": "Drawing job",
           "MODE_OBSTACLE_DRAW": "Drawing obstacles",
           "MODE_CHANNEL_DRAW": "Drawing channel",
           "MODE_ERASER_DRAW": "Drawing eraser",
-          "MODE_EDIT_BOUNDARY": "Editing boundary",
-          "MODE_LOCATION_ERROR": "Location error",
-          "MODE_BOUNDARY_JUMP": "Boundary crossed",
-          "MODE_CHARGING_PAUSE": "Charging paused"
+          "MODE_EDIT_BOUNDARY": "Redigera gräns",
+          "MODE_LOCATION_ERROR": "Platsfel",
+          "MODE_BOUNDARY_JUMP": "Gränsen korsad",
+          "MODE_CHARGING_PAUSE": "Laddningen pausad"
         }
       },
       "work_area": {
-        "name": "Aktuell plats"
+        "name": "Current location"
+      },
+      "task_area_status": {
+        "name": "Task area {name}",
+        "state": {
+          "NOT_STARTED": "Not started",
+          "WAITING": "Waiting",
+          "MOWING": "Mowing",
+          "COMPLETE": "Complete",
+          "ABORTED": "Aborted"
+        }
       },
       "maintenance_distance": {
         "name": "Total körsträcka"
@@ -191,13 +201,13 @@
         "unit_of_measurement": "cykler"
       },
       "blade_used_time": {
-        "name": "Bladanvändningstid"
+        "name": "Blade used time"
       },
       "blade_used_warn_time": {
-        "name": "Bladslitagevarningstid"
+        "name": "Blade wear warning time"
       },
       "non_work_hours": {
-        "name": "Non-work hours"
+        "name": "Icke-arbetstimmar"
       },
       "rtk_lora": {
         "name": "LoRa-version"
@@ -212,33 +222,23 @@
         "name": "Wi-Fi RSSI"
       },
       "rtk_sats_num": {
-        "name": "Satelliter"
+        "name": "Satellites"
       },
       "position_mode": {
-        "name": "Positioneringsläge",
+        "name": "Position mode",
         "state": {
-          "RTK_OVER_DATALINK": "Antenn över DataLink",
-          "RTK_OVER_INTERNET": "Antenn över internet",
+          "RTK_OVER_DATALINK": "Antenna Over Datalink",
+          "RTK_OVER_INTERNET": "Antenna Over Internet",
           "INAVI_NET_RTK": "iNavi NetRTK",
-          "INAVI_RTK_BOX": "iNavi RTK-box"
+          "INAVI_RTK_BOX": "iNavi RTK Box"
         }
       },
       "rtk_app_connect_type": {
-        "name": "Anslutningstyp",
+        "name": "Connection type",
         "state": {
-          "UNKNOWN": "Okänd",
+          "UNKNOWN": "Unknown",
           "CON_BLE": "BLE",
           "CON_WIFI": "Wi-Fi"
-        }
-      },
-      "task_area_status": {
-        "name": "Uppgiftsområde {name}",
-        "state": {
-          "NOT_STARTED": "Inte startat",
-          "WAITING": "Väntar",
-          "MOWING": "Klipper",
-          "COMPLETE": "Slutfört",
-          "ABORTED": "Avbrutet"
         }
       }
     },
@@ -247,7 +247,7 @@
         "name": "Synkronisera kartor"
       },
       "start_schedule_sync": {
-        "name": "Synchronize schedules"
+        "name": "Synkronisera scheman"
       },
       "resync_rtk_dock": {
         "name": "Synkronisera RTK och laddstationen"
@@ -277,7 +277,7 @@
         "name": "Flytta laddstation"
       },
       "restart_mower": {
-        "name": "Restart mower"
+        "name": "Starta om gräsklipparen"
       }
     },
     "switch": {
@@ -365,9 +365,9 @@
         }
       },
       "bypass_mode": {
-        "name": "Hinderdetektering",
+        "name": "Obstacle detection",
         "state": {
-          "direct_touch": "Av",
+          "direct_touch": "Off",
           "slow_touch": "Långsam kontakt",
           "less_touch": "Mindre kontakt",
           "no_touch": "Standard",
@@ -446,10 +446,10 @@
         "name": "Korsningsvinkel"
       },
       "map_offset_lat": {
-        "name": "Kartoffset latitud"
+        "name": "Map offset latitude"
       },
       "map_offset_lon": {
-        "name": "Kartoffset longitud"
+        "name": "Map offset longitude"
       }
     },
     "device_tracker": {
@@ -522,8 +522,8 @@
       "description": "Starta klippningen med anpassade inställningar.",
       "fields": {
         "modify": {
-          "name": "Modify existing job",
-          "description": "Whether to modify an existing job or start a new one."
+          "name": "Ändra befintligt jobb",
+          "description": "Om du vill ändra ett befintligt jobb eller starta ett nytt."
         },
         "is_mow": {
           "name": "Klipper",
@@ -606,8 +606,8 @@
           "description": "Lista över områden att klippa (representeras som heltal)."
         },
         "plan_only": {
-          "name": "Planera endast",
-          "description": "Generera klippplanen utan att starta uppgiften."
+          "name": "Plan only",
+          "description": "Generate the mowing plan without starting the job."
         }
       }
     },
@@ -626,32 +626,32 @@
       }
     },
     "set_non_work_hours": {
-      "name": "Set non-work hours",
-      "description": "Set the hours when the mower is not working.",
+      "name": "Ange icke-arbetstimmar",
+      "description": "Ställ in timmarna när gräsklipparen inte arbetar.",
       "fields": {
         "start_time": {
-          "name": "Start time",
-          "description": "Start time of the non-work hours."
+          "name": "Starttid",
+          "description": "Starttid för icke-arbetstid."
         },
         "end_time": {
-          "name": "End time",
-          "description": "End time of the non-work hours."
+          "name": "Sluttid",
+          "description": "Sluttid för icke-arbetstid."
         }
       }
     },
     "set_blade_warning_time": {
-      "name": "Ange varningstid för blad",
-      "description": "Ange varningstiden för bladbyte i timmar.",
+      "name": "Set blade warning time",
+      "description": "Set the blade replacement warning time in hours.",
       "fields": {
         "hours": {
-          "name": "Timmar",
-          "description": "Varningströskel i timmar innan bladbyte rekommenderas."
+          "name": "Hours",
+          "description": "Warning threshold in hours before blade replacement is recommended."
         }
       }
     },
     "reset_blade_time": {
-      "name": "Återställ bladtid",
-      "description": "Återställ räknaren för bladanvändningstid."
+      "name": "Reset blade time",
+      "description": "Reset the blade usage time counter."
     }
   },
   "exceptions": {
@@ -677,10 +677,10 @@
       "message": "Det gick inte att skicka kommandot till gräsklipparen."
     },
     "api_limit_exceeded": {
-      "message": "API-anropsgränsen har överskridits."
+      "message": "API rate limit has been exceeded."
     },
     "cloud_setup_failed": {
-      "message": "Det går inte att ansluta till Mammotion-molnet. Kontrollera nätverket och försök att läsa in integrationen på nytt."
+      "message": "Unable to connect to the Mammotion cloud. Check your network and try reloading the integration."
     }
   }
 }

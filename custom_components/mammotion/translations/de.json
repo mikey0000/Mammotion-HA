@@ -2,27 +2,27 @@
   "config": {
     "abort": {
       "already_configured": "Das Gerät ist bereits konfiguriert",
-      "already_in_progress": "Der Konfigurationsprozess läuft bereits",
-      "no_devices_found": "Es wurden keine Geräte gefunden",
-      "no_devices_found_in_account": "Es wurden keine Geräte in deinem Account gefunden",
-      "bluetooth_and_account_mismatch": "Es wurde kein Bluetooth-Gerät in deinem Account gefunden",
-      "no_longer_present": "Das Gerät ist nicht länger verfügbar",
-      "not_supported": "Das Gerät wird nicht unterstützt",
-      "reconfigure_successful": "Die Neukonfiguration war erfolgreich",
-      "api_limit_exceeded": "Das API-Anfragelimit wurde überschritten. Bitte versuchen Sie es später erneut.",
-      "cannot_connect": "Verbindung zur Mammotion-Cloud nicht möglich. Überprüfen Sie Ihre Anmeldedaten und das Netzwerk und versuchen Sie es erneut."
+      "already_in_progress": "Der Einrichtungsprozess läuft bereits.",
+      "no_devices_found": "Es wurden keine Geräte gefunden.",
+      "no_devices_found_in_account": "Es wurden keine Geräte in deinem Mammotion-Konto gefunden.",
+      "bluetooth_and_account_mismatch": "Es wurde kein Bluetooth-Gerät in deinem Mammotion-Konto gefunden.",
+      "no_longer_present": "Das Gerät ist nicht länger verfügbar.",
+      "not_supported": "Das Gerät wird nicht unterstützt.",
+      "reconfigure_successful": "Die Neueinrichtung war erfolgreich.",
+      "api_limit_exceeded": "API rate limit has been exceeded. Please try again later.",
+      "cannot_connect": "Unable to connect to the Mammotion cloud. Check your credentials and network, then try again."
     },
     "flow_title": "{name}",
     "step": {
       "bluetooth_confirm": {
-        "description": "Konfiguriere {name}",
+        "description": "{name} einrichten",
         "data": {
           "stay_connected_bluetooth": "Bluetooth-Verbindung aufrechterhalten"
         }
       },
       "reconfigure": {
         "data": {
-          "use_wifi": "Verwende Wi-Fi",
+          "use_wifi": "WLAN verwenden",
           "account_name": "Mammotion E-Mail oder Account Nummer",
           "password": "Mammotion Kennwort"
         }
@@ -32,7 +32,7 @@
           "address": "Gerät",
           "stay_connected_bluetooth": "Bluetooth-Verbindung aufrechterhalten"
         },
-        "description": "Wähle deinen Mähroboter"
+        "description": "Bitte wähle deinen Mähroboter aus."
       },
       "wifi": {
         "data": {
@@ -74,22 +74,22 @@
         "name": "Batterie"
       },
       "ble_rssi": {
-        "name": "BLE RSSI"
+        "name": "Bluetooth Signalqualität (RSSI)"
       },
       "camera_brightness": {
-        "name": "Kamera Helligkeit"
+        "name": "Kamerahelligkeit"
       },
       "wifi_rssi": {
-        "name": "Wi-Fi RSSI"
+        "name": "WLAN Signalqualität (RSSI)"
       },
       "mnet_rssi": {
-        "name": "Mobilfunk RSSI"
+        "name": "Mobilfunk Signalqualität (RSSI)"
       },
       "connect_type": {
         "name": "Verbindungsart"
       },
       "gps_stars": {
-        "name": "Satelliten (Roboter)"
+        "name": "Satelliten (Mähroboter)"
       },
       "blade_height": {
         "name": "Schnitthöhe"
@@ -104,7 +104,7 @@
         "name": "Fortschritt"
       },
       "total_time": {
-        "name": "Gesamtzeit"
+        "name": "Aufgabendauer"
       },
       "elapsed_time": {
         "name": "Vergangene Zeit"
@@ -119,38 +119,38 @@
         "name": "L2 Satelliten (Co-Viewing)"
       },
       "positioning_mode": {
-        "name": "RTK Position"
+        "name": "RTK position"
       },
       "position_type": {
-        "name": "Typ der Gerätepositionierung",
+        "name": "Positionstyp",
         "state": {
-          "AREA_BORDER_ON": "Auf Perimeter",
-          "AREA_INSIDE": "Innerhalb Fläche",
-          "AREA_OUT": "Außerhalb Fläche",
-          "CHANNEL_AREA_OVERLAP": "Pfade überlappen",
-          "CHANNEL_ON": "Auf Pfad",
-          "CHARGE_ON": "Ladestation",
-          "DUMPING_AREA_INSIDE": "Innerhalb Ablagefläche",
-          "DUMPING_OUTSIDE": "Außerhalb Ablagefläche",
-          "ABNORMAL_POSITIONING": "Positionierungsfehler",
-          "NO_AREAS": "Keine Flächen gefunden",
-          "OBS_ON": "An Hindernis",
-          "TURN_AREA_INSIDE": "In Wendebereich",
-          "VIRTUAL_INSIDE": "In virtueller Fläche"
+          "AREA_BORDER_ON": "Auf der Eingrenzung",
+          "AREA_INSIDE": "Innerhalb des Bereiches",
+          "AREA_OUT": "Außerhalb des Bereiches",
+          "CHANNEL_AREA_OVERLAP": "Schnittbereich überlappen",
+          "CHANNEL_ON": "Auf der Passage\n",
+          "CHARGE_ON": "An der Ladestation",
+          "DUMPING_AREA_INSIDE": "Innerhalb des Entleerungsbereiches",
+          "DUMPING_OUTSIDE": "Außerhalb des Entleerungsbereiches\n",
+          "ABNORMAL_POSITIONING": "Positionsfehler",
+          "NO_AREAS": "Keine Bereiche gefunden",
+          "OBS_ON": "Vor einem Hindernis",
+          "TURN_AREA_INSIDE": "Innerhalb des Wendebereichs",
+          "VIRTUAL_INSIDE": "Innerhalb des virtuellen Bereichs"
         }
       },
       "visual_positioning_status": {
-        "name": "Status der visuellen Positionierung",
+        "name": "Visual positioning status",
         "state": {
-          "SIGNAL_NONE": "Keiner",
-          "SIGNAL_INIT": "Initialisiert",
-          "SIGNAL_GOOD": "Gut",
-          "SIGNAL_BAD": "Schlecht",
-          "SIGNAL_UNKNOWN": "Unbekannt"
+          "SIGNAL_NONE": "None",
+          "SIGNAL_INIT": "Initialising",
+          "SIGNAL_GOOD": "Good",
+          "SIGNAL_BAD": "Bad",
+          "SIGNAL_UNKNOWN": "Unknown"
         }
       },
       "activity_mode": {
-        "name": "Aktivitätsmodus",
+        "name": "Status",
         "state": {
           "MODE_NOT_ACTIVE": "Nicht aktiv",
           "MODE_ONLINE": "Online",
@@ -159,95 +159,95 @@
           "MODE_INITIALIZATION": "Initialisiere",
           "MODE_READY": "Bereit",
           "MODE_WORKING": "Arbeitet",
-          "MODE_RETURNING": "Rückkehr",
+          "MODE_RETURNING": "Fährt zur Ladestation",
           "MODE_CHARGING": "Lädt",
-          "MODE_UPDATING": "Update",
+          "MODE_UPDATING": "Wird aktualisiert",
           "MODE_LOCK": "Gesperrt",
           "MODE_PAUSE": "Pausiert",
           "MODE_MANUAL_MOWING": "Manuelles Mähen",
-          "MODE_UPDATE_SUCCESS": "Update erfolgreich",
-          "MODE_OTA_UPGRADE_FAIL": "Update fehlgeschlagen",
-          "MODE_JOB_DRAW": "Richte Job ein",
-          "MODE_OBSTACLE_DRAW": "Richte Hindernisse ein",
-          "MODE_CHANNEL_DRAW": "Richte Kanal ein",
-          "MODE_ERASER_DRAW": "Richte Löschung ein",
-          "MODE_EDIT_BOUNDARY": "Editing boundary",
-          "MODE_LOCATION_ERROR": "Platzierungsfehler",
-          "MODE_BOUNDARY_JUMP": "Boundary crossed",
+          "MODE_UPDATE_SUCCESS": "Aktualisierung erfolgreich",
+          "MODE_OTA_UPGRADE_FAIL": "Aktualisierung fehlgeschlagen",
+          "MODE_JOB_DRAW": "Bereich erstellen",
+          "MODE_OBSTACLE_DRAW": "No-Go-Zone erstellen",
+          "MODE_CHANNEL_DRAW": "Passage erstellen",
+          "MODE_ERASER_DRAW": "Muster erstellen",
+          "MODE_EDIT_BOUNDARY": "Begrenzung anpassen",
+          "MODE_LOCATION_ERROR": "Fehler bei der Standortbestimmung",
+          "MODE_BOUNDARY_JUMP": "Begrenzung überschritten",
           "MODE_CHARGING_PAUSE": "Laden pausiert"
         }
       },
       "work_area": {
-        "name": "Aktueller Standort"
+        "name": "Current location"
+      },
+      "task_area_status": {
+        "name": "Task area {name}",
+        "state": {
+          "NOT_STARTED": "Not started",
+          "WAITING": "Waiting",
+          "MOWING": "Mowing",
+          "COMPLETE": "Complete",
+          "ABORTED": "Aborted"
+        }
       },
       "maintenance_distance": {
-        "name": "Gesamtkilometerstand"
+        "name": "Fahrleistung gesamt"
       },
       "maintenance_work_time": {
-        "name": "Aufgabendauer"
+        "name": "Arbeitszeit gesamt"
       },
       "maintenance_bat_cycles": {
         "name": "Batteriezyklen",
         "unit_of_measurement": "Zyklen"
       },
       "blade_used_time": {
-        "name": "Messernutzungszeit"
+        "name": "Blade used time"
       },
       "blade_used_warn_time": {
-        "name": "Messerverschleiß-Warnzeit"
+        "name": "Blade wear warning time"
       },
       "non_work_hours": {
-        "name": "Arbeitsfreie Zeit"
+        "name": "Ruhezeit"
       },
       "rtk_lora": {
         "name": "LoRa Version"
       },
       "rtk_latitude": {
-        "name": "Breitengrad"
+        "name": "RTK Breitengrad"
       },
       "rtk_longitude": {
-        "name": "Längengrad"
+        "name": "RTK Längengrad"
       },
       "rtk_wifi_rssi": {
-        "name": "Wi-Fi RSSI"
+        "name": "WLAN Signalqualität (RSSI)"
       },
       "rtk_sats_num": {
-        "name": "Satelliten"
+        "name": "Satellites"
       },
       "position_mode": {
-        "name": "Positionierungsmodus",
+        "name": "Position mode",
         "state": {
-          "RTK_OVER_DATALINK": "Antenne über DataLink",
-          "RTK_OVER_INTERNET": "Antenne über Internet",
+          "RTK_OVER_DATALINK": "Antenna Over Datalink",
+          "RTK_OVER_INTERNET": "Antenna Over Internet",
           "INAVI_NET_RTK": "iNavi NetRTK",
-          "INAVI_RTK_BOX": "iNavi RTK-Box"
+          "INAVI_RTK_BOX": "iNavi RTK Box"
         }
       },
       "rtk_app_connect_type": {
-        "name": "Verbindungstyp",
+        "name": "Connection type",
         "state": {
-          "UNKNOWN": "Unbekannt",
+          "UNKNOWN": "Unknown",
           "CON_BLE": "BLE",
-          "CON_WIFI": "WLAN"
-        }
-      },
-      "task_area_status": {
-        "name": "Aufgabenbereich {name}",
-        "state": {
-          "NOT_STARTED": "Nicht gestartet",
-          "WAITING": "Wartend",
-          "MOWING": "Mäht",
-          "COMPLETE": "Abgeschlossen",
-          "ABORTED": "Abgebrochen"
+          "CON_WIFI": "Wi-Fi"
         }
       }
     },
     "button": {
       "start_map_sync": {
-        "name": "Synchronisiere Karte"
+        "name": "Synchronisiere Karten"
       },
       "start_schedule_sync": {
-        "name": "Synchronisiere Zeitplan"
+        "name": "Synchronisiere Zeitpläne"
       },
       "resync_rtk_dock": {
         "name": "Synchronisiere RTK und Ladestation"
@@ -277,7 +277,7 @@
         "name": "Ladestation umsetzen"
       },
       "restart_mower": {
-        "name": "Restart mower"
+        "name": "Mähroboter neustarten"
       }
     },
     "switch": {
@@ -285,31 +285,31 @@
         "name": "Bereich {name}"
       },
       "blade_status": {
-        "name": "Klingen An/Aus"
+        "name": "Mähwerk ein/aus"
       },
       "is_mow": {
-        "name": "Mähen An/Aus"
+        "name": "Mähen ein/aus"
       },
       "is_dump": {
-        "name": "Gras sammeln"
+        "name": "Grasschnitt sammeln ein/aus"
       },
       "is_edge": {
-        "name": "Kanten schneiden"
+        "name": "Kantenschnitt"
       },
       "rain_tactics": {
-        "name": "Regenerkennung (beim Mähen)"
+        "name": "Regenerkennung (beim Mähen) ein/aus"
       },
       "rain_detection": {
-        "name": "Regenerkennung (Roboter)"
+        "name": "Regenerkennung (Mähroboter) ein/aus"
       },
       "side_led": {
-        "name": "Seitenlicht"
+        "name": "LED-Seitenlicht ein/aus"
       },
       "perimeter_first_on_off": {
-        "name": "Zuerst den Umfang"
+        "name": "Eingrenzung zuerst"
       },
       "schedule_updates": {
-        "name": "Updates ein-/ausschalten"
+        "name": "Automatische Updates ein/aus"
       },
       "bluetooth_enabled": {
         "name": "Bluetooth"
@@ -318,10 +318,10 @@
         "name": "Cloud"
       },
       "manual_light": {
-        "name": "Manuelles Licht an/aus"
+        "name": "Manuelles Licht ein/aus"
       },
       "night_light": {
-        "name": "Automatische Beleuchtung ein/aus"
+        "name": "Nachtlicht ein/aus"
       },
       "voice_on_off": {
         "name": "Sprache ein/aus"
@@ -329,16 +329,16 @@
     },
     "select": {
       "channel_mode": {
-        "name": "Navigationsmodus",
+        "name": "Schnittbahnenmodus",
         "state": {
-          "single_grid": "Einzelnes Raster",
-          "double_grid": "Doppeltes Raster",
-          "segment_grid": "Segment Raster",
-          "no_grid": "Kein Raster"
+          "single_grid": "Zick-Zack-Modus",
+          "double_grid": "Schachbrett-Modus",
+          "segment_grid": "Adaptiver Zick-Zack-Modus",
+          "no_grid": "Nur Eingrenzung"
         }
       },
       "mowing_laps": {
-        "name": "Patrouillenrunden für den seitlichen Rasenschnitt",
+        "name": "Umrundungsanzahl für Eingrenzung",
         "state": {
           "none": "Keine",
           "one": "Eine",
@@ -348,7 +348,7 @@
         }
       },
       "obstacle_laps": {
-        "name": "Patrouillenrunden für Mähen von No-Go-Zonen",
+        "name": "Umrundungsanzahl für No-Go-Zonen",
         "state": {
           "none": "Keine",
           "one": "Eine",
@@ -358,16 +358,16 @@
         }
       },
       "border_mode": {
-        "name": "Ausführungsreihenfolge des Pfades",
+        "name": "Mähreihenfolge",
         "state": {
-          "border_first": "Zuerst den Umfang",
-          "grid_first": "Zuerst das Raster"
+          "border_first": "Eingrenzung zuerst",
+          "grid_first": "Zick-Zack-/Schachbrett-Fläche zuerst"
         }
       },
       "bypass_mode": {
-        "name": "Hinderniserkennung",
+        "name": "Obstacle detection",
         "state": {
-          "direct_touch": "Aus",
+          "direct_touch": "Off",
           "slow_touch": "Langsame Berührung",
           "less_touch": "Weniger Berührung",
           "no_touch": "Standard",
@@ -375,25 +375,25 @@
         }
       },
       "cutting_angle_mode": {
-        "name": "Wegwinkel Modus",
+        "name": "Winkel für Schnittbahnenmodus",
         "state": {
-          "relative_angle": "Relativer Winkel",
-          "absolute_angle": "Absoluter Winkel",
-          "random_angle": "Zufälliger Winkel"
+          "relative_angle": "Optimal",
+          "absolute_angle": "Benutzerdefiniert",
+          "random_angle": "Zufällig"
         }
       },
       "traversal_mode": {
-        "name": "Aufladungsmodus",
+        "name": "Ladestrecke",
         "state": {
           "direct": "Direkt",
-          "follow_perimeter": "Dem Umfang folgen"
+          "follow_perimeter": "Der Eingrenzung folgend"
         }
       },
       "turning_mode": {
         "name": "Wendemodus",
         "state": {
-          "multipoint": "Mehrpunkt-Wendung",
-          "zero_turn": "Nullwendung"
+          "multipoint": "Mehr-Punkt-Drehung",
+          "zero_turn": "Null-Punkt-Drehung"
         }
       },
       "cutter_mode": {
@@ -431,36 +431,36 @@
         "name": "Schnitthöhe"
       },
       "working_speed": {
-        "name": "Aufgabengeschwindigkeit"
+        "name": "Arbeitsgeschwindigkeit"
       },
       "cutting_angle": {
-        "name": "Wegwinkel"
+        "name": "Schnittbahnenwinkel"
       },
       "path_spacing": {
-        "name": "Wegabstand"
+        "name": "Schnittbahnenabstand"
       },
       "dumping_interval": {
-        "name": "Intervall für das Entleeren"
+        "name": "Entleerungsintervall"
       },
       "toward_included_angle": {
-        "name": "Kreuzungswinkel"
+        "name": "Schnittwinkel"
       },
       "map_offset_lat": {
-        "name": "Kartenversatz Breitengrad"
+        "name": "Map offset latitude"
       },
       "map_offset_lon": {
-        "name": "Kartenversatz Längengrad"
+        "name": "Map offset longitude"
       }
     },
     "device_tracker": {
-      "name": "Geräte Standort"
+      "name": "Geräteverfolgung"
     }
   },
   "selector": {
     "border_mode": {
       "options": {
-        "0": "Umfang zuerst",
-        "1": "Fläche zuerst"
+        "0": "Eingrenzung zuerst",
+        "1": "Zick-Zack-/Schachbrett-Muster zuerst"
       }
     },
     "ultra_wave": {
@@ -474,10 +474,10 @@
     },
     "channel_mode": {
       "options": {
-        "0": "Zigzag Muster",
-        "1": "Schachbrett Muster",
-        "2": "Adaptives Zigzag Muster",
-        "3": "Nur Umfang"
+        "0": "Zick-Zack-Modus",
+        "1": "Schachbrett-Modus",
+        "2": "Adaptiver Zick-Zack-Modus",
+        "3": "Nur Eingrenzung"
       }
     },
     "rain_tactics": {
@@ -488,9 +488,9 @@
     },
     "toward_mode": {
       "options": {
-        "0": "Relativer Winkel",
-        "1": "Absoluter Winkel",
-        "2": "Zufälliger Winkel"
+        "0": "Optimal",
+        "1": "Benutzerdefiniert",
+        "2": "Zufällig"
       }
     },
     "mowing_laps": {
@@ -518,56 +518,56 @@
       "description": "Stoppt den Mähroboter und bereinigt die aktuelle Aufgabe."
     },
     "start_mow": {
-      "name": "Starte Mähvorgang",
-      "description": "Startet einen Mähvorgang mit individuellen Einstellungen.",
+      "name": "Mähvorgang starten",
+      "description": "Startet den Mähvorgang mit individuellen Einstellungen.",
       "fields": {
         "modify": {
-          "name": "Modify existing job",
-          "description": "Whether to modify an existing job or start a new one."
+          "name": "Bestehende Aufgabe ändern",
+          "description": "Gibt an, ob eine bestehende Aufgabe geändert oder eine neue gestartet werden soll."
         },
         "is_mow": {
           "name": "Mähen",
-          "description": "Gibt an, ob Mähen aktiviert ist. (Yuka)."
+          "description": "Gibt an, ob der Modus für das Mähen aktiv ist. (Yuka)"
         },
         "is_dump": {
-          "name": "Gras sammeln",
-          "description": "Gibt an, ob Gras sammeln aktiviert ist. (Yuka)."
+          "name": "Grasschnitt sammeln",
+          "description": "Gibt an, ob der Modus für das Grasschnittsammeln aktiv ist. (Yuka)"
         },
         "is_edge": {
-          "name": "Kanten schneiden",
-          "description": "Gibt an, ob der Modus zum Kanten schneiden aktiv ist. (Yuka)."
+          "name": "Kantenschnitt",
+          "description": "Gibt an, ob der Modus für den Kantenschnitt aktiv ist. (Yuka)"
         },
         "collect_grass_frequency": {
-          "name": "Intervall für das Entleeren",
-          "description": "Häufigkeit für das Auffangen von Gras (in Quadratmetern). (Yuka)."
+          "name": "Intervall für das Grasschnittsammeln",
+          "description": "Gibt an, wie oft Grasschnitt gesammelt wird (in Quadratmetern). (Yuka)"
         },
         "border_mode": {
-          "name": "Ausführungsreihenfolge des Pfades",
-          "description": "Pfadreihenfolge fürs Mähen (zuerst Perimeter oder Raster)."
+          "name": "Mähreihenfolge",
+          "description": "Gibt an, in welcher Reihenfolge gemäht wird. (zuerst Eingrenzung oder Fläche)"
         },
         "job_version": {
-          "name": "Job Version",
-          "description": "Version des Jobs."
+          "name": "Aufgaben-Version",
+          "description": "Gibt die Version der Aufgabe an."
         },
         "job_id": {
-          "name": "Job ID",
-          "description": "ID des Jobs."
+          "name": "Aufgaben-ID",
+          "description": "Gibt die ID der Aufgabe an."
         },
         "speed": {
           "name": "Geschwindigkeit",
-          "description": "Geschwindigkeit beim Mähen."
+          "description": "Gibt an, welche Geschwindigkeit beim Mähen verwendet wird."
         },
         "ultra_wave": {
-          "name": "Modus der Hinderniserkennung",
-          "description": "Bypass Strategie / Modus der Hinderniserkennung beim Mähen."
+          "name": "Hinderniserkennung",
+          "description": "Gibt an, welcher Modus der Hinderniserkennung beim Mähen aktiviert ist."
         },
         "channel_mode": {
-          "name": "Navigationsmodus",
-          "description": "Raster für die Navigation (Einzel, Doppel, Segment oder kein Raster)."
+          "name": "Schnittbahnenmodus",
+          "description": "Gibt an, welcher Modus für die Schnittbahnennavigation eingestellt ist. (Zick-Zack, Schachbrett, Adaptives Zick-Zack oder nur Eingrenzung)"
         },
         "channel_width": {
-          "name": "Wegabstand",
-          "description": "Wähle den Wegabstand (in cm)."
+          "name": "Schnittbahnenabstand",
+          "description": "Gibt an, welcher Abstand zwischen den einzelnen Schnittbahnen eingehalten wird. (in cm)"
         },
         "rain_tactics": {
           "name": "Regenerkennung",
@@ -575,83 +575,83 @@
         },
         "blade_height": {
           "name": "Schnitthöhe",
-          "description": "Gewünschte Schnitthöhe."
+          "description": "Gibt an, welche Schnitthöhe für den Mähvorgang eingestellt ist."
         },
         "toward": {
-          "name": "Wegwinkel",
-          "description": "Wegwinkel für das Mähen."
+          "name": "Schnittbahnenwinkel",
+          "description": "Gibt an, welcher Anfangswinkel für das Mähen verwendet wird."
         },
         "toward_included_angle": {
-          "name": "Wegwinkel im Verhältnis zum Raster",
-          "description": "Ändern des zweiten Winkels bei Auswahl eines Rasters."
+          "name": "Kreuzungswinkel",
+          "description": "Gibt an, welcher Kreuzungswinkel im Schachbrett-Modus verwendet wird. (Standardwert ist 90 Grad)"
         },
         "toward_mode": {
-          "name": "Wegwinkel Modus",
-          "description": "Wähle den Modus für den Wegwinkel."
+          "name": "Schnittwinkelmodus",
+          "description": "Gibt an, welche Mährichtung verwendet wird."
         },
         "mowing_laps": {
-          "name": "Patrouillenrunden für den seitlichen Rasenschnitt",
-          "description": "Anzahl der Runden für den seitlichen Rasenschnitt."
+          "name": "Umrundungsanzahl für Eingrenzung",
+          "description": "Gibt an, wie viele Runden entlang der Eingrenzung des Mähbereichs durchgeführt werden."
         },
         "obstacle_laps": {
-          "name": "Mähen von No-Go-Zonen",
-          "description": "Anzahl der Runden rund um Hindernisse."
+          "name": "Rundenanzahl für No-Go-Zonen",
+          "description": "Gibt an, wie viele Runden entlang der No-Go-Zonen durchgeführt werden."
         },
         "start_progress": {
           "name": "Fortschritt beim Start",
-          "description": "Fortschritt beim Start in Prozent."
+          "description": "Gibt an, welcher prozentuale Fortschritt beim Start einer Aufgabe festgelegt wird."
         },
         "areas": {
-          "name": "Bereiche",
-          "description": "Auswahl der zu mähenden Bereiche."
+          "name": "Bereichsauswahl",
+          "description": "Gibt an, welche zu mähenden Bereiche ausgewählt werden können."
         },
         "plan_only": {
-          "name": "Nur planen",
-          "description": "Mähplan erstellen, ohne den Auftrag zu starten."
+          "name": "Plan only",
+          "description": "Generate the mowing plan without starting the job."
         }
       }
     },
     "start_stop_blades": {
-      "name": "Starte oder stoppe Klingen",
-      "description": "Klingen manuell starten oder stoppen.",
+      "name": "Mähwerk starten oder stoppen",
+      "description": "Manuelles Starten oder Stoppen des Mähwerks",
       "fields": {
         "start_stop": {
-          "name": "Start oder Stopp",
-          "description": "Ob Klingen an oder aus."
+          "name": "Gestartet oder Gestoppt",
+          "description": "Gibt an, ob das Mähwerk gestartet oder gestoppt wurde."
         },
         "blade_height": {
           "name": "Schnitthöhe",
-          "description": "Höhe der Klinge"
+          "description": "Gibt an, welche Schnitthöhe eingestellt ist."
         }
       }
     },
     "set_non_work_hours": {
-      "name": "Set non-work hours",
-      "description": "Set the hours when the mower is not working.",
+      "name": "Ruhezeit festlegen",
+      "description": "Legt den Zeitraum fest, in dem der Mähroboter nicht arbeitet.",
       "fields": {
         "start_time": {
-          "name": "Start time",
-          "description": "Start time of the non-work hours."
+          "name": "Startzeitpunkt",
+          "description": "Beginn der Ruhezeit"
         },
         "end_time": {
-          "name": "End time",
-          "description": "End time of the non-work hours."
+          "name": "Endzeitpunkt",
+          "description": "Ende der Ruhezeit"
         }
       }
     },
     "set_blade_warning_time": {
-      "name": "Klingenwarnzeit festlegen",
-      "description": "Warnzeit für den Klingenaustausch in Stunden festlegen.",
+      "name": "Set blade warning time",
+      "description": "Set the blade replacement warning time in hours.",
       "fields": {
         "hours": {
-          "name": "Stunden",
-          "description": "Warnschwelle in Stunden, ab wann ein Klingenaustausch empfohlen wird."
+          "name": "Hours",
+          "description": "Warning threshold in hours before blade replacement is recommended."
         }
       }
     },
     "reset_blade_time": {
-      "name": "Klingenzeit zurücksetzen",
-      "description": "Den Zähler für die Klingennutzungszeit zurücksetzen."
+      "name": "Reset blade time",
+      "description": "Reset the blade usage time counter."
     }
   },
   "exceptions": {
@@ -677,10 +677,10 @@
       "message": "Senden eines Befehls zum Mähroboter fehlgeschlagen."
     },
     "api_limit_exceeded": {
-      "message": "Das API-Anfragelimit wurde überschritten."
+      "message": "API rate limit has been exceeded."
     },
     "cloud_setup_failed": {
-      "message": "Verbindung zur Mammotion-Cloud nicht möglich. Überprüfen Sie das Netzwerk und versuchen Sie, die Integration neu zu laden."
+      "message": "Unable to connect to the Mammotion cloud. Check your network and try reloading the integration."
     }
   }
 }
