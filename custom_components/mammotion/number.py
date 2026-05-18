@@ -1,3 +1,5 @@
+"""Number entities for the Mammotion integration."""
+
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from typing import Any, cast
@@ -15,7 +17,7 @@ from homeassistant.const import (
     UnitOfLength,
     UnitOfSpeed,
 )
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pymammotion.data.model.device_limits import DeviceLimits
@@ -60,6 +62,21 @@ MAP_OFFSET_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
         mode=NumberMode.BOX,
         set_fn=lambda coordinator, value: setattr(coordinator, "map_offset_lon", value),
         get_fn=lambda coordinator: coordinator.map_offset_lon,
+    ),
+)
+
+AUDIO_NUMBER_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
+    MammotionConfigNumberEntityDescription(
+        key="voice_volume",
+        native_min_value=0,
+        native_max_value=100,
+        native_step=1,
+        mode=NumberMode.SLIDER,
+        native_unit_of_measurement=PERCENTAGE,
+        set_async_fn=lambda coordinator, value: coordinator.async_set_voice_volume(
+            value
+        ),
+        get_fn=lambda coordinator: coordinator.data.mower_state.audio.volume,
     ),
 )
 
@@ -181,6 +198,14 @@ async def async_setup_entry(
                 )
             )
 
+        if DeviceType.is_luba_pro(mower.device.device_name):
+            for entity_description in AUDIO_NUMBER_ENTITIES:
+                entities.append(
+                    MammotionConfigNumberEntity(
+                        mower.reporting_coordinator, entity_description
+                    )
+                )
+
         for entity_description in MAP_OFFSET_ENTITIES:
             entities.append(
                 MammotionConfigNumberEntity(
@@ -216,6 +241,8 @@ async def async_setup_entry(
 
 
 class MammotionConfigNumberEntity(MammotionBaseEntity, RestoreNumber):  # type: ignore[misc]
+    """Mammotion config number entity."""
+
     entity_description: MammotionConfigNumberEntityDescription
     _attr_has_entity_name = True
     _attr_entity_category = EntityCategory.CONFIG
@@ -225,6 +252,7 @@ class MammotionConfigNumberEntity(MammotionBaseEntity, RestoreNumber):  # type: 
         coordinator: MammotionBaseUpdateCoordinator[Any],
         entity_description: MammotionConfigNumberEntityDescription,
     ) -> None:
+        """Initialize the config number entity."""
         super().__init__(coordinator, entity_description.key)
         self.entity_description = entity_description
         self._attr_translation_key = entity_description.key
@@ -247,14 +275,24 @@ class MammotionConfigNumberEntity(MammotionBaseEntity, RestoreNumber):  # type: 
         ):
             self.entity_description.set_fn(self.coordinator, self._attr_native_value)
 
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+        if self.entity_description.get_fn is not None:
+            self._attr_native_value = self.entity_description.get_fn(self.coordinator)
+        super()._handle_coordinator_update()
+
     async def async_set_native_value(self, value: float) -> None:
-        """Sets native value for number."""
+        """Set native value for number."""
         self._attr_native_value = value
         if self.entity_description.set_fn is not None:
             self.entity_description.set_fn(self.coordinator, value)
+        if self.entity_description.set_async_fn is not None:
+            await self.entity_description.set_async_fn(self.coordinator, value)
         self.async_write_ha_state()
 
     async def async_added_to_hass(self) -> None:
+        """Restore last saved value when entity is added to hass."""
         await super().async_added_to_hass()
         last_number_data = await self.async_get_last_number_data()
         if (last_number_data is not None) and (

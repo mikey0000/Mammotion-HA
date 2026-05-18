@@ -51,8 +51,10 @@
         "data": {
           "title": "Actualizarea configurației",
           "stay_connected_bluetooth": "Mențineți bluetooth-ul conectat",
-          "prefer_ble_over_wifi": "Prefer Bluetooth over Wi-Fi when available",
-          "movement_use_wifi": "Send movement commands over Wi-Fi"
+          "prefer_ble_over_wifi": "Preferați Bluetooth față de Wi-Fi când este disponibil",
+          "movement_use_wifi": "Trimiteți comenzi de mișcare prin Wi-Fi",
+          "mow_path_fetch_enabled": "Activați descărcarea traseului de tuns (cloud)",
+          "full_map_fetch_enabled": "Activați descărcarea completă a hărții (cloud) — când este oprit, se descarcă doar numele zonelor"
         }
       }
     }
@@ -309,11 +311,20 @@
       "schedule_updates": {
         "name": "Turn Updates On/Off"
       },
+      "bluetooth_enabled": {
+        "name": "Bluetooth"
+      },
+      "cloud_enabled": {
+        "name": "Cloud"
+      },
       "manual_light": {
         "name": "Manual light on/off"
       },
       "night_light": {
-        "name": "Night light on/off"
+        "name": "Auto lighting on/off"
+      },
+      "voice_on_off": {
+        "name": "Voce pornit/oprit"
       }
     },
     "select": {
@@ -392,9 +403,27 @@
           "slow": "Slow",
           "fast": "Fast"
         }
+      },
+      "voice_gender": {
+        "name": "Genul vocii",
+        "state": {
+          "MAN": "Masculin",
+          "WOMAN": "Feminin"
+        }
+      },
+      "wildlife_safety": {
+        "name": "Siguranța faunei",
+        "state": {
+          "off": "Oprit",
+          "stop_mowing": "Oprire cosire",
+          "low_speed_mowing": "Cosire cu viteză redusă"
+        }
       }
     },
     "number": {
+      "voice_volume": {
+        "name": "Volumul vocii"
+      },
       "start_progress": {
         "name": "Progresul la start"
       },

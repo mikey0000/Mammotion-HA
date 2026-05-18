@@ -52,7 +52,9 @@
           "title": "Update Configuration",
           "stay_connected_bluetooth": "Keep bluetooth connected",
           "prefer_ble_over_wifi": "Prefer Bluetooth over Wi-Fi when available",
-          "movement_use_wifi": "Send movement commands over Wi-Fi"
+          "movement_use_wifi": "Send movement commands over Wi-Fi",
+          "mow_path_fetch_enabled": "Enable mow path fetching (cloud)",
+          "full_map_fetch_enabled": "Enable full map fetching (cloud) — when off, only area names are fetched"
         }
       }
     }
@@ -309,11 +311,20 @@
       "schedule_updates": {
         "name": "Turn Updates On/Off"
       },
+      "bluetooth_enabled": {
+        "name": "Bluetooth"
+      },
+      "cloud_enabled": {
+        "name": "Cloud"
+      },
       "manual_light": {
         "name": "Manual light on/off"
       },
       "night_light": {
-        "name": "Night light on/off"
+        "name": "Auto lighting on/off"
+      },
+      "voice_on_off": {
+        "name": "Voice on/off"
       }
     },
     "select": {
@@ -385,6 +396,14 @@
           "zero_turn": "Zero turn"
         }
       },
+      "wildlife_safety": {
+        "name": "Wildlife Safety",
+        "state": {
+          "off": "Off",
+          "stop_mowing": "Stop Mowing",
+          "low_speed_mowing": "Low-Speed Mowing"
+        }
+      },
       "cutter_mode": {
         "name": "Cutter Speed",
         "state": {
@@ -392,9 +411,19 @@
           "slow": "Slow",
           "fast": "Fast"
         }
+      },
+      "voice_gender": {
+        "name": "Voice gender",
+        "state": {
+          "MAN": "Male",
+          "WOMAN": "Female"
+        }
       }
     },
     "number": {
+      "voice_volume": {
+        "name": "Voice volume"
+      },
       "start_progress": {
         "name": "Start progress"
       },

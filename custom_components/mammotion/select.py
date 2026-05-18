@@ -1,9 +1,11 @@
+"""Select entities for the Mammotion integration."""
+
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 
 from homeassistant.components.select import SelectEntity, SelectEntityDescription
 from homeassistant.const import EntityCategory
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.restore_state import RestoreEntity
 from pymammotion.data.model.mowing_modes import (
@@ -16,6 +18,7 @@ from pymammotion.data.model.mowing_modes import (
     PathAngleSetting,
     TraversalMode,
     TurningMode,
+    WildlifeSafety,
 )
 from pymammotion.utility.device_type import DeviceType
 
@@ -44,6 +47,15 @@ class MammotionAsyncConfigSelectEntityDescription(MammotionBaseEntity, SelectEnt
     set_fn: Callable[[MammotionBaseUpdateCoordinator, str], Awaitable[None]]
 
 
+AUDIO_SELECT_ENTITIES: tuple[MammotionAsyncConfigSelectEntityDescription, ...] = (
+    MammotionAsyncConfigSelectEntityDescription(
+        key="voice_gender",
+        options=["MAN", "WOMAN"],
+        get_fn=lambda coordinator: coordinator.data.mower_state.audio.sex,
+        set_fn=lambda coordinator, value: coordinator.async_set_voice_gender(value),
+    ),
+)
+
 ASYNC_SELECT_ENTITIES: tuple[MammotionAsyncConfigSelectEntityDescription, ...] = (
     MammotionAsyncConfigSelectEntityDescription(
         key="traversal_mode",
@@ -59,6 +71,18 @@ ASYNC_SELECT_ENTITIES: tuple[MammotionAsyncConfigSelectEntityDescription, ...] =
         get_fn=lambda coordinator: coordinator.data.mower_state.turning_mode,
         set_fn=lambda coordinator, value: coordinator.async_set_turning_mode(
             TurningMode[value].value
+        ),
+    ),
+    MammotionAsyncConfigSelectEntityDescription(
+        key="wildlife_safety",
+        options=[mode.name for mode in WildlifeSafety],
+        get_fn=lambda coordinator: (
+            WildlifeSafety.off.value
+            if coordinator.data.mower_state.animal_protection.status == 0
+            else coordinator.data.mower_state.animal_protection.mode
+        ),
+        set_fn=lambda coordinator, value: coordinator.async_set_wildlife_safety(
+            WildlifeSafety[value].value
         ),
     ),
 )
@@ -154,6 +178,14 @@ async def async_setup_entry(
                 )
             )
 
+        if DeviceType.is_luba_pro(mower.device.device_name):
+            for entity_description in AUDIO_SELECT_ENTITIES:
+                entities.append(
+                    MammotionAsyncConfigSelectEntity(
+                        mower.reporting_coordinator, entity_description
+                    )
+                )
+
         for entity_description in ASYNC_SELECT_ENTITIES:
             entities.append(
                 MammotionAsyncConfigSelectEntity(
@@ -163,13 +195,19 @@ async def async_setup_entry(
 
         bypass_mode_desc = MammotionConfigSelectEntityDescription(
             key="bypass_mode",
-            options=[s.name for s in DetectionStrategy.for_device(mower.device.device_name)],
+            options=[
+                s.name for s in DetectionStrategy.for_device(mower.device.device_name)
+            ],
             set_fn=lambda coordinator, value: setattr(
-                coordinator.operation_settings, "ultra_wave", DetectionStrategy[value].value
+                coordinator.operation_settings,
+                "ultra_wave",
+                DetectionStrategy[value].value,
             ),
             async_set_fn=lambda coordinator: coordinator.async_modify_plan_if_mowing(),
         )
-        entities.append(MammotionConfigSelectEntity(mower.reporting_coordinator, bypass_mode_desc))
+        entities.append(
+            MammotionConfigSelectEntity(mower.reporting_coordinator, bypass_mode_desc)
+        )
 
         if DeviceType.is_luba1(mower.device.device_name):
             for entity_description in LUBA1_SELECT_ENTITIES:
@@ -211,6 +249,7 @@ class MammotionConfigSelectEntity(MammotionBaseEntity, SelectEntity, RestoreEnti
         coordinator: MammotionReportUpdateCoordinator,
         entity_description: MammotionConfigSelectEntityDescription,
     ) -> None:
+        """Initialize the config select entity."""
         super().__init__(coordinator, entity_description.key)
         self.coordinator = coordinator
         self.entity_description = entity_description
@@ -220,6 +259,7 @@ class MammotionConfigSelectEntity(MammotionBaseEntity, SelectEntity, RestoreEnti
         self.entity_description.set_fn(self.coordinator, self._attr_current_option)
 
     async def async_select_option(self, option: str) -> None:
+        """Select an option."""
         self._attr_current_option = option
         self.entity_description.set_fn(self.coordinator, option)
         if self.entity_description.async_set_fn is not None:
@@ -253,19 +293,30 @@ class MammotionAsyncConfigSelectEntity(
         coordinator: MammotionReportUpdateCoordinator,
         entity_description: MammotionAsyncConfigSelectEntityDescription,
     ) -> None:
+        """Initialize the async config select entity."""
         super().__init__(coordinator, entity_description.key)
         self.coordinator = coordinator
         self.entity_description = entity_description
         self._attr_translation_key = entity_description.key
         self._attr_options = entity_description.options
-        if callable(entity_description.get_fn):
-            self._attr_current_option = self._attr_options[
-                entity_description.get_fn(self.coordinator)
-            ]
-        else:
-            self._attr_current_option = self._attr_options[0]
+        self._attr_current_option = self._resolve_option()
+
+    def _resolve_option(self) -> str:
+        """Return the current option, falling back to the first if the index is out of range."""
+        if callable(self.entity_description.get_fn):
+            idx = self.entity_description.get_fn(self.coordinator)
+            if 0 <= idx < len(self._attr_options):
+                return self._attr_options[idx]
+        return self._attr_options[0]
+
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+        self._attr_current_option = self._resolve_option()
+        super()._handle_coordinator_update()
 
     async def async_select_option(self, option: str) -> None:
+        """Select an option."""
         self._attr_current_option = option
         await self.entity_description.set_fn(self.coordinator, option)
         self.async_write_ha_state()
@@ -278,6 +329,7 @@ class MammotionAsyncConfigSelectEntity(
                 self._attr_current_option = state.state
 
     async def async_update(self) -> None:
+        """Update entity state from coordinator."""
         if callable(self.entity_description.get_fn):
             self._attr_current_option = self._attr_options[
                 self.entity_description.get_fn(self.coordinator)

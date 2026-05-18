@@ -1,5 +1,6 @@
 """Support for Mammotion switches."""
 
+import re
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from dataclasses import replace as dataclass_replace
@@ -25,6 +26,10 @@ from .coordinator import (
 )
 from .entity import MammotionBaseEntity
 
+# Matches pymammotion's auto-generated fallback names ("area 1", "area 2", …).
+# These carry no user intent and must be treated the same as empty names.
+_PYMAMMOTION_AUTO_NAME = re.compile(r"^area\s+\d+$", re.IGNORECASE)
+
 
 @dataclass(frozen=True, kw_only=True)
 class MammotionSwitchEntityDescription(SwitchEntityDescription):
@@ -37,8 +42,6 @@ class MammotionSwitchEntityDescription(SwitchEntityDescription):
 class MammotionAsyncSwitchEntityDescription(MammotionSwitchEntityDescription):
     """Describes Mammotion switch entity."""
 
-    polling: bool = False
-    poll_func: Callable[[MammotionBaseUpdateCoordinator], Awaitable[None]] | None = None
     is_on_func: Callable[[MammotionBaseUpdateCoordinator], bool] | None = None
     set_fn: Callable[[MammotionBaseUpdateCoordinator, bool], Awaitable[None]]
 
@@ -94,11 +97,18 @@ MINI_AND_X_SERIES_CONFIG_SWITCH_ENTITIES: tuple[
     ),
 )
 
+AUDIO_SWITCH_ENTITIES: tuple[MammotionAsyncSwitchEntityDescription, ...] = (
+    MammotionAsyncSwitchEntityDescription(
+        key="voice_on_off",
+        is_on_func=lambda coordinator: coordinator.data.mower_state.audio.volume > 0,
+        set_fn=lambda coordinator, value: coordinator.async_set_voice_on_off(value),
+        entity_category=EntityCategory.CONFIG,
+    ),
+)
+
 SWITCH_ENTITIES: tuple[MammotionAsyncSwitchEntityDescription, ...] = (
     MammotionAsyncSwitchEntityDescription(
         key="side_led",
-        polling=True,
-        poll_func=lambda coordinator: coordinator.async_read_sidelight(),
         is_on_func=lambda coordinator: bool(
             coordinator.data.mower_state.side_led.operate
         ),
@@ -107,8 +117,6 @@ SWITCH_ENTITIES: tuple[MammotionAsyncSwitchEntityDescription, ...] = (
     ),
     MammotionAsyncSwitchEntityDescription(
         key="rain_detection",
-        polling=True,
-        poll_func=lambda coordinator: coordinator.async_read_rain_detection(),
         is_on_func=lambda coordinator: coordinator.data.mower_state.rain_detection,
         set_fn=lambda coordinator, value: coordinator.async_set_rain_detection(value),
         entity_category=EntityCategory.CONFIG,
@@ -128,6 +136,23 @@ UPDATE_SWITCH_ENTITIES: tuple[MammotionAsyncSwitchEntityDescription, ...] = (
         key="schedule_updates",
         is_on_func=lambda coordinator: coordinator.data.enabled,
         set_fn=lambda coordinator, value: coordinator.set_scheduled_updates(value),
+    ),
+)
+
+CONNECTIVITY_SWITCH_ENTITIES: tuple[MammotionAsyncSwitchEntityDescription, ...] = (
+    MammotionAsyncSwitchEntityDescription(
+        key="bluetooth_enabled",
+        is_on_func=lambda coordinator: coordinator.bluetooth_enabled,
+        set_fn=lambda coordinator, value: coordinator.async_set_bluetooth_enabled(
+            value
+        ),
+        entity_category=EntityCategory.CONFIG,
+    ),
+    MammotionAsyncSwitchEntityDescription(
+        key="cloud_enabled",
+        is_on_func=lambda coordinator: coordinator.cloud_enabled,
+        set_fn=lambda coordinator, value: coordinator.async_set_cloud_enabled(value),
+        entity_category=EntityCategory.CONFIG,
     ),
 )
 
@@ -170,6 +195,10 @@ async def async_setup_entry(
             entity = MammotionSwitchEntity(coordinator, entity_description)
             entities.append(entity)
 
+        if DeviceType.is_luba_pro(mower.device.device_name):
+            for entity_description in AUDIO_SWITCH_ENTITIES:
+                entities.append(MammotionSwitchEntity(coordinator, entity_description))
+
         for entity_description in CONFIG_SWITCH_ENTITIES:
             config_entity = MammotionConfigSwitchEntity(coordinator, entity_description)
             entities.append(config_entity)
@@ -177,6 +206,9 @@ async def async_setup_entry(
         for entity_description in UPDATE_SWITCH_ENTITIES:
             config_entity = MammotionUpdateSwitchEntity(coordinator, entity_description)
             entities.append(config_entity)
+
+        for entity_description in CONNECTIVITY_SWITCH_ENTITIES:
+            entities.append(MammotionSwitchEntity(coordinator, entity_description))
 
         if DeviceType.is_yuka(mower.device.device_name) and not DeviceType.is_yuka_mini(
             mower.device.device_name
@@ -241,14 +273,15 @@ class MammotionSwitchEntity(MammotionBaseEntity, SwitchEntity, RestoreEntity):
             self.async_write_ha_state()
             raise
 
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+        if callable(self.entity_description.is_on_func):
+            self._attr_is_on = self.entity_description.is_on_func(self.coordinator)
+        super()._handle_coordinator_update()
+
     async def async_update(self) -> None:
         """Update the entity state."""
-        if (
-            self.entity_description.polling
-            and self.entity_description.poll_func is not None
-        ):
-            await self.entity_description.poll_func(self.coordinator)
-
         if self.entity_description.is_on_func is not None:
             self._attr_is_on = self.entity_description.is_on_func(self.coordinator)
             self.async_write_ha_state()
@@ -470,13 +503,21 @@ def async_add_area_entities(
         all_current_areas = area_name_hashes | map_area_hashes
 
     new_areas = all_current_areas - added_areas
-    # Find the highest "Area N" number already in use so new auto-names don't
-    # collide with existing entities after deletions shrink len(added_areas).
+
+    # On HA restart added_areas is empty so the per-session deduplication
+    # cannot catch orphaned registry entries from a previous run.  If the
+    # device assigned new hashes to existing areas the old entries linger and
+    # the user sees two switches for the same logical area (e.g. "Area Pool"
+    # twice).  Clean up any such stale entries before adding new entities.
+    if map_area_hashes and new_areas:
+        _async_clean_stale_area_registry_entries(coordinator, all_current_areas)
+    # Find the highest "Area N" number already in use — check case-insensitively
+    # so that pymammotion's lowercase "area 1" fallback names are counted too.
     area_counter = max(
         (
             int(name.split()[-1])
             for name in area_entities_by_name
-            if name.startswith("Area ") and name.split()[-1].isdigit()
+            if name.lower().startswith("area ") and name.split()[-1].isdigit()
         ),
         default=0,
     )
@@ -494,7 +535,14 @@ def async_add_area_entities(
         area_entry: AreaHashNameList | None = next(
             (area for area in area_names if area.hash == area_id), None
         )
-        if area_entry and area_entry.name:
+        # Use the device-provided name only if it is a real user-assigned name.
+        # Pymammotion generates lowercase "area N" fallbacks when the device
+        # returns no names; treat those the same as an empty string.
+        if (
+            area_entry
+            and area_entry.name
+            and not _PYMAMMOTION_AUTO_NAME.match(area_entry.name)
+        ):
             name = area_entry.name
         else:
             area_counter += 1
@@ -539,19 +587,50 @@ def async_add_area_entities(
         entity.update_name(new_name)
         area_entities_by_name[new_name] = entity
 
-    old_areas = added_areas - all_current_areas
-    if old_areas:
-        async_remove_entities(coordinator, old_areas)
-        for area in old_areas:
-            added_areas.discard(area)
-            stale_names = [
-                n for n, e in area_entities_by_name.items() if e._area == area
-            ]
-            for n in stale_names:
-                del area_entities_by_name[n]
+    # Guard: only remove areas when map.area has data.  An empty map signals a
+    # transient refresh — if we removed here every tracked area would be
+    # deleted from the HA registry and recreated as "new" entities on the
+    # next update, breaking user automations.
+    if map_area_hashes:
+        old_areas = added_areas - all_current_areas
+        if old_areas:
+            async_remove_entities(coordinator, old_areas)
+            for area in old_areas:
+                added_areas.discard(area)
+                stale_names = [
+                    n for n, e in area_entities_by_name.items() if e._area == area
+                ]
+                for n in stale_names:
+                    del area_entities_by_name[n]
 
     if switch_entities:
         async_add_entities(switch_entities)
+
+
+def _async_clean_stale_area_registry_entries(
+    coordinator: MammotionReportUpdateCoordinator,
+    all_current_areas: set[int],
+) -> None:
+    """Remove area entity registry entries whose hashes are no longer on the device.
+
+    Area entity unique_ids follow ``{unique_name}_{hash}`` where the suffix is
+    the numeric area hash.  Any entry whose hash is absent from
+    ``all_current_areas`` is removed so it cannot appear as a ghost duplicate
+    alongside the replacement entity.
+    """
+    registry = er.async_get(coordinator.hass)
+    prefix = f"{coordinator.unique_name}_"
+
+    for entry in list(registry.entities.values()):
+        if entry.domain != SWITCH_DOMAIN or entry.platform != DOMAIN:
+            continue
+        if not entry.unique_id.startswith(prefix):
+            continue
+        suffix = entry.unique_id[len(prefix) :]
+        if not suffix.lstrip("-").isdigit():
+            continue  # non-numeric suffix → not an area entity (e.g. "is_mow")
+        if int(suffix) not in all_current_areas:
+            registry.async_remove(entry.entity_id)
 
 
 def async_remove_entities(

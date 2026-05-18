@@ -51,8 +51,10 @@
         "data": {
           "title": "Aggiorna Configurazione",
           "stay_connected_bluetooth": "Mantieni Bluetooth connesso",
-          "prefer_ble_over_wifi": "Prefer Bluetooth over Wi-Fi when available",
-          "movement_use_wifi": "Send movement commands over Wi-Fi"
+          "prefer_ble_over_wifi": "Preferisci Bluetooth rispetto al Wi-Fi quando disponibile",
+          "movement_use_wifi": "Invia comandi di movimento tramite Wi-Fi",
+          "mow_path_fetch_enabled": "Abilita recupero percorso di taglio (cloud)",
+          "full_map_fetch_enabled": "Abilita recupero completo della mappa (cloud) — se disabilitato, vengono recuperati solo i nomi delle aree"
         }
       }
     }
@@ -309,11 +311,20 @@
       "schedule_updates": {
         "name": "Attivare/Disattivare Gli aggiornamenti"
       },
+      "bluetooth_enabled": {
+        "name": "Bluetooth"
+      },
+      "cloud_enabled": {
+        "name": "Cloud"
+      },
       "manual_light": {
         "name": "Attivazione/disattivazione luce manuale"
       },
       "night_light": {
-        "name": "Luce notturna accesa/spenta"
+        "name": "Illuminazione automatica accesa/spenta"
+      },
+      "voice_on_off": {
+        "name": "Voce on/off"
       }
     },
     "select": {
@@ -392,9 +403,27 @@
           "slow": "Lento",
           "fast": "Veloce"
         }
+      },
+      "voice_gender": {
+        "name": "Genere della voce",
+        "state": {
+          "MAN": "Maschile",
+          "WOMAN": "Femminile"
+        }
+      },
+      "wildlife_safety": {
+        "name": "Sicurezza fauna selvatica",
+        "state": {
+          "off": "Disattivato",
+          "stop_mowing": "Ferma falciatura",
+          "low_speed_mowing": "Falciatura a bassa velocità"
+        }
       }
     },
     "number": {
+      "voice_volume": {
+        "name": "Volume della voce"
+      },
       "start_progress": {
         "name": "Avanzamento iniziale"
       },

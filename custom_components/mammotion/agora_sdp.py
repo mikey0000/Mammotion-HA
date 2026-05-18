@@ -11,6 +11,7 @@ class SDPParser:
 
     @staticmethod
     def parse(sdp: str) -> dict[str, Any]:
+        """Parse an SDP string into a structured dictionary."""
         parsed = {"media": []}
         current_media = None
 
@@ -128,6 +129,7 @@ class SDPParser:
 
     @staticmethod
     def write(parsed: dict[str, Any]) -> str:
+        """Serialize a parsed SDP dictionary back into an SDP string."""
         lines = [f"v={parsed.get('version', 0)}"]
         orig = parsed.get("origin", {})
         lines.append(
@@ -229,7 +231,12 @@ def parse_offer_to_ortc(offer_sdp: str) -> dict[str, Any]:
             "fingerprints": [
                 {"hashFunction": fp["hash"], "fingerprint": fp["fingerprint"]}
                 for fp in parsed["fingerprints"]
-            ]
+            ],
+            # Tell Agora the browser is the DTLS server (passive), so Agora acts as
+            # client (active/initiator). Matches JS SDK behaviour — without this,
+            # Agora may default to passive and both sides deadlock waiting for the
+            # other to send the DTLS ClientHello.
+            "role": "server",
         }
 
     # Iterate media sections to extract params and build caps
@@ -263,7 +270,8 @@ def parse_offer_to_ortc(offer_sdp: str) -> dict[str, Any]:
                 "fingerprints": [
                     {"hashFunction": fp["hash"], "fingerprint": fp["fingerprint"]}
                     for fp in m["fingerprints"]
-                ]
+                ],
+                "role": "server",
             }
 
         mtype = m.get("type")

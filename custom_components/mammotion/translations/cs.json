@@ -51,8 +51,10 @@
         "data": {
           "title": "Aktualizovat konfiguraci",
           "stay_connected_bluetooth": "Udržovat připojení Bluetooth",
-          "prefer_ble_over_wifi": "Prefer Bluetooth over Wi-Fi when available",
-          "movement_use_wifi": "Send movement commands over Wi-Fi"
+          "prefer_ble_over_wifi": "Upřednostňovat Bluetooth před Wi-Fi, je-li dostupné",
+          "movement_use_wifi": "Odesílat příkazy pohybu přes Wi-Fi",
+          "mow_path_fetch_enabled": "Povolit načítání cesty sekání (cloud)",
+          "full_map_fetch_enabled": "Povolit úplné načítání mapy (cloud) — pokud vypnuto, načítají se pouze názvy oblastí"
         }
       }
     }
@@ -309,11 +311,20 @@
       "schedule_updates": {
         "name": "Zapnout/Vypnout aktualizace"
       },
+      "bluetooth_enabled": {
+        "name": "Bluetooth"
+      },
+      "cloud_enabled": {
+        "name": "Cloud"
+      },
       "manual_light": {
         "name": "Ruční osvětlení zapnuto/vypnuto"
       },
       "night_light": {
-        "name": "Noční světlo zapnout/vypnout"
+        "name": "Automatické osvětlení zapnout/vypnout"
+      },
+      "voice_on_off": {
+        "name": "Hlas zapnuto/vypnuto"
       }
     },
     "select": {
@@ -392,9 +403,27 @@
           "slow": "Pomalý",
           "fast": "Rychlá"
         }
+      },
+      "voice_gender": {
+        "name": "Pohlaví hlasu",
+        "state": {
+          "MAN": "Mužský",
+          "WOMAN": "Ženský"
+        }
+      },
+      "wildlife_safety": {
+        "name": "Ochrana volně žijících živočichů",
+        "state": {
+          "off": "Vypnuto",
+          "stop_mowing": "Zastavit sekání",
+          "low_speed_mowing": "Sekání nízkou rychlostí"
+        }
       }
     },
     "number": {
+      "voice_volume": {
+        "name": "Hlasitost hlasu"
+      },
       "start_progress": {
         "name": "Pokrok při zahájení"
       },

@@ -51,8 +51,10 @@
         "data": {
           "title": "Posodobi nastavitev",
           "stay_connected_bluetooth": "Ohrani Bluetooth povezavo",
-          "prefer_ble_over_wifi": "Prefer Bluetooth over Wi-Fi when available",
-          "movement_use_wifi": "Send movement commands over Wi-Fi"
+          "prefer_ble_over_wifi": "Daj prednost Bluetooth pred Wi-Fi, ko je na voljo",
+          "movement_use_wifi": "Pošiljaj ukaze gibanja prek Wi-Fi",
+          "mow_path_fetch_enabled": "Omogoči pridobivanje poti košnje (oblak)",
+          "full_map_fetch_enabled": "Omogoči pridobivanje celotnega zemljevida (oblak) — če izklopljeno, se pridobijo samo imena območij"
         }
       }
     }
@@ -309,11 +311,20 @@
       "schedule_updates": {
         "name": "Turn Updates On/Off"
       },
+      "bluetooth_enabled": {
+        "name": "Bluetooth"
+      },
+      "cloud_enabled": {
+        "name": "Cloud"
+      },
       "manual_light": {
         "name": "Manual light on/off"
       },
       "night_light": {
-        "name": "Night light on/off"
+        "name": "Auto lighting on/off"
+      },
+      "voice_on_off": {
+        "name": "Glas vklopljeno/izklopljeno"
       }
     },
     "select": {
@@ -392,9 +403,27 @@
           "slow": "Počasi",
           "fast": "Hitro"
         }
+      },
+      "voice_gender": {
+        "name": "Spol glasu",
+        "state": {
+          "MAN": "Moški",
+          "WOMAN": "Ženski"
+        }
+      },
+      "wildlife_safety": {
+        "name": "Varnost divjih živali",
+        "state": {
+          "off": "Izklopljeno",
+          "stop_mowing": "Ustavi košnjo",
+          "low_speed_mowing": "Košnja z nizko hitrostjo"
+        }
       }
     },
     "number": {
+      "voice_volume": {
+        "name": "Glasnost glasu"
+      },
       "start_progress": {
         "name": "Napredek"
       },

@@ -52,7 +52,9 @@
           "title": "Update Configuration",
           "stay_connected_bluetooth": "Keep Bluetooth connected",
           "prefer_ble_over_wifi": "Prefer Bluetooth over Wi-Fi when available",
-          "movement_use_wifi": "Send movement commands over Wi-Fi"
+          "movement_use_wifi": "Send movement commands over Wi-Fi",
+          "mow_path_fetch_enabled": "Enable mow path fetching (cloud)",
+          "full_map_fetch_enabled": "Enable full map fetching (cloud) — when off, only area names are fetched"
         }
       }
     }
@@ -231,6 +233,9 @@
       },
       "schedule_updates": {
         "name": "Turn updates on/off"
+      },
+      "voice_on_off": {
+        "name": "Voice on/off"
       }
     },
     "select": {
@@ -287,9 +292,19 @@
           "absolute_angle": "North",
           "random_angle": "Random"
         }
+      },
+      "voice_gender": {
+        "name": "Voice gender",
+        "state": {
+          "MAN": "Male",
+          "WOMAN": "Female"
+        }
       }
     },
     "number": {
+      "voice_volume": {
+        "name": "Voice volume"
+      },
       "start_progress": {
         "name": "Start progress"
       },

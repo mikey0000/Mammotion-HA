@@ -51,8 +51,10 @@
         "data": {
           "title": "Opdater konfiguration",
           "stay_connected_bluetooth": "Hold Bluetooth-forbindelsen",
-          "prefer_ble_over_wifi": "Prefer Bluetooth over Wi-Fi when available",
-          "movement_use_wifi": "Send movement commands over Wi-Fi"
+          "prefer_ble_over_wifi": "Foretræk Bluetooth frem for Wi-Fi, når det er tilgængeligt",
+          "movement_use_wifi": "Send bevægelseskommandoer via Wi-Fi",
+          "mow_path_fetch_enabled": "Aktivér hentning af klippesti (sky)",
+          "full_map_fetch_enabled": "Aktivér fuld korthentning (sky) — når slået fra, hentes kun områdenavne"
         }
       }
     }
@@ -309,11 +311,20 @@
       "schedule_updates": {
         "name": "Slå opdateringer til/fra"
       },
+      "bluetooth_enabled": {
+        "name": "Bluetooth"
+      },
+      "cloud_enabled": {
+        "name": "Cloud"
+      },
       "manual_light": {
         "name": "Manuelt lys Tænd/sluk"
       },
       "night_light": {
-        "name": "Nattelys til/fra"
+        "name": "Automatisk belysning til/fra"
+      },
+      "voice_on_off": {
+        "name": "Stemme til/fra"
       }
     },
     "select": {
@@ -392,9 +403,27 @@
           "slow": "Langsom",
           "fast": "Hurtig"
         }
+      },
+      "voice_gender": {
+        "name": "Stemmekøn",
+        "state": {
+          "MAN": "Mand",
+          "WOMAN": "Kvinde"
+        }
+      },
+      "wildlife_safety": {
+        "name": "Dyresikkerhed",
+        "state": {
+          "off": "Slukket",
+          "stop_mowing": "Stop klipning",
+          "low_speed_mowing": "Klipning med lav hastighed"
+        }
       }
     },
     "number": {
+      "voice_volume": {
+        "name": "Stemmestyrke"
+      },
       "start_progress": {
         "name": "Start forløb på"
       },

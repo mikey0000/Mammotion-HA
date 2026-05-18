@@ -3,7 +3,6 @@
 from abc import ABC
 from typing import Any
 
-from homeassistant.components import bluetooth
 from homeassistant.components.camera import Camera, CameraEntityFeature
 from homeassistant.core import callback
 from homeassistant.helpers.device_registry import (
@@ -59,15 +58,10 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionBaseUpdateCoordinator[Any]]
         connections: set[tuple[str, str]] = set()
 
         if mower.mower_state.ble_mac != "":
-            ble_device = bluetooth.async_ble_device_from_address(
-                self.hass, mower.mower_state.ble_mac.upper(), True
-            )
             connections.add(
                 (
                     CONNECTION_BLUETOOTH,
-                    format_mac(
-                        ble_device.address if ble_device else mower.mower_state.ble_mac
-                    ),
+                    format_mac(mower.mower_state.ble_mac),
                 )
             )
 
@@ -253,15 +247,10 @@ class MammotionCameraBaseEntity(Camera, ABC):  # type: ignore[misc]
         connections: set[tuple[str, str]] = set()
 
         if mower.mower_state.ble_mac != "":
-            ble_device = bluetooth.async_ble_device_from_address(
-                self.hass, mower.mower_state.ble_mac.upper(), True
-            )
             connections.add(
                 (
                     CONNECTION_BLUETOOTH,
-                    format_mac(
-                        ble_device.address if ble_device else mower.mower_state.ble_mac
-                    ),
+                    format_mac(mower.mower_state.ble_mac),
                 )
             )
 

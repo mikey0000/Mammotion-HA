@@ -51,8 +51,10 @@
         "data": {
           "title": "Aktualizuj konfigurację",
           "stay_connected_bluetooth": "Użyj połączenia Bluetooth",
-          "prefer_ble_over_wifi": "Prefer Bluetooth over Wi-Fi when available",
-          "movement_use_wifi": "Send movement commands over Wi-Fi"
+          "prefer_ble_over_wifi": "Preferuj Bluetooth zamiast Wi-Fi, gdy dostępne",
+          "movement_use_wifi": "Wysyłaj polecenia ruchu przez Wi-Fi",
+          "mow_path_fetch_enabled": "Włącz pobieranie ścieżki koszenia (chmura)",
+          "full_map_fetch_enabled": "Włącz pełne pobieranie mapy (chmura) — gdy wyłączone, pobierane są tylko nazwy obszarów"
         }
       }
     }
@@ -309,11 +311,20 @@
       "schedule_updates": {
         "name": "Turn Updates On/Off"
       },
+      "bluetooth_enabled": {
+        "name": "Bluetooth"
+      },
+      "cloud_enabled": {
+        "name": "Cloud"
+      },
       "manual_light": {
         "name": "Manual light on/off"
       },
       "night_light": {
-        "name": "Night light on/off"
+        "name": "Auto lighting on/off"
+      },
+      "voice_on_off": {
+        "name": "Głos wł./wył."
       }
     },
     "select": {
@@ -392,9 +403,27 @@
           "slow": "Slow",
           "fast": "Fast"
         }
+      },
+      "voice_gender": {
+        "name": "Płeć głosu",
+        "state": {
+          "MAN": "Męski",
+          "WOMAN": "Żeński"
+        }
+      },
+      "wildlife_safety": {
+        "name": "Ochrona dzikich zwierząt",
+        "state": {
+          "off": "Wył.",
+          "stop_mowing": "Zatrzymaj koszenie",
+          "low_speed_mowing": "Koszenie z małą prędkością"
+        }
       }
     },
     "number": {
+      "voice_volume": {
+        "name": "Głośność głosu"
+      },
       "start_progress": {
         "name": "Rozpocznij koszenie przy x% postępie"
       },

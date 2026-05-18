@@ -1221,7 +1221,7 @@ sdist = { url = "https://files.pythonhosted.org/packages/96/e3/42c87871920602a3c
 
 [[package]]
 name = "mammotion-ha"
-version = "0.5.39b1"
+version = "0.5.46b1"
 source = { virtual = "." }
 dependencies = [
     { name = "autotyping" },
@@ -1244,7 +1244,7 @@ dev = [
 requires-dist = [
     { name = "autotyping", specifier = ">=24.3.0" },
     { name = "homeassistant", specifier = ">=2026.1.0" },
-    { name = "pymammotion", specifier = "==0.7.97" },
+    { name = "pymammotion", specifier = "==0.7.114b1" },
     { name = "sdp-transform", specifier = ">=1.1.0" },
     { name = "websockets", specifier = ">=15.0.1" },
 ]
@@ -1737,7 +1737,7 @@ wheels = [
 
 [[package]]
 name = "pymammotion"
-version = "0.7.97"
+version = "0.7.114b1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -1762,9 +1762,9 @@ dependencies = [
     { name = "webrtc-models" },
     { name = "websockets" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/8d/eb/7788bfb53dbc7696dec89b75d5f17cd9e7ca7dbe480f662ee743de7a30c3/pymammotion-0.7.97.tar.gz", hash = "sha256:b30bab208169cda5ec66451400e09fcbd4d09a9e7cf277acb33168faa9156fd0", size = 332469, upload-time = "2026-05-05T06:33:13.299Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/3a/d4/4be23f7d5d16889cdabeb94463b2ed818f863e7361b4f0ee5b5315173d3a/pymammotion-0.7.114b1.tar.gz", hash = "sha256:a1382ad0891f2a9cf8849f1b428874f7fdcbaf12dfc00bb87ef5c6938968cb92", size = 341916, upload-time = "2026-05-15T03:09:25.758Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ad/f6/3cde0afd85165dd7d51f6a892587d5e50b5576f684f3f9f0f9ce8894b1ed/pymammotion-0.7.97-py3-none-any.whl", hash = "sha256:506e0db8426bff3a1b0f453fa6ce775fedbce787c76b65b8c90475a7a2cc4b19", size = 390100, upload-time = "2026-05-05T06:33:11.369Z" },
+    { url = "https://files.pythonhosted.org/packages/45/2d/6eff46dec5806baca35027d6411e52cc13d8eb1397d8f23e6873bbc31a61/pymammotion-0.7.114b1-py3-none-any.whl", hash = "sha256:18fa0f05cda63850e5a929ec7981e9f2d860583cf116584da0087b35f1a12d3f", size = 402021, upload-time = "2026-05-15T03:09:23.916Z" },
 ]
 
 [[package]]
