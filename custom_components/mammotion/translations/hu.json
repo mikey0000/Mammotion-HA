@@ -652,6 +652,130 @@
     "reset_blade_time": {
       "name": "Késhasználati idő nullázása",
       "description": "Késhasználati időszámláló nullázása."
+    },
+    "get_map_data": {
+      "name": "Térképadatok lekérése",
+      "description": "Visszaadja a nyers térképadatokat (területek, SVG-csempék, területnevek) az SVG térkép kártyával való használathoz.",
+      "fields": {
+        "entity_id": {
+          "name": "Entitás",
+          "description": "Bármely, az eszközhöz tartozó Mammotion entitás."
+        }
+      }
+    },
+    "svg_add": {
+      "name": "SVG-csempe hozzáadása",
+      "description": "Új SVG-csempét küld az eszköztérképre. Visszaadja az eszköz által hozzárendelt hasht.",
+      "fields": {
+        "entity_id": {
+          "name": "Entitás",
+          "description": "Bármely, az eszközhöz tartozó Mammotion entitás."
+        },
+        "area_hash": {
+          "name": "Terület hash",
+          "description": "A szülő nyírási terület hashje."
+        },
+        "svg_data": {
+          "name": "SVG-adatok",
+          "description": "Nyers SVG-kód a térképen való megjelenítéshez."
+        },
+        "svg_file_name": {
+          "name": "Fájlnév",
+          "description": "Az eszközön tárolt fájlnév (alapértelmezett: pattern.svg)."
+        },
+        "scale": {
+          "name": "Méretarány",
+          "description": "Egyenletes méretarány-tényező (1,0 = nincs méretezés)."
+        },
+        "rotate": {
+          "name": "Elforgatás",
+          "description": "Elforgatás radiánban (CCW-pozitív az eszköz ENU keretében)."
+        },
+        "base_width_m": {
+          "name": "Szélesség (m)",
+          "description": "Egy csempeegység fizikai szélessége méterben (2,5 Luba 1/Yuka, 4,0 Luba 2 esetén)."
+        },
+        "base_height_m": {
+          "name": "Magasság (m)",
+          "description": "Egy csempeegység fizikai magassága méterben."
+        },
+        "x_move": {
+          "name": "X pozíció",
+          "description": "X koordináta felülírás (méter). Alapértelmezett: terület súlypontja."
+        },
+        "y_move": {
+          "name": "Y pozíció",
+          "description": "Y koordináta felülírás (méter). Alapértelmezett: terület súlypontja."
+        }
+      }
+    },
+    "svg_update": {
+      "name": "SVG-csempe frissítése",
+      "description": "Lecseréli a meglévő SVG-csempét az eszköztérképen. Használja az svg_add által visszaadott device_hash értéket.",
+      "fields": {
+        "entity_id": {
+          "name": "Entitás",
+          "description": "Bármely, az eszközhöz tartozó Mammotion entitás."
+        },
+        "device_hash": {
+          "name": "Eszköz hash",
+          "description": "Az eszköz által hozzárendelt hash a csempe első hozzáadásakor."
+        },
+        "area_hash": {
+          "name": "Terület hash",
+          "description": "A szülő nyírási terület hashje."
+        },
+        "svg_data": {
+          "name": "SVG-adatok",
+          "description": "Frissített SVG-kód."
+        },
+        "svg_file_name": {
+          "name": "Fájlnév",
+          "description": "Az eszközön tárolt fájlnév."
+        },
+        "scale": {
+          "name": "Méretarány",
+          "description": "Egyenletes méretarány-tényező."
+        },
+        "rotate": {
+          "name": "Elforgatás",
+          "description": "Elforgatás radiánban (CCW-pozitív)."
+        },
+        "base_width_m": {
+          "name": "Szélesség (m)",
+          "description": "Egy csempeegység fizikai szélessége méterben."
+        },
+        "base_height_m": {
+          "name": "Magasság (m)",
+          "description": "Egy csempeegység fizikai magassága méterben."
+        },
+        "x_move": {
+          "name": "X pozíció",
+          "description": "X koordináta felülírás (méter)."
+        },
+        "y_move": {
+          "name": "Y pozíció",
+          "description": "Y koordináta felülírás (méter)."
+        }
+      }
+    },
+    "svg_delete": {
+      "name": "SVG-csempe törlése",
+      "description": "Eltávolít egy SVG-csempét az eszköztérképről az eszköz által hozzárendelt hash alapján.",
+      "fields": {
+        "entity_id": {
+          "name": "Entitás",
+          "description": "Bármely, az eszközhöz tartozó Mammotion entitás."
+        },
+        "device_hash": {
+          "name": "Eszköz hash",
+          "description": "Az eszköz által hozzárendelt hash a csempe hozzáadásakor."
+        },
+        "area_hash": {
+          "name": "Terület hash",
+          "description": "A szülő nyírási terület hashje."
+        }
+      }
     }
   },
   "exceptions": {

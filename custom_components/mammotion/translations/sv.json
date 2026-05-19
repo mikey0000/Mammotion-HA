@@ -124,19 +124,19 @@
       "position_type": {
         "name": "Typ av enhet",
         "state": {
-          "AREA_BORDER_ON": "At perimeter",
-          "AREA_INSIDE": "Inside area",
-          "AREA_OUT": "Outside area",
-          "CHANNEL_AREA_OVERLAP": "Path area overlap",
-          "CHANNEL_ON": "On path",
-          "CHARGE_ON": "At charging station",
-          "DUMPING_AREA_INSIDE": "In dump area",
-          "DUMPING_OUTSIDE": "Outside dump area",
-          "ABNORMAL_POSITIONING": "Position error",
-          "NO_AREAS": "No areas defined",
-          "OBS_ON": "At obstacle",
-          "TURN_AREA_INSIDE": "In turn area",
-          "VIRTUAL_INSIDE": "In virtual area"
+          "AREA_BORDER_ON": "Vid perimeter",
+          "AREA_INSIDE": "Inuti område",
+          "AREA_OUT": "Utanför område",
+          "CHANNEL_AREA_OVERLAP": "Överlapp av banområde",
+          "CHANNEL_ON": "På bana",
+          "CHARGE_ON": "Vid laddstation",
+          "DUMPING_AREA_INSIDE": "I dumpningszon",
+          "DUMPING_OUTSIDE": "Utanför dumpningszon",
+          "ABNORMAL_POSITIONING": "Positionsfel",
+          "NO_AREAS": "Inga områden definierade",
+          "OBS_ON": "Vid hinder",
+          "TURN_AREA_INSIDE": "I vändningszon",
+          "VIRTUAL_INSIDE": "I virtuellt område"
         }
       },
       "visual_positioning_status": {
@@ -152,29 +152,29 @@
       "activity_mode": {
         "name": "Aktivitetsläge",
         "state": {
-          "MODE_NOT_ACTIVE": "Not active",
+          "MODE_NOT_ACTIVE": "Inte aktiv",
           "MODE_ONLINE": "Online",
           "MODE_OFFLINE": "Offline",
-          "MODE_DISABLE": "Disabled",
-          "MODE_INITIALIZATION": "Initializing",
-          "MODE_READY": "Ready",
-          "MODE_WORKING": "Working",
-          "MODE_RETURNING": "Returning",
-          "MODE_CHARGING": "Charging",
-          "MODE_UPDATING": "Updating",
-          "MODE_LOCK": "Locked",
-          "MODE_PAUSE": "Paused",
-          "MODE_MANUAL_MOWING": "Manual mowing",
-          "MODE_UPDATE_SUCCESS": "Update successful",
-          "MODE_OTA_UPGRADE_FAIL": "Update failed",
-          "MODE_JOB_DRAW": "Drawing job",
-          "MODE_OBSTACLE_DRAW": "Drawing obstacles",
-          "MODE_CHANNEL_DRAW": "Drawing channel",
-          "MODE_ERASER_DRAW": "Drawing eraser",
-          "MODE_EDIT_BOUNDARY": "Editing boundary",
-          "MODE_LOCATION_ERROR": "Location error",
-          "MODE_BOUNDARY_JUMP": "Boundary crossed",
-          "MODE_CHARGING_PAUSE": "Charging paused"
+          "MODE_DISABLE": "Inaktiverad",
+          "MODE_INITIALIZATION": "Initialiserar",
+          "MODE_READY": "Redo",
+          "MODE_WORKING": "Arbetar",
+          "MODE_RETURNING": "Återvänder",
+          "MODE_CHARGING": "Laddar",
+          "MODE_UPDATING": "Uppdaterar",
+          "MODE_LOCK": "Låst",
+          "MODE_PAUSE": "Pausad",
+          "MODE_MANUAL_MOWING": "Manuell klippning",
+          "MODE_UPDATE_SUCCESS": "Uppdatering lyckades",
+          "MODE_OTA_UPGRADE_FAIL": "Uppdatering misslyckades",
+          "MODE_JOB_DRAW": "Ritar uppgift",
+          "MODE_OBSTACLE_DRAW": "Ritar hinder",
+          "MODE_CHANNEL_DRAW": "Ritar kanal",
+          "MODE_ERASER_DRAW": "Ritar suddgummi",
+          "MODE_EDIT_BOUNDARY": "Redigerar gräns",
+          "MODE_LOCATION_ERROR": "Positionsfel",
+          "MODE_BOUNDARY_JUMP": "Gräns korsad",
+          "MODE_CHARGING_PAUSE": "Laddning pausad"
         }
       },
       "work_area": {
@@ -197,7 +197,7 @@
         "name": "Bladslitagevarningstid"
       },
       "non_work_hours": {
-        "name": "Non-work hours"
+        "name": "Ej arbetstid"
       },
       "rtk_lora": {
         "name": "LoRa-version"
@@ -247,7 +247,7 @@
         "name": "Synkronisera kartor"
       },
       "start_schedule_sync": {
-        "name": "Synchronize schedules"
+        "name": "Synkronisera scheman"
       },
       "resync_rtk_dock": {
         "name": "Synkronisera RTK och laddstationen"
@@ -277,7 +277,7 @@
         "name": "Flytta laddstation"
       },
       "restart_mower": {
-        "name": "Restart mower"
+        "name": "Starta om gräsklipparen"
       }
     },
     "switch": {
@@ -522,8 +522,8 @@
       "description": "Starta klippningen med anpassade inställningar.",
       "fields": {
         "modify": {
-          "name": "Modify existing job",
-          "description": "Whether to modify an existing job or start a new one."
+          "name": "Ändra befintligt jobb",
+          "description": "Om ett befintligt jobb ska ändras eller ett nytt startas."
         },
         "is_mow": {
           "name": "Klipper",
@@ -626,16 +626,16 @@
       }
     },
     "set_non_work_hours": {
-      "name": "Set non-work hours",
-      "description": "Set the hours when the mower is not working.",
+      "name": "Ange ej arbetstid",
+      "description": "Ange de timmar då gräsklipparen inte arbetar.",
       "fields": {
         "start_time": {
-          "name": "Start time",
-          "description": "Start time of the non-work hours."
+          "name": "Starttid",
+          "description": "Starttid för ej arbetstid."
         },
         "end_time": {
-          "name": "End time",
-          "description": "End time of the non-work hours."
+          "name": "Sluttid",
+          "description": "Sluttid för ej arbetstid."
         }
       }
     },
@@ -652,6 +652,130 @@
     "reset_blade_time": {
       "name": "Återställ bladtid",
       "description": "Återställ räknaren för bladanvändningstid."
+    },
+    "get_map_data": {
+      "name": "Hämta kartdata",
+      "description": "Returnerar rå kartdata (områden, SVG-brickor, områdesnamn) för användning med SVG-kartkortet.",
+      "fields": {
+        "entity_id": {
+          "name": "Enhet",
+          "description": "Vilken som helst Mammotion-enhet som tillhör enheten."
+        }
+      }
+    },
+    "svg_add": {
+      "name": "Lägg till SVG-bricka",
+      "description": "Skickar en ny SVG-bricka till enhetens karta. Returnerar den enhetstilldelade hashen.",
+      "fields": {
+        "entity_id": {
+          "name": "Enhet",
+          "description": "Vilken som helst Mammotion-enhet som tillhör enheten."
+        },
+        "area_hash": {
+          "name": "Områdeshash",
+          "description": "Hash för det överordnade klipområdet."
+        },
+        "svg_data": {
+          "name": "SVG-data",
+          "description": "Rå SVG-kod för visning på kartan."
+        },
+        "svg_file_name": {
+          "name": "Filnamn",
+          "description": "Filnamn sparat på enheten (standard: pattern.svg)."
+        },
+        "scale": {
+          "name": "Skala",
+          "description": "Enhetlig skalfaktor (1,0 = ingen skalning)."
+        },
+        "rotate": {
+          "name": "Rotation",
+          "description": "Rotation i radianer (CCW-positiv i enhetens ENU-ram)."
+        },
+        "base_width_m": {
+          "name": "Bredd (m)",
+          "description": "Fysisk bredd av en brickenhet i meter (2,5 för Luba 1/Yuka, 4,0 för Luba 2)."
+        },
+        "base_height_m": {
+          "name": "Höjd (m)",
+          "description": "Fysisk höjd av en brickenhet i meter."
+        },
+        "x_move": {
+          "name": "X-position",
+          "description": "X-koordinat åsidosättning (meter). Standard: områdets tyngdpunkt."
+        },
+        "y_move": {
+          "name": "Y-position",
+          "description": "Y-koordinat åsidosättning (meter). Standard: områdets tyngdpunkt."
+        }
+      }
+    },
+    "svg_update": {
+      "name": "Uppdatera SVG-bricka",
+      "description": "Ersätter en befintlig SVG-bricka på enhetens karta. Använd device_hash returnerad av svg_add.",
+      "fields": {
+        "entity_id": {
+          "name": "Enhet",
+          "description": "Vilken som helst Mammotion-enhet som tillhör enheten."
+        },
+        "device_hash": {
+          "name": "Enhetshash",
+          "description": "Hash tilldelad av enheten när brickan lades till första gången."
+        },
+        "area_hash": {
+          "name": "Områdeshash",
+          "description": "Hash för det överordnade klipområdet."
+        },
+        "svg_data": {
+          "name": "SVG-data",
+          "description": "Uppdaterad SVG-kod."
+        },
+        "svg_file_name": {
+          "name": "Filnamn",
+          "description": "Filnamn sparat på enheten."
+        },
+        "scale": {
+          "name": "Skala",
+          "description": "Enhetlig skalfaktor."
+        },
+        "rotate": {
+          "name": "Rotation",
+          "description": "Rotation i radianer (CCW-positiv)."
+        },
+        "base_width_m": {
+          "name": "Bredd (m)",
+          "description": "Fysisk bredd av en brickenhet i meter."
+        },
+        "base_height_m": {
+          "name": "Höjd (m)",
+          "description": "Fysisk höjd av en brickenhet i meter."
+        },
+        "x_move": {
+          "name": "X-position",
+          "description": "X-koordinat åsidosättning (meter)."
+        },
+        "y_move": {
+          "name": "Y-position",
+          "description": "Y-koordinat åsidosättning (meter)."
+        }
+      }
+    },
+    "svg_delete": {
+      "name": "Ta bort SVG-bricka",
+      "description": "Tar bort en SVG-bricka från enhetens karta via dess enhetstilldelade hash.",
+      "fields": {
+        "entity_id": {
+          "name": "Enhet",
+          "description": "Vilken som helst Mammotion-enhet som tillhör enheten."
+        },
+        "device_hash": {
+          "name": "Enhetshash",
+          "description": "Hash tilldelad av enheten när brickan lades till."
+        },
+        "area_hash": {
+          "name": "Områdeshash",
+          "description": "Hash för det överordnade klipområdet."
+        }
+      }
     }
   },
   "exceptions": {

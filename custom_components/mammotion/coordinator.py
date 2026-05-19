@@ -976,11 +976,27 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         """Fire a one-shot snapshot if device state is older than 2 minutes."""
         await self.manager.ensure_fresh_state(self.device_name, max_age_s=120.0)
 
-    async def send_svg_command(self, command_str: str, **kwargs: Any) -> None:
-        """Send command and update."""
-        svg_message = SvgMessage()
+    async def send_svg_command(self, svg_message: SvgMessage) -> int | None:
+        """Send an SVG tile to the device using the multi-frame saga protocol.
 
-        await self.async_send_command("send_svg_data", svg_message=svg_message)
+        Chunks *svg_message* into 500-character frames and sends them one at a
+        time, waiting for a per-frame device ACK after each.  Returns the
+        device-assigned ``data_hash`` for use in subsequent UPDATE or DELETE
+        operations.
+
+        Args:
+            svg_message: Fully-populated message from
+                         :func:`~pymammotion.utility.svg.build_svg_for_area` or
+                         :func:`~pymammotion.utility.svg.build_svg_update`.
+
+        Returns:
+            Device-assigned ``data_hash``, or ``None`` on failure.
+
+        """
+        from pymammotion.utility.svg import chunk_svg_messages
+
+        chunks = chunk_svg_messages(svg_message)
+        return await self.manager.send_svg(self.device_name, chunks)
 
     def generate_route_information(
         self, operation_settings: OperationSettings

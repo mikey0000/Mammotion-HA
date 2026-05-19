@@ -29,7 +29,6 @@ from homeassistant.loader import async_get_integration
 from pymammotion.aliyun.exceptions import TooManyRequestsException
 from pymammotion.aliyun.model.dev_by_account_response import Device
 from pymammotion.client import MammotionClient
-from pymammotion.data.model.account import Credentials
 from pymammotion.data.model.device import MowingDevice
 from pymammotion.transport.base import (
     LoginFailedError,
@@ -52,6 +51,7 @@ from .const import (
     CONF_MAMMOTION_DEVICE_RECORDS,
     CONF_MAMMOTION_JWT_INFO,
     CONF_MAMMOTION_MQTT,
+    CONF_MOW_PATH_FETCH_ENABLED,
     CONF_PREFER_BLE,
     CONF_REGION_DATA,
     CONF_SESSION_DATA,
@@ -288,6 +288,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
         hass.config_entries.async_update_entry(entry, options=new_opts)
 
     prefer_ble = entry.options.get(CONF_PREFER_BLE, True)
+    mow_path_fetch_enabled = entry.options.get(CONF_MOW_PATH_FETCH_ENABLED, False)
 
     # Default to True for older entries that predate this key, as long as they
     # have account credentials configured.
@@ -352,9 +353,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
             elif prefer_ble:
                 mammotion.set_prefer_ble(device.device_name, prefer_ble=True)
 
-            # mammotion.set_mow_path_fetch_enabled(
-            #     device.device_name, enabled=False
-            # )
+            mammotion.set_mow_path_fetch_enabled(
+                device.device_name, enabled=mow_path_fetch_enabled
+            )
 
             unique_name = device.device_name
 

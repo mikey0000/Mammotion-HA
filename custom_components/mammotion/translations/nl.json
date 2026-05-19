@@ -277,7 +277,7 @@
         "name": "Verplaats laadstation"
       },
       "restart_mower": {
-        "name": "Restart mower"
+        "name": "Maaier herstarten"
       }
     },
     "switch": {
@@ -297,7 +297,7 @@
         "name": "Rand maaien"
       },
       "rain_tactics": {
-        "name": ""
+        "name": "Regendetectie (tijdens maaien) aan/uit"
       },
       "rain_detection": {
         "name": "Regen­detectie (maaier) aan/uit"
@@ -652,6 +652,130 @@
     "reset_blade_time": {
       "name": "Mestijd resetten",
       "description": "Reset de teller voor de gebruikstijd van het mes."
+    },
+    "get_map_data": {
+      "name": "Kaartgegevens ophalen",
+      "description": "Geeft de ruwe kaartgegevens terug (gebieden, SVG-tegels, gebiednamen) voor gebruik met de SVG-kaartkaart.",
+      "fields": {
+        "entity_id": {
+          "name": "Entiteit",
+          "description": "Elke Mammotion-entiteit die bij het apparaat hoort."
+        }
+      }
+    },
+    "svg_add": {
+      "name": "SVG-tegel toevoegen",
+      "description": "Stuurt een nieuwe SVG-tegel naar de apparaatkaart. Geeft de door het apparaat toegewezen hash terug.",
+      "fields": {
+        "entity_id": {
+          "name": "Entiteit",
+          "description": "Elke Mammotion-entiteit die bij het apparaat hoort."
+        },
+        "area_hash": {
+          "name": "Gebiedshash",
+          "description": "Hash van het bovenliggende maaigebied."
+        },
+        "svg_data": {
+          "name": "SVG-gegevens",
+          "description": "Ruwe SVG-opmaak om op de kaart weer te geven."
+        },
+        "svg_file_name": {
+          "name": "Bestandsnaam",
+          "description": "Bestandsnaam opgeslagen op het apparaat (standaard: pattern.svg)."
+        },
+        "scale": {
+          "name": "Schaal",
+          "description": "Uniforme schaalfactor (1,0 = geen schaling)."
+        },
+        "rotate": {
+          "name": "Rotatie",
+          "description": "Rotatie in radialen (CCW-positief in ENU-frame van het apparaat)."
+        },
+        "base_width_m": {
+          "name": "Breedte (m)",
+          "description": "Fysieke breedte van één tegeleenheid in meters (2,5 voor Luba 1/Yuka, 4,0 voor Luba 2)."
+        },
+        "base_height_m": {
+          "name": "Hoogte (m)",
+          "description": "Fysieke hoogte van één tegeleenheid in meters."
+        },
+        "x_move": {
+          "name": "X-positie",
+          "description": "X-coördinaat overschrijving (meters). Standaard: zwaartepunt van het gebied."
+        },
+        "y_move": {
+          "name": "Y-positie",
+          "description": "Y-coördinaat overschrijving (meters). Standaard: zwaartepunt van het gebied."
+        }
+      }
+    },
+    "svg_update": {
+      "name": "SVG-tegel bijwerken",
+      "description": "Vervangt een bestaande SVG-tegel op de apparaatkaart. Gebruik de device_hash die door svg_add is geretourneerd.",
+      "fields": {
+        "entity_id": {
+          "name": "Entiteit",
+          "description": "Elke Mammotion-entiteit die bij het apparaat hoort."
+        },
+        "device_hash": {
+          "name": "Apparaathash",
+          "description": "Hash toegewezen door het apparaat toen de tegel voor het eerst werd toegevoegd."
+        },
+        "area_hash": {
+          "name": "Gebiedshash",
+          "description": "Hash van het bovenliggende maaigebied."
+        },
+        "svg_data": {
+          "name": "SVG-gegevens",
+          "description": "Bijgewerkte SVG-opmaak."
+        },
+        "svg_file_name": {
+          "name": "Bestandsnaam",
+          "description": "Bestandsnaam opgeslagen op het apparaat."
+        },
+        "scale": {
+          "name": "Schaal",
+          "description": "Uniforme schaalfactor."
+        },
+        "rotate": {
+          "name": "Rotatie",
+          "description": "Rotatie in radialen (CCW-positief)."
+        },
+        "base_width_m": {
+          "name": "Breedte (m)",
+          "description": "Fysieke breedte van één tegeleenheid in meters."
+        },
+        "base_height_m": {
+          "name": "Hoogte (m)",
+          "description": "Fysieke hoogte van één tegeleenheid in meters."
+        },
+        "x_move": {
+          "name": "X-positie",
+          "description": "X-coördinaat overschrijving (meters)."
+        },
+        "y_move": {
+          "name": "Y-positie",
+          "description": "Y-coördinaat overschrijving (meters)."
+        }
+      }
+    },
+    "svg_delete": {
+      "name": "SVG-tegel verwijderen",
+      "description": "Verwijdert een SVG-tegel van de apparaatkaart via de door het apparaat toegewezen hash.",
+      "fields": {
+        "entity_id": {
+          "name": "Entiteit",
+          "description": "Elke Mammotion-entiteit die bij het apparaat hoort."
+        },
+        "device_hash": {
+          "name": "Apparaathash",
+          "description": "Hash toegewezen door het apparaat toen de tegel werd toegevoegd."
+        },
+        "area_hash": {
+          "name": "Gebiedshash",
+          "description": "Hash van het bovenliggende maaigebied."
+        }
+      }
     }
   },
   "exceptions": {

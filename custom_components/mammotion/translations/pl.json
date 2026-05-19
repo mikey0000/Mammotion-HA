@@ -62,13 +62,13 @@
   "entity": {
     "sensor": {
       "error_1_message": {
-        "name": "Last error"
+        "name": "Ostatni błąd"
       },
       "error_1_time": {
-        "name": "Last error time"
+        "name": "Czas ostatniego błędu"
       },
       "error_1_code": {
-        "name": "Last error code"
+        "name": "Ostatni kod błędu"
       },
       "battery_percent": {
         "name": "Bateria"
@@ -124,19 +124,19 @@
       "position_type": {
         "name": "Stan urządzenia",
         "state": {
-          "AREA_BORDER_ON": "At perimeter",
-          "AREA_INSIDE": "Inside area",
-          "AREA_OUT": "Outside area",
-          "CHANNEL_AREA_OVERLAP": "Path area overlap",
-          "CHANNEL_ON": "On path",
-          "CHARGE_ON": "At charging station",
-          "DUMPING_AREA_INSIDE": "In dump area",
-          "DUMPING_OUTSIDE": "Outside dump area",
-          "ABNORMAL_POSITIONING": "Position error",
-          "NO_AREAS": "No areas defined",
-          "OBS_ON": "At obstacle",
-          "TURN_AREA_INSIDE": "In turn area",
-          "VIRTUAL_INSIDE": "In virtual area"
+          "AREA_BORDER_ON": "Na obwodzie",
+          "AREA_INSIDE": "Wewnątrz obszaru",
+          "AREA_OUT": "Poza obszarem",
+          "CHANNEL_AREA_OVERLAP": "Nakładanie obszarów ścieżki",
+          "CHANNEL_ON": "Na ścieżce",
+          "CHARGE_ON": "Przy stacji ładowania",
+          "DUMPING_AREA_INSIDE": "W strefie zrzutu",
+          "DUMPING_OUTSIDE": "Poza strefą zrzutu",
+          "ABNORMAL_POSITIONING": "Błąd pozycji",
+          "NO_AREAS": "Brak zdefiniowanych obszarów",
+          "OBS_ON": "Przy przeszkodzie",
+          "TURN_AREA_INSIDE": "W strefie zawracania",
+          "VIRTUAL_INSIDE": "W obszarze wirtualnym"
         }
       },
       "visual_positioning_status": {
@@ -152,29 +152,29 @@
       "activity_mode": {
         "name": "Stan pracy",
         "state": {
-          "MODE_NOT_ACTIVE": "Not active",
+          "MODE_NOT_ACTIVE": "Nieaktywny",
           "MODE_ONLINE": "Online",
           "MODE_OFFLINE": "Offline",
-          "MODE_DISABLE": "Disabled",
-          "MODE_INITIALIZATION": "Initializing",
-          "MODE_READY": "Ready",
-          "MODE_WORKING": "Working",
-          "MODE_RETURNING": "Returning",
-          "MODE_CHARGING": "Charging",
-          "MODE_UPDATING": "Updating",
-          "MODE_LOCK": "Locked",
-          "MODE_PAUSE": "Paused",
-          "MODE_MANUAL_MOWING": "Manual mowing",
-          "MODE_UPDATE_SUCCESS": "Update successful",
-          "MODE_OTA_UPGRADE_FAIL": "Update failed",
-          "MODE_JOB_DRAW": "Drawing job",
-          "MODE_OBSTACLE_DRAW": "Drawing obstacles",
-          "MODE_CHANNEL_DRAW": "Drawing channel",
-          "MODE_ERASER_DRAW": "Drawing eraser",
-          "MODE_EDIT_BOUNDARY": "Editing boundary",
-          "MODE_LOCATION_ERROR": "Location error",
-          "MODE_BOUNDARY_JUMP": "Boundary crossed",
-          "MODE_CHARGING_PAUSE": "Charging paused"
+          "MODE_DISABLE": "Wyłączony",
+          "MODE_INITIALIZATION": "Inicjalizacja",
+          "MODE_READY": "Gotowy",
+          "MODE_WORKING": "Pracuje",
+          "MODE_RETURNING": "Powraca",
+          "MODE_CHARGING": "Ładowanie",
+          "MODE_UPDATING": "Aktualizacja",
+          "MODE_LOCK": "Zablokowany",
+          "MODE_PAUSE": "Wstrzymany",
+          "MODE_MANUAL_MOWING": "Ręczne koszenie",
+          "MODE_UPDATE_SUCCESS": "Aktualizacja udana",
+          "MODE_OTA_UPGRADE_FAIL": "Aktualizacja nieudana",
+          "MODE_JOB_DRAW": "Rysowanie zadania",
+          "MODE_OBSTACLE_DRAW": "Rysowanie przeszkód",
+          "MODE_CHANNEL_DRAW": "Rysowanie kanału",
+          "MODE_ERASER_DRAW": "Rysowanie gumki",
+          "MODE_EDIT_BOUNDARY": "Edytowanie granicy",
+          "MODE_LOCATION_ERROR": "Błąd lokalizacji",
+          "MODE_BOUNDARY_JUMP": "Przekroczono granicę",
+          "MODE_CHARGING_PAUSE": "Ładowanie wstrzymane"
         }
       },
       "work_area": {
@@ -197,16 +197,16 @@
         "name": "Czas ostrzeżenia o zużyciu ostrza"
       },
       "non_work_hours": {
-        "name": "Non-work hours"
+        "name": "Godziny nierobocze"
       },
       "rtk_lora": {
-        "name": "LoRa version"
+        "name": "Wersja LoRa"
       },
       "rtk_latitude": {
-        "name": "Latitude"
+        "name": "Szerokość geograficzna"
       },
       "rtk_longitude": {
-        "name": "Longitude"
+        "name": "Długość geograficzna"
       },
       "rtk_wifi_rssi": {
         "name": "Wi-Fi RSSI"
@@ -247,7 +247,7 @@
         "name": "Synchronizuj mapy"
       },
       "start_schedule_sync": {
-        "name": "Synchronize schedules"
+        "name": "Synchronizuj harmonogramy"
       },
       "resync_rtk_dock": {
         "name": "Zsynchronizuj RTK i stację ładującą"
@@ -274,10 +274,10 @@
         "name": "Wyczyść mapy i nazwy obszarów"
       },
       "relocate_charging_station": {
-        "name": "Relocate charging station"
+        "name": "Przenieś stację ładowania"
       },
       "restart_mower": {
-        "name": "Restart mower"
+        "name": "Uruchom ponownie kosiarkę"
       }
     },
     "switch": {
@@ -297,10 +297,10 @@
         "name": "Cięcie krawędzi"
       },
       "rain_tactics": {
-        "name": "Rain detection (during mow) On/Off"
+        "name": "Wykrywanie deszczu (podczas koszenia) wł/wył"
       },
       "rain_detection": {
-        "name": "Rain detection (Mower) On/Off"
+        "name": "Wykrywanie deszczu (kosiarka) wł/wył"
       },
       "side_led": {
         "name": "Boczna dioda LED wł/wył"
@@ -309,7 +309,7 @@
         "name": "Najpierw obwód"
       },
       "schedule_updates": {
-        "name": "Turn Updates On/Off"
+        "name": "Włącz/Wyłącz aktualizacje"
       },
       "bluetooth_enabled": {
         "name": "Bluetooth"
@@ -318,10 +318,10 @@
         "name": "Cloud"
       },
       "manual_light": {
-        "name": "Manual light on/off"
+        "name": "Ręczne światło wł/wył"
       },
       "night_light": {
-        "name": "Auto lighting on/off"
+        "name": "Automatyczne oświetlenie wł/wył"
       },
       "voice_on_off": {
         "name": "Głos wł./wył."
@@ -397,11 +397,11 @@
         }
       },
       "cutter_mode": {
-        "name": "Cutter Speed",
+        "name": "Prędkość cięcia",
         "state": {
-          "normal": "Medium",
-          "slow": "Slow",
-          "fast": "Fast"
+          "normal": "Średnia",
+          "slow": "Wolna",
+          "fast": "Szybka"
         }
       },
       "voice_gender": {
@@ -522,15 +522,15 @@
       "description": "Rozpocznij operację kojenia z ustawieniami niestandardowymi.",
       "fields": {
         "modify": {
-          "name": "Modify existing job",
-          "description": "Whether to modify an existing job or start a new one."
+          "name": "Modyfikuj istniejące zadanie",
+          "description": "Czy zmodyfikować istniejące zadanie, czy rozpocząć nowe."
         },
         "is_mow": {
           "name": "Jest siew",
           "description": "Czy koszenie jest aktywne. (Yuka)."
         },
         "is_dump": {
-          "name": "Dumping",
+          "name": "Opróżnianie",
           "description": "Czy opróżnianie trawy jest aktywne. (Yuka)."
         },
         "is_edge": {
@@ -612,30 +612,30 @@
       }
     },
     "start_stop_blades": {
-      "name": "Start or stop blades",
-      "description": "Start or stop the blades manually.",
+      "name": "Uruchom lub zatrzymaj ostrza",
+      "description": "Uruchom lub zatrzymaj ostrza ręcznie.",
       "fields": {
         "start_stop": {
-          "name": "Start or stop",
-          "description": "Whether blades are on or off."
+          "name": "Uruchom lub zatrzymaj",
+          "description": "Czy ostrza są włączone czy wyłączone."
         },
         "blade_height": {
-          "name": "Blade height",
-          "description": "Height of the blade."
+          "name": "Wysokość ostrza",
+          "description": "Wysokość ostrza."
         }
       }
     },
     "set_non_work_hours": {
-      "name": "Set non-work hours",
-      "description": "Set the hours when the mower is not working.",
+      "name": "Ustaw godziny nierobocze",
+      "description": "Ustaw godziny, w których kosiarka nie pracuje.",
       "fields": {
         "start_time": {
-          "name": "Start time",
-          "description": "Start time of the non-work hours."
+          "name": "Czas rozpoczęcia",
+          "description": "Czas rozpoczęcia godzin nieroboczych."
         },
         "end_time": {
-          "name": "End time",
-          "description": "End time of the non-work hours."
+          "name": "Czas zakończenia",
+          "description": "Czas zakończenia godzin nieroboczych."
         }
       }
     },
@@ -652,6 +652,130 @@
     "reset_blade_time": {
       "name": "Resetuj czas noża",
       "description": "Resetuj licznik czasu użytkowania noża."
+    },
+    "get_map_data": {
+      "name": "Pobierz dane mapy",
+      "description": "Zwraca surowe dane mapy (obszary, kafelki SVG, nazwy obszarów) do użytku z kartą mapy SVG.",
+      "fields": {
+        "entity_id": {
+          "name": "Encja",
+          "description": "Dowolna encja Mammotion należąca do urządzenia."
+        }
+      }
+    },
+    "svg_add": {
+      "name": "Dodaj kafelek SVG",
+      "description": "Wysyła nowy kafelek SVG do mapy urządzenia. Zwraca hash przydzielony przez urządzenie.",
+      "fields": {
+        "entity_id": {
+          "name": "Encja",
+          "description": "Dowolna encja Mammotion należąca do urządzenia."
+        },
+        "area_hash": {
+          "name": "Hash obszaru",
+          "description": "Hash nadrzędnego obszaru koszenia."
+        },
+        "svg_data": {
+          "name": "Dane SVG",
+          "description": "Surowy znacznik SVG do wyświetlenia na mapie."
+        },
+        "svg_file_name": {
+          "name": "Nazwa pliku",
+          "description": "Nazwa pliku zapisana na urządzeniu (domyślnie: pattern.svg)."
+        },
+        "scale": {
+          "name": "Skala",
+          "description": "Jednolity współczynnik skali (1,0 = brak skalowania)."
+        },
+        "rotate": {
+          "name": "Obrót",
+          "description": "Obrót w radianach (CCW-dodatni w ramce ENU urządzenia)."
+        },
+        "base_width_m": {
+          "name": "Szerokość (m)",
+          "description": "Fizyczna szerokość jednej jednostki kafelka w metrach (2,5 dla Luba 1/Yuka, 4,0 dla Luba 2)."
+        },
+        "base_height_m": {
+          "name": "Wysokość (m)",
+          "description": "Fizyczna wysokość jednej jednostki kafelka w metrach."
+        },
+        "x_move": {
+          "name": "Pozycja X",
+          "description": "Nadpisanie współrzędnej X (metry). Domyślnie: centroid obszaru."
+        },
+        "y_move": {
+          "name": "Pozycja Y",
+          "description": "Nadpisanie współrzędnej Y (metry). Domyślnie: centroid obszaru."
+        }
+      }
+    },
+    "svg_update": {
+      "name": "Aktualizuj kafelek SVG",
+      "description": "Zastępuje istniejący kafelek SVG na mapie urządzenia. Użyj device_hash zwróconego przez svg_add.",
+      "fields": {
+        "entity_id": {
+          "name": "Encja",
+          "description": "Dowolna encja Mammotion należąca do urządzenia."
+        },
+        "device_hash": {
+          "name": "Hash urządzenia",
+          "description": "Hash przydzielony przez urządzenie podczas pierwszego dodania kafelka."
+        },
+        "area_hash": {
+          "name": "Hash obszaru",
+          "description": "Hash nadrzędnego obszaru koszenia."
+        },
+        "svg_data": {
+          "name": "Dane SVG",
+          "description": "Zaktualizowany znacznik SVG."
+        },
+        "svg_file_name": {
+          "name": "Nazwa pliku",
+          "description": "Nazwa pliku zapisana na urządzeniu."
+        },
+        "scale": {
+          "name": "Skala",
+          "description": "Jednolity współczynnik skali."
+        },
+        "rotate": {
+          "name": "Obrót",
+          "description": "Obrót w radianach (CCW-dodatni)."
+        },
+        "base_width_m": {
+          "name": "Szerokość (m)",
+          "description": "Fizyczna szerokość jednej jednostki kafelka w metrach."
+        },
+        "base_height_m": {
+          "name": "Wysokość (m)",
+          "description": "Fizyczna wysokość jednej jednostki kafelka w metrach."
+        },
+        "x_move": {
+          "name": "Pozycja X",
+          "description": "Nadpisanie współrzędnej X (metry)."
+        },
+        "y_move": {
+          "name": "Pozycja Y",
+          "description": "Nadpisanie współrzędnej Y (metry)."
+        }
+      }
+    },
+    "svg_delete": {
+      "name": "Usuń kafelek SVG",
+      "description": "Usuwa kafelek SVG z mapy urządzenia na podstawie jego hasha przydzielonego przez urządzenie.",
+      "fields": {
+        "entity_id": {
+          "name": "Encja",
+          "description": "Dowolna encja Mammotion należąca do urządzenia."
+        },
+        "device_hash": {
+          "name": "Hash urządzenia",
+          "description": "Hash przydzielony przez urządzenie podczas dodawania kafelka."
+        },
+        "area_hash": {
+          "name": "Hash obszaru",
+          "description": "Hash nadrzędnego obszaru koszenia."
+        }
+      }
     }
   },
   "exceptions": {
