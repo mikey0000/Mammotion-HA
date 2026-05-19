@@ -5,6 +5,11 @@ on:
     branches:
       - main
       - refactored-library
+    paths:
+      - "**.py"
+      - "custom_components/**/manifest.json"
+      - "pyproject.toml"
+      - "uv.lock"
 
 jobs:
   check-tag:

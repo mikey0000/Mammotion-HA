@@ -82,6 +82,22 @@ Satellite map tiles (Google Maps, OpenStreetMap, etc.) are sometimes misaligned 
 
 Typical offsets are within ±20 m. Positive latitude = north, positive longitude = east.
 
+## Dashboard Plugins
+
+Companion HACS dashboard plugins that extend the Mammotion integration with visual tools.
+
+### Mammotion Assets
+
+Images and scripts for displaying Mammotion mowers on a map in Home Assistant — mower card backgrounds, side-profile images, map icons, RTK/dock assets, and the `geojson.js` script that renders mowing areas with labels.
+
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=mikey0000&repository=ha-mammotion-assets&category=plugin)
+
+### Mammotion SVG Pick and Place
+
+An interactive Lovelace card for placing, editing, and deleting SVG pattern tiles on your mower's map directly from the dashboard. Load an SVG, drag it into position, scale and rotate it, then send it to the device in one click via the `mammotion.svg_add` service.
+
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=mikey0000&repository=ha-mammotion-svg-pick-n-place&category=plugin)
+
 ## Troubleshooting 🔧
 
 If you encounter any issues with the Mammotion integration, please check the Home Assistant logs for error messages. You can also try the following troubleshooting steps:
