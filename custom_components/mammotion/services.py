@@ -68,6 +68,29 @@ SVG_DELETE_SCHEMA = vol.Schema(
 )
 
 
+_JS_MAX_SAFE_INT = (1 << 53) - 1
+
+
+def _stringify_large_ints(obj: Any) -> Any:
+    """Recursively convert integers beyond JS Number.MAX_SAFE_INTEGER to strings.
+
+    JavaScript's JSON.parse silently loses precision on integers > 2**53-1.
+    Converting them to strings before sending over the WebSocket preserves the
+    full hash value; Python's vol.Coerce(int) can convert them back on ingress.
+    """
+    if isinstance(obj, dict):
+        return {k: _stringify_large_ints(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_stringify_large_ints(v) for v in obj]
+    if (
+        isinstance(obj, int)
+        and not isinstance(obj, bool)
+        and abs(obj) > _JS_MAX_SAFE_INT
+    ):
+        return str(obj)
+    return obj
+
+
 def _get_mower_by_entity_id(
     hass: HomeAssistant, entity_id: str
 ) -> MammotionMowerData | None:
@@ -172,11 +195,13 @@ def async_setup_services(hass: HomeAssistant) -> None:  # noqa: C901
             return {}
         device_data = cast(MowingDevice, mower.reporting_coordinator.data)
         map_dict = dataclasses.asdict(device_data.map)
-        return {
-            "area": map_dict.get("area", {}),
-            "svg": map_dict.get("svg", {}),
-            "area_name": map_dict.get("area_name", []),
-        }
+        return _stringify_large_ints(
+            {
+                "area": map_dict.get("area", {}),
+                "svg": map_dict.get("svg", {}),
+                "area_name": map_dict.get("area_name", []),
+            }
+        )
 
     async def handle_svg_add(call: ServiceCall) -> dict[str, Any]:
         from pymammotion.data.model.device import MowingDevice  # noqa: PLC0415
@@ -211,7 +236,7 @@ def async_setup_services(hass: HomeAssistant) -> None:  # noqa: C901
         if "y_move" in call.data:
             msg.svg_message.y_move = call.data["y_move"]
         result = await coordinator.send_svg_command(msg)
-        return {"device_hash": result}
+        return {"device_hash": str(result)}
 
     async def handle_svg_update(call: ServiceCall) -> dict[str, Any]:
         from pymammotion.data.model.device import MowingDevice  # noqa: PLC0415
@@ -247,7 +272,7 @@ def async_setup_services(hass: HomeAssistant) -> None:  # noqa: C901
         if "y_move" in call.data:
             msg.svg_message.y_move = call.data["y_move"]
         result = await coordinator.send_svg_command(msg)
-        return {"device_hash": result}
+        return {"device_hash": str(result)}
 
     async def handle_svg_delete(call: ServiceCall) -> dict[str, Any]:
         from pymammotion.utility.svg import build_svg_delete  # noqa: PLC0415

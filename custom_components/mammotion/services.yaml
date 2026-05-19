@@ -316,7 +316,7 @@ svg_add:
         number:
           min: -3.14159
           max: 3.14159
-          step: 0.0001
+          step: 0.001
           mode: box
           unit_of_measurement: "rad"
     base_width_m:
@@ -402,7 +402,7 @@ svg_update:
         number:
           min: -3.14159
           max: 3.14159
-          step: 0.0001
+          step: 0.001
           mode: box
           unit_of_measurement: "rad"
     base_width_m:
