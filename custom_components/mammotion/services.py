@@ -10,7 +10,9 @@ from homeassistant.const import ATTR_ENTITY_ID
 from homeassistant.core import HomeAssistant, ServiceCall, SupportsResponse, callback
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import entity_registry as er
+from pymammotion.data.model.hash_list import CommDataCouple
 
+from . import MammotionConfigEntry
 from .const import DOMAIN, LOGGER
 from .geojson_utils import apply_geojson_offset
 from .models import MammotionMowerData
@@ -95,7 +97,6 @@ def _get_mower_by_entity_id(
     hass: HomeAssistant, entity_id: str
 ) -> MammotionMowerData | None:
     """Find the MammotionMowerData for the given entity_id across all config entries."""
-    from . import MammotionConfigEntry  # noqa: PLC0415
 
     entity_reg = er.async_get(hass)
     entity_entry = entity_reg.async_get(entity_id)
@@ -195,12 +196,15 @@ def async_setup_services(hass: HomeAssistant) -> None:  # noqa: C901
             return {}
         device_data = cast(MowingDevice, mower.reporting_coordinator.data)
         map_dict = dataclasses.asdict(device_data.map)
-        return _stringify_large_ints(
-            {
-                "area": map_dict.get("area", {}),
-                "svg": map_dict.get("svg", {}),
-                "area_name": map_dict.get("area_name", []),
-            }
+        return cast(
+            dict[str, Any],
+            _stringify_large_ints(
+                {
+                    "area": map_dict.get("area", {}),
+                    "svg": map_dict.get("svg", {}),
+                    "area_name": map_dict.get("area_name", []),
+                }
+            ),
         )
 
     async def handle_svg_add(call: ServiceCall) -> dict[str, Any]:
@@ -215,7 +219,7 @@ def async_setup_services(hass: HomeAssistant) -> None:  # noqa: C901
         device_data = cast(MowingDevice, coordinator.data)
         area_hash: int = call.data["area_hash"]
         frame_list = device_data.map.area.get(area_hash)
-        boundary = []
+        boundary: list[CommDataCouple] = []
         if frame_list:
             for frame in sorted(
                 frame_list.data, key=lambda f: getattr(f, "current_frame", 0)
@@ -250,7 +254,7 @@ def async_setup_services(hass: HomeAssistant) -> None:  # noqa: C901
         device_data = cast(MowingDevice, coordinator.data)
         area_hash: int = call.data["area_hash"]
         frame_list = device_data.map.area.get(area_hash)
-        boundary = []
+        boundary: list[CommDataCouple] = []
         if frame_list:
             for frame in sorted(
                 frame_list.data, key=lambda f: getattr(f, "current_frame", 0)
