@@ -1,0 +1,1707 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Mammotion SVG Map Aligner</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: system-ui, sans-serif;
+        background: #111827;
+        color: #e5e7eb;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      /* ── header ── */
+      header {
+        background: #1f2937;
+        border-bottom: 1px solid #374151;
+        padding: 8px 12px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+        flex-shrink: 0;
+      }
+      header h1 {
+        font-size: 16px;
+        font-weight: 700;
+        color: #60a5fa;
+        white-space: nowrap;
+      }
+      select,
+      input[type="number"],
+      input[type="text"] {
+        background: #374151;
+        border: 1px solid #4b5563;
+        color: #e5e7eb;
+        border-radius: 6px;
+        padding: 4px 8px;
+        font-size: 13px;
+      }
+      select:focus,
+      input:focus {
+        outline: none;
+        border-color: #60a5fa;
+      }
+      button {
+        background: #2563eb;
+        border: none;
+        color: #fff;
+        border-radius: 6px;
+        padding: 5px 12px;
+        font-size: 13px;
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+      button:hover {
+        background: #1d4ed8;
+      }
+      button.danger {
+        background: #dc2626;
+      }
+      button.danger:hover {
+        background: #b91c1c;
+      }
+      button.secondary {
+        background: #374151;
+      }
+      button.secondary:hover {
+        background: #4b5563;
+      }
+      label {
+        font-size: 12px;
+        color: #9ca3af;
+      }
+
+      /* ── main layout ── */
+      main {
+        flex: 1;
+        display: flex;
+        min-height: 0;
+      }
+
+      /* ── map panel ── */
+      .map-panel {
+        flex: 1;
+        position: relative;
+        overflow: hidden;
+        background: #0d1117;
+        cursor: default;
+      }
+      #map-svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      .map-hint {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        color: #4b5563;
+        pointer-events: none;
+      }
+      .map-hint h2 {
+        font-size: 20px;
+        margin-bottom: 8px;
+      }
+      .map-hint p {
+        font-size: 13px;
+      }
+
+      /* ── drop overlay ── */
+      .drop-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(96, 165, 250, 0.15);
+        border: 3px dashed #60a5fa;
+        z-index: 100;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        color: #60a5fa;
+      }
+      .drop-overlay.active {
+        display: flex;
+      }
+
+      /* ── sidebar ── */
+      .sidebar {
+        width: 320px;
+        display: flex;
+        flex-direction: column;
+        background: #1f2937;
+        border-left: 1px solid #374151;
+        overflow: hidden;
+      }
+      .sidebar-tabs {
+        display: flex;
+        border-bottom: 1px solid #374151;
+        flex-shrink: 0;
+      }
+      .tab-btn {
+        flex: 1;
+        padding: 8px;
+        font-size: 13px;
+        background: none;
+        border: none;
+        color: #9ca3af;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+      }
+      .tab-btn.active {
+        color: #60a5fa;
+        border-bottom-color: #60a5fa;
+      }
+      .tab-content {
+        display: none;
+        flex: 1;
+        overflow-y: auto;
+        padding: 12px;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .tab-content.active {
+        display: flex;
+      }
+
+      /* ── sections ── */
+      .section {
+        background: #111827;
+        border: 1px solid #374151;
+        border-radius: 8px;
+        padding: 10px;
+      }
+      .section h3 {
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #6b7280;
+        margin-bottom: 8px;
+      }
+      .form-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 6px;
+      }
+      .form-row label {
+        min-width: 90px;
+        font-size: 12px;
+        color: #9ca3af;
+      }
+      .form-row input {
+        flex: 1;
+        min-width: 0;
+      }
+      .form-row span {
+        font-size: 11px;
+        color: #6b7280;
+        white-space: nowrap;
+      }
+
+      /* ── SVG drop zone ── */
+      .svg-dropzone {
+        border: 2px dashed #374151;
+        border-radius: 8px;
+        padding: 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: border-color 0.15s;
+        font-size: 13px;
+        color: #6b7280;
+      }
+      .svg-dropzone:hover,
+      .svg-dropzone.over {
+        border-color: #60a5fa;
+        color: #60a5fa;
+      }
+      .svg-dropzone.loaded {
+        border-color: #22c55e;
+        color: #22c55e;
+      }
+      .svg-dropzone.toobig {
+        border-color: #dc2626;
+        color: #dc2626;
+      }
+      .svg-size-banner {
+        border-radius: 6px;
+        padding: 7px 10px;
+        font-size: 12px;
+        margin-top: 6px;
+        display: none;
+      }
+      .svg-size-banner.ok {
+        display: block;
+        background: #052e16;
+        border: 1px solid #22c55e;
+        color: #86efac;
+      }
+      .svg-size-banner.warn {
+        display: block;
+        background: #450a0a;
+        border: 1px solid #dc2626;
+        color: #fca5a5;
+      }
+
+      /* ── existing SVG list ── */
+      .svg-item {
+        background: #1f2937;
+        border: 1px solid #374151;
+        border-radius: 6px;
+        padding: 8px;
+        margin-bottom: 6px;
+        font-size: 12px;
+      }
+      .svg-item .hash {
+        font-family: monospace;
+        color: #60a5fa;
+        font-size: 11px;
+        word-break: break-all;
+      }
+      .svg-item .area-name {
+        color: #e5e7eb;
+        font-weight: 500;
+        margin-bottom: 3px;
+      }
+      .svg-item.disabled {
+        border-color: #f59e0b;
+        background: #1c1a0f;
+      }
+      .badge {
+        display: inline-block;
+        font-size: 10px;
+        padding: 1px 5px;
+        border-radius: 3px;
+        margin-left: 4px;
+      }
+      .badge.disabled {
+        background: #78350f;
+        color: #fcd34d;
+      }
+      .badge.active {
+        background: #064e3b;
+        color: #6ee7b7;
+      }
+
+      /* ── code output ── */
+      #code-output {
+        font-family: monospace;
+        font-size: 11px;
+        background: #030712;
+        border: 1px solid #374151;
+        border-radius: 6px;
+        padding: 10px;
+        resize: none;
+        width: 100%;
+        height: 260px;
+        color: #86efac;
+        line-height: 1.5;
+      }
+      .copy-row {
+        display: flex;
+        gap: 6px;
+        margin-top: 6px;
+      }
+
+      /* ── status bar ── */
+      #statusbar {
+        background: #1f2937;
+        border-top: 1px solid #374151;
+        padding: 3px 12px;
+        font-size: 11px;
+        color: #6b7280;
+        flex-shrink: 0;
+        display: flex;
+        gap: 16px;
+      }
+      #statusbar span {
+        color: #9ca3af;
+      }
+
+      /* ── map elements ── */
+      .map-area {
+        fill-opacity: 0.12;
+        stroke-width: 1.5;
+        cursor: pointer;
+        transition: fill-opacity 0.15s;
+      }
+      .map-area:hover {
+        fill-opacity: 0.25;
+      }
+      .map-area.selected {
+        fill-opacity: 0.3;
+        stroke-width: 2.5;
+      }
+      .map-obstacle {
+        fill: #ef4444;
+        fill-opacity: 0.2;
+        stroke: #ef4444;
+        stroke-width: 1.5;
+      }
+      .map-label {
+        font-size: 11px;
+        fill: #e5e7eb;
+        pointer-events: none;
+        text-anchor: middle;
+        dominant-baseline: middle;
+      }
+      .map-centroid {
+        fill: #60a5fa;
+        pointer-events: none;
+      }
+      .svg-tile-preview {
+        cursor: move;
+      }
+      .svg-tile-existing {
+        cursor: pointer;
+      }
+      .grid-line {
+        stroke: #1e3a5f;
+        stroke-width: 0.5;
+      }
+      .axis-line {
+        stroke: #1e4a7a;
+        stroke-width: 1;
+      }
+      .scalebar {
+        stroke: #9ca3af;
+        stroke-width: 1.5;
+      }
+      .drag-handle {
+        fill: #60a5fa;
+        stroke: #fff;
+        stroke-width: 1;
+        cursor: nw-resize;
+      }
+      .rotate-handle {
+        fill: #f59e0b;
+        stroke: #fff;
+        stroke-width: 1;
+        cursor: crosshair;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- global drag-drop overlay -->
+    <div class="drop-overlay" id="drop-overlay">Drop diagnostic JSON here</div>
+
+    <!-- header -->
+    <header>
+      <h1>⛳ Mammotion SVG Map Aligner</h1>
+
+      <div style="display: flex; gap: 6px; align-items: center">
+        <button onclick="document.getElementById('json-input').click()">
+          📂 Load Diagnostic JSON
+        </button>
+        <input
+          type="file"
+          id="json-input"
+          accept=".json"
+          style="display: none"
+        />
+      </div>
+
+      <div style="display: flex; gap: 6px; align-items: center">
+        <label>Device</label>
+        <select id="device-select" onchange="onDeviceChange()">
+          <option value="">— select —</option>
+        </select>
+      </div>
+
+      <div style="display: flex; gap: 6px; align-items: center">
+        <label>Area</label>
+        <select id="area-select" onchange="onAreaChange()">
+          <option value="">— select —</option>
+        </select>
+      </div>
+
+      <div
+        style="display: flex; gap: 6px; align-items: center; margin-left: auto"
+      >
+        <label style="font-size: 11px; color: #6b7280">Device type</label>
+        <select id="device-type" onchange="onTransformChange()">
+          <option value="2.5">Luba 1 / Yuka (2.5 m)</option>
+          <option value="4.0">Luba 2 (4.0 m)</option>
+        </select>
+      </div>
+    </header>
+
+    <!-- main -->
+    <main>
+      <!-- map -->
+      <div class="map-panel" id="map-panel">
+        <svg id="map-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div class="map-hint" id="map-hint">
+          <h2>🗺️ No map loaded</h2>
+          <p>
+            Drag &amp; drop a diagnostic JSON file here,<br />or use the "Load"
+            button above.
+          </p>
+        </div>
+      </div>
+
+      <!-- sidebar -->
+      <div class="sidebar">
+        <div class="sidebar-tabs">
+          <button class="tab-btn active" onclick="showTab('place')">
+            Place SVG
+          </button>
+          <button class="tab-btn" onclick="showTab('existing')">
+            Existing
+          </button>
+          <button class="tab-btn" onclick="showTab('code')">Code</button>
+        </div>
+
+        <!-- Place tab -->
+        <div class="tab-content active" id="tab-place">
+          <div class="section">
+            <h3>SVG Source</h3>
+            <div
+              class="svg-dropzone"
+              id="svg-dropzone"
+              onclick="document.getElementById('svg-file-input').click()"
+            >
+              <div id="svg-dz-label">Drop SVG file here or click to browse</div>
+            </div>
+            <input
+              type="file"
+              id="svg-file-input"
+              accept=".svg,image/svg+xml"
+              style="display: none"
+            />
+            <button
+              class="secondary"
+              style="width: 100%; margin-top: 6px; font-size: 12px"
+              onclick="document.getElementById('svg-paste-area').style.display=document.getElementById('svg-paste-area').style.display==='none'?'block':'none'"
+            >
+              Paste SVG markup ▾
+            </button>
+            <textarea
+              id="svg-paste-area"
+              placeholder="<svg …>…</svg>"
+              style="
+                display: none;
+                width: 100%;
+                height: 80px;
+                margin-top: 6px;
+                font-family: monospace;
+                font-size: 11px;
+                background: #030712;
+                color: #86efac;
+                border: 1px solid #374151;
+                border-radius: 4px;
+                padding: 6px;
+                resize: vertical;
+              "
+              oninput="onSvgPaste()"
+            ></textarea>
+            <div id="svg-size-banner" class="svg-size-banner"></div>
+          </div>
+
+          <div class="section">
+            <h3>Transform</h3>
+            <div class="form-row">
+              <label>X (East) m</label>
+              <input
+                type="number"
+                id="t-x"
+                step="0.001"
+                value="0"
+                oninput="onTransformInput()"
+              />
+            </div>
+            <div class="form-row">
+              <label>Y (North) m</label>
+              <input
+                type="number"
+                id="t-y"
+                step="0.001"
+                value="0"
+                oninput="onTransformInput()"
+              />
+            </div>
+            <div class="form-row">
+              <label>Scale</label>
+              <input
+                type="number"
+                id="t-scale"
+                step="0.05"
+                value="1.0"
+                min="0.1"
+                max="10"
+                oninput="onTransformInput()"
+              />
+            </div>
+            <div class="form-row">
+              <label>Rotate (rad)</label>
+              <input
+                type="number"
+                id="t-rotate"
+                step="0.01"
+                value="0"
+                oninput="onTransformInput()"
+              />
+              <span id="rotate-deg">0°</span>
+            </div>
+            <div class="form-row">
+              <label>Base W (m)</label>
+              <input
+                type="number"
+                id="t-bw"
+                step="0.1"
+                value="2.5"
+                min="0.5"
+                oninput="onTransformInput()"
+              />
+            </div>
+            <div class="form-row">
+              <label>Base H (m)</label>
+              <input
+                type="number"
+                id="t-bh"
+                step="0.1"
+                value="2.5"
+                min="0.5"
+                oninput="onTransformInput()"
+              />
+            </div>
+            <div class="form-row">
+              <label>Filename</label>
+              <input
+                type="text"
+                id="t-fname"
+                value="pattern.svg"
+                oninput="onTransformInput()"
+              />
+            </div>
+            <button
+              onclick="resetToAreaCentroid()"
+              class="secondary"
+              style="width: 100%; margin-top: 4px; font-size: 12px"
+            >
+              ⌖ Snap to area centroid
+            </button>
+          </div>
+        </div>
+
+        <!-- Existing tab -->
+        <div class="tab-content" id="tab-existing">
+          <div class="section">
+            <h3>SVG tiles on device</h3>
+            <div id="existing-svg-list">
+              <p style="color: #6b7280; font-size: 12px">
+                Load a diagnostic JSON to see existing SVG tiles.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Code tab -->
+        <div class="tab-content" id="tab-code">
+          <div class="section">
+            <h3>Generated Python</h3>
+            <p style="font-size: 11px; color: #6b7280; margin-bottom: 6px">
+              Paste into dev_console.py or HA Python console.
+            </p>
+            <textarea
+              id="code-output"
+              readonly
+              placeholder="Position an SVG on the map, then code will appear here."
+            ></textarea>
+            <div class="copy-row">
+              <button onclick="copyCode()" style="flex: 1">📋 Copy</button>
+              <select id="code-mode" onchange="generateCode()" style="flex: 1">
+                <option value="add">ADD (new tile)</option>
+                <option value="update">UPDATE (existing hash)</option>
+              </select>
+            </div>
+            <div class="form-row" style="margin-top: 8px" id="update-hash-row">
+              <label>Existing hash</label>
+              <input
+                type="text"
+                id="existing-hash-input"
+                placeholder="device-assigned hash"
+                oninput="generateCode()"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <div id="statusbar">
+      <span id="status-coords">Hover map for coordinates</span>
+      <span id="status-area">No area selected</span>
+      <span id="status-svg">No SVG loaded</span>
+    </div>
+
+    <script>
+      "use strict";
+
+      // ── Constants ──────────────────────────────────────────────────────────────
+      const SVG_MAX_BYTES = 10240; // device TSL string length limit (error 6310)
+
+      // ── State ──────────────────────────────────────────────────────────────────
+      let diag = null; // parsed diagnostic JSON (hashes as strings)
+      let deviceName = "";
+      let areaHash = ""; // selected area hash string
+      let areaNames = {}; // hash→name for selected device
+      let svgContent = ""; // raw SVG markup
+      let svgFilename = "pattern.svg";
+
+      let tform = { x: 0, y: 0, scale: 1.0, rotate: 0.0, bw: 2.5, bh: 2.5 };
+      let mapT = null; // { ppm, padX, padY, bounds, W, H, toSX, toSY, toMX, toMY }
+      let dragging = false;
+      let dragStart = null;
+      let selectedExistingHash = null; // hash of existing tile being edited
+
+      // ── BigInt-safe JSON parse ─────────────────────────────────────────────────
+      function safeParse(text) {
+        // Wrap large integers (≥16 digits) that are standalone JSON values in quotes.
+        // Must exclude:
+        //   - preceded by '.' → fractional part of a float (e.g. -2.5552389621734620)
+        //   - followed by '.' or 'e'/'E' → integer part of a float (e.g. 1234567890.5)
+        const patched = text.replace(
+          /(?<!["\w.])(-?\d{16,})(?!["\d.eE])/g,
+          '"$1"',
+        );
+        return JSON.parse(patched);
+      }
+
+      // ── File loading ───────────────────────────────────────────────────────────
+      function loadJsonText(text) {
+        try {
+          diag = safeParse(text);
+        } catch (e) {
+          alert("Failed to parse JSON: " + e.message);
+          return;
+        }
+        const deviceData = diag.data || {};
+        const deviceSel = document.getElementById("device-select");
+        deviceSel.innerHTML = '<option value="">— select —</option>';
+        for (const [name, data] of Object.entries(deviceData)) {
+          const areas = data?.map?.area;
+          if (!areas || Object.keys(areas).length === 0) continue;
+          const opt = document.createElement("option");
+          opt.value = name;
+          opt.textContent = name;
+          deviceSel.appendChild(opt);
+        }
+        document.getElementById("map-hint").style.display = "none";
+        setStatus(
+          "status-coords",
+          `Loaded ${Object.keys(deviceData).length} devices`,
+        );
+      }
+
+      document.getElementById("json-input").addEventListener("change", (e) => {
+        const f = e.target.files[0];
+        if (!f) return;
+        const r = new FileReader();
+        r.onload = (ev) => loadJsonText(ev.target.result);
+        r.readAsText(f);
+        e.target.value = "";
+      });
+
+      // SVG file input
+      document
+        .getElementById("svg-file-input")
+        .addEventListener("change", (e) => {
+          const f = e.target.files[0];
+          if (!f) return;
+          svgFilename = f.name;
+          document.getElementById("t-fname").value = svgFilename;
+          const r = new FileReader();
+          r.onload = (ev) => {
+            svgContent = ev.target.result;
+            onSvgLoaded();
+          };
+          r.readAsText(f);
+          e.target.value = "";
+        });
+
+      function onSvgPaste() {
+        const v = document.getElementById("svg-paste-area").value.trim();
+        if (v.startsWith("<svg")) {
+          svgContent = v;
+          onSvgLoaded();
+        }
+      }
+
+      function onSvgLoaded() {
+        const dz = document.getElementById("svg-dropzone");
+        const banner = document.getElementById("svg-size-banner");
+        const bytes = new TextEncoder().encode(svgContent).length;
+        const pct = Math.round((bytes / SVG_MAX_BYTES) * 100);
+
+        dz.classList.remove("loaded", "toobig");
+        if (bytes > SVG_MAX_BYTES) {
+          dz.classList.add("toobig");
+          document.getElementById("svg-dz-label").textContent =
+            "⚠ SVG too large — simplify before sending";
+          banner.className = "svg-size-banner warn";
+          banner.innerHTML = `<strong>SVG exceeds device limit (${bytes.toLocaleString()} / ${SVG_MAX_BYTES.toLocaleString()} bytes, ${pct}%)</strong><br>
+The device will reject with error 6310 (string length &gt; max 10240).<br>
+<small>Try: remove comments &amp; metadata, simplify paths, strip unused attributes.</small>`;
+          setStatus(
+            "status-svg",
+            `⚠ SVG too large: ${bytes} / ${SVG_MAX_BYTES} bytes`,
+          );
+        } else {
+          dz.classList.add("loaded");
+          document.getElementById("svg-dz-label").textContent =
+            "✓ SVG loaded — drag on map to position";
+          banner.className = "svg-size-banner ok";
+          banner.textContent = `${bytes.toLocaleString()} / ${SVG_MAX_BYTES.toLocaleString()} bytes (${pct}%)`;
+          setStatus("status-svg", `SVG loaded (${bytes} bytes)`);
+        }
+        renderMap();
+        generateCode();
+      }
+
+      // ── Global drag-drop for diagnostic JSON ──────────────────────────────────
+      const dropOverlay = document.getElementById("drop-overlay");
+      let dropCounter = 0;
+      document.addEventListener("dragenter", (e) => {
+        e.preventDefault();
+        dropCounter++;
+        dropOverlay.classList.add("active");
+      });
+      document.addEventListener("dragleave", () => {
+        if (--dropCounter <= 0) {
+          dropCounter = 0;
+          dropOverlay.classList.remove("active");
+        }
+      });
+      document.addEventListener("dragover", (e) => e.preventDefault());
+      document.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dropCounter = 0;
+        dropOverlay.classList.remove("active");
+        const file = e.dataTransfer.files[0];
+        if (!file) return;
+        const r = new FileReader();
+        r.onload = (ev) => {
+          if (file.name.endsWith(".json")) loadJsonText(ev.target.result);
+          else if (
+            file.name.endsWith(".svg") ||
+            file.type === "image/svg+xml"
+          ) {
+            svgFilename = file.name;
+            document.getElementById("t-fname").value = svgFilename;
+            svgContent = ev.target.result;
+            onSvgLoaded();
+          }
+        };
+        r.readAsText(file);
+      });
+
+      // SVG drop zone
+      const svgDz = document.getElementById("svg-dropzone");
+      svgDz.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        svgDz.classList.add("over");
+      });
+      svgDz.addEventListener("dragleave", () => svgDz.classList.remove("over"));
+      svgDz.addEventListener("drop", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        svgDz.classList.remove("over");
+        const file = e.dataTransfer.files[0];
+        if (!file) return;
+        svgFilename = file.name;
+        document.getElementById("t-fname").value = svgFilename;
+        const r = new FileReader();
+        r.onload = (ev) => {
+          svgContent = ev.target.result;
+          onSvgLoaded();
+        };
+        r.readAsText(file);
+      });
+
+      // ── Device / area selection ────────────────────────────────────────────────
+      function onDeviceChange() {
+        deviceName = document.getElementById("device-select").value;
+        const areaSel = document.getElementById("area-select");
+        areaSel.innerHTML = '<option value="">— select area —</option>';
+        areaHash = "";
+        areaNames = {};
+
+        if (!deviceName || !diag?.data?.[deviceName]) {
+          renderMap();
+          return;
+        }
+
+        const mapData = diag.data[deviceName].map || {};
+
+        // Build name lookup
+        for (const an of mapData.area_name || []) {
+          areaNames[String(an.hash)] = an.name;
+        }
+
+        // Populate area selector
+        for (const hash of Object.keys(mapData.area || {})) {
+          const opt = document.createElement("option");
+          opt.value = hash;
+          opt.textContent = areaNames[hash] || "Area " + hash.slice(-6);
+          areaSel.appendChild(opt);
+        }
+
+        populateExistingSvgs();
+        renderMap();
+      }
+
+      function onAreaChange() {
+        areaHash = document.getElementById("area-select").value;
+        if (areaHash) {
+          resetToAreaCentroid();
+          setStatus("status-area", areaNames[areaHash] || areaHash);
+        }
+        renderMap();
+        generateCode();
+      }
+
+      // ── Transform controls ─────────────────────────────────────────────────────
+      function onTransformInput() {
+        tform.x = parseFloat(document.getElementById("t-x").value) || 0;
+        tform.y = parseFloat(document.getElementById("t-y").value) || 0;
+        tform.scale = parseFloat(document.getElementById("t-scale").value) || 1;
+        tform.rotate =
+          parseFloat(document.getElementById("t-rotate").value) || 0;
+        tform.bw = parseFloat(document.getElementById("t-bw").value) || 2.5;
+        tform.bh = parseFloat(document.getElementById("t-bh").value) || 2.5;
+        const deg = ((tform.rotate * 180) / Math.PI).toFixed(1);
+        document.getElementById("rotate-deg").textContent = deg + "°";
+        updateSvgTilePreview();
+        generateCode();
+      }
+
+      function onTransformChange() {
+        const bm = parseFloat(document.getElementById("device-type").value);
+        document.getElementById("t-bw").value = bm;
+        document.getElementById("t-bh").value = bm;
+        tform.bw = bm;
+        tform.bh = bm;
+        updateSvgTilePreview();
+        generateCode();
+      }
+
+      function syncFormFromTform() {
+        document.getElementById("t-x").value = tform.x.toFixed(4);
+        document.getElementById("t-y").value = tform.y.toFixed(4);
+        document.getElementById("t-scale").value = tform.scale.toFixed(3);
+        document.getElementById("t-rotate").value = tform.rotate.toFixed(4);
+        document.getElementById("t-bw").value = tform.bw;
+        document.getElementById("t-bh").value = tform.bh;
+        document.getElementById("rotate-deg").textContent =
+          ((tform.rotate * 180) / Math.PI).toFixed(1) + "°";
+      }
+
+      // ── Area boundary helpers ──────────────────────────────────────────────────
+      function getAreaPoints(areaData) {
+        const frames = (areaData.data || []).slice();
+        frames.sort((a, b) => (a.current_frame || 0) - (b.current_frame || 0));
+        const pts = [];
+        for (const fr of frames)
+          for (const pt of fr.data_couple || []) pts.push(pt);
+        return pts;
+      }
+
+      function centroid(pts) {
+        const n = pts.length;
+        if (n === 0) return { x: 0, y: 0 };
+        if (n === 1) return { x: pts[0].x, y: pts[0].y };
+        let A = 0,
+          cx = 0,
+          cy = 0;
+        for (let i = 0; i < n; i++) {
+          const j = (i + 1) % n;
+          const cross = pts[i].x * pts[j].y - pts[j].x * pts[i].y;
+          A += cross;
+          cx += (pts[i].x + pts[j].x) * cross;
+          cy += (pts[i].y + pts[j].y) * cross;
+        }
+        A *= 0.5;
+        if (Math.abs(A) < 1e-10)
+          return {
+            x: pts.reduce((s, p) => s + p.x, 0) / n,
+            y: pts.reduce((s, p) => s + p.y, 0) / n,
+          };
+        return { x: cx / (6 * A), y: cy / (6 * A) };
+      }
+
+      function resetToAreaCentroid() {
+        if (!areaHash || !deviceName) return;
+        const areaData = diag?.data?.[deviceName]?.map?.area?.[areaHash];
+        if (!areaData) return;
+        const pts = getAreaPoints(areaData);
+        const c = centroid(pts);
+        tform.x = parseFloat(c.x.toFixed(4));
+        tform.y = parseFloat(c.y.toFixed(4));
+        syncFormFromTform();
+        updateSvgTilePreview();
+        generateCode();
+      }
+
+      // ── Map rendering ──────────────────────────────────────────────────────────
+      const AREA_COLORS = [
+        "#22c55e",
+        "#3b82f6",
+        "#f59e0b",
+        "#a855f7",
+        "#14b8a6",
+        "#f97316",
+        "#ec4899",
+        "#84cc16",
+      ];
+
+      function computeMapTransform(mapData, W, H) {
+        const areas = mapData.area || {};
+        const obstacles = mapData.obstacle || {};
+        const allPts = [];
+        for (const v of Object.values(areas)) allPts.push(...getAreaPoints(v));
+        for (const v of Object.values(obstacles))
+          allPts.push(...getAreaPoints(v));
+        if (allPts.length === 0) return null;
+
+        const minX = Math.min(...allPts.map((p) => p.x));
+        const maxX = Math.max(...allPts.map((p) => p.x));
+        const minY = Math.min(...allPts.map((p) => p.y));
+        const maxY = Math.max(...allPts.map((p) => p.y));
+        const pad = Math.max(maxX - minX, maxY - minY) * 0.08 + 1;
+        const b = {
+          minX: minX - pad,
+          maxX: maxX + pad,
+          minY: minY - pad,
+          maxY: maxY + pad,
+        };
+
+        const ppm = Math.min(W / (b.maxX - b.minX), H / (b.maxY - b.minY));
+        const padX = (W - (b.maxX - b.minX) * ppm) / 2;
+        const padY = (H - (b.maxY - b.minY) * ppm) / 2;
+
+        const toSX = (mx) => padX + (mx - b.minX) * ppm;
+        const toSY = (my) => H - padY - (my - b.minY) * ppm; // flip Y
+        const toMX = (sx) => (sx - padX) / ppm + b.minX;
+        const toMY = (sy) => (H - sy - padY) / ppm + b.minY;
+
+        return { ppm, padX, padY, bounds: b, W, H, toSX, toSY, toMX, toMY };
+      }
+
+      function renderMap() {
+        const svg = document.getElementById("map-svg");
+        svg.innerHTML = "";
+        if (!deviceName || !diag?.data?.[deviceName]) return;
+
+        const W = svg.clientWidth || svg.parentElement.clientWidth;
+        const H = svg.clientHeight || svg.parentElement.clientHeight;
+        svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+
+        const mapData = diag.data[deviceName].map || {};
+        mapT = computeMapTransform(mapData, W, H);
+        if (!mapT) return;
+
+        drawGrid(svg, mapT);
+        drawAreas(svg, mapData.area || {}, mapT);
+        drawObstacles(svg, mapData.obstacle || {}, mapT);
+        drawExistingSvgTiles(svg, mapData.svg || {}, mapData.area || {}, mapT);
+        if (svgContent) drawActiveTile(svg, mapT);
+        drawScaleBar(svg, mapT, W, H);
+      }
+
+      function drawGrid(svg, mt) {
+        const { bounds: b, ppm, toSX, toSY, W, H } = mt;
+        const step = niceGridStep(5 / ppm); // aim for ~5px per cell minimum
+        const g = el("g");
+        for (let x = Math.ceil(b.minX / step) * step; x <= b.maxX; x += step) {
+          const line = el("line", {
+            x1: toSX(x),
+            y1: 0,
+            x2: toSX(x),
+            y2: H,
+            class: "grid-line",
+          });
+          g.appendChild(line);
+        }
+        for (let y = Math.ceil(b.minY / step) * step; y <= b.maxY; y += step) {
+          const line = el("line", {
+            x1: 0,
+            y1: toSY(y),
+            x2: W,
+            y2: toSY(y),
+            class: "grid-line",
+          });
+          g.appendChild(line);
+        }
+        // X/Y axes if visible
+        if (b.minX <= 0 && b.maxX >= 0)
+          g.appendChild(
+            el("line", {
+              x1: toSX(0),
+              y1: 0,
+              x2: toSX(0),
+              y2: H,
+              class: "axis-line",
+            }),
+          );
+        if (b.minY <= 0 && b.maxY >= 0)
+          g.appendChild(
+            el("line", {
+              x1: 0,
+              y1: toSY(0),
+              x2: W,
+              y2: toSY(0),
+              class: "axis-line",
+            }),
+          );
+        svg.appendChild(g);
+      }
+
+      function niceGridStep(minStep) {
+        const candidates = [0.5, 1, 2, 5, 10, 20, 50];
+        return candidates.find((c) => c >= minStep) || 50;
+      }
+
+      function drawAreas(svg, areas, mt) {
+        let colorIdx = 0;
+        for (const [hash, areaData] of Object.entries(areas)) {
+          const pts = getAreaPoints(areaData);
+          if (pts.length < 2) continue;
+          const color = AREA_COLORS[colorIdx++ % AREA_COLORS.length];
+          const isSelected = hash === areaHash;
+          const polyPts = pts
+            .map((p) => `${mt.toSX(p.x).toFixed(1)},${mt.toSY(p.y).toFixed(1)}`)
+            .join(" ");
+          const poly = el("polygon", {
+            points: polyPts,
+            fill: color,
+            stroke: color,
+            class: "map-area" + (isSelected ? " selected" : ""),
+            "data-hash": hash,
+          });
+          poly.addEventListener("click", () => {
+            document.getElementById("area-select").value = hash;
+            onAreaChange();
+          });
+          svg.appendChild(poly);
+
+          // Label
+          const c = centroid(pts);
+          const name = areaNames[hash] || hash.slice(-6);
+          const lbl = el("text", {
+            x: mt.toSX(c.x).toFixed(1),
+            y: mt.toSY(c.y).toFixed(1),
+            class: "map-label",
+            fill: color,
+          });
+          lbl.textContent = name;
+          svg.appendChild(lbl);
+        }
+      }
+
+      function drawObstacles(svg, obstacles, mt) {
+        for (const [hash, obsData] of Object.entries(obstacles)) {
+          const pts = getAreaPoints(obsData);
+          if (pts.length < 2) continue;
+          const polyPts = pts
+            .map((p) => `${mt.toSX(p.x).toFixed(1)},${mt.toSY(p.y).toFixed(1)}`)
+            .join(" ");
+          svg.appendChild(
+            el("polygon", {
+              points: polyPts,
+              class: "map-obstacle",
+              title: "Obstacle",
+            }),
+          );
+        }
+      }
+
+      function drawExistingSvgTiles(svg, svgs, areas, mt) {
+        for (const [hash, svgData] of Object.entries(svgs)) {
+          const frames = svgData.data || [];
+          if (frames.length === 0) continue;
+          const frame = frames[0];
+          const parentHash = String(frame.paternal_hash_a || "");
+          const dataHash = String(frame.data_hash || hash);
+          const isDisabled = frames.every(
+            (f) => (f.data_couple || []).length === 0,
+          );
+
+          // Find centroid of parent area
+          const areaData = areas[parentHash];
+          if (!areaData) continue;
+          const pts = getAreaPoints(areaData);
+          const c = centroid(pts);
+          const sx = mt.toSX(c.x);
+          const sy = mt.toSY(c.y);
+          const r = Math.max(8, mt.ppm * tform.bw * 0.5);
+
+          const g = el("g", {
+            class: "svg-tile-existing",
+            "data-hash": dataHash,
+            title: "SVG hash: " + dataHash,
+          });
+          const rect = el("rect", {
+            x: sx - r,
+            y: sy - r,
+            width: r * 2,
+            height: r * 2,
+            fill: isDisabled ? "rgba(245,158,11,0.1)" : "rgba(96,165,250,0.15)",
+            stroke: isDisabled ? "#f59e0b" : "#60a5fa",
+            "stroke-width": 1.5,
+            "stroke-dasharray": "4,3",
+            rx: 3,
+          });
+          const lbl = el("text", {
+            x: sx,
+            y: sy - r - 4,
+            "text-anchor": "middle",
+            "font-size": "10",
+            fill: isDisabled ? "#f59e0b" : "#60a5fa",
+          });
+          lbl.textContent =
+            (isDisabled ? "⚠ disabled " : "✓ ") + dataHash.slice(-8);
+          g.appendChild(rect);
+          g.appendChild(lbl);
+          // Cross for disabled
+          if (isDisabled) {
+            g.appendChild(
+              el("line", {
+                x1: sx - r + 4,
+                y1: sy - r + 4,
+                x2: sx + r - 4,
+                y2: sy + r - 4,
+                stroke: "#f59e0b",
+                "stroke-width": 1,
+              }),
+            );
+            g.appendChild(
+              el("line", {
+                x1: sx + r - 4,
+                y1: sy - r + 4,
+                x2: sx - r + 4,
+                y2: sy + r - 4,
+                stroke: "#f59e0b",
+                "stroke-width": 1,
+              }),
+            );
+          }
+          g.addEventListener("click", () => {
+            document.getElementById("existing-hash-input").value = dataHash;
+            document.getElementById("code-mode").value = "update";
+            if (parentHash) {
+              document.getElementById("area-select").value = parentHash;
+              onAreaChange();
+            }
+            showTab("code");
+            generateCode();
+          });
+          svg.appendChild(g);
+        }
+      }
+
+      function drawActiveTile(svg, mt) {
+        if (!svgContent || !areaHash) return;
+        const sx = mt.toSX(tform.x);
+        const sy = mt.toSY(tform.y);
+        const tw = tform.bw * tform.scale * mt.ppm;
+        const th = tform.bh * tform.scale * mt.ppm;
+        // tform.rotate is CCW-positive (ENU/mathematical convention).
+        // On a North-up map (Y-flipped canvas) CCW is still CCW visually.
+        // SVG rotate() is CW-positive, so negate to convert.
+        const rotDeg = (-tform.rotate * 180) / Math.PI;
+
+        const g = el("g", {
+          id: "active-tile",
+          transform: `translate(${sx},${sy}) rotate(${rotDeg.toFixed(2)}) translate(${(-tw / 2).toFixed(1)},${(-th / 2).toFixed(1)})`,
+          class: "svg-tile-preview",
+        });
+
+        // Border rect
+        g.appendChild(
+          el("rect", {
+            x: 0,
+            y: 0,
+            width: tw.toFixed(1),
+            height: th.toFixed(1),
+            fill: "rgba(96,165,250,0.08)",
+            stroke: "#60a5fa",
+            "stroke-width": 1.5,
+            "stroke-dasharray": "5,3",
+            rx: 2,
+          }),
+        );
+
+        // Embedded SVG preview
+        const fo = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "foreignObject",
+        );
+        fo.setAttribute("x", "2");
+        fo.setAttribute("y", "2");
+        fo.setAttribute("width", (tw - 4).toFixed(1));
+        fo.setAttribute("height", (th - 4).toFixed(1));
+        fo.setAttribute("pointer-events", "none");
+        const div = document.createElementNS(
+          "http://www.w3.org/1999/xhtml",
+          "div",
+        );
+        div.style.cssText = `width:100%;height:100%;overflow:hidden;opacity:0.7`;
+        div.innerHTML = svgContent;
+        const inner = div.querySelector("svg");
+        if (inner) {
+          inner.style.width = "100%";
+          inner.style.height = "100%";
+        }
+        fo.appendChild(div);
+        g.appendChild(fo);
+
+        // Center dot
+        g.appendChild(
+          el("circle", {
+            cx: (tw / 2).toFixed(1),
+            cy: (th / 2).toFixed(1),
+            r: 4,
+            fill: "#60a5fa",
+            opacity: 0.8,
+          }),
+        );
+
+        // Drag handle (invisible hit zone)
+        const dragRect = el("rect", {
+          x: 0,
+          y: 0,
+          width: tw.toFixed(1),
+          height: th.toFixed(1),
+          fill: "transparent",
+          cursor: "move",
+        });
+        dragRect.addEventListener("mousedown", startDrag);
+        g.appendChild(dragRect);
+
+        // Scale handle (bottom-right)
+        const sh = el("rect", {
+          x: (tw - 6).toFixed(1),
+          y: (th - 6).toFixed(1),
+          width: 12,
+          height: 12,
+          class: "drag-handle",
+          rx: 2,
+        });
+        sh.addEventListener("mousedown", startScaleDrag);
+        g.appendChild(sh);
+
+        // Rotate handle (top-center)
+        const rh = el("circle", {
+          cx: (tw / 2).toFixed(1),
+          cy: -12,
+          r: 7,
+          class: "rotate-handle",
+        });
+        rh.appendChild(el("title")).textContent = "Drag to rotate";
+        rh.addEventListener("mousedown", startRotateDrag);
+        g.appendChild(rh);
+        // Line to rotate handle
+        g.appendChild(
+          el("line", {
+            x1: (tw / 2).toFixed(1),
+            y1: 0,
+            x2: (tw / 2).toFixed(1),
+            y2: -5,
+            stroke: "#f59e0b",
+            "stroke-width": 1,
+          }),
+        );
+
+        svg.appendChild(g);
+      }
+
+      function updateSvgTilePreview() {
+        if (!mapT) return;
+        const existing = document.getElementById("active-tile");
+        if (existing) existing.remove();
+        if (svgContent && areaHash)
+          drawActiveTile(document.getElementById("map-svg"), mapT);
+      }
+
+      // ── Drag / scale / rotate ──────────────────────────────────────────────────
+      function startDrag(e) {
+        e.stopPropagation();
+        dragging = "move";
+        dragStart = { mx: e.clientX, my: e.clientY, ox: tform.x, oy: tform.y };
+      }
+
+      function startScaleDrag(e) {
+        e.stopPropagation();
+        dragging = "scale";
+        const sx = mapT.toSX(tform.x);
+        const sy = mapT.toSY(tform.y);
+        dragStart = {
+          mx: e.clientX,
+          my: e.clientY,
+          dist: Math.hypot(e.clientX - sx, e.clientY - sy),
+          os: tform.scale,
+        };
+      }
+
+      function startRotateDrag(e) {
+        e.stopPropagation();
+        dragging = "rotate";
+        const sx = mapT.toSX(tform.x);
+        const sy = mapT.toSY(tform.y);
+        dragStart = {
+          mx: e.clientX,
+          my: e.clientY,
+          cx: sx,
+          cy: sy,
+          or: tform.rotate,
+          startAngle: Math.atan2(e.clientY - sy, e.clientX - sx),
+        };
+      }
+
+      const mapSvg = document.getElementById("map-svg");
+      mapSvg.addEventListener("mousemove", (e) => {
+        const rect = mapSvg.getBoundingClientRect();
+        const sx = e.clientX - rect.left;
+        const sy = e.clientY - rect.top;
+        if (mapT) {
+          const mx = mapT.toMX(sx),
+            my = mapT.toMY(sy);
+          setStatus(
+            "status-coords",
+            `Map: (${mx.toFixed(3)}, ${my.toFixed(3)}) m`,
+          );
+        }
+        if (!dragging) return;
+        if (dragging === "move" && mapT) {
+          const dx = (e.clientX - dragStart.mx) / mapT.ppm;
+          const dy = -(e.clientY - dragStart.my) / mapT.ppm; // Y flipped
+          tform.x = parseFloat((dragStart.ox + dx).toFixed(4));
+          tform.y = parseFloat((dragStart.oy + dy).toFixed(4));
+          syncFormFromTform();
+          updateSvgTilePreview();
+          generateCode();
+        } else if (dragging === "scale" && mapT) {
+          const cx = mapT.toSX(tform.x),
+            cy = mapT.toSY(tform.y);
+          const d = Math.hypot(
+            e.clientX - rect.left - cx,
+            e.clientY - rect.top - cy,
+          );
+          tform.scale = Math.max(
+            0.05,
+            parseFloat(((dragStart.os * d) / dragStart.dist).toFixed(3)),
+          );
+          syncFormFromTform();
+          updateSvgTilePreview();
+          generateCode();
+        } else if (dragging === "rotate") {
+          const cx = dragStart.cx - rect.left,
+            cy = dragStart.cy - rect.top;
+          const angle = Math.atan2(
+            e.clientY - rect.top - cy,
+            e.clientX - rect.left - cx,
+          );
+          // In screen space (Y down): clockwise = positive angle
+          // Map convention (Y up): counterclockwise = positive → negate
+          tform.rotate = parseFloat(
+            (dragStart.or - (angle - dragStart.startAngle)).toFixed(4),
+          );
+          syncFormFromTform();
+          updateSvgTilePreview();
+          generateCode();
+        }
+      });
+      mapSvg.addEventListener("mouseup", () => {
+        dragging = false;
+      });
+      mapSvg.addEventListener("mouseleave", () => {
+        dragging = false;
+      });
+
+      // ── Existing SVG tiles panel ───────────────────────────────────────────────
+      function populateExistingSvgs() {
+        const container = document.getElementById("existing-svg-list");
+        container.innerHTML = "";
+        if (!deviceName || !diag?.data?.[deviceName]) return;
+        const svgs = diag.data[deviceName].map?.svg || {};
+        if (Object.keys(svgs).length === 0) {
+          container.innerHTML =
+            '<p style="color:#6b7280;font-size:12px">No SVG tiles found for this device.</p>';
+          return;
+        }
+        for (const [hash, svgData] of Object.entries(svgs)) {
+          const frames = svgData.data || [];
+          const frame = frames[0] || {};
+          const parentHash = String(frame.paternal_hash_a || "");
+          const dataHash = String(frame.data_hash || hash);
+          const isDisabled = frames.every(
+            (f) => (f.data_couple || []).length === 0,
+          );
+          const parentName = areaNames[parentHash] || parentHash.slice(-6);
+
+          const div = document.createElement("div");
+          div.className = "svg-item" + (isDisabled ? " disabled" : "");
+          div.innerHTML = `
+      <div class="area-name">Area: ${escHtml(parentName)} <span class="badge ${isDisabled ? "disabled" : "active"}">${isDisabled ? "disabled" : "active"}</span></div>
+      <div class="hash">SVG hash: ${dataHash}</div>
+      <div class="hash" style="color:#9ca3af">Parent: ${parentHash}</div>
+      <div style="margin-top:6px;display:flex;gap:4px">
+        <button style="font-size:11px;padding:3px 8px" onclick="editExistingSvg('${dataHash}','${parentHash}')">Edit/Update</button>
+        <button class="danger" style="font-size:11px;padding:3px 8px" onclick="deleteExistingSvg('${dataHash}','${parentHash}')">Delete code</button>
+      </div>`;
+          container.appendChild(div);
+        }
+      }
+
+      function editExistingSvg(dataHash, parentHash) {
+        document.getElementById("existing-hash-input").value = dataHash;
+        document.getElementById("code-mode").value = "update";
+        selectedExistingHash = dataHash;
+        if (parentHash) {
+          document.getElementById("area-select").value = parentHash;
+          onAreaChange();
+        }
+        showTab("code");
+        generateCode();
+      }
+
+      function deleteExistingSvg(dataHash, parentHash) {
+        const code = `from pymammotion.utility.svg import build_svg_delete
+
+msg = build_svg_delete(
+    device_hash=${dataHash},
+    area_hash=${parentHash},
+)
+
+# ── Send to device ─────────────────────────────────────────────
+# await coordinator.send_svg_command(msg)
+`;
+        document.getElementById("code-output").value = code;
+        showTab("code");
+      }
+
+      // ── Code generation ────────────────────────────────────────────────────────
+      function generateCode() {
+        if (!areaHash) {
+          document.getElementById("code-output").value =
+            "# Select an area first.";
+          return;
+        }
+        const mapData = diag?.data?.[deviceName]?.map || {};
+        const areaData = mapData.area?.[areaHash];
+        if (!areaData) {
+          document.getElementById("code-output").value =
+            "# Area data not found.";
+          return;
+        }
+
+        const pts = getAreaPoints(areaData);
+        const mode = document.getElementById("code-mode").value;
+        const existingHash = document
+          .getElementById("existing-hash-input")
+          .value.trim();
+        const fname = document.getElementById("t-fname").value || "pattern.svg";
+        const svgEscaped = svgContent
+          ? svgContent.replace(/"""/g, '\\"\\"\\"')
+          : "";
+
+        const boundaryLines = pts
+          .map((p) => `    CommDataCouple(x=${p.x}, y=${p.y}),`)
+          .join("\n");
+
+        let code;
+        if (mode === "add") {
+          code = `from pymammotion.utility.svg import build_svg_for_area
+from pymammotion.data.model.hash_list import CommDataCouple
+
+# Device: ${deviceName}
+# Area:   ${areaNames[areaHash] || areaHash} (hash: ${areaHash})
+AREA_HASH = ${areaHash}
+
+BOUNDARY = [
+${boundaryLines}
+]
+
+SVG_DATA = """${svgEscaped || "<!-- paste your SVG here -->"}"""
+
+msg = build_svg_for_area(
+    area_hash=AREA_HASH,
+    boundary=BOUNDARY,
+    svg_file_data=SVG_DATA,
+    svg_file_name="${escPy(fname)}",
+    scale=${tform.scale.toFixed(4)},
+    rotate=${tform.rotate.toFixed(4)},
+    base_width_m=${tform.bw},
+    base_height_m=${tform.bh},
+)
+# Position override (centroid is default; remove to use centroid):
+msg.svg_message.x_move = ${tform.x.toFixed(4)}
+msg.svg_message.y_move = ${tform.y.toFixed(4)}
+
+# ── Send to device ─────────────────────────────────────────────
+# from custom_components.mammotion.coordinator import MammotionBaseUpdateCoordinator
+# coordinator: MammotionBaseUpdateCoordinator = hass.data["mammotion"]["${deviceName}"].reporting_coordinator
+# device_hash = await coordinator.send_svg_command(msg)
+# print(f"Device-assigned hash: {device_hash}")  # save this for UPDATE / DELETE
+`;
+        } else {
+          code = `from pymammotion.utility.svg import build_svg_update
+from pymammotion.data.model.hash_list import CommDataCouple
+
+# Device: ${deviceName}
+# Area:   ${areaNames[areaHash] || areaHash} (hash: ${areaHash})
+DEVICE_HASH = ${existingHash || "0  # <-- fill in the device-assigned hash from the ADD response"}
+AREA_HASH = ${areaHash}
+
+BOUNDARY = [
+${boundaryLines}
+]
+
+SVG_DATA = """${svgEscaped || "<!-- paste your SVG here -->"}"""
+
+msg = build_svg_update(
+    device_hash=DEVICE_HASH,
+    area_hash=AREA_HASH,
+    boundary=BOUNDARY,
+    svg_file_data=SVG_DATA,
+    svg_file_name="${escPy(fname)}",
+    scale=${tform.scale.toFixed(4)},
+    rotate=${tform.rotate.toFixed(4)},
+    base_width_m=${tform.bw},
+    base_height_m=${tform.bh},
+)
+# Position override:
+msg.svg_message.x_move = ${tform.x.toFixed(4)}
+msg.svg_message.y_move = ${tform.y.toFixed(4)}
+
+# ── Send to device ─────────────────────────────────────────────
+# device_hash = await coordinator.send_svg_command(msg)
+`;
+        }
+        const svgBytes = svgContent
+          ? new TextEncoder().encode(svgContent).length
+          : 0;
+        if (svgBytes > SVG_MAX_BYTES) {
+          code =
+            `# !! WARNING: SVG is ${svgBytes.toLocaleString()} bytes — exceeds device limit of ${SVG_MAX_BYTES.toLocaleString()} bytes.
+# The device will reject this with error 6310 (tsl parse: string length bigger than max length 10240).
+# Simplify or minify the SVG before sending (remove comments, metadata, simplify paths).
+# ──────────────────────────────────────────────────────────────────────────\n\n` +
+            code;
+        }
+        document.getElementById("code-output").value = code;
+      }
+
+      function copyCode() {
+        navigator.clipboard
+          .writeText(document.getElementById("code-output").value)
+          .then(() => {
+            const b = event.target;
+            const t = b.textContent;
+            b.textContent = "✓ Copied!";
+            setTimeout(() => (b.textContent = t), 1500);
+          })
+          .catch(() => document.getElementById("code-output").select());
+      }
+
+      // ── Scale bar ──────────────────────────────────────────────────────────────
+      function drawScaleBar(svg, mt, W, H) {
+        const targetPx = 80;
+        const targetM = targetPx / mt.ppm;
+        const nice = niceGridStep(targetM * 0.5);
+        const barPx = nice * mt.ppm;
+        const x = 20,
+          y = H - 20;
+        const g = el("g");
+        g.appendChild(
+          el("line", { x1: x, y1: y, x2: x + barPx, y2: y, class: "scalebar" }),
+        );
+        g.appendChild(
+          el("line", { x1: x, y1: y - 4, x2: x, y2: y + 4, class: "scalebar" }),
+        );
+        g.appendChild(
+          el("line", {
+            x1: x + barPx,
+            y1: y - 4,
+            x2: x + barPx,
+            y2: y + 4,
+            class: "scalebar",
+          }),
+        );
+        const lbl = el("text", {
+          x: x + barPx / 2,
+          y: y - 7,
+          "text-anchor": "middle",
+          "font-size": "11",
+          fill: "#9ca3af",
+        });
+        lbl.textContent =
+          nice >= 1 ? nice + " m" : (nice * 100).toFixed(0) + " cm";
+        g.appendChild(lbl);
+        svg.appendChild(g);
+      }
+
+      // ── Tabs ───────────────────────────────────────────────────────────────────
+      function showTab(name) {
+        document.querySelectorAll(".tab-btn").forEach((b, i) => {
+          const tabs = ["place", "existing", "code"];
+          b.classList.toggle("active", tabs[i] === name);
+        });
+        document
+          .querySelectorAll(".tab-content")
+          .forEach((t) => t.classList.remove("active"));
+        document.getElementById("tab-" + name).classList.add("active");
+      }
+
+      // ── Helpers ────────────────────────────────────────────────────────────────
+      function el(tag, attrs = {}) {
+        const e = document.createElementNS("http://www.w3.org/2000/svg", tag);
+        for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+        return e;
+      }
+      function setStatus(id, msg) {
+        const el = document.getElementById(id);
+        if (el) el.textContent = msg;
+      }
+      function escHtml(s) {
+        return String(s)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+      }
+      function escPy(s) {
+        return String(s).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+      }
+
+      // ── Resize observer ────────────────────────────────────────────────────────
+      new ResizeObserver(() => renderMap()).observe(
+        document.getElementById("map-panel"),
+      );
+
+      // ── update-hash-row visibility ─────────────────────────────────────────────
+      document.getElementById("code-mode").addEventListener("change", () => {
+        const isUpdate =
+          document.getElementById("code-mode").value === "update";
+        document.getElementById("update-hash-row").style.display = isUpdate
+          ? "flex"
+          : "none";
+        generateCode();
+      });
+      document.getElementById("update-hash-row").style.display = "none";
+    </script>
+  </body>
+</html>

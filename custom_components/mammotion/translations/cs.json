@@ -52,7 +52,9 @@
           "title": "Aktualizovat konfiguraci",
           "stay_connected_bluetooth": "Udržovat připojení Bluetooth",
           "prefer_ble_over_wifi": "Upřednostňovat Bluetooth před Wi-Fi, je-li dostupné",
-          "movement_use_wifi": "Odesílat příkazy pohybu přes Wi-Fi"
+          "movement_use_wifi": "Odesílat příkazy pohybu přes Wi-Fi",
+          "mow_path_fetch_enabled": "Povolit načítání cesty sekání (cloud)",
+          "full_map_fetch_enabled": "Povolit úplné načítání mapy (cloud) — pokud vypnuto, načítají se pouze názvy oblastí"
         }
       }
     }
@@ -122,19 +124,19 @@
       "position_type": {
         "name": "Typ pozice zařízení",
         "state": {
-          "AREA_BORDER_ON": "At perimeter",
-          "AREA_INSIDE": "Inside area",
-          "AREA_OUT": "Outside area",
-          "CHANNEL_AREA_OVERLAP": "Path area overlap",
-          "CHANNEL_ON": "On path",
-          "CHARGE_ON": "At charging station",
-          "DUMPING_AREA_INSIDE": "In dump area",
-          "DUMPING_OUTSIDE": "Outside dump area",
-          "ABNORMAL_POSITIONING": "Position error",
-          "NO_AREAS": "No areas defined",
-          "OBS_ON": "At obstacle",
-          "TURN_AREA_INSIDE": "In turn area",
-          "VIRTUAL_INSIDE": "In virtual area"
+          "AREA_BORDER_ON": "Na obvodu",
+          "AREA_INSIDE": "Uvnitř oblasti",
+          "AREA_OUT": "Mimo oblast",
+          "CHANNEL_AREA_OVERLAP": "Překrytí oblastí cesty",
+          "CHANNEL_ON": "Na cestě",
+          "CHARGE_ON": "U nabíjecí stanice",
+          "DUMPING_AREA_INSIDE": "Ve výkladní oblasti",
+          "DUMPING_OUTSIDE": "Mimo výkladní oblast",
+          "ABNORMAL_POSITIONING": "Chyba polohy",
+          "NO_AREAS": "Žádné oblasti nejsou definovány",
+          "OBS_ON": "U překážky",
+          "TURN_AREA_INSIDE": "V oblasti otáčení",
+          "VIRTUAL_INSIDE": "Ve virtuální oblasti"
         }
       },
       "visual_positioning_status": {
@@ -150,29 +152,29 @@
       "activity_mode": {
         "name": "Režim činnosti",
         "state": {
-          "MODE_NOT_ACTIVE": "Not active",
+          "MODE_NOT_ACTIVE": "Neaktivní",
           "MODE_ONLINE": "Online",
           "MODE_OFFLINE": "Offline",
-          "MODE_DISABLE": "Disabled",
-          "MODE_INITIALIZATION": "Initializing",
-          "MODE_READY": "Ready",
-          "MODE_WORKING": "Working",
-          "MODE_RETURNING": "Returning",
-          "MODE_CHARGING": "Charging",
-          "MODE_UPDATING": "Updating",
-          "MODE_LOCK": "Locked",
-          "MODE_PAUSE": "Paused",
-          "MODE_MANUAL_MOWING": "Manual mowing",
-          "MODE_UPDATE_SUCCESS": "Update successful",
-          "MODE_OTA_UPGRADE_FAIL": "Update failed",
-          "MODE_JOB_DRAW": "Drawing job",
-          "MODE_OBSTACLE_DRAW": "Drawing obstacles",
-          "MODE_CHANNEL_DRAW": "Drawing channel",
-          "MODE_ERASER_DRAW": "Drawing eraser",
-          "MODE_EDIT_BOUNDARY": "Editing boundary",
-          "MODE_LOCATION_ERROR": "Location error",
-          "MODE_BOUNDARY_JUMP": "Boundary crossed",
-          "MODE_CHARGING_PAUSE": "Charging paused"
+          "MODE_DISABLE": "Zakázáno",
+          "MODE_INITIALIZATION": "Inicializace",
+          "MODE_READY": "Připraveno",
+          "MODE_WORKING": "Pracuje",
+          "MODE_RETURNING": "Návrat",
+          "MODE_CHARGING": "Nabíjení",
+          "MODE_UPDATING": "Aktualizace",
+          "MODE_LOCK": "Zamčeno",
+          "MODE_PAUSE": "Pozastaveno",
+          "MODE_MANUAL_MOWING": "Ruční sekání",
+          "MODE_UPDATE_SUCCESS": "Aktualizace úspěšná",
+          "MODE_OTA_UPGRADE_FAIL": "Aktualizace selhala",
+          "MODE_JOB_DRAW": "Kreslení úlohy",
+          "MODE_OBSTACLE_DRAW": "Kreslení překážek",
+          "MODE_CHANNEL_DRAW": "Kreslení kanálu",
+          "MODE_ERASER_DRAW": "Kreslení mazání",
+          "MODE_EDIT_BOUNDARY": "Úprava hranice",
+          "MODE_LOCATION_ERROR": "Chyba polohy",
+          "MODE_BOUNDARY_JUMP": "Překročení hranice",
+          "MODE_CHARGING_PAUSE": "Nabíjení pozastaveno"
         }
       },
       "work_area": {
@@ -195,7 +197,7 @@
         "name": "Čas varování opotřebení nože"
       },
       "non_work_hours": {
-        "name": "Non-work hours"
+        "name": "Hodiny mimo pracovní dobu"
       },
       "rtk_lora": {
         "name": "Verze LoRa"
@@ -245,7 +247,7 @@
         "name": "Synchronizace mapy"
       },
       "start_schedule_sync": {
-        "name": "Synchronize schedules"
+        "name": "Synchronizovat plány"
       },
       "resync_rtk_dock": {
         "name": "Synchronizovat RTK a dok"
@@ -275,7 +277,7 @@
         "name": "Přemístit nabíjecí stanici"
       },
       "restart_mower": {
-        "name": "Restart mower"
+        "name": "Restartovat sekačku"
       }
     },
     "switch": {
@@ -520,8 +522,8 @@
       "description": "Zahájit sečení s vlastním nastavením.",
       "fields": {
         "modify": {
-          "name": "Modify existing job",
-          "description": "Whether to modify an existing job or start a new one."
+          "name": "Upravit existující úlohu",
+          "description": "Zda upravit existující úlohu nebo spustit novou."
         },
         "is_mow": {
           "name": "Sečení",
@@ -624,16 +626,16 @@
       }
     },
     "set_non_work_hours": {
-      "name": "Set non-work hours",
-      "description": "Set the hours when the mower is not working.",
+      "name": "Nastavit hodiny mimo pracovní dobu",
+      "description": "Nastavit hodiny, kdy sekačka nepracuje.",
       "fields": {
         "start_time": {
-          "name": "Start time",
-          "description": "Start time of the non-work hours."
+          "name": "Čas začátku",
+          "description": "Čas začátku hodin mimo pracovní dobu."
         },
         "end_time": {
-          "name": "End time",
-          "description": "End time of the non-work hours."
+          "name": "Čas konce",
+          "description": "Čas konce hodin mimo pracovní dobu."
         }
       }
     },
@@ -650,6 +652,130 @@
     "reset_blade_time": {
       "name": "Resetovat čas nože",
       "description": "Resetovat čítač doby používání nože."
+    },
+    "get_map_data": {
+      "name": "Získat data mapy",
+      "description": "Vrací surová data mapy (oblasti, SVG dlaždice, názvy oblastí) pro použití s kartou SVG mapy.",
+      "fields": {
+        "entity_id": {
+          "name": "Entita",
+          "description": "Jakákoli Mammotion entita patřící k zařízení."
+        }
+      }
+    },
+    "svg_add": {
+      "name": "Přidat SVG dlaždici",
+      "description": "Odešle novou SVG dlaždici na mapu zařízení. Vrací hash přiřazený zařízením.",
+      "fields": {
+        "entity_id": {
+          "name": "Entita",
+          "description": "Jakákoli Mammotion entita patřící k zařízení."
+        },
+        "area_hash": {
+          "name": "Hash oblasti",
+          "description": "Hash nadřazené sekací oblasti."
+        },
+        "svg_data": {
+          "name": "SVG data",
+          "description": "Surové SVG značkování pro zobrazení na mapě."
+        },
+        "svg_file_name": {
+          "name": "Název souboru",
+          "description": "Název souboru uložený na zařízení (výchozí: pattern.svg)."
+        },
+        "scale": {
+          "name": "Měřítko",
+          "description": "Rovnoměrný faktor měřítka (1,0 = bez měřítka)."
+        },
+        "rotate": {
+          "name": "Otočení",
+          "description": "Otočení v radiánech (CCW-kladné v ENU rámci zařízení)."
+        },
+        "base_width_m": {
+          "name": "Šířka (m)",
+          "description": "Fyzická šířka jedné jednotky dlaždice v metrech (2,5 pro Luba 1/Yuka, 4,0 pro Luba 2)."
+        },
+        "base_height_m": {
+          "name": "Výška (m)",
+          "description": "Fyzická výška jedné jednotky dlaždice v metrech."
+        },
+        "x_move": {
+          "name": "Pozice X",
+          "description": "Přepsání souřadnice X (metry). Výchozí: těžiště oblasti."
+        },
+        "y_move": {
+          "name": "Pozice Y",
+          "description": "Přepsání souřadnice Y (metry). Výchozí: těžiště oblasti."
+        }
+      }
+    },
+    "svg_update": {
+      "name": "Aktualizovat SVG dlaždici",
+      "description": "Nahradí existující SVG dlaždici na mapě zařízení. Použijte device_hash vrácený funkcí svg_add.",
+      "fields": {
+        "entity_id": {
+          "name": "Entita",
+          "description": "Jakákoli Mammotion entita patřící k zařízení."
+        },
+        "device_hash": {
+          "name": "Hash zařízení",
+          "description": "Hash přiřazený zařízením při prvním přidání dlaždice."
+        },
+        "area_hash": {
+          "name": "Hash oblasti",
+          "description": "Hash nadřazené sekací oblasti."
+        },
+        "svg_data": {
+          "name": "SVG data",
+          "description": "Aktualizované SVG značkování."
+        },
+        "svg_file_name": {
+          "name": "Název souboru",
+          "description": "Název souboru uložený na zařízení."
+        },
+        "scale": {
+          "name": "Měřítko",
+          "description": "Rovnoměrný faktor měřítka."
+        },
+        "rotate": {
+          "name": "Otočení",
+          "description": "Otočení v radiánech (CCW-kladné)."
+        },
+        "base_width_m": {
+          "name": "Šířka (m)",
+          "description": "Fyzická šířka jedné jednotky dlaždice v metrech."
+        },
+        "base_height_m": {
+          "name": "Výška (m)",
+          "description": "Fyzická výška jedné jednotky dlaždice v metrech."
+        },
+        "x_move": {
+          "name": "Pozice X",
+          "description": "Přepsání souřadnice X (metry)."
+        },
+        "y_move": {
+          "name": "Pozice Y",
+          "description": "Přepsání souřadnice Y (metry)."
+        }
+      }
+    },
+    "svg_delete": {
+      "name": "Smazat SVG dlaždici",
+      "description": "Odstraní SVG dlaždici z mapy zařízení pomocí jejího hashe přiřazeného zařízením.",
+      "fields": {
+        "entity_id": {
+          "name": "Entita",
+          "description": "Jakákoli Mammotion entita patřící k zařízení."
+        },
+        "device_hash": {
+          "name": "Hash zařízení",
+          "description": "Hash přiřazený zařízením při přidání dlaždice."
+        },
+        "area_hash": {
+          "name": "Hash oblasti",
+          "description": "Hash nadřazené sekací oblasti."
+        }
+      }
     }
   },
   "exceptions": {

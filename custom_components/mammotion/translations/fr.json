@@ -52,7 +52,9 @@
           "title": "Mettre à jour la configuration",
           "stay_connected_bluetooth": "Garder le Bluetooth connecté",
           "prefer_ble_over_wifi": "Préférer le Bluetooth au Wi-Fi si disponible",
-          "movement_use_wifi": "Envoyer les commandes de mouvement via Wi-Fi"
+          "movement_use_wifi": "Envoyer les commandes de mouvement via Wi-Fi",
+          "mow_path_fetch_enabled": "Activer la récupération du chemin de tonte (cloud)",
+          "full_map_fetch_enabled": "Activer la récupération complète de la carte (cloud) — désactivé, seuls les noms de zones sont récupérés"
         }
       }
     }
@@ -122,19 +124,19 @@
       "position_type": {
         "name": "Type de position de l'appareil",
         "state": {
-          "AREA_BORDER_ON": "At perimeter",
-          "AREA_INSIDE": "Inside area",
-          "AREA_OUT": "Outside area",
-          "CHANNEL_AREA_OVERLAP": "Path area overlap",
-          "CHANNEL_ON": "On path",
-          "CHARGE_ON": "At charging station",
-          "DUMPING_AREA_INSIDE": "In dump area",
-          "DUMPING_OUTSIDE": "Outside dump area",
-          "ABNORMAL_POSITIONING": "Position error",
-          "NO_AREAS": "No areas defined",
-          "OBS_ON": "At obstacle",
-          "TURN_AREA_INSIDE": "In turn area",
-          "VIRTUAL_INSIDE": "In virtual area"
+          "AREA_BORDER_ON": "Au périmètre",
+          "AREA_INSIDE": "Dans la zone",
+          "AREA_OUT": "Hors zone",
+          "CHANNEL_AREA_OVERLAP": "Chevauchement de zone de chemin",
+          "CHANNEL_ON": "Sur le chemin",
+          "CHARGE_ON": "À la station de recharge",
+          "DUMPING_AREA_INSIDE": "Dans la zone de dépôt",
+          "DUMPING_OUTSIDE": "Hors zone de dépôt",
+          "ABNORMAL_POSITIONING": "Erreur de position",
+          "NO_AREAS": "Aucune zone définie",
+          "OBS_ON": "À l'obstacle",
+          "TURN_AREA_INSIDE": "Dans la zone de demi-tour",
+          "VIRTUAL_INSIDE": "Dans la zone virtuelle"
         }
       },
       "visual_positioning_status": {
@@ -150,29 +152,29 @@
       "activity_mode": {
         "name": "Mode activité",
         "state": {
-          "MODE_NOT_ACTIVE": "Not active",
-          "MODE_ONLINE": "Online",
-          "MODE_OFFLINE": "Offline",
-          "MODE_DISABLE": "Disabled",
-          "MODE_INITIALIZATION": "Initializing",
-          "MODE_READY": "Ready",
-          "MODE_WORKING": "Working",
-          "MODE_RETURNING": "Returning",
-          "MODE_CHARGING": "Charging",
-          "MODE_UPDATING": "Updating",
-          "MODE_LOCK": "Locked",
-          "MODE_PAUSE": "Paused",
-          "MODE_MANUAL_MOWING": "Manual mowing",
-          "MODE_UPDATE_SUCCESS": "Update successful",
-          "MODE_OTA_UPGRADE_FAIL": "Update failed",
-          "MODE_JOB_DRAW": "Drawing job",
-          "MODE_OBSTACLE_DRAW": "Drawing obstacles",
-          "MODE_CHANNEL_DRAW": "Drawing channel",
-          "MODE_ERASER_DRAW": "Drawing eraser",
-          "MODE_EDIT_BOUNDARY": "Editing boundary",
-          "MODE_LOCATION_ERROR": "Location error",
-          "MODE_BOUNDARY_JUMP": "Boundary crossed",
-          "MODE_CHARGING_PAUSE": "Charging paused"
+          "MODE_NOT_ACTIVE": "Inactif",
+          "MODE_ONLINE": "En ligne",
+          "MODE_OFFLINE": "Hors ligne",
+          "MODE_DISABLE": "Désactivé",
+          "MODE_INITIALIZATION": "Initialisation",
+          "MODE_READY": "Prêt",
+          "MODE_WORKING": "En marche",
+          "MODE_RETURNING": "Retour",
+          "MODE_CHARGING": "En charge",
+          "MODE_UPDATING": "Mise à jour",
+          "MODE_LOCK": "Verrouillé",
+          "MODE_PAUSE": "En pause",
+          "MODE_MANUAL_MOWING": "Tonte manuelle",
+          "MODE_UPDATE_SUCCESS": "Mise à jour réussie",
+          "MODE_OTA_UPGRADE_FAIL": "Mise à jour échouée",
+          "MODE_JOB_DRAW": "Dessin de tâche",
+          "MODE_OBSTACLE_DRAW": "Dessin d'obstacles",
+          "MODE_CHANNEL_DRAW": "Dessin de voie",
+          "MODE_ERASER_DRAW": "Dessin de gomme",
+          "MODE_EDIT_BOUNDARY": "Édition des limites",
+          "MODE_LOCATION_ERROR": "Erreur de localisation",
+          "MODE_BOUNDARY_JUMP": "Limite franchie",
+          "MODE_CHARGING_PAUSE": "Charge en pause"
         }
       },
       "work_area": {
@@ -195,7 +197,7 @@
         "name": "Temps d'avertissement d'usure de la lame"
       },
       "non_work_hours": {
-        "name": "Non-work hours"
+        "name": "Heures non travaillées"
       },
       "rtk_lora": {
         "name": "Version LoRa"
@@ -245,7 +247,7 @@
         "name": "Synchroniser les cartes"
       },
       "start_schedule_sync": {
-        "name": "Synchronize schedules"
+        "name": "Synchroniser les plannings"
       },
       "resync_rtk_dock": {
         "name": "Synchroniser RTK et base"
@@ -275,7 +277,7 @@
         "name": "Déplacer la station de recharge"
       },
       "restart_mower": {
-        "name": "Restart mower"
+        "name": "Redémarrer la tondeuse"
       }
     },
     "switch": {
@@ -520,8 +522,8 @@
       "description": "Démarrer l'opération de tonte avec des paramètres personnalisés.",
       "fields": {
         "modify": {
-          "name": "Modify existing job",
-          "description": "Whether to modify an existing job or start a new one."
+          "name": "Modifier un travail existant",
+          "description": "Modifier un travail existant ou en démarrer un nouveau."
         },
         "is_mow": {
           "name": "Tonte",
@@ -624,16 +626,16 @@
       }
     },
     "set_non_work_hours": {
-      "name": "Set non-work hours",
-      "description": "Set the hours when the mower is not working.",
+      "name": "Définir les heures non travaillées",
+      "description": "Définir les heures pendant lesquelles la tondeuse ne travaille pas.",
       "fields": {
         "start_time": {
-          "name": "Start time",
-          "description": "Start time of the non-work hours."
+          "name": "Heure de début",
+          "description": "Heure de début des heures non travaillées."
         },
         "end_time": {
-          "name": "End time",
-          "description": "End time of the non-work hours."
+          "name": "Heure de fin",
+          "description": "Heure de fin des heures non travaillées."
         }
       }
     },
@@ -650,6 +652,130 @@
     "reset_blade_time": {
       "name": "Réinitialiser le temps de lame",
       "description": "Réinitialiser le compteur de temps d'utilisation de la lame."
+    },
+    "get_map_data": {
+      "name": "Obtenir les données de la carte",
+      "description": "Retourne les données brutes de la carte (zones, tuiles SVG, noms de zones) pour utilisation avec la carte SVG.",
+      "fields": {
+        "entity_id": {
+          "name": "Entité",
+          "description": "Toute entité Mammotion appartenant à l'appareil."
+        }
+      }
+    },
+    "svg_add": {
+      "name": "Ajouter une tuile SVG",
+      "description": "Envoie une nouvelle tuile SVG à la carte de l'appareil. Retourne le hash attribué par l'appareil.",
+      "fields": {
+        "entity_id": {
+          "name": "Entité",
+          "description": "Toute entité Mammotion appartenant à l'appareil."
+        },
+        "area_hash": {
+          "name": "Hash de zone",
+          "description": "Hash de la zone de tonte parente."
+        },
+        "svg_data": {
+          "name": "Données SVG",
+          "description": "Balisage SVG brut à afficher sur la carte."
+        },
+        "svg_file_name": {
+          "name": "Nom de fichier",
+          "description": "Nom de fichier stocké sur l'appareil (par défaut : pattern.svg)."
+        },
+        "scale": {
+          "name": "Échelle",
+          "description": "Facteur d'échelle uniforme (1,0 = pas de mise à l'échelle)."
+        },
+        "rotate": {
+          "name": "Rotation",
+          "description": "Rotation en radians (CCW-positif dans le référentiel ENU de l'appareil)."
+        },
+        "base_width_m": {
+          "name": "Largeur (m)",
+          "description": "Largeur physique d'une unité de tuile en mètres (2,5 pour Luba 1/Yuka, 4,0 pour Luba 2)."
+        },
+        "base_height_m": {
+          "name": "Hauteur (m)",
+          "description": "Hauteur physique d'une unité de tuile en mètres."
+        },
+        "x_move": {
+          "name": "Position X",
+          "description": "Remplacement de la coordonnée X (mètres). Par défaut : centroïde de la zone."
+        },
+        "y_move": {
+          "name": "Position Y",
+          "description": "Remplacement de la coordonnée Y (mètres). Par défaut : centroïde de la zone."
+        }
+      }
+    },
+    "svg_update": {
+      "name": "Mettre à jour une tuile SVG",
+      "description": "Remplace une tuile SVG existante sur la carte de l'appareil. Utilisez le device_hash retourné par svg_add.",
+      "fields": {
+        "entity_id": {
+          "name": "Entité",
+          "description": "Toute entité Mammotion appartenant à l'appareil."
+        },
+        "device_hash": {
+          "name": "Hash de l'appareil",
+          "description": "Hash attribué par l'appareil lors du premier ajout de la tuile."
+        },
+        "area_hash": {
+          "name": "Hash de zone",
+          "description": "Hash de la zone de tonte parente."
+        },
+        "svg_data": {
+          "name": "Données SVG",
+          "description": "Balisage SVG mis à jour."
+        },
+        "svg_file_name": {
+          "name": "Nom de fichier",
+          "description": "Nom de fichier stocké sur l'appareil."
+        },
+        "scale": {
+          "name": "Échelle",
+          "description": "Facteur d'échelle uniforme."
+        },
+        "rotate": {
+          "name": "Rotation",
+          "description": "Rotation en radians (CCW-positif)."
+        },
+        "base_width_m": {
+          "name": "Largeur (m)",
+          "description": "Largeur physique d'une unité de tuile en mètres."
+        },
+        "base_height_m": {
+          "name": "Hauteur (m)",
+          "description": "Hauteur physique d'une unité de tuile en mètres."
+        },
+        "x_move": {
+          "name": "Position X",
+          "description": "Remplacement de la coordonnée X (mètres)."
+        },
+        "y_move": {
+          "name": "Position Y",
+          "description": "Remplacement de la coordonnée Y (mètres)."
+        }
+      }
+    },
+    "svg_delete": {
+      "name": "Supprimer une tuile SVG",
+      "description": "Supprime une tuile SVG de la carte de l'appareil par son hash attribué par l'appareil.",
+      "fields": {
+        "entity_id": {
+          "name": "Entité",
+          "description": "Toute entité Mammotion appartenant à l'appareil."
+        },
+        "device_hash": {
+          "name": "Hash de l'appareil",
+          "description": "Hash attribué par l'appareil lors de l'ajout de la tuile."
+        },
+        "area_hash": {
+          "name": "Hash de zone",
+          "description": "Hash de la zone de tonte parente."
+        }
+      }
     }
   },
   "exceptions": {

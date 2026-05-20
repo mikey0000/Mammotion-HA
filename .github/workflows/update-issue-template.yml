@@ -1,0 +1,92 @@
+name: Refresh issue template version dropdown
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    name: Refresh integration_version options
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - name: Regenerate version options block
+        env:
+          MAX_TAGS: "20"
+        run: |
+          python3 - <<'PY'
+          import os
+          import re
+          import subprocess
+
+          MAX_TAGS = int(os.environ.get("MAX_TAGS", "20"))
+
+          tags = subprocess.check_output(
+              ["git", "tag", "--sort=-creatordate"],
+              text=True,
+          ).strip().splitlines()
+          tags = [t for t in tags if t.startswith("v")][:MAX_TAGS]
+          if not tags:
+              raise SystemExit("No v-prefixed tags found; aborting.")
+
+          path = ".github/ISSUE_TEMPLATE/bug_report.yml"
+          with open(path, "r", encoding="utf-8") as f:
+              original = f.read()
+
+          # Indentation matches the existing options: block in the dropdown
+          # (siblings: label, description, options).  See bug_report.yml.
+          indent = "      "
+          item_indent = "        "
+
+          new_block_lines = [
+              f"{indent}# BEGIN AUTO-GENERATED VERSION LIST (refreshed by .github/workflows/update-issue-template.yml — do not hand-edit)",
+              f"{indent}options:",
+          ]
+          for tag in tags:
+              new_block_lines.append(f"{item_indent}- {tag}")
+          new_block_lines.append(f"{item_indent}- Older / not listed (specify in description)")
+          new_block_lines.append(f"{indent}# END AUTO-GENERATED VERSION LIST")
+          new_block = "\n".join(new_block_lines)
+
+          pattern = re.compile(
+              re.escape(f"{indent}# BEGIN AUTO-GENERATED VERSION LIST")
+              + r".*?"
+              + re.escape(f"{indent}# END AUTO-GENERATED VERSION LIST"),
+              re.DOTALL,
+          )
+          if not pattern.search(original):
+              raise SystemExit(
+                  "Could not find AUTO-GENERATED VERSION LIST markers in bug_report.yml"
+              )
+
+          updated = pattern.sub(new_block, original)
+          if updated == original:
+              print("No change.")
+              raise SystemExit(0)
+
+          with open(path, "w", encoding="utf-8") as f:
+              f.write(updated)
+          print(f"Updated dropdown with {len(tags)} tag(s); newest: {tags[0]}")
+          PY
+
+      - name: Commit and push if changed
+        run: |
+          if git diff --quiet -- .github/ISSUE_TEMPLATE/bug_report.yml; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/ISSUE_TEMPLATE/bug_report.yml
+          git commit -m "chore: refresh issue template version dropdown"
+          git push origin main

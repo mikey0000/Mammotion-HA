@@ -52,7 +52,9 @@
           "title": "Konfiguration aktualisieren",
           "stay_connected_bluetooth": "Bluetooth-Verbindung aufrechterhalten",
           "prefer_ble_over_wifi": "Wenn möglich, Bluetooth statt WLAN verwenden",
-          "movement_use_wifi": "Bewegungsbefehle über WLAN senden"
+          "movement_use_wifi": "Bewegungsbefehle über WLAN senden",
+          "mow_path_fetch_enabled": "Mähpfad-Abruf aktivieren (Cloud)",
+          "full_map_fetch_enabled": "Vollständigen Kartenabruf aktivieren (Cloud) — wenn aus, werden nur Bereichsnamen abgerufen"
         }
       }
     }
@@ -650,6 +652,130 @@
     "reset_blade_time": {
       "name": "Betriebsstunden der Klingen zurücksetzen",
       "description": "Setzt den Betriebsstundenzähler für die Klingen zurück."
+    },
+    "get_map_data": {
+      "name": "Kartendaten abrufen",
+      "description": "Gibt die Karten-Rohdaten zur Verwendung mit der Mammotion-SVG-Karte zurück. (Bereiche, Bereichsnamen, SVG-Muster)",
+      "fields": {
+        "entity_id": {
+          "name": "Entität",
+          "description": "Eine beliebige Mammotion-Entität, die zum Gerät gehört."
+        }
+      }
+    },
+    "svg_add": {
+      "name": "SVG-Kachel hinzufügen",
+      "description": "Sendet eine neues SVG-Muster an die Karte des Gerätes. Gibt den geräteinternen Hash zurück.",
+      "fields": {
+        "entity_id": {
+          "name": "Entität",
+          "description": "Eine beliebige Mammotion-Entität, die zum Gerät gehört."
+        },
+        "area_hash": {
+          "name": "Bereichs-Hash",
+          "description": "Gibt den Hash des übergeordneten Mähbereichs an."
+        },
+        "svg_data": {
+          "name": "SVG-Daten",
+          "description": "Reines SVG-Markup, dass zur Anzeige auf der Karte verwendet wird."
+        },
+        "svg_file_name": {
+          "name": "Dateiname",
+          "description": "Gibt den auf dem Gerät gespeicherten Dateinamen an. (Standard: pattern.svg)"
+        },
+        "scale": {
+          "name": "Skalierung",
+          "description": "Gibt den einheitlicher Skalierungsfaktor an. (1,0 = keine Skalierung)"
+        },
+        "rotate": {
+          "name": "Drehung",
+          "description": "Drehung im Bogenmaß (CCW-positiv (Drehung gegen den Uhrzeigersinn ist positiv.) im ENU-Rahmen (Koordinatensystem East–North–Up) des Geräts)."
+        },
+        "base_width_m": {
+          "name": "Breite (m)",
+          "description": "Gibt die physische Breite einer Kacheleinheit an (in Meter). (2,5 für Luba 1/Yuka, 4,0 für Luba 2)"
+        },
+        "base_height_m": {
+          "name": "Höhe (m)",
+          "description": "Gibt die physische Höhe einer Kacheleinheit an (in Meter)."
+        },
+        "x_move": {
+          "name": "X-Position",
+          "description": "Überschreibung der X-Koordinate (in Meter). Standard: Flächenmittelpunkt."
+        },
+        "y_move": {
+          "name": "Y-Position",
+          "description": "Überschreibung der Y-Koordinate (in Meter). Standard: Flächenmittelpunkt."
+        }
+      }
+    },
+    "svg_update": {
+      "name": "SVG-Kachel aktualisieren",
+      "description": "Ersetzt ein vorhandenes SVG-Muster auf der Karte des Gerätes. Verwende den von svg_add zurückgegebenen device_hash.",
+      "fields": {
+        "entity_id": {
+          "name": "Entität",
+          "description": "Eine beliebige Mammotion-Entität, die zum Gerät gehört."
+        },
+        "device_hash": {
+          "name": "Geräte-Hash",
+          "description": "Gibt den vom Gerät zugewiesener Hash an, als die Kachel erstmals hinzugefügt wurde."
+        },
+        "area_hash": {
+          "name": "Bereichs-Hash",
+          "description": "Gibt den Hash des übergeordneten Mähbereichs an."
+        },
+        "svg_data": {
+          "name": "SVG-Daten",
+          "description": "Aktualisiertes SVG-Markup, das zur Anzeige auf der Karte verwendet wird."
+        },
+        "svg_file_name": {
+          "name": "Dateiname",
+          "description": "Gibt den auf dem Gerät gespeicherten Dateinamen an. (Standard: pattern.svg)"
+        },
+        "scale": {
+          "name": "Skalierung",
+          "description": "Gibt den einheitlicher Skalierungsfaktor an. (1,0 = keine Skalierung)"
+        },
+        "rotate": {
+          "name": "Drehung",
+          "description": "Drehung im Bogenmaß (CCW-positiv (Drehung gegen den Uhrzeigersinn ist positiv.) im ENU-Rahmen (Koordinatensystem East–North–Up) des Geräts)."
+        },
+        "base_width_m": {
+          "name": "Breite (m)",
+          "description": "Gibt die physische Breite einer Kacheleinheit an (in Meter). (2,5 für Luba 1/Yuka, 4,0 für Luba 2)"
+        },
+        "base_height_m": {
+          "name": "Höhe (m)",
+          "description": "Gibt die physische Höhe einer Kacheleinheit an (in Meter)."
+        },
+        "x_move": {
+          "name": "X-Position",
+          "description": "Überschreibung der X-Koordinate (in Meter). Standard: Flächenmittelpunkt."
+        },
+        "y_move": {
+          "name": "Y-Position",
+          "description": "Überschreibung der Y-Koordinate (in Meter). Standard: Flächenmittelpunkt."
+        }
+      }
+    },
+    "svg_delete": {
+      "name": "SVG-Kachel löschen",
+      "description": "Entfernt eine SVG-Muster von der Karte des Gerätes anhand ihres geräteinternen Hashes.",
+      "fields": {
+        "entity_id": {
+          "name": "Entität",
+          "description": "Eine beliebige Mammotion-Entität, die zum Gerät gehört."
+        },
+        "device_hash": {
+          "name": "Geräte-Hash",
+          "description": "Gibt den vom Gerät zugewiesener Hash an, als die Kachel erstmals hinzugefügt wurde."
+        },
+        "area_hash": {
+          "name": "Bereichs-Hash",
+          "description": "Gibt den Hash des übergeordneten Mähbereichs an."
+        }
+      }
     }
   },
   "exceptions": {

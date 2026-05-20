@@ -264,3 +264,196 @@ reset_blade_time:
     entity:
       integration: mammotion
       domain: lawn_mower
+
+get_map_data:
+  fields:
+    entity_id:
+      required: true
+      selector:
+        entity:
+          integration: mammotion
+
+svg_add:
+  fields:
+    entity_id:
+      required: true
+      selector:
+        entity:
+          integration: mammotion
+    area_hash:
+      required: true
+      example: 123456789
+      selector:
+        number:
+          mode: box
+    svg_data:
+      required: true
+      example: "<svg>...</svg>"
+      selector:
+        text:
+          multiline: true
+    svg_file_name:
+      required: false
+      default: "pattern.svg"
+      example: "pattern.svg"
+      selector:
+        text:
+    scale:
+      required: false
+      default: 1.0
+      example: 1.0
+      selector:
+        number:
+          min: 0.1
+          max: 10.0
+          step: 0.01
+          mode: box
+    rotate:
+      required: false
+      default: 0.0
+      example: 0.0
+      selector:
+        number:
+          min: -3.14159
+          max: 3.14159
+          step: 0.001
+          mode: box
+          unit_of_measurement: "rad"
+    base_width_m:
+      required: false
+      default: 2.5
+      example: 2.5
+      selector:
+        number:
+          min: 0.1
+          max: 20.0
+          step: 0.1
+          mode: box
+          unit_of_measurement: "m"
+    base_height_m:
+      required: false
+      default: 2.5
+      example: 2.5
+      selector:
+        number:
+          min: 0.1
+          max: 20.0
+          step: 0.1
+          mode: box
+          unit_of_measurement: "m"
+    x_move:
+      required: false
+      example: 0.0
+      selector:
+        number:
+          mode: box
+          unit_of_measurement: "m"
+    y_move:
+      required: false
+      example: 0.0
+      selector:
+        number:
+          mode: box
+          unit_of_measurement: "m"
+
+svg_update:
+  fields:
+    entity_id:
+      required: true
+      selector:
+        entity:
+          integration: mammotion
+    device_hash:
+      required: true
+      example: 987654321
+      selector:
+        number:
+          mode: box
+    area_hash:
+      required: true
+      example: 123456789
+      selector:
+        number:
+          mode: box
+    svg_data:
+      required: true
+      example: "<svg>...</svg>"
+      selector:
+        text:
+          multiline: true
+    svg_file_name:
+      required: false
+      default: "pattern.svg"
+      selector:
+        text:
+    scale:
+      required: false
+      default: 1.0
+      selector:
+        number:
+          min: 0.1
+          max: 10.0
+          step: 0.01
+          mode: box
+    rotate:
+      required: false
+      default: 0.0
+      selector:
+        number:
+          min: -3.14159
+          max: 3.14159
+          step: 0.001
+          mode: box
+          unit_of_measurement: "rad"
+    base_width_m:
+      required: false
+      default: 2.5
+      selector:
+        number:
+          min: 0.1
+          max: 20.0
+          step: 0.1
+          mode: box
+          unit_of_measurement: "m"
+    base_height_m:
+      required: false
+      default: 2.5
+      selector:
+        number:
+          min: 0.1
+          max: 20.0
+          step: 0.1
+          mode: box
+          unit_of_measurement: "m"
+    x_move:
+      required: false
+      selector:
+        number:
+          mode: box
+          unit_of_measurement: "m"
+    y_move:
+      required: false
+      selector:
+        number:
+          mode: box
+          unit_of_measurement: "m"
+
+svg_delete:
+  fields:
+    entity_id:
+      required: true
+      selector:
+        entity:
+          integration: mammotion
+    device_hash:
+      required: true
+      example: 987654321
+      selector:
+        number:
+          mode: box
+    area_hash:
+      required: true
+      example: 123456789
+      selector:
+        number:
+          mode: box

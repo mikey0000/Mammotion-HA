@@ -1221,7 +1221,7 @@ sdist = { url = "https://files.pythonhosted.org/packages/96/e3/42c87871920602a3c
 
 [[package]]
 name = "mammotion-ha"
-version = "0.5.45b5"
+version = "0.5.48b1"
 source = { virtual = "." }
 dependencies = [
     { name = "autotyping" },
@@ -1244,7 +1244,7 @@ dev = [
 requires-dist = [
     { name = "autotyping", specifier = ">=24.3.0" },
     { name = "homeassistant", specifier = ">=2026.1.0" },
-    { name = "pymammotion", specifier = "==0.7.109" },
+    { name = "pymammotion", specifier = "==0.7.117" },
     { name = "sdp-transform", specifier = ">=1.1.0" },
     { name = "websockets", specifier = ">=15.0.1" },
 ]
@@ -1737,7 +1737,7 @@ wheels = [
 
 [[package]]
 name = "pymammotion"
-version = "0.7.109"
+version = "0.7.117"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -1747,7 +1747,6 @@ dependencies = [
     { name = "betterproto2" },
     { name = "bleak" },
     { name = "bleak-retry-connector" },
-    { name = "bluetooth-adapters" },
     { name = "crcmod" },
     { name = "cryptography" },
     { name = "mashumaro" },
@@ -1762,9 +1761,9 @@ dependencies = [
     { name = "webrtc-models" },
     { name = "websockets" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a1/c7/7cb5b11d6c7f96242b9555a7dd7a4733f718471b5e26d99218f906bc897b/pymammotion-0.7.109.tar.gz", hash = "sha256:a5648d343d46dc8158c57761f8af31059b0e3609df3b18ad422ada235009d3af", size = 340108, upload-time = "2026-05-11T21:50:49.556Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/90/83/d5b388601d6d7479262aa87f4ee55d05de48e468d46c8717a4493d12f8d8/pymammotion-0.7.117.tar.gz", hash = "sha256:48279318a24eae0e9659d418d21069ead172bb99a3b7cf1ab0769327b46ca599", size = 344730, upload-time = "2026-05-20T05:19:33.841Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/98/5c/c7c50eb7b4863a8d1082e35ac75e7feaa0a835bd0888076b848a70ba4ab0/pymammotion-0.7.109-py3-none-any.whl", hash = "sha256:542d5cc8f3d9ebbe23818d2546538a5fd7348a784ab39e533a8084e6f56e5073", size = 399802, upload-time = "2026-05-11T21:50:47.936Z" },
+    { url = "https://files.pythonhosted.org/packages/d5/4b/3c1eb3ae1139cd906277e3afa05a31ea35c900b105f58a142c5c22a65eca/pymammotion-0.7.117-py3-none-any.whl", hash = "sha256:20929942b5af20661d28b6f23d78e789a129994e96c897a92cdc7b3b5fc8263a", size = 405947, upload-time = "2026-05-20T05:19:31.802Z" },
 ]
 
 [[package]]

@@ -34,6 +34,7 @@ from .const import (
     CONF_DEVICE_NAME,
     CONF_HAS_CLOUD_ACCOUNT,
     CONF_MOVEMENT_USE_WIFI,
+    CONF_MOW_PATH_FETCH_ENABLED,
     CONF_PREFER_BLE,
     CONF_USE_WIFI,
     DEVICE_SUPPORT,
@@ -370,6 +371,9 @@ class MammotionConfigFlowHandler(OptionsFlow):
         self._config_entry = config_entry
         self.prefer_ble = config_entry.options.get(CONF_PREFER_BLE, True)
         self.movement_use_wifi = config_entry.options.get(CONF_MOVEMENT_USE_WIFI, False)
+        self.mow_path_fetch_enabled = config_entry.options.get(
+            CONF_MOW_PATH_FETCH_ENABLED, False
+        )
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
@@ -383,6 +387,10 @@ class MammotionConfigFlowHandler(OptionsFlow):
             ) is not None:
                 for mower in runtime.mowers:
                     mower.api.set_prefer_ble(mower.name, prefer_ble=new_prefer_ble)
+                    mower.api.set_mow_path_fetch_enabled(
+                        mower.name,
+                        enabled=user_input.get(CONF_MOW_PATH_FETCH_ENABLED, False),
+                    )
 
             return self.async_create_entry(data=user_input)
 
@@ -395,6 +403,10 @@ class MammotionConfigFlowHandler(OptionsFlow):
                 vol.Optional(
                     CONF_MOVEMENT_USE_WIFI,
                     default=self.movement_use_wifi,
+                ): cv.boolean,
+                vol.Optional(
+                    CONF_MOW_PATH_FETCH_ENABLED,
+                    default=self.mow_path_fetch_enabled,
                 ): cv.boolean,
             }
         )

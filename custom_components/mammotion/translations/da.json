@@ -52,7 +52,9 @@
           "title": "Opdater konfiguration",
           "stay_connected_bluetooth": "Hold Bluetooth-forbindelsen",
           "prefer_ble_over_wifi": "Foretræk Bluetooth frem for Wi-Fi, når det er tilgængeligt",
-          "movement_use_wifi": "Send bevægelseskommandoer via Wi-Fi"
+          "movement_use_wifi": "Send bevægelseskommandoer via Wi-Fi",
+          "mow_path_fetch_enabled": "Aktivér hentning af klippesti (sky)",
+          "full_map_fetch_enabled": "Aktivér fuld korthentning (sky) — når slået fra, hentes kun områdenavne"
         }
       }
     }
@@ -122,19 +124,19 @@
       "position_type": {
         "name": "Enhedspositionstype",
         "state": {
-          "AREA_BORDER_ON": "At perimeter",
-          "AREA_INSIDE": "Inside area",
-          "AREA_OUT": "Outside area",
-          "CHANNEL_AREA_OVERLAP": "Path area overlap",
-          "CHANNEL_ON": "On path",
-          "CHARGE_ON": "At charging station",
-          "DUMPING_AREA_INSIDE": "In dump area",
-          "DUMPING_OUTSIDE": "Outside dump area",
-          "ABNORMAL_POSITIONING": "Position error",
-          "NO_AREAS": "No areas defined",
-          "OBS_ON": "At obstacle",
-          "TURN_AREA_INSIDE": "In turn area",
-          "VIRTUAL_INSIDE": "In virtual area"
+          "AREA_BORDER_ON": "Ved perimeter",
+          "AREA_INSIDE": "Inde i område",
+          "AREA_OUT": "Udenfor område",
+          "CHANNEL_AREA_OVERLAP": "Overlappende stiområde",
+          "CHANNEL_ON": "På sti",
+          "CHARGE_ON": "Ved ladestation",
+          "DUMPING_AREA_INSIDE": "I affaldszone",
+          "DUMPING_OUTSIDE": "Udenfor affaldszone",
+          "ABNORMAL_POSITIONING": "Positionsfejl",
+          "NO_AREAS": "Ingen områder defineret",
+          "OBS_ON": "Ved forhindring",
+          "TURN_AREA_INSIDE": "I vendezone",
+          "VIRTUAL_INSIDE": "I virtuelt område"
         }
       },
       "visual_positioning_status": {
@@ -150,29 +152,29 @@
       "activity_mode": {
         "name": "Aktivitetstilstand",
         "state": {
-          "MODE_NOT_ACTIVE": "Not active",
+          "MODE_NOT_ACTIVE": "Ikke aktiv",
           "MODE_ONLINE": "Online",
           "MODE_OFFLINE": "Offline",
-          "MODE_DISABLE": "Disabled",
-          "MODE_INITIALIZATION": "Initializing",
-          "MODE_READY": "Ready",
-          "MODE_WORKING": "Working",
-          "MODE_RETURNING": "Returning",
-          "MODE_CHARGING": "Charging",
-          "MODE_UPDATING": "Updating",
-          "MODE_LOCK": "Locked",
-          "MODE_PAUSE": "Paused",
-          "MODE_MANUAL_MOWING": "Manual mowing",
-          "MODE_UPDATE_SUCCESS": "Update successful",
-          "MODE_OTA_UPGRADE_FAIL": "Update failed",
-          "MODE_JOB_DRAW": "Drawing job",
-          "MODE_OBSTACLE_DRAW": "Drawing obstacles",
-          "MODE_CHANNEL_DRAW": "Drawing channel",
-          "MODE_ERASER_DRAW": "Drawing eraser",
-          "MODE_EDIT_BOUNDARY": "Editing boundary",
-          "MODE_LOCATION_ERROR": "Location error",
-          "MODE_BOUNDARY_JUMP": "Boundary crossed",
-          "MODE_CHARGING_PAUSE": "Charging paused"
+          "MODE_DISABLE": "Deaktiveret",
+          "MODE_INITIALIZATION": "Initialiserer",
+          "MODE_READY": "Klar",
+          "MODE_WORKING": "Arbejder",
+          "MODE_RETURNING": "Vender tilbage",
+          "MODE_CHARGING": "Oplader",
+          "MODE_UPDATING": "Opdaterer",
+          "MODE_LOCK": "Låst",
+          "MODE_PAUSE": "Sat på pause",
+          "MODE_MANUAL_MOWING": "Manuel klipning",
+          "MODE_UPDATE_SUCCESS": "Opdatering lykkedes",
+          "MODE_OTA_UPGRADE_FAIL": "Opdatering fejlede",
+          "MODE_JOB_DRAW": "Tegner opgave",
+          "MODE_OBSTACLE_DRAW": "Tegner forhindringer",
+          "MODE_CHANNEL_DRAW": "Tegner kanal",
+          "MODE_ERASER_DRAW": "Tegner viskelæder",
+          "MODE_EDIT_BOUNDARY": "Redigerer grænse",
+          "MODE_LOCATION_ERROR": "Positionsfejl",
+          "MODE_BOUNDARY_JUMP": "Grænse overskredet",
+          "MODE_CHARGING_PAUSE": "Opladning sat på pause"
         }
       },
       "work_area": {
@@ -195,7 +197,7 @@
         "name": "Knivslitage advarseltid"
       },
       "non_work_hours": {
-        "name": "Non-work hours"
+        "name": "Ikke-arbejdstimer"
       },
       "rtk_lora": {
         "name": "LoRa version"
@@ -245,7 +247,7 @@
         "name": "Synkroniser kort"
       },
       "start_schedule_sync": {
-        "name": "Synchronize schedules"
+        "name": "Synkroniser tidsplaner"
       },
       "resync_rtk_dock": {
         "name": "Synkroniser RTK og ladestation"
@@ -275,7 +277,7 @@
         "name": "Flyt ladestation"
       },
       "restart_mower": {
-        "name": "Restart mower"
+        "name": "Genstart plæneklipperen"
       }
     },
     "switch": {
@@ -520,8 +522,8 @@
       "description": "Start klippeoperationen med tilpassede indstillinger.",
       "fields": {
         "modify": {
-          "name": "Modify existing job",
-          "description": "Whether to modify an existing job or start a new one."
+          "name": "Rediger eksisterende opgave",
+          "description": "Om en eksisterende opgave skal ændres eller en ny startes."
         },
         "is_mow": {
           "name": "Klipper",
@@ -624,16 +626,16 @@
       }
     },
     "set_non_work_hours": {
-      "name": "Set non-work hours",
-      "description": "Set the hours when the mower is not working.",
+      "name": "Indstil ikke-arbejdstimer",
+      "description": "Indstil de timer, hvor plæneklipperen ikke arbejder.",
       "fields": {
         "start_time": {
-          "name": "Start time",
-          "description": "Start time of the non-work hours."
+          "name": "Starttid",
+          "description": "Starttid for ikke-arbejdstimerne."
         },
         "end_time": {
-          "name": "End time",
-          "description": "End time of the non-work hours."
+          "name": "Sluttid",
+          "description": "Sluttid for ikke-arbejdstimerne."
         }
       }
     },
@@ -650,6 +652,130 @@
     "reset_blade_time": {
       "name": "Nulstil klingetid",
       "description": "Nulstil tælleren for klingebrug."
+    },
+    "get_map_data": {
+      "name": "Hent kortdata",
+      "description": "Returnerer de rå kortdata (områder, SVG-fliser, områdenavne) til brug med SVG-kortkortet.",
+      "fields": {
+        "entity_id": {
+          "name": "Enhed",
+          "description": "En hvilken som helst Mammotion-enhed tilhørende enheden."
+        }
+      }
+    },
+    "svg_add": {
+      "name": "Tilføj SVG-flise",
+      "description": "Sender en ny SVG-flise til enhedskortet. Returnerer den enhedstildelte hash.",
+      "fields": {
+        "entity_id": {
+          "name": "Enhed",
+          "description": "En hvilken som helst Mammotion-enhed tilhørende enheden."
+        },
+        "area_hash": {
+          "name": "Områdehash",
+          "description": "Hash for det overordnede klippeområde."
+        },
+        "svg_data": {
+          "name": "SVG-data",
+          "description": "Rå SVG-markup til visning på kortet."
+        },
+        "svg_file_name": {
+          "name": "Filnavn",
+          "description": "Filnavn gemt på enheden (standard: pattern.svg)."
+        },
+        "scale": {
+          "name": "Skalering",
+          "description": "Ensartet skalafaktor (1,0 = ingen skalering)."
+        },
+        "rotate": {
+          "name": "Rotation",
+          "description": "Rotation i radianer (CCW-positiv i enhedens ENU-ramme)."
+        },
+        "base_width_m": {
+          "name": "Bredde (m)",
+          "description": "Fysisk bredde af én fliseenhed i meter (2,5 for Luba 1/Yuka, 4,0 for Luba 2)."
+        },
+        "base_height_m": {
+          "name": "Højde (m)",
+          "description": "Fysisk højde af én fliseenhed i meter."
+        },
+        "x_move": {
+          "name": "X-position",
+          "description": "X-koordinat tilsidesættelse (meter). Standard: områdets tyngdepunkt."
+        },
+        "y_move": {
+          "name": "Y-position",
+          "description": "Y-koordinat tilsidesættelse (meter). Standard: områdets tyngdepunkt."
+        }
+      }
+    },
+    "svg_update": {
+      "name": "Opdater SVG-flise",
+      "description": "Erstatter en eksisterende SVG-flise på enhedskortet. Brug device_hash returneret af svg_add.",
+      "fields": {
+        "entity_id": {
+          "name": "Enhed",
+          "description": "En hvilken som helst Mammotion-enhed tilhørende enheden."
+        },
+        "device_hash": {
+          "name": "Enhedshash",
+          "description": "Hash tildelt af enheden, da flisen første gang blev tilføjet."
+        },
+        "area_hash": {
+          "name": "Områdehash",
+          "description": "Hash for det overordnede klippeområde."
+        },
+        "svg_data": {
+          "name": "SVG-data",
+          "description": "Opdateret SVG-markup."
+        },
+        "svg_file_name": {
+          "name": "Filnavn",
+          "description": "Filnavn gemt på enheden."
+        },
+        "scale": {
+          "name": "Skalering",
+          "description": "Ensartet skalafaktor."
+        },
+        "rotate": {
+          "name": "Rotation",
+          "description": "Rotation i radianer (CCW-positiv)."
+        },
+        "base_width_m": {
+          "name": "Bredde (m)",
+          "description": "Fysisk bredde af én fliseenhed i meter."
+        },
+        "base_height_m": {
+          "name": "Højde (m)",
+          "description": "Fysisk højde af én fliseenhed i meter."
+        },
+        "x_move": {
+          "name": "X-position",
+          "description": "X-koordinat tilsidesættelse (meter)."
+        },
+        "y_move": {
+          "name": "Y-position",
+          "description": "Y-koordinat tilsidesættelse (meter)."
+        }
+      }
+    },
+    "svg_delete": {
+      "name": "Slet SVG-flise",
+      "description": "Fjerner en SVG-flise fra enhedskortet via dens enhedstildelte hash.",
+      "fields": {
+        "entity_id": {
+          "name": "Enhed",
+          "description": "En hvilken som helst Mammotion-enhed tilhørende enheden."
+        },
+        "device_hash": {
+          "name": "Enhedshash",
+          "description": "Hash tildelt af enheden, da flisen blev tilføjet."
+        },
+        "area_hash": {
+          "name": "Områdehash",
+          "description": "Hash for det overordnede klippeområde."
+        }
+      }
     }
   },
   "exceptions": {

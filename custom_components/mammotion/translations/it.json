@@ -52,7 +52,9 @@
           "title": "Aggiorna Configurazione",
           "stay_connected_bluetooth": "Mantieni Bluetooth connesso",
           "prefer_ble_over_wifi": "Preferisci Bluetooth rispetto al Wi-Fi quando disponibile",
-          "movement_use_wifi": "Invia comandi di movimento tramite Wi-Fi"
+          "movement_use_wifi": "Invia comandi di movimento tramite Wi-Fi",
+          "mow_path_fetch_enabled": "Abilita recupero percorso di taglio (cloud)",
+          "full_map_fetch_enabled": "Abilita recupero completo della mappa (cloud) — se disabilitato, vengono recuperati solo i nomi delle aree"
         }
       }
     }
@@ -275,7 +277,7 @@
         "name": "Riposiziona stazione di ricarica"
       },
       "restart_mower": {
-        "name": "Restart mower"
+        "name": "Riavvia il tagliaerba"
       }
     },
     "switch": {
@@ -520,8 +522,8 @@
       "description": "Avvia l'operazione di taglio con impostazioni personalizzate.",
       "fields": {
         "modify": {
-          "name": "Modify existing job",
-          "description": "Whether to modify an existing job or start a new one."
+          "name": "Modifica lavoro esistente",
+          "description": "Se modificare un lavoro esistente o iniziarne uno nuovo."
         },
         "is_mow": {
           "name": "Sta tagliando",
@@ -624,16 +626,16 @@
       }
     },
     "set_non_work_hours": {
-      "name": "Set non-work hours",
-      "description": "Set the hours when the mower is not working.",
+      "name": "Imposta ore non lavorative",
+      "description": "Imposta le ore in cui il tagliaerba non lavora.",
       "fields": {
         "start_time": {
-          "name": "Start time",
-          "description": "Start time of the non-work hours."
+          "name": "Ora di inizio",
+          "description": "Ora di inizio delle ore non lavorative."
         },
         "end_time": {
-          "name": "End time",
-          "description": "End time of the non-work hours."
+          "name": "Ora di fine",
+          "description": "Ora di fine delle ore non lavorative."
         }
       }
     },
@@ -650,6 +652,130 @@
     "reset_blade_time": {
       "name": "Reimposta tempo lama",
       "description": "Reimposta il contatore del tempo di utilizzo della lama."
+    },
+    "get_map_data": {
+      "name": "Ottieni dati mappa",
+      "description": "Restituisce i dati grezzi della mappa (aree, tessere SVG, nomi delle aree) per l'uso con la scheda mappa SVG.",
+      "fields": {
+        "entity_id": {
+          "name": "Entità",
+          "description": "Qualsiasi entità Mammotion appartenente al dispositivo."
+        }
+      }
+    },
+    "svg_add": {
+      "name": "Aggiungi tessera SVG",
+      "description": "Invia una nuova tessera SVG alla mappa del dispositivo. Restituisce l'hash assegnato dal dispositivo.",
+      "fields": {
+        "entity_id": {
+          "name": "Entità",
+          "description": "Qualsiasi entità Mammotion appartenente al dispositivo."
+        },
+        "area_hash": {
+          "name": "Hash area",
+          "description": "Hash dell'area di falciatura principale."
+        },
+        "svg_data": {
+          "name": "Dati SVG",
+          "description": "Markup SVG grezzo da visualizzare sulla mappa."
+        },
+        "svg_file_name": {
+          "name": "Nome file",
+          "description": "Nome file salvato sul dispositivo (predefinito: pattern.svg)."
+        },
+        "scale": {
+          "name": "Scala",
+          "description": "Fattore di scala uniforme (1,0 = nessuna scala)."
+        },
+        "rotate": {
+          "name": "Rotazione",
+          "description": "Rotazione in radianti (CCW-positivo nel frame ENU del dispositivo)."
+        },
+        "base_width_m": {
+          "name": "Larghezza (m)",
+          "description": "Larghezza fisica di un'unità tessera in metri (2,5 per Luba 1/Yuka, 4,0 per Luba 2)."
+        },
+        "base_height_m": {
+          "name": "Altezza (m)",
+          "description": "Altezza fisica di un'unità tessera in metri."
+        },
+        "x_move": {
+          "name": "Posizione X",
+          "description": "Override coordinata X (metri). Predefinito: centroide area."
+        },
+        "y_move": {
+          "name": "Posizione Y",
+          "description": "Override coordinata Y (metri). Predefinito: centroide area."
+        }
+      }
+    },
+    "svg_update": {
+      "name": "Aggiorna tessera SVG",
+      "description": "Sostituisce una tessera SVG esistente sulla mappa del dispositivo. Usa il device_hash restituito da svg_add.",
+      "fields": {
+        "entity_id": {
+          "name": "Entità",
+          "description": "Qualsiasi entità Mammotion appartenente al dispositivo."
+        },
+        "device_hash": {
+          "name": "Hash dispositivo",
+          "description": "Hash assegnato dal dispositivo quando la tessera è stata aggiunta per la prima volta."
+        },
+        "area_hash": {
+          "name": "Hash area",
+          "description": "Hash dell'area di falciatura principale."
+        },
+        "svg_data": {
+          "name": "Dati SVG",
+          "description": "Markup SVG aggiornato."
+        },
+        "svg_file_name": {
+          "name": "Nome file",
+          "description": "Nome file salvato sul dispositivo."
+        },
+        "scale": {
+          "name": "Scala",
+          "description": "Fattore di scala uniforme."
+        },
+        "rotate": {
+          "name": "Rotazione",
+          "description": "Rotazione in radianti (CCW-positivo)."
+        },
+        "base_width_m": {
+          "name": "Larghezza (m)",
+          "description": "Larghezza fisica di un'unità tessera in metri."
+        },
+        "base_height_m": {
+          "name": "Altezza (m)",
+          "description": "Altezza fisica di un'unità tessera in metri."
+        },
+        "x_move": {
+          "name": "Posizione X",
+          "description": "Override coordinata X (metri)."
+        },
+        "y_move": {
+          "name": "Posizione Y",
+          "description": "Override coordinata Y (metri)."
+        }
+      }
+    },
+    "svg_delete": {
+      "name": "Elimina tessera SVG",
+      "description": "Rimuove una tessera SVG dalla mappa del dispositivo tramite il suo hash assegnato dal dispositivo.",
+      "fields": {
+        "entity_id": {
+          "name": "Entità",
+          "description": "Qualsiasi entità Mammotion appartenente al dispositivo."
+        },
+        "device_hash": {
+          "name": "Hash dispositivo",
+          "description": "Hash assegnato dal dispositivo quando la tessera è stata aggiunta."
+        },
+        "area_hash": {
+          "name": "Hash area",
+          "description": "Hash dell'area di falciatura principale."
+        }
+      }
     }
   },
   "exceptions": {

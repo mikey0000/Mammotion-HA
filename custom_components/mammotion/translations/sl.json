@@ -52,7 +52,9 @@
           "title": "Posodobi nastavitev",
           "stay_connected_bluetooth": "Ohrani bluetooth povezavo",
           "prefer_ble_over_wifi": "Daj prednost Bluetooth pred Wi-Fi, ko je na voljo",
-          "movement_use_wifi": "Pošiljaj ukaze gibanja prek Wi-Fi"
+          "movement_use_wifi": "Pošiljaj ukaze gibanja prek Wi-Fi",
+          "mow_path_fetch_enabled": "Omogoči pridobivanje poti košnje (oblak)",
+          "full_map_fetch_enabled": "Omogoči pridobivanje celotnega zemljevida (oblak) — če izklopljeno, se pridobijo samo imena območij"
         }
       }
     }
@@ -60,13 +62,13 @@
   "entity": {
     "sensor": {
       "error_1_message": {
-        "name": "Last error"
+        "name": "Zadnja napaka"
       },
       "error_1_time": {
-        "name": "Last error time"
+        "name": "Čas zadnje napake"
       },
       "error_1_code": {
-        "name": "Last error code"
+        "name": "Koda zadnje napake"
       },
       "battery_percent": {
         "name": "Baterija"
@@ -122,19 +124,19 @@
       "position_type": {
         "name": "Vrsta pozicioniranja",
         "state": {
-          "AREA_BORDER_ON": "At perimeter",
-          "AREA_INSIDE": "Inside area",
-          "AREA_OUT": "Outside area",
-          "CHANNEL_AREA_OVERLAP": "Path area overlap",
-          "CHANNEL_ON": "On path",
-          "CHARGE_ON": "At charging station",
-          "DUMPING_AREA_INSIDE": "In dump area",
-          "DUMPING_OUTSIDE": "Outside dump area",
-          "ABNORMAL_POSITIONING": "Position error",
-          "NO_AREAS": "No areas defined",
-          "OBS_ON": "At obstacle",
-          "TURN_AREA_INSIDE": "In turn area",
-          "VIRTUAL_INSIDE": "In virtual area"
+          "AREA_BORDER_ON": "Na obodu",
+          "AREA_INSIDE": "Znotraj področja",
+          "AREA_OUT": "Zunaj področja",
+          "CHANNEL_AREA_OVERLAP": "Prekrivanje področja poti",
+          "CHANNEL_ON": "Na poti",
+          "CHARGE_ON": "Na polnilni postaji",
+          "DUMPING_AREA_INSIDE": "V področju odlaganja",
+          "DUMPING_OUTSIDE": "Zunaj področja odlaganja",
+          "ABNORMAL_POSITIONING": "Napaka pozicije",
+          "NO_AREAS": "Ni definiranih področij",
+          "OBS_ON": "Pri oviri",
+          "TURN_AREA_INSIDE": "V področju obračanja",
+          "VIRTUAL_INSIDE": "V virtualnem področju"
         }
       },
       "visual_positioning_status": {
@@ -150,29 +152,29 @@
       "activity_mode": {
         "name": "Vrsta dejavnosti",
         "state": {
-          "MODE_NOT_ACTIVE": "Not active",
+          "MODE_NOT_ACTIVE": "Neaktivno",
           "MODE_ONLINE": "Online",
           "MODE_OFFLINE": "Offline",
-          "MODE_DISABLE": "Disabled",
-          "MODE_INITIALIZATION": "Initializing",
-          "MODE_READY": "Ready",
-          "MODE_WORKING": "Working",
-          "MODE_RETURNING": "Returning",
-          "MODE_CHARGING": "Charging",
-          "MODE_UPDATING": "Updating",
-          "MODE_LOCK": "Locked",
-          "MODE_PAUSE": "Paused",
-          "MODE_MANUAL_MOWING": "Manual mowing",
-          "MODE_UPDATE_SUCCESS": "Update successful",
-          "MODE_OTA_UPGRADE_FAIL": "Update failed",
-          "MODE_JOB_DRAW": "Drawing job",
-          "MODE_OBSTACLE_DRAW": "Drawing obstacles",
-          "MODE_CHANNEL_DRAW": "Drawing channel",
-          "MODE_ERASER_DRAW": "Drawing eraser",
-          "MODE_EDIT_BOUNDARY": "Editing boundary",
-          "MODE_LOCATION_ERROR": "Location error",
-          "MODE_BOUNDARY_JUMP": "Boundary crossed",
-          "MODE_CHARGING_PAUSE": "Charging paused"
+          "MODE_DISABLE": "Onemogočeno",
+          "MODE_INITIALIZATION": "Inicializacija",
+          "MODE_READY": "Pripravljeno",
+          "MODE_WORKING": "Deluje",
+          "MODE_RETURNING": "Vrača se",
+          "MODE_CHARGING": "Polnjenje",
+          "MODE_UPDATING": "Posodabljanje",
+          "MODE_LOCK": "Zaklenjeno",
+          "MODE_PAUSE": "Zaustavljeno",
+          "MODE_MANUAL_MOWING": "Ročna košnja",
+          "MODE_UPDATE_SUCCESS": "Posodobitev uspešna",
+          "MODE_OTA_UPGRADE_FAIL": "Posodobitev neuspešna",
+          "MODE_JOB_DRAW": "Risanje naloge",
+          "MODE_OBSTACLE_DRAW": "Risanje ovir",
+          "MODE_CHANNEL_DRAW": "Risanje kanala",
+          "MODE_ERASER_DRAW": "Risanje radirke",
+          "MODE_EDIT_BOUNDARY": "Urejanje meje",
+          "MODE_LOCATION_ERROR": "Napaka lokacije",
+          "MODE_BOUNDARY_JUMP": "Prečkanje meje",
+          "MODE_CHARGING_PAUSE": "Polnjenje zaustavljeno"
         }
       },
       "work_area": {
@@ -195,16 +197,16 @@
         "name": "Čas opozorila obrabe rezila"
       },
       "non_work_hours": {
-        "name": "Non-work hours"
+        "name": "Ure brez dela"
       },
       "rtk_lora": {
-        "name": "LoRa version"
+        "name": "Različica LoRa"
       },
       "rtk_latitude": {
-        "name": "Latitude"
+        "name": "Zemljepisna širina"
       },
       "rtk_longitude": {
-        "name": "Longitude"
+        "name": "Zemljepisna dolžina"
       },
       "rtk_wifi_rssi": {
         "name": "Wi-Fi RSSI"
@@ -245,7 +247,7 @@
         "name": "Sinhronizacija zemljevidov"
       },
       "start_schedule_sync": {
-        "name": "Synchronize schedules"
+        "name": "Sinhronizacija urnikov"
       },
       "resync_rtk_dock": {
         "name": "Sinhronizacija položaja RTK in polnilne postaje"
@@ -272,10 +274,10 @@
         "name": "Počisti zemljevide in imena področji"
       },
       "relocate_charging_station": {
-        "name": "Relocate charging station"
+        "name": "Premesti polnilno postajo"
       },
       "restart_mower": {
-        "name": "Restart mower"
+        "name": "Ponovni zagon kosilnice"
       }
     },
     "switch": {
@@ -295,10 +297,10 @@
         "name": "Način obračanja"
       },
       "rain_tactics": {
-        "name": "Rain detection (during mow) On/Off"
+        "name": "Zaznavanje dežja (med košnjo) vkl/izkl"
       },
       "rain_detection": {
-        "name": "Rain detection (Mower) On/Off"
+        "name": "Zaznavanje dežja (kosilnica) vkl/izkl"
       },
       "side_led": {
         "name": "Stranska LED osvetlitev"
@@ -307,7 +309,7 @@
         "name": "Prvo obod"
       },
       "schedule_updates": {
-        "name": "Turn Updates On/Off"
+        "name": "Vkl/Izkl posodobitve"
       },
       "bluetooth_enabled": {
         "name": "Bluetooth"
@@ -316,10 +318,10 @@
         "name": "Cloud"
       },
       "manual_light": {
-        "name": "Manual light on/off"
+        "name": "Ročna luč vkl/izkl"
       },
       "night_light": {
-        "name": "Auto lighting on/off"
+        "name": "Samodejna osvetlitev vkl/izkl"
       },
       "voice_on_off": {
         "name": "Glas vklopljeno/izklopljeno"
@@ -395,11 +397,11 @@
         }
       },
       "cutter_mode": {
-        "name": "Cutter Speed",
+        "name": "Hitrost rezanja",
         "state": {
-          "normal": "Medium",
-          "slow": "Slow",
-          "fast": "Fast"
+          "normal": "Srednje",
+          "slow": "Počasi",
+          "fast": "Hitro"
         }
       },
       "voice_gender": {
@@ -520,8 +522,8 @@
       "description": "Prični košnjo z dodatnimi nastavitvami",
       "fields": {
         "modify": {
-          "name": "Modify existing job",
-          "description": "Whether to modify an existing job or start a new one."
+          "name": "Uredi obstoječo nalogo",
+          "description": "Ali urediti obstoječo nalogo ali začeti novo."
         },
         "is_mow": {
           "name": "Kosi",
@@ -544,12 +546,12 @@
           "description": "Vrstni red poti (obod ali cikcak prvo)."
         },
         "job_version": {
-          "name": "Job version",
-          "description": "Job version."
+          "name": "Različica naloge",
+          "description": "Različica naloge."
         },
         "job_id": {
-          "name": "Job ID",
-          "description": "Job ID."
+          "name": "ID naloge",
+          "description": "ID naloge."
         },
         "speed": {
           "name": "Hitrost",
@@ -610,30 +612,30 @@
       }
     },
     "start_stop_blades": {
-      "name": "Start or stop blades",
-      "description": "Start or stop the blades manually.",
+      "name": "Zaženi ali ustavi rezila",
+      "description": "Ročno zaženite ali ustavite rezila.",
       "fields": {
         "start_stop": {
-          "name": "Start or stop",
-          "description": "Whether blades are on or off."
+          "name": "Zaženi ali ustavi",
+          "description": "Ali so rezila vklopljena ali izklopljena."
         },
         "blade_height": {
-          "name": "Blade height",
-          "description": "Height of the blade."
+          "name": "Višina rezila",
+          "description": "Višina rezila."
         }
       }
     },
     "set_non_work_hours": {
-      "name": "Set non-work hours",
-      "description": "Set the hours when the mower is not working.",
+      "name": "Nastavi ure brez dela",
+      "description": "Nastavi ure, ko kosilnica ne dela.",
       "fields": {
         "start_time": {
-          "name": "Start time",
-          "description": "Start time of the non-work hours."
+          "name": "Začetni čas",
+          "description": "Začetni čas ur brez dela."
         },
         "end_time": {
-          "name": "End time",
-          "description": "End time of the non-work hours."
+          "name": "Končni čas",
+          "description": "Končni čas ur brez dela."
         }
       }
     },
@@ -650,6 +652,130 @@
     "reset_blade_time": {
       "name": "Ponastavi čas rezila",
       "description": "Ponastavi števec časa uporabe rezila."
+    },
+    "get_map_data": {
+      "name": "Pridobi podatke zemljevida",
+      "description": "Vrne surove podatke zemljevida (področja, SVG ploščice, imena področij) za uporabo s kartico SVG zemljevida.",
+      "fields": {
+        "entity_id": {
+          "name": "Entiteta",
+          "description": "Katera koli Mammotion entiteta, ki pripada napravi."
+        }
+      }
+    },
+    "svg_add": {
+      "name": "Dodaj SVG ploščico",
+      "description": "Pošlje novo SVG ploščico na zemljevid naprave. Vrne hash, ki ga dodeli naprava.",
+      "fields": {
+        "entity_id": {
+          "name": "Entiteta",
+          "description": "Katera koli Mammotion entiteta, ki pripada napravi."
+        },
+        "area_hash": {
+          "name": "Hash področja",
+          "description": "Hash nadrejenega področja košnje."
+        },
+        "svg_data": {
+          "name": "SVG podatki",
+          "description": "Surova SVG koda za prikaz na zemljevidu."
+        },
+        "svg_file_name": {
+          "name": "Ime datoteke",
+          "description": "Ime datoteke, shranjene na napravi (privzeto: pattern.svg)."
+        },
+        "scale": {
+          "name": "Merilo",
+          "description": "Enakomerni faktor merila (1,0 = brez merila)."
+        },
+        "rotate": {
+          "name": "Zasuk",
+          "description": "Zasuk v radianih (CCW-pozitiven v ENU okviru naprave)."
+        },
+        "base_width_m": {
+          "name": "Širina (m)",
+          "description": "Fizična širina ene enote ploščice v metrih (2,5 za Luba 1/Yuka, 4,0 za Luba 2)."
+        },
+        "base_height_m": {
+          "name": "Višina (m)",
+          "description": "Fizična višina ene enote ploščice v metrih."
+        },
+        "x_move": {
+          "name": "Položaj X",
+          "description": "Prepisovanje koordinate X (metri). Privzeto: težišče področja."
+        },
+        "y_move": {
+          "name": "Položaj Y",
+          "description": "Prepisovanje koordinate Y (metri). Privzeto: težišče področja."
+        }
+      }
+    },
+    "svg_update": {
+      "name": "Posodobi SVG ploščico",
+      "description": "Zamenja obstoječo SVG ploščico na zemljevidu naprave. Uporabite device_hash, ki ga vrne svg_add.",
+      "fields": {
+        "entity_id": {
+          "name": "Entiteta",
+          "description": "Katera koli Mammotion entiteta, ki pripada napravi."
+        },
+        "device_hash": {
+          "name": "Hash naprave",
+          "description": "Hash, ki ga je naprava dodelila ob prvem dodajanju ploščice."
+        },
+        "area_hash": {
+          "name": "Hash področja",
+          "description": "Hash nadrejenega področja košnje."
+        },
+        "svg_data": {
+          "name": "SVG podatki",
+          "description": "Posodobljena SVG koda."
+        },
+        "svg_file_name": {
+          "name": "Ime datoteke",
+          "description": "Ime datoteke, shranjene na napravi."
+        },
+        "scale": {
+          "name": "Merilo",
+          "description": "Enakomerni faktor merila."
+        },
+        "rotate": {
+          "name": "Zasuk",
+          "description": "Zasuk v radianih (CCW-pozitiven)."
+        },
+        "base_width_m": {
+          "name": "Širina (m)",
+          "description": "Fizična širina ene enote ploščice v metrih."
+        },
+        "base_height_m": {
+          "name": "Višina (m)",
+          "description": "Fizična višina ene enote ploščice v metrih."
+        },
+        "x_move": {
+          "name": "Položaj X",
+          "description": "Prepisovanje koordinate X (metri)."
+        },
+        "y_move": {
+          "name": "Položaj Y",
+          "description": "Prepisovanje koordinate Y (metri)."
+        }
+      }
+    },
+    "svg_delete": {
+      "name": "Izbriši SVG ploščico",
+      "description": "Odstrani SVG ploščico z zemljevida naprave z njenim hashom, ki ga je dodelila naprava.",
+      "fields": {
+        "entity_id": {
+          "name": "Entiteta",
+          "description": "Katera koli Mammotion entiteta, ki pripada napravi."
+        },
+        "device_hash": {
+          "name": "Hash naprave",
+          "description": "Hash, ki ga je naprava dodelila ob dodajanju ploščice."
+        },
+        "area_hash": {
+          "name": "Hash področja",
+          "description": "Hash nadrejenega področja košnje."
+        }
+      }
     }
   },
   "exceptions": {

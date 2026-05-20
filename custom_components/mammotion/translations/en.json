@@ -52,7 +52,9 @@
           "title": "Update Configuration",
           "stay_connected_bluetooth": "Keep bluetooth connected",
           "prefer_ble_over_wifi": "Prefer Bluetooth over Wi-Fi when available",
-          "movement_use_wifi": "Send movement commands over Wi-Fi"
+          "movement_use_wifi": "Send movement commands over Wi-Fi",
+          "mow_path_fetch_enabled": "Enable mow path fetching (cloud)",
+          "full_map_fetch_enabled": "Enable full map fetching (cloud) — when off, only area names are fetched"
         }
       }
     }
@@ -650,6 +652,130 @@
     "reset_blade_time": {
       "name": "Reset blade time",
       "description": "Reset the blade usage time counter."
+    },
+    "get_map_data": {
+      "name": "Get map data",
+      "description": "Returns the raw map data (areas, SVG tiles, area names) for use with the SVG map card.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity",
+          "description": "Any Mammotion entity belonging to the device."
+        }
+      }
+    },
+    "svg_add": {
+      "name": "Add SVG tile",
+      "description": "Send a new SVG tile to the device map. Returns the device-assigned hash.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity",
+          "description": "Any Mammotion entity belonging to the device."
+        },
+        "area_hash": {
+          "name": "Area hash",
+          "description": "Hash of the parent mowing area."
+        },
+        "svg_data": {
+          "name": "SVG data",
+          "description": "Raw SVG markup to display on the map."
+        },
+        "svg_file_name": {
+          "name": "Filename",
+          "description": "Filename stored on the device (default: pattern.svg)."
+        },
+        "scale": {
+          "name": "Scale",
+          "description": "Uniform scale factor (1.0 = no scaling)."
+        },
+        "rotate": {
+          "name": "Rotation",
+          "description": "Rotation in radians (CCW-positive in device ENU frame)."
+        },
+        "base_width_m": {
+          "name": "Width (m)",
+          "description": "Physical width of one tile unit in metres (2.5 for Luba 1/Yuka, 4.0 for Luba 2)."
+        },
+        "base_height_m": {
+          "name": "Height (m)",
+          "description": "Physical height of one tile unit in metres."
+        },
+        "x_move": {
+          "name": "X position",
+          "description": "X coordinate override (metres). Defaults to area centroid."
+        },
+        "y_move": {
+          "name": "Y position",
+          "description": "Y coordinate override (metres). Defaults to area centroid."
+        }
+      }
+    },
+    "svg_update": {
+      "name": "Update SVG tile",
+      "description": "Replace an existing SVG tile on the device map. Use the device_hash returned by svg_add.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity",
+          "description": "Any Mammotion entity belonging to the device."
+        },
+        "device_hash": {
+          "name": "Device hash",
+          "description": "Hash assigned by the device when the tile was first added."
+        },
+        "area_hash": {
+          "name": "Area hash",
+          "description": "Hash of the parent mowing area."
+        },
+        "svg_data": {
+          "name": "SVG data",
+          "description": "Updated SVG markup."
+        },
+        "svg_file_name": {
+          "name": "Filename",
+          "description": "Filename stored on the device."
+        },
+        "scale": {
+          "name": "Scale",
+          "description": "Uniform scale factor."
+        },
+        "rotate": {
+          "name": "Rotation",
+          "description": "Rotation in radians (CCW-positive)."
+        },
+        "base_width_m": {
+          "name": "Width (m)",
+          "description": "Physical width of one tile unit in metres."
+        },
+        "base_height_m": {
+          "name": "Height (m)",
+          "description": "Physical height of one tile unit in metres."
+        },
+        "x_move": {
+          "name": "X position",
+          "description": "X coordinate override (metres)."
+        },
+        "y_move": {
+          "name": "Y position",
+          "description": "Y coordinate override (metres)."
+        }
+      }
+    },
+    "svg_delete": {
+      "name": "Delete SVG tile",
+      "description": "Remove an SVG tile from the device map by its device-assigned hash.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity",
+          "description": "Any Mammotion entity belonging to the device."
+        },
+        "device_hash": {
+          "name": "Device hash",
+          "description": "Hash assigned by the device when the tile was added."
+        },
+        "area_hash": {
+          "name": "Area hash",
+          "description": "Hash of the parent mowing area."
+        }
+      }
     }
   },
   "exceptions": {
