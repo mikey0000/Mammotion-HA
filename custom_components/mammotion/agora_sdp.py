@@ -112,7 +112,13 @@ class SDPParser:
                     )
                 elif attr == "extmap":
                     eparts = val.split()
-                    target["ext"].append({"value": int(eparts[0]), "uri": eparts[1]})
+                    # RFC 5285: value may carry an optional /direction suffix (e.g. "2/recvonly")
+                    ext_id = int(eparts[0].split("/")[0])
+                    ext_dir = eparts[0].split("/")[1] if "/" in eparts[0] else None
+                    entry: dict[str, Any] = {"value": ext_id, "uri": eparts[1]}
+                    if ext_dir:
+                        entry["direction"] = ext_dir
+                    target["ext"].append(entry)
                 elif attr == "group":
                     if "groups" not in parsed:
                         parsed["groups"] = []
