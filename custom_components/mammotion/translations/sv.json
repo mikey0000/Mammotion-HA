@@ -175,7 +175,8 @@
           "MODE_EDIT_BOUNDARY": "Redigerar gräns",
           "MODE_LOCATION_ERROR": "Positionsfel",
           "MODE_BOUNDARY_JUMP": "Gräns korsad",
-          "MODE_CHARGING_PAUSE": "Laddning pausad"
+          "MODE_CHARGING_PAUSE": "Laddning pausad",
+          "MODE_POWER_OFF": "Stänger av"
         }
       },
       "work_area": {

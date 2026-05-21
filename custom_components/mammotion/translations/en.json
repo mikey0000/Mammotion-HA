@@ -175,7 +175,8 @@
           "MODE_EDIT_BOUNDARY": "Editing boundary",
           "MODE_LOCATION_ERROR": "Location error",
           "MODE_BOUNDARY_JUMP": "Boundary crossed",
-          "MODE_CHARGING_PAUSE": "Charging paused"
+          "MODE_CHARGING_PAUSE": "Charging paused",
+          "MODE_POWER_OFF": "Powering off"
         }
       },
       "work_area": {

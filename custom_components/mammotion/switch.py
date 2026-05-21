@@ -15,7 +15,6 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.restore_state import RestoreEntity
-from pymammotion.data.model.hash_list import AreaHashNameList
 from pymammotion.utility.device_type import DeviceType
 
 from . import MammotionConfigEntry
@@ -484,43 +483,33 @@ def async_add_area_entities(
         return
 
     switch_entities: list[MammotionConfigAreaSwitchEntity] = []
-    area_names = coordinator.data.map.area_name
-    area_name_hashes: set[int] = {area.hash for area in area_names}
+    computed = coordinator.data.map.computed_areas
+    all_current_areas = {a.hash for a in computed}
     map_area_hashes: set[int] = {
         int(k) for k in coordinator.data.map.area.keys() if str(k).lstrip("-").isdigit()
     }
-    is_luba1 = DeviceType.is_luba1(coordinator.device_name)
 
-    if is_luba1:
-        # Luba 1 doesn't support get_area_name_list; map.area keys are authoritative
-        all_current_areas = map_area_hashes
-    else:
-        # Trigger a re-fetch if map has hashes that aren't yet named.
+    # Trigger re-fetch when the device hasn't yet sent names for all areas.
+    # Luba 1 never provides area_name, so skip for it.
+    if not DeviceType.is_luba1(coordinator.device_name):
+        area_name_hashes: set[int] = {a.hash for a in coordinator.data.map.area_name}
         if map_area_hashes - area_name_hashes:
             coordinator.hass.async_create_task(coordinator.async_get_area_list())
-        # Include ALL known hashes so unnamed areas are still added with a generated
-        # name (the loop below handles the None-name case with "Area N" fallback).
-        all_current_areas = area_name_hashes | map_area_hashes
 
-    new_areas = all_current_areas - added_areas
-
-    # On HA restart added_areas is empty so the per-session deduplication
-    # cannot catch orphaned registry entries from a previous run.  If the
-    # device assigned new hashes to existing areas the old entries linger and
-    # the user sees two switches for the same logical area (e.g. "Area Pool"
-    # twice).  Clean up any such stale entries before adding new entities.
-    if map_area_hashes and new_areas:
+    # Startup registry cleanup: remove stale entries from previous sessions.
+    if map_area_hashes and (all_current_areas - added_areas):
         _async_clean_stale_area_registry_entries(coordinator, all_current_areas)
-    # Find the highest "Area N" number already in use — check case-insensitively
-    # so that pymammotion's lowercase "area 1" fallback names are counted too.
-    area_counter = max(
-        (
-            int(name.split()[-1])
-            for name in area_entities_by_name
-            if name.lower().startswith("area ") and name.split()[-1].isdigit()
-        ),
-        default=0,
-    )
+
+    # Pre-clear auto-generated names for areas about to be removed so that
+    # surviving areas can be renumbered into the freed slots without collision.
+    if map_area_hashes:
+        for old_hash in added_areas - all_current_areas:
+            for n in [
+                n
+                for n, e in list(area_entities_by_name.items())
+                if e._area == old_hash and _PYMAMMOTION_AUTO_NAME.match(n)
+            ]:
+                del area_entities_by_name[n]
 
     def set_area_entity(
         coord: MammotionReportUpdateCoordinator, bool_val: bool, value: int
@@ -531,76 +520,66 @@ def async_add_area_entities(
         elif value in coord.operation_settings.areas:
             coord.operation_settings.areas.remove(value)
 
-    for area_id in sorted(new_areas):
-        area_entry: AreaHashNameList | None = next(
-            (area for area in area_names if area.hash == area_id), None
-        )
-        # Use the device-provided name only if it is a real user-assigned name.
-        # Pymammotion generates lowercase "area N" fallbacks when the device
-        # returns no names; treat those the same as an empty string.
-        if (
-            area_entry
-            and area_entry.name
-            and not _PYMAMMOTION_AUTO_NAME.match(area_entry.name)
-        ):
-            name = area_entry.name
-        else:
-            area_counter += 1
-            name = f"Area {area_counter}"
+    entities_by_hash: dict[int, tuple[str, MammotionConfigAreaSwitchEntity]] = {
+        e._area: (name, e) for name, e in area_entities_by_name.items()
+    }
 
-        if name in area_entities_by_name:
-            # Same name, new hash — update the existing entity instead of creating one
-            existing_entity = area_entities_by_name[name]
-            added_areas.discard(existing_entity._area)
-            existing_entity.update_area(area_id)
+    for entry in computed:
+        area_id = entry.hash
+        new_name = entry.name
+
+        if area_id in added_areas:
+            # Already tracked — update name unless we'd overwrite a real device name
+            # with an auto-generated one (protects user-visible names from renumbering).
+            if area_id in entities_by_hash:
+                current_name, entity = entities_by_hash[area_id]
+                if current_name != new_name:
+                    is_new_auto = bool(_PYMAMMOTION_AUTO_NAME.match(new_name))
+                    is_cur_auto = bool(_PYMAMMOTION_AUTO_NAME.match(current_name))
+                    if not (is_new_auto and not is_cur_auto):
+                        if current_name in area_entities_by_name:
+                            del area_entities_by_name[current_name]
+                        entity.update_name(new_name)
+                        area_entities_by_name[new_name] = entity
+            continue
+
+        # Not yet tracked — for real (non-auto) names, update the existing entity's
+        # hash if the same name already exists (same logical area, device rebuilt it).
+        if (
+            not _PYMAMMOTION_AUTO_NAME.match(new_name)
+            and new_name in area_entities_by_name
+        ):
+            existing = area_entities_by_name[new_name]
+            added_areas.discard(existing._area)
+            existing.update_area(area_id)
             added_areas.add(area_id)
             continue
 
+        # Missing area — add a new entity with the name supplied by computed_areas.
         base_area_switch_entity = MammotionConfigAreaSwitchEntityDescription(
             key=f"{area_id}",
             translation_key="area",
-            translation_placeholders={"name": name},
+            translation_placeholders={"name": new_name},
             area=area_id,
-            name=f"{name}",
+            name=new_name,
             set_fn=set_area_entity,
         )
         entity = MammotionConfigAreaSwitchEntity(coordinator, base_area_switch_entity)
         switch_entities.append(entity)
-        area_entities_by_name[name] = entity
+        area_entities_by_name[new_name] = entity
         added_areas.add(area_id)
 
-    # Check already-tracked areas for name updates (e.g. unnamed → real name).
-    entities_by_hash: dict[int, tuple[str, MammotionConfigAreaSwitchEntity]] = {
-        e._area: (current_name, e) for current_name, e in area_entities_by_name.items()
-    }
-    for area_id in list(added_areas):
-        area_entry = next((a for a in area_names if a.hash == area_id), None)
-        if not (area_entry and area_entry.name):
-            continue
-        new_name = area_entry.name
-        if area_id not in entities_by_hash:
-            continue
-        current_name, entity = entities_by_hash[area_id]
-        if current_name == new_name:
-            continue
-        del area_entities_by_name[current_name]
-        entity.update_name(new_name)
-        area_entities_by_name[new_name] = entity
-
-    # Guard: only remove areas when map.area has data.  An empty map signals a
-    # transient refresh — if we removed here every tracked area would be
-    # deleted from the HA registry and recreated as "new" entities on the
-    # next update, breaking user automations.
+    # Guard: only remove when map.area is non-empty — an empty map is a transient
+    # refresh state and must not wipe the entity registry.
     if map_area_hashes:
         old_areas = added_areas - all_current_areas
         if old_areas:
             async_remove_entities(coordinator, old_areas)
             for area in old_areas:
                 added_areas.discard(area)
-                stale_names = [
-                    n for n, e in area_entities_by_name.items() if e._area == area
-                ]
-                for n in stale_names:
+                for n in [
+                    n for n, e in list(area_entities_by_name.items()) if e._area == area
+                ]:
                     del area_entities_by_name[n]
 
     if switch_entities:

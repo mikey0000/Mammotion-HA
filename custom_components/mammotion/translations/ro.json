@@ -175,7 +175,8 @@
           "MODE_EDIT_BOUNDARY": "Editare limită",
           "MODE_LOCATION_ERROR": "Eroare de localizare",
           "MODE_BOUNDARY_JUMP": "Limită depășită",
-          "MODE_CHARGING_PAUSE": "Încărcare în pauză"
+          "MODE_CHARGING_PAUSE": "Încărcare în pauză",
+          "MODE_POWER_OFF": "Oprire"
         }
       },
       "work_area": {

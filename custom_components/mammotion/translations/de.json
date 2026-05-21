@@ -175,7 +175,8 @@
           "MODE_EDIT_BOUNDARY": "Bearbeitet Begrenzung",
           "MODE_LOCATION_ERROR": "Fehler bei Standortbestimmung",
           "MODE_BOUNDARY_JUMP": "Begrennzung überschritten",
-          "MODE_CHARGING_PAUSE": "Laden pausiert"
+          "MODE_CHARGING_PAUSE": "Laden pausiert",
+          "MODE_POWER_OFF": "Ausschalten"
         }
       },
       "work_area": {
@@ -402,7 +403,7 @@
         "state": {
           "slow": "Niedrig",
           "normal": "Mittel",
-          "fast": "Hoch"        
+          "fast": "Hoch"
         }
       },
       "voice_gender": {

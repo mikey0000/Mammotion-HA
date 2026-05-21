@@ -175,7 +175,8 @@
           "MODE_EDIT_BOUNDARY": "Urejanje meje",
           "MODE_LOCATION_ERROR": "Napaka lokacije",
           "MODE_BOUNDARY_JUMP": "Prečkanje meje",
-          "MODE_CHARGING_PAUSE": "Polnjenje zaustavljeno"
+          "MODE_CHARGING_PAUSE": "Polnjenje zaustavljeno",
+          "MODE_POWER_OFF": "Izklop"
         }
       },
       "work_area": {

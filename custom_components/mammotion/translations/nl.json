@@ -175,7 +175,8 @@
           "MODE_EDIT_BOUNDARY": "Grens aan het aanpassen",
           "MODE_LOCATION_ERROR": "Locatie fout",
           "MODE_BOUNDARY_JUMP": "Grens overschreden",
-          "MODE_CHARGING_PAUSE": "Opladen gepauzeerd"
+          "MODE_CHARGING_PAUSE": "Opladen gepauzeerd",
+          "MODE_POWER_OFF": "Uitschakelen"
         }
       },
       "work_area": {

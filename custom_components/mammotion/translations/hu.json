@@ -175,7 +175,8 @@
           "MODE_EDIT_BOUNDARY": "Határ szerkesztése",
           "MODE_LOCATION_ERROR": "Helymeghatározási hiba",
           "MODE_BOUNDARY_JUMP": "Határ átlépve",
-          "MODE_CHARGING_PAUSE": "Töltés szünetel"
+          "MODE_CHARGING_PAUSE": "Töltés szünetel",
+          "MODE_POWER_OFF": "Kikapcsolás"
         }
       },
       "work_area": {

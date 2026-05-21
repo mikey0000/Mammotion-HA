@@ -175,7 +175,8 @@
           "MODE_EDIT_BOUNDARY": "Redigerer grænse",
           "MODE_LOCATION_ERROR": "Positionsfejl",
           "MODE_BOUNDARY_JUMP": "Grænse overskredet",
-          "MODE_CHARGING_PAUSE": "Opladning sat på pause"
+          "MODE_CHARGING_PAUSE": "Opladning sat på pause",
+          "MODE_POWER_OFF": "Slukker"
         }
       },
       "work_area": {

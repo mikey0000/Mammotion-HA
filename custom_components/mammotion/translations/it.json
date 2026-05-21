@@ -175,7 +175,8 @@
           "MODE_EDIT_BOUNDARY": "Modifica del confine",
           "MODE_LOCATION_ERROR": "Errore di posizione",
           "MODE_BOUNDARY_JUMP": "Confine attraversato",
-          "MODE_CHARGING_PAUSE": "Ricarica in pausa"
+          "MODE_CHARGING_PAUSE": "Ricarica in pausa",
+          "MODE_POWER_OFF": "Spegnimento"
         }
       },
       "work_area": {

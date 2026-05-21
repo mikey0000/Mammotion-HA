@@ -175,7 +175,8 @@
           "MODE_EDIT_BOUNDARY": "Úprava hranice",
           "MODE_LOCATION_ERROR": "Chyba polohy",
           "MODE_BOUNDARY_JUMP": "Překročení hranice",
-          "MODE_CHARGING_PAUSE": "Nabíjení pozastaveno"
+          "MODE_CHARGING_PAUSE": "Nabíjení pozastaveno",
+          "MODE_POWER_OFF": "Vypínání"
         }
       },
       "work_area": {

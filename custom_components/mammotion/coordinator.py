@@ -319,7 +319,6 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             handle.set_prefer_ble(value=True)
             await self._async_ensure_ble_client()
 
-
     async def async_set_cloud_enabled(self, enabled: bool) -> None:
         """Enable or disable Cloud transport."""
         self._cloud_enabled = enabled
@@ -463,6 +462,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
                 self.device_name,
                 command,
                 prefer_ble=kwargs.pop("prefer_ble", self._bluetooth_enabled),
+                skip_if_saga_active=False,
                 **kwargs,
             )
             self.update_failures = 0
@@ -1350,7 +1350,6 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
         )
 
         self._on_stop: list[CALLBACK_TYPE] = []
-
 
         self.poll_debouncer = Debouncer(
             hass,
