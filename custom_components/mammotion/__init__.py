@@ -114,7 +114,7 @@ async def _async_attempt_login(
     cached = _load_cached_credentials(entry)
     try:
         if cached:
-            await mammotion.restore_credentials(account, password, cached, session)
+            await mammotion.restore_credentials(account, password, cached, session, check_for_new_devices=True)
         else:
             await mammotion.login_and_initiate_cloud(account, password, session)
         return True

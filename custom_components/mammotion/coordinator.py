@@ -123,6 +123,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         )
         self._ice_servers = None
         self._agora_response = None
+        self.service_info: BluetoothServiceInfoBleak | None = None
         assert config_entry.unique_id
         self.account = config_entry.data.get(CONF_ACCOUNTNAME, "")
         self.password = config_entry.data.get(CONF_PASSWORD, "")
@@ -316,6 +317,8 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             await handle.disconnect_transport(TransportType.BLE)
         else:
             handle.set_prefer_ble(value=True)
+            await self._async_ensure_ble_client()
+
 
     async def async_set_cloud_enabled(self, enabled: bool) -> None:
         """Enable or disable Cloud transport."""
@@ -1347,7 +1350,7 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
         )
 
         self._on_stop: list[CALLBACK_TYPE] = []
-        self.service_info: BluetoothServiceInfoBleak | None = None
+
 
         self.poll_debouncer = Debouncer(
             hass,
