@@ -10,6 +10,7 @@
       "not_supported": "Naprava ni podprta",
       "reconfigure_successful": "Ponastavitev uspešna",
       "api_limit_exceeded": "Prekoračena je bila omejitev API-ja. Poskusite znova pozneje.",
+      "account_in_use": "Vaš račun Mammotion je že aktiven v drugi seji. Odjavite se iz aplikacije Mammotion in poskusite znova.",
       "cannot_connect": "Povezava z oblakom Mammotion ni mogoča. Preverite poverilnice in omrežje ter poskusite znova."
     },
     "flow_title": "{name}",
@@ -802,6 +803,9 @@
     },
     "api_limit_exceeded": {
       "message": "Prekočena je bila omejitev API-ja."
+    },
+    "account_in_use": {
+      "message": "Vaš račun Mammotion je že aktiven v drugi seji. Odjavite se iz aplikacije Mammotion in poskusite znova."
     },
     "cloud_setup_failed": {
       "message": "Povezava z oblakom Mammotion ni mogoča. Preverite omrežje in poskusite znova naložiti integracijo."

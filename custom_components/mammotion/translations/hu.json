@@ -10,6 +10,7 @@
       "not_supported": "Az eszköz nem támogatott",
       "reconfigure_successful": "Újrakonfigurálás sikeres",
       "api_limit_exceeded": "Az API sebességkorlátját elérte. Próbáld újra később.",
+      "account_in_use": "A Mammotion fiókod már aktív egy másik munkamenetben. Jelentkezz ki a Mammotion alkalmazásból, és próbáld újra.",
       "cannot_connect": "Nem lehet csatlakozni a Mammotion felhőhöz. Ellenőrizd a hitelesítő adatokat és a hálózatot, majd próbáld újra."
     },
     "flow_title": "{name}",
@@ -802,6 +803,9 @@
     },
     "api_limit_exceeded": {
       "message": "Az API sebességkorlátját elérte."
+    },
+    "account_in_use": {
+      "message": "A Mammotion fiókod már aktív egy másik munkamenetben. Jelentkezz ki a Mammotion alkalmazásból, és próbáld újra."
     },
     "cloud_setup_failed": {
       "message": "Nem lehet csatlakozni a Mammotion felhőhöz. Ellenőrizd a hálózatot, és próbáld meg újratölteni az integrációt."

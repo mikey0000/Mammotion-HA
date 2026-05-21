@@ -10,6 +10,7 @@
       "not_supported": "Dispositivo non supportato",
       "reconfigure_successful": "Riconfigurazione avvenuta con successo",
       "api_limit_exceeded": "Il limite di frequenza dell'API è stato superato. Si prega di riprovare più tardi.",
+      "account_in_use": "Il tuo account Mammotion è già attivo in un'altra sessione. Disconnettiti dall'app Mammotion e riprova.",
       "cannot_connect": "Impossibile connettersi al cloud Mammotion. Verifica le credenziali e la rete, quindi riprova."
     },
     "flow_title": "{name}",
@@ -802,6 +803,9 @@
     },
     "api_limit_exceeded": {
       "message": "Il limite di frequenza dell'API è stato superato."
+    },
+    "account_in_use": {
+      "message": "Il tuo account Mammotion è già attivo in un'altra sessione. Disconnettiti dall'app Mammotion e riprova."
     },
     "cloud_setup_failed": {
       "message": "Impossibile connettersi al cloud Mammotion. Verifica la rete e prova a ricaricare l'integrazione."

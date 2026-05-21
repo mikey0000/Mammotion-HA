@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import dataclasses
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 import voluptuous as vol
 from homeassistant.const import ATTR_ENTITY_ID
@@ -12,8 +12,10 @@ from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import entity_registry as er
 from pymammotion.data.model.hash_list import CommDataCouple
 
-from . import MammotionConfigEntry
 from .const import DOMAIN, LOGGER
+
+if TYPE_CHECKING:
+    from . import MammotionConfigEntry
 from .geojson_utils import apply_geojson_offset
 from .models import MammotionMowerData
 

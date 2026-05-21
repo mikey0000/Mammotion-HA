@@ -74,6 +74,7 @@ from pymammotion.transport.base import (
 from pymammotion.transport.ble import BLETransport
 from pymammotion.utility.constant import MOWING_ACTIVE_MODES, WorkMode
 from pymammotion.utility.device_type import DeviceType
+from pymammotion.utility.svg import chunk_svg_messages
 from webrtc_models import RTCIceServer
 
 from .agora_api import SERVICE_IDS, AgoraAPIClient, AgoraResponse
@@ -993,7 +994,6 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             Device-assigned ``data_hash``, or ``None`` on failure.
 
         """
-        from pymammotion.utility.svg import chunk_svg_messages
 
         chunks = chunk_svg_messages(svg_message)
         return await self.manager.send_svg(self.device_name, chunks)

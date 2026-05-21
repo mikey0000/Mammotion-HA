@@ -31,6 +31,7 @@ from pymammotion.aliyun.model.dev_by_account_response import Device
 from pymammotion.client import MammotionClient
 from pymammotion.data.model.device import MowingDevice
 from pymammotion.transport.base import (
+    AccountInUseError,
     LoginFailedError,
     ReLoginRequiredError,
     TransportType,
@@ -165,6 +166,15 @@ async def _async_attempt_login(
                 )
                 return False
             raise ConfigEntryAuthFailed(retry_err) from retry_err
+    except AccountInUseError as err:
+        if ble_fallback:
+            LOGGER.warning(
+                "Mammotion account in use elsewhere; continuing in BLE-only mode: %s", err
+            )
+            return False
+        raise ConfigEntryError(
+            translation_domain=DOMAIN, translation_key="account_in_use"
+        ) from err
     except TooManyRequestsException as err:
         if ble_fallback:
             LOGGER.warning("Mammotion API rate limited; continuing in BLE-only mode")

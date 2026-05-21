@@ -10,6 +10,7 @@
       "not_supported": "Urządzenie nie jest obsługiwane",
       "reconfigure_successful": "Ponowna konfiguracja zakończona powodzeniem",
       "api_limit_exceeded": "Przekroczono limit API. Spróbuj ponownie później.",
+      "account_in_use": "Twoje konto Mammotion jest już aktywne w innej sesji. Wyloguj się z aplikacji Mammotion i spróbuj ponownie.",
       "cannot_connect": "Nie można połączyć się z chmurą Mammotion. Sprawdź dane logowania i sieć, a następnie spróbuj ponownie."
     },
     "flow_title": "{name}",
@@ -802,6 +803,9 @@
     },
     "api_limit_exceeded": {
       "message": "Przekroczono limit API."
+    },
+    "account_in_use": {
+      "message": "Twoje konto Mammotion jest już aktywne w innej sesji. Wyloguj się z aplikacji Mammotion i spróbuj ponownie."
     },
     "cloud_setup_failed": {
       "message": "Nie można połączyć się z chmurą Mammotion. Sprawdź sieć i spróbuj ponownie załadować integrację."
