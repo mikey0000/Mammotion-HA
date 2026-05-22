@@ -108,9 +108,8 @@ AUDIO_SWITCH_ENTITIES: tuple[MammotionAsyncSwitchEntityDescription, ...] = (
 SWITCH_ENTITIES: tuple[MammotionAsyncSwitchEntityDescription, ...] = (
     MammotionAsyncSwitchEntityDescription(
         key="side_led",
-        is_on_func=lambda coordinator: bool(
-            not coordinator.data.mower_state.side_led.operate
-        ),
+        is_on_func=lambda coordinator: coordinator.data.mower_state.side_led.enable
+        == 0,
         set_fn=lambda coordinator, value: coordinator.async_set_sidelight(int(value)),
         entity_category=EntityCategory.CONFIG,
     ),
