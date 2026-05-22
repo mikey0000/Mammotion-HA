@@ -1342,7 +1342,7 @@ wheels = [
 
 [[package]]
 name = "mammotion-ha"
-version = "0.5.48b6"
+version = "0.5.48b7"
 source = { virtual = "." }
 dependencies = [
     { name = "autotyping" },
@@ -1365,7 +1365,7 @@ dev = [
 requires-dist = [
     { name = "autotyping", specifier = ">=24.3.0" },
     { name = "homeassistant", specifier = ">=2026.1.0" },
-    { name = "pymammotion", specifier = "==0.7.122" },
+    { name = "pymammotion", specifier = "==0.7.123" },
     { name = "sdp-transform", specifier = ">=1.1.0" },
     { name = "websockets", specifier = ">=15.0.1" },
 ]
@@ -1859,7 +1859,7 @@ wheels = [
 
 [[package]]
 name = "pymammotion"
-version = "0.7.122"
+version = "0.7.123"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -1883,9 +1883,9 @@ dependencies = [
     { name = "webrtc-models" },
     { name = "websockets" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/7e/bf/6fe5288eaa451582e9e246b23e48aedcb854aad289a9280c7567f5a8ab67/pymammotion-0.7.122.tar.gz", hash = "sha256:9bb821a70130e9a6b19bb9123ec37d739d74e5200384349657ccfe53a22923fe", size = 360106, upload-time = "2026-05-22T00:01:42.88Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/f2/39/8d1c9b965a69e4f76df72fdb50ebc8d9ccc65586c76baf82a093eff97ed2/pymammotion-0.7.123.tar.gz", hash = "sha256:15a1c0d9e88a5092128f2a1ba40227e1edcaf398776955aa4692c7e0e29ef74a", size = 360158, upload-time = "2026-05-22T05:07:16.762Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/fa/83/70581beecb3830b3e56265c16c46ece995ea4a8b0f9a64ae033cd2ef165a/pymammotion-0.7.122-py3-none-any.whl", hash = "sha256:0732ac03a8d951221be98e84523569f9235b072c19dd17c38dd36c834a1c274f", size = 424182, upload-time = "2026-05-22T00:01:40.534Z" },
+    { url = "https://files.pythonhosted.org/packages/55/9e/58eec29180bdbf81bd4868d59e2b969ef622123956bf1eac61fa240fa53e/pymammotion-0.7.123-py3-none-any.whl", hash = "sha256:7da6e69a86e0d14493b85c20336d9f2bfbd179c5da7d8be0ede6a801e2518337", size = 424157, upload-time = "2026-05-22T05:07:14.547Z" },
 ]
 
 [[package]]
