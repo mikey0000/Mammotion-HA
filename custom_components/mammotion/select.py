@@ -196,7 +196,11 @@ async def async_setup_entry(
         bypass_mode_desc = MammotionConfigSelectEntityDescription(
             key="bypass_mode",
             options=[
-                s.name for s in DetectionStrategy.for_device(mower.device.device_name)
+                s.name
+                for s in DetectionStrategy.for_device(
+                    mower.device.device_name,
+                    mower.device.device_firmwares.device_version,
+                )
             ],
             set_fn=lambda coordinator, value: setattr(
                 coordinator.operation_settings,
