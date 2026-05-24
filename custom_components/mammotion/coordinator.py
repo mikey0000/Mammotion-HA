@@ -1462,7 +1462,12 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
 
         if handle := self.manager.mower(self.device_name):
             if ble := handle.get_transport(TransportType.BLE):
-                if ble.is_usable and not ble.is_connected and self._bluetooth_enabled:
+                if (
+                    handle.prefer_ble
+                    and ble.is_usable
+                    and not ble.is_connected
+                    and self._bluetooth_enabled
+                ):
                     try:
                         await ble.connect()
                     except BLEUnavailableError as exc:

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from contextlib import suppress
 from datetime import datetime
 from typing import Any
 
@@ -34,6 +35,7 @@ from pymammotion.transport.base import (
     AccountInUseError,
     LoginFailedError,
     ReLoginRequiredError,
+    TransportError,
     TransportType,
 )
 from Tea.exceptions import UnretryableException
@@ -114,7 +116,9 @@ async def _async_attempt_login(
     cached = _load_cached_credentials(entry)
     try:
         if cached:
-            await mammotion.restore_credentials(account, password, cached, session, check_for_new_devices=True)
+            await mammotion.restore_credentials(
+                account, password, cached, session, check_for_new_devices=True
+            )
         else:
             await mammotion.login_and_initiate_cloud(account, password, session)
         return True
@@ -169,7 +173,8 @@ async def _async_attempt_login(
     except AccountInUseError as err:
         if ble_fallback:
             LOGGER.warning(
-                "Mammotion account in use elsewhere; continuing in BLE-only mode: %s", err
+                "Mammotion account in use elsewhere; continuing in BLE-only mode: %s",
+                err,
             )
             return False
         raise ConfigEntryError(
@@ -272,6 +277,28 @@ async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
     """Set up the Mammotion integration."""
     async_setup_services(hass)
     return True
+
+
+async def _await_device_connection(
+    mammotion: MammotionClient,
+    device_name: str,
+    *,
+    prefer_ble: bool,
+) -> None:
+    """Wait for a transport to connect before the coordinators start polling.
+
+    There's no point hitting the coordinators before MQTT/BLE is up. MQTT
+    auto-connects after login, but BLE does not — so when we prefer BLE, kick the
+    connection here. Then wait for MQTT to be stable for 10s (or BLE to connect),
+    giving up after 30s and continuing regardless.
+    """
+    handle = mammotion.mower(device_name)
+    if handle is None:
+        return
+    if prefer_ble and handle.has_transport(TransportType.BLE):
+        with suppress(TransportError):
+            await handle.connect_transport(TransportType.BLE)
+    await handle.wait_until_connected(timeout=30, mqtt_stable_for=10)
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) -> bool:
@@ -384,6 +411,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
             error_coordinator = MammotionDeviceErrorUpdateCoordinator(
                 hass, entry, device, mammotion, unique_name=unique_name
             )
+
+            await _await_device_connection(
+                mammotion,
+                device.device_name,
+                prefer_ble=(not use_wifi or prefer_ble),
+            )
+
             await report_coordinator.async_restore_data()
             await version_coordinator.async_config_entry_first_refresh()
 
@@ -506,6 +540,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
 
             await report_coordinator.async_restore_data()
             if ble_device is not None:
+                # In range — connect BLE and wait until it's up (30s cap) before
+                # the coordinators start polling.
+                await _await_device_connection(mammotion, device_name, prefer_ble=True)
                 await version_coordinator.async_config_entry_first_refresh()
                 await report_coordinator.async_config_entry_first_refresh()
                 await maintenance_coordinator.async_config_entry_first_refresh()

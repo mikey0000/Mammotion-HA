@@ -38,6 +38,12 @@ def _create_ws_ssl_context() -> ssl.SSLContext:
 
 _SSL_CONTEXT = _create_ws_ssl_context()
 
+#: Minimum seconds between consecutive renew_token sends.  The gateway's
+#: ``on_token_privilege_will_expire`` event repeats every ~1 s while the token
+#: is in its pre-expiry window; one renew is enough, so we ignore the rest
+#: until either the renew lands or this window passes.
+RENEW_TOKEN_DEBOUNCE_SECS: float = 30.0
+
 
 @dataclass
 class AddressEntry:
@@ -116,6 +122,12 @@ class AgoraWebSocketHandler:
         self._msid_stream_id: int = 1
         self._msid_video_track_id: str = ""
         self._msid_audio_track_id: str = ""
+        # Renew-token debounce — the gateway repeats `on_token_privilege_will_expire`
+        # every second during the pre-expiry window.  Without this gate the handler
+        # would fire one renew_token request per second (30 in 30 s before the token
+        # finally expires).  Suppresses follow-up renews within RENEW_DEBOUNCE_SECS
+        # of the last attempt; the gateway treats one renew as authoritative.
+        self._last_renew_token_at: float = 0.0
         self._setup_message_handlers()
 
     def _setup_message_handlers(self) -> None:
@@ -363,11 +375,14 @@ class AgoraWebSocketHandler:
 
                     # Handle token expiry events
                     if message_type == "on_token_privilege_will_expire":
-                        _LOGGER.warning("Token will expire soon, sending renew_token")
                         await self._send_renew_token()
 
                     elif message_type == "on_token_privilege_did_expire":
                         _LOGGER.error("Token expired! Connection may drop.")
+                        # Allow the next renew attempt by clearing the debounce —
+                        # the existing token is gone, so a fresh renew is needed
+                        # regardless of how recently we last tried.
+                        self._last_renew_token_at = 0.0
 
                 except json.JSONDecodeError as ex:
                     _LOGGER.error("[msg_loop] Failed to parse message: %s", ex)

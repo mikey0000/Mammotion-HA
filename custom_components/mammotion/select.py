@@ -199,7 +199,7 @@ async def async_setup_entry(
                 s.name
                 for s in DetectionStrategy.for_device(
                     mower.device.device_name,
-                    mower.device.device_firmwares.device_version,
+                    mower.reporting_coordinator.data.device_firmwares.device_version,
                 )
             ],
             set_fn=lambda coordinator, value: setattr(
