@@ -159,6 +159,19 @@ LUBA_PRO_SELECT_ENTITIES: tuple[MammotionConfigSelectEntityDescription, ...] = (
 )
 
 
+def _device_firmware_version(device_state: object | None) -> str:
+    """Return the runtime device firmware version, or "" when unknown.
+
+    Firmware lives on the runtime device state (MowerDevice/RTK/Pool), reached via
+    the coordinator's data — NOT on ``mower.device``, which is the Aliyun
+    list/binding response model and has no ``device_firmwares``. Coordinator data
+    can also be ``None`` or a bare ``Device`` before telemetry arrives, so default
+    to "" (DetectionStrategy.for_device treats empty as the new-firmware options).
+    """
+    device_firmwares = getattr(device_state, "device_firmwares", None)
+    return device_firmwares.device_version if device_firmwares is not None else ""
+
+
 # Define the setup entry function
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -199,7 +212,7 @@ async def async_setup_entry(
                 s.name
                 for s in DetectionStrategy.for_device(
                     mower.device.device_name,
-                    mower.reporting_coordinator.data.device_firmwares.device_version,
+                    _device_firmware_version(mower.reporting_coordinator.data),
                 )
             ],
             set_fn=lambda coordinator, value: setattr(

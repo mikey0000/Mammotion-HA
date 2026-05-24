@@ -418,9 +418,26 @@ class AgoraWebSocketHandler:
             _LOGGER.info("Ping loop cancelled")
 
     async def _send_renew_token(self) -> None:
-        """Send renew_token message with current token."""
+        """Send renew_token message with current token, debounced.
+
+        Suppresses repeats within ``RENEW_TOKEN_DEBOUNCE_SECS`` of the last
+        attempt so that a stream of ``on_token_privilege_will_expire`` events
+        from the gateway (one per second during the pre-expiry window) doesn't
+        produce a one-per-second renew_token storm.  ``on_token_privilege_did_expire``
+        clears the debounce so the next renew goes through.
+        """
         if not self._websocket or not self._agora_data:
             return
+        now = time.monotonic()
+        elapsed = now - self._last_renew_token_at
+        if self._last_renew_token_at and elapsed < RENEW_TOKEN_DEBOUNCE_SECS:
+            _LOGGER.debug(
+                "Skipping renew_token — last attempt %.1fs ago (< %.0fs debounce)",
+                elapsed,
+                RENEW_TOKEN_DEBOUNCE_SECS,
+            )
+            return
+        self._last_renew_token_at = now
         try:
             renew_msg = {
                 "_id": secrets.token_hex(3),
@@ -428,9 +445,12 @@ class AgoraWebSocketHandler:
                 "_message": {"token": self._agora_data.token},
             }
             await self._websocket.send(json.dumps(renew_msg))
-            _LOGGER.info("Sent renew_token to gateway")
+            _LOGGER.warning("Token will expire soon, sent renew_token")
         except (WebSocketException, ConnectionError) as ex:
             _LOGGER.error("Failed to send renew_token: %s", ex)
+            # Reset debounce so the next event can retry rather than waiting
+            # 30 s after a send that never actually went out.
+            self._last_renew_token_at = 0.0
 
     async def _handle_join_success(
         self,
