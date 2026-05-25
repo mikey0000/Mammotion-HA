@@ -136,8 +136,10 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         self.async_update_token()
         self._create_stream_lock: asyncio.Lock | None = None
         self._join_lock = asyncio.Lock()
-        self._agora_handler = AgoraWebSocketHandler(hass)
         self.coordinator = coordinator
+        self._agora_handler = AgoraWebSocketHandler(
+            hass, recover_stream=self._recover_stream
+        )
         self.entity_description = entity_description
         self._attr_translation_key = entity_description.key
         self._stream_data: StreamSubscriptionResponse | None = None
@@ -236,6 +238,18 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
     async def async_close_webrtc_session(self, session_id: str) -> None:
         """Close WebRTC session."""
         await self._agora_handler.disconnect()
+
+    async def _recover_stream(self) -> None:
+        """Re-establish the stream after the mower drops out of the Agora channel.
+
+        Invoked by AgoraWebSocketHandler once the mower (peer) has been gone for
+        its debounce window: nudge the device with a BLE sync, then refresh the
+        stream subscription so it rejoins the channel.
+        """
+        await self.coordinator.async_send_command("send_todev_ble_sync", sync_type=3)
+        await self.coordinator.manager.get_stream_subscription(
+            self.coordinator.device.device_name, self.coordinator.device.iot_id
+        )
 
     async def _perform_webrtc_negotiation(
         self,

@@ -15,10 +15,14 @@ from homeassistant.helpers.device_registry import (
     async_get as async_get_device_registry,
 )
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from pymammotion.data.model.device import RTKBaseStationDevice
+from pymammotion.data.model.device import PoolCleanerDevice, RTKBaseStationDevice
 
 from .const import DOMAIN
-from .coordinator import MammotionBaseUpdateCoordinator, MammotionRTKCoordinator
+from .coordinator import (
+    MammotionBaseUpdateCoordinator,
+    MammotionRTKCoordinator,
+    MammotionSpinoCoordinator,
+)
 
 
 class MammotionBaseEntity(CoordinatorEntity[MammotionBaseUpdateCoordinator[Any]]):  # type: ignore[misc]
@@ -202,6 +206,43 @@ class MammotionBaseRTKEntity(CoordinatorEntity[MammotionRTKCoordinator]):  # typ
         if nick_name and not device.name_by_user:
             update_kwargs["name_by_user"] = nick_name
         device_registry.async_update_device(device.id, **update_kwargs)
+
+
+class MammotionBaseSpinoEntity(CoordinatorEntity[MammotionSpinoCoordinator]):  # type: ignore[misc]
+    """Representation of a Mammotion Spino pool cleaner entity."""
+
+    _attr_has_entity_name = True
+
+    def __init__(self, coordinator: MammotionSpinoCoordinator, key: str) -> None:
+        """Initialize the pool cleaner entity."""
+        super().__init__(coordinator)
+        self._attr_unique_id = f"{coordinator.unique_name}_{key}"
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return the HA device-registry info for this pool cleaner entity."""
+        spino_device: PoolCleanerDevice = self.coordinator.data
+
+        return DeviceInfo(
+            identifiers={(DOMAIN, self.coordinator.unique_name)},
+            name=self.coordinator.device_name,
+            manufacturer="Mammotion",
+            serial_number=self.coordinator.device_name,
+            model=spino_device.name,
+            model_id=self.coordinator.device.product_key,
+            sw_version=spino_device.device_firmwares.device_version,
+            suggested_area="Garden",
+        )
+
+    @property
+    def available(self) -> bool:
+        """Return True when the pool cleaner reports itself online."""
+        return bool(self.coordinator.data.online)
+
+    @callback  # type: ignore[misc]
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+        super()._handle_coordinator_update()
 
 
 class MammotionCameraBaseEntity(Camera, ABC):  # type: ignore[misc]

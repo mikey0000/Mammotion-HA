@@ -20,8 +20,9 @@ from .const import CONF_MOVEMENT_USE_WIFI, DOMAIN
 from .coordinator import (
     MammotionBaseUpdateCoordinator,
     MammotionReportUpdateCoordinator,
+    MammotionSpinoCoordinator,
 )
-from .entity import MammotionBaseEntity
+from .entity import MammotionBaseEntity, MammotionBaseSpinoEntity
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -38,6 +39,27 @@ class MammotionTaskButtonSensorEntityDescription(ButtonEntityDescription):
 
     plan_id: str
     press_fn: Callable[[MammotionBaseUpdateCoordinator, str], Awaitable[None]]
+
+
+@dataclass(frozen=True, kw_only=True)
+class MammotionSpinoButtonEntityDescription(ButtonEntityDescription):
+    """Describes a Mammotion Spino pool cleaner button entity."""
+
+    press_fn: Callable[[MammotionSpinoCoordinator], Awaitable[None]]
+
+
+SPINO_BUTTON_SENSORS: tuple[MammotionSpinoButtonEntityDescription, ...] = (
+    MammotionSpinoButtonEntityDescription(
+        key="spino_fetch_map",
+        entity_category=EntityCategory.CONFIG,
+        press_fn=lambda coordinator: coordinator.async_fetch_pool_map(),
+    ),
+    MammotionSpinoButtonEntityDescription(
+        key="spino_fetch_line",
+        entity_category=EntityCategory.CONFIG,
+        press_fn=lambda coordinator: coordinator.async_fetch_pool_line(),
+    ),
+)
 
 
 def _nudge_available(coordinator: MammotionBaseUpdateCoordinator) -> bool:
@@ -160,6 +182,12 @@ async def async_setup_entry(
                 )
                 for entity_description in BUTTON_LUBA_PRO_YUKA
             )
+
+    for spino in entry.runtime_data.spino:
+        async_add_entities(
+            MammotionSpinoButtonEntity(spino.coordinator, entity_description)
+            for entity_description in SPINO_BUTTON_SENSORS
+        )
 
 
 class MammotionButtonSensorEntity(MammotionBaseEntity, ButtonEntity):
@@ -313,3 +341,23 @@ def async_remove_entities(
         )
         if entity_id:
             registry.async_remove(entity_id)
+
+
+class MammotionSpinoButtonEntity(MammotionBaseSpinoEntity, ButtonEntity):
+    """Mammotion Spino pool cleaner button entity."""
+
+    entity_description: MammotionSpinoButtonEntityDescription
+
+    def __init__(
+        self,
+        coordinator: MammotionSpinoCoordinator,
+        entity_description: MammotionSpinoButtonEntityDescription,
+    ) -> None:
+        """Initialize the Spino button entity."""
+        super().__init__(coordinator, entity_description.key)
+        self.entity_description = entity_description
+        self._attr_translation_key = entity_description.key
+
+    async def async_press(self) -> None:
+        """Handle the button press."""
+        await self.entity_description.press_fn(self.coordinator)

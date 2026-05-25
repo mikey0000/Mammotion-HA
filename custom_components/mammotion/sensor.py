@@ -27,8 +27,13 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import StateType
-from pymammotion.data.model.device import MowingDevice, RTKBaseStationDevice
+from pymammotion.data.model.device import (
+    MowingDevice,
+    PoolCleanerDevice,
+    RTKBaseStationDevice,
+)
 from pymammotion.data.model.enums import RTKStatus, TaskAreaStatus
+from pymammotion.data.model.pool_state import SpinoSysStatus, SpinoWorkMode
 from pymammotion.utility.constant import VioState
 from pymammotion.utility.constant.device_constant import (
     AppConnectType,
@@ -47,8 +52,13 @@ from .coordinator import (
     MammotionDeviceErrorUpdateCoordinator,
     MammotionReportUpdateCoordinator,
     MammotionRTKCoordinator,
+    MammotionSpinoCoordinator,
 )
-from .entity import MammotionBaseEntity, MammotionBaseRTKEntity
+from .entity import (
+    MammotionBaseEntity,
+    MammotionBaseRTKEntity,
+    MammotionBaseSpinoEntity,
+)
 
 
 class MowerDataFormatter:
@@ -108,6 +118,13 @@ class MammotionRTKSensorEntityDescription(SensorEntityDescription):
     """Describes Mammotion RTK sensor entity."""
 
     value_fn: Callable[[RTKBaseStationDevice], StateType]
+
+
+@dataclass(frozen=True, kw_only=True)
+class MammotionSpinoSensorEntityDescription(SensorEntityDescription):
+    """Describes Mammotion Spino pool cleaner sensor entity."""
+
+    value_fn: Callable[[PoolCleanerDevice], StateType]
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -485,6 +502,31 @@ RTK_SENSOR_TYPES: tuple[MammotionRTKSensorEntityDescription, ...] = (
     ),
 )
 
+SPINO_SENSOR_TYPES: tuple[MammotionSpinoSensorEntityDescription, ...] = (
+    MammotionSpinoSensorEntityDescription(
+        key="spino_battery",
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.BATTERY,
+        native_unit_of_measurement=PERCENTAGE,
+        value_fn=lambda spino_data: spino_data.pool_state.battery,
+    ),
+    MammotionSpinoSensorEntityDescription(
+        key="spino_status",
+        state_class=None,
+        device_class=SensorDeviceClass.ENUM,
+        options=[status.name for status in SpinoSysStatus],
+        value_fn=lambda spino_data: spino_data.pool_state.sys_status.name,
+    ),
+    MammotionSpinoSensorEntityDescription(
+        key="spino_work_mode",
+        state_class=None,
+        device_class=SensorDeviceClass.ENUM,
+        options=[mode.name for mode in SpinoWorkMode],
+        value_fn=lambda spino_data: spino_data.pool_state.work_mode.name,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+)
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -550,6 +592,13 @@ async def async_setup_entry(
             for description in RTK_SENSOR_TYPES
         )
 
+    mammotion_spinos = entry.runtime_data.spino
+    for spino in mammotion_spinos:
+        entities.extend(
+            MammotionSpinoSensorEntity(spino.coordinator, description)
+            for description in SPINO_SENSOR_TYPES
+        )
+
     async_add_entities(entities)
 
 
@@ -586,6 +635,27 @@ class MammotionRTKSensorEntity(MammotionBaseRTKEntity, SensorEntity):
         entity_description: MammotionRTKSensorEntityDescription,
     ) -> None:
         """Set up MammotionSensor."""
+        super().__init__(coordinator, entity_description.key)
+        self.entity_description = entity_description
+        self._attr_translation_key = entity_description.key
+
+    @property
+    def native_value(self) -> StateType:
+        """Return the state of the sensor."""
+        return self.entity_description.value_fn(self.coordinator.data)
+
+
+class MammotionSpinoSensorEntity(MammotionBaseSpinoEntity, SensorEntity):
+    """Defining the Mammotion Spino pool cleaner Sensor."""
+
+    entity_description: MammotionSpinoSensorEntityDescription
+
+    def __init__(
+        self,
+        coordinator: MammotionSpinoCoordinator,
+        entity_description: MammotionSpinoSensorEntityDescription,
+    ) -> None:
+        """Set up MammotionSpinoSensor."""
         super().__init__(coordinator, entity_description.key)
         self.entity_description = entity_description
         self._attr_translation_key = entity_description.key

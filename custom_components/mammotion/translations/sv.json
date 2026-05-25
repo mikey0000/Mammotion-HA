@@ -10,8 +10,12 @@
       "not_supported": "Enheten stöds inte",
       "reconfigure_successful": "Omkonfigurering lyckades",
       "api_limit_exceeded": "API-anropsgränsen har överskridits. Försök igen senare.",
-      "account_in_use": "Ditt Mammotion-konto är redan aktivt i en annan session. Logga ut från Mammotion-appen och försök igen.",
-      "cannot_connect": "Det går inte att ansluta till Mammotion-molnet. Kontrollera dina inloggningsuppgifter och nätverket och försök igen."
+      "account_in_use": "Ditt Mammotion-konto är redan aktivt i en annan session. Logga ut från Mammotion-appen och försök igen."
+    },
+    "error": {
+      "login_failed": "Inloggningen misslyckades. Kontrollera kontots e-postadress och lösenord och försök igen.",
+      "cannot_connect": "Det går inte att ansluta till Mammotion-molnet. Kontrollera dina inloggningsuppgifter och nätverket och försök igen.",
+      "no_account_no_ble": "Inga kontouppgifter angavs och ingen Bluetooth-enhet hittades. Ange dina Mammotion-kontouppgifter eller konfigurera en Bluetooth-enhet."
     },
     "flow_title": "{name}",
     "step": {

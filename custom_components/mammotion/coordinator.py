@@ -44,6 +44,7 @@ from pymammotion.data.model.device import (
     MowerDevice,
     MowerInfo,
     MowingDevice,
+    PoolCleanerDevice,
     RTKBaseStationDevice,
 )
 from pymammotion.data.model.device_config import OperationSettings, create_path_order
@@ -99,6 +100,7 @@ REPORT_INTERVAL = timedelta(minutes=5)
 DEVICE_VERSION_INTERVAL = timedelta(weeks=1)
 MAP_INTERVAL = timedelta(minutes=60)
 RTK_INTERVAL = timedelta(hours=5)
+SPINO_INTERVAL = timedelta(weeks=1)
 
 
 class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # type: ignore[misc]
@@ -1712,7 +1714,7 @@ class MammotionDeviceVersionUpdateCoordinator(
                 if check_versions := ota_info.data:
                     for check_version in check_versions:
                         if check_version.device_id == handle.iot_id:
-                            device.update_check = check_version
+                            device.apply_version_check(check_version)
 
         if device.mower_state.model_id != "":
             self.update_interval = DEVICE_VERSION_INTERVAL
@@ -1770,7 +1772,7 @@ class MammotionDeviceVersionUpdateCoordinator(
                     if device is not None and (check_versions := ota_info.data):
                         for check_version in check_versions:
                             if check_version.device_id == handle.iot_id:
-                                device.update_check = check_version
+                                device.apply_version_check(check_version)
 
             self.async_set_updated_data(self.data)
         except DeviceOfflineException:
@@ -2112,7 +2114,7 @@ class MammotionRTKCoordinator(MammotionBaseUpdateCoordinator[RTKBaseStationDevic
                     if check_versions := ota_info.data:
                         for check_version in check_versions:
                             if check_version.device_id == self.device.iot_id:
-                                self.data.update_check = check_version
+                                self.data.apply_version_check(check_version)
                 except ReLoginRequiredError:
                     await self.async_refresh_login()
                 except (DeviceOfflineException, GatewayTimeoutException):
@@ -2169,3 +2171,123 @@ class MammotionRTKCoordinator(MammotionBaseUpdateCoordinator[RTKBaseStationDevic
         http = self.manager.mammotion_http
         if http is not None:
             await http.start_ota_upgrade(self.device.iot_id, version)
+
+
+class MammotionSpinoCoordinator(MammotionBaseUpdateCoordinator[PoolCleanerDevice]):
+    """Mammotion DataUpdateCoordinator for Spino pool cleaner devices."""
+
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        config_entry: MammotionConfigEntry,
+        device: Device,
+        mammotion: MammotionClient,
+        unique_name: str | None = None,
+    ) -> None:
+        """Initialize spino mammotion data updater."""
+        super().__init__(
+            hass=hass,
+            config_entry=config_entry,
+            device=device,
+            mammotion=mammotion,
+            update_interval=SPINO_INTERVAL,
+            unique_name=unique_name,
+        )
+
+    async def get_coordinator_data(
+        self, device: PoolCleanerDevice
+    ) -> PoolCleanerDevice:
+        """Return the current pool cleaner state tracked by this coordinator."""
+        return self.data
+
+    async def async_restore_data(self) -> None:
+        """Restore saved data."""
+        store = MammotionConfigStore(
+            self.hass, version=1, minor_version=2, key=self.device_name
+        )
+        restored_data: Mapping[str, Any] | None = await store.async_load()
+
+        handle = self.manager.mower(self.device_name)
+
+        if restored_data is None:
+            empty = PoolCleanerDevice()
+            self.data = empty
+            if handle is not None:
+                handle.restore_device(empty)
+            return
+
+        try:
+            spino_state = PoolCleanerDevice().from_dict(restored_data)
+            if handle is not None:
+                handle.restore_device(spino_state)
+                self.data = spino_state
+        except InvalidFieldValue:
+            empty = PoolCleanerDevice()
+            self.data = empty
+            if handle is not None:
+                handle.restore_device(empty)
+
+    async def _async_update_data(self) -> PoolCleanerDevice:
+        """Return current pool cleaner state from the device handle.
+
+        Runtime state (sys_status, work_mode, battery, settings, map) is pushed
+        into the state machine by ``PoolStateReducer`` as MQTT frames arrive, so
+        the only polling work here is the HTTP OTA firmware check, which is not
+        pushed over MQTT.
+        """
+        handle = self.manager.mower(self.device_name)
+        if handle is None:
+            return self.data
+
+        if self.has_cloud_account:
+            http = self.manager.mammotion_http
+            if http is not None:
+                try:
+                    ota_info = await http.get_device_ota_firmware([self.device.iot_id])
+                    if check_versions := ota_info.data:
+                        for check_version in check_versions:
+                            if check_version.device_id == self.device.iot_id:
+                                self.data.apply_version_check(check_version)
+                except ReLoginRequiredError:
+                    await self.async_refresh_login()
+                except (DeviceOfflineException, GatewayTimeoutException):
+                    pass
+
+        return self.data
+
+    async def _async_update_notification(self, res: tuple[str, Any | None]) -> None:
+        """Handle update notifications for the pool cleaner."""
+        if spino := self.manager.mower(self.device_name):
+            self.async_set_updated_data(cast(PoolCleanerDevice, spino.snapshot.raw))
+
+    async def update_firmware(self, version: str) -> None:
+        """Update firmware."""
+        http = self.manager.mammotion_http
+        if http is not None:
+            await http.start_ota_upgrade(self.device.iot_id, version)
+
+    # === Pool cleaner control helpers (called by control entities) ===
+
+    async def async_set_work_mode(self, work_mode: int) -> None:
+        """Set the Spino cleaning work mode."""
+        await self.async_send_command("set_swimming_work_mode", work_mode=work_mode)
+
+    async def async_set_wall_material(self, material: int) -> None:
+        """Set the pool wall material."""
+        await self.async_send_command("sp_environment_update", material=material)
+
+    async def async_set_bottom_type(self, bottom_type: int) -> None:
+        """Set the pool bottom shape type."""
+        await self.async_send_command("sp_set_bottom_type", bottom_type=bottom_type)
+
+    async def async_set_floor_speed(self, speed: float) -> None:
+        """Set the pool floor cleaning speed."""
+        await self.async_send_command("sp_speed_update", speed=speed)
+
+    async def async_fetch_pool_map(self) -> None:
+        """Request the pool boundary map from the device."""
+        await self.async_send_command("get_sp_map")
+
+    async def async_fetch_pool_line(self) -> None:
+        """Request the pool cleaning route from the device."""
+        await self.async_send_command("get_sp_line")

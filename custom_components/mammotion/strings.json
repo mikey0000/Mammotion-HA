@@ -9,8 +9,12 @@
       "no_longer_present": "Device is no longer present",
       "not_supported": "Device not supported",
       "reconfigure_successful": "Re-configure successful",
-      "api_limit_exceeded": "API rate limit has been exceeded. Please try again later.",
-      "cannot_connect": "Unable to connect to the Mammotion cloud. Check your credentials and network, then try again."
+      "api_limit_exceeded": "API rate limit has been exceeded. Please try again later."
+    },
+    "error": {
+      "login_failed": "Login failed. Check your account email and password, then try again.",
+      "cannot_connect": "Unable to connect to the Mammotion cloud. Check your credentials and network, then try again.",
+      "no_account_no_ble": "No account details entered and no Bluetooth device found. Enter your Mammotion account credentials, or set up a Bluetooth device."
     },
     "flow_title": "{name}",
     "step": {
@@ -169,6 +173,29 @@
       },
       "rtk_longitude": {
         "name": "RTK longitude"
+      },
+      "spino_battery": {
+        "name": "Battery"
+      },
+      "spino_status": {
+        "name": "Status",
+        "state": {
+          "READY": "Standby",
+          "WORKING": "Working",
+          "WORKBACKING": "Returning",
+          "CHARGEBACKING": "Recharging"
+        }
+      },
+      "spino_work_mode": {
+        "name": "Cleaning mode",
+        "state": {
+          "RECHARGE": "Recharge",
+          "AUTO": "All",
+          "FLOOR": "Floor",
+          "WALL": "Wall",
+          "ECO": "Eco",
+          "LINE": "Waterline"
+        }
       }
     },
     "button": {
@@ -201,6 +228,12 @@
       },
       "relocate_charging_station": {
         "name": "Relocate charging station"
+      },
+      "spino_fetch_map": {
+        "name": "Fetch pool map"
+      },
+      "spino_fetch_line": {
+        "name": "Fetch cleaning route"
       }
     },
     "switch": {
@@ -299,6 +332,34 @@
           "MAN": "Male",
           "WOMAN": "Female"
         }
+      },
+      "spino_work_mode": {
+        "name": "Cleaning mode",
+        "state": {
+          "RECHARGE": "Recharge",
+          "AUTO": "All",
+          "FLOOR": "Floor",
+          "WALL": "Wall",
+          "ECO": "Eco",
+          "LINE": "Waterline"
+        }
+      },
+      "spino_wall_material": {
+        "name": "Wall material",
+        "state": {
+          "GLASS": "Glass",
+          "CERAMICS": "Tile",
+          "SAND_STONE": "Mosaic"
+        }
+      },
+      "spino_bottom_type": {
+        "name": "Pool bottom shape",
+        "state": {
+          "RIGHT_ANGLE_SIMPLE": "Right angle (simple)",
+          "RIGHT_ANGLE_COMPLEX": "Right angle (complex)",
+          "CURVE_SIMPLE": "Curved (simple)",
+          "CURVE_COMPLEX": "Curved (complex)"
+        }
       }
     },
     "number": {
@@ -331,6 +392,9 @@
       },
       "map_offset_lon": {
         "name": "Map offset longitude"
+      },
+      "spino_floor_speed": {
+        "name": "Pool floor movement speed"
       }
     },
     "device_tracker": {
@@ -582,7 +646,10 @@
           "name": "Filename",
           "description": "Filename stored on the device."
         },
-        "scale": { "name": "Scale", "description": "Uniform scale factor." },
+        "scale": {
+          "name": "Scale",
+          "description": "Uniform scale factor."
+        },
         "rotate": {
           "name": "Rotation",
           "description": "Rotation in radians (CCW-positive)."

@@ -10,8 +10,12 @@
       "not_supported": "Dispozitivul nu este suportat",
       "reconfigure_successful": "Reconfigurare reușită",
       "api_limit_exceeded": "Limita de solicitări API a fost depășită. Vă rugăm să încercați din nou mai târziu.",
-      "account_in_use": "Contul dvs. Mammotion este deja activ într-o altă sesiune. Deconectați-vă din aplicația Mammotion și încercați din nou.",
-      "cannot_connect": "Nu se poate conecta la cloud-ul Mammotion. Verificați datele de autentificare și rețeaua, apoi încercați din nou."
+      "account_in_use": "Contul dvs. Mammotion este deja activ într-o altă sesiune. Deconectați-vă din aplicația Mammotion și încercați din nou."
+    },
+    "error": {
+      "login_failed": "Autentificare eșuată. Verificați adresa de e-mail și parola contului, apoi încercați din nou.",
+      "cannot_connect": "Nu se poate conecta la cloud-ul Mammotion. Verificați datele de autentificare și rețeaua, apoi încercați din nou.",
+      "no_account_no_ble": "Nu au fost introduse datele contului și nu a fost găsit niciun dispozitiv Bluetooth. Introduceți datele de autentificare ale contului Mammotion sau configurați un dispozitiv Bluetooth."
     },
     "flow_title": "{name}",
     "step": {

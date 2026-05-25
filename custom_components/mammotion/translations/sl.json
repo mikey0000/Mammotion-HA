@@ -10,8 +10,12 @@
       "not_supported": "Naprava ni podprta",
       "reconfigure_successful": "Ponastavitev uspešna",
       "api_limit_exceeded": "Prekoračena je bila omejitev API-ja. Poskusite znova pozneje.",
-      "account_in_use": "Vaš račun Mammotion je že aktiven v drugi seji. Odjavite se iz aplikacije Mammotion in poskusite znova.",
-      "cannot_connect": "Povezava z oblakom Mammotion ni mogoča. Preverite poverilnice in omrežje ter poskusite znova."
+      "account_in_use": "Vaš račun Mammotion je že aktiven v drugi seji. Odjavite se iz aplikacije Mammotion in poskusite znova."
+    },
+    "error": {
+      "login_failed": "Prijava ni uspela. Preverite e-poštni naslov in geslo računa ter poskusite znova.",
+      "cannot_connect": "Povezava z oblakom Mammotion ni mogoča. Preverite poverilnice in omrežje ter poskusite znova.",
+      "no_account_no_ble": "Podatki računa niso bili vneseni in naprava Bluetooth ni bila najdena. Vnesite poverilnice računa Mammotion ali nastavite napravo Bluetooth."
     },
     "flow_title": "{name}",
     "step": {

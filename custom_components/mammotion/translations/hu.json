@@ -10,8 +10,12 @@
       "not_supported": "Az eszköz nem támogatott",
       "reconfigure_successful": "Újrakonfigurálás sikeres",
       "api_limit_exceeded": "Az API sebességkorlátját elérte. Próbáld újra később.",
-      "account_in_use": "A Mammotion fiókod már aktív egy másik munkamenetben. Jelentkezz ki a Mammotion alkalmazásból, és próbáld újra.",
-      "cannot_connect": "Nem lehet csatlakozni a Mammotion felhőhöz. Ellenőrizd a hitelesítő adatokat és a hálózatot, majd próbáld újra."
+      "account_in_use": "A Mammotion fiókod már aktív egy másik munkamenetben. Jelentkezz ki a Mammotion alkalmazásból, és próbáld újra."
+    },
+    "error": {
+      "login_failed": "A bejelentkezés sikertelen. Ellenőrizze fiókja e-mail-címét és jelszavát, majd próbálja újra.",
+      "cannot_connect": "Nem lehet csatlakozni a Mammotion felhőhöz. Ellenőrizd a hitelesítő adatokat és a hálózatot, majd próbáld újra.",
+      "no_account_no_ble": "Nincsenek megadva fiókadatok, és nem található Bluetooth-eszköz. Adja meg a Mammotion-fiók hitelesítő adatait, vagy állítson be egy Bluetooth-eszközt."
     },
     "flow_title": "{name}",
     "step": {

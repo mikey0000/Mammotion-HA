@@ -6,6 +6,7 @@ from typing import Any, cast
 
 from homeassistant.components.number import (
     NumberDeviceClass,
+    NumberEntity,
     NumberEntityDescription,
     NumberMode,
     RestoreNumber,
@@ -20,13 +21,14 @@ from homeassistant.const import (
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from pymammotion.data.model.device import PoolCleanerDevice
 from pymammotion.data.model.device_limits import DeviceLimits
 from pymammotion.utility.device_config import DeviceConfig
 from pymammotion.utility.device_type import DeviceType
 
 from . import MammotionConfigEntry
-from .coordinator import MammotionBaseUpdateCoordinator
-from .entity import MammotionBaseEntity
+from .coordinator import MammotionBaseUpdateCoordinator, MammotionSpinoCoordinator
+from .entity import MammotionBaseEntity, MammotionBaseSpinoEntity
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -38,6 +40,28 @@ class MammotionConfigNumberEntityDescription(NumberEntityDescription):  # type: 
         Callable[[MammotionBaseUpdateCoordinator[Any], float], Awaitable[None]] | None
     ) = None
     get_fn: Callable[[MammotionBaseUpdateCoordinator[Any]], float | None] | None = None
+
+
+@dataclass(frozen=True, kw_only=True)
+class MammotionSpinoNumberEntityDescription(NumberEntityDescription):  # type: ignore[misc]
+    """Describes a Mammotion Spino pool cleaner number entity."""
+
+    value_fn: Callable[[PoolCleanerDevice], float]
+    set_fn: Callable[[MammotionSpinoCoordinator, float], Awaitable[None]]
+
+
+SPINO_NUMBER_ENTITIES: tuple[MammotionSpinoNumberEntityDescription, ...] = (
+    MammotionSpinoNumberEntityDescription(
+        key="spino_floor_speed",
+        native_min_value=0.1,
+        native_max_value=1.0,
+        native_step=0.05,
+        mode=NumberMode.SLIDER,
+        entity_category=EntityCategory.CONFIG,
+        value_fn=lambda spino_data: spino_data.pool_state.floor_speed,
+        set_fn=lambda coordinator, value: coordinator.async_set_floor_speed(value),
+    ),
+)
 
 
 MAP_OFFSET_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
@@ -239,6 +263,12 @@ async def async_setup_entry(
 
         async_add_entities(entities)
 
+    for spino in entry.runtime_data.spino:
+        async_add_entities(
+            MammotionSpinoNumberEntity(spino.coordinator, entity_description)
+            for entity_description in SPINO_NUMBER_ENTITIES
+        )
+
 
 class MammotionConfigNumberEntity(MammotionBaseEntity, RestoreNumber):  # type: ignore[misc]
     """Mammotion config number entity."""
@@ -355,3 +385,29 @@ class MammotionWorkingNumberEntity(MammotionConfigNumberEntity):
         if self.entity_description.set_async_fn is not None:
             await self.entity_description.set_async_fn(self.coordinator, value)
         self.async_write_ha_state()
+
+
+class MammotionSpinoNumberEntity(MammotionBaseSpinoEntity, NumberEntity):  # type: ignore[misc]
+    """Mammotion Spino pool cleaner number entity."""
+
+    entity_description: MammotionSpinoNumberEntityDescription
+
+    def __init__(
+        self,
+        coordinator: MammotionSpinoCoordinator,
+        entity_description: MammotionSpinoNumberEntityDescription,
+    ) -> None:
+        """Initialize the Spino number entity."""
+        super().__init__(coordinator, entity_description.key)
+        self.entity_description = entity_description
+        self._attr_translation_key = entity_description.key
+
+    @property
+    def native_value(self) -> float:
+        """Return the current value."""
+        return self.entity_description.value_fn(self.coordinator.data)
+
+    async def async_set_native_value(self, value: float) -> None:
+        """Set a new value."""
+        await self.entity_description.set_fn(self.coordinator, value)
+        await self.coordinator.async_request_refresh()

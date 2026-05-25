@@ -10,7 +10,7 @@ import secrets
 import ssl
 import time
 import uuid
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from typing import Any
 
@@ -92,9 +92,25 @@ class SdpInfo:
 class AgoraWebSocketHandler:
     """Handle Agora WebSocket communications for WebRTC streaming."""
 
-    def __init__(self, hass: HomeAssistant) -> None:
-        """Initialize the Agora WebSocket handler."""
+    # Peer-recovery timings: when the mower (remote peer) drops out of the
+    # channel, wait this long for it to rejoin before kicking a recovery, and
+    # don't run another recovery within the cooldown window (anti-thrash).
+    PEER_REJOIN_DEBOUNCE_SECS = 2.0
+    PEER_RECOVER_COOLDOWN_SECS = 15.0
+
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        recover_stream: Callable[[], Awaitable[None]] | None = None,
+    ) -> None:
+        """Initialize the Agora WebSocket handler.
+
+        ``recover_stream`` is an optional async callback invoked when the mower
+        leaves the channel and doesn't rejoin within ``PEER_REJOIN_DEBOUNCE_SECS``
+        — it should re-establish the stream (BLE sync + get_stream_subscription).
+        """
         self.hass = hass
+        self._recover_stream = recover_stream
         self._websocket: ClientConnection | None = None
         self._connection_state = "DISCONNECTED"
         self._message_handlers: dict[str, Callable] = {}
@@ -128,6 +144,9 @@ class AgoraWebSocketHandler:
         # finally expires).  Suppresses follow-up renews within RENEW_DEBOUNCE_SECS
         # of the last attempt; the gateway treats one renew as authoritative.
         self._last_renew_token_at: float = 0.0
+        # Peer-recovery debounce task + cooldown timestamp (see _schedule_peer_recovery).
+        self._peer_recover_task: asyncio.Task | None = None
+        self._last_peer_recover_at: float = 0.0
         self._setup_message_handlers()
 
     def _setup_message_handlers(self) -> None:
@@ -175,6 +194,8 @@ class AgoraWebSocketHandler:
         self._msid_stream_id = 1
         self._msid_video_track_id = str(uuid.uuid4())
         self._msid_audio_track_id = str(uuid.uuid4())
+        # Fresh session — clear any peer-recovery cooldown from a prior stream.
+        self._last_peer_recover_at = 0.0
 
         # Store for later use in token refresh / rejoin / restart
         self._agora_data = agora_data
@@ -690,7 +711,8 @@ class AgoraWebSocketHandler:
                 del self._video_streams[uid]
 
             # If the other peer left but we are still in the channel,
-            # renew the token so it is fresh when the device rejoins.
+            # renew the token so it is fresh when the device rejoins, and arm a
+            # debounced stream-recovery in case it doesn't come back.
             if uid != self._uid and self._websocket:
                 _LOGGER.info(
                     "Peer %s left the channel while our uid %s is still connected — refreshing token",
@@ -698,6 +720,55 @@ class AgoraWebSocketHandler:
                     self._uid,
                 )
                 await self._send_renew_token()
+                self._schedule_peer_recovery(uid)
+
+    def _schedule_peer_recovery(self, peer_uid: int) -> None:
+        """Arm a debounced stream recovery after the mower (peer) leaves the channel.
+
+        Waits ``PEER_REJOIN_DEBOUNCE_SECS`` for the peer to rejoin; if it hasn't,
+        and we're outside the ``PEER_RECOVER_COOLDOWN_SECS`` anti-thrash window,
+        invokes ``recover_stream`` (BLE sync + fresh stream subscription).  Only
+        the latest peer-left is honoured, and the task is cancelled on disconnect.
+        """
+        if self._recover_stream is None:
+            return
+        if self._peer_recover_task and not self._peer_recover_task.done():
+            self._peer_recover_task.cancel()
+        self._peer_recover_task = self.hass.async_create_task(
+            self._peer_recovery(peer_uid)
+        )
+
+    async def _peer_recovery(self, peer_uid: int) -> None:
+        """Debounce body for :meth:`_schedule_peer_recovery` (cancelled on rejoin/disconnect)."""
+        # Cancellation during this sleep (disconnect, or a newer peer-left) ends the task.
+        await asyncio.sleep(self.PEER_REJOIN_DEBOUNCE_SECS)
+
+        if peer_uid in self._online_users:
+            return  # rejoined within the debounce window — nothing to do
+        if not self._websocket or self._connection_state != "CONNECTED":
+            return  # websocket gone — viewer stopped watching; don't recover
+
+        now = time.monotonic()
+        if now - self._last_peer_recover_at < self.PEER_RECOVER_COOLDOWN_SECS:
+            _LOGGER.debug(
+                "Peer %s still gone but stream recovery is within the %.0fs cooldown — skipping",
+                peer_uid,
+                self.PEER_RECOVER_COOLDOWN_SECS,
+            )
+            return
+        self._last_peer_recover_at = now
+
+        _LOGGER.info(
+            "Peer %s did not rejoin within %.0fs — recovering stream (BLE sync + subscription)",
+            peer_uid,
+            self.PEER_REJOIN_DEBOUNCE_SECS,
+        )
+        if self._recover_stream is None:
+            return
+        try:
+            await self._recover_stream()
+        except Exception:  # noqa: BLE001 — recovery is best-effort; never kill the handler
+            _LOGGER.exception("Peer-recovery (BLE sync + stream subscription) failed")
 
     async def _send_unsubscribe(
         self,
@@ -1756,6 +1827,9 @@ class AgoraWebSocketHandler:
         if self._message_loop_task and not self._message_loop_task.done():
             self._message_loop_task.cancel()
             self._message_loop_task = None
+        if self._peer_recover_task and not self._peer_recover_task.done():
+            self._peer_recover_task.cancel()
+            self._peer_recover_task = None
 
         # Close WebSocket
         if self._websocket:

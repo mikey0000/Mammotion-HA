@@ -12,6 +12,7 @@ from .coordinator import (
     MammotionMapUpdateCoordinator,
     MammotionReportUpdateCoordinator,
     MammotionRTKCoordinator,
+    MammotionSpinoCoordinator,
 )
 
 
@@ -42,9 +43,20 @@ class MammotionRTKData:
 
 
 @dataclass
+class MammotionSpinoData:
+    """Data for a Spino pool cleaner."""
+
+    name: str
+    unique_name: str
+    api: MammotionClient
+    coordinator: MammotionSpinoCoordinator
+    device: Device
+
+
+@dataclass
 class MammotionDevices:
     """Data for the Mammotion integration."""
 
     mowers: list[MammotionMowerData]
     RTK: list[MammotionRTKData]
-    # TODO add spino
+    spino: list[MammotionSpinoData]

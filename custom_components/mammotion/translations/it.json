@@ -10,8 +10,12 @@
       "not_supported": "Dispositivo non supportato",
       "reconfigure_successful": "Riconfigurazione avvenuta con successo",
       "api_limit_exceeded": "Il limite di frequenza dell'API è stato superato. Si prega di riprovare più tardi.",
-      "account_in_use": "Il tuo account Mammotion è già attivo in un'altra sessione. Disconnettiti dall'app Mammotion e riprova.",
-      "cannot_connect": "Impossibile connettersi al cloud Mammotion. Verifica le credenziali e la rete, quindi riprova."
+      "account_in_use": "Il tuo account Mammotion è già attivo in un'altra sessione. Disconnettiti dall'app Mammotion e riprova."
+    },
+    "error": {
+      "login_failed": "Accesso non riuscito. Controlla l'email e la password del tuo account, quindi riprova.",
+      "cannot_connect": "Impossibile connettersi al cloud Mammotion. Verifica le credenziali e la rete, quindi riprova.",
+      "no_account_no_ble": "Nessun dato dell'account inserito e nessun dispositivo Bluetooth trovato. Inserisci le credenziali del tuo account Mammotion oppure configura un dispositivo Bluetooth."
     },
     "flow_title": "{name}",
     "step": {

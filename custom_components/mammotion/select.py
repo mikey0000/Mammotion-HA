@@ -8,6 +8,7 @@ from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.restore_state import RestoreEntity
+from pymammotion.data.model.device import PoolCleanerDevice
 from pymammotion.data.model.mowing_modes import (
     BorderPatrolMode,
     CuttingMode,
@@ -20,11 +21,16 @@ from pymammotion.data.model.mowing_modes import (
     TurningMode,
     WildlifeSafety,
 )
+from pymammotion.data.model.pool_state import (
+    PoolBottomType,
+    SpinoWorkMode,
+    WallMaterial,
+)
 from pymammotion.utility.device_type import DeviceType
 
 from . import MammotionConfigEntry, MammotionReportUpdateCoordinator
-from .coordinator import MammotionBaseUpdateCoordinator
-from .entity import MammotionBaseEntity
+from .coordinator import MammotionBaseUpdateCoordinator, MammotionSpinoCoordinator
+from .entity import MammotionBaseEntity, MammotionBaseSpinoEntity
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -45,6 +51,43 @@ class MammotionAsyncConfigSelectEntityDescription(MammotionBaseEntity, SelectEnt
     options: list[str]
     get_fn: Callable[[MammotionBaseUpdateCoordinator], int | None]
     set_fn: Callable[[MammotionBaseUpdateCoordinator, str], Awaitable[None]]
+
+
+@dataclass(frozen=True, kw_only=True)
+class MammotionSpinoSelectEntityDescription(SelectEntityDescription):
+    """Describes a Mammotion Spino pool cleaner select entity."""
+
+    options: list[str]
+    current_fn: Callable[[PoolCleanerDevice], str]
+    set_fn: Callable[[MammotionSpinoCoordinator, str], Awaitable[None]]
+
+
+SPINO_SELECT_ENTITIES: tuple[MammotionSpinoSelectEntityDescription, ...] = (
+    MammotionSpinoSelectEntityDescription(
+        key="spino_work_mode",
+        options=[mode.name for mode in SpinoWorkMode],
+        current_fn=lambda spino_data: spino_data.pool_state.work_mode.name,
+        set_fn=lambda coordinator, value: coordinator.async_set_work_mode(
+            SpinoWorkMode[value].value
+        ),
+    ),
+    MammotionSpinoSelectEntityDescription(
+        key="spino_wall_material",
+        options=[material.name for material in WallMaterial],
+        current_fn=lambda spino_data: spino_data.pool_state.wall_material.name,
+        set_fn=lambda coordinator, value: coordinator.async_set_wall_material(
+            WallMaterial[value].value
+        ),
+    ),
+    MammotionSpinoSelectEntityDescription(
+        key="spino_bottom_type",
+        options=[bottom.name for bottom in PoolBottomType],
+        current_fn=lambda spino_data: spino_data.pool_state.bottom_type.name,
+        set_fn=lambda coordinator, value: coordinator.async_set_bottom_type(
+            PoolBottomType[value].value
+        ),
+    ),
+)
 
 
 AUDIO_SELECT_ENTITIES: tuple[MammotionAsyncConfigSelectEntityDescription, ...] = (
@@ -251,6 +294,12 @@ async def async_setup_entry(
 
         async_add_entities(entities)
 
+    for spino in entry.runtime_data.spino:
+        async_add_entities(
+            MammotionSpinoSelectEntity(spino.coordinator, entity_description)
+            for entity_description in SPINO_SELECT_ENTITIES
+        )
+
 
 # Define the select entity class with entity_category: config
 class MammotionConfigSelectEntity(MammotionBaseEntity, SelectEntity, RestoreEntity):
@@ -352,3 +401,32 @@ class MammotionAsyncConfigSelectEntity(
                 self.entity_description.get_fn(self.coordinator)
             ]
         self.async_write_ha_state()
+
+
+class MammotionSpinoSelectEntity(MammotionBaseSpinoEntity, SelectEntity):
+    """Representation of a Mammotion Spino pool cleaner select entity."""
+
+    _attr_entity_category = EntityCategory.CONFIG
+
+    entity_description: MammotionSpinoSelectEntityDescription
+
+    def __init__(
+        self,
+        coordinator: MammotionSpinoCoordinator,
+        entity_description: MammotionSpinoSelectEntityDescription,
+    ) -> None:
+        """Initialize the Spino select entity."""
+        super().__init__(coordinator, entity_description.key)
+        self.entity_description = entity_description
+        self._attr_translation_key = entity_description.key
+        self._attr_options = entity_description.options
+
+    @property
+    def current_option(self) -> str | None:
+        """Return the currently selected option."""
+        return self.entity_description.current_fn(self.coordinator.data)
+
+    async def async_select_option(self, option: str) -> None:
+        """Change the selected option."""
+        await self.entity_description.set_fn(self.coordinator, option)
+        await self.coordinator.async_request_refresh()
