@@ -12,7 +12,6 @@ from pymammotion.transport import AuthError
 from pymammotion.transport.base import (
     LoginFailedError,
     NoTransportAvailableError,
-    ReLoginRequiredError,
 )
 from pymammotion.utility.constant import WorkMode
 
@@ -38,7 +37,6 @@ EXPIRED_CREDENTIAL_EXCEPTIONS = (
     AuthError,
     UnauthorizedException,
     LoginFailedError,
-    ReLoginRequiredError,
 )
 
 CONF_HAS_CLOUD_ACCOUNT: Final = "has_cloud_account"

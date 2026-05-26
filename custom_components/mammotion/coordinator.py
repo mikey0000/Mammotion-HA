@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import datetime
 import json
 import time
@@ -49,6 +50,7 @@ from pymammotion.data.model.device import (
 )
 from pymammotion.data.model.device_config import OperationSettings, create_path_order
 from pymammotion.data.model.hash_list import AreaHashNameList, SvgMessage
+from pymammotion.data.model.pool_state import SpinoToggle
 from pymammotion.data.model.report_info import Maintain
 from pymammotion.data.mqtt.event import DeviceNotificationEventParams, ThingEventMessage
 from pymammotion.data.mqtt.properties import ThingPropertiesMessage
@@ -537,6 +539,10 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             raise HomeAssistantError(
                 translation_domain=DOMAIN, translation_key="api_limit_exceeded"
             ) from exc
+        except ReLoginRequiredError as err:
+            raise ConfigEntryAuthFailed(
+                f"Re-authentication required for Mammotion account: {err}"
+            ) from err
         return False
 
     async def async_send_bluetooth_command(self, key: str, **kwargs: Any) -> None:
@@ -2115,8 +2121,10 @@ class MammotionRTKCoordinator(MammotionBaseUpdateCoordinator[RTKBaseStationDevic
                         for check_version in check_versions:
                             if check_version.device_id == self.device.iot_id:
                                 self.data.apply_version_check(check_version)
-                except ReLoginRequiredError:
-                    await self.async_refresh_login()
+                except ReLoginRequiredError as err:
+                    raise ConfigEntryAuthFailed(
+                        f"Re-authentication required for Mammotion account: {err}"
+                    ) from err
                 except (DeviceOfflineException, GatewayTimeoutException):
                     pass
 
@@ -2194,6 +2202,31 @@ class MammotionSpinoCoordinator(MammotionBaseUpdateCoordinator[PoolCleanerDevice
             unique_name=unique_name,
         )
 
+    async def _async_setup(self) -> None:
+        """Subscribe to device events, then read the initial toggle states once.
+
+        The buzzer/turbo/platform/waterline toggles aren't part of the regular
+        push — the device only emits a ``bidire_comm_cmd`` for them in response
+        to a read or write.  Issue one read per toggle here to seed initial
+        state; subsequent changes (from our writes or the Mammotion app) arrive
+        as ``bidire_comm_cmd`` responses applied by ``PoolStateReducer`` and
+        pushed to entities via the inherited ``_on_state_changed`` callback.
+        """
+        await super()._async_setup()
+        for toggle in SpinoToggle:
+            with contextlib.suppress(
+                DeviceOfflineException,
+                GatewayTimeoutException,
+                NoTransportAvailableError,
+            ):
+                await self.async_send_and_wait(
+                    "read_write_device",
+                    "bidire_comm_cmd",
+                    rw_id=int(toggle),
+                    context=0,
+                    rw=0,
+                )
+
     async def get_coordinator_data(
         self, device: PoolCleanerDevice
     ) -> PoolCleanerDevice:
@@ -2248,8 +2281,10 @@ class MammotionSpinoCoordinator(MammotionBaseUpdateCoordinator[PoolCleanerDevice
                         for check_version in check_versions:
                             if check_version.device_id == self.device.iot_id:
                                 self.data.apply_version_check(check_version)
-                except ReLoginRequiredError:
-                    await self.async_refresh_login()
+                except ReLoginRequiredError as err:
+                    raise ConfigEntryAuthFailed(
+                        f"Re-authentication required for Mammotion account: {err}"
+                    ) from err
                 except (DeviceOfflineException, GatewayTimeoutException):
                     pass
 
@@ -2291,3 +2326,13 @@ class MammotionSpinoCoordinator(MammotionBaseUpdateCoordinator[PoolCleanerDevice
     async def async_fetch_pool_line(self) -> None:
         """Request the pool cleaning route from the device."""
         await self.async_send_command("get_sp_line")
+
+    async def async_set_pool_toggle(self, toggle: SpinoToggle, enabled: bool) -> None:
+        """Write a Spino on/off toggle (buzzer / turbo / platform / waterline).
+
+        Uses the generic ``read_write_device`` (``allpowerfullRW``) command: the
+        toggle id with ``context`` 0/1 and ``rw=1`` (write).
+        """
+        await self.async_send_command(
+            "read_write_device", rw_id=int(toggle), context=int(enabled), rw=1
+        )

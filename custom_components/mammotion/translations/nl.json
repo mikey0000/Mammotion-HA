@@ -226,7 +226,8 @@
           "RTK_OVER_DATALINK": "Antenne via DataLink",
           "RTK_OVER_INTERNET": "Antenne via internet",
           "INAVI_NET_RTK": "iNavi NetRTK",
-          "INAVI_RTK_BOX": "iNavi RTK-box"
+          "INAVI_RTK_BOX": "iNavi RTK-box",
+          "UNKNOWN": "Onbekend"
         }
       },
       "rtk_app_connect_type": {
@@ -331,6 +332,18 @@
       },
       "voice_on_off": {
         "name": "Stem aan/uit"
+      },
+      "spino_buzzer": {
+        "name": "Zoemer"
+      },
+      "spino_turbo_clean": {
+        "name": "Turbo-reiniging"
+      },
+      "spino_platform_cleaning": {
+        "name": "Platformreiniging"
+      },
+      "spino_waterline_parking": {
+        "name": "Parkeren bij de waterlijn"
       }
     },
     "select": {

@@ -226,7 +226,8 @@
           "RTK_OVER_DATALINK": "Antena prek DataLink",
           "RTK_OVER_INTERNET": "Antena prek interneta",
           "INAVI_NET_RTK": "iNavi NetRTK",
-          "INAVI_RTK_BOX": "iNavi RTK škatla"
+          "INAVI_RTK_BOX": "iNavi RTK škatla",
+          "UNKNOWN": "Neznano"
         }
       },
       "rtk_app_connect_type": {
@@ -331,6 +332,18 @@
       },
       "voice_on_off": {
         "name": "Glas vklopljeno/izklopljeno"
+      },
+      "spino_buzzer": {
+        "name": "Brenčalo"
+      },
+      "spino_turbo_clean": {
+        "name": "Turbo čiščenje"
+      },
+      "spino_platform_cleaning": {
+        "name": "Čiščenje ploščadi"
+      },
+      "spino_waterline_parking": {
+        "name": "Parkiranje na vodni gladini"
       }
     },
     "select": {

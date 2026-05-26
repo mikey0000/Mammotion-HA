@@ -236,7 +236,8 @@
           "RTK_OVER_DATALINK": "Antenna adatkapcsolaton",
           "RTK_OVER_INTERNET": "Antenna interneten",
           "INAVI_NET_RTK": "iNavi NetRTK",
-          "INAVI_RTK_BOX": "iNavi RTK doboz"
+          "INAVI_RTK_BOX": "iNavi RTK doboz",
+          "UNKNOWN": "Ismeretlen"
         }
       },
       "rtk_app_connect_type": {
@@ -331,6 +332,18 @@
       },
       "voice_on_off": {
         "name": "Beszédhang be/ki"
+      },
+      "spino_buzzer": {
+        "name": "Hangjelző"
+      },
+      "spino_turbo_clean": {
+        "name": "Turbó tisztítás"
+      },
+      "spino_platform_cleaning": {
+        "name": "Emelvény tisztítása"
+      },
+      "spino_waterline_parking": {
+        "name": "Parkolás a vízvonalnál"
       }
     },
     "select": {

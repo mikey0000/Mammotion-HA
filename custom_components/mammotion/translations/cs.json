@@ -226,7 +226,8 @@
           "RTK_OVER_DATALINK": "Antena přes DataLink",
           "RTK_OVER_INTERNET": "Antena přes internet",
           "INAVI_NET_RTK": "iNavi NetRTK",
-          "INAVI_RTK_BOX": "iNavi RTK Box"
+          "INAVI_RTK_BOX": "iNavi RTK Box",
+          "UNKNOWN": "Neznámé"
         }
       },
       "rtk_app_connect_type": {
@@ -331,6 +332,18 @@
       },
       "voice_on_off": {
         "name": "Hlas zapnuto/vypnuto"
+      },
+      "spino_buzzer": {
+        "name": "Bzučák"
+      },
+      "spino_turbo_clean": {
+        "name": "Turbo čištění"
+      },
+      "spino_platform_cleaning": {
+        "name": "Čištění plošiny"
+      },
+      "spino_waterline_parking": {
+        "name": "Parkování na hladině"
       }
     },
     "select": {

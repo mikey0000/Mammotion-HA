@@ -236,7 +236,8 @@
           "RTK_OVER_DATALINK": "Antenna Over Datalink",
           "RTK_OVER_INTERNET": "Antenna Over Internet",
           "INAVI_NET_RTK": "iNavi NetRTK",
-          "INAVI_RTK_BOX": "iNavi RTK Box"
+          "INAVI_RTK_BOX": "iNavi RTK Box",
+          "UNKNOWN": "Unknown"
         }
       },
       "rtk_app_connect_type": {
@@ -360,6 +361,18 @@
       },
       "voice_on_off": {
         "name": "Voice on/off"
+      },
+      "spino_buzzer": {
+        "name": "Buzzer"
+      },
+      "spino_turbo_clean": {
+        "name": "Turbo cleaning"
+      },
+      "spino_platform_cleaning": {
+        "name": "Platform cleaning"
+      },
+      "spino_waterline_parking": {
+        "name": "Waterline parking"
       }
     },
     "select": {

@@ -15,6 +15,8 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.restore_state import RestoreEntity
+from pymammotion.data.model.device import PoolCleanerDevice
+from pymammotion.data.model.pool_state import SpinoToggle
 from pymammotion.utility.device_type import DeviceType
 
 from . import MammotionConfigEntry
@@ -22,8 +24,9 @@ from .const import DOMAIN
 from .coordinator import (
     MammotionBaseUpdateCoordinator,
     MammotionReportUpdateCoordinator,
+    MammotionSpinoCoordinator,
 )
-from .entity import MammotionBaseEntity
+from .entity import MammotionBaseEntity, MammotionBaseSpinoEntity
 
 # Matches pymammotion's auto-generated fallback names ("area 1", "area 2", …).
 # These carry no user intent and must be treated the same as empty names.
@@ -58,6 +61,51 @@ class MammotionConfigAreaSwitchEntityDescription(MammotionSwitchEntityDescriptio
 
     area: int
     set_fn: Callable[[MammotionBaseUpdateCoordinator, bool, int], None]
+
+
+@dataclass(frozen=True, kw_only=True)
+class MammotionSpinoSwitchEntityDescription(SwitchEntityDescription):
+    """Describes a Mammotion Spino pool cleaner switch entity."""
+
+    key: str
+    is_on_fn: Callable[[PoolCleanerDevice], bool]
+    set_fn: Callable[[MammotionSpinoCoordinator, bool], Awaitable[None]]
+
+
+SPINO_SWITCH_ENTITIES: tuple[MammotionSpinoSwitchEntityDescription, ...] = (
+    MammotionSpinoSwitchEntityDescription(
+        key="spino_buzzer",
+        entity_category=EntityCategory.CONFIG,
+        is_on_fn=lambda spino_data: spino_data.pool_state.buzzer,
+        set_fn=lambda coordinator, value: coordinator.async_set_pool_toggle(
+            SpinoToggle.buzzer, value
+        ),
+    ),
+    MammotionSpinoSwitchEntityDescription(
+        key="spino_turbo_clean",
+        entity_category=EntityCategory.CONFIG,
+        is_on_fn=lambda spino_data: spino_data.pool_state.turbo_clean,
+        set_fn=lambda coordinator, value: coordinator.async_set_pool_toggle(
+            SpinoToggle.turbo_clean, value
+        ),
+    ),
+    MammotionSpinoSwitchEntityDescription(
+        key="spino_platform_cleaning",
+        entity_category=EntityCategory.CONFIG,
+        is_on_fn=lambda spino_data: spino_data.pool_state.platform_cleaning,
+        set_fn=lambda coordinator, value: coordinator.async_set_pool_toggle(
+            SpinoToggle.platform_cleaning, value
+        ),
+    ),
+    MammotionSpinoSwitchEntityDescription(
+        key="spino_waterline_parking",
+        entity_category=EntityCategory.CONFIG,
+        is_on_fn=lambda spino_data: spino_data.pool_state.waterline_parking,
+        set_fn=lambda coordinator, value: coordinator.async_set_pool_toggle(
+            SpinoToggle.waterline_parking, value
+        ),
+    ),
+)
 
 
 YUKA_CONFIG_SWITCH_ENTITIES: tuple[MammotionConfigSwitchEntityDescription, ...] = (
@@ -226,6 +274,12 @@ async def async_setup_entry(
                 entity = MammotionSwitchEntity(coordinator, entity_description)
                 entities.append(entity)
         async_add_entities(entities)
+
+    for spino in entry.runtime_data.spino:
+        async_add_entities(
+            MammotionSpinoSwitchEntity(spino.coordinator, entity_description)
+            for entity_description in SPINO_SWITCH_ENTITIES
+        )
 
 
 class MammotionSwitchEntity(MammotionBaseEntity, SwitchEntity, RestoreEntity):
@@ -624,3 +678,37 @@ def async_remove_entities(
         )
         if entity_id:
             registry.async_remove(entity_id)
+
+
+class MammotionSpinoSwitchEntity(MammotionBaseSpinoEntity, SwitchEntity):
+    """Representation of a Mammotion Spino pool cleaner switch entity."""
+
+    entity_description: MammotionSpinoSwitchEntityDescription
+
+    def __init__(
+        self,
+        coordinator: MammotionSpinoCoordinator,
+        entity_description: MammotionSpinoSwitchEntityDescription,
+    ) -> None:
+        """Initialize the Spino switch entity."""
+        super().__init__(coordinator, entity_description.key)
+        self.entity_description = entity_description
+        self._attr_translation_key = entity_description.key
+
+    @property
+    def is_on(self) -> bool:
+        """Return True if the toggle is on."""
+        return self.entity_description.is_on_fn(self.coordinator.data)
+
+    async def async_turn_on(self, **kwargs: Any) -> None:
+        """Turn the toggle on.
+
+        No explicit refresh — the device echoes the new value in a
+        ``bidire_comm_cmd`` response, which the reducer applies and the
+        coordinator's ``_on_state_changed`` callback pushes to this entity.
+        """
+        await self.entity_description.set_fn(self.coordinator, True)
+
+    async def async_turn_off(self, **kwargs: Any) -> None:
+        """Turn the toggle off (state updates via the device's response event)."""
+        await self.entity_description.set_fn(self.coordinator, False)

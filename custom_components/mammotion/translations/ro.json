@@ -226,7 +226,8 @@
           "RTK_OVER_DATALINK": "Antenă prin DataLink",
           "RTK_OVER_INTERNET": "Antenă prin Internet",
           "INAVI_NET_RTK": "iNavi NetRTK",
-          "INAVI_RTK_BOX": "Cutie iNavi RTK"
+          "INAVI_RTK_BOX": "Cutie iNavi RTK",
+          "UNKNOWN": "Necunoscut"
         }
       },
       "rtk_app_connect_type": {
@@ -331,6 +332,18 @@
       },
       "voice_on_off": {
         "name": "Voce pornit/oprit"
+      },
+      "spino_buzzer": {
+        "name": "Avertizor sonor"
+      },
+      "spino_turbo_clean": {
+        "name": "Curățare turbo"
+      },
+      "spino_platform_cleaning": {
+        "name": "Curățarea platformei"
+      },
+      "spino_waterline_parking": {
+        "name": "Parcare la linia de apă"
       }
     },
     "select": {
