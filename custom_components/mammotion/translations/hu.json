@@ -247,6 +247,34 @@
           "CON_BLE": "BLE",
           "CON_WIFI": "Wi-Fi"
         }
+      },
+      "spino_status": {
+        "name": "Állapot",
+        "state": {
+          "UNKNOWN": "Ismeretlen",
+          "IDLE": "Készenlét",
+          "PREPARE": "Előkészítés",
+          "WAIT_WATER": "Vízzel töltés",
+          "WORKING": "Dolgozik",
+          "PAUSE_GO_CHARGE": "Visszatérés töltésre (szüneteltetve)",
+          "END_GO_CHARGE": "Visszatérés töltésre",
+          "CHARGING": "Töltés",
+          "LEAVE_DOCK": "Elhagyja a dokkolót",
+          "RECALLING": "Visszatér"
+        }
+      },
+      "spino_work_mode": {
+        "name": "Tisztítási mód",
+        "state": {
+          "UNKNOWN": "Ismeretlen",
+          "RECHARGE": "Újratöltés",
+          "AUTO": "Mind",
+          "FLOOR": "Fenék",
+          "WALL": "Fal",
+          "ECO": "Eco",
+          "LINE": "Vízvonal",
+          "CUSTOM": "Egyéni"
+        }
       }
     },
     "button": {
@@ -436,6 +464,19 @@
         "state": {
           "MAN": "Férfi",
           "WOMAN": "Nő"
+        }
+      },
+      "spino_work_mode": {
+        "name": "Tisztítási mód",
+        "state": {
+          "UNKNOWN": "Ismeretlen",
+          "RECHARGE": "Újratöltés",
+          "AUTO": "Mind",
+          "FLOOR": "Fenék",
+          "WALL": "Fal",
+          "ECO": "Eco",
+          "LINE": "Vízvonal",
+          "CUSTOM": "Egyéni"
         }
       }
     },

@@ -247,6 +247,34 @@
           "COMPLETE": "Fuldført",
           "ABORTED": "Afbrudt"
         }
+      },
+      "spino_status": {
+        "name": "Status",
+        "state": {
+          "UNKNOWN": "Ukendt",
+          "IDLE": "Standby",
+          "PREPARE": "Forbereder",
+          "WAIT_WATER": "Fylder med vand",
+          "WORKING": "Arbejder",
+          "PAUSE_GO_CHARGE": "Vender tilbage til opladning (pause)",
+          "END_GO_CHARGE": "Vender tilbage til opladning",
+          "CHARGING": "Oplader",
+          "LEAVE_DOCK": "Forlader dock",
+          "RECALLING": "Vender tilbage"
+        }
+      },
+      "spino_work_mode": {
+        "name": "Rengøringstilstand",
+        "state": {
+          "UNKNOWN": "Ukendt",
+          "RECHARGE": "Genoplad",
+          "AUTO": "Alle",
+          "FLOOR": "Bund",
+          "WALL": "Væg",
+          "ECO": "Eco",
+          "LINE": "Vandlinje",
+          "CUSTOM": "Brugerdefineret"
+        }
       }
     },
     "button": {
@@ -436,6 +464,19 @@
           "off": "Slukket",
           "stop_mowing": "Stop klipning",
           "low_speed_mowing": "Klipning med lav hastighed"
+        }
+      },
+      "spino_work_mode": {
+        "name": "Rengøringstilstand",
+        "state": {
+          "UNKNOWN": "Ukendt",
+          "RECHARGE": "Genoplad",
+          "AUTO": "Alle",
+          "FLOOR": "Bund",
+          "WALL": "Væg",
+          "ECO": "Eco",
+          "LINE": "Vandlinje",
+          "CUSTOM": "Brugerdefineret"
         }
       }
     },

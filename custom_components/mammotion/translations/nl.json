@@ -247,6 +247,34 @@
           "COMPLETE": "Voltooid",
           "ABORTED": "Afgebroken"
         }
+      },
+      "spino_status": {
+        "name": "Status",
+        "state": {
+          "UNKNOWN": "Onbekend",
+          "IDLE": "Stand-by",
+          "PREPARE": "Voorbereiden",
+          "WAIT_WATER": "Vullen met water",
+          "WORKING": "Bezig",
+          "PAUSE_GO_CHARGE": "Terug naar laden (gepauzeerd)",
+          "END_GO_CHARGE": "Terug naar laden",
+          "CHARGING": "Aan het opladen",
+          "LEAVE_DOCK": "Verlaat dock",
+          "RECALLING": "Aan het terugkeren"
+        }
+      },
+      "spino_work_mode": {
+        "name": "Reinigingsmodus",
+        "state": {
+          "UNKNOWN": "Onbekend",
+          "RECHARGE": "Opladen",
+          "AUTO": "Alles",
+          "FLOOR": "Bodem",
+          "WALL": "Wand",
+          "ECO": "Eco",
+          "LINE": "Waterlijn",
+          "CUSTOM": "Aangepast"
+        }
       }
     },
     "button": {
@@ -436,6 +464,19 @@
           "off": "Uit",
           "stop_mowing": "Maaien stoppen",
           "low_speed_mowing": "Maaien op lage snelheid"
+        }
+      },
+      "spino_work_mode": {
+        "name": "Reinigingsmodus",
+        "state": {
+          "UNKNOWN": "Onbekend",
+          "RECHARGE": "Opladen",
+          "AUTO": "Alles",
+          "FLOOR": "Bodem",
+          "WALL": "Wand",
+          "ECO": "Eco",
+          "LINE": "Waterlijn",
+          "CUSTOM": "Aangepast"
         }
       }
     },

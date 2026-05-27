@@ -254,21 +254,29 @@
       "spino_status": {
         "name": "Status",
         "state": {
-          "READY": "Standby",
+          "UNKNOWN": "Unknown",
+          "IDLE": "Standby",
+          "PREPARE": "Preparing",
+          "WAIT_WATER": "Filling with water",
           "WORKING": "Working",
-          "WORKBACKING": "Returning",
-          "CHARGEBACKING": "Recharging"
+          "PAUSE_GO_CHARGE": "Returning to charge (paused)",
+          "END_GO_CHARGE": "Returning to charge",
+          "CHARGING": "Charging",
+          "LEAVE_DOCK": "Leaving dock",
+          "RECALLING": "Returning"
         }
       },
       "spino_work_mode": {
         "name": "Cleaning mode",
         "state": {
+          "UNKNOWN": "Unknown",
           "RECHARGE": "Recharge",
           "AUTO": "All",
           "FLOOR": "Floor",
           "WALL": "Wall",
           "ECO": "Eco",
-          "LINE": "Waterline"
+          "LINE": "Waterline",
+          "CUSTOM": "Custom"
         }
       }
     },
@@ -470,12 +478,14 @@
       "spino_work_mode": {
         "name": "Cleaning mode",
         "state": {
+          "UNKNOWN": "Unknown",
           "RECHARGE": "Recharge",
           "AUTO": "All",
           "FLOOR": "Floor",
           "WALL": "Wall",
           "ECO": "Eco",
-          "LINE": "Waterline"
+          "LINE": "Waterline",
+          "CUSTOM": "Custom"
         }
       },
       "spino_wall_material": {

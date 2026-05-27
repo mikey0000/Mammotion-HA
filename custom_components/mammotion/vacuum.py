@@ -17,17 +17,26 @@ from . import MammotionConfigEntry
 from .coordinator import MammotionSpinoCoordinator
 from .entity import MammotionBaseSpinoEntity
 
-# The fan-speed picker maps to the Spino cleaning work modes. RECHARGE is
-# excluded — it is the dock action exposed via return_to_base, not a speed.
+# The fan-speed picker maps to the Spino cleaning work modes. RECHARGE (the
+# dock action exposed via return_to_base) and UNKNOWN are excluded — neither is
+# a selectable cleaning speed.
+_FAN_SPEED_EXCLUDED = {SpinoWorkMode.RECHARGE, SpinoWorkMode.UNKNOWN}
 FAN_SPEED_MODES = [
-    mode.name for mode in SpinoWorkMode if mode is not SpinoWorkMode.RECHARGE
+    mode.name for mode in SpinoWorkMode if mode not in _FAN_SPEED_EXCLUDED
 ]
 
+# dev_statue_t.sys_status (0-8) collapsed to a HA vacuum activity, following the
+# app's STANDBY / WORKING / RETURNING bucketing in updateDeviceState().
 ACTIVITY_MAP = {
-    SpinoSysStatus.READY: VacuumActivity.DOCKED,
+    SpinoSysStatus.IDLE: VacuumActivity.IDLE,
+    SpinoSysStatus.PREPARE: VacuumActivity.IDLE,
+    SpinoSysStatus.WAIT_WATER: VacuumActivity.CLEANING,
     SpinoSysStatus.WORKING: VacuumActivity.CLEANING,
-    SpinoSysStatus.WORKBACKING: VacuumActivity.RETURNING,
-    SpinoSysStatus.CHARGEBACKING: VacuumActivity.RETURNING,
+    SpinoSysStatus.PAUSE_GO_CHARGE: VacuumActivity.RETURNING,
+    SpinoSysStatus.END_GO_CHARGE: VacuumActivity.RETURNING,
+    SpinoSysStatus.CHARGING: VacuumActivity.DOCKED,
+    SpinoSysStatus.LEAVE_DOCK: VacuumActivity.CLEANING,
+    SpinoSysStatus.RECALLING: VacuumActivity.RETURNING,
 }
 
 

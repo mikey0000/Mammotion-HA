@@ -44,6 +44,11 @@ _SSL_CONTEXT = _create_ws_ssl_context()
 #: until either the renew lands or this window passes.
 RENEW_TOKEN_DEBOUNCE_SECS: float = 30.0
 
+#: Seconds between FPV keep-alive pokes on 4G.  Over cellular the mower's video
+#: encoder stops publishing unless it is re-armed with ``refresh_fpv`` roughly
+#: every 3 s (the app's ``FPV4GVideoStateMannager.refreshInterval = 3000ms``).
+FPV_KEEPALIVE_INTERVAL_SECS: float = 3.0
+
 
 @dataclass
 class AddressEntry:
@@ -102,15 +107,24 @@ class AgoraWebSocketHandler:
         self,
         hass: HomeAssistant,
         recover_stream: Callable[[], Awaitable[None]] | None = None,
+        keepalive: Callable[[], Awaitable[bool]] | None = None,
     ) -> None:
         """Initialize the Agora WebSocket handler.
 
         ``recover_stream`` is an optional async callback invoked when the mower
         leaves the channel and doesn't rejoin within ``PEER_REJOIN_DEBOUNCE_SECS``
         — it should re-establish the stream (BLE sync + get_stream_subscription).
+
+        ``keepalive`` is an optional async callback invoked every
+        ``FPV_KEEPALIVE_INTERVAL_SECS`` while a session is live.  It re-arms the
+        mower's video encoder (``refresh_fpv``) and returns ``True`` to keep the
+        loop running, or ``False`` when no keep-alive is needed (e.g. the device
+        is on WiFi, which streams continuously without poking) — in which case the
+        loop stops quietly and the stream is left running.
         """
         self.hass = hass
         self._recover_stream = recover_stream
+        self._keepalive = keepalive
         self._websocket: ClientConnection | None = None
         self._connection_state = "DISCONNECTED"
         self._message_handlers: dict[str, Callable] = {}
@@ -122,6 +136,7 @@ class AgoraWebSocketHandler:
         # Background tasks
         self._message_loop_task: asyncio.Task | None = None
         self._ping_task: asyncio.Task | None = None
+        self._fpv_keepalive_task: asyncio.Task | None = None
         # Token refresh state
         self._rejoin_token: str | None = None
         self._session_id: str | None = None
@@ -263,6 +278,12 @@ class AgoraWebSocketHandler:
                         )
                         # Start ping-pong keepalive (every 3s, matching Agora SDK)
                         self._ping_task = asyncio.ensure_future(self._ping_loop())
+                        # Start FPV keep-alive (re-arms the encoder on 4G); no-op
+                        # when no callback is wired or the device is on WiFi.
+                        if self._keepalive is not None:
+                            self._fpv_keepalive_task = asyncio.ensure_future(
+                                self._fpv_keepalive_loop(agora_data.availableTime)
+                            )
                         return answer_sdp
 
                     # If join failed, close this connection and try next
@@ -437,6 +458,48 @@ class AgoraWebSocketHandler:
                         break
         except asyncio.CancelledError:
             _LOGGER.info("Ping loop cancelled")
+
+    async def _fpv_keepalive_loop(self, available_time: int | None) -> None:
+        """Re-arm the mower's video encoder while a 4G session is live.
+
+        Over cellular the encoder stops publishing unless poked with
+        ``refresh_fpv`` every ~3 s, so this calls the ``keepalive`` callback on
+        that cadence.  The callback returns ``False`` when no poking is needed
+        (e.g. on WiFi) and the loop exits, leaving the stream running.
+
+        ``available_time`` is the cloud's free-minutes budget (seconds) for 4G
+        streaming.  When it elapses the budget is exhausted, so the stream is
+        ended rather than left to silently rack up cellular data.  ``None`` or a
+        non-positive value means no local budget deadline.
+        """
+        deadline = (
+            time.monotonic() + available_time
+            if available_time and available_time > 0
+            else None
+        )
+        _LOGGER.info(
+            "Started FPV keep-alive (%.0fs interval, budget=%s)",
+            FPV_KEEPALIVE_INTERVAL_SECS,
+            available_time,
+        )
+        try:
+            while True:
+                should_continue = await self._keepalive()
+                if not should_continue:
+                    _LOGGER.debug("FPV keep-alive not required — stopping loop")
+                    return
+                if deadline is not None and time.monotonic() >= deadline:
+                    _LOGGER.warning(
+                        "4G free-streaming budget (%ss) exhausted — ending stream",
+                        available_time,
+                    )
+                    # Schedule rather than await: disconnect() cancels this task,
+                    # so awaiting it inline would cancel ourselves mid-call.
+                    self.hass.async_create_task(self.disconnect())
+                    return
+                await asyncio.sleep(FPV_KEEPALIVE_INTERVAL_SECS)
+        except asyncio.CancelledError:
+            _LOGGER.info("FPV keep-alive loop cancelled")
 
     async def _send_renew_token(self) -> None:
         """Send renew_token message with current token, debounced.
@@ -1830,6 +1893,9 @@ class AgoraWebSocketHandler:
         if self._peer_recover_task and not self._peer_recover_task.done():
             self._peer_recover_task.cancel()
             self._peer_recover_task = None
+        if self._fpv_keepalive_task and not self._fpv_keepalive_task.done():
+            self._fpv_keepalive_task.cancel()
+            self._fpv_keepalive_task = None
 
         # Close WebSocket
         if self._websocket:

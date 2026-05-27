@@ -247,6 +247,34 @@
           "COMPLETE": "Dokončano",
           "ABORTED": "Prekinjeno"
         }
+      },
+      "spino_status": {
+        "name": "Stanje",
+        "state": {
+          "UNKNOWN": "Neznano",
+          "IDLE": "Pripravljenost",
+          "PREPARE": "Priprava",
+          "WAIT_WATER": "Polnjenje z vodo",
+          "WORKING": "Deluje",
+          "PAUSE_GO_CHARGE": "Vračanje na polnjenje (zaustavljeno)",
+          "END_GO_CHARGE": "Vračanje na polnjenje",
+          "CHARGING": "Polnjenje",
+          "LEAVE_DOCK": "Zapušča postajo",
+          "RECALLING": "Vrača se"
+        }
+      },
+      "spino_work_mode": {
+        "name": "Način čiščenja",
+        "state": {
+          "UNKNOWN": "Neznano",
+          "RECHARGE": "Ponovno polnjenje",
+          "AUTO": "Vse",
+          "FLOOR": "Dno",
+          "WALL": "Stena",
+          "ECO": "Eko",
+          "LINE": "Vodna gladina",
+          "CUSTOM": "Po meri"
+        }
       }
     },
     "button": {
@@ -436,6 +464,19 @@
           "off": "Izklopljeno",
           "stop_mowing": "Ustavi košnjo",
           "low_speed_mowing": "Košnja z nizko hitrostjo"
+        }
+      },
+      "spino_work_mode": {
+        "name": "Način čiščenja",
+        "state": {
+          "UNKNOWN": "Neznano",
+          "RECHARGE": "Ponovno polnjenje",
+          "AUTO": "Vse",
+          "FLOOR": "Dno",
+          "WALL": "Stena",
+          "ECO": "Eko",
+          "LINE": "Vodna gladina",
+          "CUSTOM": "Po meri"
         }
       }
     },

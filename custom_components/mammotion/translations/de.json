@@ -247,6 +247,34 @@
           "COMPLETE": "Abgeschlossen",
           "ABORTED": "Abgebrochen"
         }
+      },
+      "spino_status": {
+        "name": "Status",
+        "state": {
+          "UNKNOWN": "Unbekannt",
+          "IDLE": "Bereitschaft",
+          "PREPARE": "Vorbereitung",
+          "WAIT_WATER": "Füllt mit Wasser",
+          "WORKING": "Arbeitet",
+          "PAUSE_GO_CHARGE": "Rückkehr zum Laden (pausiert)",
+          "END_GO_CHARGE": "Rückkehr zum Laden",
+          "CHARGING": "Lädt",
+          "LEAVE_DOCK": "Verlässt die Station",
+          "RECALLING": "Kehrt zurück"
+        }
+      },
+      "spino_work_mode": {
+        "name": "Reinigungsmodus",
+        "state": {
+          "UNKNOWN": "Unbekannt",
+          "RECHARGE": "Aufladen",
+          "AUTO": "Alle",
+          "FLOOR": "Boden",
+          "WALL": "Wand",
+          "ECO": "Eco",
+          "LINE": "Wasserlinie",
+          "CUSTOM": "Benutzerdefiniert"
+        }
       }
     },
     "button": {
@@ -436,6 +464,19 @@
           "off": "Aus",
           "stop_mowing": "Mähen stoppen",
           "low_speed_mowing": "Langsamfahrt"
+        }
+      },
+      "spino_work_mode": {
+        "name": "Reinigungsmodus",
+        "state": {
+          "UNKNOWN": "Unbekannt",
+          "RECHARGE": "Aufladen",
+          "AUTO": "Alle",
+          "FLOOR": "Boden",
+          "WALL": "Wand",
+          "ECO": "Eco",
+          "LINE": "Wasserlinie",
+          "CUSTOM": "Benutzerdefiniert"
         }
       }
     },

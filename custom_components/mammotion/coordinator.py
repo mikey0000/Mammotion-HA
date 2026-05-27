@@ -51,7 +51,7 @@ from pymammotion.data.model.device import (
 from pymammotion.data.model.device_config import OperationSettings, create_path_order
 from pymammotion.data.model.hash_list import AreaHashNameList, SvgMessage
 from pymammotion.data.model.pool_state import SpinoToggle
-from pymammotion.data.model.report_info import Maintain
+from pymammotion.data.model.report_info import Maintain, NetUsedType
 from pymammotion.data.mqtt.event import DeviceNotificationEventParams, ThingEventMessage
 from pymammotion.data.mqtt.properties import ThingPropertiesMessage
 from pymammotion.data.mqtt.status import StatusType, ThingStatusMessage
@@ -260,6 +260,15 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
     def get_stream_data(self) -> Response[StreamSubscriptionResponse]:
         """Return stream data."""
         return self._stream_data
+
+    @property
+    def is_on_4g(self) -> bool:
+        """Return True when the device's active network interface is 4G/cellular."""
+        device = self.manager.get_device_by_name(self.device_name)
+        try:
+            return device.report_data.connect.used_net == NetUsedType.MNET
+        except AttributeError:
+            return False
 
     async def join_webrtc_channel(self) -> None:
         """Start stream command."""
@@ -943,6 +952,21 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             "get_area_name_list",
             "toapp_all_hash_name",
             device_id=self.device.iot_id,
+        )
+
+    async def async_set_area_name(self, hash_id: int, name: str) -> None:
+        """Push a user-edited area name to the device.
+
+        The device acks with a single toapp_map_name_msg (hash + name) which the
+        pymammotion reducer applies to map.area_name, so no local write-back is
+        needed here.
+        """
+        await self.async_send_and_wait(
+            "set_area_name",
+            "toapp_map_name_msg",
+            device_id=self.device.iot_id,
+            hash_id=hash_id,
+            name=name,
         )
 
     async def async_relocate_charging_station(self) -> None:

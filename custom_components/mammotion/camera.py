@@ -138,7 +138,9 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         self._join_lock = asyncio.Lock()
         self.coordinator = coordinator
         self._agora_handler = AgoraWebSocketHandler(
-            hass, recover_stream=self._recover_stream
+            hass,
+            recover_stream=self._recover_stream,
+            keepalive=self._fpv_keepalive,
         )
         self.entity_description = entity_description
         self._attr_translation_key = entity_description.key
@@ -238,6 +240,27 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
     async def async_close_webrtc_session(self, session_id: str) -> None:
         """Close WebRTC session."""
         await self._agora_handler.disconnect()
+        # Tear the device encoder down cleanly (mirrors the app's vi_switch=0 on
+        # close). Harmless / no-op on new firmware that stops on its own.
+        try:
+            await self.coordinator.async_send_command(
+                "device_agora_join_channel_with_position", enter_state=0
+            )
+        except Exception as ex:  # noqa: BLE001
+            _LOGGER.debug("Leave-channel command failed on close: %s", ex)
+
+    async def _fpv_keepalive(self) -> bool:
+        """Re-arm the mower's video encoder on 4G; return False on WiFi.
+
+        Invoked by AgoraWebSocketHandler every few seconds while a session is
+        live. Over cellular the encoder stops publishing unless poked with
+        ``refresh_fpv``; on WiFi the stream is continuous, so return False to
+        stop the keep-alive loop without sending anything.
+        """
+        if not self.coordinator.is_on_4g:
+            return False
+        await self.coordinator.async_send_command("refresh_fpv")
+        return True
 
     async def _recover_stream(self) -> None:
         """Re-establish the stream after the mower drops out of the Agora channel.

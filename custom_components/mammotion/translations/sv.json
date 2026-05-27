@@ -247,6 +247,34 @@
           "COMPLETE": "Slutfört",
           "ABORTED": "Avbrutet"
         }
+      },
+      "spino_status": {
+        "name": "Status",
+        "state": {
+          "UNKNOWN": "Okänd",
+          "IDLE": "Standby",
+          "PREPARE": "Förbereder",
+          "WAIT_WATER": "Fyller med vatten",
+          "WORKING": "Arbetar",
+          "PAUSE_GO_CHARGE": "Återvänder för laddning (pausad)",
+          "END_GO_CHARGE": "Återvänder för laddning",
+          "CHARGING": "Laddar",
+          "LEAVE_DOCK": "Lämnar dockan",
+          "RECALLING": "Återvänder"
+        }
+      },
+      "spino_work_mode": {
+        "name": "Rengöringsläge",
+        "state": {
+          "UNKNOWN": "Okänd",
+          "RECHARGE": "Ladda om",
+          "AUTO": "Alla",
+          "FLOOR": "Botten",
+          "WALL": "Vägg",
+          "ECO": "Eco",
+          "LINE": "Vattenlinje",
+          "CUSTOM": "Anpassad"
+        }
       }
     },
     "button": {
@@ -436,6 +464,19 @@
           "off": "Av",
           "stop_mowing": "Stoppa klippning",
           "low_speed_mowing": "Klippning med låg hastighet"
+        }
+      },
+      "spino_work_mode": {
+        "name": "Rengöringsläge",
+        "state": {
+          "UNKNOWN": "Okänd",
+          "RECHARGE": "Ladda om",
+          "AUTO": "Alla",
+          "FLOOR": "Botten",
+          "WALL": "Vägg",
+          "ECO": "Eco",
+          "LINE": "Vattenlinje",
+          "CUSTOM": "Anpassad"
         }
       }
     },

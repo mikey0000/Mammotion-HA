@@ -247,6 +247,34 @@
           "COMPLETE": "Dokončeno",
           "ABORTED": "Přerušeno"
         }
+      },
+      "spino_status": {
+        "name": "Stav",
+        "state": {
+          "UNKNOWN": "Neznámý",
+          "IDLE": "Pohotovostní režim",
+          "PREPARE": "Příprava",
+          "WAIT_WATER": "Napouštění vody",
+          "WORKING": "Pracuje",
+          "PAUSE_GO_CHARGE": "Návrat k nabíjení (pozastaveno)",
+          "END_GO_CHARGE": "Návrat k nabíjení",
+          "CHARGING": "Nabíjení",
+          "LEAVE_DOCK": "Opouští dok",
+          "RECALLING": "Návrat"
+        }
+      },
+      "spino_work_mode": {
+        "name": "Režim čištění",
+        "state": {
+          "UNKNOWN": "Neznámý",
+          "RECHARGE": "Dobíjení",
+          "AUTO": "Vše",
+          "FLOOR": "Dno",
+          "WALL": "Stěna",
+          "ECO": "Eko",
+          "LINE": "Vodní hladina",
+          "CUSTOM": "Vlastní"
+        }
       }
     },
     "button": {
@@ -436,6 +464,19 @@
           "off": "Vypnuto",
           "stop_mowing": "Zastavit sekání",
           "low_speed_mowing": "Sekání nízkou rychlostí"
+        }
+      },
+      "spino_work_mode": {
+        "name": "Režim čištění",
+        "state": {
+          "UNKNOWN": "Neznámý",
+          "RECHARGE": "Dobíjení",
+          "AUTO": "Vše",
+          "FLOOR": "Dno",
+          "WALL": "Stěna",
+          "ECO": "Eko",
+          "LINE": "Vodní hladina",
+          "CUSTOM": "Vlastní"
         }
       }
     },

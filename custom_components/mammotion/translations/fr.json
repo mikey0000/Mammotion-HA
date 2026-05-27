@@ -247,6 +247,34 @@
           "COMPLETE": "Terminé",
           "ABORTED": "Abandonné"
         }
+      },
+      "spino_status": {
+        "name": "Statut",
+        "state": {
+          "UNKNOWN": "Inconnu",
+          "IDLE": "Veille",
+          "PREPARE": "Préparation",
+          "WAIT_WATER": "Remplissage d'eau",
+          "WORKING": "En marche",
+          "PAUSE_GO_CHARGE": "Retour en charge (en pause)",
+          "END_GO_CHARGE": "Retour en charge",
+          "CHARGING": "En charge",
+          "LEAVE_DOCK": "Quitte la station",
+          "RECALLING": "Retour"
+        }
+      },
+      "spino_work_mode": {
+        "name": "Mode de nettoyage",
+        "state": {
+          "UNKNOWN": "Inconnu",
+          "RECHARGE": "Recharge",
+          "AUTO": "Tout",
+          "FLOOR": "Fond",
+          "WALL": "Paroi",
+          "ECO": "Eco",
+          "LINE": "Ligne d'eau",
+          "CUSTOM": "Personnalisé"
+        }
       }
     },
     "button": {
@@ -436,6 +464,19 @@
           "off": "Désactivé",
           "stop_mowing": "Arrêter de tondre",
           "low_speed_mowing": "Tonte à vitesse réduite"
+        }
+      },
+      "spino_work_mode": {
+        "name": "Mode de nettoyage",
+        "state": {
+          "UNKNOWN": "Inconnu",
+          "RECHARGE": "Recharge",
+          "AUTO": "Tout",
+          "FLOOR": "Fond",
+          "WALL": "Paroi",
+          "ECO": "Eco",
+          "LINE": "Ligne d'eau",
+          "CUSTOM": "Personnalisé"
         }
       }
     },

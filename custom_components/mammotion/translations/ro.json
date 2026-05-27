@@ -247,6 +247,34 @@
           "COMPLETE": "Finalizat",
           "ABORTED": "Abandonat"
         }
+      },
+      "spino_status": {
+        "name": "Stare",
+        "state": {
+          "UNKNOWN": "Necunoscut",
+          "IDLE": "Așteptare",
+          "PREPARE": "Pregătire",
+          "WAIT_WATER": "Umplere cu apă",
+          "WORKING": "Lucrează",
+          "PAUSE_GO_CHARGE": "Revine la încărcare (în pauză)",
+          "END_GO_CHARGE": "Revine la încărcare",
+          "CHARGING": "Încărcare",
+          "LEAVE_DOCK": "Părăsește stația",
+          "RECALLING": "Se întoarce"
+        }
+      },
+      "spino_work_mode": {
+        "name": "Mod de curățare",
+        "state": {
+          "UNKNOWN": "Necunoscut",
+          "RECHARGE": "Reîncărcare",
+          "AUTO": "Toate",
+          "FLOOR": "Fund",
+          "WALL": "Perete",
+          "ECO": "Eco",
+          "LINE": "Linia apei",
+          "CUSTOM": "Personalizat"
+        }
       }
     },
     "button": {
@@ -436,6 +464,19 @@
           "off": "Oprit",
           "stop_mowing": "Oprire cosire",
           "low_speed_mowing": "Cosire cu viteză redusă"
+        }
+      },
+      "spino_work_mode": {
+        "name": "Mod de curățare",
+        "state": {
+          "UNKNOWN": "Necunoscut",
+          "RECHARGE": "Reîncărcare",
+          "AUTO": "Toate",
+          "FLOOR": "Fund",
+          "WALL": "Perete",
+          "ECO": "Eco",
+          "LINE": "Linia apei",
+          "CUSTOM": "Personalizat"
         }
       }
     },

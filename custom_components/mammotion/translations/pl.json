@@ -247,6 +247,34 @@
           "COMPLETE": "Ukończono",
           "ABORTED": "Przerwano"
         }
+      },
+      "spino_status": {
+        "name": "Stan",
+        "state": {
+          "UNKNOWN": "Nieznany",
+          "IDLE": "Czuwanie",
+          "PREPARE": "Przygotowanie",
+          "WAIT_WATER": "Napełnianie wodą",
+          "WORKING": "Pracuje",
+          "PAUSE_GO_CHARGE": "Powrót do ładowania (wstrzymano)",
+          "END_GO_CHARGE": "Powrót do ładowania",
+          "CHARGING": "Ładowanie",
+          "LEAVE_DOCK": "Opuszcza stację",
+          "RECALLING": "Powraca"
+        }
+      },
+      "spino_work_mode": {
+        "name": "Tryb czyszczenia",
+        "state": {
+          "UNKNOWN": "Nieznany",
+          "RECHARGE": "Doładowanie",
+          "AUTO": "Wszystko",
+          "FLOOR": "Dno",
+          "WALL": "Ściana",
+          "ECO": "Eco",
+          "LINE": "Linia wody",
+          "CUSTOM": "Niestandardowy"
+        }
       }
     },
     "button": {
@@ -436,6 +464,19 @@
           "off": "Wył.",
           "stop_mowing": "Zatrzymaj koszenie",
           "low_speed_mowing": "Koszenie z małą prędkością"
+        }
+      },
+      "spino_work_mode": {
+        "name": "Tryb czyszczenia",
+        "state": {
+          "UNKNOWN": "Nieznany",
+          "RECHARGE": "Doładowanie",
+          "AUTO": "Wszystko",
+          "FLOOR": "Dno",
+          "WALL": "Ściana",
+          "ECO": "Eco",
+          "LINE": "Linia wody",
+          "CUSTOM": "Niestandardowy"
         }
       }
     },

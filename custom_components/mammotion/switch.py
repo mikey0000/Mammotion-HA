@@ -462,6 +462,9 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
         self._area = entity_description.area
         self._attr_extra_state_attributes = {"hash": self._area}
         self._attr_is_on = self._area in self.coordinator.operation_settings.areas
+        # Last custom name we pushed to the device, so an unrelated registry
+        # update (icon, area assignment, …) doesn't re-send set_area_name.
+        self._pushed_name: str | None = None
 
     def update_name(self, new_name: str) -> None:
         """Update the display name when the device provides a real name for this area."""
@@ -470,6 +473,7 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
             name=new_name,
             translation_placeholders={"name": new_name},
         )
+        self._pushed_name = new_name
         if self.hass is not None:
             self.async_write_ha_state()
 
@@ -501,9 +505,28 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
     async def async_added_to_hass(self) -> None:
         """Call when entity about to be added to hass."""
         await super().async_added_to_hass()
+        # Seed with any existing name override so we only push live user edits.
+        self._pushed_name = self.registry_entry.name if self.registry_entry else None
         last_state = await self.async_get_last_state()
         if last_state and last_state.state == STATE_ON:
             await self.async_turn_on()
+
+    @callback
+    def async_registry_entry_updated(self) -> None:
+        """Push a user-edited entity name to the device as this area's name."""
+        super().async_registry_entry_updated()
+        # Pushing area names back to the device is only supported on Luba Pro
+        # (Luba 2) and newer models.
+        if not DeviceType.is_luba_pro(self.coordinator.device_name):
+            return
+        if self.registry_entry:
+            if new_name := self.registry_entry.name:
+                if new_name == self._pushed_name:
+                    return
+                self._pushed_name = new_name
+                self.hass.async_create_task(
+                    self.coordinator.async_set_area_name(self._area, new_name)
+                )
 
     async def async_update(self) -> None:
         """Update the entity state."""

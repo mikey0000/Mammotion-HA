@@ -247,6 +247,34 @@
           "COMPLETE": "Completato",
           "ABORTED": "Interrotto"
         }
+      },
+      "spino_status": {
+        "name": "Stato",
+        "state": {
+          "UNKNOWN": "Sconosciuto",
+          "IDLE": "Standby",
+          "PREPARE": "Preparazione",
+          "WAIT_WATER": "Riempimento d'acqua",
+          "WORKING": "In funzione",
+          "PAUSE_GO_CHARGE": "Ritorno alla ricarica (in pausa)",
+          "END_GO_CHARGE": "Ritorno alla ricarica",
+          "CHARGING": "In carica",
+          "LEAVE_DOCK": "Lascia la base",
+          "RECALLING": "Di ritorno"
+        }
+      },
+      "spino_work_mode": {
+        "name": "Modalità di pulizia",
+        "state": {
+          "UNKNOWN": "Sconosciuto",
+          "RECHARGE": "Ricarica",
+          "AUTO": "Tutto",
+          "FLOOR": "Fondo",
+          "WALL": "Parete",
+          "ECO": "Eco",
+          "LINE": "Linea di galleggiamento",
+          "CUSTOM": "Personalizzato"
+        }
       }
     },
     "button": {
@@ -436,6 +464,19 @@
           "off": "Disattivato",
           "stop_mowing": "Ferma falciatura",
           "low_speed_mowing": "Falciatura a bassa velocità"
+        }
+      },
+      "spino_work_mode": {
+        "name": "Modalità di pulizia",
+        "state": {
+          "UNKNOWN": "Sconosciuto",
+          "RECHARGE": "Ricarica",
+          "AUTO": "Tutto",
+          "FLOOR": "Fondo",
+          "WALL": "Parete",
+          "ECO": "Eco",
+          "LINE": "Linea di galleggiamento",
+          "CUSTOM": "Personalizzato"
         }
       }
     },
