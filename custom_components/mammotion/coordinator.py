@@ -2237,19 +2237,31 @@ class MammotionSpinoCoordinator(MammotionBaseUpdateCoordinator[PoolCleanerDevice
         pushed to entities via the inherited ``_on_state_changed`` callback.
         """
         await super()._async_setup()
-        for toggle in SpinoToggle:
+        # Start the status report stream so the device pushes dev_statue_t
+        # (sys_status / work_mode / battery) — the pool cleaner doesn't report
+        # unsolicited otherwise. See get_report_cfg_spino / async_subscribe_status.
+
+        try:
             with contextlib.suppress(
-                DeviceOfflineException,
                 GatewayTimeoutException,
                 NoTransportAvailableError,
+                HomeAssistantError,
             ):
-                await self.async_send_and_wait(
-                    "read_write_device",
-                    "bidire_comm_cmd",
-                    rw_id=int(toggle),
-                    context=0,
-                    rw=0,
-                )
+                await self.async_subscribe_status()
+            for toggle in SpinoToggle:
+                with contextlib.suppress(
+                    GatewayTimeoutException,
+                    NoTransportAvailableError,
+                ):
+                    await self.async_send_and_wait(
+                        "read_write_device",
+                        "bidire_comm_cmd",
+                        rw_id=int(toggle),
+                        context=0,
+                        rw=0,
+                    )
+        except DeviceOfflineException:
+            self.device.online = False
 
     async def get_coordinator_data(
         self, device: PoolCleanerDevice
@@ -2326,6 +2338,18 @@ class MammotionSpinoCoordinator(MammotionBaseUpdateCoordinator[PoolCleanerDevice
             await http.start_ota_upgrade(self.device.iot_id, version)
 
     # === Pool cleaner control helpers (called by control entities) ===
+
+    async def async_subscribe_status(self) -> None:
+        """Start the Spino status report stream (called once at setup).
+
+        Subscribes to RIT_CONNECT + RIT_DEV_STA with count=0 (continuous) so the
+        device pushes dev_statue_t frames; PoolStateReducer applies them.
+        """
+        await self.async_send_command("get_report_cfg_spino", count=0)
+
+    async def async_request_status(self) -> None:
+        """One-shot Spino status poll, backing the refresh-status button."""
+        await self.async_send_command("get_report_cfg_spino", count=1)
 
     async def async_set_work_mode(self, work_mode: int) -> None:
         """Set the Spino cleaning work mode."""

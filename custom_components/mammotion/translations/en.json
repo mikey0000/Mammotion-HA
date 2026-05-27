@@ -322,6 +322,9 @@
       },
       "spino_fetch_line": {
         "name": "Fetch cleaning route"
+      },
+      "spino_refresh_status": {
+        "name": "Refresh status"
       }
     },
     "switch": {

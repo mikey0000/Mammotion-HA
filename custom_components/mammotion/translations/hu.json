@@ -313,6 +313,9 @@
       },
       "restart_mower": {
         "name": "Fűnyíró újraindítása"
+      },
+      "spino_refresh_status": {
+        "name": "Állapot frissítése"
       }
     },
     "switch": {

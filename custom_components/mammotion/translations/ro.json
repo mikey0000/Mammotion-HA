@@ -313,6 +313,9 @@
       },
       "restart_mower": {
         "name": "Repornire mașina de tuns"
+      },
+      "spino_refresh_status": {
+        "name": "Reîmprospătează starea"
       }
     },
     "switch": {

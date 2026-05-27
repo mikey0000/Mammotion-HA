@@ -313,6 +313,9 @@
       },
       "restart_mower": {
         "name": "Maaier herstarten"
+      },
+      "spino_refresh_status": {
+        "name": "Status vernieuwen"
       }
     },
     "switch": {

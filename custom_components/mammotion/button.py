@@ -59,6 +59,11 @@ SPINO_BUTTON_SENSORS: tuple[MammotionSpinoButtonEntityDescription, ...] = (
         entity_category=EntityCategory.CONFIG,
         press_fn=lambda coordinator: coordinator.async_fetch_pool_line(),
     ),
+    MammotionSpinoButtonEntityDescription(
+        key="spino_refresh_status",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        press_fn=lambda coordinator: coordinator.async_request_status(),
+    ),
 )
 
 

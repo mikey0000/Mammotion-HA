@@ -313,6 +313,9 @@
       },
       "restart_mower": {
         "name": "Uruchom ponownie kosiarkę"
+      },
+      "spino_refresh_status": {
+        "name": "Odśwież stan"
       }
     },
     "switch": {

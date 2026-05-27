@@ -313,6 +313,9 @@
       },
       "restart_mower": {
         "name": "Restartovat sekačku"
+      },
+      "spino_refresh_status": {
+        "name": "Obnovit stav"
       }
     },
     "switch": {

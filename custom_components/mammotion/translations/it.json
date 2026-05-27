@@ -313,6 +313,9 @@
       },
       "restart_mower": {
         "name": "Riavvia il tagliaerba"
+      },
+      "spino_refresh_status": {
+        "name": "Aggiorna stato"
       }
     },
     "switch": {

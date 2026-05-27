@@ -231,7 +231,7 @@ class MammotionBaseSpinoEntity(CoordinatorEntity[MammotionSpinoCoordinator]):  #
             model=spino_device.name,
             model_id=self.coordinator.device.product_key,
             sw_version=spino_device.device_firmwares.device_version,
-            suggested_area="Garden",
+            suggested_area="Pool",
         )
 
     @property

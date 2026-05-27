@@ -313,6 +313,9 @@
       },
       "restart_mower": {
         "name": "Starta om gräsklipparen"
+      },
+      "spino_refresh_status": {
+        "name": "Uppdatera status"
       }
     },
     "switch": {

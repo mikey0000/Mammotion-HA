@@ -313,6 +313,9 @@
       },
       "restart_mower": {
         "name": "Ponovni zagon kosilnice"
+      },
+      "spino_refresh_status": {
+        "name": "Osveži stanje"
       }
     },
     "switch": {

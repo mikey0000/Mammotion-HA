@@ -313,6 +313,9 @@
       },
       "restart_mower": {
         "name": "Redémarrer la tondeuse"
+      },
+      "spino_refresh_status": {
+        "name": "Actualiser le statut"
       }
     },
     "switch": {
