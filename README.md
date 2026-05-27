@@ -11,9 +11,11 @@ This integration allows you to control and monitor Mammotion products, e.g robot
 ## Roadmap 🗺️
 
 - [x] Bluetooth (BLE) support
-- [x] Wi-Fi support (Including SIM 3G)
+- [x] Wi-Fi support (Including SIM 3G/4G)
+- [x] Camera stream
 - [ ] Scheduling
 - [ ] Mapping and zone management
+- [x] Maps
 - [x] Firmware updates
 - [x] Automations
 - [ ] More...
@@ -26,6 +28,8 @@ This integration allows you to control and monitor Mammotion products, e.g robot
 - Start a mow based on configuration
 - Start an existing scheduled task/s
 - More features being added all the time!
+
+- Supports Spino pool cleaners
 
 ## Prerequisites 📋
 
