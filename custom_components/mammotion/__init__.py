@@ -373,6 +373,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
         )
 
     if cloud_available:
+
+        async def _on_unrecoverable_auth_error(_: Exception) -> None:
+            """Trigger HA re-authentication when all automatic recovery has failed."""
+            LOGGER.error(
+                "Mammotion account %s: all auth recovery attempts exhausted — prompting re-login",
+                account,
+            )
+            await mammotion.stop()
+            raise ConfigEntryAuthFailed()
+
+        mammotion.on_unrecoverable_auth_error = _on_unrecoverable_auth_error
         store_cloud_credentials(hass, entry, mammotion)
 
         mower_devices, mammotion_rtk_devices, spino_devices = _build_device_list(
@@ -605,18 +616,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
     entry.runtime_data = mammotion_devices
 
     mammotion.setup_all_mower_watchers()
-
-    if has_cloud_account:
-
-        async def _on_unrecoverable_auth_error(_: Exception) -> None:
-            """Trigger HA re-authentication when all automatic recovery has failed."""
-            LOGGER.error(
-                "Mammotion account %s: all auth recovery attempts exhausted — prompting re-login",
-                account,
-            )
-            entry.async_start_reauth(hass)
-
-        mammotion.on_unrecoverable_auth_error = _on_unrecoverable_auth_error
 
     async def shutdown_mammotion(_: Event | None = None) -> None:
         await mammotion.stop()

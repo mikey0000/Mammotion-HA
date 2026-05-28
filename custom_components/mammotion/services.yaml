@@ -457,3 +457,309 @@ svg_delete:
       selector:
         number:
           mode: box
+# === Task / schedule CRUD =================================================
+# Modify ops (rename / set_task_enabled / delete / copy / edit) target an
+# existing task button entity (mower or Spino).  Create and refresh target
+# any entity belonging to the device — typically the lawn_mower or vacuum.
+
+rename_task:
+  target:
+    entity:
+      integration: mammotion
+      domain: button
+  fields:
+    name:
+      required: true
+      example: "Front lawn morning"
+      selector:
+        text:
+
+set_task_enabled:
+  target:
+    entity:
+      integration: mammotion
+      domain: button
+  fields:
+    enabled:
+      required: true
+      example: true
+      selector:
+        boolean:
+
+delete_task:
+  target:
+    entity:
+      integration: mammotion
+      domain: button
+
+copy_task:
+  target:
+    entity:
+      integration: mammotion
+      domain: button
+  fields:
+    name:
+      required: false
+      example: "Copy of front lawn"
+      selector:
+        text:
+
+edit_task:
+  target:
+    entity:
+      integration: mammotion
+      domain: button
+  fields:
+    name:
+      required: false
+      selector:
+        text:
+    enabled:
+      required: false
+      selector:
+        boolean:
+    weeks:
+      required: false
+      example: "[1, 2, 3, 4, 5]"
+      selector:
+        object:
+    start_time:
+      required: false
+      example: "07:30"
+      selector:
+        text:
+    end_time:
+      required: false
+      example: "09:00"
+      selector:
+        text:
+    start_date:
+      required: false
+      example: "2026-06-01"
+      selector:
+        text:
+    end_date:
+      required: false
+      example: "2026-08-31"
+      selector:
+        text:
+    trigger_type:
+      required: false
+      example: 0
+      selector:
+        number:
+          min: 0
+          max: 3
+          mode: box
+    day:
+      required: false
+      example: 1
+      selector:
+        number:
+          min: 0
+          mode: box
+    # --- Mower-only fields -----------------------------------------------
+    knife_height:
+      required: false
+      example: 60
+      selector:
+        number:
+          min: 20
+          max: 100
+          unit_of_measurement: "mm"
+          mode: box
+    speed:
+      required: false
+      example: 0.4
+      selector:
+        number:
+          min: 0
+          mode: box
+    edge_mode:
+      required: false
+      example: 1
+      selector:
+        number:
+          min: 0
+          max: 2
+          mode: box
+    route_angle:
+      required: false
+      example: 0
+      selector:
+        number:
+          min: 0
+          max: 179
+          mode: box
+    route_spacing:
+      required: false
+      example: 25
+      selector:
+        number:
+          min: 0
+          mode: box
+    zone_hashs:
+      required: false
+      example: "[123456789, 987654321]"
+      selector:
+        object:
+    # --- Spino-only fields -----------------------------------------------
+    work_mode:
+      required: false
+      example: 1
+      selector:
+        number:
+          min: 0
+          max: 6
+          mode: box
+    sub_mode:
+      required: false
+      example: "[2, 3]"
+      selector:
+        object:
+    operating_power:
+      required: false
+      example: 50
+      selector:
+        number:
+          min: 0
+          mode: box
+    starttime:
+      required: false
+      example: 1717000000
+      selector:
+        number:
+          min: 0
+          mode: box
+
+create_task:
+  target:
+    entity:
+      integration: mammotion
+  fields:
+    name:
+      required: true
+      example: "Daily lawn"
+      selector:
+        text:
+    enabled:
+      required: false
+      default: true
+      selector:
+        boolean:
+    weeks:
+      required: false
+      example: "[1, 2, 3, 4, 5]"
+      selector:
+        object:
+    start_time:
+      required: false
+      example: "07:30"
+      selector:
+        text:
+    end_time:
+      required: false
+      example: "09:00"
+      selector:
+        text:
+    start_date:
+      required: false
+      example: "2026-06-01"
+      selector:
+        text:
+    end_date:
+      required: false
+      example: "2026-08-31"
+      selector:
+        text:
+    trigger_type:
+      required: false
+      example: 0
+      selector:
+        number:
+          min: 0
+          max: 3
+          mode: box
+    day:
+      required: false
+      example: 1
+      selector:
+        number:
+          min: 0
+          mode: box
+    knife_height:
+      required: false
+      example: 60
+      selector:
+        number:
+          min: 20
+          max: 100
+          unit_of_measurement: "mm"
+          mode: box
+    speed:
+      required: false
+      example: 0.4
+      selector:
+        number:
+          min: 0
+          mode: box
+    edge_mode:
+      required: false
+      example: 1
+      selector:
+        number:
+          min: 0
+          max: 2
+          mode: box
+    route_angle:
+      required: false
+      example: 0
+      selector:
+        number:
+          min: 0
+          max: 179
+          mode: box
+    route_spacing:
+      required: false
+      example: 25
+      selector:
+        number:
+          min: 0
+          mode: box
+    zone_hashs:
+      required: false
+      example: "[123456789, 987654321]"
+      selector:
+        object:
+    work_mode:
+      required: false
+      example: 1
+      selector:
+        number:
+          min: 0
+          max: 6
+          mode: box
+    sub_mode:
+      required: false
+      example: "[2, 3]"
+      selector:
+        object:
+    operating_power:
+      required: false
+      example: 50
+      selector:
+        number:
+          min: 0
+          mode: box
+    starttime:
+      required: false
+      example: 1717000000
+      selector:
+        number:
+          min: 0
+          mode: box
+
+refresh_tasks:
+  target:
+    entity:
+      integration: mammotion

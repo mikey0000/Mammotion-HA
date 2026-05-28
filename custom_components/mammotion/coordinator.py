@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import dataclasses
 import datetime
 import json
+import secrets
 import time
 from abc import abstractmethod
 from collections.abc import Callable, Mapping
@@ -49,8 +51,8 @@ from pymammotion.data.model.device import (
     RTKBaseStationDevice,
 )
 from pymammotion.data.model.device_config import OperationSettings, create_path_order
-from pymammotion.data.model.hash_list import AreaHashNameList, SvgMessage
-from pymammotion.data.model.pool_state import SpinoToggle
+from pymammotion.data.model.hash_list import AreaHashNameList, Plan, SvgMessage
+from pymammotion.data.model.pool_state import PoolPlan, SpinoToggle
 from pymammotion.data.model.report_info import Maintain, NetUsedType
 from pymammotion.data.mqtt.event import DeviceNotificationEventParams, ThingEventMessage
 from pymammotion.data.mqtt.properties import ThingPropertiesMessage
@@ -77,6 +79,7 @@ from pymammotion.transport.base import (
 from pymammotion.transport.ble import BLETransport
 from pymammotion.utility.constant import MOWING_ACTIVE_MODES, WorkMode
 from pymammotion.utility.device_type import DeviceType
+from pymammotion.utility.plan_id import make_copy_name, new_mower_plan_id
 from pymammotion.utility.svg import chunk_svg_messages
 from webrtc_models import RTCIceServer
 
@@ -422,9 +425,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
                 translation_domain=DOMAIN, translation_key="api_limit_exceeded"
             ) from exc
         except NoTransportAvailableError as exc:
-            raise HomeAssistantError(
-                translation_domain=DOMAIN, translation_key="command_failed"
-            ) from exc
+            LOGGER.debug(f"No Transport: {exc}")
         except (
             GatewayTimeoutException,
             CommandTimeoutError,
@@ -1125,6 +1126,81 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         await self.async_send_and_wait(
             "single_schedule", "todev_planjob_set", plan_id=plan_id
         )
+
+    # ------------------------------------------------------------------
+    # Mower task CRUD — backed by NavPlanJobSet on the wire.
+    # All helpers look up the existing Plan from ``self.data.map.plan`` so
+    # round-trip operations (enable / rename / edit / copy) preserve the
+    # rest of the plan (reserved bytes, recurrence, areas, …) verbatim.
+    # See ``docs/tasks_and_schedules.md`` § 1.
+    # ------------------------------------------------------------------
+
+    def _lookup_mower_plan(self, plan_id: str) -> Plan:
+        """Return the stored mower Plan keyed by ``plan_id`` or raise."""
+        plan = cast(MowingDevice, self.data).map.plan.get(plan_id)
+        if plan is None:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="task_not_found",
+                translation_placeholders={"plan_id": plan_id},
+            )
+        return plan
+
+    async def async_create_mower_task(self, plan: Plan) -> None:
+        """Create a brand-new mower schedule with a freshly generated plan_id.
+
+        Caller passes a fully-populated Plan **without** a plan_id; this
+        helper assigns one via :func:`new_mower_plan_id` so the device
+        treats the write as a create rather than an edit.
+        """
+        plan_with_id = dataclasses.replace(plan, plan_id=new_mower_plan_id())
+        await self.async_send_command("create_plan", plan=plan_with_id)
+
+    async def async_edit_mower_task(self, plan: Plan) -> None:
+        """Edit an existing mower schedule (``sub_cmd=4``)."""
+        await self.async_send_command("edit_plan", plan=plan)
+
+    async def async_rename_mower_task(self, plan_id: str, new_name: str) -> None:
+        """Rename the mower schedule identified by ``plan_id`` to ``new_name``."""
+        plan = self._lookup_mower_plan(plan_id)
+        await self.async_send_command("rename_plan", plan=plan, new_name=new_name)
+
+    async def async_set_mower_task_enabled(self, plan_id: str, enabled: bool) -> None:
+        """Flip the enable flag (``reserved[2]``) on an existing mower schedule.
+
+        The existing plan is round-tripped verbatim so the other reserved
+        bytes (knife height, edge mode, …) are preserved.
+        """
+        plan = self._lookup_mower_plan(plan_id)
+        await self.async_send_command("enable_plan", plan=plan, enabled=enabled)
+
+    async def async_delete_mower_task(self, plan_id: str) -> None:
+        """Delete the mower schedule identified by ``plan_id`` (``sub_cmd=3``)."""
+        await self.async_send_command("delete_plan_by_id", plan_id=plan_id)
+
+    async def async_copy_mower_task(
+        self, plan_id: str, new_name: str | None = None
+    ) -> None:
+        """Duplicate the mower schedule under a new id + auto-generated name.
+
+        Reuses :func:`make_copy_name` against the currently stored plans so
+        successive copies produce ``Copy-1, Copy-2, …`` without collision.
+        """
+        plan = self._lookup_mower_plan(plan_id)
+        existing_names = {
+            p.task_name for p in cast(MowingDevice, self.data).map.plan.values()
+        }
+        resolved_name = new_name or make_copy_name(existing_names)
+        await self.async_send_command(
+            "copy_plan",
+            plan=plan,
+            new_name=resolved_name,
+            new_plan_id=new_mower_plan_id(),
+        )
+
+    async def async_refresh_mower_tasks(self) -> None:
+        """Re-fetch the mower schedule list via :class:`PlanFetchSaga`."""
+        await self.manager.start_plan_sync(self.device_name)
 
     async def async_restart_mower(self) -> None:
         """Restart mower."""
@@ -2374,6 +2450,81 @@ class MammotionSpinoCoordinator(MammotionBaseUpdateCoordinator[PoolCleanerDevice
     async def async_fetch_pool_line(self) -> None:
         """Request the pool cleaning route from the device."""
         await self.async_send_command("get_sp_line")
+
+    # ------------------------------------------------------------------
+    # Spino task CRUD — backed by spino_ctrl.PlanJobSet on the wire.
+    # See ``docs/tasks_and_schedules.md`` § 2.  All ``enabled`` arguments
+    # are in NATURAL orientation; the builder inverts at the boundary.
+    # ------------------------------------------------------------------
+
+    def _lookup_spino_plan(self, jobid: int) -> PoolPlan:
+        """Return the stored Spino PoolPlan keyed by ``jobid`` or raise."""
+        plan = self.data.plans.get(jobid)
+        if plan is None:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="task_not_found",
+                translation_placeholders={"plan_id": str(jobid)},
+            )
+        return plan
+
+    @staticmethod
+    def _new_spino_jobid() -> int:
+        """Generate a fresh 64-bit non-zero ``jobid`` for a new Spino plan.
+
+        ``secrets.randbits(63)`` keeps the high bit clear (fits in a signed
+        uint64-as-int comfortably); ``| 1`` avoids the all-zero corner.
+        """
+        return secrets.randbits(63) | 1
+
+    async def async_create_spino_task(self, plan: PoolPlan) -> None:
+        """Create a brand-new Spino schedule with a freshly generated jobid."""
+        plan_with_id = dataclasses.replace(plan, jobid=self._new_spino_jobid())
+        await self.async_send_command("create_spino_plan", plan=plan_with_id)
+
+    async def async_edit_spino_task(self, plan: PoolPlan) -> None:
+        """Edit an existing Spino schedule (``cmd = EDIT = 4``)."""
+        await self.async_send_command("edit_spino_plan", plan=plan)
+
+    async def async_rename_spino_task(self, jobid: int, new_name: str) -> None:
+        """Rename the Spino schedule identified by ``jobid`` to ``new_name``."""
+        plan = self._lookup_spino_plan(jobid)
+        await self.async_send_command("rename_spino_plan", plan=plan, new_name=new_name)
+
+    async def async_set_spino_task_enabled(self, jobid: int, enabled: bool) -> None:
+        """Flip the enabled flag on an existing Spino schedule.
+
+        Round-trips the stored plan; the wire inversion (``enable = 0 if
+        enabled else 1``) happens in the pymammotion builder.
+        """
+        plan = self._lookup_spino_plan(jobid)
+        await self.async_send_command("enable_spino_plan", plan=plan, enabled=enabled)
+
+    async def async_delete_spino_task(self, jobid: int) -> None:
+        """Delete the Spino schedule identified by ``jobid``."""
+        await self.async_send_command("delete_spino_plan", jobid=jobid)
+
+    async def async_copy_spino_task(
+        self, jobid: int, new_name: str | None = None
+    ) -> None:
+        """Duplicate the Spino schedule under a new jobid + auto-generated name."""
+        plan = self._lookup_spino_plan(jobid)
+        existing_names = {p.jobname for p in self.data.plans.values()}
+        resolved_name = new_name or make_copy_name(existing_names)
+        await self.async_send_command(
+            "copy_spino_plan",
+            plan=plan,
+            new_name=resolved_name,
+            new_jobid=self._new_spino_jobid(),
+        )
+
+    async def async_refresh_spino_tasks(self) -> None:
+        """Re-fetch every Spino schedule via :class:`SpinoPlanFetchSaga`.
+
+        Used after ``delete_all`` (no per-plan echo) and on user request via
+        the schedule-refresh service.
+        """
+        await self.manager.start_spino_plan_sync(self.device_name)
 
     async def async_set_pool_toggle(self, toggle: SpinoToggle, enabled: bool) -> None:
         """Write a Spino on/off toggle (buzzer / turbo / platform / waterline).

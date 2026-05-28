@@ -839,6 +839,208 @@
           "description": "Hash nadřazené sekací oblasti."
         }
       }
+    },
+    "rename_task": {
+      "name": "Přejmenovat úlohu",
+      "description": "Přejmenuje existující plán (sekačka nebo bazénový čistič). Vyberte entitu tlačítka úlohy.",
+      "fields": {
+        "name": {
+          "name": "Nový název",
+          "description": "New display name for the task."
+        }
+      }
+    },
+    "set_task_enabled": {
+      "name": "Povolit / zakázat úlohu",
+      "description": "Přepne příznak povolení plánu bez jeho smazání.",
+      "fields": {
+        "enabled": {
+          "name": "Povoleno",
+          "description": "True to enable the schedule, false to disable it."
+        }
+      }
+    },
+    "delete_task": {
+      "name": "Smazat úlohu",
+      "description": "Trvale smaže plán."
+    },
+    "copy_task": {
+      "name": "Kopírovat úlohu",
+      "description": "Duplikuje plán pod novým ID. Bez názvu se použije 'Copy-N'.",
+      "fields": {
+        "name": {
+          "name": "Nový název",
+          "description": "Override the auto-generated 'Copy-N' name."
+        }
+      }
+    },
+    "edit_task": {
+      "name": "Upravit úlohu",
+      "description": "Upraví podmnožinu polí plánu.",
+      "fields": {
+        "name": {
+          "name": "Name",
+          "description": "Display name."
+        },
+        "enabled": {
+          "name": "Enabled",
+          "description": "Whether the schedule is active."
+        },
+        "weeks": {
+          "name": "Weekdays",
+          "description": "List of weekday integers (0 = Sunday … 6 = Saturday) the schedule runs on."
+        },
+        "start_time": {
+          "name": "Start time",
+          "description": "HH:MM (mower only)."
+        },
+        "end_time": {
+          "name": "End time",
+          "description": "HH:MM (mower only)."
+        },
+        "start_date": {
+          "name": "Start date",
+          "description": "YYYY-MM-DD."
+        },
+        "end_date": {
+          "name": "End date",
+          "description": "YYYY-MM-DD."
+        },
+        "trigger_type": {
+          "name": "Trigger type",
+          "description": "0 = weekly, 1 = day interval, 2 = date, 3 = run once."
+        },
+        "day": {
+          "name": "Day interval",
+          "description": "Interval in days when trigger_type is 1 (DAY)."
+        },
+        "knife_height": {
+          "name": "Cut height",
+          "description": "Mower-only blade height in millimetres."
+        },
+        "speed": {
+          "name": "Speed",
+          "description": "Mower: driving speed (float). Spino: fixed32 speed value (int)."
+        },
+        "edge_mode": {
+          "name": "Edge mode",
+          "description": "Mower-only: 0 = none, 1 = once, 2 = twice."
+        },
+        "route_angle": {
+          "name": "Route angle",
+          "description": "Mower-only: mowing pattern angle 0–179 degrees."
+        },
+        "route_spacing": {
+          "name": "Route spacing",
+          "description": "Mower-only: spacing between mow lines in cm."
+        },
+        "zone_hashs": {
+          "name": "Zone hashes",
+          "description": "Mower-only: list of area hashes (fixed64) covered by this schedule."
+        },
+        "work_mode": {
+          "name": "Work mode",
+          "description": "Spino-only: 0 = recharge, 1 = AUTO, 2 = FLOOR, 3 = WALL, 4 = ECO, 5 = LINE, 6 = CUSTOM."
+        },
+        "sub_mode": {
+          "name": "Sub-modes",
+          "description": "Spino-only: list of APP_WORK values for multi-stage cleaning."
+        },
+        "operating_power": {
+          "name": "Operating power",
+          "description": "Spino-only: suction power (fixed32 int)."
+        },
+        "starttime": {
+          "name": "Start timestamp",
+          "description": "Spino-only: unix timestamp (seconds) for the start of the cleaning session."
+        }
+      }
+    },
+    "create_task": {
+      "name": "Vytvořit úlohu",
+      "description": "Vytvoří nový plán na zařízení.",
+      "fields": {
+        "name": {
+          "name": "Name",
+          "description": "Display name for the new schedule."
+        },
+        "enabled": {
+          "name": "Enabled",
+          "description": "Whether the schedule starts enabled."
+        },
+        "weeks": {
+          "name": "Weekdays",
+          "description": "List of weekday integers (0 = Sunday … 6 = Saturday)."
+        },
+        "start_time": {
+          "name": "Start time",
+          "description": "HH:MM (mower)."
+        },
+        "end_time": {
+          "name": "End time",
+          "description": "HH:MM (mower)."
+        },
+        "start_date": {
+          "name": "Start date",
+          "description": "YYYY-MM-DD."
+        },
+        "end_date": {
+          "name": "End date",
+          "description": "YYYY-MM-DD."
+        },
+        "trigger_type": {
+          "name": "Trigger type",
+          "description": "0 = weekly, 1 = day interval, 2 = date, 3 = run once."
+        },
+        "day": {
+          "name": "Day interval",
+          "description": "Interval in days for trigger_type = 1."
+        },
+        "knife_height": {
+          "name": "Cut height",
+          "description": "Mower-only blade height in millimetres."
+        },
+        "speed": {
+          "name": "Speed",
+          "description": "Mower or Spino speed."
+        },
+        "edge_mode": {
+          "name": "Edge mode",
+          "description": "Mower-only."
+        },
+        "route_angle": {
+          "name": "Route angle",
+          "description": "Mower-only."
+        },
+        "route_spacing": {
+          "name": "Route spacing",
+          "description": "Mower-only."
+        },
+        "zone_hashs": {
+          "name": "Zone hashes",
+          "description": "Mower-only: list of area hashes covered."
+        },
+        "work_mode": {
+          "name": "Work mode",
+          "description": "Spino-only cleaning mode."
+        },
+        "sub_mode": {
+          "name": "Sub-modes",
+          "description": "Spino-only: list of APP_WORK values."
+        },
+        "operating_power": {
+          "name": "Operating power",
+          "description": "Spino-only."
+        },
+        "starttime": {
+          "name": "Start timestamp",
+          "description": "Spino-only: unix start time."
+        }
+      }
+    },
+    "refresh_tasks": {
+      "name": "Obnovit úlohy",
+      "description": "Znovu načte všechny plány ze zařízení."
     }
   },
   "exceptions": {
@@ -871,6 +1073,9 @@
     },
     "cloud_setup_failed": {
       "message": "Nelze se připojit ke cloudu Mammotion. Zkontrolujte síť a zkuste integraci znovu načíst."
+    },
+    "task_not_found": {
+      "message": "Úloha {plan_id} nebyla v zařízení nalezena. Obnovte plán a zkuste to znovu."
     }
   }
 }

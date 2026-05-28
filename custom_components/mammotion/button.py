@@ -12,6 +12,7 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pymammotion.data.model.hash_list import Plan
+from pymammotion.data.model.pool_state import PoolPlan
 from pymammotion.transport.base import TransportType
 from pymammotion.utility.device_type import DeviceType
 
@@ -46,6 +47,20 @@ class MammotionSpinoButtonEntityDescription(ButtonEntityDescription):
     """Describes a Mammotion Spino pool cleaner button entity."""
 
     press_fn: Callable[[MammotionSpinoCoordinator], Awaitable[None]]
+
+
+@dataclass(frozen=True, kw_only=True)
+class MammotionSpinoTaskButtonEntityDescription(ButtonEntityDescription):
+    """Describes a dynamic per-schedule Spino task button entity.
+
+    Mirror of :class:`MammotionTaskButtonSensorEntityDescription` for the
+    Spino pool cleaner. Spino plans are keyed by a 64-bit ``jobid``; we
+    stringify it for ``key`` / ``unique_id`` so it survives the HA entity
+    registry's string-only constraint.
+    """
+
+    jobid: int
+    press_fn: Callable[[MammotionSpinoCoordinator, int], Awaitable[None]]
 
 
 SPINO_BUTTON_SENSORS: tuple[MammotionSpinoButtonEntityDescription, ...] = (
@@ -193,6 +208,22 @@ async def async_setup_entry(
             MammotionSpinoButtonEntity(spino.coordinator, entity_description)
             for entity_description in SPINO_BUTTON_SENSORS
         )
+
+        # Dynamic per-schedule task buttons — mirrors the mower setup but
+        # keyed by Spino ``jobid`` (int).  Primary purpose: provide an
+        # addressable HA entity so the rename / enable / delete / copy
+        # services can target a specific schedule via entity_id.
+        added_spino_tasks: set[int] = set()
+        spino_task_entities_by_id: dict[int, MammotionSpinoTaskButtonEntity] = {}
+        update_spino_tasks = partial(
+            async_add_spino_task_entities,
+            spino.coordinator,
+            added_spino_tasks,
+            spino_task_entities_by_id,
+            async_add_entities,
+        )
+        update_spino_tasks()
+        spino.coordinator.async_add_listener(update_spino_tasks)
 
 
 class MammotionButtonSensorEntity(MammotionBaseEntity, ButtonEntity):
@@ -346,6 +377,134 @@ def async_remove_entities(
         )
         if entity_id:
             registry.async_remove(entity_id)
+
+
+class MammotionSpinoTaskButtonEntity(MammotionBaseSpinoEntity, ButtonEntity):
+    """Per-schedule Spino task button.
+
+    Exists primarily so the schedule-modify services (rename / enable /
+    disable / delete / copy / edit) can target an addressable HA entity
+    via ``entity_id``.
+
+    Spino does not expose a "start this schedule now" command in the
+    proto we have today, so the press triggers a refresh of the whole
+    schedule list — a useful default and the closest analogue to the
+    mower's ``start_task`` press semantics.
+    """
+
+    entity_description: MammotionSpinoTaskButtonEntityDescription
+    _attr_has_entity_name = True
+    _attr_entity_category = EntityCategory.CONFIG
+
+    def __init__(
+        self,
+        coordinator: MammotionSpinoCoordinator,
+        entity_description: MammotionSpinoTaskButtonEntityDescription,
+    ) -> None:
+        """Initialize the Spino task button entity."""
+        super().__init__(coordinator, entity_description.key)
+        self.entity_description = entity_description
+        self._attr_translation_key = "spino_task"
+        # ``task_id`` mirrors the mower entity's attribute name so the
+        # service resolution helper can read it generically.  Stored as a
+        # string for HA-attribute compatibility; the int form is exposed
+        # via ``jobid`` for callers that prefer it.
+        self._attr_extra_state_attributes = {
+            "task_id": str(entity_description.jobid),
+            "jobid": entity_description.jobid,
+        }
+
+    def update_name(self, new_name: str) -> None:
+        """Update the display name when the plan's jobname changes."""
+        self.entity_description = dataclass_replace(
+            self.entity_description,
+            name=new_name,
+            translation_placeholders={"name": new_name},
+        )
+        if self.hass is not None:
+            self.async_write_ha_state()
+
+    async def async_press(self) -> None:
+        """Refresh all Spino schedules from the device.
+
+        Spino has no per-schedule "execute now" command, so the press
+        action triggers a full schedule re-sync (matching the spirit of
+        the mower task button while staying within the proto we support).
+        """
+        await self.entity_description.press_fn(
+            self.coordinator, self.entity_description.jobid
+        )
+
+
+def _update_spino_task_names(
+    coordinator: MammotionSpinoCoordinator,
+    added_tasks: set[int],
+    task_entities_by_id: dict[int, MammotionSpinoTaskButtonEntity],
+) -> None:
+    """Rename Spino task button entities whose plan jobname has changed."""
+    for jobid in added_tasks:
+        plan: PoolPlan | None = coordinator.data.plans.get(jobid)
+        if plan is None:
+            continue
+        entity = task_entities_by_id.get(jobid)
+        if entity is None:
+            continue
+        if entity.entity_description.name != plan.jobname:
+            entity.update_name(plan.jobname)
+
+
+@callback
+def async_add_spino_task_entities(
+    coordinator: MammotionSpinoCoordinator,
+    added_tasks: set[int],
+    task_entities_by_id: dict[int, MammotionSpinoTaskButtonEntity],
+    async_add_entities: AddEntitiesCallback,
+) -> None:
+    """Sync the per-schedule Spino task buttons against ``coordinator.data.plans``.
+
+    Mirror of :func:`async_add_task_entities` for the Spino path — adds a
+    button when a new ``jobid`` appears, renames when ``jobname`` changes,
+    and removes via the entity registry when a plan disappears.
+    """
+    if coordinator.data is None:
+        return
+
+    button_entities: list[MammotionSpinoTaskButtonEntity] = []
+    current = set(coordinator.data.plans.keys())
+    new_tasks = current - added_tasks
+
+    for jobid in new_tasks:
+        plan = coordinator.data.plans.get(jobid)
+        if plan is None:
+            continue
+        desc = MammotionSpinoTaskButtonEntityDescription(
+            key=str(jobid),
+            jobid=jobid,
+            name=plan.jobname,
+            translation_placeholders={"name": plan.jobname},
+            press_fn=lambda coord, _jobid: coord.async_refresh_spino_tasks(),
+        )
+        entity = MammotionSpinoTaskButtonEntity(coordinator, desc)
+        button_entities.append(entity)
+        task_entities_by_id[jobid] = entity
+        added_tasks.add(jobid)
+
+    _update_spino_task_names(coordinator, added_tasks, task_entities_by_id)
+
+    old_tasks = added_tasks - current
+    if old_tasks:
+        registry = er.async_get(coordinator.hass)
+        for jobid in old_tasks:
+            entity_id = registry.async_get_entity_id(
+                BUTTON_DOMAIN, DOMAIN, f"{coordinator.device_name}_{jobid}"
+            )
+            if entity_id:
+                registry.async_remove(entity_id)
+            task_entities_by_id.pop(jobid, None)
+        added_tasks -= old_tasks
+
+    if button_entities:
+        async_add_entities(button_entities)
 
 
 class MammotionSpinoButtonEntity(MammotionBaseSpinoEntity, ButtonEntity):

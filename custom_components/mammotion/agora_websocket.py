@@ -195,7 +195,7 @@ class AgoraWebSocketHandler:
 
         """
         if self._joined or self._connection_state != "DISCONNECTED":
-            _LOGGER.info(
+            _LOGGER.debug(
                 "Already joined (state=%s) — disconnecting before new join for session %s",
                 self._connection_state,
                 session_id,
@@ -203,7 +203,7 @@ class AgoraWebSocketHandler:
             await self.disconnect()
 
         _LOGGER.debug("Starting Agora WebSocket connection for session %s", session_id)
-        _LOGGER.info("Agora data: %s", agora_data)
+        _LOGGER.debug("Agora data: %s", agora_data)
 
         # Fresh UUIDs for this session's answer SDP msid attributes
         self._msid_stream_id = 1
@@ -247,7 +247,7 @@ class AgoraWebSocketHandler:
                     )
                     self._websocket = websocket
                     self._connection_state = "CONNECTED"
-                    _LOGGER.info("Connected to Agora WebSocket: %s", ws_url)
+                    _LOGGER.debug("Connected to Agora WebSocket: %s", ws_url)
 
                     # Store SDP info for later use in trickle ICE
                     self._sdp_info = ortc_info
@@ -262,7 +262,7 @@ class AgoraWebSocketHandler:
                         session_id,
                     )
                     await websocket.send(json.dumps(join_message))
-                    _LOGGER.info("Sent join message to Agora %s", join_message)
+                    _LOGGER.debug("Sent join message to Agora %s", join_message)
 
                     # Wait for join response and get answer SDP
                     answer_sdp = await self._wait_for_join_response(
@@ -333,7 +333,7 @@ class AgoraWebSocketHandler:
                 async for message in websocket:
                     try:
                         response = json.loads(message)
-                        _LOGGER.info("Received Agora message: %s", response)
+                        _LOGGER.debug("Received Agora message: %s", response)
 
                         message_type = response.get("_type")
                         message_id = response.get("_id")
@@ -385,7 +385,7 @@ class AgoraWebSocketHandler:
 
         Handles: on_add_video_stream, subscribe, token refresh, p2p_lost, etc.
         """
-        _LOGGER.info("Started background message loop for session %s", session_id)
+        _LOGGER.debug("Started background message loop for session %s", session_id)
         try:
             async for message in websocket:
                 try:
@@ -404,7 +404,7 @@ class AgoraWebSocketHandler:
                         continue
 
                     # Log all messages (non-ping)
-                    _LOGGER.info(
+                    _LOGGER.debug(
                         "[msg_loop] type=%s result=%s msg=%s",
                         message_type,
                         message_result,
@@ -420,7 +420,7 @@ class AgoraWebSocketHandler:
                         await self._send_renew_token()
 
                     elif message_type == "on_token_privilege_did_expire":
-                        _LOGGER.error("Token expired! Connection may drop.")
+                        _LOGGER.debug("Token expired! Connection may drop.")
                         # Allow the next renew attempt by clearing the debounce —
                         # the existing token is gone, so a fresh renew is needed
                         # regardless of how recently we last tried.
@@ -430,19 +430,19 @@ class AgoraWebSocketHandler:
                     _LOGGER.error("[msg_loop] Failed to parse message: %s", ex)
 
         except asyncio.CancelledError:
-            _LOGGER.info("Message loop cancelled")
+            _LOGGER.debug("Message loop cancelled")
         except WebSocketException as ex:
             _LOGGER.warning("WebSocket closed in message loop: %s", ex)
         finally:
             self._connection_state = "DISCONNECTED"
-            _LOGGER.info("Message loop ended")
+            _LOGGER.debug("Message loop ended")
 
     async def _ping_loop(self) -> None:
         """Send ping messages every 3 seconds to keep the WebSocket alive.
 
         Matches the Agora SDK's handlePingPong interval.
         """
-        _LOGGER.info("Started ping-pong keepalive (3s interval)")
+        _LOGGER.debug("Started ping-pong keepalive (3s interval)")
         try:
             while self._websocket and self._connection_state == "CONNECTED":
                 await asyncio.sleep(3)
@@ -457,7 +457,7 @@ class AgoraWebSocketHandler:
                         _LOGGER.warning("Ping failed: %s", ex)
                         break
         except asyncio.CancelledError:
-            _LOGGER.info("Ping loop cancelled")
+            _LOGGER.debug("Ping loop cancelled")
 
     async def _fpv_keepalive_loop(self, available_time: int | None) -> None:
         """Re-arm the mower's video encoder while a 4G session is live.
@@ -529,7 +529,7 @@ class AgoraWebSocketHandler:
                 "_message": {"token": self._agora_data.token},
             }
             await self._websocket.send(json.dumps(renew_msg))
-            _LOGGER.warning("Token will expire soon, sent renew_token")
+            _LOGGER.debug("Token will expire soon, sent renew_token")
         except (WebSocketException, ConnectionError) as ex:
             _LOGGER.error("Failed to send renew_token: %s", ex)
             # Reset debounce so the next event can retry rather than waiting
@@ -548,7 +548,7 @@ class AgoraWebSocketHandler:
 
         # Mark as joined so trickle ICE can start
         self._joined = True
-        _LOGGER.info("Join successful - trickle ICE now enabled")
+        _LOGGER.debug("Join successful - trickle ICE now enabled")
 
         # Store rejoin token for reconnection (mirrors agoraRTC_N.js)
         self._rejoin_token = message.get("rejoin_token")
@@ -557,19 +557,19 @@ class AgoraWebSocketHandler:
         self._vid = message.get("vid", 0)
         self._channel_name = message.get("cname", "")
         if self._rejoin_token:
-            _LOGGER.info("Stored rejoin_token: %s...", self._rejoin_token[:20])
+            _LOGGER.debug("Stored rejoin_token: %s...", self._rejoin_token[:20])
 
         if not ortc:
             _LOGGER.error("No ORTC parameters in join success response")
-            _LOGGER.info("Full response message: %s", message)
+            _LOGGER.debug("Full response message: %s", message)
             return None
 
-        _LOGGER.info("ORTC parameters: %s", ortc)
+        _LOGGER.debug("ORTC parameters: %s", ortc)
 
         # Inject fingerprint from Agora Response (Auth) to ensure we have the correct server certificates.
         # This fixes the "bytes sent but not received" issue where DTLS fails due to missing/mismatched fingerprints.
         if agora_response:
-            _LOGGER.info("Syncing fingerprints from Agora Auth Response")
+            _LOGGER.debug("Syncing fingerprints from Agora Auth Response")
             dtls_params = ortc.setdefault("dtlsParameters", {})
             current_fps = dtls_params.get("fingerprints", [])
             seen_fp_values = {
@@ -599,7 +599,7 @@ class AgoraWebSocketHandler:
 
             if injected_count > 0:
                 dtls_params["fingerprints"] = current_fps
-                _LOGGER.info(
+                _LOGGER.debug(
                     "Injected %d new fingerprints from Auth Response", injected_count
                 )
 
@@ -609,7 +609,7 @@ class AgoraWebSocketHandler:
         # answer_sdp = generate_answer_from_ortc(ortc, sdp_info.parsed_sdp, force_setup="active")
         answer_sdp = self._generate_answer_sdp(ortc, sdp_info)
         if answer_sdp:
-            _LOGGER.info("Generated answer SDP from Agora ORTC parameters")
+            _LOGGER.debug("Generated answer SDP from Agora ORTC parameters")
             # _LOGGER.info("Generated SDP: %s", answer_sdp)
 
             # Store answer SDP for later retrieval
@@ -625,7 +625,7 @@ class AgoraWebSocketHandler:
         message = response.get("_message", {})
         sdp = message.get("sdp")
         if sdp:
-            _LOGGER.info("Received direct answer SDP from Agora")
+            _LOGGER.debug("Received direct answer SDP from Agora")
             return sdp
         return None
 
@@ -638,7 +638,7 @@ class AgoraWebSocketHandler:
         message = response.get("_message", {})
         uid = message.get("uid")
         proxy = message.get("proxy", False)
-        _LOGGER.info("P2P connection established (proxy=%s, uid=%s)", proxy, uid)
+        _LOGGER.debug("P2P connection established (proxy=%s, uid=%s)", proxy, uid)
         if uid and self._uid and uid != self._uid:
             _LOGGER.warning(
                 "on_p2p_ok uid mismatch: expected %s, got %s",
@@ -673,12 +673,12 @@ class AgoraWebSocketHandler:
     async def _handle_rtp_capability_change(self, response: dict[str, Any]) -> None:
         """Handle RTP capability change notification."""
         message = response.get("_message", {})
-        _LOGGER.info("RTP capabilities changed: %s", message)
+        _LOGGER.debug("RTP capabilities changed: %s", message)
         # Store capabilities if needed
         video_codecs = message.get("video_codec", [])
         extmap_allow_mixed = message.get("extmap_allow_mixed", False)
         web_av1_svc = message.get("web_av1_svc", False)
-        _LOGGER.info(
+        _LOGGER.debug(
             "Video codecs: %s, extmap_allow_mixed: %s, web_av1_svc: %s",
             video_codecs,
             extmap_allow_mixed,
@@ -696,13 +696,13 @@ class AgoraWebSocketHandler:
         uid = message.get("uid")
         if uid:
             self._online_users.add(uid)
-            _LOGGER.info("User %s came online", uid)
+            _LOGGER.debug("User %s came online", uid)
 
             # Check if we already have a pending video stream for this user
             if uid in self._video_streams and self._websocket:
                 stream_info = self._video_streams[uid]
                 if not stream_info.get("subscribed"):
-                    _LOGGER.info(
+                    _LOGGER.debug(
                         "User %s is online and has pending video stream, subscribing now",
                         uid,
                     )
@@ -710,7 +710,13 @@ class AgoraWebSocketHandler:
                     await self._send_subscribe(
                         stream_id=uid,
                         ssrc_id=stream_info["ssrcId"],
-                        codec="vp8",
+                        # Mammotion mowers publish H264 from their hardware
+                        # encoder; subscribing with codec="vp8" tells the SFU to
+                        # forward a non-existent VP8 stream, so no video RTP
+                        # arrives.  Use the codec the publisher actually sent
+                        # (logged on on_add_video_stream) when available, else
+                        # default to h264.
+                        codec=stream_info.get("codec") or "h264",
                     )
 
     async def _handle_add_video_stream(self, response: dict[str, Any]) -> None:
@@ -725,14 +731,21 @@ class AgoraWebSocketHandler:
         ssrc_id = message.get("ssrcId")
         rtx_ssrc_id = message.get("rtxSsrcId")
         cname = message.get("cname")
+        # Some Agora SFU versions include a codec hint on the add-stream
+        # notification; capture it if present so subscribe asks for the same.
+        stream_codec = (message.get("codec") or "").lower() or None
 
         if uid:
-            _LOGGER.info(
-                "Video stream added - uid: %s, ssrcId: %s, rtxSsrcId: %s, cname: %s",
+            # Full message dump so any unknown fields (codec hints, profile, …)
+            # are visible without re-enabling DEBUG.
+            _LOGGER.debug(
+                "on_add_video_stream — uid=%s ssrcId=%s rtxSsrcId=%s cname=%s codec=%s full=%s",
                 uid,
                 ssrc_id,
                 rtx_ssrc_id,
                 cname,
+                stream_codec,
+                message,
             )
 
             # Store stream info
@@ -740,16 +753,24 @@ class AgoraWebSocketHandler:
                 "ssrcId": ssrc_id,
                 "rtxSsrcId": rtx_ssrc_id,
                 "cname": cname,
+                "codec": stream_codec,
                 "subscribed": False,
             }
 
             # Auto-subscribe if user is already online
             if uid in self._online_users and self._websocket:
-                _LOGGER.info(
+                _LOGGER.debug(
                     "User %s already online, subscribing to video stream now", uid
                 )
                 self._video_streams[uid]["subscribed"] = True
-                await self._send_subscribe(stream_id=uid, ssrc_id=ssrc_id, codec="vp8")
+                await self._send_subscribe(
+                    stream_id=uid,
+                    ssrc_id=ssrc_id,
+                    # Mammotion mowers publish H264 from their hardware encoder.
+                    # Subscribing with the wrong codec means the SFU has no
+                    # matching stream to forward and no video RTP arrives.
+                    codec=stream_codec or "h264",
+                )
 
     async def _handle_user_offline(self, response: dict[str, Any]) -> None:
         """Handle user offline notification.
@@ -764,7 +785,7 @@ class AgoraWebSocketHandler:
         uid = message.get("uid")
         reason = message.get("reason", "unknown")
         if uid:
-            _LOGGER.info("User %s went offline (reason: %s)", uid, reason)
+            _LOGGER.debug("User %s went offline (reason: %s)", uid, reason)
             self._online_users.discard(uid)
 
             # Unsubscribe if we had an active subscription
@@ -777,7 +798,7 @@ class AgoraWebSocketHandler:
             # renew the token so it is fresh when the device rejoins, and arm a
             # debounced stream-recovery in case it doesn't come back.
             if uid != self._uid and self._websocket:
-                _LOGGER.info(
+                _LOGGER.debug(
                     "Peer %s left the channel while our uid %s is still connected — refreshing token",
                     uid,
                     self._uid,
@@ -821,7 +842,7 @@ class AgoraWebSocketHandler:
             return
         self._last_peer_recover_at = now
 
-        _LOGGER.info(
+        _LOGGER.debug(
             "Peer %s did not rejoin within %.0fs — recovering stream (BLE sync + subscription)",
             peer_uid,
             self.PEER_REJOIN_DEBOUNCE_SECS,
@@ -860,7 +881,7 @@ class AgoraWebSocketHandler:
             },
         }
 
-        _LOGGER.info("Sending unsubscribe message: %s", message)
+        _LOGGER.debug("Sending unsubscribe message: %s", message)
         await self._websocket.send(json.dumps(message))
 
     def _create_join_message(
@@ -951,14 +972,14 @@ class AgoraWebSocketHandler:
             },
         }
 
-        _LOGGER.info("Sending set_client_role message: %s", message)
+        _LOGGER.debug("Sending set_client_role message: %s", message)
         await self._websocket.send(json.dumps(message))
 
     async def _send_subscribe(
         self,
         stream_id: int,
         ssrc_id: int,
-        codec: str = "vp8",
+        codec: str = "h264",
         stream_type: str = "video",
         mode: str = "live",
         p2p_id: int = 1,
@@ -971,7 +992,7 @@ class AgoraWebSocketHandler:
         Args:
             stream_id: Stream ID (usually the uid)
             ssrc_id: SSRC ID from on_add_video_stream
-            codec: Video codec (default: "vp8")
+            codec: Video codec (default: "h264")
             stream_type: Stream type (default: "video")
             mode: Mode (default: "live")
             p2p_id: P2P ID (default: 1)
@@ -1001,7 +1022,7 @@ class AgoraWebSocketHandler:
             },
         }
 
-        _LOGGER.info("Sending subscribe message: %s", message)
+        _LOGGER.debug("Sending subscribe message: %s", message)
         await self._websocket.send(json.dumps(message))
 
     def _convert_candidates_to_ortc(self) -> list[dict[str, Any]]:
@@ -1053,7 +1074,7 @@ class AgoraWebSocketHandler:
                 )
                 continue
 
-        _LOGGER.info("Converted %d candidates to ORTC format", len(ortc_candidates))
+        _LOGGER.debug("Converted %d candidates to ORTC format", len(ortc_candidates))
         return ortc_candidates
 
     @staticmethod
@@ -1108,7 +1129,7 @@ class AgoraWebSocketHandler:
         try:
             # Parse SDP using sdp_transform
             parsed_sdp = sdp_parse(offer_sdp)
-            _LOGGER.info("Parsed SDP structure: %s", parsed_sdp)
+            _LOGGER.debug("Parsed SDP structure: %s", parsed_sdp)
 
             # Extract fingerprint
             fingerprint = ""
@@ -1340,14 +1361,35 @@ class AgoraWebSocketHandler:
 
             _LOGGER.debug("ICE params: %s", ice_params)
             _LOGGER.debug("DTLS params: %s", dtls_params)
-            _LOGGER.debug("RTP caps: %s", rtp_caps)
+            # Promoted to INFO: this single line is the ground truth for which
+            # codec(s)/PTs Agora advertises for the publisher. If video fails to
+            # decode in the browser, comparing this to the browser's offered
+            # video codecs in about:webrtc pinpoints a PT/codec mismatch (the
+            # MID extension is intentionally not negotiated — see below — so
+            # PT is the only demux key the browser has for video RTP).
+            _LOGGER.debug("Agora rtpCapabilities: %s", rtp_caps)
+            video_caps_summary = [
+                f"PT={c.get('payloadType')} {c.get('rtpMap', {}).get('encodingName')}"
+                f"/{c.get('rtpMap', {}).get('clockRate')}"
+                for c in (rtp_caps.get("videoCodecs", []) or [])
+            ]
+            audio_caps_summary = [
+                f"PT={c.get('payloadType')} {c.get('rtpMap', {}).get('encodingName')}"
+                f"/{c.get('rtpMap', {}).get('clockRate')}"
+                for c in (rtp_caps.get("audioCodecs", []) or [])
+            ]
+            _LOGGER.debug(
+                "Negotiated codecs — video: %s | audio: %s",
+                video_caps_summary or "(none)",
+                audio_caps_summary or "(none)",
+            )
 
             # Extract ICE credentials from ORTC (these are OUR credentials for the answer)
             ortc_candidates = ice_params.get("candidates", []) or []
             ice_ufrag = ice_params.get("iceUfrag", "") or ""
             ice_pwd = ice_params.get("icePwd", "") or ""
 
-            _LOGGER.info(
+            _LOGGER.debug(
                 "Answer SDP will use ICE ufrag: %s, "
                 "and will include %d candidates from Agora response",
                 ice_ufrag,
@@ -1553,7 +1595,7 @@ class AgoraWebSocketHandler:
                     sdp_lines.append(cl)
 
                 if specific:
-                    _LOGGER.info(
+                    _LOGGER.debug(
                         "Added %d ICE candidates to media section %s (type=%s)",
                         len(specific),
                         mid,
@@ -1841,7 +1883,7 @@ class AgoraWebSocketHandler:
         message loop to exit naturally), then re-runs connect_and_join with
         the stored parameters and renews the token.
         """
-        _LOGGER.info("Restarting WebSocket connection...")
+        _LOGGER.debug("Restarting WebSocket connection...")
 
         if self._ping_task and not self._ping_task.done():
             self._ping_task.cancel()
@@ -1867,7 +1909,7 @@ class AgoraWebSocketHandler:
             _LOGGER.warning("Cannot restart WebSocket: missing connection parameters")
             return
 
-        _LOGGER.info("Reconnecting to Agora WebSocket...")
+        _LOGGER.debug("Reconnecting to Agora WebSocket...")
         answer_sdp = await self.connect_and_join(
             self._agora_data,
             self._offer_sdp,
@@ -1876,7 +1918,7 @@ class AgoraWebSocketHandler:
         )
 
         if answer_sdp:
-            _LOGGER.info("WebSocket restarted successfully, renewing token")
+            _LOGGER.debug("WebSocket restarted successfully, renewing token")
             await self._send_renew_token()
         else:
             _LOGGER.error("WebSocket restart failed — could not rejoin channel")

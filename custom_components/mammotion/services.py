@@ -8,11 +8,14 @@ from typing import TYPE_CHECKING, Any, cast
 import voluptuous as vol
 from homeassistant.const import ATTR_ENTITY_ID
 from homeassistant.core import HomeAssistant, ServiceCall, SupportsResponse, callback
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import entity_registry as er
-from pymammotion.data.model.hash_list import CommDataCouple
+from pymammotion.data.model.hash_list import CommDataCouple, Plan
+from pymammotion.data.model.pool_state import PoolPlan
 
 from .const import DOMAIN, LOGGER
+from .coordinator import MammotionReportUpdateCoordinator, MammotionSpinoCoordinator
 
 if TYPE_CHECKING:
     from . import MammotionConfigEntry
@@ -26,6 +29,98 @@ SERVICE_GET_MAP_DATA = "get_map_data"
 SERVICE_SVG_ADD = "svg_add"
 SERVICE_SVG_UPDATE = "svg_update"
 SERVICE_SVG_DELETE = "svg_delete"
+
+# --- Task / schedule CRUD services ---------------------------------------
+# Modify ops target a task button entity (entity_id).  Create / refresh
+# target the device's lawn_mower or vacuum entity.  See
+# ``docs/tasks_and_schedules.md`` in pymammotion for the wire protocol
+# every one of these wraps.
+SERVICE_CREATE_TASK = "create_task"
+SERVICE_EDIT_TASK = "edit_task"
+SERVICE_RENAME_TASK = "rename_task"
+SERVICE_SET_TASK_ENABLED = "set_task_enabled"
+SERVICE_DELETE_TASK = "delete_task"
+SERVICE_COPY_TASK = "copy_task"
+SERVICE_REFRESH_TASKS = "refresh_tasks"
+
+# Optional schedule fields shared by both device kinds.  The HA service
+# layer normalises them into the per-kind Plan / PoolPlan dataclass.
+_SCHEDULE_FIELDS = {
+    vol.Optional("enabled", default=True): cv.boolean,
+    vol.Optional("weeks"): vol.All(
+        cv.ensure_list, [vol.All(vol.Coerce(int), vol.Range(min=0, max=6))]
+    ),
+    vol.Optional("start_time"): cv.string,  # "HH:MM"
+    vol.Optional("end_time"): cv.string,
+    vol.Optional("start_date"): cv.string,
+    vol.Optional("end_date"): cv.string,
+    vol.Optional("trigger_type"): vol.All(vol.Coerce(int), vol.Range(min=0, max=3)),
+    vol.Optional("day"): vol.All(vol.Coerce(int), vol.Range(min=0)),
+}
+
+# Mower-only fields keyed by the names used on ``pymammotion.Plan``.
+_MOWER_ONLY_FIELDS = {
+    vol.Optional("knife_height"): vol.All(vol.Coerce(int), vol.Range(min=20, max=100)),
+    vol.Optional("speed"): vol.Coerce(float),
+    vol.Optional("edge_mode"): vol.All(vol.Coerce(int), vol.Range(min=0, max=2)),
+    vol.Optional("route_angle"): vol.All(vol.Coerce(int), vol.Range(min=0, max=179)),
+    vol.Optional("route_spacing"): vol.All(vol.Coerce(int), vol.Range(min=0)),
+    vol.Optional("zone_hashs"): vol.All(cv.ensure_list, [vol.Coerce(int)]),
+}
+
+# Spino-only fields keyed by names on ``pymammotion.PoolPlan``.
+_SPINO_ONLY_FIELDS = {
+    vol.Optional("work_mode"): vol.All(vol.Coerce(int), vol.Range(min=0, max=6)),
+    vol.Optional("sub_mode"): vol.All(cv.ensure_list, [vol.Coerce(int)]),
+    vol.Optional("speed"): vol.All(vol.Coerce(int), vol.Range(min=0)),
+    vol.Optional("operating_power"): vol.All(vol.Coerce(int), vol.Range(min=0)),
+    vol.Optional("starttime"): vol.All(vol.Coerce(int), vol.Range(min=0)),
+}
+
+CREATE_TASK_SCHEMA = vol.Schema(
+    {
+        vol.Required(ATTR_ENTITY_ID): cv.entity_id,
+        vol.Required("name"): cv.string,
+        **_SCHEDULE_FIELDS,
+        **_MOWER_ONLY_FIELDS,
+        **_SPINO_ONLY_FIELDS,
+    },
+    extra=vol.ALLOW_EXTRA,
+)
+
+EDIT_TASK_SCHEMA = vol.Schema(
+    {
+        vol.Required(ATTR_ENTITY_ID): cv.entity_id,
+        vol.Optional("name"): cv.string,
+        **_SCHEDULE_FIELDS,
+        **_MOWER_ONLY_FIELDS,
+        **_SPINO_ONLY_FIELDS,
+    },
+    extra=vol.ALLOW_EXTRA,
+)
+
+RENAME_TASK_SCHEMA = vol.Schema(
+    {vol.Required(ATTR_ENTITY_ID): cv.entity_id, vol.Required("name"): cv.string},
+    extra=vol.ALLOW_EXTRA,
+)
+
+SET_TASK_ENABLED_SCHEMA = vol.Schema(
+    {vol.Required(ATTR_ENTITY_ID): cv.entity_id, vol.Required("enabled"): cv.boolean},
+    extra=vol.ALLOW_EXTRA,
+)
+
+DELETE_TASK_SCHEMA = vol.Schema(
+    {vol.Required(ATTR_ENTITY_ID): cv.entity_id}, extra=vol.ALLOW_EXTRA
+)
+
+COPY_TASK_SCHEMA = vol.Schema(
+    {vol.Required(ATTR_ENTITY_ID): cv.entity_id, vol.Optional("name"): cv.string},
+    extra=vol.ALLOW_EXTRA,
+)
+
+REFRESH_TASKS_SCHEMA = vol.Schema(
+    {vol.Required(ATTR_ENTITY_ID): cv.entity_id}, extra=vol.ALLOW_EXTRA
+)
 
 GEOJSON_SCHEMA = vol.Schema(
     {vol.Required(ATTR_ENTITY_ID): cv.entity_id}, extra=vol.ALLOW_EXTRA
@@ -123,6 +218,153 @@ def _get_mower_by_entity_id(
         if mower is not None:
             return mower
     return None
+
+
+def _resolve_mower_task(
+    hass: HomeAssistant, entity_id: str
+) -> tuple[MammotionReportUpdateCoordinator, str] | None:
+    """Resolve a task button entity_id to (coordinator, plan_id) for a mower.
+
+    Returns ``None`` when the entity_id doesn't belong to any mower
+    coordinator, or when the suffix isn't a known plan in
+    ``coordinator.data.map.plan``.
+    """
+    entity_reg = er.async_get(hass)
+    entry = entity_reg.async_get(entity_id)
+    if entry is None:
+        return None
+
+    for cfg in hass.config_entries.async_entries(DOMAIN):
+        if not cfg.runtime_data:
+            continue
+        for mower in cfg.runtime_data.mowers:
+            prefix = mower.reporting_coordinator.unique_name + "_"
+            if not entry.unique_id.startswith(prefix):
+                continue
+            plan_id = entry.unique_id[len(prefix) :]
+            if plan_id in mower.reporting_coordinator.data.map.plan:
+                return mower.reporting_coordinator, plan_id
+    return None
+
+
+def _resolve_spino_task(
+    hass: HomeAssistant, entity_id: str
+) -> tuple[MammotionSpinoCoordinator, int] | None:
+    """Resolve a task button entity_id to (coordinator, jobid) for a Spino.
+
+    Returns ``None`` when the entity_id doesn't belong to any Spino
+    coordinator, or when the suffix isn't a known jobid in
+    ``coordinator.data.plans``.
+    """
+    entity_reg = er.async_get(hass)
+    entry = entity_reg.async_get(entity_id)
+    if entry is None:
+        return None
+
+    for cfg in hass.config_entries.async_entries(DOMAIN):
+        if not cfg.runtime_data:
+            continue
+        for spino in cfg.runtime_data.spino:
+            prefix = spino.coordinator.unique_name + "_"
+            if not entry.unique_id.startswith(prefix):
+                continue
+            suffix = entry.unique_id[len(prefix) :]
+            try:
+                jobid = int(suffix)
+            except ValueError:
+                continue
+            if jobid in spino.coordinator.data.plans:
+                return spino.coordinator, jobid
+    return None
+
+
+def _resolve_device(
+    hass: HomeAssistant, entity_id: str
+) -> tuple[MammotionReportUpdateCoordinator | MammotionSpinoCoordinator, str] | None:
+    """Resolve any entity_id to (coordinator, kind) — used by create / refresh.
+
+    ``kind`` is ``"mower"`` or ``"spino"``.  Returns the *device's* primary
+    coordinator regardless of which of the device's entities was targeted.
+    """
+    entity_reg = er.async_get(hass)
+    entry = entity_reg.async_get(entity_id)
+    if entry is None:
+        return None
+
+    for cfg in hass.config_entries.async_entries(DOMAIN):
+        if not cfg.runtime_data:
+            continue
+        for mower in cfg.runtime_data.mowers:
+            if entry.unique_id.startswith(mower.reporting_coordinator.unique_name):
+                return mower.reporting_coordinator, "mower"
+        for spino in cfg.runtime_data.spino:
+            if entry.unique_id.startswith(spino.coordinator.unique_name):
+                return spino.coordinator, "spino"
+    return None
+
+
+def _raise_task_not_found(entity_id: str) -> None:
+    """Raise a translated HomeAssistantError when no task matches."""
+    raise HomeAssistantError(
+        translation_domain=DOMAIN,
+        translation_key="task_not_found",
+        translation_placeholders={"plan_id": entity_id},
+    )
+
+
+def _build_mower_plan(data: dict[str, Any], base: Plan | None = None) -> Plan:
+    """Map service kwargs onto a ``Plan`` dataclass (mower side).
+
+    When ``base`` is given the unspecified fields come from it (edit
+    path); otherwise defaults from ``Plan()`` apply (create path).
+    """
+    plan = dataclasses.replace(base) if base is not None else Plan()
+    if name := data.get("name"):
+        plan = plan.with_renamed(name)
+    if "enabled" in data:
+        plan = plan.with_enabled(bool(data["enabled"]))
+    for key in (
+        "weeks",
+        "start_time",
+        "end_time",
+        "start_date",
+        "end_date",
+        "trigger_type",
+        "day",
+        "knife_height",
+        "speed",
+        "edge_mode",
+        "route_angle",
+        "route_spacing",
+        "zone_hashs",
+    ):
+        if key in data:
+            plan = dataclasses.replace(plan, **{key: data[key]})
+    return plan
+
+
+def _build_spino_plan(data: dict[str, Any], base: PoolPlan | None = None) -> PoolPlan:
+    """Map service kwargs onto a ``PoolPlan`` dataclass (spino side)."""
+    plan = dataclasses.replace(base) if base is not None else PoolPlan()
+    if name := data.get("name"):
+        plan = plan.with_renamed(name)
+    if "enabled" in data:
+        plan = plan.with_enabled(bool(data["enabled"]))
+    if "weeks" in data:
+        plan = dataclasses.replace(plan, weeks=list(data["weeks"]))
+    if "sub_mode" in data:
+        plan = dataclasses.replace(plan, sub_mode=list(data["sub_mode"]))
+    for key, target in (
+        ("trigger_type", "triggertype"),
+        ("start_date", "startdate"),
+        ("end_date", "enddate"),
+    ):
+        if key in data:
+            plan = dataclasses.replace(plan, **{target: data[key]})
+    for key in ("day", "work_mode", "speed", "operating_power", "starttime"):
+        if key in data:
+            plan = dataclasses.replace(plan, **{key: data[key]})
+    return plan
 
 
 @callback
@@ -321,4 +563,125 @@ def async_setup_services(hass: HomeAssistant) -> None:  # noqa: C901
         handle_svg_delete,
         schema=SVG_DELETE_SCHEMA,
         supports_response=SupportsResponse.OPTIONAL,
+    )
+
+    # === Task / schedule services =====================================
+    #
+    # Modify ops (rename / enable / delete / copy / edit) target a task
+    # button entity_id; we resolve to the mower or Spino path by checking
+    # the entity's owning coordinator.  Create / refresh target *any*
+    # entity that belongs to the device (typically the lawn_mower or
+    # vacuum entity).
+
+    async def handle_rename_task(call: ServiceCall) -> None:
+        entity_id = call.data[ATTR_ENTITY_ID]
+        if (mower := _resolve_mower_task(hass, entity_id)) is not None:
+            await mower[0].async_rename_mower_task(mower[1], call.data["name"])
+            return
+        if (spino := _resolve_spino_task(hass, entity_id)) is not None:
+            await spino[0].async_rename_spino_task(spino[1], call.data["name"])
+            return
+        _raise_task_not_found(entity_id)
+
+    async def handle_set_task_enabled(call: ServiceCall) -> None:
+        entity_id = call.data[ATTR_ENTITY_ID]
+        enabled = bool(call.data["enabled"])
+        if (mower := _resolve_mower_task(hass, entity_id)) is not None:
+            await mower[0].async_set_mower_task_enabled(mower[1], enabled)
+            return
+        if (spino := _resolve_spino_task(hass, entity_id)) is not None:
+            await spino[0].async_set_spino_task_enabled(spino[1], enabled)
+            return
+        _raise_task_not_found(entity_id)
+
+    async def handle_delete_task(call: ServiceCall) -> None:
+        entity_id = call.data[ATTR_ENTITY_ID]
+        if (mower := _resolve_mower_task(hass, entity_id)) is not None:
+            await mower[0].async_delete_mower_task(mower[1])
+            return
+        if (spino := _resolve_spino_task(hass, entity_id)) is not None:
+            await spino[0].async_delete_spino_task(spino[1])
+            return
+        _raise_task_not_found(entity_id)
+
+    async def handle_copy_task(call: ServiceCall) -> None:
+        entity_id = call.data[ATTR_ENTITY_ID]
+        new_name: str | None = call.data.get("name")
+        if (mower := _resolve_mower_task(hass, entity_id)) is not None:
+            await mower[0].async_copy_mower_task(mower[1], new_name=new_name)
+            return
+        if (spino := _resolve_spino_task(hass, entity_id)) is not None:
+            await spino[0].async_copy_spino_task(spino[1], new_name=new_name)
+            return
+        _raise_task_not_found(entity_id)
+
+    async def handle_edit_task(call: ServiceCall) -> None:
+        entity_id = call.data[ATTR_ENTITY_ID]
+        if (mower := _resolve_mower_task(hass, entity_id)) is not None:
+            base = mower[0].data.map.plan[mower[1]]
+            await mower[0].async_edit_mower_task(
+                _build_mower_plan(dict(call.data), base)
+            )
+            return
+        if (spino := _resolve_spino_task(hass, entity_id)) is not None:
+            base = spino[0].data.plans[spino[1]]
+            await spino[0].async_edit_spino_task(
+                _build_spino_plan(dict(call.data), base)
+            )
+            return
+        _raise_task_not_found(entity_id)
+
+    async def handle_create_task(call: ServiceCall) -> None:
+        entity_id = call.data[ATTR_ENTITY_ID]
+        resolved = _resolve_device(hass, entity_id)
+        if resolved is None:
+            _raise_task_not_found(entity_id)
+            return  # pragma: no cover — unreachable after raise above
+        coord, kind = resolved
+        if kind == "mower":
+            await cast(MammotionReportUpdateCoordinator, coord).async_create_mower_task(
+                _build_mower_plan(dict(call.data))
+            )
+        else:
+            await cast(MammotionSpinoCoordinator, coord).async_create_spino_task(
+                _build_spino_plan(dict(call.data))
+            )
+
+    async def handle_refresh_tasks(call: ServiceCall) -> None:
+        entity_id = call.data[ATTR_ENTITY_ID]
+        resolved = _resolve_device(hass, entity_id)
+        if resolved is None:
+            _raise_task_not_found(entity_id)
+            return
+        coord, kind = resolved
+        if kind == "mower":
+            await cast(
+                MammotionReportUpdateCoordinator, coord
+            ).async_refresh_mower_tasks()
+        else:
+            await cast(MammotionSpinoCoordinator, coord).async_refresh_spino_tasks()
+
+    hass.services.async_register(
+        DOMAIN, SERVICE_RENAME_TASK, handle_rename_task, schema=RENAME_TASK_SCHEMA
+    )
+    hass.services.async_register(
+        DOMAIN,
+        SERVICE_SET_TASK_ENABLED,
+        handle_set_task_enabled,
+        schema=SET_TASK_ENABLED_SCHEMA,
+    )
+    hass.services.async_register(
+        DOMAIN, SERVICE_DELETE_TASK, handle_delete_task, schema=DELETE_TASK_SCHEMA
+    )
+    hass.services.async_register(
+        DOMAIN, SERVICE_COPY_TASK, handle_copy_task, schema=COPY_TASK_SCHEMA
+    )
+    hass.services.async_register(
+        DOMAIN, SERVICE_EDIT_TASK, handle_edit_task, schema=EDIT_TASK_SCHEMA
+    )
+    hass.services.async_register(
+        DOMAIN, SERVICE_CREATE_TASK, handle_create_task, schema=CREATE_TASK_SCHEMA
+    )
+    hass.services.async_register(
+        DOMAIN, SERVICE_REFRESH_TASKS, handle_refresh_tasks, schema=REFRESH_TASKS_SCHEMA
     )
