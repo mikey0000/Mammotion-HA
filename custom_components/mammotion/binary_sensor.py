@@ -34,6 +34,12 @@ BINARY_SENSORS: tuple[MammotionBinarySensorEntityDescription, ...] = (
         is_on_fn=lambda mower_data: mower_data.report_data.dev.charge_state in (1, 2),
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
+    MammotionBinarySensorEntityDescription(
+        key="app_interactive",
+        translation_key="app_interactive",
+        is_on_fn=lambda mower_data: mower_data.report_data.connect.connect_type == 3,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
 )
 
 

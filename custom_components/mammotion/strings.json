@@ -207,6 +207,11 @@
         }
       }
     },
+    "binary_sensor": {
+      "app_interactive": {
+        "name": "App interactive"
+      }
+    },
     "button": {
       "start_map_sync": {
         "name": "Sync maps"
