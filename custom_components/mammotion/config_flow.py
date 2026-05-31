@@ -80,10 +80,6 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                             device_entry.id,
                             merge_connections={(CONNECTION_BLUETOOTH, formatted_ble)},
                         )
-                        if entry.state == config_entries.ConfigEntryState.LOADED:
-                            self.hass.config_entries.async_schedule_reload(
-                                entry.entry_id
-                            )
                     return entry
         return None
 
