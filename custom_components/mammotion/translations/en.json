@@ -349,6 +349,9 @@
       "rain_detection": {
         "name": "Rain detection (Mower) On/Off"
       },
+      "auto_lighting": {
+        "name": "Auto lighting"
+      },
       "side_led": {
         "name": "Side LED on/off"
       },
@@ -426,6 +429,8 @@
       "bypass_mode": {
         "name": "Obstacle detection",
         "state": {
+          "off": "Off",
+          "standard": "Standard",
           "direct_touch": "Off",
           "slow_touch": "Slow touch",
           "less_touch": "Less touch",
@@ -442,7 +447,7 @@
         }
       },
       "traversal_mode": {
-        "name": "Traversal Mode",
+        "name": "Route to dock",
         "state": {
           "direct": "Direct",
           "follow_perimeter": "Follow the perimeter"
@@ -456,19 +461,55 @@
         }
       },
       "wildlife_safety": {
-        "name": "Wildlife Safety",
+        "name": "Wildlife safety",
         "state": {
           "off": "Off",
-          "stop_mowing": "Stop Mowing",
-          "low_speed_mowing": "Low-Speed Mowing"
+          "stop_mowing": "Stop mowing",
+          "low_speed_mowing": "Low-speed mowing"
         }
       },
       "cutter_mode": {
-        "name": "Cutter Speed",
+        "name": "Blade speed",
         "state": {
+          "low": "Low",
+          "high": "High",
           "normal": "Medium",
           "slow": "Slow",
           "fast": "Fast"
+        }
+      },
+      "pattern_family": {
+        "name": "Mowing pattern",
+        "state": {
+          "perimeter_only": "Perimeter only",
+          "stripes": "Stripes",
+          "grid": "Grid"
+        }
+      },
+      "stripes_pattern": {
+        "name": "Stripes pattern",
+        "state": {
+          "efficient": "Efficient",
+          "random": "Random",
+          "custom": "Custom"
+        }
+      },
+      "grid_pattern": {
+        "name": "Grid pattern",
+        "state": {
+          "default": "Default",
+          "random": "Random",
+          "custom": "Custom"
+        }
+      },
+      "voice_volume_level": {
+        "name": "Voice volume",
+        "state": {
+          "one": "1",
+          "two": "2",
+          "three": "3",
+          "four": "4",
+          "five": "5"
         }
       },
       "voice_gender": {
@@ -528,6 +569,9 @@
       "path_spacing": {
         "name": "Path spacing"
       },
+      "pattern_angle": {
+        "name": "Pattern angle"
+      },
       "dumping_interval": {
         "name": "Dumping frequency"
       },
@@ -546,6 +590,11 @@
     },
     "device_tracker": {
       "name": "Device tracking"
+    },
+    "image": {
+      "map": {
+        "name": "Map"
+      }
     }
   },
   "selector": {

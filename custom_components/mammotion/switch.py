@@ -28,6 +28,7 @@ from .coordinator import (
     MammotionSpinoCoordinator,
 )
 from .entity import MammotionBaseEntity, MammotionBaseSpinoEntity
+from .yuka import is_yuka_2
 
 # Matches pymammotion's auto-generated fallback names ("area 1", "area 2", …).
 # These carry no user intent and must be treated the same as empty names.
@@ -145,6 +146,35 @@ MINI_AND_X_SERIES_CONFIG_SWITCH_ENTITIES: tuple[
     ),
 )
 
+YUKA_SWITCH_ENTITIES: tuple[MammotionAsyncSwitchEntityDescription, ...] = (
+    MammotionAsyncSwitchEntityDescription(
+        key="rain_detection",
+        is_on_func=lambda coordinator: coordinator.data.mower_state.rain_detection,
+        set_fn=lambda coordinator, value: coordinator.async_set_rain_detection(value),
+        entity_category=EntityCategory.CONFIG,
+    ),
+    MammotionAsyncSwitchEntityDescription(
+        key="auto_lighting",
+        is_on_func=lambda coordinator: coordinator.data.mower_state.lamp_info.night_light,
+        set_fn=lambda coordinator, value: coordinator.async_set_night_light(value),
+        entity_category=EntityCategory.CONFIG,
+    ),
+    MammotionAsyncSwitchEntityDescription(
+        key="side_led",
+        is_on_func=lambda coordinator: bool(
+            coordinator.data.mower_state.side_led.operate
+        ),
+        set_fn=lambda coordinator, value: coordinator.async_set_sidelight(int(value)),
+        entity_category=EntityCategory.CONFIG,
+    ),
+    MammotionAsyncSwitchEntityDescription(
+        key="voice_on_off",
+        is_on_func=lambda coordinator: coordinator.data.mower_state.audio.volume > 0,
+        set_fn=lambda coordinator, value: coordinator.async_set_voice_on_off(value),
+        entity_category=EntityCategory.CONFIG,
+    ),
+)
+
 AUDIO_SWITCH_ENTITIES: tuple[MammotionAsyncSwitchEntityDescription, ...] = (
     MammotionAsyncSwitchEntityDescription(
         key="voice_on_off",
@@ -157,8 +187,9 @@ AUDIO_SWITCH_ENTITIES: tuple[MammotionAsyncSwitchEntityDescription, ...] = (
 SWITCH_ENTITIES: tuple[MammotionAsyncSwitchEntityDescription, ...] = (
     MammotionAsyncSwitchEntityDescription(
         key="side_led",
-        is_on_func=lambda coordinator: coordinator.data.mower_state.side_led.enable
-        == 0,
+        is_on_func=lambda coordinator: bool(
+            coordinator.data.mower_state.side_led.operate
+        ),
         set_fn=lambda coordinator, value: coordinator.async_set_sidelight(int(value)),
         entity_category=EntityCategory.CONFIG,
     ),
@@ -222,6 +253,7 @@ async def async_setup_entry(
     mammotion_devices = entry.runtime_data.mowers
 
     for mower in mammotion_devices:
+        _cleanup_removed_yuka_2_switches(hass, mower.device.device_name)
         added_areas: set[int] = set()
         area_entities_by_name: dict[str, MammotionConfigAreaSwitchEntity] = {}
         coordinator = mower.reporting_coordinator
@@ -238,6 +270,13 @@ async def async_setup_entry(
         coordinator.subscribe_map_updated(update_areas)
 
         entities = []
+        if is_yuka_2(mower.device.device_name):
+            async_add_entities(
+                MammotionSwitchEntity(coordinator, entity_description)
+                for entity_description in YUKA_SWITCH_ENTITIES
+            )
+            continue
+
         for entity_description in SWITCH_ENTITIES:
             entity = MammotionSwitchEntity(coordinator, entity_description)
             entities.append(entity)
@@ -759,6 +798,34 @@ def _async_clean_stale_area_registry_entries(
             continue
         if entry.entity_id.startswith(area_entity_id_prefix):
             registry.async_remove(entry.entity_id)
+
+
+def _cleanup_removed_yuka_2_switches(
+    hass: HomeAssistant,
+    device_name: str,
+) -> None:
+    """Remove switch entities that are not exposed by the Yuka app controls."""
+    if not is_yuka_2(device_name):
+        return
+    registry = er.async_get(hass)
+    for key in (
+        "manual_light",
+        "night_light",
+        "is_mow",
+        "is_dump",
+        "is_edge",
+        "rain_tactics",
+        "schedule_updates",
+        "bluetooth_enabled",
+        "cloud_enabled",
+    ):
+        entity_id = registry.async_get_entity_id(
+            SWITCH_DOMAIN,
+            DOMAIN,
+            f"{device_name}_{key}",
+        )
+        if entity_id:
+            registry.async_remove(entity_id)
 
 
 def async_remove_entities(

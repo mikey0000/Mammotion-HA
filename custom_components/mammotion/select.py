@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from homeassistant.components.select import SelectEntity, SelectEntityDescription
 from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.restore_state import RestoreEntity
 from pymammotion.data.model.device import PoolCleanerDevice
@@ -30,7 +31,32 @@ from pymammotion.utility.device_type import DeviceType
 
 from . import MammotionConfigEntry, MammotionReportUpdateCoordinator
 from .coordinator import MammotionBaseUpdateCoordinator, MammotionSpinoCoordinator
+from .const import DOMAIN
 from .entity import MammotionBaseEntity, MammotionBaseSpinoEntity
+from .yuka import (
+    BLADE_SPEED_OPTIONS,
+    BLADE_SPEED_VALUES,
+    GRID_PATTERN_OPTIONS,
+    GRID_PATTERN_VALUE,
+    LAP_OPTIONS,
+    LAP_VALUES,
+    OBSTACLE_OPTIONS,
+    OBSTACLE_VALUES,
+    PATTERN_FAMILY_OPTIONS,
+    PATTERN_FAMILY_VALUES,
+    ROUTE_TO_DOCK_OPTIONS,
+    ROUTE_TO_DOCK_VALUES,
+    STRIPES_PATTERN_OPTIONS,
+    STRIPES_PATTERN_VALUE,
+    VOICE_VOLUME_LEVEL_OPTIONS,
+    VOICE_VOLUME_VALUES,
+    WILDLIFE_SAFETY_OPTIONS,
+    WILDLIFE_SAFETY_VALUES,
+    is_yuka_2,
+    is_yuka_mini_or_ml,
+    voice_volume_option,
+    yuka_value_option,
+)
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -40,7 +66,11 @@ class MammotionConfigSelectEntityDescription(SelectEntityDescription):
     key: str
     options: list[str]
     set_fn: Callable[[MammotionBaseUpdateCoordinator, str], None]
-    async_set_fn: Callable[[MammotionBaseUpdateCoordinator], Awaitable[None]] = None
+    default_option: str | None = None
+    async_set_fn: (
+        Callable[[MammotionBaseUpdateCoordinator], Awaitable[None]] | None
+    ) = None
+    available_fn: Callable[[MammotionBaseUpdateCoordinator], bool] | None = None
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -49,8 +79,9 @@ class MammotionAsyncConfigSelectEntityDescription(MammotionBaseEntity, SelectEnt
 
     key: str
     options: list[str]
-    get_fn: Callable[[MammotionBaseUpdateCoordinator], int | None]
+    get_fn: Callable[[MammotionBaseUpdateCoordinator], int | str | None]
     set_fn: Callable[[MammotionBaseUpdateCoordinator, str], Awaitable[None]]
+    poll_fn: Callable[[MammotionBaseUpdateCoordinator], Awaitable[None]] | None = None
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -144,6 +175,52 @@ MINI_AND_X_SERIES_CONFIG_SELECT_ENTITIES: tuple[
 )
 
 
+def _set_pattern_family(
+    coordinator: MammotionBaseUpdateCoordinator, option: str
+) -> None:
+    """Set the app-level Yuka mowing pattern family."""
+    coordinator.operation_settings.channel_mode = PATTERN_FAMILY_VALUES[option]
+
+
+def _set_pattern_variant(
+    coordinator: MammotionBaseUpdateCoordinator, option: str
+) -> None:
+    """Set the app-level Yuka path angle variant."""
+    if option in {"efficient", "default"}:
+        coordinator.operation_settings.toward_mode = (
+            PathAngleSetting.relative_angle.value
+        )
+    elif option == "random":
+        coordinator.operation_settings.toward_mode = PathAngleSetting.random_angle.value
+    elif option == "custom":
+        coordinator.operation_settings.toward_mode = (
+            PathAngleSetting.absolute_angle.value
+        )
+
+
+def _set_stripes_pattern(
+    coordinator: MammotionBaseUpdateCoordinator, option: str
+) -> None:
+    """Set the stripes variant only when stripes are active."""
+    if coordinator.operation_settings.channel_mode == STRIPES_PATTERN_VALUE:
+        _set_pattern_variant(coordinator, option)
+
+
+def _set_grid_pattern(coordinator: MammotionBaseUpdateCoordinator, option: str) -> None:
+    """Set the grid variant only when grid is active."""
+    if coordinator.operation_settings.channel_mode == GRID_PATTERN_VALUE:
+        _set_pattern_variant(coordinator, option)
+
+
+def _set_yuka_mow_order(
+    coordinator: MammotionBaseUpdateCoordinator, option: str
+) -> None:
+    """Set the app-level Yuka mow order."""
+    value = MowOrder[option].value
+    coordinator.operation_settings.border_mode = value
+    coordinator.operation_settings.job_mode = value
+
+
 SELECT_ENTITIES: tuple[MammotionConfigSelectEntityDescription, ...] = (
     MammotionConfigSelectEntityDescription(
         key="channel_mode",
@@ -174,6 +251,115 @@ SELECT_ENTITIES: tuple[MammotionConfigSelectEntityDescription, ...] = (
         set_fn=lambda coordinator, value: setattr(
             coordinator.operation_settings, "border_mode", MowOrder[value].value
         ),
+    ),
+)
+
+YUKA_SELECT_ENTITIES: tuple[MammotionConfigSelectEntityDescription, ...] = (
+    MammotionConfigSelectEntityDescription(
+        key="border_mode",
+        options=[order.name for order in MowOrder],
+        default_option=MowOrder.border_first.name,
+        set_fn=_set_yuka_mow_order,
+    ),
+    MammotionConfigSelectEntityDescription(
+        key="mowing_laps",
+        options=LAP_OPTIONS,
+        default_option="three",
+        set_fn=lambda coordinator, value: setattr(
+            coordinator.operation_settings, "mowing_laps", LAP_VALUES[value]
+        ),
+    ),
+    MammotionConfigSelectEntityDescription(
+        key="obstacle_laps",
+        options=LAP_OPTIONS,
+        default_option="none",
+        set_fn=lambda coordinator, value: setattr(
+            coordinator.operation_settings, "obstacle_laps", LAP_VALUES[value]
+        ),
+    ),
+    MammotionConfigSelectEntityDescription(
+        key="bypass_mode",
+        options=OBSTACLE_OPTIONS,
+        default_option="standard",
+        set_fn=lambda coordinator, value: setattr(
+            coordinator.operation_settings, "ultra_wave", OBSTACLE_VALUES[value]
+        ),
+        async_set_fn=lambda coordinator: coordinator.async_modify_plan_if_mowing(),
+    ),
+    MammotionConfigSelectEntityDescription(
+        key="pattern_family",
+        options=PATTERN_FAMILY_OPTIONS,
+        default_option="grid",
+        set_fn=_set_pattern_family,
+        async_set_fn=lambda coordinator: coordinator.async_modify_plan_if_mowing(),
+    ),
+    MammotionConfigSelectEntityDescription(
+        key="stripes_pattern",
+        options=STRIPES_PATTERN_OPTIONS,
+        default_option="random",
+        set_fn=_set_stripes_pattern,
+        async_set_fn=lambda coordinator: coordinator.async_modify_plan_if_mowing(),
+        available_fn=lambda coordinator: coordinator.operation_settings.channel_mode
+        == STRIPES_PATTERN_VALUE,
+    ),
+    MammotionConfigSelectEntityDescription(
+        key="grid_pattern",
+        options=GRID_PATTERN_OPTIONS,
+        default_option="random",
+        set_fn=_set_grid_pattern,
+        async_set_fn=lambda coordinator: coordinator.async_modify_plan_if_mowing(),
+        available_fn=lambda coordinator: coordinator.operation_settings.channel_mode
+        == GRID_PATTERN_VALUE,
+    ),
+)
+
+YUKA_ASYNC_SELECT_ENTITIES: tuple[MammotionAsyncConfigSelectEntityDescription, ...] = (
+    MammotionAsyncConfigSelectEntityDescription(
+        key="traversal_mode",
+        options=ROUTE_TO_DOCK_OPTIONS,
+        get_fn=lambda coordinator: yuka_value_option(
+            ROUTE_TO_DOCK_OPTIONS,
+            coordinator.data.mower_state.traversal_mode,
+            ROUTE_TO_DOCK_VALUES,
+        ),
+        set_fn=lambda coordinator, value: coordinator.async_set_traversal_mode(
+            ROUTE_TO_DOCK_VALUES[value]
+        ),
+    ),
+    MammotionAsyncConfigSelectEntityDescription(
+        key="cutter_mode",
+        options=BLADE_SPEED_OPTIONS,
+        get_fn=lambda coordinator: yuka_value_option(
+            BLADE_SPEED_OPTIONS,
+            coordinator.data.mower_state.cutter_mode,
+            BLADE_SPEED_VALUES,
+        ),
+        set_fn=lambda coordinator, value: coordinator.async_set_cutter_speed(
+            BLADE_SPEED_VALUES[value]
+        ),
+    ),
+    MammotionAsyncConfigSelectEntityDescription(
+        key="voice_volume_level",
+        options=VOICE_VOLUME_LEVEL_OPTIONS,
+        get_fn=lambda coordinator: voice_volume_option(
+            coordinator.data.mower_state.audio.volume
+        ),
+        set_fn=lambda coordinator, value: coordinator.async_set_voice_volume(
+            VOICE_VOLUME_VALUES[value]
+        ),
+    ),
+    MammotionAsyncConfigSelectEntityDescription(
+        key="wildlife_safety",
+        options=WILDLIFE_SAFETY_OPTIONS,
+        get_fn=lambda coordinator: yuka_value_option(
+            WILDLIFE_SAFETY_OPTIONS,
+            coordinator.data.mower_state.animal_protection.mode,
+            WILDLIFE_SAFETY_VALUES,
+        ),
+        set_fn=lambda coordinator, value: coordinator.async_set_wildlife_safety(
+            WILDLIFE_SAFETY_VALUES[value]
+        ),
+        poll_fn=lambda coordinator: coordinator.async_read_wildlife_safety(),
     ),
 )
 
@@ -225,16 +411,24 @@ async def async_setup_entry(
     mammotion_devices = entry.runtime_data.mowers
 
     for mower in mammotion_devices:
+        _cleanup_removed_yuka_2_selects(hass, mower.device.device_name)
         entities = []
 
-        for entity_description in SELECT_ENTITIES:
+        base_selects = (
+            YUKA_SELECT_ENTITIES
+            if is_yuka_2(mower.device.device_name)
+            else SELECT_ENTITIES
+        )
+        for entity_description in base_selects:
             entities.append(
                 MammotionConfigSelectEntity(
                     mower.reporting_coordinator, entity_description
                 )
             )
 
-        if DeviceType.is_luba_pro(mower.device.device_name):
+        if DeviceType.is_luba_pro(mower.device.device_name) and not is_yuka_2(
+            mower.device.device_name
+        ):
             for entity_description in AUDIO_SELECT_ENTITIES:
                 entities.append(
                     MammotionAsyncConfigSelectEntity(
@@ -242,32 +436,42 @@ async def async_setup_entry(
                     )
                 )
 
-        for entity_description in ASYNC_SELECT_ENTITIES:
+        async_selects = (
+            YUKA_ASYNC_SELECT_ENTITIES
+            if is_yuka_2(mower.device.device_name)
+            else ASYNC_SELECT_ENTITIES
+        )
+        for entity_description in async_selects:
             entities.append(
                 MammotionAsyncConfigSelectEntity(
                     mower.reporting_coordinator, entity_description
                 )
             )
 
-        bypass_mode_desc = MammotionConfigSelectEntityDescription(
-            key="bypass_mode",
-            options=[
-                s.name
-                for s in DetectionStrategy.for_device(
-                    mower.device.device_name,
-                    _device_firmware_version(mower.reporting_coordinator.data),
+        if not is_yuka_2(mower.device.device_name):
+            bypass_mode_desc = MammotionConfigSelectEntityDescription(
+                key="bypass_mode",
+                options=[
+                    s.name
+                    for s in DetectionStrategy.for_device(
+                        mower.device.device_name,
+                        _device_firmware_version(mower.reporting_coordinator.data),
+                    )
+                ],
+                set_fn=lambda coordinator, value: setattr(
+                    coordinator.operation_settings,
+                    "ultra_wave",
+                    DetectionStrategy[value].value,
+                ),
+                async_set_fn=(
+                    lambda coordinator: coordinator.async_modify_plan_if_mowing()
+                ),
+            )
+            entities.append(
+                MammotionConfigSelectEntity(
+                    mower.reporting_coordinator, bypass_mode_desc
                 )
-            ],
-            set_fn=lambda coordinator, value: setattr(
-                coordinator.operation_settings,
-                "ultra_wave",
-                DetectionStrategy[value].value,
-            ),
-            async_set_fn=lambda coordinator: coordinator.async_modify_plan_if_mowing(),
-        )
-        entities.append(
-            MammotionConfigSelectEntity(mower.reporting_coordinator, bypass_mode_desc)
-        )
+            )
 
         if DeviceType.is_luba1(mower.device.device_name):
             for entity_description in LUBA1_SELECT_ENTITIES:
@@ -276,7 +480,7 @@ async def async_setup_entry(
                         mower.reporting_coordinator, entity_description
                     )
                 )
-        else:
+        elif not is_yuka_mini_or_ml(mower.device.device_name):
             for entity_description in LUBA_PRO_SELECT_ENTITIES:
                 entities.append(
                     MammotionConfigSelectEntity(
@@ -284,7 +488,9 @@ async def async_setup_entry(
                     )
                 )
 
-        if DeviceType.is_mini_or_x_series(mower.device.device_name):
+        if DeviceType.is_mini_or_x_series(
+            mower.device.device_name
+        ) and not is_yuka_2(mower.device.device_name):
             for entity_description in MINI_AND_X_SERIES_CONFIG_SELECT_ENTITIES:
                 entities.append(
                     MammotionAsyncConfigSelectEntity(
@@ -299,6 +505,24 @@ async def async_setup_entry(
             MammotionSpinoSelectEntity(spino.coordinator, entity_description)
             for entity_description in SPINO_SELECT_ENTITIES
         )
+
+
+def _cleanup_removed_yuka_2_selects(hass: HomeAssistant, device_name: str) -> None:
+    """Remove select entities that are not exposed by the Yuka app controls."""
+    if not is_yuka_2(device_name):
+        return
+    registry = er.async_get(hass)
+    for key in (
+        "channel_mode",
+        "cutting_angle_mode",
+        "turning_mode",
+        "voice_gender",
+    ):
+        entity_id = registry.async_get_entity_id(
+            "select", DOMAIN, f"{device_name}_{key}"
+        )
+        if entity_id:
+            registry.async_remove(entity_id)
 
 
 # Define the select entity class with entity_category: config
@@ -321,7 +545,9 @@ class MammotionConfigSelectEntity(MammotionBaseEntity, SelectEntity, RestoreEnti
         self.entity_description = entity_description
         self._attr_translation_key = entity_description.key
         self._attr_options = entity_description.options
-        self._attr_current_option = entity_description.options[0]
+        self._attr_current_option = (
+            entity_description.default_option or entity_description.options[0]
+        )
         self.entity_description.set_fn(self.coordinator, self._attr_current_option)
 
     async def async_select_option(self, option: str) -> None:
@@ -330,6 +556,7 @@ class MammotionConfigSelectEntity(MammotionBaseEntity, SelectEntity, RestoreEnti
         self.entity_description.set_fn(self.coordinator, option)
         if self.entity_description.async_set_fn is not None:
             await self.entity_description.async_set_fn(self.coordinator)
+        self.coordinator.async_update_listeners()
         self.async_write_ha_state()
 
     async def async_added_to_hass(self) -> None:
@@ -341,6 +568,16 @@ class MammotionConfigSelectEntity(MammotionBaseEntity, SelectEntity, RestoreEnti
                 self.entity_description.set_fn(
                     self.coordinator, self._attr_current_option
                 )
+                self.coordinator.async_update_listeners()
+
+    @property
+    def available(self) -> bool:
+        """Return True when this select applies to the current Yuka settings."""
+        if self.entity_description.available_fn is None:
+            return super().available
+        return super().available and self.entity_description.available_fn(
+            self.coordinator
+        )
 
 
 # Define the select entity class with entity_category: config
@@ -368,9 +605,15 @@ class MammotionAsyncConfigSelectEntity(
         self._attr_current_option = self._resolve_option()
 
     def _resolve_option(self) -> str:
-        """Return the current option, falling back to the first if the index is out of range."""
+        """Return the current option, falling back to the first option."""
         if callable(self.entity_description.get_fn):
-            idx = self.entity_description.get_fn(self.coordinator)
+            value = self.entity_description.get_fn(self.coordinator)
+            if isinstance(value, str) and value in self._attr_options:
+                return value
+            try:
+                idx = int(value)
+            except (TypeError, ValueError):
+                return self._attr_options[0]
             if 0 <= idx < len(self._attr_options):
                 return self._attr_options[idx]
         return self._attr_options[0]
@@ -396,10 +639,10 @@ class MammotionAsyncConfigSelectEntity(
 
     async def async_update(self) -> None:
         """Update entity state from coordinator."""
+        if self.entity_description.poll_fn is not None:
+            await self.entity_description.poll_fn(self.coordinator)
         if callable(self.entity_description.get_fn):
-            self._attr_current_option = self._attr_options[
-                self.entity_description.get_fn(self.coordinator)
-            ]
+            self._attr_current_option = self._resolve_option()
         self.async_write_ha_state()
 
 

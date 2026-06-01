@@ -14,21 +14,29 @@ from homeassistant.components.number import (
 from homeassistant.const import (
     DEGREE,
     PERCENTAGE,
-    UnitOfArea,
     UnitOfLength,
     UnitOfSpeed,
 )
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pymammotion.data.model.device import PoolCleanerDevice
 from pymammotion.data.model.device_limits import DeviceLimits
+from pymammotion.data.model.mowing_modes import PathAngleSetting
 from pymammotion.utility.device_config import DeviceConfig
 from pymammotion.utility.device_type import DeviceType
 
 from . import MammotionConfigEntry
 from .coordinator import MammotionBaseUpdateCoordinator, MammotionSpinoCoordinator
+from .const import DOMAIN
 from .entity import MammotionBaseEntity, MammotionBaseSpinoEntity
+from .yuka import (
+    GRID_PATTERN_VALUE,
+    STRIPES_PATTERN_VALUE,
+    is_yuka_2,
+    is_yuka_mini_or_ml,
+)
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -40,6 +48,7 @@ class MammotionConfigNumberEntityDescription(NumberEntityDescription):  # type: 
         Callable[[MammotionBaseUpdateCoordinator[Any], float], Awaitable[None]] | None
     ) = None
     get_fn: Callable[[MammotionBaseUpdateCoordinator[Any]], float | None] | None = None
+    available_fn: Callable[[MammotionBaseUpdateCoordinator[Any]], bool] | None = None
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -140,15 +149,44 @@ NUMBER_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
 
 YUKA_NUMBER_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
     MammotionConfigNumberEntityDescription(
-        key="dumping_interval",
-        native_min_value=5,
-        native_max_value=100,
-        native_step=1,
-        mode=NumberMode.SLIDER,
-        native_unit_of_measurement=UnitOfArea.SQUARE_METERS,
+        key="working_speed",
+        device_class=NumberDeviceClass.SPEED,
+        native_unit_of_measurement=UnitOfSpeed.METERS_PER_SECOND,
+        native_step=0.1,
+        native_min_value=0.2,
+        native_max_value=0.6,
+        set_async_fn=lambda coordinator,
+        value: coordinator.async_modify_plan_if_mowing(),
         set_fn=lambda coordinator, value: setattr(
-            coordinator.operation_settings, "collect_grass_frequency", value
+            coordinator.operation_settings, "speed", value
         ),
+    ),
+    MammotionConfigNumberEntityDescription(
+        key="path_spacing",
+        native_step=1,
+        device_class=NumberDeviceClass.DISTANCE,
+        native_unit_of_measurement=UnitOfLength.CENTIMETERS,
+        native_min_value=8,
+        native_max_value=12,
+        set_async_fn=lambda coordinator,
+        value: coordinator.async_modify_plan_if_mowing(),
+        set_fn=lambda coordinator, value: setattr(
+            coordinator.operation_settings, "channel_width", value
+        ),
+    ),
+    MammotionConfigNumberEntityDescription(
+        key="pattern_angle",
+        native_step=1,
+        native_unit_of_measurement=DEGREE,
+        native_min_value=-180,
+        native_max_value=180,
+        set_fn=lambda coordinator, value: setattr(
+            coordinator.operation_settings, "toward", value
+        ),
+        available_fn=lambda coordinator: coordinator.operation_settings.channel_mode
+        in (STRIPES_PATTERN_VALUE, GRID_PATTERN_VALUE)
+        and coordinator.operation_settings.toward_mode
+        == PathAngleSetting.absolute_angle.value,
     ),
 )
 
@@ -208,12 +246,23 @@ async def async_setup_entry(
     mammotion_devices = entry.runtime_data.mowers
 
     for mower in mammotion_devices:
+        _cleanup_removed_yuka_2_numbers(hass, mower.device.device_name)
         limits: DeviceLimits | None = DeviceConfig().get_working_parameters(
             mower.device.product_key
         )
         if handle := mower.api.get_device_by_name(mower.name):
             limits = handle.device_limits
         entities: list[MammotionConfigNumberEntity] = []
+
+        if is_yuka_2(mower.device.device_name):
+            for entity_description in (*YUKA_NUMBER_ENTITIES, *MAP_OFFSET_ENTITIES):
+                entities.append(
+                    MammotionWorkingNumberEntity(
+                        mower.reporting_coordinator, entity_description, None
+                    )
+                )
+            async_add_entities(entities)
+            continue
 
         for entity_description in NUMBER_WORKING_ENTITIES:
             entities.append(
@@ -244,7 +293,7 @@ async def async_setup_entry(
                 )
             )
 
-        if DeviceType.is_yuka(mower.device.device_name) and not DeviceType.is_yuka_mini(
+        if DeviceType.is_yuka(mower.device.device_name) and not is_yuka_mini_or_ml(
             mower.device.device_name
         ):
             for entity_description in YUKA_NUMBER_ENTITIES:
@@ -268,6 +317,25 @@ async def async_setup_entry(
             MammotionSpinoNumberEntity(spino.coordinator, entity_description)
             for entity_description in SPINO_NUMBER_ENTITIES
         )
+
+
+def _cleanup_removed_yuka_2_numbers(hass: HomeAssistant, device_name: str) -> None:
+    """Remove number entities that are not exposed by the Yuka app controls."""
+    if not is_yuka_2(device_name):
+        return
+    registry = er.async_get(hass)
+    for key in (
+        "voice_volume",
+        "start_progress",
+        "cutting_angle",
+        "toward_included_angle",
+        "dumping_interval",
+    ):
+        entity_id = registry.async_get_entity_id(
+            "number", DOMAIN, f"{device_name}_{key}"
+        )
+        if entity_id:
+            registry.async_remove(entity_id)
 
 
 class MammotionConfigNumberEntity(MammotionBaseEntity, RestoreNumber):  # type: ignore[misc]
@@ -319,6 +387,7 @@ class MammotionConfigNumberEntity(MammotionBaseEntity, RestoreNumber):  # type: 
             self.entity_description.set_fn(self.coordinator, value)
         if self.entity_description.set_async_fn is not None:
             await self.entity_description.set_async_fn(self.coordinator, value)
+        self.coordinator.async_update_listeners()
         self.async_write_ha_state()
 
     async def async_added_to_hass(self) -> None:
@@ -333,6 +402,16 @@ class MammotionConfigNumberEntity(MammotionBaseEntity, RestoreNumber):  # type: 
                 self.entity_description.set_fn(
                     self.coordinator, cast(float, self._attr_native_value)
                 )
+                self.coordinator.async_update_listeners()
+
+    @property
+    def available(self) -> bool:
+        """Return True when this number applies to the current Yuka settings."""
+        if self.entity_description.available_fn is None:
+            return super().available
+        return super().available and self.entity_description.available_fn(
+            self.coordinator
+        )
 
 
 class MammotionWorkingNumberEntity(MammotionConfigNumberEntity):
@@ -384,6 +463,7 @@ class MammotionWorkingNumberEntity(MammotionConfigNumberEntity):
             self.entity_description.set_fn(self.coordinator, value)
         if self.entity_description.set_async_fn is not None:
             await self.entity_description.set_async_fn(self.coordinator, value)
+        self.coordinator.async_update_listeners()
         self.async_write_ha_state()
 
 
