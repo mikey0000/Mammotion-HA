@@ -15,6 +15,7 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.restore_state import RestoreEntity
+from homeassistant.util import slugify
 from pymammotion.data.model.device import PoolCleanerDevice
 from pymammotion.data.model.pool_state import SpinoToggle
 from pymammotion.utility.device_type import DeviceType
@@ -558,23 +559,34 @@ def async_add_area_entities(
     if coordinator.data is None:
         return
 
-    switch_entities: list[MammotionConfigAreaSwitchEntity] = []
     computed = coordinator.data.map.computed_areas
-    all_current_areas = {a.hash for a in computed}
     map_area_hashes: set[int] = {
         int(k) for k in coordinator.data.map.area.keys() if str(k).lstrip("-").isdigit()
     }
+    area_names_by_hash: dict[int, str] = {
+        area.hash: area.name
+        for area in computed
+        if not map_area_hashes or area.hash in map_area_hashes
+    }
+    area_names_by_hash.update(_active_named_areas(coordinator, map_area_hashes))
+    all_current_areas = set(area_names_by_hash)
+    if map_area_hashes and not all_current_areas:
+        return
 
     # Trigger re-fetch when the device hasn't yet sent names for all areas.
     # Luba 1 never provides area_name, so skip for it.
     if not DeviceType.is_luba1(coordinator.device_name):
-        area_name_hashes: set[int] = {a.hash for a in coordinator.data.map.area_name}
+        area_name_hashes: set[int] = {
+            a.hash for a in coordinator.data.map.area_name if a.hash in map_area_hashes
+        }
         if map_area_hashes - area_name_hashes:
             coordinator.hass.async_create_task(coordinator.async_get_area_list())
 
     # Startup registry cleanup: remove stale entries from previous sessions.
     if map_area_hashes and (all_current_areas - added_areas):
-        _async_clean_stale_area_registry_entries(coordinator, all_current_areas)
+        _async_clean_stale_area_registry_entries(
+            coordinator, all_current_areas, area_names_by_hash
+        )
 
     # Pre-clear auto-generated names for areas about to be removed so that
     # surviving areas can be renumbered into the freed slots without collision.
@@ -600,9 +612,10 @@ def async_add_area_entities(
         e._area: (name, e) for name, e in area_entities_by_name.items()
     }
 
-    for entry in computed:
-        area_id = entry.hash
-        new_name = entry.name
+    switch_entities: list[MammotionConfigAreaSwitchEntity] = []
+    for area_id, new_name in sorted(
+        area_names_by_hash.items(), key=lambda item: item[1].lower()
+    ):
 
         if area_id in added_areas:
             # Already tracked — update name unless we'd overwrite a real device name
@@ -633,7 +646,7 @@ def async_add_area_entities(
 
         # Missing area — add a new entity with the name supplied by computed_areas.
         base_area_switch_entity = MammotionConfigAreaSwitchEntityDescription(
-            key=f"{area_id}",
+            key=_area_entity_key(area_id, new_name),
             translation_key="area",
             translation_placeholders={"name": new_name},
             area=area_id,
@@ -662,29 +675,89 @@ def async_add_area_entities(
         async_add_entities(switch_entities)
 
 
+def _area_entity_key(area_id: int, name: str) -> str:
+    """Return a stable key for named areas and hash key for unnamed areas."""
+    if _is_generic_area_name(name, area_id):
+        return f"{area_id}"
+    return f"area_{slugify(name)}"
+
+
+def _active_named_areas(
+    coordinator: MammotionReportUpdateCoordinator, map_area_hashes: set[int]
+) -> dict[int, str]:
+    """Return real area names keyed by active mower area hash."""
+    if not map_area_hashes:
+        return {}
+
+    named_areas: dict[int, str] = {}
+    generated_geojson = getattr(coordinator.data.map, "generated_geojson", None) or {}
+    for feature in generated_geojson.get("features", []):
+        properties = feature.get("properties", {})
+        if properties.get("type_name") != "area":
+            continue
+        try:
+            area_id = int(properties.get("hash"))
+        except (TypeError, ValueError):
+            continue
+        if area_id not in map_area_hashes:
+            continue
+        name = str(properties.get("Name") or properties.get("title") or "").strip()
+        if name and not _is_generic_area_name(name, area_id):
+            named_areas[area_id] = name
+
+    for area in coordinator.data.map.area_name:
+        try:
+            area_id = int(area.hash)
+        except (TypeError, ValueError):
+            continue
+        if area_id not in map_area_hashes:
+            continue
+        name = str(getattr(area, "name", "") or "").strip()
+        if name and not _is_generic_area_name(name, area_id):
+            named_areas[area_id] = name
+
+    return named_areas
+
+
+def _is_generic_area_name(name: str, area_id: int) -> bool:
+    """Return True for placeholder area names reported by Mammotion firmware."""
+    normalized = name.strip().lower()
+    return (
+        normalized in {"path", f"area {area_id}", str(area_id)}
+        or bool(_PYMAMMOTION_AUTO_NAME.match(normalized))
+    )
+
+
 def _async_clean_stale_area_registry_entries(
     coordinator: MammotionReportUpdateCoordinator,
     all_current_areas: set[int],
+    area_names_by_hash: dict[int, str],
 ) -> None:
     """Remove area entity registry entries whose hashes are no longer on the device.
 
-    Area entity unique_ids follow ``{unique_name}_{hash}`` where the suffix is
-    the numeric area hash.  Any entry whose hash is absent from
-    ``all_current_areas`` is removed so it cannot appear as a ghost duplicate
-    alongside the replacement entity.
+    Older area entity unique_ids used the area hash directly. Named areas now use
+    a stable name key, so both old hash entries and old name entries are cleaned.
     """
     registry = er.async_get(coordinator.hass)
     prefix = f"{coordinator.unique_name}_"
+    active_unique_ids = {
+        f"{coordinator.unique_name}_{_area_entity_key(area_id, name)}"
+        for area_id, name in area_names_by_hash.items()
+    }
+    area_entity_id_prefix = f"switch.{slugify(coordinator.device_name)}_area_"
 
     for entry in list(registry.entities.values()):
         if entry.domain != SWITCH_DOMAIN or entry.platform != DOMAIN:
             continue
         if not entry.unique_id.startswith(prefix):
             continue
+        if entry.unique_id in active_unique_ids:
+            continue
         suffix = entry.unique_id[len(prefix) :]
-        if not suffix.lstrip("-").isdigit():
-            continue  # non-numeric suffix → not an area entity (e.g. "is_mow")
-        if int(suffix) not in all_current_areas:
+        if suffix.lstrip("-").isdigit() and int(suffix) not in all_current_areas:
+            registry.async_remove(entry.entity_id)
+            continue
+        if entry.entity_id.startswith(area_entity_id_prefix):
             registry.async_remove(entry.entity_id)
 
 
