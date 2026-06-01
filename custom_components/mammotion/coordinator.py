@@ -7,6 +7,7 @@ import contextlib
 import dataclasses
 import datetime
 import json
+import math
 import secrets
 import time
 from abc import abstractmethod
@@ -95,6 +96,7 @@ from .const import (
     LOGGER,
     NO_REQUEST_MODES,
 )
+from .yuka import is_yuka_2
 
 if TYPE_CHECKING:
     from . import MammotionConfigEntry
@@ -102,10 +104,32 @@ if TYPE_CHECKING:
 MAINTENANCE_INTERVAL = timedelta(minutes=60)
 DEFAULT_INTERVAL = timedelta(minutes=30)
 REPORT_INTERVAL = timedelta(minutes=5)
+ACTIVE_REPORT_INTERVAL = timedelta(minutes=1)
 DEVICE_VERSION_INTERVAL = timedelta(weeks=1)
 MAP_INTERVAL = timedelta(minutes=60)
 RTK_INTERVAL = timedelta(hours=5)
 SPINO_INTERVAL = timedelta(weeks=1)
+LOCATION_TRAIL_MAX_POINTS = 500
+LOCATION_TRAIL_MIN_DISTANCE_METERS = 0.25
+LIVE_REPORT_MODES = {
+    int(WorkMode.MODE_WORKING),
+    int(WorkMode.MODE_PAUSE),
+    int(WorkMode.MODE_RETURNING),
+}
+EMPTY_GEOJSON = {"type": "FeatureCollection", "features": []}
+
+
+def _distance_meters(first: tuple[float, float], second: tuple[float, float]) -> float:
+    """Return the rough distance between two lon/lat points in metres."""
+    first_lon, first_lat = first
+    second_lon, second_lat = second
+    mean_lat = math.radians((first_lat + second_lat) / 2)
+    metres_per_lat = 111_111.0
+    metres_per_lon = 111_111.0 * max(math.cos(mean_lat), 0.01)
+    return math.hypot(
+        (second_lon - first_lon) * metres_per_lon,
+        (second_lat - first_lat) * metres_per_lat,
+    )
 
 
 class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # type: ignore[misc]
@@ -158,6 +182,8 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         self._subscriptions: list[Subscription] = []
         self.map_offset_lat: float = 0.0
         self.map_offset_lon: float = 0.0
+        self.location_trail: list[tuple[float, float]] = []
+        self._location_trail_active = False
         self._bluetooth_enabled: bool = True
         self._cloud_enabled: bool = True
 
@@ -1542,9 +1568,95 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
         """Get coordinator data."""
         return device
 
+    async def async_get_dynamics_line(self) -> None:
+        """Fetch the active mow-progress trail from the mower when supported."""
+        if get_dynamics_line := getattr(self.manager, "get_dynamics_line", None):
+            await get_dynamics_line(self.device_name)
+
+    @staticmethod
+    def _is_live_report_active(device: MowingDevice) -> bool:
+        """Return True when live mowing telemetry should be tracked."""
+        try:
+            return int(device.report_data.dev.sys_status) in LIVE_REPORT_MODES
+        except (TypeError, ValueError):
+            return False
+
+    def _clear_live_location_trail(self, device: MowingDevice) -> None:
+        """Drop stale live trail overlays."""
+        self.location_trail.clear()
+        if getattr(device, "map", None) is None:
+            return
+        device.map.generated_dynamics_line_geojson = EMPTY_GEOJSON.copy()
+        device.map.generated_mow_progress_geojson = EMPTY_GEOJSON.copy()
+
+    def _refresh_poll_interval(self, device: MowingDevice) -> bool:
+        """Use near-live polling only while a task is active."""
+        active = self._is_live_report_active(device)
+        if active != self._location_trail_active or (
+            not active and self.location_trail
+        ):
+            self._clear_live_location_trail(device)
+        self._location_trail_active = active
+        self.update_interval = ACTIVE_REPORT_INTERVAL if active else REPORT_INTERVAL
+        return active
+
+    def _update_location_trail(self, device: MowingDevice | None = None) -> None:
+        """Append the latest mower GPS point to the in-memory trail."""
+        if device is None:
+            device = self.manager.get_device_by_name(self.device_name)
+        if device is None or not self._is_live_report_active(device):
+            return
+
+        location = getattr(getattr(device, "location", None), "device", None)
+        latitude = getattr(location, "latitude", None)
+        longitude = getattr(location, "longitude", None)
+        try:
+            lat = float(latitude)
+            lon = float(longitude)
+        except (TypeError, ValueError):
+            return
+        if not (-90 <= lat <= 90 and -180 <= lon <= 180) or (lat == 0 and lon == 0):
+            return
+
+        point = (lon, lat)
+        if self.location_trail and (
+            _distance_meters(self.location_trail[-1], point)
+            < LOCATION_TRAIL_MIN_DISTANCE_METERS
+        ):
+            return
+        self.location_trail.append(point)
+        if len(self.location_trail) > LOCATION_TRAIL_MAX_POINTS:
+            del self.location_trail[:-LOCATION_TRAIL_MAX_POINTS]
+        self._sync_location_trail_geojson(device)
+
+    def _sync_location_trail_geojson(self, device: MowingDevice) -> None:
+        """Persist the HA GPS trail as a Mammotion map overlay."""
+        if len(self.location_trail) < 2 or getattr(device, "map", None) is None:
+            return
+        device.map.generated_dynamics_line_geojson = {
+            "type": "FeatureCollection",
+            "name": "Mammotion Live Trail",
+            "features": [
+                {
+                    "type": "Feature",
+                    "properties": {
+                        "type_name": "trail",
+                        "Name": "Trail",
+                        "color": "#2377eb",
+                    },
+                    "geometry": {
+                        "type": "LineString",
+                        "coordinates": self.location_trail[-LOCATION_TRAIL_MAX_POINTS:],
+                    },
+                }
+            ],
+        }
+
     async def _async_update_data(self) -> MowingDevice:
         """Get data from the device."""
         if data := await super()._async_update_data():
+            self._refresh_poll_interval(data)
+            self._update_location_trail(data)
             return data
 
         device = self.manager.get_device_by_name(self.device_name)
@@ -1552,8 +1664,23 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
             LOGGER.debug("device not found")
             return self.data
 
+        active = self._refresh_poll_interval(device)
+        if active:
+            try:
+                await self.async_request_report_snapshot()
+                await self.async_get_dynamics_line()
+            except (DeviceOfflineException, NoTransportAvailableError):
+                LOGGER.debug(
+                    "Skipping live refresh for %s because the device is offline",
+                    self.device_name,
+                )
+                return device
+            if refreshed_device := self.manager.get_device_by_name(self.device_name):
+                device = refreshed_device
+
         LOGGER.debug("Updated Mammotion device %s", self.device_name)
         self.update_failures = 0
+        self._update_location_trail(device)
         await self.async_save_data(device)
 
         if self.data.mower_state.ble_mac != "" and len(self._on_stop) == 0:
@@ -1586,6 +1713,13 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
                         )
 
         return device
+
+    async def _on_state_changed(self, snapshot: DeviceSnapshot) -> None:
+        """Push updated device data to HA."""
+        data = cast(MowingDevice, snapshot.raw)
+        self._refresh_poll_interval(data)
+        self._update_location_trail(data)
+        self.async_set_updated_data(data)
 
     async def _async_update_notification(self, res: tuple[str, Any | None]) -> None:
         """Update data from incoming messages."""
@@ -1633,6 +1767,9 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
             await self.async_read_traversal_mode()
             if DeviceType.is_mini_or_x_series(self.device_name):
                 await self.async_read_manual_light()
+                await self.async_read_night_light()
+                await self.async_read_cutter_mode()
+            elif is_yuka_2(self.device_name):
                 await self.async_read_night_light()
                 await self.async_read_cutter_mode()
             if DeviceType.is_luba_pro(self.device_name):
