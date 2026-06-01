@@ -59,6 +59,7 @@ from .entity import (
     MammotionBaseRTKEntity,
     MammotionBaseSpinoEntity,
 )
+from .yuka import is_yuka_2
 
 
 class MowerDataFormatter:
@@ -538,6 +539,14 @@ async def async_setup_entry(
 
     entities = []
     for mower in mammotion_mowers:
+        yuka2 = is_yuka_2(mower.device.device_name) or is_yuka_2(
+            mower.reporting_coordinator.unique_name
+        )
+        if yuka2:
+            _cleanup_removed_yuka_2_sensors(
+                hass, mower.reporting_coordinator.unique_name
+            )
+
         if not DeviceType.is_yuka(mower.device.device_name):
             entities.extend(
                 MammotionSensorEntity(mower.reporting_coordinator, description)
@@ -545,9 +554,18 @@ async def async_setup_entry(
             )
 
         if DeviceType.is_luba_pro(mower.device.device_name):
+            luba_2_yuka_types = (
+                tuple(
+                    description
+                    for description in LUBA_2_YUKA_ONLY_TYPES
+                    if description.key != "camera_brightness"
+                )
+                if yuka2
+                else LUBA_2_YUKA_ONLY_TYPES
+            )
             entities.extend(
                 MammotionSensorEntity(mower.reporting_coordinator, description)
-                for description in LUBA_2_YUKA_ONLY_TYPES
+                for description in luba_2_yuka_types
             )
             if not DeviceType.is_yuka_mini(mower.device.device_name):
                 entities.extend(
@@ -555,9 +573,19 @@ async def async_setup_entry(
                     for description in MINI_SERIES_EXCLUDED_TYPES
                 )
 
+        sensor_types = (
+            tuple(
+                description
+                for description in SENSOR_TYPES
+                if description.key != "non_work_hours"
+            )
+            if yuka2
+            else SENSOR_TYPES
+        )
+
         entities.extend(
             MammotionSensorEntity(mower.reporting_coordinator, description)
-            for description in SENSOR_TYPES
+            for description in sensor_types
         )
         entities.extend(
             MammotionWorkSensorEntity(mower.reporting_coordinator, description)
@@ -600,6 +628,22 @@ async def async_setup_entry(
         )
 
     async_add_entities(entities)
+
+
+def _cleanup_removed_yuka_2_sensors(hass: HomeAssistant, unique_name: str) -> None:
+    """Remove sensor entities that are not exposed by the Yuka app controls."""
+    registry = er.async_get(hass)
+    removed_unique_ids = {
+        f"{unique_name}_{key}"
+        for key in ("camera_brightness", "non_work_hours", "route_settings")
+    }
+    for entry in list(registry.entities.values()):
+        if (
+            entry.domain == SENSOR_DOMAIN
+            and entry.platform == DOMAIN
+            and entry.unique_id in removed_unique_ids
+        ):
+            registry.async_remove(entry.entity_id)
 
 
 class MammotionSensorEntity(MammotionBaseEntity, SensorEntity):
