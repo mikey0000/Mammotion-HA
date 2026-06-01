@@ -341,7 +341,7 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                         CONF_ACCOUNTNAME: account or None,
                         CONF_PASSWORD: password or None,
                         CONF_ACCOUNT_ID: account_id,
-                        CONF_USE_WIFI: bool(account),
+                        CONF_USE_WIFI: bool(has_cloud_account),
                         CONF_HAS_CLOUD_ACCOUNT: has_cloud_account,
                     },
                     reason="reconfigure_successful",
