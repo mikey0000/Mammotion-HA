@@ -409,6 +409,7 @@
       "wildlife_safety": {
         "name": "Wildlife safety",
         "state": {
+          "off": "Off",
           "low_speed_mowing": "Low-speed mowing",
           "stop_mowing": "Stop mowing"
         }

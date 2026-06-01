@@ -571,12 +571,10 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
     async def async_update(self) -> None:
         """Update the entity state."""
         self._attr_is_on = self._area in self.coordinator.operation_settings.areas
-        area_keys: set[int] = {
-            int(k)
-            for k in self.coordinator.data.map.area.keys()
-            if str(k).lstrip("-").isdigit()
-        }
-        if self._area not in area_keys:
+        known_area_hashes = _known_area_hashes(self.coordinator)
+        if self._area not in known_area_hashes and _area_names_loaded(
+            self.coordinator
+        ):
             await self.async_remove()
             return
         self.async_write_ha_state()
@@ -598,16 +596,22 @@ def async_add_area_entities(
     if coordinator.data is None:
         return
 
-    computed = coordinator.data.map.computed_areas
+    computed = coordinator.data.map.computed_areas or []
     map_area_hashes: set[int] = {
         int(k) for k in coordinator.data.map.area.keys() if str(k).lstrip("-").isdigit()
     }
-    area_names_by_hash: dict[int, str] = {
-        area.hash: area.name
-        for area in computed
-        if not map_area_hashes or area.hash in map_area_hashes
-    }
-    area_names_by_hash.update(_active_named_areas(coordinator, map_area_hashes))
+    area_names_by_hash = _active_named_areas(coordinator, map_area_hashes)
+    area_names = {name.lower() for name in area_names_by_hash.values()}
+    for area in computed:
+        area_name = str(getattr(area, "name", "") or "").strip()
+        if not area_name or _is_generic_area_name(area_name, area.hash):
+            continue
+        if map_area_hashes and area.hash not in map_area_hashes:
+            if area_name.lower() in area_names:
+                continue
+        area_names_by_hash[area.hash] = area_name
+        area_names.add(area_name.lower())
+    area_names_by_hash.update(_fallback_named_areas(coordinator, area_names_by_hash))
     all_current_areas = set(area_names_by_hash)
     if map_area_hashes and not all_current_areas:
         return
@@ -615,14 +619,13 @@ def async_add_area_entities(
     # Trigger re-fetch when the device hasn't yet sent names for all areas.
     # Luba 1 never provides area_name, so skip for it.
     if not DeviceType.is_luba1(coordinator.device_name):
-        area_name_hashes: set[int] = {
-            a.hash for a in coordinator.data.map.area_name if a.hash in map_area_hashes
-        }
-        if map_area_hashes - area_name_hashes:
+        named_map_area_hashes = set(area_names_by_hash) & map_area_hashes
+        if map_area_hashes - named_map_area_hashes:
             coordinator.hass.async_create_task(coordinator.async_get_area_list())
 
     # Startup registry cleanup: remove stale entries from previous sessions.
-    if map_area_hashes and (all_current_areas - added_areas):
+    area_names_loaded = _area_names_loaded(coordinator)
+    if map_area_hashes and area_names_loaded and (all_current_areas - added_areas):
         _async_clean_stale_area_registry_entries(
             coordinator, all_current_areas, area_names_by_hash
         )
@@ -699,7 +702,7 @@ def async_add_area_entities(
 
     # Guard: only remove when map.area is non-empty — an empty map is a transient
     # refresh state and must not wipe the entity registry.
-    if map_area_hashes:
+    if map_area_hashes and area_names_loaded:
         old_areas = added_areas - all_current_areas
         if old_areas:
             async_remove_entities(coordinator, old_areas)
@@ -729,6 +732,20 @@ def _active_named_areas(
         return {}
 
     named_areas: dict[int, str] = {}
+    for area_hash, area_data in coordinator.data.map.area.items():
+        try:
+            area_id = int(area_hash)
+        except (TypeError, ValueError):
+            continue
+        if area_id not in map_area_hashes:
+            continue
+        for frame in getattr(area_data, "data", []) or []:
+            name_time = getattr(frame, "name_time", None)
+            name = str(getattr(name_time, "name", "") or "").strip()
+            if name and not _is_generic_area_name(name, area_id):
+                named_areas[area_id] = name
+                break
+
     generated_geojson = getattr(coordinator.data.map, "generated_geojson", None) or {}
     for feature in generated_geojson.get("features", []):
         properties = feature.get("properties", {})
@@ -756,6 +773,56 @@ def _active_named_areas(
             named_areas[area_id] = name
 
     return named_areas
+
+
+def _fallback_named_areas(
+    coordinator: MammotionReportUpdateCoordinator, current_areas: dict[int, str]
+) -> dict[int, str]:
+    """Return named areas that are known but not present in the current map payload."""
+    current_names = {name.lower() for name in current_areas.values()}
+    named_areas: dict[int, str] = {}
+
+    for area in coordinator.data.map.area_name:
+        try:
+            area_id = int(area.hash)
+        except (TypeError, ValueError):
+            continue
+        name = str(getattr(area, "name", "") or "").strip()
+        if not name or _is_generic_area_name(name, area_id):
+            continue
+        if name.lower() in current_names:
+            continue
+        named_areas[area_id] = name
+        current_names.add(name.lower())
+
+    return named_areas
+
+
+def _known_area_hashes(coordinator: MammotionBaseUpdateCoordinator) -> set[int]:
+    """Return area hashes that the mower currently advertises as selectable."""
+    mower_map = getattr(coordinator.data, "map", None)
+    if mower_map is None:
+        return set()
+
+    area_hashes: set[int] = {
+        int(k) for k in mower_map.area.keys() if str(k).lstrip("-").isdigit()
+    }
+    for area in mower_map.area_name:
+        try:
+            area_id = int(area.hash)
+        except (TypeError, ValueError):
+            continue
+        name = str(getattr(area, "name", "") or "").strip()
+        if name and not _is_generic_area_name(name, area_id):
+            area_hashes.add(area_id)
+
+    return area_hashes
+
+
+def _area_names_loaded(coordinator: MammotionBaseUpdateCoordinator) -> bool:
+    """Return True when the mower has supplied its named area list."""
+    mower_map = getattr(coordinator.data, "map", None)
+    return bool(getattr(mower_map, "area_name", None))
 
 
 def _is_generic_area_name(name: str, area_id: int) -> bool:

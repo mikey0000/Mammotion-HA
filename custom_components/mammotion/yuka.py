@@ -16,7 +16,7 @@ VOICE_VOLUME_LEVEL_OPTIONS = ["one", "two", "three", "four", "five"]
 PATTERN_FAMILY_OPTIONS = ["perimeter_only", "stripes", "grid"]
 STRIPES_PATTERN_OPTIONS = ["efficient", "random", "custom"]
 GRID_PATTERN_OPTIONS = ["default", "random", "custom"]
-WILDLIFE_SAFETY_OPTIONS = ["low_speed_mowing", "stop_mowing"]
+WILDLIFE_SAFETY_OPTIONS = ["off", "low_speed_mowing", "stop_mowing"]
 
 PATTERN_FAMILY_VALUES = {"perimeter_only": 3, "stripes": 0, "grid": 1}
 STRIPES_PATTERN_VALUE = PATTERN_FAMILY_VALUES["stripes"]
@@ -26,7 +26,7 @@ OBSTACLE_VALUES = {"off": 0, "standard": 10, "sensitive": 11}
 BLADE_SPEED_VALUES = {"low": 1, "high": 2}
 ROUTE_TO_DOCK_VALUES = {"direct": 0, "follow_perimeter": 1}
 VOICE_VOLUME_VALUES = {"one": 20, "two": 40, "three": 60, "four": 80, "five": 100}
-WILDLIFE_SAFETY_VALUES = {"low_speed_mowing": 2, "stop_mowing": 1}
+WILDLIFE_SAFETY_VALUES = {"off": 0, "low_speed_mowing": 2, "stop_mowing": 1}
 
 
 def is_yuka_2(device_name: str) -> bool:
