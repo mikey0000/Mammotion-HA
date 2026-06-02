@@ -74,6 +74,7 @@ from pymammotion.transport.base import (
     LoginFailedError,
     NoTransportAvailableError,
     ReLoginRequiredError,
+    SagaFailedError,
     SessionExpiredError,
     Subscription,
     TransportType,
@@ -112,6 +113,8 @@ RTK_INTERVAL = timedelta(hours=5)
 SPINO_INTERVAL = timedelta(weeks=1)
 LOCATION_TRAIL_MAX_POINTS = 500
 LOCATION_TRAIL_MIN_DISTANCE_METERS = 0.25
+DYNAMICS_LINE_BACKOFF_SECONDS = 300
+DYNAMICS_LINE_FETCH_ENABLED = False
 LIVE_REPORT_MODES = {
     int(WorkMode.MODE_WORKING),
     int(WorkMode.MODE_PAUSE),
@@ -1587,6 +1590,7 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
         )
 
         self._on_stop: list[CALLBACK_TYPE] = []
+        self._next_dynamics_line_fetch_at = 0.0
 
         self.poll_debouncer = Debouncer(
             hass,
@@ -1673,8 +1677,20 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
 
     async def async_get_dynamics_line(self) -> None:
         """Fetch the active mow-progress trail from the mower when supported."""
+        if not DYNAMICS_LINE_FETCH_ENABLED:
+            return
+        now = time.monotonic()
+        if now < self._next_dynamics_line_fetch_at:
+            return
+        self._next_dynamics_line_fetch_at = now + DYNAMICS_LINE_BACKOFF_SECONDS
         if get_dynamics_line := getattr(self.manager, "get_dynamics_line", None):
-            await get_dynamics_line(self.device_name)
+            try:
+                await get_dynamics_line(self.device_name)
+            except (CommandTimeoutError, ConcurrentRequestError, SagaFailedError):
+                LOGGER.debug(
+                    "Backed off Mammotion dynamics-line fetch for %s after timeout",
+                    self.device_name,
+                )
 
     @staticmethod
     def _is_live_report_active(device: MowingDevice) -> bool:
@@ -1771,7 +1787,8 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
         if active:
             try:
                 await self.async_request_report_snapshot()
-                await self.async_get_dynamics_line()
+                if int(getattr(device.report_data.dev, "charge_state", 0) or 0) == 0:
+                    await self.async_get_dynamics_line()
             except (DeviceOfflineException, NoTransportAvailableError):
                 LOGGER.debug(
                     "Skipping live refresh for %s because the device is offline",
