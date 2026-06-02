@@ -423,7 +423,7 @@
         "name": "Mow Order",
         "state": {
           "border_first": "Perimeter first",
-          "grid_first": "ZigZag / Chessboard first"
+          "grid_first": "Interior first"
         }
       },
       "bypass_mode": {
@@ -684,7 +684,7 @@
         },
         "border_mode": {
           "name": "Mow order",
-          "description": "Mowing path order (Perimeter first or grid first)."
+          "description": "Mowing path order (perimeter first or interior first)."
         },
         "job_version": {
           "name": "Job version",
