@@ -66,6 +66,7 @@ class MammotionConfigSelectEntityDescription(SelectEntityDescription):
     key: str
     options: list[str]
     set_fn: Callable[[MammotionBaseUpdateCoordinator, str], None]
+    get_fn: Callable[[MammotionBaseUpdateCoordinator], str | None] | None = None
     default_option: str | None = None
     async_set_fn: (
         Callable[[MammotionBaseUpdateCoordinator], Awaitable[None]] | None
@@ -221,6 +222,65 @@ def _set_yuka_mow_order(
     coordinator.operation_settings.job_mode = value
 
 
+def _value_option(options: list[str], value: int, values: dict[str, int]) -> str:
+    """Return the option matching a numeric operation setting."""
+    for option, option_value in values.items():
+        if option_value == value and option in options:
+            return option
+    return options[0]
+
+
+def _get_yuka_mow_order(coordinator: MammotionBaseUpdateCoordinator) -> str:
+    """Return the selected Yuka mow order from operation settings."""
+    values = {order.name: order.value for order in MowOrder}
+    return _value_option(
+        [order.name for order in MowOrder], coordinator.operation_settings.job_mode, values
+    )
+
+
+def _get_yuka_lap(
+    coordinator: MammotionBaseUpdateCoordinator, setting: str
+) -> str:
+    """Return the selected Yuka lap option from operation settings."""
+    return _value_option(
+        LAP_OPTIONS, getattr(coordinator.operation_settings, setting), LAP_VALUES
+    )
+
+
+def _get_yuka_obstacle_detection(
+    coordinator: MammotionBaseUpdateCoordinator,
+) -> str:
+    """Return the selected Yuka obstacle detection option."""
+    return _value_option(
+        OBSTACLE_OPTIONS,
+        coordinator.operation_settings.ultra_wave,
+        OBSTACLE_VALUES,
+    )
+
+
+def _get_pattern_family(coordinator: MammotionBaseUpdateCoordinator) -> str:
+    """Return the selected Yuka pattern family from operation settings."""
+    return _value_option(
+        PATTERN_FAMILY_OPTIONS,
+        coordinator.operation_settings.channel_mode,
+        PATTERN_FAMILY_VALUES,
+    )
+
+
+def _get_pattern_variant(
+    coordinator: MammotionBaseUpdateCoordinator, options: list[str]
+) -> str:
+    """Return the selected app-level pattern variant from operation settings."""
+    value = coordinator.operation_settings.toward_mode
+    if value == PathAngleSetting.relative_angle.value:
+        return "efficient" if "efficient" in options else "default"
+    if value == PathAngleSetting.random_angle.value:
+        return "random"
+    if value == PathAngleSetting.absolute_angle.value:
+        return "custom"
+    return options[0]
+
+
 SELECT_ENTITIES: tuple[MammotionConfigSelectEntityDescription, ...] = (
     MammotionConfigSelectEntityDescription(
         key="channel_mode",
@@ -259,12 +319,14 @@ YUKA_SELECT_ENTITIES: tuple[MammotionConfigSelectEntityDescription, ...] = (
         key="border_mode",
         options=[order.name for order in MowOrder],
         default_option=MowOrder.border_first.name,
+        get_fn=_get_yuka_mow_order,
         set_fn=_set_yuka_mow_order,
     ),
     MammotionConfigSelectEntityDescription(
         key="mowing_laps",
         options=LAP_OPTIONS,
         default_option="three",
+        get_fn=lambda coordinator: _get_yuka_lap(coordinator, "mowing_laps"),
         set_fn=lambda coordinator, value: setattr(
             coordinator.operation_settings, "mowing_laps", LAP_VALUES[value]
         ),
@@ -273,6 +335,7 @@ YUKA_SELECT_ENTITIES: tuple[MammotionConfigSelectEntityDescription, ...] = (
         key="obstacle_laps",
         options=LAP_OPTIONS,
         default_option="none",
+        get_fn=lambda coordinator: _get_yuka_lap(coordinator, "obstacle_laps"),
         set_fn=lambda coordinator, value: setattr(
             coordinator.operation_settings, "obstacle_laps", LAP_VALUES[value]
         ),
@@ -281,6 +344,7 @@ YUKA_SELECT_ENTITIES: tuple[MammotionConfigSelectEntityDescription, ...] = (
         key="bypass_mode",
         options=OBSTACLE_OPTIONS,
         default_option="standard",
+        get_fn=_get_yuka_obstacle_detection,
         set_fn=lambda coordinator, value: setattr(
             coordinator.operation_settings, "ultra_wave", OBSTACLE_VALUES[value]
         ),
@@ -290,6 +354,7 @@ YUKA_SELECT_ENTITIES: tuple[MammotionConfigSelectEntityDescription, ...] = (
         key="pattern_family",
         options=PATTERN_FAMILY_OPTIONS,
         default_option="grid",
+        get_fn=_get_pattern_family,
         set_fn=_set_pattern_family,
         async_set_fn=lambda coordinator: coordinator.async_modify_plan_if_mowing(),
     ),
@@ -297,6 +362,9 @@ YUKA_SELECT_ENTITIES: tuple[MammotionConfigSelectEntityDescription, ...] = (
         key="stripes_pattern",
         options=STRIPES_PATTERN_OPTIONS,
         default_option="random",
+        get_fn=lambda coordinator: _get_pattern_variant(
+            coordinator, STRIPES_PATTERN_OPTIONS
+        ),
         set_fn=_set_stripes_pattern,
         async_set_fn=lambda coordinator: coordinator.async_modify_plan_if_mowing(),
         available_fn=lambda coordinator: coordinator.operation_settings.channel_mode
@@ -306,6 +374,9 @@ YUKA_SELECT_ENTITIES: tuple[MammotionConfigSelectEntityDescription, ...] = (
         key="grid_pattern",
         options=GRID_PATTERN_OPTIONS,
         default_option="random",
+        get_fn=lambda coordinator: _get_pattern_variant(
+            coordinator, GRID_PATTERN_OPTIONS
+        ),
         set_fn=_set_grid_pattern,
         async_set_fn=lambda coordinator: coordinator.async_modify_plan_if_mowing(),
         available_fn=lambda coordinator: coordinator.operation_settings.channel_mode
@@ -548,7 +619,17 @@ class MammotionConfigSelectEntity(MammotionBaseEntity, SelectEntity, RestoreEnti
         self._attr_current_option = (
             entity_description.default_option or entity_description.options[0]
         )
-        self.entity_description.set_fn(self.coordinator, self._attr_current_option)
+        self._attr_current_option = self._resolve_option()
+        if self.entity_description.get_fn is None:
+            self.entity_description.set_fn(self.coordinator, self._attr_current_option)
+
+    def _resolve_option(self) -> str:
+        """Return the current option from coordinator operation settings."""
+        if self.entity_description.get_fn is not None:
+            option = self.entity_description.get_fn(self.coordinator)
+            if option in self._attr_options:
+                return option
+        return self._attr_current_option
 
     async def async_select_option(self, option: str) -> None:
         """Select an option."""
@@ -558,6 +639,12 @@ class MammotionConfigSelectEntity(MammotionBaseEntity, SelectEntity, RestoreEnti
             await self.entity_description.async_set_fn(self.coordinator)
         self.coordinator.async_update_listeners()
         self.async_write_ha_state()
+
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+        self._attr_current_option = self._resolve_option()
+        super()._handle_coordinator_update()
 
     async def async_added_to_hass(self) -> None:
         """Restore last state."""

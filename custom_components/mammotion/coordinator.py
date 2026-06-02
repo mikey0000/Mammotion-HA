@@ -55,6 +55,7 @@ from pymammotion.data.model.device_config import OperationSettings, create_path_
 from pymammotion.data.model.hash_list import AreaHashNameList, Plan, SvgMessage
 from pymammotion.data.model.pool_state import PoolPlan, SpinoToggle
 from pymammotion.data.model.report_info import Maintain, NetUsedType
+from pymammotion.data.model.work import CurrentTaskSettings
 from pymammotion.data.mqtt.event import DeviceNotificationEventParams, ThingEventMessage
 from pymammotion.data.mqtt.properties import ThingPropertiesMessage
 from pymammotion.data.mqtt.status import StatusType, ThingStatusMessage
@@ -420,7 +421,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         command: str,
         expected_field: str,
         **kwargs: Any,
-    ) -> None:
+    ) -> Any | None:
         """Send a command and wait for response with standard exception handling.
 
         Handles credential expiry, gateway/transport timeouts, and device-offline
@@ -429,16 +430,18 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         """
         device = self.manager.get_device_by_name(self.device_name)
         if device is None or not self.is_online():
-            return
+            return None
 
         try:
-            await self.manager.send_command_and_wait(
+            response = await self.manager.send_command_and_wait(
                 self.device_name,
                 command,
                 expected_field,
                 prefer_ble=self._bluetooth_enabled,
                 **kwargs,
             )
+            self.update_failures = 0
+            return response
         except EXPIRED_CREDENTIAL_EXCEPTIONS as exc:
             self.update_failures += 1
             await self.async_refresh_login(exc)
@@ -456,8 +459,14 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             GatewayTimeoutException,
             CommandTimeoutError,
             ConcurrentRequestError,
-        ):
-            pass
+        ) as exc:
+            LOGGER.debug(
+                "Command %s for %s did not receive %s: %s",
+                command,
+                self.device_name,
+                expected_field,
+                exc,
+            )
         except asyncio.CancelledError:
             # bleak_retry_connector raises CancelledError when no BLE slot is
             # available (it cancels its own internal sleep).  Re-raise only when
@@ -470,6 +479,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
                 "BLE connection cancelled (no available slot) for %s — skipping",
                 self.device_name,
             )
+        return None
 
     @staticmethod
     def device_offline(device: MowingDevice | RTKBaseStationDevice) -> None:
@@ -1109,11 +1119,15 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         #     and route_information.toward_mode == 0
         # ):
         #     route_information.toward = 0
-        await self.async_send_and_wait(
+        response = await self.async_send_and_wait(
             "generate_route_information",
             "bidire_reqconver_path",
             generate_route_information=route_information,
         )
+        if response is None:
+            return False
+        if not self.sync_operation_settings_from_route_response(response):
+            return False
         return True
 
     async def async_get_plan_route(self, operation_settings: OperationSettings) -> None:
@@ -1143,9 +1157,11 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
 
         route_information = self.generate_route_information(operation_settings)
 
-        return await self.async_send_command(
+        result = await self.async_send_command(
             "modify_route_information", generate_route_information=route_information
         )
+        self.sync_operation_settings_from_current_task()
+        return result
 
     async def start_task(self, plan_id: str) -> None:
         """Start task."""
@@ -1241,9 +1257,96 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         """Return operation settings for planning."""
         return self._operation_settings
 
+    def _current_task_from_route_response(
+        self, response: Any
+    ) -> CurrentTaskSettings | None:
+        """Extract accepted route settings from a route-planning response."""
+        if response is None or getattr(response, "nav", None) is None:
+            return None
+
+        try:
+            nav_msg = betterproto2.which_one_of(response.nav, "SubNavMsg")
+        except (AttributeError, ValueError, KeyError):
+            return None
+
+        if nav_msg[0] != "bidire_reqconver_path":
+            return None
+
+        return CurrentTaskSettings.from_dict(
+            nav_msg[1].to_dict(casing=betterproto2.Casing.SNAKE)
+        )
+
+    def sync_operation_settings_from_route_response(self, response: Any) -> bool:
+        """Mirror accepted route settings from a route-planning ACK."""
+        work = self._current_task_from_route_response(response)
+        if work is None:
+            return False
+        if work.result != 0:
+            LOGGER.debug(
+                "Route planning for %s returned result=%s",
+                self.device_name,
+                work.result,
+            )
+            return False
+
+        device = self.manager.get_device_by_name(self.device_name) or self.data
+        if device is not None:
+            cast(MowingDevice, device).work = work
+        if self.data is not None:
+            cast(MowingDevice, self.data).work = work
+        self._sync_operation_settings_from_work(work)
+        return True
+
+    def sync_operation_settings_from_current_task(self) -> None:
+        """Mirror accepted route settings from the mower's current task."""
+        device = self.manager.get_device_by_name(self.device_name) or self.data
+        if device is None:
+            return
+
+        work = cast(MowingDevice, device).work
+        if work is None:
+            return
+
+        self._sync_operation_settings_from_work(work)
+
+    def _sync_operation_settings_from_work(self, work: CurrentTaskSettings) -> None:
+        """Mirror accepted route settings from current task data."""
+        path_order = GenerateRouteInformation.decode_path_order(work.reserved)
+        self._operation_settings.areas = [
+            area for area in list(dict.fromkeys(work.zone_hashs)) if area
+        ]
+        self._operation_settings.toward = work.toward
+        self._operation_settings.toward_mode = work.toward_mode
+        self._operation_settings.toward_included_angle = work.toward_included_angle
+        self._operation_settings.mowing_laps = work.edge_mode
+        self._operation_settings.obstacle_laps = path_order.obstacle_laps
+        self._operation_settings.rain_tactics = path_order.rain_tactics
+        self._operation_settings.start_progress = path_order.start_progress
+        self._operation_settings.collect_grass_frequency = (
+            path_order.collect_grass_freq
+        )
+        self._operation_settings.job_mode = work.job_mode
+        self._operation_settings.border_mode = work.job_mode
+        self._operation_settings.job_id = work.job_id
+        self._operation_settings.job_version = work.job_ver
+        self._operation_settings.speed = work.speed
+        self._operation_settings.ultra_wave = work.ultra_wave
+        self._operation_settings.channel_mode = work.channel_mode
+        self._operation_settings.channel_width = work.channel_width
+        self._operation_settings.path_order = work.reserved
+        self._operation_settings.blade_height = work.knife_height
+        self.async_update_listeners()
+
     async def async_modify_plan_if_mowing(self) -> None:
         """Re-plan the current mow route if the device is actively mowing."""
         _mdata = cast(MowingDevice, self.data)
+        if (
+            _mdata.report_data.dev.sys_status != WorkMode.MODE_WORKING
+            or _mdata.report_data.dev.charge_state != 0
+        ):
+            return
+        if _mdata.work is None:
+            return
         if (
             int(_mdata.report_data.work.bp_hash) in _mdata.work.zone_hashs
             and (_mdata.report_data.work.area >> 16) != 100
