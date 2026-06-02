@@ -21,7 +21,7 @@ from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import service
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pymammotion.data.model.report_info import DeviceData, ReportData
-from pymammotion.utility.constant.device_constant import WorkMode
+from pymammotion.utility.constant.device_constant import PosType, WorkMode
 from pymammotion.utility.device_type import DeviceType
 
 from . import MammotionConfigEntry
@@ -213,7 +213,10 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
         if mode is None:
             return None
 
+        position_type = self.coordinator.data.location.position_type
         LOGGER.debug("activity mode %s", mode)
+        if mode == WorkMode.MODE_READY and position_type == PosType.CHARGE_ON.value:
+            return LawnMowerActivity.DOCKED
         if mode == WorkMode.MODE_PAUSE or (
             mode == WorkMode.MODE_READY and charge_state == 0
         ):
