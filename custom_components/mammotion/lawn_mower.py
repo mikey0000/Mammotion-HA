@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from copy import copy
 from datetime import time
 from typing import Any, cast
@@ -227,12 +228,36 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
             return LawnMowerActivity.DOCKED
         return None
 
+    async def _async_wait_for_modes(
+        self, modes: set[WorkMode], attempts: int = 15
+    ) -> bool:
+        """Wait for the mower to report one of the expected work modes."""
+        for _ in range(attempts):
+            await self.coordinator.async_request_report_snapshot()
+            if self.rpt_dev_status.sys_status in modes:
+                return True
+            await asyncio.sleep(1)
+        await self.coordinator.async_request_report_snapshot()
+        return self.rpt_dev_status.sys_status in modes
+
+    async def _async_start_job_and_verify(self, trans_key: str) -> None:
+        """Start the planned job and verify the mower actually begins work."""
+        if not await self.coordinator.async_send_command("start_job"):
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key=trans_key
+            )
+        if not await self._async_wait_for_modes({WorkMode.MODE_WORKING}):
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key=trans_key
+            )
+
     async def async_start_mowing(self, **kwargs: Any) -> None:
         """Start mowing."""
         trans_key = "pause_failed"
 
         await self.coordinator.async_ensure_fresh_state()
 
+        explicit_route = bool(kwargs)
         if kwargs:
             entity_ids = kwargs.pop("areas", [])
             attributes = [
@@ -281,8 +306,22 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
                     await self.coordinator.async_modify_plan_route(operational_settings)
                     return
 
-                if kwargs:
+                if explicit_route:
                     await self.async_cancel()
+                    await self.coordinator.async_request_report_snapshot()
+                    for _ in range(5):
+                        mode = self.rpt_dev_status.sys_status
+                        if mode != WorkMode.MODE_PAUSE:
+                            break
+                        await asyncio.sleep(1)
+                        await self.coordinator.async_request_report_snapshot()
+                    mode = self.rpt_dev_status.sys_status
+                    breakpoint_info = 0
+                    if (
+                        mode == WorkMode.MODE_PAUSE
+                        and self.rpt_dev_status.charge_state != 0
+                    ):
+                        mode = WorkMode.MODE_READY
 
                 if mode == WorkMode.MODE_RETURNING:
                     trans_key = "dock_cancel_failed"
@@ -295,23 +334,38 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
                     trans_key = "resume_failed"
                     if breakpoint_info != 0:
                         await self.coordinator.async_send_command("resume_execute_task")
-                        await self.coordinator.async_send_and_wait(
+                        response = await self.coordinator.async_send_and_wait(
                             "query_generate_route_information", "bidire_reqconver_path"
                         )
+                        if not self.coordinator.sync_operation_settings_from_route_response(
+                            response
+                        ):
+                            raise HomeAssistantError(
+                                translation_domain=DOMAIN, translation_key=trans_key
+                            )
                 if mode in (WorkMode.MODE_READY, WorkMode.MODE_INITIALIZATION):
                     trans_key = "start_failed"
                     if breakpoint_info != 0:
-                        await self.coordinator.async_send_and_wait(
+                        response = await self.coordinator.async_send_and_wait(
                             "query_generate_route_information", "bidire_reqconver_path"
                         )
-                        if not plan_only:
-                            await self.coordinator.async_send_command("start_job")
-                        return
-                    if await self.coordinator.async_plan_route(operational_settings):
-                        if not plan_only:
-                            await self.coordinator.async_send_and_wait(
-                                "start_job", "zone_start_precent_t"
+                        if not self.coordinator.sync_operation_settings_from_route_response(
+                            response
+                        ):
+                            raise HomeAssistantError(
+                                translation_domain=DOMAIN, translation_key=trans_key
                             )
+                        if not plan_only:
+                            await self._async_start_job_and_verify(trans_key)
+                        return
+                    if not await self.coordinator.async_plan_route(
+                        operational_settings
+                    ):
+                        raise HomeAssistantError(
+                            translation_domain=DOMAIN, translation_key=trans_key
+                        )
+                    if not plan_only:
+                        await self._async_start_job_and_verify(trans_key)
 
             except COMMAND_EXCEPTIONS as exc:
                 raise HomeAssistantError(
