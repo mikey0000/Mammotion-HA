@@ -1041,6 +1041,10 @@
     "refresh_tasks": {
       "name": "Feladatok frissítése",
       "description": "Újra letölti az összes ütemezést az eszközről."
+    },
+    "start_task": {
+      "name": "Feladat indítása",
+      "description": "Egy tárolt ütemezést azonnal végrehajt (másik neve „ütemezés indítása”). Csak fűnyíró — a Spino medencetisztítónak nincs ezzel egyenértékű parancsa."
     }
   },
   "exceptions": {
@@ -1076,6 +1080,9 @@
     },
     "task_not_found": {
       "message": "A(z) {plan_id} feladat nem található az eszközön. Frissítsd az ütemezést, és próbáld újra."
+    },
+    "start_task_unsupported_on_spino": {
+      "message": "A Spino medencetisztító nem támogatja az ütemezés kérésre történő indítását — a firmware nem rendelkezik „azonnali futtatás” paranccsal a tárolt ütemezésekhez."
     }
   }
 }

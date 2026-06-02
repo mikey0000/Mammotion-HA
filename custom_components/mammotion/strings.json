@@ -917,6 +917,10 @@
     "refresh_tasks": {
       "name": "Refresh tasks",
       "description": "Re-fetch every schedule from the targeted device. Use after delete-all or to recover from a missed update."
+    },
+    "start_task": {
+      "name": "Start task",
+      "description": "Run a stored schedule immediately (also known as 'start schedule'). Mower-only — the Spino pool cleaner has no equivalent command, so targeting a Spino task entity raises an error."
     }
   },
   "exceptions": {
@@ -949,6 +953,9 @@
     },
     "cloud_setup_failed": {
       "message": "Unable to connect to the Mammotion cloud. Check your network and try reloading the integration."
+    },
+    "start_task_unsupported_on_spino": {
+      "message": "Starting a schedule on demand is not supported on the Spino pool cleaner — the device firmware has no execute-now command for stored plans."
     }
   }
 }

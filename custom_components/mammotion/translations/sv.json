@@ -1041,6 +1041,10 @@
     "refresh_tasks": {
       "name": "Uppdatera uppgifter",
       "description": "Hämtar om alla scheman från enheten."
+    },
+    "start_task": {
+      "name": "Starta uppgift",
+      "description": "Kör ett sparat schema omedelbart (även kallat 'starta schema'). Endast gräsklippare — Spino-poolroboten har inte motsvarande kommando."
     }
   },
   "exceptions": {
@@ -1076,6 +1080,9 @@
     },
     "task_not_found": {
       "message": "Uppgiften {plan_id} kunde inte hittas på enheten. Uppdatera schemat och försök igen."
+    },
+    "start_task_unsupported_on_spino": {
+      "message": "Att starta ett schema på begäran stöds inte på Spino-poolroboten — enhetens firmware har inget 'kör nu'-kommando för sparade scheman."
     }
   }
 }

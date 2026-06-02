@@ -1041,6 +1041,10 @@
     "refresh_tasks": {
       "name": "Taken vernieuwen",
       "description": "Haalt alle schema's opnieuw op van het apparaat."
+    },
+    "start_task": {
+      "name": "Taak starten",
+      "description": "Voert een opgeslagen schema direct uit (ook bekend als 'schema starten'). Alleen maaier — de Spino zwembadrobot heeft geen equivalent commando."
     }
   },
   "exceptions": {
@@ -1076,6 +1080,9 @@
     },
     "task_not_found": {
       "message": "Taak {plan_id} is niet gevonden op het apparaat. Vernieuw het schema en probeer opnieuw."
+    },
+    "start_task_unsupported_on_spino": {
+      "message": "Een schema op aanvraag starten wordt niet ondersteund op de Spino zwembadrobot — de firmware heeft geen 'nu uitvoeren' commando voor opgeslagen schema's."
     }
   }
 }

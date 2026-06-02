@@ -1041,6 +1041,10 @@
     "refresh_tasks": {
       "name": "Obnovit úlohy",
       "description": "Znovu načte všechny plány ze zařízení."
+    },
+    "start_task": {
+      "name": "Spustit úlohu",
+      "description": "Okamžitě spustí uložený plán (známé také jako „spustit plán“). Pouze pro sekačku — robot bazénový čistič Spino nemá ekvivalentní příkaz."
     }
   },
   "exceptions": {
@@ -1076,6 +1080,9 @@
     },
     "task_not_found": {
       "message": "Úloha {plan_id} nebyla v zařízení nalezena. Obnovte plán a zkuste to znovu."
+    },
+    "start_task_unsupported_on_spino": {
+      "message": "Spuštění plánu na vyžádání není u bazénového čističe Spino podporováno — firmware nemá příkaz pro okamžité spuštění uloženého plánu."
     }
   }
 }

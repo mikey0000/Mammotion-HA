@@ -763,3 +763,12 @@ refresh_tasks:
   target:
     entity:
       integration: mammotion
+
+# Run a stored mower schedule immediately ("start task" / "start schedule").
+# Mower-only — Spino has no execute-now command in the proto; the service
+# will raise a translated error if targeted at a Spino task entity.
+start_task:
+  target:
+    entity:
+      integration: mammotion
+      domain: button

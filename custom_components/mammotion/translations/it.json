@@ -1041,6 +1041,10 @@
     "refresh_tasks": {
       "name": "Aggiorna attività",
       "description": "Riscarica tutte le pianificazioni dal dispositivo."
+    },
+    "start_task": {
+      "name": "Avvia attività",
+      "description": "Esegue immediatamente una pianificazione memorizzata (nota anche come 'avvia pianificazione'). Solo per tagliaerba — il robot piscina Spino non ha un comando equivalente."
     }
   },
   "exceptions": {
@@ -1076,6 +1080,9 @@
     },
     "task_not_found": {
       "message": "L'attività {plan_id} non è stata trovata sul dispositivo. Aggiorna la pianificazione e riprova."
+    },
+    "start_task_unsupported_on_spino": {
+      "message": "Avviare una pianificazione su richiesta non è supportato sul robot piscina Spino — il firmware non offre un comando di esecuzione immediata per le pianificazioni memorizzate."
     }
   }
 }

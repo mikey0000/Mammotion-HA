@@ -1041,6 +1041,10 @@
     "refresh_tasks": {
       "name": "Reîmprospătează sarcinile",
       "description": "Reia toate programele de pe dispozitiv."
+    },
+    "start_task": {
+      "name": "Pornește sarcina",
+      "description": "Pornește imediat un program stocat (cunoscut și ca „pornește programul”). Doar pentru cositoare — robotul de piscină Spino nu are o comandă echivalentă."
     }
   },
   "exceptions": {
@@ -1076,6 +1080,9 @@
     },
     "task_not_found": {
       "message": "Sarcina {plan_id} nu a fost găsită pe dispozitiv. Reîmprospătează programul și încearcă din nou."
+    },
+    "start_task_unsupported_on_spino": {
+      "message": "Pornirea unui program la cerere nu este acceptată pe robotul de piscină Spino — firmware-ul nu oferă o comandă de execuție imediată pentru programele stocate."
     }
   }
 }

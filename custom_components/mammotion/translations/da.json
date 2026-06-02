@@ -1041,6 +1041,10 @@
     "refresh_tasks": {
       "name": "Opdatér opgaver",
       "description": "Henter alle planer fra enheden igen."
+    },
+    "start_task": {
+      "name": "Start opgave",
+      "description": "Kører en gemt plan med det samme (også kendt som 'start plan'). Kun til plæneklipper — Spino-poolrobotten har ikke en tilsvarende kommando."
     }
   },
   "exceptions": {
@@ -1076,6 +1080,9 @@
     },
     "task_not_found": {
       "message": "Opgave {plan_id} findes ikke på enheden. Opdater planen og prøv igen."
+    },
+    "start_task_unsupported_on_spino": {
+      "message": "Start af en plan på forespørgsel understøttes ikke på Spino-poolrobotten — enhedens firmware har ingen 'kør nu'-kommando for gemte planer."
     }
   }
 }

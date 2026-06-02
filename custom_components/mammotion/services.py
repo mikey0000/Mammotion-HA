@@ -42,6 +42,12 @@ SERVICE_SET_TASK_ENABLED = "set_task_enabled"
 SERVICE_DELETE_TASK = "delete_task"
 SERVICE_COPY_TASK = "copy_task"
 SERVICE_REFRESH_TASKS = "refresh_tasks"
+# "start task" === "start schedule" — runs a stored mower schedule now.
+# Backed by ``NavPlanTaskExecute(sub_cmd=1, id=plan_id)`` on the wire (see
+# APK ``MACommandHelper.singleSchedule`` / docs/tasks_and_schedules.md § 1.6).
+# Spino has no equivalent in the proto — the service rejects Spino targets
+# with a translated error.
+SERVICE_START_TASK = "start_task"
 
 # Optional schedule fields shared by both device kinds.  The HA service
 # layer normalises them into the per-kind Plan / PoolPlan dataclass.
@@ -119,6 +125,10 @@ COPY_TASK_SCHEMA = vol.Schema(
 )
 
 REFRESH_TASKS_SCHEMA = vol.Schema(
+    {vol.Required(ATTR_ENTITY_ID): cv.entity_id}, extra=vol.ALLOW_EXTRA
+)
+
+START_TASK_SCHEMA = vol.Schema(
     {vol.Required(ATTR_ENTITY_ID): cv.entity_id}, extra=vol.ALLOW_EXTRA
 )
 
@@ -661,6 +671,26 @@ def async_setup_services(hass: HomeAssistant) -> None:  # noqa: C901
         else:
             await cast(MammotionSpinoCoordinator, coord).async_refresh_spino_tasks()
 
+    async def handle_start_task(call: ServiceCall) -> None:
+        """Run a stored mower schedule immediately ("start task" / "start schedule").
+
+        Backed by the APK's ``singleSchedule(planId)`` →
+        ``NavPlanTaskExecute(sub_cmd=1, id=plan_id)`` (file MACommandHelper.java,
+        line 1673). Spino has no equivalent in the wire protocol — we raise a
+        translated error rather than silently doing nothing so users see why
+        the press / service call didn't take effect.
+        """
+        entity_id = call.data[ATTR_ENTITY_ID]
+        if (mower := _resolve_mower_task(hass, entity_id)) is not None:
+            await mower[0].start_task(mower[1])
+            return
+        if _resolve_spino_task(hass, entity_id) is not None:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="start_task_unsupported_on_spino",
+            )
+        _raise_task_not_found(entity_id)
+
     hass.services.async_register(
         DOMAIN, SERVICE_RENAME_TASK, handle_rename_task, schema=RENAME_TASK_SCHEMA
     )
@@ -684,4 +714,7 @@ def async_setup_services(hass: HomeAssistant) -> None:  # noqa: C901
     )
     hass.services.async_register(
         DOMAIN, SERVICE_REFRESH_TASKS, handle_refresh_tasks, schema=REFRESH_TASKS_SCHEMA
+    )
+    hass.services.async_register(
+        DOMAIN, SERVICE_START_TASK, handle_start_task, schema=START_TASK_SCHEMA
     )

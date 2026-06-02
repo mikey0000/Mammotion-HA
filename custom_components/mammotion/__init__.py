@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from asyncio import CancelledError
 from contextlib import suppress
 from datetime import datetime
 from typing import Any
@@ -21,6 +22,7 @@ from homeassistant.exceptions import (
     ConfigEntryAuthFailed,
     ConfigEntryError,
     ConfigEntryNotReady,
+    HomeAssistantError,
 )
 from homeassistant.helpers import aiohttp_client
 from homeassistant.helpers.device_registry import DeviceEntry
@@ -303,10 +305,17 @@ async def _await_device_connection(
     handle = mammotion.mower(device_name)
     if handle is None:
         return
-    if prefer_ble and handle.has_transport(TransportType.BLE):
+    if (
+        prefer_ble
+        and (ble := handle.get_transport(TransportType.BLE))
+        and ble.is_usable
+    ):
         with suppress(TransportError):
             await handle.connect_transport(TransportType.BLE)
-    await handle.wait_until_connected(timeout=30, mqtt_stable_for=10)
+    try:
+        await handle.wait_until_connected(timeout=30, mqtt_stable_for=10)
+    except CancelledError:
+        raise HomeAssistantError("Setup cancelled, transport connection timed out")
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) -> bool:
@@ -362,7 +371,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
 
     cloud_available = False
 
-    if has_cloud_account and account and password:
+    if has_cloud_account and account and password and use_wifi:
         cloud_available = await _async_attempt_login(
             hass,
             entry,
@@ -374,11 +383,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
 
     if cloud_available:
 
-        async def _on_unrecoverable_auth_error(_: Exception) -> None:
+        async def _on_unrecoverable_auth_error(
+            account_id: str, transport_type: TransportType, _: Exception
+        ) -> None:
             """Trigger HA re-authentication when all automatic recovery has failed."""
             LOGGER.error(
-                "Mammotion account %s: all auth recovery attempts exhausted — prompting re-login",
-                account,
+                "Mammotion account %s: %s auth recovery exhausted",
+                account_id,
+                transport_type.value,
             )
             await mammotion.stop()
             raise ConfigEntryAuthFailed()

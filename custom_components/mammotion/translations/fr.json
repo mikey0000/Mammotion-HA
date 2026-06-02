@@ -1041,6 +1041,10 @@
     "refresh_tasks": {
       "name": "Actualiser les tâches",
       "description": "Récupère à nouveau tous les programmes de l'appareil."
+    },
+    "start_task": {
+      "name": "Démarrer la tâche",
+      "description": "Exécute immédiatement un programme enregistré (aussi appelé « démarrer le programme »). Uniquement pour la tondeuse — le robot de piscine Spino n'a pas de commande équivalente."
     }
   },
   "exceptions": {
@@ -1076,6 +1080,9 @@
     },
     "task_not_found": {
       "message": "La tâche {plan_id} est introuvable sur l'appareil. Actualisez le programme puis réessayez."
+    },
+    "start_task_unsupported_on_spino": {
+      "message": "Démarrer un programme à la demande n'est pas pris en charge sur le robot de piscine Spino — le firmware ne propose aucune commande d'exécution immédiate pour les programmes enregistrés."
     }
   }
 }

@@ -1041,6 +1041,10 @@
     "refresh_tasks": {
       "name": "Osveži opravila",
       "description": "Znova pridobi vse urnike iz naprave."
+    },
+    "start_task": {
+      "name": "Zaženi opravilo",
+      "description": "Takoj zažene shranjen urnik (znano tudi kot „zaženi urnik“). Samo kosilnica — bazenski robot Spino nima enakovrednega ukaza."
     }
   },
   "exceptions": {
@@ -1076,6 +1080,9 @@
     },
     "task_not_found": {
       "message": "Opravila {plan_id} ni mogoče najti na napravi. Osveži urnik in poskusi znova."
+    },
+    "start_task_unsupported_on_spino": {
+      "message": "Zagon urnika na zahtevo ni podprt na bazenskem robotu Spino — vdelana programska oprema ne ponuja ukaza za takojšen zagon shranjenih urnikov."
     }
   }
 }

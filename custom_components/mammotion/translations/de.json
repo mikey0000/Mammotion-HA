@@ -1041,6 +1041,10 @@
     "refresh_tasks": {
       "name": "Aufgaben aktualisieren",
       "description": "Lädt alle Zeitpläne erneut vom Gerät."
+    },
+    "start_task": {
+      "name": "Aufgabe starten",
+      "description": "Führt einen gespeicherten Zeitplan sofort aus (auch 'Zeitplan starten' genannt). Nur für Mäher — der Spino-Poolreiniger hat keinen entsprechenden Befehl."
     }
   },
   "exceptions": {
@@ -1076,6 +1080,9 @@
     },
     "task_not_found": {
       "message": "Aufgabe {plan_id} wurde auf dem Gerät nicht gefunden. Aktualisiere den Zeitplan und versuche es erneut."
+    },
+    "start_task_unsupported_on_spino": {
+      "message": "Das Starten eines Zeitplans auf Abruf wird vom Spino-Poolreiniger nicht unterstützt — die Geräte-Firmware hat keinen 'jetzt ausführen'-Befehl für gespeicherte Pläne."
     }
   }
 }

@@ -68,14 +68,14 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
             for device_entry in device_entries:
                 formatted_ble = format_mac(self._discovered_device.address)
                 identifiers = {device_id[1] for device_id in device_entry.identifiers}
-                already_connected = (
+                already_added = (
                     CONNECTION_BLUETOOTH,
                     formatted_ble,
                 ) in device_entry.connections
                 if device.name in identifiers:
                     await self.async_set_unique_id(entry.data.get(CONF_ACCOUNT_ID))
 
-                    if not already_connected:
+                    if not already_added:
                         device_registry.async_update_device(
                             device_entry.id,
                             merge_connections={(CONNECTION_BLUETOOTH, formatted_ble)},

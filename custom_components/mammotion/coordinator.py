@@ -887,21 +887,20 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         if handle is None:
             return
 
+        # If a BLE transport already exists and has the same address cached, do nothing.
+        # The per-advertisement callback (_ble_seen) handles routine refreshes.
+        if ble := handle.get_transport(TransportType.BLE):
+            if not ble.is_connected:
+                await ble.connect()
+
+            if ble.is_connected:
+                return
+
         ble_device = bluetooth.async_ble_device_from_address(
             self.hass, ble_mac.upper(), True
         )
         if ble_device is None:
             return
-
-        # If a BLE transport already exists and has the same address cached, do nothing.
-        # The per-advertisement callback (_ble_seen) handles routine refreshes.
-        if (ble := handle.get_transport(TransportType.BLE)) is not None:
-            cached_address = getattr(ble, "ble_address", None)
-            if (
-                cached_address is not None
-                and cached_address.upper() == ble_device.address.upper()
-            ):
-                return
 
         await self.manager.add_ble_to_device(self.device_name, ble_device)
 
@@ -1507,7 +1506,9 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
 
         if ble := handle.get_transport(TransportType.BLE):
             if not ble.is_connected and self.data.enabled:
-                cast(BLETransport, ble).set_ble_device(self.service_info.device)
+                cast(BLETransport, ble).set_ble_device(
+                    self.service_info.device, self.service_info.rssi
+                )
                 self.hass.create_task(ble.connect())
 
     async def async_set_bluetooth_enabled(self, enabled: bool) -> None:

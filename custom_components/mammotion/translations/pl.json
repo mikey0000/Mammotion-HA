@@ -1041,6 +1041,10 @@
     "refresh_tasks": {
       "name": "Odśwież zadania",
       "description": "Pobiera ponownie wszystkie plany z urządzenia."
+    },
+    "start_task": {
+      "name": "Uruchom zadanie",
+      "description": "Natychmiast uruchamia zapisany plan (znane też jako „uruchom plan”). Tylko kosiarka — robot basenowy Spino nie ma równoważnego polecenia."
     }
   },
   "exceptions": {
@@ -1076,6 +1080,9 @@
     },
     "task_not_found": {
       "message": "Nie znaleziono zadania {plan_id} na urządzeniu. Odśwież plan i spróbuj ponownie."
+    },
+    "start_task_unsupported_on_spino": {
+      "message": "Uruchomienie planu na żądanie nie jest obsługiwane na robocie basenowym Spino — firmware urządzenia nie ma polecenia natychmiastowego uruchomienia zapisanego planu."
     }
   }
 }
