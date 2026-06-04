@@ -26,6 +26,9 @@ from homeassistant.exceptions import (
 )
 from homeassistant.helpers import aiohttp_client
 from homeassistant.helpers.device_registry import DeviceEntry
+from homeassistant.helpers.device_registry import (
+    async_get as async_get_device_registry,
+)
 from homeassistant.helpers.event import async_call_later
 from homeassistant.helpers.storage import Store
 from homeassistant.loader import async_get_integration
@@ -396,6 +399,28 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
             raise ConfigEntryAuthFailed()
 
         mammotion.on_unrecoverable_auth_error = _on_unrecoverable_auth_error
+
+        async def _on_device_removed(device_name: str, iot_id: str) -> None:
+            """Delete a device unbound from the account from the HA device registry.
+
+            pymammotion fires this when a device returns 29004 ("device is unbind")
+            and is no longer present on either cloud after re-discovery — i.e. it has
+            been removed from the account.  Removing the HA device also removes all of
+            its entities.
+            """
+            LOGGER.warning(
+                "Mammotion device %s (iot_id=%s) unbound from account — removing from Home Assistant",
+                device_name,
+                iot_id,
+            )
+            device_registry = async_get_device_registry(hass)
+            device = device_registry.async_get_device(
+                identifiers={(DOMAIN, device_name)}
+            )
+            if device is not None:
+                device_registry.async_remove_device(device.id)
+
+        mammotion.on_device_removed = _on_device_removed
         store_cloud_credentials(hass, entry, mammotion)
 
         mower_devices, mammotion_rtk_devices, spino_devices = _build_device_list(

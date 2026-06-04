@@ -83,9 +83,32 @@ _SPINO_ONLY_FIELDS = {
     vol.Optional("starttime"): vol.All(vol.Coerce(int), vol.Range(min=0)),
 }
 
+
+# Task services declare ``target:`` in services.yaml, so the HA UI delivers
+# the selected task button(s) under ``entity_id`` as a list — one element per
+# selected entity — even when only one is picked.  Plain ``cv.entity_id``
+# rejected that list outright, which is why enable/disable (and every other
+# task service) failed when invoked from the UI.
+#
+# Two flavours of validator handle this:
+#   * ``cv.entity_ids`` — used by the bulk operations (enable/disable, delete)
+#     where applying the same action to many tasks is meaningful.  Always
+#     normalises to a list so the handler can iterate.
+#   * ``_single_entity_id`` — used by operations that carry per-task identity
+#     (edit/rename/copy/create) or target a single device (refresh/start).
+#     Accepts the one-element target list and returns the lone entity_id,
+#     rejecting ambiguous multi-entity input.
+def _single_entity_id(value: Any) -> str:
+    """Validate a single entity_id, tolerating the target list form."""
+    ids = cv.entity_ids(value)
+    if len(ids) != 1:
+        raise vol.Invalid("expected exactly one entity_id")
+    return ids[0]
+
+
 CREATE_TASK_SCHEMA = vol.Schema(
     {
-        vol.Required(ATTR_ENTITY_ID): cv.entity_id,
+        vol.Required(ATTR_ENTITY_ID): _single_entity_id,
         vol.Required("name"): cv.string,
         **_SCHEDULE_FIELDS,
         **_MOWER_ONLY_FIELDS,
@@ -96,7 +119,7 @@ CREATE_TASK_SCHEMA = vol.Schema(
 
 EDIT_TASK_SCHEMA = vol.Schema(
     {
-        vol.Required(ATTR_ENTITY_ID): cv.entity_id,
+        vol.Required(ATTR_ENTITY_ID): _single_entity_id,
         vol.Optional("name"): cv.string,
         **_SCHEDULE_FIELDS,
         **_MOWER_ONLY_FIELDS,
@@ -106,30 +129,30 @@ EDIT_TASK_SCHEMA = vol.Schema(
 )
 
 RENAME_TASK_SCHEMA = vol.Schema(
-    {vol.Required(ATTR_ENTITY_ID): cv.entity_id, vol.Required("name"): cv.string},
+    {vol.Required(ATTR_ENTITY_ID): _single_entity_id, vol.Required("name"): cv.string},
     extra=vol.ALLOW_EXTRA,
 )
 
 SET_TASK_ENABLED_SCHEMA = vol.Schema(
-    {vol.Required(ATTR_ENTITY_ID): cv.entity_id, vol.Required("enabled"): cv.boolean},
+    {vol.Required(ATTR_ENTITY_ID): cv.entity_ids, vol.Required("enabled"): cv.boolean},
     extra=vol.ALLOW_EXTRA,
 )
 
 DELETE_TASK_SCHEMA = vol.Schema(
-    {vol.Required(ATTR_ENTITY_ID): cv.entity_id}, extra=vol.ALLOW_EXTRA
+    {vol.Required(ATTR_ENTITY_ID): cv.entity_ids}, extra=vol.ALLOW_EXTRA
 )
 
 COPY_TASK_SCHEMA = vol.Schema(
-    {vol.Required(ATTR_ENTITY_ID): cv.entity_id, vol.Optional("name"): cv.string},
+    {vol.Required(ATTR_ENTITY_ID): _single_entity_id, vol.Optional("name"): cv.string},
     extra=vol.ALLOW_EXTRA,
 )
 
 REFRESH_TASKS_SCHEMA = vol.Schema(
-    {vol.Required(ATTR_ENTITY_ID): cv.entity_id}, extra=vol.ALLOW_EXTRA
+    {vol.Required(ATTR_ENTITY_ID): _single_entity_id}, extra=vol.ALLOW_EXTRA
 )
 
 START_TASK_SCHEMA = vol.Schema(
-    {vol.Required(ATTR_ENTITY_ID): cv.entity_id}, extra=vol.ALLOW_EXTRA
+    {vol.Required(ATTR_ENTITY_ID): _single_entity_id}, extra=vol.ALLOW_EXTRA
 )
 
 GEOJSON_SCHEMA = vol.Schema(
@@ -594,25 +617,25 @@ def async_setup_services(hass: HomeAssistant) -> None:  # noqa: C901
         _raise_task_not_found(entity_id)
 
     async def handle_set_task_enabled(call: ServiceCall) -> None:
-        entity_id = call.data[ATTR_ENTITY_ID]
         enabled = bool(call.data["enabled"])
-        if (mower := _resolve_mower_task(hass, entity_id)) is not None:
-            await mower[0].async_set_mower_task_enabled(mower[1], enabled)
-            return
-        if (spino := _resolve_spino_task(hass, entity_id)) is not None:
-            await spino[0].async_set_spino_task_enabled(spino[1], enabled)
-            return
-        _raise_task_not_found(entity_id)
+        for entity_id in call.data[ATTR_ENTITY_ID]:
+            if (mower := _resolve_mower_task(hass, entity_id)) is not None:
+                await mower[0].async_set_mower_task_enabled(mower[1], enabled)
+                continue
+            if (spino := _resolve_spino_task(hass, entity_id)) is not None:
+                await spino[0].async_set_spino_task_enabled(spino[1], enabled)
+                continue
+            _raise_task_not_found(entity_id)
 
     async def handle_delete_task(call: ServiceCall) -> None:
-        entity_id = call.data[ATTR_ENTITY_ID]
-        if (mower := _resolve_mower_task(hass, entity_id)) is not None:
-            await mower[0].async_delete_mower_task(mower[1])
-            return
-        if (spino := _resolve_spino_task(hass, entity_id)) is not None:
-            await spino[0].async_delete_spino_task(spino[1])
-            return
-        _raise_task_not_found(entity_id)
+        for entity_id in call.data[ATTR_ENTITY_ID]:
+            if (mower := _resolve_mower_task(hass, entity_id)) is not None:
+                await mower[0].async_delete_mower_task(mower[1])
+                continue
+            if (spino := _resolve_spino_task(hass, entity_id)) is not None:
+                await spino[0].async_delete_spino_task(spino[1])
+                continue
+            _raise_task_not_found(entity_id)
 
     async def handle_copy_task(call: ServiceCall) -> None:
         entity_id = call.data[ATTR_ENTITY_ID]
