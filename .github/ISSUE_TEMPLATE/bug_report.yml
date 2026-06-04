@@ -88,6 +88,8 @@ body:
         version than what you actually have installed.
       # BEGIN AUTO-GENERATED VERSION LIST (refreshed by .github/workflows/update-issue-template.yml — do not hand-edit)
       options:
+        - v0.6.2
+        - v0.6.2-beta1
         - v0.6.1
         - v0.6.0
         - v0.5.48-beta15
@@ -106,8 +108,6 @@ body:
         - v0.5.48-beta2
         - v0.5.48-beta1
         - v0.5.47
-        - v0.5.47-beta1
-        - v0.5.46
         - Older / not listed (specify in description)
       # END AUTO-GENERATED VERSION LIST
   - type: input
