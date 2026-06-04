@@ -7,7 +7,7 @@ from typing import Final
 from bleak.exc import BleakError
 from bleak_retry_connector import BleakNotFoundError
 from pymammotion.aliyun.exceptions import CheckSessionException
-from pymammotion.http.model.http import UnauthorizedException
+from pymammotion.http.model.http import UnauthorizedExceptionError
 from pymammotion.transport import AuthError
 from pymammotion.transport.base import (
     LoginFailedError,
@@ -35,7 +35,7 @@ COMMAND_EXCEPTIONS = (
 EXPIRED_CREDENTIAL_EXCEPTIONS = (
     CheckSessionException,
     AuthError,
-    UnauthorizedException,
+    UnauthorizedExceptionError,
     LoginFailedError,
 )
 

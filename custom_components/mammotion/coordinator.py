@@ -14,7 +14,6 @@ from collections.abc import Callable, Mapping
 from datetime import timedelta
 from typing import TYPE_CHECKING, Any, cast
 
-import betterproto2
 from habluetooth import BluetoothScanningMode
 from habluetooth.models import BluetoothServiceInfoBleak
 from homeassistant.components import bluetooth
@@ -62,7 +61,7 @@ from pymammotion.http.model.camera_stream import (
 )
 from pymammotion.http.model.http import ErrorInfo, Response
 from pymammotion.mammotion.commands.mammotion_command import MammotionCommand
-from pymammotion.proto import MulSex, SystemUpdateBufMsg
+from pymammotion.proto import MulSex
 from pymammotion.state.device_state import DeviceShutdownEvent, DeviceSnapshot
 from pymammotion.transport.base import (
     AuthError,
@@ -598,6 +597,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         """Get map data from the device."""
         try:
             await self.manager.start_map_sync(self.device_name)
+
         except EXPIRED_CREDENTIAL_EXCEPTIONS as exc:
             self.update_failures += 1
             await self.async_refresh_login(exc)
@@ -1251,7 +1251,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             if handle is not None:
                 handle.restore_device(empty)
 
-    async def async_save_data(self, data: MowingDevice) -> None:
+    async def async_save_data(self, data: MowingDevice | PoolCleanerDevice) -> None:
         """Store data."""
         store: Store = Store(
             self.hass, version=1, minor_version=2, key=self.device_name
@@ -1392,6 +1392,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
 
     async def _on_state_changed(self, snapshot: DeviceSnapshot) -> None:
         """Push updated device data to HA."""
+        self.device.online = True
         self.async_set_updated_data(snapshot.raw)
 
     def find_entity_by_attribute_in_registry(
@@ -1588,11 +1589,6 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
 
         return device
 
-    async def _async_update_notification(self, res: tuple[str, Any | None]) -> None:
-        """Update data from incoming messages."""
-        if device := self.manager.get_device_by_name(self.device_name):
-            self.async_set_updated_data(device)
-
     async def _async_update_properties(
         self, properties: ThingPropertiesMessage
     ) -> None:
@@ -1626,28 +1622,53 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
     async def _async_setup(self) -> None:
         await super()._async_setup()
 
-        try:
-            await self.async_send_command("send_todev_ble_sync", sync_type=3)
-            await self.async_read_rain_detection()
-            await self.async_read_sidelight()
-            await self.async_read_turning_mode()
-            await self.async_read_traversal_mode()
-            if DeviceType.is_mini_or_x_series(self.device_name):
-                await self.async_read_manual_light()
-                await self.async_read_night_light()
-                await self.async_read_cutter_mode()
-            if DeviceType.is_luba_pro(self.device_name):
-                await self.async_fetch_audio_config()
-                await self.async_read_wildlife_safety()
-            await self.async_request_report_snapshot()
-        except (
-            DeviceOfflineException,
-            NoTransportAvailableError,
-            CommandTimeoutError,
-            ConcurrentRequestError,
-            BLEUnavailableError,
-        ):
-            pass
+        # Common commands for all device types
+        commands = [
+            ("send_todev_ble_sync", {"sync_type": 3}),
+            ("async_read_rain_detection", {}),
+            ("async_read_sidelight", {}),
+            ("async_read_turning_mode", {}),
+            ("async_read_traversal_mode", {}),
+        ]
+
+        # Add device-specific commands
+        if DeviceType.is_mini_or_x_series(self.device_name):
+            commands.extend(
+                [
+                    ("async_read_manual_light", {}),
+                    ("async_read_night_light", {}),
+                    ("async_read_cutter_mode", {}),
+                ]
+            )
+
+        if DeviceType.is_luba_pro(self.device_name):
+            commands.extend(
+                [
+                    ("async_fetch_audio_config", {}),
+                    ("async_read_wildlife_safety", {}),
+                ]
+            )
+
+        # Final command for all devices
+        commands.append(("async_request_report_snapshot", {}))
+
+        # Execute all commands with unified exception handling
+        for command_name, kwargs in commands:
+            try:
+                command_method = getattr(self, command_name, None)
+                if command_method is None:
+                    command_method = self.async_send_command
+                    await command_method(command_name, **kwargs)
+                else:
+                    await command_method(**kwargs)
+            except (
+                DeviceOfflineException,
+                NoTransportAvailableError,
+                CommandTimeoutError,
+                ConcurrentRequestError,
+                BLEUnavailableError,
+            ) as exc:
+                LOGGER.debug(f"Command {command_name} failed with exception: {exc}")
 
         # Watch sys_status changes so we can refresh the full status when the
         # device transitions states.  Skipped when the BLE polling loop is
@@ -2020,16 +2041,6 @@ class MammotionDeviceErrorUpdateCoordinator(
             except json.JSONDecodeError:
                 """Failed to parse warning event."""
 
-    async def _async_update_notification(self, res: tuple[str, Any | None]) -> None:
-        """Update data from incoming notifications messages."""
-        if res[0] == "sys" and res[1] is not None:
-            sys_msg = betterproto2.which_one_of(res[1], "SubSysMsg")
-            if sys_msg[0] == "system_update_buf" and sys_msg[1] is not None:
-                buffer_list: SystemUpdateBufMsg = sys_msg[1]
-                if buffer_list.update_buf_data[0] == 2:
-                    if device := self.manager.get_device_by_name(self.device_name):
-                        self.async_set_updated_data(device)
-
     def get_error_code(self, number: int) -> int:
         """Get error code from an error code list."""
         try:
@@ -2238,13 +2249,6 @@ class MammotionRTKCoordinator(MammotionBaseUpdateCoordinator[RTKBaseStationDevic
         self._subscriptions.clear()
         await super().async_shutdown()
 
-    async def _async_update_notification(self, res: tuple[str, Any | None]) -> None:
-        """Handle update notifications for the RTK device."""
-        if rtk_device := self.manager.rtk_device(self.device_name):
-            self.async_set_updated_data(
-                cast(RTKBaseStationDevice, rtk_device.snapshot.raw)
-            )
-
     async def _async_setup(self) -> None:
         """Set up RTK device subscriptions and fetch one-time HTTP data."""
         await super()._async_setup()
@@ -2401,12 +2405,9 @@ class MammotionSpinoCoordinator(MammotionBaseUpdateCoordinator[PoolCleanerDevice
                 except (DeviceOfflineException, GatewayTimeoutException):
                     pass
 
-        return self.data
+        await self.async_save_data(self.data)
 
-    async def _async_update_notification(self, res: tuple[str, Any | None]) -> None:
-        """Handle update notifications for the pool cleaner."""
-        if spino := self.manager.mower(self.device_name):
-            self.async_set_updated_data(cast(PoolCleanerDevice, spino.snapshot.raw))
+        return self.data
 
     async def update_firmware(self, version: str) -> None:
         """Update firmware."""

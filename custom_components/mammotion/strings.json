@@ -183,7 +183,7 @@
         "state": {
           "UNKNOWN": "Unknown",
           "IDLE": "Standby",
-          "PREPARE": "Preparing",
+          "PREPARE": "Standby",
           "WAIT_WATER": "Filling with water",
           "WORKING": "Working",
           "PAUSE_GO_CHARGE": "Returning to charge (paused)",
