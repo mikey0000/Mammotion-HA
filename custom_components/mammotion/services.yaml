@@ -479,7 +479,6 @@ set_task_enabled:
     entity:
       integration: mammotion
       domain: button
-      multiple: true
   fields:
     enabled:
       required: true
@@ -492,7 +491,6 @@ delete_task:
     entity:
       integration: mammotion
       domain: button
-      multiple: true
 
 copy_task:
   target:
