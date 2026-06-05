@@ -1948,13 +1948,21 @@ class MammotionMapUpdateCoordinator(MammotionBaseUpdateCoordinator[MowerInfo]):
         assert device is not None
 
         try:
+            # RTK/dock lat are radians with an exact-0.0 "unset" sentinel — compare to 0.0,
+            # not round(lat, 0), which would treat everything within ~0.5 rad (~28°) of the
+            # equator as unset and re-fetch the location on every update.
             if (
-                round(device.location.RTK.latitude, 0) == 0
-                or round(device.location.dock.latitude, 0) == 0
+                device.location.RTK.latitude == 0.0
+                or device.location.dock.latitude == 0.0
             ):
                 await self.async_rtk_dock_location()
 
-            if len(device.map.hashlist) == 0 or len(device.map.missing_hashlist()) > 0:
+            bol_hash = (
+                device.report_data.locations[0].bol_hash
+                if device.report_data.locations
+                else 0
+            )
+            if not device.map.is_map_synced(bol_hash):
                 await self.manager.start_map_sync(self.device_name)
 
         except DeviceOfflineException as ex:
@@ -2423,7 +2431,7 @@ class MammotionSpinoCoordinator(MammotionBaseUpdateCoordinator[PoolCleanerDevice
         Subscribes to RIT_CONNECT + RIT_DEV_STA with count=0 (continuous) so the
         device pushes dev_statue_t frames; PoolStateReducer applies them.
         """
-        await self.async_send_command("get_report_cfg_spino", count=0)
+        await self.async_send_command("get_report_cfg_spino", count=1)
 
     async def async_request_status(self) -> None:
         """One-shot Spino status poll, backing the refresh-status button."""

@@ -27,6 +27,7 @@ from homeassistant.loader import async_get_integration
 from pymammotion.aliyun.exceptions import CloudSetupError, TooManyRequestsException
 from pymammotion.client import MammotionClient
 
+from . import store_cloud_credentials
 from .const import (
     CONF_ACCOUNT_ID,
     CONF_ACCOUNTNAME,
@@ -236,6 +237,7 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                                 CONF_USE_WIFI: True,
                                 CONF_HAS_CLOUD_ACCOUNT: True,
                                 **self._config,
+                                **temp_client.to_cache(),
                             },
                         )
                 except TooManyRequestsException:
@@ -332,12 +334,19 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                     errors["base"] = "cannot_connect"
                 finally:
                     await temp_client.stop()
+                    store_cloud_credentials(self.hass, entry, temp_client)
 
             if not errors:
+                updated_entry = self.hass.config_entries.async_get_entry(
+                    self.context["entry_id"]
+                )
+                if TYPE_CHECKING:
+                    assert updated_entry
+
                 return self.async_update_reload_and_abort(
-                    entry,
+                    entry=updated_entry,
                     data={
-                        **entry.data,
+                        **updated_entry.data,
                         CONF_ACCOUNTNAME: account or None,
                         CONF_PASSWORD: password or None,
                         CONF_ACCOUNT_ID: account_id,
