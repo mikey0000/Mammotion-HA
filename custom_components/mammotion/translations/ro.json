@@ -186,6 +186,21 @@
       "work_area": {
         "name": "Locație curentă"
       },
+      "map_sync_status": {
+        "name": "Stare sincronizare hartă",
+        "state": {
+          "synced": "Sincronizat",
+          "syncing": "Se sincronizează",
+          "out_of_sync": "Nesincronizat"
+        }
+      },
+      "mqtt_status": {
+        "name": "Stare MQTT",
+        "state": {
+          "reported_online": "Raportat online",
+          "reported_offline": "Raportat offline"
+        }
+      },
       "maintenance_distance": {
         "name": "Kilometraj total"
       },

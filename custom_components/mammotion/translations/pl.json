@@ -186,6 +186,21 @@
       "work_area": {
         "name": "Aktualna lokalizacja"
       },
+      "map_sync_status": {
+        "name": "Stan synchronizacji mapy",
+        "state": {
+          "synced": "Zsynchronizowano",
+          "syncing": "Synchronizowanie",
+          "out_of_sync": "Niezsynchronizowano"
+        }
+      },
+      "mqtt_status": {
+        "name": "Stan MQTT",
+        "state": {
+          "reported_online": "Zgłoszono online",
+          "reported_offline": "Zgłoszono offline"
+        }
+      },
       "maintenance_distance": {
         "name": "Całkowity przebieg"
       },

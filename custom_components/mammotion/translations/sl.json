@@ -186,6 +186,21 @@
       "work_area": {
         "name": "Trenutna lokacija"
       },
+      "map_sync_status": {
+        "name": "Stanje sinhronizacije zemljevida",
+        "state": {
+          "synced": "Sinhronizirano",
+          "syncing": "Poteka sinhronizacija",
+          "out_of_sync": "Ni sinhronizirano"
+        }
+      },
+      "mqtt_status": {
+        "name": "Stanje MQTT",
+        "state": {
+          "reported_online": "Sporočeno na spletu",
+          "reported_offline": "Sporočeno brez povezave"
+        }
+      },
       "maintenance_distance": {
         "name": "Skupno opravljena pot"
       },

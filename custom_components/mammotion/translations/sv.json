@@ -186,6 +186,21 @@
       "work_area": {
         "name": "Aktuell plats"
       },
+      "map_sync_status": {
+        "name": "Kartsynkroniseringsstatus",
+        "state": {
+          "synced": "Synkroniserad",
+          "syncing": "Synkroniserar",
+          "out_of_sync": "Inte synkroniserad"
+        }
+      },
+      "mqtt_status": {
+        "name": "MQTT-status",
+        "state": {
+          "reported_online": "Rapporterad online",
+          "reported_offline": "Rapporterad offline"
+        }
+      },
       "maintenance_distance": {
         "name": "Total körsträcka"
       },

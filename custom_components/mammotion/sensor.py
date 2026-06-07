@@ -48,6 +48,7 @@ from pymammotion.utility.device_type import DeviceType
 from . import MammotionConfigEntry
 from .const import DOMAIN
 from .coordinator import (
+    MAP_SYNC_STATUSES,
     MammotionBaseUpdateCoordinator,
     MammotionDeviceErrorUpdateCoordinator,
     MammotionReportUpdateCoordinator,
@@ -449,6 +450,26 @@ WORK_SENSOR_TYPES: tuple[MammotionWorkSensorEntityDescription, ...] = (
         value_fn=lambda coordinator, mower_data: str(
             coordinator.get_area_entity_name(mower_data.location.work_zone)
             or "Not working"
+        ),
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    MammotionWorkSensorEntityDescription(
+        key="map_sync_status",
+        state_class=None,
+        device_class=SensorDeviceClass.ENUM,
+        options=list(MAP_SYNC_STATUSES),
+        native_unit_of_measurement=None,
+        value_fn=lambda coordinator, mower_data: coordinator.map_sync_status,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    MammotionWorkSensorEntityDescription(
+        key="mqtt_status",
+        state_class=None,
+        device_class=SensorDeviceClass.ENUM,
+        options=["reported_online", "reported_offline"],
+        native_unit_of_measurement=None,
+        value_fn=lambda coordinator, mower_data: (
+            "reported_online" if coordinator.mqtt_device_online else "reported_offline"
         ),
         entity_category=EntityCategory.DIAGNOSTIC,
     ),

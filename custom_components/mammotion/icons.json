@@ -68,6 +68,12 @@
       "work_area": {
         "default": "mdi:identifier"
       },
+      "map_sync_status": {
+        "default": "mdi:map-check"
+      },
+      "mqtt_status": {
+        "default": "mdi:cloud-check-variant"
+      },
       "activity_mode": {
         "default": "mdi:information-outline"
       },

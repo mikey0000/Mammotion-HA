@@ -186,6 +186,21 @@
       "work_area": {
         "name": "Nuværende placering"
       },
+      "map_sync_status": {
+        "name": "Kortsynkroniseringsstatus",
+        "state": {
+          "synced": "Synkroniseret",
+          "syncing": "Synkroniserer",
+          "out_of_sync": "Ikke synkroniseret"
+        }
+      },
+      "mqtt_status": {
+        "name": "MQTT-status",
+        "state": {
+          "reported_online": "Rapporteret online",
+          "reported_offline": "Rapporteret offline"
+        }
+      },
       "maintenance_distance": {
         "name": "Samlet kilometertal"
       },

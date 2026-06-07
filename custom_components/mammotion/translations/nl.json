@@ -186,6 +186,21 @@
       "work_area": {
         "name": "Huidige locatie"
       },
+      "map_sync_status": {
+        "name": "Kaartsynchronisatiestatus",
+        "state": {
+          "synced": "Gesynchroniseerd",
+          "syncing": "Bezig met synchroniseren",
+          "out_of_sync": "Niet gesynchroniseerd"
+        }
+      },
+      "mqtt_status": {
+        "name": "MQTT-status",
+        "state": {
+          "reported_online": "Online gemeld",
+          "reported_offline": "Offline gemeld"
+        }
+      },
       "maintenance_distance": {
         "name": "Totale kilometerstand"
       },

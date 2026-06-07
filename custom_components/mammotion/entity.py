@@ -135,6 +135,12 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionBaseUpdateCoordinator[Any]]
     @property
     def available(self) -> bool:
         """Return True if entity is available."""
+        if (
+            not self.coordinator.is_online()
+            and self.coordinator.mqtt_transport_connected
+        ):
+            return True
+
         return self.coordinator.data is not None and self.coordinator.is_online()
 
 

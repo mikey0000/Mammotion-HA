@@ -159,6 +159,21 @@
       "work_area": {
         "name": "Current location"
       },
+      "map_sync_status": {
+        "name": "Map sync status",
+        "state": {
+          "synced": "Synced",
+          "syncing": "Syncing",
+          "out_of_sync": "Out of sync"
+        }
+      },
+      "mqtt_status": {
+        "name": "MQTT status",
+        "state": {
+          "reported_online": "Reported online",
+          "reported_offline": "Reported offline"
+        }
+      },
       "task_area_status": {
         "name": "Task area {name}",
         "state": {

@@ -186,6 +186,21 @@
       "work_area": {
         "name": "Aktuální poloha"
       },
+      "map_sync_status": {
+        "name": "Stav synchronizace mapy",
+        "state": {
+          "synced": "Synchronizováno",
+          "syncing": "Probíhá synchronizace",
+          "out_of_sync": "Nesynchronizováno"
+        }
+      },
+      "mqtt_status": {
+        "name": "Stav MQTT",
+        "state": {
+          "reported_online": "Hlášeno online",
+          "reported_offline": "Hlášeno offline"
+        }
+      },
       "maintenance_distance": {
         "name": "Celková vzdálenost"
       },

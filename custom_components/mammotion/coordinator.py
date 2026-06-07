@@ -106,6 +106,10 @@ MAP_INTERVAL = timedelta(minutes=60)
 RTK_INTERVAL = timedelta(hours=5)
 SPINO_INTERVAL = timedelta(weeks=1)
 
+# Possible states for ``MammotionReportUpdateCoordinator.map_sync_status`` and
+# the ``map_sync_status`` diagnostic ENUM sensor that surfaces it.
+MAP_SYNC_STATUSES = ("synced", "syncing", "out_of_sync")
+
 
 class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # type: ignore[misc]
     """Mammotion DataUpdateCoordinator."""
@@ -310,6 +314,23 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             if ble.is_usable:
                 return True
         return bool(not handle.availability.mqtt_reported_offline)
+
+    @property
+    def mqtt_transport_connected(self) -> bool:
+        if handle := self.manager.mower(self.device_name):
+            for t_type in (TransportType.CLOUD_ALIYUN, TransportType.CLOUD_MAMMOTION):
+                if handle.is_transport_connected(t_type):
+                    return True
+        return False
+
+    @property
+    def mqtt_device_online(self) -> bool:
+        device = self.manager.get_device_by_name(self.device_name)
+        if device is None:
+            return False
+        if handle := self.manager.mower(self.device_name):
+            return bool(not handle.availability.mqtt_reported_offline)
+        return False
 
     @property
     def bluetooth_enabled(self) -> bool:
@@ -1434,6 +1455,33 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             return "path"
 
         return name if name else f"area {area_hash}"
+
+    @property
+    def map_sync_status(self) -> str:
+        """Return the current map-sync status for diagnostics.
+
+        One of :data:`MAP_SYNC_STATUSES`:
+
+        * ``syncing`` — an exclusive sync saga (the map fetch) is running on
+          the device command queue, so the cached map is mid-refresh.
+        * ``synced`` — our local map fully matches the device's current area
+          set (``map.is_map_synced`` against the latest reported ``bol_hash``).
+        * ``out_of_sync`` — neither of the above: the cached map is stale or
+          incomplete and a fresh ``async_sync_maps()`` is needed.
+        """
+        handle = self.manager.mower(self.device_name)
+        if handle is not None and handle.queue.is_saga_active:
+            return "syncing"
+
+        if self.data is None:
+            return "out_of_sync"
+
+        mower_data = cast(MowingDevice, self.data)
+        locations = mower_data.report_data.locations
+        bol_hash = locations[0].bol_hash if locations else 0
+        if mower_data.map.is_map_synced(bol_hash):
+            return "synced"
+        return "out_of_sync"
 
 
 class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevice]):

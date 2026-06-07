@@ -186,6 +186,21 @@
       "work_area": {
         "name": "Jelenlegi hely"
       },
+      "map_sync_status": {
+        "name": "Térkép szinkronizálási állapota",
+        "state": {
+          "synced": "Szinkronizálva",
+          "syncing": "Szinkronizálás folyamatban",
+          "out_of_sync": "Nincs szinkronizálva"
+        }
+      },
+      "mqtt_status": {
+        "name": "MQTT állapot",
+        "state": {
+          "reported_online": "Online jelentve",
+          "reported_offline": "Offline jelentve"
+        }
+      },
       "task_area_status": {
         "name": "Feladatterület {name}",
         "state": {
