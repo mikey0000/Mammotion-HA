@@ -473,6 +473,31 @@ WORK_SENSOR_TYPES: tuple[MammotionWorkSensorEntityDescription, ...] = (
         ),
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
+    MammotionWorkSensorEntityDescription(
+        key="cloud_sends_24h",
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=None,
+        value_fn=lambda coordinator, mower_data: coordinator.mqtt_sends_in_window,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    MammotionWorkSensorEntityDescription(
+        key="cloud_send_limit_status",
+        state_class=None,
+        device_class=SensorDeviceClass.ENUM,
+        options=["ok", "rate_limited"],
+        native_unit_of_measurement=None,
+        value_fn=lambda coordinator, mower_data: (
+            "rate_limited" if coordinator.mqtt_rate_limited else "ok"
+        ),
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    MammotionWorkSensorEntityDescription(
+        key="command_timeouts_24h",
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=None,
+        value_fn=lambda coordinator, mower_data: coordinator.command_timeouts_in_window,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
 )
 
 RTK_SENSOR_TYPES: tuple[MammotionRTKSensorEntityDescription, ...] = (

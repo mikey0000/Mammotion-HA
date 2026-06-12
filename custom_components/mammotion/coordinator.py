@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import collections
 import contextlib
 import dataclasses
 import datetime
@@ -73,6 +74,7 @@ from pymammotion.transport.base import (
     ReLoginRequiredError,
     SessionExpiredError,
     Subscription,
+    Transport,
     TransportType,
 )
 from pymammotion.transport.ble import BLETransport
@@ -109,6 +111,15 @@ SPINO_INTERVAL = timedelta(weeks=1)
 # Possible states for ``MammotionReportUpdateCoordinator.map_sync_status`` and
 # the ``map_sync_status`` diagnostic ENUM sensor that surfaces it.
 MAP_SYNC_STATUSES = ("synced", "syncing", "out_of_sync")
+
+
+# Rolling per-device log of CommandTimeoutError timestamps (monotonic).
+# Module-level because timeouts surface in several coordinator instances
+# (report/maintenance/version) but the sensor reads one shared count.
+# Covers command ACK failures only — poll-keepalive no-acks are handled
+# inside pymammotion and never raise into the integration.
+_COMMAND_TIMEOUT_LOG: dict[str, collections.deque[float]] = {}
+_COMMAND_TIMEOUT_WINDOW: float = 86400.0
 
 
 class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # type: ignore[misc]
@@ -332,6 +343,57 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             return bool(not handle.availability.mqtt_reported_offline)
         return False
 
+    def _mqtt_transport(self) -> Transport | None:
+        """Return the active cloud MQTT transport, if any."""
+        if handle := self.manager.mower(self.device_name):
+            for t_type in (TransportType.CLOUD_ALIYUN, TransportType.CLOUD_MAMMOTION):
+                if handle.has_transport(t_type) and (
+                    transport := handle.get_transport(t_type)
+                ):
+                    return transport
+        return None
+
+    @property
+    def mqtt_sends_in_window(self) -> int | None:
+        """Outbound MQTT sends in the rolling 24h budget window (limit 300).
+
+        Counts every physical send including retries, so ACK problems show
+        up directly as an elevated rate. None when no MQTT transport exists.
+        """
+        if transport := self._mqtt_transport():
+            return transport.sends_in_window()
+        return None
+
+    @property
+    def mqtt_rate_limited(self) -> bool:
+        """True while the self-imposed 12h rate-limit ban is active."""
+        if transport := self._mqtt_transport():
+            return bool(transport.is_rate_limited)
+        return False
+
+    def _maybe_record_command_timeout(self, exc: Exception) -> None:
+        """Record the exception when it is a command ACK timeout (else no-op)."""
+        if isinstance(exc, CommandTimeoutError):
+            self.record_command_timeout()
+
+    def record_command_timeout(self) -> None:
+        """Log one CommandTimeoutError occurrence for this device."""
+        log = _COMMAND_TIMEOUT_LOG.setdefault(self.device_name, collections.deque())
+        now = time.monotonic()
+        log.append(now)
+        cutoff = now - _COMMAND_TIMEOUT_WINDOW
+        while log and log[0] < cutoff:
+            log.popleft()
+
+    @property
+    def command_timeouts_in_window(self) -> int:
+        """Command ACK timeouts in the rolling 24h window (all coordinators)."""
+        log = _COMMAND_TIMEOUT_LOG.get(self.device_name)
+        if not log:
+            return 0
+        cutoff = time.monotonic() - _COMMAND_TIMEOUT_WINDOW
+        return sum(1 for ts in log if ts >= cutoff)
+
     @property
     def bluetooth_enabled(self) -> bool:
         """Return whether Bluetooth transport is enabled."""
@@ -450,8 +512,8 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             GatewayTimeoutException,
             CommandTimeoutError,
             ConcurrentRequestError,
-        ):
-            pass
+        ) as exc:
+            self._maybe_record_command_timeout(exc)
         except asyncio.CancelledError:
             # bleak_retry_connector raises CancelledError when no BLE slot is
             # available (it cancels its own internal sleep).  Re-raise only when
@@ -1716,6 +1778,7 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
                 ConcurrentRequestError,
                 BLEUnavailableError,
             ) as exc:
+                self._maybe_record_command_timeout(exc)
                 LOGGER.debug(f"Command {command_name} failed with exception: {exc}")
 
         # Watch sys_status changes so we can refresh the full status when the
