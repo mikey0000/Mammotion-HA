@@ -263,12 +263,15 @@
           "ABORTED": "Avbrutet"
         }
       },
+      "spino_battery": {
+        "name": "Batteri"
+      },
       "spino_status": {
         "name": "Status",
         "state": {
           "UNKNOWN": "Okänd",
           "IDLE": "Standby",
-          "PREPARE": "Förbereder",
+          "PREPARE": "Standby",
           "WAIT_WATER": "Fyller med vatten",
           "WORKING": "Arbetar",
           "PAUSE_GO_CHARGE": "Återvänder för laddning (pausad)",

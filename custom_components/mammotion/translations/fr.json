@@ -263,12 +263,15 @@
           "ABORTED": "Abandonné"
         }
       },
+      "spino_battery": {
+        "name": "Batterie"
+      },
       "spino_status": {
         "name": "Statut",
         "state": {
           "UNKNOWN": "Inconnu",
           "IDLE": "Veille",
-          "PREPARE": "Préparation",
+          "PREPARE": "Veille",
           "WAIT_WATER": "Remplissage d'eau",
           "WORKING": "En marche",
           "PAUSE_GO_CHARGE": "Retour en charge (en pause)",

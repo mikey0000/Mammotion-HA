@@ -263,12 +263,15 @@
           "ABORTED": "Interrotto"
         }
       },
+      "spino_battery": {
+        "name": "Batteria"
+      },
       "spino_status": {
         "name": "Stato",
         "state": {
           "UNKNOWN": "Sconosciuto",
           "IDLE": "Standby",
-          "PREPARE": "Preparazione",
+          "PREPARE": "Standby",
           "WAIT_WATER": "Riempimento d'acqua",
           "WORKING": "In funzione",
           "PAUSE_GO_CHARGE": "Ritorno alla ricarica (in pausa)",

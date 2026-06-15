@@ -263,12 +263,15 @@
           "ABORTED": "Prekinjeno"
         }
       },
+      "spino_battery": {
+        "name": "Baterija"
+      },
       "spino_status": {
         "name": "Stanje",
         "state": {
           "UNKNOWN": "Neznano",
           "IDLE": "Pripravljenost",
-          "PREPARE": "Priprava",
+          "PREPARE": "Pripravljenost",
           "WAIT_WATER": "Polnjenje z vodo",
           "WORKING": "Deluje",
           "PAUSE_GO_CHARGE": "Vračanje na polnjenje (zaustavljeno)",

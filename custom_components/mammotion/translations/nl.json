@@ -263,12 +263,15 @@
           "ABORTED": "Afgebroken"
         }
       },
+      "spino_battery": {
+        "name": "Batterij"
+      },
       "spino_status": {
         "name": "Status",
         "state": {
           "UNKNOWN": "Onbekend",
           "IDLE": "Stand-by",
-          "PREPARE": "Voorbereiden",
+          "PREPARE": "Stand-by",
           "WAIT_WATER": "Vullen met water",
           "WORKING": "Bezig",
           "PAUSE_GO_CHARGE": "Terug naar laden (gepauzeerd)",

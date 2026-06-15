@@ -263,12 +263,15 @@
           "ABORTED": "Přerušeno"
         }
       },
+      "spino_battery": {
+        "name": "Baterie"
+      },
       "spino_status": {
         "name": "Stav",
         "state": {
           "UNKNOWN": "Neznámý",
           "IDLE": "Pohotovostní režim",
-          "PREPARE": "Příprava",
+          "PREPARE": "Pohotovostní režim",
           "WAIT_WATER": "Napouštění vody",
           "WORKING": "Pracuje",
           "PAUSE_GO_CHARGE": "Návrat k nabíjení (pozastaveno)",

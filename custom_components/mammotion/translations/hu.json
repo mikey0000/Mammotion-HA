@@ -263,12 +263,15 @@
           "CON_WIFI": "Wi-Fi"
         }
       },
+      "spino_battery": {
+        "name": "Akkumulátor"
+      },
       "spino_status": {
         "name": "Állapot",
         "state": {
           "UNKNOWN": "Ismeretlen",
           "IDLE": "Készenlét",
-          "PREPARE": "Előkészítés",
+          "PREPARE": "Készenlét",
           "WAIT_WATER": "Vízzel töltés",
           "WORKING": "Dolgozik",
           "PAUSE_GO_CHARGE": "Visszatérés töltésre (szüneteltetve)",

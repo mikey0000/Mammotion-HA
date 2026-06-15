@@ -316,7 +316,7 @@ async def _await_device_connection(
         with suppress(TransportError):
             await handle.connect_transport(TransportType.BLE)
     try:
-        await handle.wait_until_connected(timeout=30, mqtt_stable_for=10)
+        await handle.wait_until_connected(timeout=60, mqtt_stable_for=10)
     except CancelledError:
         raise HomeAssistantError("Setup cancelled, transport connection timed out")
 
@@ -327,6 +327,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
     addresses = entry.data.get(CONF_BLE_DEVICES, {})
     integration = await async_get_integration(hass, DOMAIN)
     mammotion = MammotionClient(ha_version=integration.version.split("-")[0])
+
+    async def shutdown_mammotion(_: Event | None = None) -> None:
+        await mammotion.stop()
+
+    entry.async_on_unload(
+        hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, shutdown_mammotion)
+    )
+    entry.async_on_unload(shutdown_mammotion)
+
     account = entry.data.get(CONF_ACCOUNTNAME)
     password = entry.data.get(CONF_PASSWORD)
     use_wifi = entry.data.get(CONF_USE_WIFI, True)
@@ -653,14 +662,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
     entry.runtime_data = mammotion_devices
 
     mammotion.setup_all_mower_watchers()
-
-    async def shutdown_mammotion(_: Event | None = None) -> None:
-        await mammotion.stop()
-
-    entry.async_on_unload(
-        hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, shutdown_mammotion)
-    )
-    entry.async_on_unload(shutdown_mammotion)
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 

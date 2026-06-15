@@ -263,12 +263,15 @@
           "ABORTED": "Abgebrochen"
         }
       },
+      "spino_battery": {
+        "name": "Akku"
+      },
       "spino_status": {
         "name": "Status",
         "state": {
           "UNKNOWN": "Unbekannt",
           "IDLE": "Bereitschaft",
-          "PREPARE": "Vorbereitung",
+          "PREPARE": "Bereitschaft",
           "WAIT_WATER": "Füllt mit Wasser",
           "WORKING": "Arbeitet",
           "PAUSE_GO_CHARGE": "Rückkehr zum Laden (pausiert)",

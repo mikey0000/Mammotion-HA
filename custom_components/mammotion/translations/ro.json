@@ -263,12 +263,15 @@
           "ABORTED": "Abandonat"
         }
       },
+      "spino_battery": {
+        "name": "Acumulator"
+      },
       "spino_status": {
         "name": "Stare",
         "state": {
           "UNKNOWN": "Necunoscut",
           "IDLE": "Așteptare",
-          "PREPARE": "Pregătire",
+          "PREPARE": "Așteptare",
           "WAIT_WATER": "Umplere cu apă",
           "WORKING": "Lucrează",
           "PAUSE_GO_CHARGE": "Revine la încărcare (în pauză)",
