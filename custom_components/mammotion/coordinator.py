@@ -110,6 +110,11 @@ SPINO_INTERVAL = timedelta(weeks=1)
 # the ``map_sync_status`` diagnostic ENUM sensor that surfaces it.
 MAP_SYNC_STATUSES = ("synced", "syncing", "out_of_sync")
 
+# Cloud response code returned by the stream-subscription endpoint when the
+# device is unreachable ("Device not responding. Please check the network
+# connection").  Treated as a device-offline signal.
+DEVICE_NOT_RESPONDING_CODE = 50504
+
 
 class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # type: ignore[misc]
     """Mammotion DataUpdateCoordinator."""
@@ -205,6 +210,21 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             )
             self.set_stream_data(stream_data)
             self._stream_data_fetched_at = time.monotonic()
+
+            # A 50504 means the cloud couldn't reach the device — bail out
+            # cleanly rather than continuing on to the Agora setup with no data.
+            if (
+                stream_data is not None
+                and stream_data.code == DEVICE_NOT_RESPONDING_CODE
+            ):
+                LOGGER.warning(
+                    "Stream subscription for %s reports device not responding "
+                    "(code %s: %s)",
+                    self.device_name,
+                    stream_data.code,
+                    stream_data.msg,
+                )
+                return None, self._agora_response
 
             if stream_data is not None and stream_data.data is not None:
                 LOGGER.debug("Received stream data: %s", stream_data)
@@ -2433,6 +2453,47 @@ class MammotionSpinoCoordinator(MammotionBaseUpdateCoordinator[PoolCleanerDevice
             if handle is not None:
                 handle.restore_device(empty)
 
+    def get_error_code(self) -> int:
+        """Return the absolute error code of the most recent fault, or 0."""
+        try:
+            return int(abs(self.data.pool_state.error_log[0].code))
+        except IndexError:
+            return 0
+
+    def get_error_time(self) -> datetime.datetime | None:
+        """Return the timestamp of the most recent fault as a UTC datetime, or None."""
+        try:
+            return datetime.datetime.fromtimestamp(
+                self.data.pool_state.error_log[0].timestamp, datetime.UTC
+            )
+        except IndexError:
+            return None
+
+    def get_error_message(self) -> str:
+        """Return a human-readable description of the most recent fault."""
+        try:
+            error_code = abs(self.data.pool_state.error_log[0].code)
+            error_info: ErrorInfo = self.data.errors.error_codes[f"{error_code}"]
+            implication = (
+                getattr(error_info, f"{self.hass.config.language}_implication")
+                if hasattr(error_info, f"{self.hass.config.language}_implication")
+                else error_info.en_implication
+            )
+            solution = (
+                getattr(error_info, f"{self.hass.config.language}_solution")
+                if hasattr(error_info, f"{self.hass.config.language}_solution")
+                else error_info.en_solution
+            )
+            if implication == "":
+                implication = error_info.en_implication
+            if solution == "":
+                solution = error_info.en_solution
+            return f"{error_info.module}: {implication}, {solution}"
+        except IndexError:
+            return "No Error"
+        except KeyError:
+            return "Error message not found"
+
     async def _async_update_data(self) -> PoolCleanerDevice:
         """Return current pool cleaner state from the device handle.
 
@@ -2454,6 +2515,8 @@ class MammotionSpinoCoordinator(MammotionBaseUpdateCoordinator[PoolCleanerDevice
                         for check_version in check_versions:
                             if check_version.device_id == self.device.iot_id:
                                 self.data.apply_version_check(check_version)
+                    if not self.data.errors.error_codes:
+                        self.data.errors.error_codes = await http.get_all_error_codes()
                 except ReLoginRequiredError as err:
                     raise ConfigEntryAuthFailed(
                         f"Re-authentication required for Mammotion account: {err}"

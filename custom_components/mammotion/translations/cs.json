@@ -118,10 +118,10 @@
         "name": "Zbývající čas"
       },
       "l1_satellites": {
-        "name": "Satelity L1 (společný výhled)"
+        "name": "L1 signal quality"
       },
       "l2_satellites": {
-        "name": "Satelity L2 (společný výhled)"
+        "name": "L2 signal quality"
       },
       "positioning_mode": {
         "name": "Poloha RTK"
@@ -292,6 +292,55 @@
           "ECO": "Eko",
           "LINE": "Vodní hladina",
           "CUSTOM": "Vlastní"
+        }
+      },
+      "spino_error_time": {
+        "name": "Čas poslední chyby"
+      },
+      "spino_error_message": {
+        "name": "Poslední chyba"
+      },
+      "spino_error_code": {
+        "name": "Kód poslední chyby"
+      },
+      "spino_mqtt_status": {
+        "name": "Stav MQTT",
+        "state": {
+          "online": "Online",
+          "offline": "Offline"
+        }
+      },
+      "co_view_l1": {
+        "name": "L1 satellites (co-viewing)"
+      },
+      "co_view_l2": {
+        "name": "L2 satellites (co-viewing)"
+      },
+      "pos_level": {
+        "name": "Position level"
+      },
+      "rtk_signal": {
+        "name": "RTK signal quality"
+      },
+      "device_signal": {
+        "name": "Device signal quality",
+        "state": {
+          "0": "Dobrý",
+          "1": "Dobrý",
+          "2": "Slabý",
+          "3": "Žádný"
+        }
+      },
+      "age": {
+        "name": "RTK correction age"
+      },
+      "base_link_status": {
+        "name": "Base link status",
+        "state": {
+          "0": "Dobrý",
+          "1": "Slabý",
+          "2": "Slabý",
+          "3": "Žádný"
         }
       }
     },

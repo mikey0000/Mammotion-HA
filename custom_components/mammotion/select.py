@@ -65,7 +65,15 @@ class MammotionSpinoSelectEntityDescription(SelectEntityDescription):
 SPINO_SELECT_ENTITIES: tuple[MammotionSpinoSelectEntityDescription, ...] = (
     MammotionSpinoSelectEntityDescription(
         key="spino_work_mode",
-        options=[mode.name for mode in SpinoWorkMode],
+        # Only real cleaning modes are selectable.  RECHARGE (0, return-to-charge)
+        # and UNKNOWN (-1, sentinel) are valid *reported* values — surfaced by the
+        # spino_work_mode sensor — but they're not modes a user can start, so they
+        # are excluded from the select's options.
+        options=[
+            mode.name
+            for mode in SpinoWorkMode
+            if mode not in (SpinoWorkMode.UNKNOWN, SpinoWorkMode.RECHARGE)
+        ],
         current_fn=lambda spino_data: spino_data.pool_state.work_mode.name,
         set_fn=lambda coordinator, value: coordinator.async_set_work_mode(
             SpinoWorkMode[value].value
@@ -73,7 +81,12 @@ SPINO_SELECT_ENTITIES: tuple[MammotionSpinoSelectEntityDescription, ...] = (
     ),
     MammotionSpinoSelectEntityDescription(
         key="spino_wall_material",
-        options=[material.name for material in WallMaterial],
+        # UNKNOWN (-1) is a sentinel for an unreported value, not a user choice.
+        options=[
+            material.name
+            for material in WallMaterial
+            if material is not WallMaterial.UNKNOWN
+        ],
         current_fn=lambda spino_data: spino_data.pool_state.wall_material.name,
         set_fn=lambda coordinator, value: coordinator.async_set_wall_material(
             WallMaterial[value].value
@@ -81,7 +94,12 @@ SPINO_SELECT_ENTITIES: tuple[MammotionSpinoSelectEntityDescription, ...] = (
     ),
     MammotionSpinoSelectEntityDescription(
         key="spino_bottom_type",
-        options=[bottom.name for bottom in PoolBottomType],
+        # UNKNOWN (-1) is a sentinel for an unreported value, not a user choice.
+        options=[
+            bottom.name
+            for bottom in PoolBottomType
+            if bottom is not PoolBottomType.UNKNOWN
+        ],
         current_fn=lambda spino_data: spino_data.pool_state.bottom_type.name,
         set_fn=lambda coordinator, value: coordinator.async_set_bottom_type(
             PoolBottomType[value].value

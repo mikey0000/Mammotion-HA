@@ -114,10 +114,43 @@
         "name": "Time left"
       },
       "l1_satellites": {
-        "name": "L1 Satellites (Co-Viewing)"
+        "name": "L1 signal quality"
       },
       "l2_satellites": {
-        "name": "L2 Satellites (Co-Viewing)"
+        "name": "L2 signal quality"
+      },
+      "co_view_l1": {
+        "name": "L1 satellites (co-viewing)"
+      },
+      "co_view_l2": {
+        "name": "L2 satellites (co-viewing)"
+      },
+      "pos_level": {
+        "name": "Position level"
+      },
+      "rtk_signal": {
+        "name": "RTK signal quality"
+      },
+      "device_signal": {
+        "name": "Device signal quality",
+        "state": {
+          "0": "Fine",
+          "1": "Fine",
+          "2": "Weak",
+          "3": "None"
+        }
+      },
+      "age": {
+        "name": "RTK correction age"
+      },
+      "base_link_status": {
+        "name": "Base link status",
+        "state": {
+          "0": "Good",
+          "1": "Weak",
+          "2": "Weak",
+          "3": "None"
+        }
       },
       "positioning_mode": {
         "name": "RTK position"

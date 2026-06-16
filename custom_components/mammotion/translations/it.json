@@ -118,10 +118,10 @@
         "name": "Tempo rimanente"
       },
       "l1_satellites": {
-        "name": "Satelliti L1 (Co-Viewing)"
+        "name": "L1 signal quality"
       },
       "l2_satellites": {
-        "name": "Satelliti L2 (Co-Viewing)"
+        "name": "L2 signal quality"
       },
       "positioning_mode": {
         "name": "Posizione RTK"
@@ -292,6 +292,55 @@
           "ECO": "Eco",
           "LINE": "Linea di galleggiamento",
           "CUSTOM": "Personalizzato"
+        }
+      },
+      "spino_error_time": {
+        "name": "Orario ultimo errore"
+      },
+      "spino_error_message": {
+        "name": "Ultimo errore"
+      },
+      "spino_error_code": {
+        "name": "Ultimo codice errore"
+      },
+      "spino_mqtt_status": {
+        "name": "Stato MQTT",
+        "state": {
+          "online": "Online",
+          "offline": "Offline"
+        }
+      },
+      "co_view_l1": {
+        "name": "L1 satellites (co-viewing)"
+      },
+      "co_view_l2": {
+        "name": "L2 satellites (co-viewing)"
+      },
+      "pos_level": {
+        "name": "Position level"
+      },
+      "rtk_signal": {
+        "name": "RTK signal quality"
+      },
+      "device_signal": {
+        "name": "Device signal quality",
+        "state": {
+          "0": "Buono",
+          "1": "Buono",
+          "2": "Debole",
+          "3": "Nessuno"
+        }
+      },
+      "age": {
+        "name": "RTK correction age"
+      },
+      "base_link_status": {
+        "name": "Base link status",
+        "state": {
+          "0": "Buono",
+          "1": "Debole",
+          "2": "Debole",
+          "3": "Nessuno"
         }
       }
     },

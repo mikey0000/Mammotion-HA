@@ -118,10 +118,10 @@
         "name": "Preostali čas"
       },
       "l1_satellites": {
-        "name": "L1 sateliti (skupaj)"
+        "name": "L1 signal quality"
       },
       "l2_satellites": {
-        "name": "L2 sateliti (skupaj)"
+        "name": "L2 signal quality"
       },
       "positioning_mode": {
         "name": "Položaj RTK postaje"
@@ -292,6 +292,55 @@
           "ECO": "Eko",
           "LINE": "Vodna gladina",
           "CUSTOM": "Po meri"
+        }
+      },
+      "spino_error_time": {
+        "name": "Čas zadnje napake"
+      },
+      "spino_error_message": {
+        "name": "Zadnja napaka"
+      },
+      "spino_error_code": {
+        "name": "Zadnja koda napake"
+      },
+      "spino_mqtt_status": {
+        "name": "Stanje MQTT",
+        "state": {
+          "online": "Online",
+          "offline": "Offline"
+        }
+      },
+      "co_view_l1": {
+        "name": "L1 satellites (co-viewing)"
+      },
+      "co_view_l2": {
+        "name": "L2 satellites (co-viewing)"
+      },
+      "pos_level": {
+        "name": "Position level"
+      },
+      "rtk_signal": {
+        "name": "RTK signal quality"
+      },
+      "device_signal": {
+        "name": "Device signal quality",
+        "state": {
+          "0": "Dobro",
+          "1": "Dobro",
+          "2": "Šibko",
+          "3": "Brez"
+        }
+      },
+      "age": {
+        "name": "RTK correction age"
+      },
+      "base_link_status": {
+        "name": "Base link status",
+        "state": {
+          "0": "Dobro",
+          "1": "Šibko",
+          "2": "Šibko",
+          "3": "Brez"
         }
       }
     },

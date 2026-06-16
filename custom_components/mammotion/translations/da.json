@@ -118,10 +118,10 @@
         "name": "Tid tilbage"
       },
       "l1_satellites": {
-        "name": "L1-satellitter (Samtidig visning)"
+        "name": "L1 signal quality"
       },
       "l2_satellites": {
-        "name": "L2-satellitter (Samtidig visning)"
+        "name": "L2 signal quality"
       },
       "positioning_mode": {
         "name": "RTK position"
@@ -292,6 +292,55 @@
           "ECO": "Eco",
           "LINE": "Vandlinje",
           "CUSTOM": "Brugerdefineret"
+        }
+      },
+      "spino_error_time": {
+        "name": "Tidspunkt for seneste fejl"
+      },
+      "spino_error_message": {
+        "name": "Seneste fejl"
+      },
+      "spino_error_code": {
+        "name": "Seneste fejlkode"
+      },
+      "spino_mqtt_status": {
+        "name": "MQTT-status",
+        "state": {
+          "online": "Online",
+          "offline": "Offline"
+        }
+      },
+      "co_view_l1": {
+        "name": "L1 satellites (co-viewing)"
+      },
+      "co_view_l2": {
+        "name": "L2 satellites (co-viewing)"
+      },
+      "pos_level": {
+        "name": "Position level"
+      },
+      "rtk_signal": {
+        "name": "RTK signal quality"
+      },
+      "device_signal": {
+        "name": "Device signal quality",
+        "state": {
+          "0": "God",
+          "1": "God",
+          "2": "Svag",
+          "3": "Ingen"
+        }
+      },
+      "age": {
+        "name": "RTK correction age"
+      },
+      "base_link_status": {
+        "name": "Base link status",
+        "state": {
+          "0": "God",
+          "1": "Svag",
+          "2": "Svag",
+          "3": "Ingen"
         }
       }
     },

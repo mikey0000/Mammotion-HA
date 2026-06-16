@@ -118,10 +118,10 @@
         "name": "Tid kvar"
       },
       "l1_satellites": {
-        "name": "L1-satelliter (samvisning)"
+        "name": "L1 signal quality"
       },
       "l2_satellites": {
-        "name": "L2-satelliter (samvisning)"
+        "name": "L2 signal quality"
       },
       "positioning_mode": {
         "name": "RTK position"
@@ -292,6 +292,55 @@
           "ECO": "Eco",
           "LINE": "Vattenlinje",
           "CUSTOM": "Anpassad"
+        }
+      },
+      "spino_error_time": {
+        "name": "Tidpunkt för senaste fel"
+      },
+      "spino_error_message": {
+        "name": "Senaste fel"
+      },
+      "spino_error_code": {
+        "name": "Senaste felkod"
+      },
+      "spino_mqtt_status": {
+        "name": "MQTT-status",
+        "state": {
+          "online": "Online",
+          "offline": "Offline"
+        }
+      },
+      "co_view_l1": {
+        "name": "L1 satellites (co-viewing)"
+      },
+      "co_view_l2": {
+        "name": "L2 satellites (co-viewing)"
+      },
+      "pos_level": {
+        "name": "Position level"
+      },
+      "rtk_signal": {
+        "name": "RTK signal quality"
+      },
+      "device_signal": {
+        "name": "Device signal quality",
+        "state": {
+          "0": "Bra",
+          "1": "Bra",
+          "2": "Svag",
+          "3": "Ingen"
+        }
+      },
+      "age": {
+        "name": "RTK correction age"
+      },
+      "base_link_status": {
+        "name": "Base link status",
+        "state": {
+          "0": "Bra",
+          "1": "Svag",
+          "2": "Svag",
+          "3": "Ingen"
         }
       }
     },

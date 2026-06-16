@@ -118,10 +118,10 @@
         "name": "Hátralévő idő"
       },
       "l1_satellites": {
-        "name": "L1 műholdak (együtt látott)"
+        "name": "L1 signal quality"
       },
       "l2_satellites": {
-        "name": "L2 műholdak (együtt látott)"
+        "name": "L2 signal quality"
       },
       "positioning_mode": {
         "name": "RTK pozíció"
@@ -292,6 +292,55 @@
           "ECO": "Eco",
           "LINE": "Vízvonal",
           "CUSTOM": "Egyéni"
+        }
+      },
+      "spino_error_time": {
+        "name": "Utolsó hiba időpontja"
+      },
+      "spino_error_message": {
+        "name": "Utolsó hiba"
+      },
+      "spino_error_code": {
+        "name": "Utolsó hibakód"
+      },
+      "spino_mqtt_status": {
+        "name": "MQTT állapot",
+        "state": {
+          "online": "Online",
+          "offline": "Offline"
+        }
+      },
+      "co_view_l1": {
+        "name": "L1 satellites (co-viewing)"
+      },
+      "co_view_l2": {
+        "name": "L2 satellites (co-viewing)"
+      },
+      "pos_level": {
+        "name": "Position level"
+      },
+      "rtk_signal": {
+        "name": "RTK signal quality"
+      },
+      "device_signal": {
+        "name": "Device signal quality",
+        "state": {
+          "0": "Jó",
+          "1": "Jó",
+          "2": "Gyenge",
+          "3": "Nincs"
+        }
+      },
+      "age": {
+        "name": "RTK correction age"
+      },
+      "base_link_status": {
+        "name": "Base link status",
+        "state": {
+          "0": "Jó",
+          "1": "Gyenge",
+          "2": "Gyenge",
+          "3": "Nincs"
         }
       }
     },

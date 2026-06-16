@@ -118,10 +118,10 @@
         "name": "Timpul rămas"
       },
       "l1_satellites": {
-        "name": "Sateliți L1 (vedere în comun)"
+        "name": "L1 signal quality"
       },
       "l2_satellites": {
-        "name": "Sateliți L2 (vedere în comun)"
+        "name": "L2 signal quality"
       },
       "positioning_mode": {
         "name": "Poziția RTK"
@@ -292,6 +292,55 @@
           "ECO": "Eco",
           "LINE": "Linia apei",
           "CUSTOM": "Personalizat"
+        }
+      },
+      "spino_error_time": {
+        "name": "Ora ultimei erori"
+      },
+      "spino_error_message": {
+        "name": "Ultima eroare"
+      },
+      "spino_error_code": {
+        "name": "Ultimul cod de eroare"
+      },
+      "spino_mqtt_status": {
+        "name": "Stare MQTT",
+        "state": {
+          "online": "Online",
+          "offline": "Offline"
+        }
+      },
+      "co_view_l1": {
+        "name": "L1 satellites (co-viewing)"
+      },
+      "co_view_l2": {
+        "name": "L2 satellites (co-viewing)"
+      },
+      "pos_level": {
+        "name": "Position level"
+      },
+      "rtk_signal": {
+        "name": "RTK signal quality"
+      },
+      "device_signal": {
+        "name": "Device signal quality",
+        "state": {
+          "0": "Bun",
+          "1": "Bun",
+          "2": "Slab",
+          "3": "Niciunul"
+        }
+      },
+      "age": {
+        "name": "RTK correction age"
+      },
+      "base_link_status": {
+        "name": "Base link status",
+        "state": {
+          "0": "Bun",
+          "1": "Slab",
+          "2": "Slab",
+          "3": "Niciunul"
         }
       }
     },
