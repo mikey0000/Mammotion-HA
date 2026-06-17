@@ -646,9 +646,9 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
                 await self.async_sync_maps()
 
     async def async_sync_schedule(self) -> None:
-        """Sync scheduled mowing plans from the device."""
+        """Sync all scheduled mowing plans from the device via PlanFetchSaga."""
         try:
-            await self.async_send_command("read_plan", sub_cmd=2, plan_index=0)
+            await self.manager.start_plan_sync(self.device_name)
         except EXPIRED_CREDENTIAL_EXCEPTIONS as exc:
             self.update_failures += 1
             await self.async_refresh_login(exc)
