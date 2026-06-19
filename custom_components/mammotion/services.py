@@ -13,6 +13,7 @@ from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import entity_registry as er
 from pymammotion.data.model.hash_list import CommDataCouple, Plan
 from pymammotion.data.model.pool_state import PoolPlan
+from pymammotion.utility.device_type import DeviceType
 
 from .const import DOMAIN, LOGGER
 from .coordinator import MammotionReportUpdateCoordinator, MammotionSpinoCoordinator
@@ -436,10 +437,14 @@ def async_setup_services(hass: HomeAssistant) -> None:  # noqa: C901
             LOGGER.error("Could not find entity %s", call.data[ATTR_ENTITY_ID])
             return {}
         coordinator = mower.reporting_coordinator
+        device_type = DeviceType.value_of_str(coordinator.device_name)
+        firmware = coordinator.data.device_firmwares.main_controller
+        if device_type.is_support_dynamics_line(firmware):
+            geojson = coordinator.data.map.generated_dynamics_line_geojson
+        else:
+            geojson = coordinator.data.map.generated_mow_progress_geojson
         return apply_geojson_offset(
-            coordinator.data.map.generated_mow_progress_geojson,
-            coordinator.map_offset_lat,
-            coordinator.map_offset_lon,
+            geojson, coordinator.map_offset_lat, coordinator.map_offset_lon
         )
 
     hass.services.async_register(
