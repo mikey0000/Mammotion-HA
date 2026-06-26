@@ -236,43 +236,43 @@ async def async_setup_entry(
         update_areas()
         coordinator.subscribe_map_updated(update_areas)
 
-        entities = []
-        for entity_description in SWITCH_ENTITIES:
-            entity = MammotionSwitchEntity(coordinator, entity_description)
-            entities.append(entity)
+        device_name = mower.device.device_name
+        entities: list = [
+            MammotionSwitchEntity(coordinator, d) for d in SWITCH_ENTITIES
+        ]
 
-        if DeviceType.is_luba_pro(mower.device.device_name):
-            for entity_description in AUDIO_SWITCH_ENTITIES:
-                entities.append(MammotionSwitchEntity(coordinator, entity_description))
+        if DeviceType.is_luba_pro(device_name):
+            entities.extend(
+                MammotionSwitchEntity(coordinator, d) for d in AUDIO_SWITCH_ENTITIES
+            )
 
-        for entity_description in CONFIG_SWITCH_ENTITIES:
-            config_entity = MammotionConfigSwitchEntity(coordinator, entity_description)
-            entities.append(config_entity)
+        entities.extend(
+            MammotionConfigSwitchEntity(coordinator, d) for d in CONFIG_SWITCH_ENTITIES
+        )
+        entities.extend(
+            MammotionUpdateSwitchEntity(coordinator, d) for d in UPDATE_SWITCH_ENTITIES
+        )
+        entities.extend(
+            MammotionSwitchEntity(coordinator, d) for d in CONNECTIVITY_SWITCH_ENTITIES
+        )
 
-        for entity_description in UPDATE_SWITCH_ENTITIES:
-            config_entity = MammotionUpdateSwitchEntity(coordinator, entity_description)
-            entities.append(config_entity)
+        if DeviceType.is_yuka(device_name) and not DeviceType.is_yuka_mini(device_name):
+            entities.extend(
+                MammotionConfigSwitchEntity(coordinator, d)
+                for d in YUKA_CONFIG_SWITCH_ENTITIES
+            )
 
-        for entity_description in CONNECTIVITY_SWITCH_ENTITIES:
-            entities.append(MammotionSwitchEntity(coordinator, entity_description))
+        if DeviceType.is_luba1(device_name):
+            entities.extend(
+                MammotionSwitchEntity(coordinator, d) for d in LUBA_1_SWITCH_ENTITIES
+            )
 
-        if DeviceType.is_yuka(mower.device.device_name) and not DeviceType.is_yuka_mini(
-            mower.device.device_name
-        ):
-            for entity_description in YUKA_CONFIG_SWITCH_ENTITIES:
-                config_entity = MammotionConfigSwitchEntity(
-                    coordinator, entity_description
-                )
-                entities.append(config_entity)
-        if DeviceType.is_luba1(mower.device.device_name):
-            for entity_description in LUBA_1_SWITCH_ENTITIES:
-                entity = MammotionSwitchEntity(coordinator, entity_description)
-                entities.append(entity)
+        if DeviceType.is_mini_or_x_series(device_name):
+            entities.extend(
+                MammotionSwitchEntity(coordinator, d)
+                for d in MINI_AND_X_SERIES_CONFIG_SWITCH_ENTITIES
+            )
 
-        if DeviceType.is_mini_or_x_series(mower.device.device_name):
-            for entity_description in MINI_AND_X_SERIES_CONFIG_SWITCH_ENTITIES:
-                entity = MammotionSwitchEntity(coordinator, entity_description)
-                entities.append(entity)
         async_add_entities(entities)
 
     for spino in entry.runtime_data.spino:
@@ -459,9 +459,9 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
         super().__init__(coordinator, entity_description.key)
         self.coordinator = coordinator
         self.entity_description = entity_description
-        self._area = entity_description.area
-        self._attr_extra_state_attributes = {"hash": self._area}
-        self._attr_is_on = self._area in self.coordinator.operation_settings.areas
+        self.area = entity_description.area
+        self._attr_extra_state_attributes = {"hash": self.area}
+        self._attr_is_on = self.area in self.coordinator.operation_settings.areas
         # Last custom name we pushed to the device, so an unrelated registry
         # update (icon, area assignment, …) doesn't re-send set_area_name.
         self._pushed_name: str | None = None
@@ -473,14 +473,19 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
             name=new_name,
             translation_placeholders={"name": new_name},
         )
-        self._pushed_name = new_name
+        # Don't overwrite _pushed_name when the user has set their own HA label —
+        # resetting it to a device/auto name would cause a spurious set_area_name
+        # push the next time async_registry_entry_updated fires.
+        registry_entry = getattr(self, "registry_entry", None)
+        if not (registry_entry and registry_entry.name):
+            self._pushed_name = new_name
         if self.hass is not None:
             self.async_write_ha_state()
 
     def update_area(self, new_area_id: int) -> None:
         """Update the area hash when the device reports a new hash for the same named area."""
-        old_area = self._area
-        self._area = new_area_id
+        old_area = self.area
+        self.area = new_area_id
         self._attr_extra_state_attributes = {"hash": new_area_id}
         if old_area in self.coordinator.operation_settings.areas:
             self.coordinator.operation_settings.areas.remove(old_area)
@@ -493,13 +498,13 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn the entity on."""
         self._attr_is_on = True
-        self.entity_description.set_fn(self.coordinator, True, self._area)
+        self.entity_description.set_fn(self.coordinator, True, self.area)
         self.async_write_ha_state()
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn the entity off."""
         self._attr_is_on = False
-        self.entity_description.set_fn(self.coordinator, False, self._area)
+        self.entity_description.set_fn(self.coordinator, False, self.area)
         self.async_write_ha_state()
 
     async def async_added_to_hass(self) -> None:
@@ -525,18 +530,18 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
                     return
                 self._pushed_name = new_name
                 self.hass.async_create_task(
-                    self.coordinator.async_set_area_name(self._area, new_name)
+                    self.coordinator.async_set_area_name(self.area, new_name)
                 )
 
     async def async_update(self) -> None:
         """Update the entity state."""
-        self._attr_is_on = self._area in self.coordinator.operation_settings.areas
+        self._attr_is_on = self.area in self.coordinator.operation_settings.areas
         area_keys: set[int] = {
             int(k)
-            for k in self.coordinator.data.map.area.keys()
+            for k in self.coordinator.data.map.area
             if str(k).lstrip("-").isdigit()
         }
-        if self._area not in area_keys:
+        if self.area not in area_keys:
             await self.async_remove()
             return
         self.async_write_ha_state()
@@ -562,19 +567,21 @@ def async_add_area_entities(
     computed = coordinator.data.map.computed_areas
     all_current_areas = {a.hash for a in computed}
     map_area_hashes: set[int] = {
-        int(k) for k in coordinator.data.map.area.keys() if str(k).lstrip("-").isdigit()
+        int(k) for k in coordinator.data.map.area if str(k).lstrip("-").isdigit()
     }
 
     # Trigger re-fetch when the device hasn't yet sent names for all areas.
-    # Luba 1 never provides area_name, so skip for it.
+    # Luba 1 / Yuka never provides area_name, so skip for it.
     if not DeviceType.is_luba1(coordinator.device_name):
         area_name_hashes: set[int] = {a.hash for a in coordinator.data.map.area_name}
         if map_area_hashes - area_name_hashes:
             coordinator.hass.async_create_task(coordinator.async_get_area_list())
 
-    # Startup registry cleanup: remove stale entries from previous sessions.
-    if map_area_hashes and (all_current_areas - added_areas):
-        _async_clean_stale_area_registry_entries(coordinator, all_current_areas)
+    # Early exit when neither the set of area hashes nor any name has changed.
+    if all_current_areas == added_areas:
+        entities_by_area = {e.area: n for n, e in area_entities_by_name.items()}
+        if all(entities_by_area.get(a.hash) == a.name for a in computed):
+            return
 
     # Pre-clear auto-generated names for areas about to be removed so that
     # surviving areas can be renumbered into the freed slots without collision.
@@ -583,7 +590,7 @@ def async_add_area_entities(
             for n in [
                 n
                 for n, e in list(area_entities_by_name.items())
-                if e._area == old_hash and _PYMAMMOTION_AUTO_NAME.match(n)
+                if e.area == old_hash and _PYMAMMOTION_AUTO_NAME.match(n)
             ]:
                 del area_entities_by_name[n]
 
@@ -597,7 +604,7 @@ def async_add_area_entities(
             coord.operation_settings.areas.remove(value)
 
     entities_by_hash: dict[int, tuple[str, MammotionConfigAreaSwitchEntity]] = {
-        e._area: (name, e) for name, e in area_entities_by_name.items()
+        e.area: (name, e) for name, e in area_entities_by_name.items()
     }
 
     for entry in computed:
@@ -626,7 +633,7 @@ def async_add_area_entities(
             and new_name in area_entities_by_name
         ):
             existing = area_entities_by_name[new_name]
-            added_areas.discard(existing._area)
+            added_areas.discard(existing.area)
             existing.update_area(area_id)
             added_areas.add(area_id)
             continue
@@ -650,11 +657,11 @@ def async_add_area_entities(
     if map_area_hashes:
         old_areas = added_areas - all_current_areas
         if old_areas:
-            async_remove_entities(coordinator, old_areas)
+            async_remove_stale_area_entities(coordinator, old_areas)
             for area in old_areas:
                 added_areas.discard(area)
                 for n in [
-                    n for n, e in list(area_entities_by_name.items()) if e._area == area
+                    n for n, e in list(area_entities_by_name.items()) if e.area == area
                 ]:
                     del area_entities_by_name[n]
 
@@ -662,33 +669,7 @@ def async_add_area_entities(
         async_add_entities(switch_entities)
 
 
-def _async_clean_stale_area_registry_entries(
-    coordinator: MammotionReportUpdateCoordinator,
-    all_current_areas: set[int],
-) -> None:
-    """Remove area entity registry entries whose hashes are no longer on the device.
-
-    Area entity unique_ids follow ``{unique_name}_{hash}`` where the suffix is
-    the numeric area hash.  Any entry whose hash is absent from
-    ``all_current_areas`` is removed so it cannot appear as a ghost duplicate
-    alongside the replacement entity.
-    """
-    registry = er.async_get(coordinator.hass)
-    prefix = f"{coordinator.unique_name}_"
-
-    for entry in list(registry.entities.values()):
-        if entry.domain != SWITCH_DOMAIN or entry.platform != DOMAIN:
-            continue
-        if not entry.unique_id.startswith(prefix):
-            continue
-        suffix = entry.unique_id[len(prefix) :]
-        if not suffix.lstrip("-").isdigit():
-            continue  # non-numeric suffix → not an area entity (e.g. "is_mow")
-        if int(suffix) not in all_current_areas:
-            registry.async_remove(entry.entity_id)
-
-
-def async_remove_entities(
+def async_remove_stale_area_entities(
     coordinator: MammotionBaseUpdateCoordinator,
     old_areas: set[int],
 ) -> None:
