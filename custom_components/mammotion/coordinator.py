@@ -100,7 +100,7 @@ if TYPE_CHECKING:
 
 MAINTENANCE_INTERVAL = timedelta(minutes=60)
 DEFAULT_INTERVAL = timedelta(minutes=30)
-REPORT_INTERVAL = timedelta(minutes=5)
+REPORT_INTERVAL = timedelta(minutes=10)  # increased from 5 min — halves baseline MQTT send rate
 DYNAMICS_LINE_INTERVAL = timedelta(seconds=10)
 DEVICE_VERSION_INTERVAL = timedelta(weeks=1)
 MAP_INTERVAL = timedelta(minutes=60)
