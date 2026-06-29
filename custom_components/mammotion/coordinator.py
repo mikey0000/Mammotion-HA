@@ -1535,6 +1535,19 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
             background=True,
         )
 
+        # Debounce MQTT CONNECTED events so that rapid reconnects (e.g. flaky
+        # WiFi, HA restart) don't fire a full _async_update_data burst for every
+        # individual reconnect.  The 30-second cooldown collapses any cluster of
+        # reconnect events into a single refresh.
+        self.reconnect_debouncer = Debouncer(
+            hass,
+            LOGGER,
+            cooldown=30,
+            immediate=False,
+            function=self.async_request_refresh,
+            background=True,
+        )
+
     @callback
     def _async_handle_bluetooth_event(
         self,
@@ -1673,7 +1686,13 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
             return
         if status.params.status.value == StatusType.CONNECTED:
             await self.set_scheduled_updates(True)
-            self.hass.async_create_task(self.async_request_refresh())
+            # Schedule a debounced refresh rather than firing async_request_refresh()
+            # directly.  If MQTT reconnects several times in quick succession (flaky
+            # WiFi, HA restart, broker hiccup) each reconnect previously enqueued a
+            # separate full _async_update_data run, causing a burst of cloud calls
+            # that can trigger Mammotion's rate-limit ban.  The debouncer coalesces
+            # all reconnect events within a 30-second window into a single refresh.
+            self.reconnect_debouncer.async_schedule_call()
         if device := self.manager.get_device_by_name(self.device_name):
             self.async_set_updated_data(device)
 
@@ -1857,6 +1876,11 @@ class MammotionDeviceVersionUpdateCoordinator(
         if self.data is None:
             self.data = mowing_device
 
+        # Tracks the last time we hit the OTA HTTP endpoint so we only call it
+        # once per DEVICE_VERSION_INTERVAL even while the coordinator is still
+        # running on the shorter DEFAULT_INTERVAL (i.e. before model_id is known).
+        self._ota_fetched_at: float = 0.0
+
     def get_coordinator_data(self, device: MowingDevice) -> MowingDevice:
         """Get coordinator data."""
         return device
@@ -1901,7 +1925,15 @@ class MammotionDeviceVersionUpdateCoordinator(
 
         await self.check_firmware_version()
 
-        if handle is not None and self.has_cloud_account:
+        # Only hit the OTA HTTP endpoint at most once per DEVICE_VERSION_INTERVAL.
+        # Without this guard the call was made on every 30-minute tick, generating
+        # continuous cloud traffic and contributing to API-rate-limit bans.
+        _ota_interval_secs = DEVICE_VERSION_INTERVAL.total_seconds()
+        if (
+            handle is not None
+            and self.has_cloud_account
+            and (time.monotonic() - self._ota_fetched_at) >= _ota_interval_secs
+        ):
             http = self.manager.mammotion_http
             if http is not None:
                 ota_info = await http.get_device_ota_firmware([handle.iot_id])
@@ -1910,6 +1942,7 @@ class MammotionDeviceVersionUpdateCoordinator(
                     for check_version in check_versions:
                         if check_version.device_id == handle.iot_id:
                             device.apply_version_check(check_version)
+                self._ota_fetched_at = time.monotonic()
 
         if device.mower_state.model_id != "":
             self.update_interval = DEVICE_VERSION_INTERVAL
@@ -1968,6 +2001,9 @@ class MammotionDeviceVersionUpdateCoordinator(
                         for check_version in check_versions:
                             if check_version.device_id == handle.iot_id:
                                 device.apply_version_check(check_version)
+                    # Stamp the timestamp so _async_update_data doesn't repeat the
+                    # OTA HTTP call immediately on the first scheduled tick.
+                    self._ota_fetched_at = time.monotonic()
 
             self.async_set_updated_data(self.data)
         except DeviceOfflineException:
