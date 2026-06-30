@@ -97,7 +97,8 @@ PLATFORMS: list[Platform] = [
     Platform.SWITCH,
     Platform.NUMBER,
     Platform.SELECT,
-    Platform.CAMERA,
+    # Platform.CAMERA disabled — Agora WebRTC streaming not used.
+    # Re-enable by uncommenting if you want the live camera feed back.
     Platform.UPDATE,
     Platform.VACUUM,
 ]
