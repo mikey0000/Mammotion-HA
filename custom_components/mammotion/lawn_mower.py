@@ -264,7 +264,27 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
         #
         mode = self.rpt_dev_status.sys_status
         breakpoint_info = self.report_data.work.bp_info
+        charge_state = self.rpt_dev_status.charge_state
+
+        # === Command tracing: capture mower state at command entry =============
+        LOGGER.info(
+            "[start_mowing] entry — device=%s mode=%s charge_state=%s "
+            "breakpoint_info=%s modify_plan=%s plan_only=%s areas=%s",
+            self.coordinator.device_name,
+            mode,
+            charge_state,
+            breakpoint_info,
+            modify_plan,
+            plan_only,
+            getattr(operational_settings, "areas", None),
+        )
+        # =======================================================================
+
         if mode is None:
+            LOGGER.warning(
+                "[start_mowing] aborted — mower mode is None (device not ready). "
+                "Device may be offline or first state update has not yet arrived."
+            )
             raise HomeAssistantError(
                 translation_domain=DOMAIN, translation_key="device_not_ready"
             )
@@ -278,47 +298,89 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
         ):
             try:
                 if modify_plan:
+                    LOGGER.info("[start_mowing] branch=modify_plan")
                     await self.coordinator.async_modify_plan_route(operational_settings)
                     return
 
                 if kwargs:
+                    LOGGER.debug("[start_mowing] cancelling current job before start")
                     await self.async_cancel()
 
                 if mode == WorkMode.MODE_RETURNING:
+                    LOGGER.info(
+                        "[start_mowing] branch=cancel_return_to_dock (mode was RETURNING)"
+                    )
                     trans_key = "dock_cancel_failed"
                     await self.coordinator.async_send_and_wait(
                         "cancel_return_to_dock", "todev_taskctrl_ack"
                     )
                     await self.coordinator.async_request_report_snapshot()
                     mode = self.rpt_dev_status.sys_status
+                    LOGGER.info(
+                        "[start_mowing] mode after cancel_return_to_dock: %s", mode
+                    )
                 if mode == WorkMode.MODE_PAUSE:
                     trans_key = "resume_failed"
                     if breakpoint_info != 0:
+                        LOGGER.info(
+                            "[start_mowing] branch=resume_execute_task (PAUSE + breakpoint=%s)",
+                            breakpoint_info,
+                        )
                         await self.coordinator.async_send_command("resume_execute_task")
                         await self.coordinator.async_send_and_wait(
                             "query_generate_route_information", "bidire_reqconver_path"
                         )
+                    else:
+                        LOGGER.warning(
+                            "[start_mowing] mode=PAUSE but breakpoint_info=0 — "
+                            "no resume sent (this can swallow the start command)"
+                        )
                 if mode in (WorkMode.MODE_READY, WorkMode.MODE_INITIALIZATION):
                     trans_key = "start_failed"
                     if breakpoint_info != 0:
+                        LOGGER.info(
+                            "[start_mowing] branch=start_job_with_existing_route (mode=%s, breakpoint=%s)",
+                            mode,
+                            breakpoint_info,
+                        )
                         await self.coordinator.async_send_and_wait(
                             "query_generate_route_information", "bidire_reqconver_path"
                         )
                         if not plan_only:
                             await self.coordinator.async_send_command("start_job")
                         return
+                    LOGGER.info(
+                        "[start_mowing] branch=plan_route_then_start (mode=%s)", mode
+                    )
                     if await self.coordinator.async_plan_route(operational_settings):
                         if not plan_only:
                             await self.coordinator.async_send_and_wait(
                                 "start_job", "zone_start_precent_t"
                             )
+                    else:
+                        LOGGER.warning(
+                            "[start_mowing] async_plan_route returned False — start_job NOT sent"
+                        )
 
             except COMMAND_EXCEPTIONS as exc:
+                LOGGER.error(
+                    "[start_mowing] command failed (trans_key=%s): %s: %s",
+                    trans_key,
+                    type(exc).__name__,
+                    exc,
+                )
                 raise HomeAssistantError(
                     translation_domain=DOMAIN, translation_key=trans_key
                 ) from exc
             finally:
                 await self.coordinator.async_request_report_snapshot()
+        else:
+            LOGGER.warning(
+                "[start_mowing] no-op — mower mode %s is not in the actionable set "
+                "(PAUSE, READY, RETURNING, WORKING, INITIALIZATION). "
+                "Command will be silently ignored.",
+                mode,
+            )
 
     async def async_dock(self) -> None:
         """Start docking."""
@@ -327,7 +389,16 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
         await self.coordinator.async_start_report_stream()
         charge_state = self.rpt_dev_status.charge_state
         mode = self.rpt_dev_status.sys_status
+
+        LOGGER.info(
+            "[dock] entry — device=%s mode=%s charge_state=%s",
+            self.coordinator.device_name,
+            mode,
+            charge_state,
+        )
+
         if mode is None:
+            LOGGER.warning("[dock] aborted — mower mode is None (device not ready)")
             raise HomeAssistantError(
                 translation_domain=DOMAIN, translation_key="device_not_ready"
             )
@@ -340,21 +411,37 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
         ):
             try:
                 if mode == WorkMode.MODE_WORKING:
+                    LOGGER.info("[dock] branch=pause_execute_task (mode=WORKING)")
                     trans_key = "pause_failed"
                     await self.coordinator.async_send_command("pause_execute_task")
 
                 if mode == WorkMode.MODE_RETURNING:
+                    LOGGER.info("[dock] branch=cancel_return_to_dock (mode=RETURNING)")
                     trans_key = "dock_cancel_failed"
                     await self.coordinator.async_send_command("cancel_return_to_dock")
                 else:
+                    LOGGER.info("[dock] branch=return_to_dock (mode=%s)", mode)
                     trans_key = "dock_failed"
                     await self.coordinator.async_send_command("return_to_dock")
             except COMMAND_EXCEPTIONS as exc:
+                LOGGER.error(
+                    "[dock] command failed (trans_key=%s): %s: %s",
+                    trans_key,
+                    type(exc).__name__,
+                    exc,
+                )
                 raise HomeAssistantError(
                     translation_domain=DOMAIN, translation_key=trans_key
                 ) from exc
             finally:
                 await self.coordinator.async_request_report_snapshot()
+        else:
+            LOGGER.warning(
+                "[dock] no-op — charge_state=%s and mode=%s — not in actionable set. "
+                "(Mower may already be docked/charging — charge_state must be 0 to act.)",
+                charge_state,
+                mode,
+            )
 
     async def async_pause(self) -> None:
         """Pause mower."""
@@ -362,7 +449,15 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
 
         await self.coordinator.async_ensure_fresh_state()
         mode = self.rpt_dev_status.sys_status
+
+        LOGGER.info(
+            "[pause] entry — device=%s mode=%s",
+            self.coordinator.device_name,
+            mode,
+        )
+
         if mode is None:
+            LOGGER.warning("[pause] aborted — mower mode is None (device not ready)")
             raise HomeAssistantError(
                 translation_domain=DOMAIN, translation_key="device_not_ready"
             )
@@ -373,17 +468,30 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
         ):
             try:
                 if mode == WorkMode.MODE_WORKING:
+                    LOGGER.info("[pause] branch=pause_execute_task (mode=WORKING)")
                     trans_key = "pause_failed"
                     await self.coordinator.async_send_command("pause_execute_task")
                 if mode == WorkMode.MODE_RETURNING:
+                    LOGGER.info("[pause] branch=cancel_return_to_dock (mode=RETURNING)")
                     trans_key = "dock_cancel_failed"
                     await self.coordinator.async_send_command("cancel_return_to_dock")
             except COMMAND_EXCEPTIONS as exc:
+                LOGGER.error(
+                    "[pause] command failed (trans_key=%s): %s: %s",
+                    trans_key,
+                    type(exc).__name__,
+                    exc,
+                )
                 raise HomeAssistantError(
                     translation_domain=DOMAIN, translation_key=trans_key
                 ) from exc
             finally:
                 await self.coordinator.async_request_report_snapshot()
+        else:
+            LOGGER.warning(
+                "[pause] no-op — mode %s is not in (WORKING, RETURNING). Command ignored.",
+                mode,
+            )
 
     async def async_cancel(self) -> None:
         """Cancel Job."""
