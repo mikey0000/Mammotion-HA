@@ -201,6 +201,19 @@
           "reported_offline": "Zgłoszono offline"
         }
       },
+      "cloud_sends_24h": {
+        "name": "Wysyłki do chmury (24h)"
+      },
+      "cloud_send_limit_status": {
+        "name": "Limit wysyłek do chmury",
+        "state": {
+          "ok": "OK",
+          "rate_limited": "Limit przekroczony"
+        }
+      },
+      "command_timeouts_24h": {
+        "name": "Timeouty komend (24h)"
+      },
       "maintenance_distance": {
         "name": "Całkowity przebieg"
       },
