@@ -2218,6 +2218,12 @@ class MammotionDeviceErrorUpdateCoordinator(
             if solution == "":
                 solution = error_info.en_solution
 
+            if not implication.strip() and not solution.strip():
+                return f"{error_info.module}: unknown error (code {error_code})"
+            if not solution.strip():
+                return f"{error_info.module}: {implication}"
+            if not implication.strip():
+                return f"{error_info.module}: {solution}"
             return f"{error_info.module}: {implication}, {solution}"
 
         except StopIteration:
@@ -2225,7 +2231,7 @@ class MammotionDeviceErrorUpdateCoordinator(
             return "No Error"
         except KeyError:
             """Failed to get error message."""
-            return "Error message not found"
+            return f"Unknown error (code {error_code})"
 
     async def _async_update_data(self) -> MowingDevice:
         """Get data from the device."""
@@ -2556,11 +2562,17 @@ class MammotionSpinoCoordinator(MammotionBaseUpdateCoordinator[PoolCleanerDevice
                 implication = error_info.en_implication
             if solution == "":
                 solution = error_info.en_solution
+            if not implication.strip() and not solution.strip():
+                return f"{error_info.module}: unknown error (code {error_code})"
+            if not solution.strip():
+                return f"{error_info.module}: {implication}"
+            if not implication.strip():
+                return f"{error_info.module}: {solution}"
             return f"{error_info.module}: {implication}, {solution}"
         except IndexError:
             return "No Error"
         except KeyError:
-            return "Error message not found"
+            return f"Unknown error (code {error_code})"
 
     async def _async_update_data(self) -> PoolCleanerDevice:
         """Return current pool cleaner state from the device handle.
