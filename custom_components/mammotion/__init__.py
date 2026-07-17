@@ -218,18 +218,18 @@ async def _attach_ble_to_mower(
     device: Device,
     ble_address: str,
 ) -> None:
-    """Attach a BLE transport to a mower device and register a persistent update callback."""
+    """Attach the latest BLE advertisement to a mower."""
     mowing_device = mammotion.get_device_by_name(device.device_name)
     if mowing_device is not None:
         mowing_device.mower_state.ble_mac = ble_address
 
-    ble_device = bluetooth.async_ble_device_from_address(
-        hass, ble_address.upper(), True
-    )
-    if ble_device:
-        await mammotion.add_ble_to_device(device.device_name, ble_device)
-
-    _device_name = device.device_name
+    service_info = bluetooth.async_last_service_info(hass, ble_address.upper(), True)
+    if service_info is not None:
+        await mammotion.update_ble_device(
+            device.device_name,
+            service_info.device,
+            service_info.rssi,
+        )
 
 
 async def _attach_ble_to_rtk(
@@ -267,20 +267,24 @@ def _register_ble_reconnect_callback(
         handle = mammotion.mower(device_name)
         if handle is None:
             return
-        # Always push the freshest BLEDevice into the transport.  add_ble_to_device
-        # is idempotent: it calls set_ble_device() if a transport already exists, or
-        # creates a new transport if one doesn't.  We must not short-circuit on
-        # has_transport() here because a device registered at startup without being
-        # in range has a transport with no BLEDevice — it needs updating too.
+        # Keep the transport's device and signal strength current so the library
+        # can avoid weak GATT connections and reconnect through a fresh scanner.
         hass.async_create_task(
-            mammotion.add_ble_to_device(device_name, service_info.device)
+            mammotion.update_ble_device(
+                device_name,
+                service_info.device,
+                service_info.rssi,
+            )
         )
 
     entry.async_on_unload(
         bluetooth.async_register_callback(
             hass,
             _ble_seen,
-            BluetoothCallbackMatcher(address=ble_address.upper()),
+            BluetoothCallbackMatcher(
+                address=ble_address.upper(),
+                connectable=True,
+            ),
             BluetoothScanningMode.ACTIVE,
         )
     )
