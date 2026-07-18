@@ -286,6 +286,9 @@
       "relocate_charging_station": {
         "name": "Relocate charging station"
       },
+      "refresh_status": {
+        "name": "Refresh status"
+      },
       "spino_fetch_map": {
         "name": "Fetch pool map"
       },
