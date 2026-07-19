@@ -622,6 +622,11 @@
     },
     "device_tracker": {
       "name": "Device Tracking"
+    },
+    "image": {
+      "map": {
+        "name": "Map"
+      }
     }
   },
   "selector": {
