@@ -584,6 +584,11 @@
     },
     "device_tracker": {
       "name": "Spårning av enhet"
+    },
+    "image": {
+      "map": {
+        "name": "Karta"
+      }
     }
   },
   "selector": {
