@@ -86,6 +86,10 @@ Satellite map tiles (Google Maps, OpenStreetMap, etc.) are sometimes misaligned 
 
 Typical offsets are within ±20 m. Positive latitude = north, positive longitude = east.
 
+The map image keeps the most recently completed mowing trail visible until the
+next task starts. Trail points are stored locally so they survive Home Assistant
+restarts.
+
 ## Dashboard Plugins
 
 Companion HACS dashboard plugins that extend the Mammotion integration with visual tools.
