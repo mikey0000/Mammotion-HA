@@ -1342,7 +1342,7 @@ wheels = [
 
 [[package]]
 name = "mammotion-ha"
-version = "0.6.4b9"
+version = "0.6.4b10"
 source = { virtual = "." }
 dependencies = [
     { name = "autotyping" },
@@ -1365,7 +1365,7 @@ dev = [
 requires-dist = [
     { name = "autotyping", specifier = ">=24.3.0" },
     { name = "homeassistant", specifier = ">=2026.1.0" },
-    { name = "pymammotion", specifier = "==0.8.11" },
+    { name = "pymammotion", specifier = "==0.8.12" },
     { name = "sdp-transform", specifier = ">=1.1.0" },
     { name = "websockets", specifier = ">=15.0.1" },
 ]
@@ -1863,7 +1863,7 @@ wheels = [
 
 [[package]]
 name = "pymammotion"
-version = "0.8.11"
+version = "0.8.12"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -1888,9 +1888,9 @@ dependencies = [
     { name = "webrtc-models" },
     { name = "websockets" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/2e/ab/353dd1f547c5bbd7a1bf0837db2b0235a19dc4e0766d400f60d35362f3f2/pymammotion-0.8.11.tar.gz", hash = "sha256:42a4c3be6be2b23c164f40e97d97569426a5fbe17a273d7e846723134d63d482", size = 413978, upload-time = "2026-07-16T21:50:58.334Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/2c/46/5a569e7fb4aafca54b23aaccf56c1edc624f9ddb7de58d4b2fcd420fd4a7/pymammotion-0.8.12.tar.gz", hash = "sha256:91669d678f220d807f1e200e13b4648ce75549839c7686ece02aa68296254c5e", size = 417171, upload-time = "2026-07-27T06:14:23.785Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/75/f6/d476e3eb60df5a52395386a9f2e01c5c5ca4a96f313683fbb4e9a0c5da5d/pymammotion-0.8.11-py3-none-any.whl", hash = "sha256:aa71a11fde92d06835ffca50f8ef68591f635764d4e8c548c47099610381bb21", size = 481457, upload-time = "2026-07-16T21:50:56.257Z" },
+    { url = "https://files.pythonhosted.org/packages/44/41/948cab06f958ab43092cde4f717af87fb18317173303b65525b6d0d3f3e0/pymammotion-0.8.12-py3-none-any.whl", hash = "sha256:156f226bdb92f8546ce0b1845b435782ca80353c8c401fecec29cb61b466c7f3", size = 484638, upload-time = "2026-07-27T06:14:21.969Z" },
 ]
 
 [[package]]
