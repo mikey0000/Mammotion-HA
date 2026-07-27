@@ -201,6 +201,16 @@
           "reported_offline": "Rapporterad offline"
         }
       },
+      "task_area_status": {
+        "name": "Uppgiftsområde {name}",
+        "state": {
+          "NOT_STARTED": "Inte startat",
+          "WAITING": "Väntar",
+          "MOWING": "Klipper",
+          "COMPLETE": "Slutfört",
+          "ABORTED": "Avbrutet"
+        }
+      },
       "maintenance_distance": {
         "name": "Total körsträcka"
       },
@@ -253,16 +263,6 @@
           "CON_WIFI": "Wi-Fi"
         }
       },
-      "task_area_status": {
-        "name": "Uppgiftsområde {name}",
-        "state": {
-          "NOT_STARTED": "Inte startat",
-          "WAITING": "Väntar",
-          "MOWING": "Klipper",
-          "COMPLETE": "Slutfört",
-          "ABORTED": "Avbrutet"
-        }
-      },
       "spino_battery": {
         "name": "Batteri"
       },
@@ -293,6 +293,12 @@
           "LINE": "Vattenlinje",
           "CUSTOM": "Anpassad"
         }
+      },
+      "spino_ble_rssi": {
+        "name": "BLE RSSI"
+      },
+      "spino_wifi_rssi": {
+        "name": "Wi-Fi RSSI"
       },
       "spino_error_time": {
         "name": "Tidpunkt för senaste fel"
@@ -380,6 +386,12 @@
       },
       "restart_mower": {
         "name": "Starta om gräsklipparen"
+      },
+      "spino_fetch_map": {
+        "name": "Hämta poolkarta"
+      },
+      "spino_fetch_line": {
+        "name": "Hämta rengöringsrutt"
       },
       "spino_refresh_status": {
         "name": "Uppdatera status"
@@ -513,6 +525,14 @@
           "zero_turn": "Runt egen axel"
         }
       },
+      "wildlife_safety": {
+        "name": "Djursäkerhet",
+        "state": {
+          "off": "Av",
+          "stop_mowing": "Stoppa klippning",
+          "low_speed_mowing": "Klippning med låg hastighet"
+        }
+      },
       "cutter_mode": {
         "name": "Klipphastighet",
         "state": {
@@ -528,14 +548,6 @@
           "WOMAN": "Kvinna"
         }
       },
-      "wildlife_safety": {
-        "name": "Djursäkerhet",
-        "state": {
-          "off": "Av",
-          "stop_mowing": "Stoppa klippning",
-          "low_speed_mowing": "Klippning med låg hastighet"
-        }
-      },
       "spino_work_mode": {
         "name": "Rengöringsläge",
         "state": {
@@ -547,6 +559,24 @@
           "ECO": "Eco",
           "LINE": "Vattenlinje",
           "CUSTOM": "Anpassad"
+        }
+      },
+      "spino_wall_material": {
+        "name": "Väggmaterial",
+        "state": {
+          "GLASS": "Glas",
+          "CERAMICS": "Kakel",
+          "SAND_STONE": "Stenmaterial",
+          "VINYL": "Vinyl"
+        }
+      },
+      "spino_bottom_type": {
+        "name": "Poolbottens form",
+        "state": {
+          "RIGHT_ANGLE_SIMPLE": "Rätvinklig (enkel)",
+          "RIGHT_ANGLE_COMPLEX": "Rätvinklig (komplex)",
+          "CURVE_SIMPLE": "Böjd (enkel)",
+          "CURVE_COMPLEX": "Böjd (komplex)"
         }
       }
     },
@@ -580,6 +610,9 @@
       },
       "map_offset_lon": {
         "name": "Kartoffset longitud"
+      },
+      "spino_floor_speed": {
+        "name": "Hastighet på poolbotten"
       }
     },
     "device_tracker": {

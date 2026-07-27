@@ -1495,7 +1495,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         if self.data is None:
             return "out_of_sync"
 
-        mower_data = cast(MowingDevice, self.data)
+        mower_data = self.data
         locations = mower_data.report_data.locations
         bol_hash = locations[0].bol_hash if locations else 0
         if mower_data.map.is_map_synced(bol_hash):

@@ -64,16 +64,17 @@ class MammotionSpinoTaskButtonEntityDescription(ButtonEntityDescription):
 
 
 SPINO_BUTTON_SENSORS: tuple[MammotionSpinoButtonEntityDescription, ...] = (
-    MammotionSpinoButtonEntityDescription(
-        key="spino_fetch_map",
-        entity_category=EntityCategory.CONFIG,
-        press_fn=lambda coordinator: coordinator.async_fetch_pool_map(),
-    ),
-    MammotionSpinoButtonEntityDescription(
-        key="spino_fetch_line",
-        entity_category=EntityCategory.CONFIG,
-        press_fn=lambda coordinator: coordinator.async_fetch_pool_line(),
-    ),
+    # Disabled until map/route fetching works reliably:
+    # MammotionSpinoButtonEntityDescription(
+    #     key="spino_fetch_map",
+    #     entity_category=EntityCategory.CONFIG,
+    #     press_fn=lambda coordinator: coordinator.async_fetch_pool_map(),
+    # ),
+    # MammotionSpinoButtonEntityDescription(
+    #     key="spino_fetch_line",
+    #     entity_category=EntityCategory.CONFIG,
+    #     press_fn=lambda coordinator: coordinator.async_fetch_pool_line(),
+    # ),
     MammotionSpinoButtonEntityDescription(
         key="spino_refresh_status",
         entity_category=EntityCategory.DIAGNOSTIC,

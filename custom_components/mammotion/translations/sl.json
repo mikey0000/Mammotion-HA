@@ -201,6 +201,16 @@
           "reported_offline": "Sporočeno brez povezave"
         }
       },
+      "task_area_status": {
+        "name": "Področje naloge {name}",
+        "state": {
+          "NOT_STARTED": "Ni začeto",
+          "WAITING": "Čaka",
+          "MOWING": "Košnja",
+          "COMPLETE": "Dokončano",
+          "ABORTED": "Prekinjeno"
+        }
+      },
       "maintenance_distance": {
         "name": "Skupno opravljena pot"
       },
@@ -253,16 +263,6 @@
           "CON_WIFI": "Wi-Fi"
         }
       },
-      "task_area_status": {
-        "name": "Področje naloge {name}",
-        "state": {
-          "NOT_STARTED": "Ni začeto",
-          "WAITING": "Čaka",
-          "MOWING": "Košnja",
-          "COMPLETE": "Dokončano",
-          "ABORTED": "Prekinjeno"
-        }
-      },
       "spino_battery": {
         "name": "Baterija"
       },
@@ -293,6 +293,12 @@
           "LINE": "Vodna gladina",
           "CUSTOM": "Po meri"
         }
+      },
+      "spino_ble_rssi": {
+        "name": "BLE RSSI"
+      },
+      "spino_wifi_rssi": {
+        "name": "Wifi RSSI"
       },
       "spino_error_time": {
         "name": "Čas zadnje napake"
@@ -380,6 +386,12 @@
       },
       "restart_mower": {
         "name": "Ponovni zagon kosilnice"
+      },
+      "spino_fetch_map": {
+        "name": "Pridobi zemljevid bazena"
+      },
+      "spino_fetch_line": {
+        "name": "Pridobi pot čiščenja"
       },
       "spino_refresh_status": {
         "name": "Osveži stanje"
@@ -513,6 +525,14 @@
           "zero_turn": "Obrat na mestu"
         }
       },
+      "wildlife_safety": {
+        "name": "Varnost divjih živali",
+        "state": {
+          "off": "Izklopljeno",
+          "stop_mowing": "Ustavi košnjo",
+          "low_speed_mowing": "Košnja z nizko hitrostjo"
+        }
+      },
       "cutter_mode": {
         "name": "Hitrost rezanja",
         "state": {
@@ -528,14 +548,6 @@
           "WOMAN": "Ženski"
         }
       },
-      "wildlife_safety": {
-        "name": "Varnost divjih živali",
-        "state": {
-          "off": "Izklopljeno",
-          "stop_mowing": "Ustavi košnjo",
-          "low_speed_mowing": "Košnja z nizko hitrostjo"
-        }
-      },
       "spino_work_mode": {
         "name": "Način čiščenja",
         "state": {
@@ -547,6 +559,24 @@
           "ECO": "Eko",
           "LINE": "Vodna gladina",
           "CUSTOM": "Po meri"
+        }
+      },
+      "spino_wall_material": {
+        "name": "Material sten",
+        "state": {
+          "GLASS": "Steklo",
+          "CERAMICS": "Ploščice",
+          "SAND_STONE": "Agregat",
+          "VINYL": "Vinil"
+        }
+      },
+      "spino_bottom_type": {
+        "name": "Oblika dna bazena",
+        "state": {
+          "RIGHT_ANGLE_SIMPLE": "Pravokotno (enostavno)",
+          "RIGHT_ANGLE_COMPLEX": "Pravokotno (zapleteno)",
+          "CURVE_SIMPLE": "Zaobljeno (enostavno)",
+          "CURVE_COMPLEX": "Zaobljeno (zapleteno)"
         }
       }
     },
@@ -580,6 +610,9 @@
       },
       "map_offset_lon": {
         "name": "Zamik zemljevida dolžina"
+      },
+      "spino_floor_speed": {
+        "name": "Hitrost na dnu bazena"
       }
     },
     "device_tracker": {

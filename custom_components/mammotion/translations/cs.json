@@ -201,6 +201,16 @@
           "reported_offline": "Hlášeno offline"
         }
       },
+      "task_area_status": {
+        "name": "Stav oblasti úkolu {name}",
+        "state": {
+          "NOT_STARTED": "Nezahájeno",
+          "WAITING": "Čeká se",
+          "MOWING": "Sečení",
+          "COMPLETE": "Dokončeno",
+          "ABORTED": "Přerušeno"
+        }
+      },
       "maintenance_distance": {
         "name": "Celková vzdálenost"
       },
@@ -253,16 +263,6 @@
           "CON_WIFI": "Wi-Fi"
         }
       },
-      "task_area_status": {
-        "name": "Stav oblasti úkolu {name}",
-        "state": {
-          "NOT_STARTED": "Nezahájeno",
-          "WAITING": "Čeká se",
-          "MOWING": "Sečení",
-          "COMPLETE": "Dokončeno",
-          "ABORTED": "Přerušeno"
-        }
-      },
       "spino_battery": {
         "name": "Baterie"
       },
@@ -293,6 +293,12 @@
           "LINE": "Vodní hladina",
           "CUSTOM": "Vlastní"
         }
+      },
+      "spino_ble_rssi": {
+        "name": "BLE RSSI"
+      },
+      "spino_wifi_rssi": {
+        "name": "WiFi RSSI"
       },
       "spino_error_time": {
         "name": "Čas poslední chyby"
@@ -380,6 +386,12 @@
       },
       "restart_mower": {
         "name": "Restartovat sekačku"
+      },
+      "spino_fetch_map": {
+        "name": "Načíst mapu bazénu"
+      },
+      "spino_fetch_line": {
+        "name": "Načíst trasu čištění"
       },
       "spino_refresh_status": {
         "name": "Obnovit stav"
@@ -513,6 +525,14 @@
           "zero_turn": "Otáčení na místě"
         }
       },
+      "wildlife_safety": {
+        "name": "Ochrana volně žijících živočichů",
+        "state": {
+          "off": "Vypnuto",
+          "stop_mowing": "Zastavit sekání",
+          "low_speed_mowing": "Sekání nízkou rychlostí"
+        }
+      },
       "cutter_mode": {
         "name": "Rychlost nožů",
         "state": {
@@ -528,14 +548,6 @@
           "WOMAN": "Ženský"
         }
       },
-      "wildlife_safety": {
-        "name": "Ochrana volně žijících živočichů",
-        "state": {
-          "off": "Vypnuto",
-          "stop_mowing": "Zastavit sekání",
-          "low_speed_mowing": "Sekání nízkou rychlostí"
-        }
-      },
       "spino_work_mode": {
         "name": "Režim čištění",
         "state": {
@@ -547,6 +559,24 @@
           "ECO": "Eko",
           "LINE": "Vodní hladina",
           "CUSTOM": "Vlastní"
+        }
+      },
+      "spino_wall_material": {
+        "name": "Materiál stěn",
+        "state": {
+          "GLASS": "Sklo",
+          "CERAMICS": "Dlaždice",
+          "SAND_STONE": "Kamenivo",
+          "VINYL": "Vinyl"
+        }
+      },
+      "spino_bottom_type": {
+        "name": "Tvar dna bazénu",
+        "state": {
+          "RIGHT_ANGLE_SIMPLE": "Pravoúhlé (jednoduché)",
+          "RIGHT_ANGLE_COMPLEX": "Pravoúhlé (složité)",
+          "CURVE_SIMPLE": "Zaoblené (jednoduché)",
+          "CURVE_COMPLEX": "Zaoblené (složité)"
         }
       }
     },
@@ -580,6 +610,9 @@
       },
       "map_offset_lon": {
         "name": "Posun mapy – zeměpisná délka"
+      },
+      "spino_floor_speed": {
+        "name": "Rychlost na dně bazénu"
       }
     },
     "device_tracker": {

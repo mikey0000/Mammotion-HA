@@ -9,7 +9,8 @@
       "no_longer_present": "Device is no longer present",
       "not_supported": "Device not supported",
       "reconfigure_successful": "Re-configure successful",
-      "api_limit_exceeded": "API rate limit has been exceeded. Please try again later."
+      "api_limit_exceeded": "API rate limit has been exceeded. Please try again later.",
+      "account_in_use": "Your Mammotion account is already in use in another session. Sign out of the Mammotion app and try again."
     },
     "error": {
       "login_failed": "Login failed. Check your account email and password, then try again.",
@@ -80,6 +81,9 @@
       "ble_rssi": {
         "name": "BLE RSSI"
       },
+      "camera_brightness": {
+        "name": "Camera Brightness"
+      },
       "wifi_rssi": {
         "name": "WiFi RSSI"
       },
@@ -119,6 +123,199 @@
       "l2_satellites": {
         "name": "L2 signal quality"
       },
+      "positioning_mode": {
+        "name": "RTK position"
+      },
+      "position_type": {
+        "name": "Device position type",
+        "state": {
+          "AREA_BORDER_ON": "At perimeter",
+          "AREA_INSIDE": "Inside area",
+          "AREA_OUT": "Outside area",
+          "CHANNEL_AREA_OVERLAP": "Path area overlap",
+          "CHANNEL_ON": "On path",
+          "CHARGE_ON": "At charging station",
+          "DUMPING_AREA_INSIDE": "In dump area",
+          "DUMPING_OUTSIDE": "Outside dump area",
+          "ABNORMAL_POSITIONING": "Position error",
+          "NO_AREAS": "No areas defined",
+          "OBS_ON": "At obstacle",
+          "TURN_AREA_INSIDE": "In turn area",
+          "VIRTUAL_INSIDE": "In virtual area"
+        }
+      },
+      "visual_positioning_status": {
+        "name": "Visual positioning status",
+        "state": {
+          "SIGNAL_NONE": "None",
+          "SIGNAL_INIT": "Initialising",
+          "SIGNAL_GOOD": "Good",
+          "SIGNAL_BAD": "Bad",
+          "SIGNAL_UNKNOWN": "Unknown"
+        }
+      },
+      "activity_mode": {
+        "name": "Activity mode",
+        "state": {
+          "MODE_NOT_ACTIVE": "Not active",
+          "MODE_ONLINE": "Online",
+          "MODE_OFFLINE": "Offline",
+          "MODE_DISABLE": "Disabled",
+          "MODE_INITIALIZATION": "Initializing",
+          "MODE_READY": "Ready",
+          "MODE_WORKING": "Working",
+          "MODE_RETURNING": "Returning",
+          "MODE_CHARGING": "Charging",
+          "MODE_UPDATING": "Updating",
+          "MODE_LOCK": "Locked",
+          "MODE_PAUSE": "Paused",
+          "MODE_MANUAL_MOWING": "Manual mowing",
+          "MODE_UPDATE_SUCCESS": "Update successful",
+          "MODE_OTA_UPGRADE_FAIL": "Update failed",
+          "MODE_JOB_DRAW": "Drawing job",
+          "MODE_OBSTACLE_DRAW": "Drawing obstacles",
+          "MODE_CHANNEL_DRAW": "Drawing channel",
+          "MODE_ERASER_DRAW": "Drawing eraser",
+          "MODE_EDIT_BOUNDARY": "Editing boundary",
+          "MODE_LOCATION_ERROR": "Location error",
+          "MODE_BOUNDARY_JUMP": "Boundary crossed",
+          "MODE_CHARGING_PAUSE": "Charging paused",
+          "MODE_POWER_OFF": "Powering off"
+        }
+      },
+      "work_area": {
+        "name": "Current location"
+      },
+      "map_sync_status": {
+        "name": "Map sync status",
+        "state": {
+          "synced": "Synced",
+          "syncing": "Syncing",
+          "out_of_sync": "Out of sync"
+        }
+      },
+      "mqtt_status": {
+        "name": "MQTT status",
+        "state": {
+          "reported_online": "Reported online",
+          "reported_offline": "Reported offline"
+        }
+      },
+      "task_area_status": {
+        "name": "Task area {name}",
+        "state": {
+          "NOT_STARTED": "Not started",
+          "WAITING": "Waiting",
+          "MOWING": "Mowing",
+          "COMPLETE": "Complete",
+          "ABORTED": "Aborted"
+        }
+      },
+      "maintenance_distance": {
+        "name": "Total mileage"
+      },
+      "maintenance_work_time": {
+        "name": "Total work time"
+      },
+      "maintenance_bat_cycles": {
+        "name": "Battery cycles",
+        "unit_of_measurement": "cycles"
+      },
+      "blade_used_time": {
+        "name": "Blade used time"
+      },
+      "blade_used_warn_time": {
+        "name": "Blade wear warning time"
+      },
+      "non_work_hours": {
+        "name": "Non-work hours"
+      },
+      "rtk_lora": {
+        "name": "LoRa version"
+      },
+      "rtk_latitude": {
+        "name": "RTK latitude"
+      },
+      "rtk_longitude": {
+        "name": "RTK longitude"
+      },
+      "rtk_wifi_rssi": {
+        "name": "Wi-Fi RSSI"
+      },
+      "rtk_sats_num": {
+        "name": "Satellites"
+      },
+      "position_mode": {
+        "name": "Position mode",
+        "state": {
+          "RTK_OVER_DATALINK": "Antenna Over Datalink",
+          "RTK_OVER_INTERNET": "Antenna Over Internet",
+          "INAVI_NET_RTK": "iNavi NetRTK",
+          "INAVI_RTK_BOX": "iNavi RTK Box",
+          "UNKNOWN": "Unknown"
+        }
+      },
+      "rtk_app_connect_type": {
+        "name": "App Connection Type",
+        "state": {
+          "UNKNOWN": "Unknown",
+          "CON_BLE": "BLE",
+          "CON_WIFI": "Wi-Fi"
+        }
+      },
+      "spino_battery": {
+        "name": "Battery"
+      },
+      "spino_status": {
+        "name": "Status",
+        "state": {
+          "UNKNOWN": "Unknown",
+          "IDLE": "Standby",
+          "PREPARE": "Standby",
+          "WAIT_WATER": "Filling with water",
+          "WORKING": "Working",
+          "PAUSE_GO_CHARGE": "Returning to charge (paused)",
+          "END_GO_CHARGE": "Returning to charge",
+          "CHARGING": "Charging",
+          "LEAVE_DOCK": "Leaving dock",
+          "RECALLING": "Returning"
+        }
+      },
+      "spino_work_mode": {
+        "name": "Cleaning mode",
+        "state": {
+          "UNKNOWN": "None",
+          "RECHARGE": "Recharge",
+          "AUTO": "All",
+          "FLOOR": "Floor",
+          "WALL": "Wall",
+          "ECO": "Eco",
+          "LINE": "Waterline",
+          "CUSTOM": "Custom"
+        }
+      },
+      "spino_ble_rssi": {
+        "name": "BLE RSSI"
+      },
+      "spino_wifi_rssi": {
+        "name": "WiFi RSSI"
+      },
+      "spino_error_time": {
+        "name": "Last error time"
+      },
+      "spino_error_message": {
+        "name": "Last error"
+      },
+      "spino_error_code": {
+        "name": "Last error code"
+      },
+      "spino_mqtt_status": {
+        "name": "MQTT status",
+        "state": {
+          "online": "Online",
+          "offline": "Offline"
+        }
+      },
       "co_view_l1": {
         "name": "L1 satellites (co-viewing)"
       },
@@ -151,113 +348,14 @@
           "2": "Weak",
           "3": "None"
         }
-      },
-      "positioning_mode": {
-        "name": "RTK position"
-      },
-      "position_mode": {
-        "name": "Position mode",
-        "state": {
-          "RTK_OVER_DATALINK": "Antenna Over Datalink",
-          "RTK_OVER_INTERNET": "Antenna Over Internet",
-          "INAVI_NET_RTK": "iNavi NetRTK",
-          "INAVI_RTK_BOX": "iNavi RTK Box",
-          "UNKNOWN": "Unknown"
-        }
-      },
-      "rtk_app_connect_type": {
-        "name": "App Connection Type",
-        "state": {
-          "UNKNOWN": "Unknown",
-          "CON_BLE": "BLE",
-          "CON_WIFI": "Wi-Fi"
-        }
-      },
-      "position_type": {
-        "name": "Device position type"
-      },
-      "visual_positioning_status": {
-        "name": "Visual positioning status",
-        "state": {
-          "SIGNAL_NONE": "None",
-          "SIGNAL_INIT": "Initialising",
-          "SIGNAL_GOOD": "Good",
-          "SIGNAL_BAD": "Bad",
-          "SIGNAL_UNKNOWN": "Unknown"
-        }
-      },
-      "activity_mode": {
-        "name": "Activity mode"
-      },
-      "work_area": {
-        "name": "Current location"
-      },
-      "map_sync_status": {
-        "name": "Map sync status",
-        "state": {
-          "synced": "Synced",
-          "syncing": "Syncing",
-          "out_of_sync": "Out of sync"
-        }
-      },
-      "mqtt_status": {
-        "name": "MQTT status",
-        "state": {
-          "reported_online": "Reported online",
-          "reported_offline": "Reported offline"
-        }
-      },
-      "task_area_status": {
-        "name": "Task area {name}",
-        "state": {
-          "NOT_STARTED": "Not started",
-          "WAITING": "Waiting",
-          "MOWING": "Mowing",
-          "COMPLETE": "Complete",
-          "ABORTED": "Aborted"
-        }
-      },
-      "rtk_latitude": {
-        "name": "RTK latitude"
-      },
-      "rtk_longitude": {
-        "name": "RTK longitude"
-      },
-      "spino_battery": {
-        "name": "Battery"
-      },
-      "spino_status": {
-        "name": "Status",
-        "state": {
-          "UNKNOWN": "Unknown",
-          "IDLE": "Standby",
-          "PREPARE": "Standby",
-          "WAIT_WATER": "Filling with water",
-          "WORKING": "Working",
-          "PAUSE_GO_CHARGE": "Returning to charge (paused)",
-          "END_GO_CHARGE": "Returning to charge",
-          "CHARGING": "Charging",
-          "LEAVE_DOCK": "Leaving dock",
-          "RECALLING": "Returning"
-        }
-      },
-      "spino_work_mode": {
-        "name": "Cleaning mode",
-        "state": {
-          "UNKNOWN": "Unknown",
-          "RECHARGE": "Recharge",
-          "AUTO": "All",
-          "FLOOR": "Floor",
-          "WALL": "Wall",
-          "ECO": "Eco",
-          "LINE": "Waterline",
-          "CUSTOM": "Custom"
-        }
       }
     },
     "button": {
       "start_map_sync": {
         "name": "Sync maps"
+      },
+      "start_schedule_sync": {
+        "name": "Synchronize schedules"
       },
       "resync_rtk_dock": {
         "name": "Sync RTK and dock"
@@ -285,6 +383,9 @@
       },
       "relocate_charging_station": {
         "name": "Relocate charging station"
+      },
+      "restart_mower": {
+        "name": "Restart mower"
       },
       "spino_fetch_map": {
         "name": "Fetch pool map"
@@ -326,6 +427,18 @@
       },
       "schedule_updates": {
         "name": "Turn updates on/off"
+      },
+      "bluetooth_enabled": {
+        "name": "Bluetooth"
+      },
+      "cloud_enabled": {
+        "name": "Cloud"
+      },
+      "manual_light": {
+        "name": "Manual light on/off"
+      },
+      "night_light": {
+        "name": "Auto lighting on/off"
       },
       "voice_on_off": {
         "name": "Voice on/off"
@@ -398,6 +511,36 @@
           "random_angle": "Random"
         }
       },
+      "traversal_mode": {
+        "name": "Traversal Mode",
+        "state": {
+          "direct": "Direct",
+          "follow_perimeter": "Follow the perimeter"
+        }
+      },
+      "turning_mode": {
+        "name": "Turnaround Mode",
+        "state": {
+          "multipoint": "Multipoint turn",
+          "zero_turn": "Zero turn"
+        }
+      },
+      "wildlife_safety": {
+        "name": "Wildlife Safety",
+        "state": {
+          "off": "Off",
+          "stop_mowing": "Stop Mowing",
+          "low_speed_mowing": "Low-Speed Mowing"
+        }
+      },
+      "cutter_mode": {
+        "name": "Cutter Speed",
+        "state": {
+          "normal": "Medium",
+          "slow": "Slow",
+          "fast": "Fast"
+        }
+      },
       "voice_gender": {
         "name": "Voice gender",
         "state": {
@@ -408,7 +551,7 @@
       "spino_work_mode": {
         "name": "Cleaning mode",
         "state": {
-          "UNKNOWN": "Unknown",
+          "UNKNOWN": "None",
           "RECHARGE": "Recharge",
           "AUTO": "All",
           "FLOOR": "Floor",
@@ -423,7 +566,8 @@
         "state": {
           "GLASS": "Glass",
           "CERAMICS": "Tile",
-          "SAND_STONE": "Mosaic"
+          "SAND_STONE": "Aggregate",
+          "VINYL": "Vinyl"
         }
       },
       "spino_bottom_type": {
@@ -540,6 +684,10 @@
       "name": "Start mowing",
       "description": "Starts the mowing operation with custom settings.",
       "fields": {
+        "modify": {
+          "name": "Modify existing job",
+          "description": "Whether to modify an existing job or start a new one."
+        },
         "is_mow": {
           "name": "Is mowing",
           "description": "Whether mowing is active. (Yuka)"
@@ -623,6 +771,34 @@
         "plan_only": {
           "name": "Plan only",
           "description": "Generate the mowing plan without starting the job."
+        }
+      }
+    },
+    "start_stop_blades": {
+      "name": "Start or stop blades",
+      "description": "Start or stop the blades manually.",
+      "fields": {
+        "start_stop": {
+          "name": "Start or stop",
+          "description": "Whether blades are on or off."
+        },
+        "blade_height": {
+          "name": "Blade height",
+          "description": "Height of the blade."
+        }
+      }
+    },
+    "set_non_work_hours": {
+      "name": "Set non-work hours",
+      "description": "Set the hours when the mower is not working.",
+      "fields": {
+        "start_time": {
+          "name": "Start time",
+          "description": "Start time of the non-work hours."
+        },
+        "end_time": {
+          "name": "End time",
+          "description": "End time of the non-work hours."
         }
       }
     },
@@ -972,9 +1148,6 @@
     }
   },
   "exceptions": {
-    "task_not_found": {
-      "message": "Task {plan_id} could not be found on the device. Refresh the schedule and try again."
-    },
     "device_not_ready": {
       "message": "Device is not ready."
     },
@@ -999,8 +1172,14 @@
     "api_limit_exceeded": {
       "message": "API rate limit has been exceeded."
     },
+    "account_in_use": {
+      "message": "Your Mammotion account is already active in another session. Sign out of the Mammotion app and try again."
+    },
     "cloud_setup_failed": {
       "message": "Unable to connect to the Mammotion cloud. Check your network and try reloading the integration."
+    },
+    "task_not_found": {
+      "message": "Task {plan_id} could not be found on the device. Refresh the schedule and try again."
     },
     "start_task_unsupported_on_spino": {
       "message": "Starting a schedule on demand is not supported on the Spino pool cleaner — the device firmware has no execute-now command for stored plans."

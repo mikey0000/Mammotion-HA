@@ -201,6 +201,16 @@
           "reported_offline": "Raportat offline"
         }
       },
+      "task_area_status": {
+        "name": "Zona de sarcină {name}",
+        "state": {
+          "NOT_STARTED": "Neînceput",
+          "WAITING": "În așteptare",
+          "MOWING": "Cosire",
+          "COMPLETE": "Finalizat",
+          "ABORTED": "Abandonat"
+        }
+      },
       "maintenance_distance": {
         "name": "Kilometraj total"
       },
@@ -253,16 +263,6 @@
           "CON_WIFI": "Wi-Fi"
         }
       },
-      "task_area_status": {
-        "name": "Zona de sarcină {name}",
-        "state": {
-          "NOT_STARTED": "Neînceput",
-          "WAITING": "În așteptare",
-          "MOWING": "Cosire",
-          "COMPLETE": "Finalizat",
-          "ABORTED": "Abandonat"
-        }
-      },
       "spino_battery": {
         "name": "Acumulator"
       },
@@ -293,6 +293,12 @@
           "LINE": "Linia apei",
           "CUSTOM": "Personalizat"
         }
+      },
+      "spino_ble_rssi": {
+        "name": "BLE RSSI"
+      },
+      "spino_wifi_rssi": {
+        "name": "Wi-Fi RSSI"
       },
       "spino_error_time": {
         "name": "Ora ultimei erori"
@@ -380,6 +386,12 @@
       },
       "restart_mower": {
         "name": "Repornire mașina de tuns"
+      },
+      "spino_fetch_map": {
+        "name": "Preia harta piscinei"
+      },
+      "spino_fetch_line": {
+        "name": "Preia traseul de curățare"
       },
       "spino_refresh_status": {
         "name": "Reîmprospătează starea"
@@ -513,6 +525,14 @@
           "zero_turn": "Întoarcere pe loc"
         }
       },
+      "wildlife_safety": {
+        "name": "Siguranța faunei",
+        "state": {
+          "off": "Oprit",
+          "stop_mowing": "Oprire cosire",
+          "low_speed_mowing": "Cosire cu viteză redusă"
+        }
+      },
       "cutter_mode": {
         "name": "Viteza de tăiere",
         "state": {
@@ -528,14 +548,6 @@
           "WOMAN": "Feminin"
         }
       },
-      "wildlife_safety": {
-        "name": "Siguranța faunei",
-        "state": {
-          "off": "Oprit",
-          "stop_mowing": "Oprire cosire",
-          "low_speed_mowing": "Cosire cu viteză redusă"
-        }
-      },
       "spino_work_mode": {
         "name": "Mod de curățare",
         "state": {
@@ -547,6 +559,24 @@
           "ECO": "Eco",
           "LINE": "Linia apei",
           "CUSTOM": "Personalizat"
+        }
+      },
+      "spino_wall_material": {
+        "name": "Materialul pereților",
+        "state": {
+          "GLASS": "Sticlă",
+          "CERAMICS": "Faianță",
+          "SAND_STONE": "Agregat",
+          "VINYL": "Vinil"
+        }
+      },
+      "spino_bottom_type": {
+        "name": "Forma fundului piscinei",
+        "state": {
+          "RIGHT_ANGLE_SIMPLE": "Unghi drept (simplu)",
+          "RIGHT_ANGLE_COMPLEX": "Unghi drept (complex)",
+          "CURVE_SIMPLE": "Curbat (simplu)",
+          "CURVE_COMPLEX": "Curbat (complex)"
         }
       }
     },
@@ -580,6 +610,9 @@
       },
       "map_offset_lon": {
         "name": "Decalaj hartă longitudine"
+      },
+      "spino_floor_speed": {
+        "name": "Viteza pe fundul piscinei"
       }
     },
     "device_tracker": {

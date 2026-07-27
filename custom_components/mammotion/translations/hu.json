@@ -294,6 +294,12 @@
           "CUSTOM": "Egyéni"
         }
       },
+      "spino_ble_rssi": {
+        "name": "BLE RSSI"
+      },
+      "spino_wifi_rssi": {
+        "name": "Wi-Fi RSSI"
+      },
       "spino_error_time": {
         "name": "Utolsó hiba időpontja"
       },
@@ -380,6 +386,12 @@
       },
       "restart_mower": {
         "name": "Fűnyíró újraindítása"
+      },
+      "spino_fetch_map": {
+        "name": "Medencetérkép lekérése"
+      },
+      "spino_fetch_line": {
+        "name": "Tisztítási útvonal lekérése"
       },
       "spino_refresh_status": {
         "name": "Állapot frissítése"
@@ -548,6 +560,24 @@
           "LINE": "Vízvonal",
           "CUSTOM": "Egyéni"
         }
+      },
+      "spino_wall_material": {
+        "name": "Falburkolat anyaga",
+        "state": {
+          "GLASS": "Üveg",
+          "CERAMICS": "Csempe",
+          "SAND_STONE": "Kőburkolat",
+          "VINYL": "Vinil"
+        }
+      },
+      "spino_bottom_type": {
+        "name": "Medencefenék alakja",
+        "state": {
+          "RIGHT_ANGLE_SIMPLE": "Derékszögű (egyszerű)",
+          "RIGHT_ANGLE_COMPLEX": "Derékszögű (összetett)",
+          "CURVE_SIMPLE": "Íves (egyszerű)",
+          "CURVE_COMPLEX": "Íves (összetett)"
+        }
       }
     },
     "number": {
@@ -580,6 +610,9 @@
       },
       "map_offset_lon": {
         "name": "Térkép hosszúsági eltolás"
+      },
+      "spino_floor_speed": {
+        "name": "Sebesség a medence alján"
       }
     },
     "device_tracker": {

@@ -284,7 +284,7 @@
       "spino_work_mode": {
         "name": "Cleaning mode",
         "state": {
-          "UNKNOWN": "Unknown",
+          "UNKNOWN": "None",
           "RECHARGE": "Recharge",
           "AUTO": "All",
           "FLOOR": "Floor",
@@ -293,6 +293,12 @@
           "LINE": "Waterline",
           "CUSTOM": "Custom"
         }
+      },
+      "spino_ble_rssi": {
+        "name": "BLE RSSI"
+      },
+      "spino_wifi_rssi": {
+        "name": "WiFi RSSI"
       },
       "spino_error_time": {
         "name": "Last error time"
@@ -545,7 +551,7 @@
       "spino_work_mode": {
         "name": "Cleaning mode",
         "state": {
-          "UNKNOWN": "Unknown",
+          "UNKNOWN": "None",
           "RECHARGE": "Recharge",
           "AUTO": "All",
           "FLOOR": "Floor",
@@ -560,7 +566,8 @@
         "state": {
           "GLASS": "Glass",
           "CERAMICS": "Tile",
-          "SAND_STONE": "Mosaic"
+          "SAND_STONE": "Aggregate",
+          "VINYL": "Vinyl"
         }
       },
       "spino_bottom_type": {

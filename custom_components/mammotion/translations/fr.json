@@ -201,6 +201,16 @@
           "reported_offline": "Signalé hors ligne"
         }
       },
+      "task_area_status": {
+        "name": "Zone de tâche {name}",
+        "state": {
+          "NOT_STARTED": "Non démarré",
+          "WAITING": "En attente",
+          "MOWING": "En cours de tonte",
+          "COMPLETE": "Terminé",
+          "ABORTED": "Abandonné"
+        }
+      },
       "maintenance_distance": {
         "name": "Kilométrage total"
       },
@@ -253,16 +263,6 @@
           "CON_WIFI": "Wi-Fi"
         }
       },
-      "task_area_status": {
-        "name": "Zone de tâche {name}",
-        "state": {
-          "NOT_STARTED": "Non démarré",
-          "WAITING": "En attente",
-          "MOWING": "En cours de tonte",
-          "COMPLETE": "Terminé",
-          "ABORTED": "Abandonné"
-        }
-      },
       "spino_battery": {
         "name": "Batterie"
       },
@@ -293,6 +293,12 @@
           "LINE": "Ligne d'eau",
           "CUSTOM": "Personnalisé"
         }
+      },
+      "spino_ble_rssi": {
+        "name": "Qualité du signal Bluetooth"
+      },
+      "spino_wifi_rssi": {
+        "name": "Qualité du signal Wi-Fi"
       },
       "spino_error_time": {
         "name": "Heure de la dernière erreur"
@@ -380,6 +386,12 @@
       },
       "restart_mower": {
         "name": "Redémarrer la tondeuse"
+      },
+      "spino_fetch_map": {
+        "name": "Récupérer la carte de la piscine"
+      },
+      "spino_fetch_line": {
+        "name": "Récupérer le trajet de nettoyage"
       },
       "spino_refresh_status": {
         "name": "Actualiser le statut"
@@ -513,6 +525,14 @@
           "zero_turn": "Virage sur place"
         }
       },
+      "wildlife_safety": {
+        "name": "Sécurité faune",
+        "state": {
+          "off": "Désactivé",
+          "stop_mowing": "Arrêter de tondre",
+          "low_speed_mowing": "Tonte à vitesse réduite"
+        }
+      },
       "cutter_mode": {
         "name": "Vitesse de coupe",
         "state": {
@@ -528,14 +548,6 @@
           "WOMAN": "Féminin"
         }
       },
-      "wildlife_safety": {
-        "name": "Sécurité faune",
-        "state": {
-          "off": "Désactivé",
-          "stop_mowing": "Arrêter de tondre",
-          "low_speed_mowing": "Tonte à vitesse réduite"
-        }
-      },
       "spino_work_mode": {
         "name": "Mode de nettoyage",
         "state": {
@@ -547,6 +559,24 @@
           "ECO": "Eco",
           "LINE": "Ligne d'eau",
           "CUSTOM": "Personnalisé"
+        }
+      },
+      "spino_wall_material": {
+        "name": "Matériau des parois",
+        "state": {
+          "GLASS": "Verre",
+          "CERAMICS": "Carrelage",
+          "SAND_STONE": "Agrégat",
+          "VINYL": "Vinyle"
+        }
+      },
+      "spino_bottom_type": {
+        "name": "Forme du fond de la piscine",
+        "state": {
+          "RIGHT_ANGLE_SIMPLE": "Angle droit (simple)",
+          "RIGHT_ANGLE_COMPLEX": "Angle droit (complexe)",
+          "CURVE_SIMPLE": "Incurvé (simple)",
+          "CURVE_COMPLEX": "Incurvé (complexe)"
         }
       }
     },
@@ -580,6 +610,9 @@
       },
       "map_offset_lon": {
         "name": "Décalage carte longitude"
+      },
+      "spino_floor_speed": {
+        "name": "Vitesse au fond de la piscine"
       }
     },
     "device_tracker": {

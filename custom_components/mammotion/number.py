@@ -53,9 +53,11 @@ class MammotionSpinoNumberEntityDescription(NumberEntityDescription):  # type: i
 SPINO_NUMBER_ENTITIES: tuple[MammotionSpinoNumberEntityDescription, ...] = (
     MammotionSpinoNumberEntityDescription(
         key="spino_floor_speed",
+        device_class=NumberDeviceClass.SPEED,
+        native_unit_of_measurement=UnitOfSpeed.METERS_PER_SECOND,
         native_min_value=0.1,
-        native_max_value=1.0,
-        native_step=0.05,
+        native_max_value=0.2,
+        native_step=0.01,
         mode=NumberMode.SLIDER,
         entity_category=EntityCategory.CONFIG,
         value_fn=lambda spino_data: spino_data.pool_state.floor_speed,

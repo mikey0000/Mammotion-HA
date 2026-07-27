@@ -201,6 +201,16 @@
           "reported_offline": "Rapporteret offline"
         }
       },
+      "task_area_status": {
+        "name": "Opgaveområde {name}",
+        "state": {
+          "NOT_STARTED": "Ikke startet",
+          "WAITING": "Venter",
+          "MOWING": "Klipper",
+          "COMPLETE": "Fuldført",
+          "ABORTED": "Afbrudt"
+        }
+      },
       "maintenance_distance": {
         "name": "Samlet kilometertal"
       },
@@ -253,16 +263,6 @@
           "CON_WIFI": "Wi-Fi"
         }
       },
-      "task_area_status": {
-        "name": "Opgaveområde {name}",
-        "state": {
-          "NOT_STARTED": "Ikke startet",
-          "WAITING": "Venter",
-          "MOWING": "Klipper",
-          "COMPLETE": "Fuldført",
-          "ABORTED": "Afbrudt"
-        }
-      },
       "spino_battery": {
         "name": "Batteri"
       },
@@ -293,6 +293,12 @@
           "LINE": "Vandlinje",
           "CUSTOM": "Brugerdefineret"
         }
+      },
+      "spino_ble_rssi": {
+        "name": "BLE RSSI"
+      },
+      "spino_wifi_rssi": {
+        "name": "WiFi RSSI"
       },
       "spino_error_time": {
         "name": "Tidspunkt for seneste fejl"
@@ -380,6 +386,12 @@
       },
       "restart_mower": {
         "name": "Genstart plæneklipperen"
+      },
+      "spino_fetch_map": {
+        "name": "Hent poolkort"
+      },
+      "spino_fetch_line": {
+        "name": "Hent rengøringsrute"
       },
       "spino_refresh_status": {
         "name": "Opdater status"
@@ -513,6 +525,14 @@
           "zero_turn": "Nul vending"
         }
       },
+      "wildlife_safety": {
+        "name": "Dyresikkerhed",
+        "state": {
+          "off": "Slukket",
+          "stop_mowing": "Stop klipning",
+          "low_speed_mowing": "Klipning med lav hastighed"
+        }
+      },
       "cutter_mode": {
         "name": "Klippe hastighed",
         "state": {
@@ -528,14 +548,6 @@
           "WOMAN": "Kvinde"
         }
       },
-      "wildlife_safety": {
-        "name": "Dyresikkerhed",
-        "state": {
-          "off": "Slukket",
-          "stop_mowing": "Stop klipning",
-          "low_speed_mowing": "Klipning med lav hastighed"
-        }
-      },
       "spino_work_mode": {
         "name": "Rengøringstilstand",
         "state": {
@@ -547,6 +559,24 @@
           "ECO": "Eco",
           "LINE": "Vandlinje",
           "CUSTOM": "Brugerdefineret"
+        }
+      },
+      "spino_wall_material": {
+        "name": "Vægmateriale",
+        "state": {
+          "GLASS": "Glas",
+          "CERAMICS": "Fliser",
+          "SAND_STONE": "Stenbelægning",
+          "VINYL": "Vinyl"
+        }
+      },
+      "spino_bottom_type": {
+        "name": "Poolbundens form",
+        "state": {
+          "RIGHT_ANGLE_SIMPLE": "Retvinklet (enkel)",
+          "RIGHT_ANGLE_COMPLEX": "Retvinklet (kompleks)",
+          "CURVE_SIMPLE": "Buet (enkel)",
+          "CURVE_COMPLEX": "Buet (kompleks)"
         }
       }
     },
@@ -580,6 +610,9 @@
       },
       "map_offset_lon": {
         "name": "Kortforskydning længdegrad"
+      },
+      "spino_floor_speed": {
+        "name": "Hastighed på poolbunden"
       }
     },
     "device_tracker": {

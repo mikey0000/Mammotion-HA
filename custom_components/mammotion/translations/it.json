@@ -201,6 +201,16 @@
           "reported_offline": "Segnalato offline"
         }
       },
+      "task_area_status": {
+        "name": "Area attività {name}",
+        "state": {
+          "NOT_STARTED": "Non avviato",
+          "WAITING": "In attesa",
+          "MOWING": "In falciatura",
+          "COMPLETE": "Completato",
+          "ABORTED": "Interrotto"
+        }
+      },
       "maintenance_distance": {
         "name": "Chilometraggio totale"
       },
@@ -253,16 +263,6 @@
           "CON_WIFI": "Wi-Fi"
         }
       },
-      "task_area_status": {
-        "name": "Area attività {name}",
-        "state": {
-          "NOT_STARTED": "Non avviato",
-          "WAITING": "In attesa",
-          "MOWING": "In falciatura",
-          "COMPLETE": "Completato",
-          "ABORTED": "Interrotto"
-        }
-      },
       "spino_battery": {
         "name": "Batteria"
       },
@@ -293,6 +293,12 @@
           "LINE": "Linea di galleggiamento",
           "CUSTOM": "Personalizzato"
         }
+      },
+      "spino_ble_rssi": {
+        "name": "BLE RSSI"
+      },
+      "spino_wifi_rssi": {
+        "name": "WiFi RSSI"
       },
       "spino_error_time": {
         "name": "Orario ultimo errore"
@@ -380,6 +386,12 @@
       },
       "restart_mower": {
         "name": "Riavvia il tagliaerba"
+      },
+      "spino_fetch_map": {
+        "name": "Recupera mappa della piscina"
+      },
+      "spino_fetch_line": {
+        "name": "Recupera percorso di pulizia"
       },
       "spino_refresh_status": {
         "name": "Aggiorna stato"
@@ -513,6 +525,14 @@
           "zero_turn": "Svolta zero"
         }
       },
+      "wildlife_safety": {
+        "name": "Sicurezza fauna selvatica",
+        "state": {
+          "off": "Disattivato",
+          "stop_mowing": "Ferma falciatura",
+          "low_speed_mowing": "Falciatura a bassa velocità"
+        }
+      },
       "cutter_mode": {
         "name": "Velocità di taglio",
         "state": {
@@ -528,14 +548,6 @@
           "WOMAN": "Femminile"
         }
       },
-      "wildlife_safety": {
-        "name": "Sicurezza fauna selvatica",
-        "state": {
-          "off": "Disattivato",
-          "stop_mowing": "Ferma falciatura",
-          "low_speed_mowing": "Falciatura a bassa velocità"
-        }
-      },
       "spino_work_mode": {
         "name": "Modalità di pulizia",
         "state": {
@@ -547,6 +559,24 @@
           "ECO": "Eco",
           "LINE": "Linea di galleggiamento",
           "CUSTOM": "Personalizzato"
+        }
+      },
+      "spino_wall_material": {
+        "name": "Materiale delle pareti",
+        "state": {
+          "GLASS": "Vetro",
+          "CERAMICS": "Piastrelle",
+          "SAND_STONE": "Aggregato",
+          "VINYL": "Vinile"
+        }
+      },
+      "spino_bottom_type": {
+        "name": "Forma del fondo della piscina",
+        "state": {
+          "RIGHT_ANGLE_SIMPLE": "Angolo retto (semplice)",
+          "RIGHT_ANGLE_COMPLEX": "Angolo retto (complesso)",
+          "CURVE_SIMPLE": "Curvo (semplice)",
+          "CURVE_COMPLEX": "Curvo (complesso)"
         }
       }
     },
@@ -580,6 +610,9 @@
       },
       "map_offset_lon": {
         "name": "Offset mappa longitudine"
+      },
+      "spino_floor_speed": {
+        "name": "Velocità sul fondo della piscina"
       }
     },
     "device_tracker": {

@@ -201,6 +201,16 @@
           "reported_offline": "Zgłoszono offline"
         }
       },
+      "task_area_status": {
+        "name": "Obszar zadania {name}",
+        "state": {
+          "NOT_STARTED": "Nie rozpoczęto",
+          "WAITING": "Oczekiwanie",
+          "MOWING": "Koszenie",
+          "COMPLETE": "Ukończono",
+          "ABORTED": "Przerwano"
+        }
+      },
       "maintenance_distance": {
         "name": "Całkowity przebieg"
       },
@@ -253,16 +263,6 @@
           "CON_WIFI": "Wi-Fi"
         }
       },
-      "task_area_status": {
-        "name": "Obszar zadania {name}",
-        "state": {
-          "NOT_STARTED": "Nie rozpoczęto",
-          "WAITING": "Oczekiwanie",
-          "MOWING": "Koszenie",
-          "COMPLETE": "Ukończono",
-          "ABORTED": "Przerwano"
-        }
-      },
       "spino_battery": {
         "name": "Bateria"
       },
@@ -293,6 +293,12 @@
           "LINE": "Linia wody",
           "CUSTOM": "Niestandardowy"
         }
+      },
+      "spino_ble_rssi": {
+        "name": "BLE RSSI"
+      },
+      "spino_wifi_rssi": {
+        "name": "Wi-Fi RSSI"
       },
       "spino_error_time": {
         "name": "Czas ostatniego błędu"
@@ -380,6 +386,12 @@
       },
       "restart_mower": {
         "name": "Uruchom ponownie kosiarkę"
+      },
+      "spino_fetch_map": {
+        "name": "Pobierz mapę basenu"
+      },
+      "spino_fetch_line": {
+        "name": "Pobierz trasę czyszczenia"
       },
       "spino_refresh_status": {
         "name": "Odśwież stan"
@@ -513,6 +525,14 @@
           "zero_turn": "Zawracanie w miejscu"
         }
       },
+      "wildlife_safety": {
+        "name": "Ochrona dzikich zwierząt",
+        "state": {
+          "off": "Wył.",
+          "stop_mowing": "Zatrzymaj koszenie",
+          "low_speed_mowing": "Koszenie z małą prędkością"
+        }
+      },
       "cutter_mode": {
         "name": "Prędkość cięcia",
         "state": {
@@ -528,14 +548,6 @@
           "WOMAN": "Żeński"
         }
       },
-      "wildlife_safety": {
-        "name": "Ochrona dzikich zwierząt",
-        "state": {
-          "off": "Wył.",
-          "stop_mowing": "Zatrzymaj koszenie",
-          "low_speed_mowing": "Koszenie z małą prędkością"
-        }
-      },
       "spino_work_mode": {
         "name": "Tryb czyszczenia",
         "state": {
@@ -547,6 +559,24 @@
           "ECO": "Eco",
           "LINE": "Linia wody",
           "CUSTOM": "Niestandardowy"
+        }
+      },
+      "spino_wall_material": {
+        "name": "Materiał ścian",
+        "state": {
+          "GLASS": "Szkło",
+          "CERAMICS": "Płytki",
+          "SAND_STONE": "Kruszywo",
+          "VINYL": "Winyl"
+        }
+      },
+      "spino_bottom_type": {
+        "name": "Kształt dna basenu",
+        "state": {
+          "RIGHT_ANGLE_SIMPLE": "Prostokątne (proste)",
+          "RIGHT_ANGLE_COMPLEX": "Prostokątne (złożone)",
+          "CURVE_SIMPLE": "Zaokrąglone (proste)",
+          "CURVE_COMPLEX": "Zaokrąglone (złożone)"
         }
       }
     },
@@ -580,6 +610,9 @@
       },
       "map_offset_lon": {
         "name": "Przesunięcie mapy długość"
+      },
+      "spino_floor_speed": {
+        "name": "Prędkość na dnie basenu"
       }
     },
     "device_tracker": {

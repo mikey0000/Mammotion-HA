@@ -201,6 +201,16 @@
           "reported_offline": "Offline gemeld"
         }
       },
+      "task_area_status": {
+        "name": "Taakgebied {name}",
+        "state": {
+          "NOT_STARTED": "Niet gestart",
+          "WAITING": "Wachtend",
+          "MOWING": "Aan het maaien",
+          "COMPLETE": "Voltooid",
+          "ABORTED": "Afgebroken"
+        }
+      },
       "maintenance_distance": {
         "name": "Totale kilometerstand"
       },
@@ -253,16 +263,6 @@
           "CON_WIFI": "Wi-Fi"
         }
       },
-      "task_area_status": {
-        "name": "Taakgebied {name}",
-        "state": {
-          "NOT_STARTED": "Niet gestart",
-          "WAITING": "Wachtend",
-          "MOWING": "Aan het maaien",
-          "COMPLETE": "Voltooid",
-          "ABORTED": "Afgebroken"
-        }
-      },
       "spino_battery": {
         "name": "Batterij"
       },
@@ -293,6 +293,12 @@
           "LINE": "Waterlijn",
           "CUSTOM": "Aangepast"
         }
+      },
+      "spino_ble_rssi": {
+        "name": "BLE RSSI"
+      },
+      "spino_wifi_rssi": {
+        "name": "WiFi RSSI"
       },
       "spino_error_time": {
         "name": "Tijd van laatste fout"
@@ -380,6 +386,12 @@
       },
       "restart_mower": {
         "name": "Maaier herstarten"
+      },
+      "spino_fetch_map": {
+        "name": "Zwembadkaart ophalen"
+      },
+      "spino_fetch_line": {
+        "name": "Schoonmaakroute ophalen"
       },
       "spino_refresh_status": {
         "name": "Status vernieuwen"
@@ -513,6 +525,14 @@
           "zero_turn": "Nulpunts draai"
         }
       },
+      "wildlife_safety": {
+        "name": "Wildveiligheid",
+        "state": {
+          "off": "Uit",
+          "stop_mowing": "Maaien stoppen",
+          "low_speed_mowing": "Maaien op lage snelheid"
+        }
+      },
       "cutter_mode": {
         "name": "Maaisnelheid",
         "state": {
@@ -528,14 +548,6 @@
           "WOMAN": "Vrouw"
         }
       },
-      "wildlife_safety": {
-        "name": "Wildveiligheid",
-        "state": {
-          "off": "Uit",
-          "stop_mowing": "Maaien stoppen",
-          "low_speed_mowing": "Maaien op lage snelheid"
-        }
-      },
       "spino_work_mode": {
         "name": "Reinigingsmodus",
         "state": {
@@ -547,6 +559,24 @@
           "ECO": "Eco",
           "LINE": "Waterlijn",
           "CUSTOM": "Aangepast"
+        }
+      },
+      "spino_wall_material": {
+        "name": "Wandmateriaal",
+        "state": {
+          "GLASS": "Glas",
+          "CERAMICS": "Tegels",
+          "SAND_STONE": "Aggregaat",
+          "VINYL": "Vinyl"
+        }
+      },
+      "spino_bottom_type": {
+        "name": "Vorm van de zwembadbodem",
+        "state": {
+          "RIGHT_ANGLE_SIMPLE": "Rechte hoek (eenvoudig)",
+          "RIGHT_ANGLE_COMPLEX": "Rechte hoek (complex)",
+          "CURVE_SIMPLE": "Gebogen (eenvoudig)",
+          "CURVE_COMPLEX": "Gebogen (complex)"
         }
       }
     },
@@ -580,6 +610,9 @@
       },
       "map_offset_lon": {
         "name": "Kaartoffset lengtegraad"
+      },
+      "spino_floor_speed": {
+        "name": "Snelheid op de zwembadbodem"
       }
     },
     "device_tracker": {

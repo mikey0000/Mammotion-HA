@@ -618,6 +618,22 @@ SPINO_SENSOR_TYPES: tuple[MammotionSpinoSensorEntityDescription, ...] = (
         value_fn=lambda spino_data: spino_data.pool_state.work_mode.name,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
+    MammotionSpinoSensorEntityDescription(
+        key="spino_ble_rssi",
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.SIGNAL_STRENGTH,
+        native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
+        value_fn=lambda spino_data: spino_data.pool_state.ble_rssi,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    MammotionSpinoSensorEntityDescription(
+        key="spino_wifi_rssi",
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.SIGNAL_STRENGTH,
+        native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
+        value_fn=lambda spino_data: spino_data.pool_state.wifi_rssi,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
 )
 
 SPINO_ERROR_SENSOR_TYPES: tuple[MammotionSpinoErrorSensorEntityDescription, ...] = (
