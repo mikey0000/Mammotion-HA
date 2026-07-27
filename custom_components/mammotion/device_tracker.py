@@ -87,8 +87,3 @@ class MammotionTracker(MammotionBaseEntity, TrackerEntity, RestoreEntity):  # ty
         return cast(float, lon) + self.coordinator.map_offset_lon / (
             111_111.0 * cos_lat
         )
-
-    @property
-    def battery_level(self) -> int | None:
-        """Return the battery level of the device."""
-        return cast(int | None, self.coordinator.data.report_data.dev.battery_val)
