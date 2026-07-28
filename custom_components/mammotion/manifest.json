@@ -1,7 +1,7 @@
 {
   "domain": "mammotion",
   "name": "Mammotion",
-  "version": "0.6.4-beta12",
+  "version": "0.6.4-beta11-dodofox.1",
   "issue_tracker": "https://github.com/Dodofox/Mammotion-HA/issues",
   "integration_type": "device",
   "bluetooth": [
@@ -29,6 +29,6 @@
   ],
   "iot_class": "local_push",
   "requirements": [
-    "pymammotion@git+https://github.com/Dodofox/PyMammotion.git@main"
+    "pymammotion@git+https://github.com/Dodofox/PyMammotion.git@v0.8.12-dodofox.1"
   ]
 }

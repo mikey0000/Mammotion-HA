@@ -1,6 +1,6 @@
 [project]
 name = "mammotion-ha"
-version = "0.6.4-beta12"
+version = "0.6.4-beta11-dodofox.1"
 description = "Mammotion integration for HACS"
 authors = [
     {name = "Michael Arthur", email = "michael@jumblesoft.co.nz"},
@@ -9,7 +9,7 @@ authors = [
 readme = "README.md"
 requires-python = ">=3.14.2"
 dependencies = [
-    "pymammotion==0.8.13",
+    "pymammotion==0.8.12",
     "homeassistant>=2026.1.0",
     "autotyping>=24.3.0",
     "websockets>=15.0.1",
