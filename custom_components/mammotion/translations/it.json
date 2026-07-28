@@ -59,7 +59,8 @@
           "prefer_ble_over_wifi": "Preferisci Bluetooth rispetto al Wi-Fi quando disponibile",
           "movement_use_wifi": "Invia comandi di movimento tramite Wi-Fi",
           "mow_path_fetch_enabled": "Abilita recupero percorso di taglio (cloud)",
-          "full_map_fetch_enabled": "Abilita recupero completo della mappa (cloud) — se disabilitato, vengono recuperati solo i nomi delle aree"
+          "full_map_fetch_enabled": "Abilita recupero completo della mappa (cloud) — se disabilitato, vengono recuperati solo i nomi delle aree",
+          "map_sync_while_mowing": "Sincronizza mappa durante il taglio (cloud) — lasciare disattivato per risparmiare quota MQTT"
         }
       }
     }
@@ -348,6 +349,19 @@
           "2": "Debole",
           "3": "Nessuno"
         }
+      },
+      "cloud_sends_12h": {
+        "name": "Cloud sends (12h)"
+      },
+      "cloud_send_limit_status": {
+        "name": "Cloud send limit",
+        "state": {
+          "ok": "OK",
+          "rate_limited": "Rate limited"
+        }
+      },
+      "command_timeouts_24h": {
+        "name": "Command timeouts (24h)"
       }
     },
     "button": {

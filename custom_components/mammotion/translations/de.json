@@ -59,7 +59,8 @@
           "prefer_ble_over_wifi": "Wenn möglich, Bluetooth statt WLAN verwenden",
           "movement_use_wifi": "Bewegungsbefehle über WLAN senden",
           "mow_path_fetch_enabled": "Mähpfad-Abruf aktivieren (Cloud)",
-          "full_map_fetch_enabled": "Vollständigen Kartenabruf aktivieren (Cloud) — wenn aus, werden nur Bereichsnamen abgerufen"
+          "full_map_fetch_enabled": "Vollständigen Kartenabruf aktivieren (Cloud) — wenn aus, werden nur Bereichsnamen abgerufen",
+          "map_sync_while_mowing": "Karte während des Mähens synchronisieren (Cloud) — aus lassen, um MQTT-Kontingent zu sparen"
         }
       }
     }
@@ -348,6 +349,19 @@
           "2": "Schwach",
           "3": "Keine"
         }
+      },
+      "cloud_sends_12h": {
+        "name": "Cloud-Sendungen (12 Std.)"
+      },
+      "cloud_send_limit_status": {
+        "name": "Cloud-Sendelimit",
+        "state": {
+          "ok": "OK",
+          "rate_limited": "Ratenbegrenzt"
+        }
+      },
+      "command_timeouts_24h": {
+        "name": "Befehls-Timeouts (24 Std.)"
       }
     },
     "button": {

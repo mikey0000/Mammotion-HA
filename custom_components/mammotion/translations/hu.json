@@ -59,7 +59,8 @@
           "prefer_ble_over_wifi": "Bluetooth előnyben részesítése Wi-Fi helyett, ha elérhető",
           "movement_use_wifi": "Mozgatási parancsok küldése Wi-Fi-n",
           "mow_path_fetch_enabled": "Nyírási útvonal lekérésének engedélyezése (felhő)",
-          "full_map_fetch_enabled": "Teljes térkép lekérésének engedélyezése (felhő) — kikapcsolva csak a területnevek kerülnek lekérésre"
+          "full_map_fetch_enabled": "Teljes térkép lekérésének engedélyezése (felhő) — kikapcsolva csak a területnevek kerülnek lekérésre",
+          "map_sync_while_mowing": "Térkép szinkronizálása nyírás közben (felhő) — hagyja kikapcsolva az MQTT kvóta kíméléséhez"
         }
       }
     }
@@ -348,6 +349,19 @@
           "2": "Gyenge",
           "3": "Nincs"
         }
+      },
+      "cloud_sends_12h": {
+        "name": "Cloud sends (12h)"
+      },
+      "cloud_send_limit_status": {
+        "name": "Cloud send limit",
+        "state": {
+          "ok": "OK",
+          "rate_limited": "Rate limited"
+        }
+      },
+      "command_timeouts_24h": {
+        "name": "Command timeouts (24h)"
       }
     },
     "button": {

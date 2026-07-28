@@ -61,6 +61,7 @@ from .const import (
     CONF_MAMMOTION_JWT_INFO,
     CONF_MAMMOTION_MQTT,
     CONF_MOW_PATH_FETCH_ENABLED,
+    CONF_MAP_SYNC_WHILE_MOWING,
     CONF_PREFER_BLE,
     CONF_REGION_DATA,
     CONF_SESSION_DATA,
@@ -355,6 +356,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
 
     prefer_ble = entry.options.get(CONF_PREFER_BLE, True)
     mow_path_fetch_enabled = entry.options.get(CONF_MOW_PATH_FETCH_ENABLED, False)
+    map_sync_while_mowing = entry.options.get(CONF_MAP_SYNC_WHILE_MOWING, False)
 
     # Default to True for older entries that predate this key, as long as they
     # have account credentials configured.
@@ -460,6 +462,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
 
             mammotion.set_mow_path_fetch_enabled(
                 device.device_name, enabled=mow_path_fetch_enabled
+            )
+            mammotion.set_map_sync_while_mowing_enabled(
+                device.device_name, enabled=map_sync_while_mowing
             )
 
             unique_name = device.device_name

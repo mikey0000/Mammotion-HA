@@ -59,7 +59,8 @@
           "prefer_ble_over_wifi": "Préférer le Bluetooth au Wi-Fi si disponible",
           "movement_use_wifi": "Envoyer les commandes de mouvement via Wi-Fi",
           "mow_path_fetch_enabled": "Activer la récupération du chemin de tonte (cloud)",
-          "full_map_fetch_enabled": "Activer la récupération complète de la carte (cloud) — désactivé, seuls les noms de zones sont récupérés"
+          "full_map_fetch_enabled": "Activer la récupération complète de la carte (cloud) — désactivé, seuls les noms de zones sont récupérés",
+          "map_sync_while_mowing": "Synchroniser la carte pendant la tonte (cloud) — laisser désactivé pour économiser le quota MQTT"
         }
       }
     }
@@ -348,6 +349,19 @@
           "2": "Faible",
           "3": "Aucun"
         }
+      },
+      "cloud_sends_12h": {
+        "name": "Envois cloud (12 h)"
+      },
+      "cloud_send_limit_status": {
+        "name": "Limite d'envois cloud",
+        "state": {
+          "ok": "OK",
+          "rate_limited": "Rate limité"
+        }
+      },
+      "command_timeouts_24h": {
+        "name": "Timeouts de commandes (24 h)"
       }
     },
     "button": {

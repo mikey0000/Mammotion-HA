@@ -59,7 +59,8 @@
           "prefer_ble_over_wifi": "Preferuj Bluetooth zamiast Wi-Fi, gdy dostępne",
           "movement_use_wifi": "Wysyłaj polecenia ruchu przez Wi-Fi",
           "mow_path_fetch_enabled": "Włącz pobieranie ścieżki koszenia (chmura)",
-          "full_map_fetch_enabled": "Włącz pełne pobieranie mapy (chmura) — gdy wyłączone, pobierane są tylko nazwy obszarów"
+          "full_map_fetch_enabled": "Włącz pełne pobieranie mapy (chmura) — gdy wyłączone, pobierane są tylko nazwy obszarów",
+          "map_sync_while_mowing": "Synchronizuj mapę podczas koszenia (chmura) — pozostaw wyłączone, by oszczędzać limit MQTT"
         }
       }
     }
@@ -348,6 +349,19 @@
           "2": "Słaby",
           "3": "Brak"
         }
+      },
+      "cloud_sends_12h": {
+        "name": "Wysyłki do chmury (12h)"
+      },
+      "cloud_send_limit_status": {
+        "name": "Limit wysyłek do chmury",
+        "state": {
+          "ok": "OK",
+          "rate_limited": "Limit przekroczony"
+        }
+      },
+      "command_timeouts_24h": {
+        "name": "Timeouty komend (24h)"
       }
     },
     "button": {
