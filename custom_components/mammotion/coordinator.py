@@ -7,6 +7,7 @@ import contextlib
 import dataclasses
 import datetime
 import json
+import math
 import secrets
 import time
 from abc import abstractmethod
@@ -106,6 +107,24 @@ DEVICE_VERSION_INTERVAL = timedelta(weeks=1)
 MAP_INTERVAL = timedelta(minutes=60)
 RTK_INTERVAL = timedelta(hours=5)
 SPINO_INTERVAL = timedelta(weeks=1)
+LOCATION_TRAIL_MAX_POINTS = 5000
+LOCATION_TRAIL_MIN_DISTANCE_METERS = 0.25
+LOCATION_TRAIL_SAVE_INTERVAL = 30
+LOCATION_TRAIL_STORE_VERSION = 1
+
+
+def _distance_meters(first: tuple[float, float], second: tuple[float, float]) -> float:
+    """Return the approximate distance between two longitude/latitude points."""
+    first_lon, first_lat = first
+    second_lon, second_lat = second
+    mean_lat = math.radians((first_lat + second_lat) / 2)
+    metres_per_lat = 111_111.0
+    metres_per_lon = 111_111.0 * max(math.cos(mean_lat), 0.01)
+    return math.hypot(
+        (second_lon - first_lon) * metres_per_lon,
+        (second_lat - first_lat) * metres_per_lat,
+    )
+
 
 # Possible states for ``MammotionReportUpdateCoordinator.map_sync_status`` and
 # the ``map_sync_status`` diagnostic ENUM sensor that surfaces it.
@@ -1525,6 +1544,16 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
         )
 
         self._on_stop: list[CALLBACK_TYPE] = []
+        self.location_trail: list[tuple[float, float]] = []
+        self._location_trail_active = False
+        self._location_trail_restored = False
+        self._location_trail_resume_pending = False
+        self._location_trail_save_cancel: CALLBACK_TYPE | None = None
+        self._location_trail_store = Store[dict[str, Any]](
+            hass,
+            LOCATION_TRAIL_STORE_VERSION,
+            f"{DOMAIN}.location_trail.{config_entry.entry_id}.{device.device_name}",
+        )
 
         self.poll_debouncer = Debouncer(
             hass,
@@ -1611,9 +1640,124 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
         """Get coordinator data."""
         return device
 
+    @staticmethod
+    def _is_location_trail_active(device: MowingDevice) -> bool:
+        """Return whether mower movement belongs to an active task."""
+        try:
+            return int(device.report_data.dev.sys_status) in MOWING_ACTIVE_MODES
+        except TypeError, ValueError:
+            return False
+
+    @staticmethod
+    def _has_resume_breakpoint(device: MowingDevice) -> bool:
+        """Return whether the current task can resume from a breakpoint."""
+        try:
+            return int(device.report_data.work.bp_info) != 0
+        except AttributeError, TypeError, ValueError:
+            return False
+
+    async def _async_restore_location_trail(self) -> None:
+        """Restore the current or most recently completed task trail."""
+        if self._location_trail_restored:
+            return
+        self._location_trail_restored = True
+        stored = await self._location_trail_store.async_load()
+        if not isinstance(stored, dict):
+            return
+
+        points = stored.get("points")
+        if not isinstance(points, list):
+            return
+
+        restored: list[tuple[float, float]] = []
+        for point in points[-LOCATION_TRAIL_MAX_POINTS:]:
+            if not isinstance(point, (list, tuple)) or len(point) != 2:
+                continue
+            try:
+                longitude = float(point[0])
+                latitude = float(point[1])
+            except TypeError, ValueError:
+                continue
+            if (
+                -180 <= longitude <= 180
+                and -90 <= latitude <= 90
+                and (longitude != 0 or latitude != 0)
+            ):
+                restored.append((longitude, latitude))
+
+        self.location_trail = restored
+        self._location_trail_active = bool(stored.get("active"))
+        self._location_trail_resume_pending = bool(stored.get("resume_pending"))
+
+    def _update_location_trail(self, device: MowingDevice) -> None:
+        """Track mower positions and retain the completed trail until the next task."""
+        active = self._is_location_trail_active(device)
+        state_changed = active != self._location_trail_active
+        previous_resume_pending = self._location_trail_resume_pending
+        if active and not self._location_trail_active:
+            if self.location_trail and not self._location_trail_resume_pending:
+                self.location_trail.clear()
+            self._location_trail_resume_pending = False
+        elif not active:
+            self._location_trail_resume_pending = self._has_resume_breakpoint(device)
+        self._location_trail_active = active
+        if (
+            state_changed
+            or self._location_trail_resume_pending != previous_resume_pending
+        ):
+            self._schedule_location_trail_save()
+        if not active:
+            return
+
+        location = getattr(getattr(device, "location", None), "device", None)
+        try:
+            point = (float(location.longitude), float(location.latitude))
+        except AttributeError, TypeError, ValueError:
+            return
+        if not (-180 <= point[0] <= 180 and -90 <= point[1] <= 90) or point == (
+            0,
+            0,
+        ):
+            return
+        if self.location_trail and (
+            _distance_meters(self.location_trail[-1], point)
+            < LOCATION_TRAIL_MIN_DISTANCE_METERS
+        ):
+            return
+
+        self.location_trail.append(point)
+        if len(self.location_trail) > LOCATION_TRAIL_MAX_POINTS:
+            del self.location_trail[:-LOCATION_TRAIL_MAX_POINTS]
+        self._schedule_location_trail_save()
+
+    def _schedule_location_trail_save(self) -> None:
+        """Persist trail progress at a bounded interval while moving."""
+        if self._location_trail_save_cancel is not None:
+            return
+        self._location_trail_save_cancel = async_call_later(
+            self.hass,
+            LOCATION_TRAIL_SAVE_INTERVAL,
+            self._async_save_location_trail,
+        )
+
+    async def _async_save_location_trail(
+        self, _now: datetime.datetime | None = None
+    ) -> None:
+        """Write the retained trail to storage."""
+        self._location_trail_save_cancel = None
+        await self._location_trail_store.async_save(
+            {
+                "active": self._location_trail_active,
+                "resume_pending": self._location_trail_resume_pending,
+                "points": self.location_trail[-LOCATION_TRAIL_MAX_POINTS:],
+            }
+        )
+
     async def _async_update_data(self) -> MowingDevice:
         """Get data from the device."""
+        await self._async_restore_location_trail()
         if data := await super()._async_update_data():
+            self._update_location_trail(data)
             return data
 
         device = self.manager.get_device_by_name(self.device_name)
@@ -1623,6 +1767,7 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
 
         LOGGER.debug("Updated Mammotion device %s", self.device_name)
         self.update_failures = 0
+        self._update_location_trail(device)
         await self.async_save_data(device)
 
         if self.data.mower_state.ble_mac != "" and len(self._on_stop) == 0:
@@ -1656,6 +1801,21 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
 
         return device
 
+    async def _on_state_changed(self, snapshot: DeviceSnapshot) -> None:
+        """Track location and push updated device data to Home Assistant."""
+        data = cast(MowingDevice, snapshot.raw)
+        self._update_location_trail(data)
+        self.async_set_updated_data(data)
+
+    async def async_shutdown(self) -> None:
+        """Flush retained trail state before shutting down."""
+        if self._location_trail_save_cancel is not None:
+            self._location_trail_save_cancel()
+            self._location_trail_save_cancel = None
+        if self._location_trail_restored:
+            await self._async_save_location_trail()
+        await super().async_shutdown()
+
     async def _async_update_properties(
         self, properties: ThingPropertiesMessage
     ) -> None:
@@ -1687,6 +1847,7 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
             self.async_set_updated_data(device)
 
     async def _async_setup(self) -> None:
+        await self._async_restore_location_trail()
         await super()._async_setup()
 
         # Common commands for all device types

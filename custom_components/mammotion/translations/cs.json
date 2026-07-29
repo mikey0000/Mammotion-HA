@@ -617,6 +617,11 @@
     },
     "device_tracker": {
       "name": "Sledování zařízení"
+    },
+    "image": {
+      "map": {
+        "name": "Mapa"
+      }
     }
   },
   "selector": {

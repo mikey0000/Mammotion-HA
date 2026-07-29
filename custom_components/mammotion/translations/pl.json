@@ -617,6 +617,11 @@
     },
     "device_tracker": {
       "name": "Śledzenie urządzenia"
+    },
+    "image": {
+      "map": {
+        "name": "Mapa"
+      }
     }
   },
   "selector": {
