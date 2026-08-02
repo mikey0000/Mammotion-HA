@@ -74,6 +74,15 @@
       "mqtt_status": {
         "default": "mdi:cloud-check-variant"
       },
+      "cloud_sends_12h": {
+        "default": "mdi:cloud-upload-outline"
+      },
+      "cloud_send_limit_status": {
+        "default": "mdi:cloud-alert"
+      },
+      "command_timeouts_24h": {
+        "default": "mdi:timer-alert-outline"
+      },
       "activity_mode": {
         "default": "mdi:information-outline"
       },

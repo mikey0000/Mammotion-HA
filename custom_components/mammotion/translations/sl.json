@@ -59,7 +59,8 @@
           "prefer_ble_over_wifi": "Daj prednost Bluetooth pred Wi-Fi, ko je na voljo",
           "movement_use_wifi": "Pošiljaj ukaze gibanja prek Wi-Fi",
           "mow_path_fetch_enabled": "Omogoči pridobivanje poti košnje (oblak)",
-          "full_map_fetch_enabled": "Omogoči pridobivanje celotnega zemljevida (oblak) — če izklopljeno, se pridobijo samo imena območij"
+          "full_map_fetch_enabled": "Omogoči pridobivanje celotnega zemljevida (oblak) — če izklopljeno, se pridobijo samo imena območij",
+          "map_sync_while_mowing": "Sinhroniziraj zemljevid med košnjo (oblak) — pustite izklopnjeno za varčevanje MQTT kvote"
         }
       }
     }
@@ -348,6 +349,19 @@
           "2": "Šibko",
           "3": "Brez"
         }
+      },
+      "cloud_sends_12h": {
+        "name": "Cloud sends (12h)"
+      },
+      "cloud_send_limit_status": {
+        "name": "Cloud send limit",
+        "state": {
+          "ok": "OK",
+          "rate_limited": "Rate limited"
+        }
+      },
+      "command_timeouts_24h": {
+        "name": "Command timeouts (24h)"
       }
     },
     "button": {

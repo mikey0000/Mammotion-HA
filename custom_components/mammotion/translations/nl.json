@@ -59,7 +59,8 @@
           "prefer_ble_over_wifi": "Bluetooth verkiezen boven Wi-Fi indien beschikbaar",
           "movement_use_wifi": "Bewegingsopdrachten via Wi-Fi verzenden",
           "mow_path_fetch_enabled": "Maaipad ophalen inschakelen (cloud)",
-          "full_map_fetch_enabled": "Volledig kaart ophalen inschakelen (cloud) — wanneer uit worden alleen gebiednamen opgehaald"
+          "full_map_fetch_enabled": "Volledig kaart ophalen inschakelen (cloud) — wanneer uit worden alleen gebiednamen opgehaald",
+          "map_sync_while_mowing": "Kaart synchroniseren tijdens maaien (cloud) — uit laten om MQTT-quota te sparen"
         }
       }
     }
@@ -348,6 +349,19 @@
           "2": "Zwak",
           "3": "Geen"
         }
+      },
+      "cloud_sends_12h": {
+        "name": "Cloud sends (12h)"
+      },
+      "cloud_send_limit_status": {
+        "name": "Cloud send limit",
+        "state": {
+          "ok": "OK",
+          "rate_limited": "Rate limited"
+        }
+      },
+      "command_timeouts_24h": {
+        "name": "Command timeouts (24h)"
       }
     },
     "button": {

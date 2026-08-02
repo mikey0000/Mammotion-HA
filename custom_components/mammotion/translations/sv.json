@@ -59,7 +59,8 @@
           "prefer_ble_over_wifi": "Föredra Bluetooth framför Wi-Fi när tillgängligt",
           "movement_use_wifi": "Skicka rörelsekommandon via Wi-Fi",
           "mow_path_fetch_enabled": "Aktivera hämtning av klippväg (moln)",
-          "full_map_fetch_enabled": "Aktivera fullständig karthämtning (moln) — när av hämtas endast områdesnamn"
+          "full_map_fetch_enabled": "Aktivera fullständig karthämtning (moln) — när av hämtas endast områdesnamn",
+          "map_sync_while_mowing": "Synka karta under klippning (moln) — lämna av för att spara MQTT-kvot"
         }
       }
     }
@@ -348,6 +349,19 @@
           "2": "Svag",
           "3": "Ingen"
         }
+      },
+      "cloud_sends_12h": {
+        "name": "Cloud sends (12h)"
+      },
+      "cloud_send_limit_status": {
+        "name": "Cloud send limit",
+        "state": {
+          "ok": "OK",
+          "rate_limited": "Rate limited"
+        }
+      },
+      "command_timeouts_24h": {
+        "name": "Command timeouts (24h)"
       }
     },
     "button": {

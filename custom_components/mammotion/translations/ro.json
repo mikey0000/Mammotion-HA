@@ -59,7 +59,8 @@
           "prefer_ble_over_wifi": "Preferați Bluetooth față de Wi-Fi când este disponibil",
           "movement_use_wifi": "Trimiteți comenzi de mișcare prin Wi-Fi",
           "mow_path_fetch_enabled": "Activați descărcarea traseului de tuns (cloud)",
-          "full_map_fetch_enabled": "Activați descărcarea completă a hărții (cloud) — când este oprit, se descarcă doar numele zonelor"
+          "full_map_fetch_enabled": "Activați descărcarea completă a hărții (cloud) — când este oprit, se descarcă doar numele zonelor",
+          "map_sync_while_mowing": "Sincronizează harta în timpul tunsului (cloud) — lăsați dezactivat pentru a economisi cota MQTT"
         }
       }
     }
@@ -348,6 +349,19 @@
           "2": "Slab",
           "3": "Niciunul"
         }
+      },
+      "cloud_sends_12h": {
+        "name": "Cloud sends (12h)"
+      },
+      "cloud_send_limit_status": {
+        "name": "Cloud send limit",
+        "state": {
+          "ok": "OK",
+          "rate_limited": "Rate limited"
+        }
+      },
+      "command_timeouts_24h": {
+        "name": "Command timeouts (24h)"
       }
     },
     "button": {

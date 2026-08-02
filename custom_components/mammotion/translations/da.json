@@ -59,7 +59,8 @@
           "prefer_ble_over_wifi": "Foretræk Bluetooth frem for Wi-Fi, når det er tilgængeligt",
           "movement_use_wifi": "Send bevægelseskommandoer via Wi-Fi",
           "mow_path_fetch_enabled": "Aktivér hentning af klippesti (sky)",
-          "full_map_fetch_enabled": "Aktivér fuld korthentning (sky) — når slået fra, hentes kun områdenavne"
+          "full_map_fetch_enabled": "Aktivér fuld korthentning (sky) — når slået fra, hentes kun områdenavne",
+          "map_sync_while_mowing": "Synkroniser kort under klipning (sky) — lad være slået fra for at spare MQTT-kvote"
         }
       }
     }
@@ -348,6 +349,19 @@
           "2": "Svag",
           "3": "Ingen"
         }
+      },
+      "cloud_sends_12h": {
+        "name": "Cloud sends (12h)"
+      },
+      "cloud_send_limit_status": {
+        "name": "Cloud send limit",
+        "state": {
+          "ok": "OK",
+          "rate_limited": "Rate limited"
+        }
+      },
+      "command_timeouts_24h": {
+        "name": "Command timeouts (24h)"
       }
     },
     "button": {
