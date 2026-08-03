@@ -9,7 +9,7 @@ from typing import Any
 
 from homeassistant.components.switch import DOMAIN as SWITCH_DOMAIN
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
-from homeassistant.const import STATE_ON
+from homeassistant.const import STATE_OFF, STATE_ON
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity import EntityCategory
@@ -46,6 +46,12 @@ class MammotionAsyncSwitchEntityDescription(MammotionSwitchEntityDescription):
 
     is_on_func: Callable[[MammotionBaseUpdateCoordinator], bool] | None = None
     set_fn: Callable[[MammotionBaseUpdateCoordinator, bool], Awaitable[None]]
+    # When True, the HA-restored state is re-applied to the coordinator on
+    # startup. Use only for switches whose source of truth is integration-local
+    # (e.g. transport selection) and therefore has nothing on the device/cloud to
+    # read back. Device-state switches must leave this False so they sync from the
+    # device report instead.
+    restore_and_apply: bool = False
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -193,12 +199,14 @@ CONNECTIVITY_SWITCH_ENTITIES: tuple[MammotionAsyncSwitchEntityDescription, ...] 
             value
         ),
         entity_category=EntityCategory.CONFIG,
+        restore_and_apply=True,
     ),
     MammotionAsyncSwitchEntityDescription(
         key="cloud_enabled",
         is_on_func=lambda coordinator: coordinator.cloud_enabled,
         set_fn=lambda coordinator, value: coordinator.async_set_cloud_enabled(value),
         entity_category=EntityCategory.CONFIG,
+        restore_and_apply=True,
     ),
 )
 
@@ -342,6 +350,17 @@ class MammotionSwitchEntity(MammotionBaseEntity, SwitchEntity, RestoreEntity):
         """Run when entity about to be added."""
         await super().async_added_to_hass()
         if not (last_state := await self.async_get_last_state()):
+            return
+        if self.entity_description.restore_and_apply:
+            # Integration-local switches (transport selection) have no device or
+            # cloud value to read on startup, so the coordinator would otherwise
+            # reset to its in-memory default. Re-apply the restored state so the
+            # user's choice survives reloads/restarts. Only act on a concrete
+            # on/off; ignore unavailable/unknown so a stale state can't silently
+            # flip the transport.
+            if last_state.state in (STATE_ON, STATE_OFF):
+                self._attr_is_on = last_state.state == STATE_ON
+                await self.entity_description.set_fn(self.coordinator, self._attr_is_on)
             return
         self._attr_is_on = last_state.state == STATE_ON
 
