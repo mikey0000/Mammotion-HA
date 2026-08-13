@@ -60,7 +60,7 @@ SPINO_NUMBER_ENTITIES: tuple[MammotionSpinoNumberEntityDescription, ...] = (
         native_step=0.01,
         mode=NumberMode.SLIDER,
         entity_category=EntityCategory.CONFIG,
-        value_fn=lambda spino_data: spino_data.pool_state.floor_speed,
+        value_fn=lambda spino_data: round(spino_data.pool_state.floor_speed, 2),
         set_fn=lambda coordinator, value: coordinator.async_set_floor_speed(value),
     ),
 )

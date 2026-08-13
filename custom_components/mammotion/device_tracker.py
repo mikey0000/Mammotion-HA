@@ -36,6 +36,7 @@ class MammotionTracker(MammotionBaseEntity, TrackerEntity, RestoreEntity):  # ty
 
     _attr_force_update = False
     _attr_translation_key = "device_tracker"
+
     _attr_source_type = SourceType.GPS
 
     def __init__(self, coordinator: MammotionBaseUpdateCoordinator[Any]) -> None:

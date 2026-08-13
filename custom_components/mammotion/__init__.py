@@ -398,14 +398,30 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
         async def _on_unrecoverable_auth_error(
             account_id: str, transport_type: TransportType, _: Exception
         ) -> None:
-            """Trigger HA re-authentication when all automatic recovery has failed."""
+            """Trigger HA re-authentication when the account's login itself is dead.
+
+            pymammotion fires this only when the HTTP refresh token has been
+            rejected, i.e. nothing about the account can be renewed without the
+            user.  A single cloud transport failing while the login is still valid
+            does NOT reach here — that only marks its own mowers unavailable.
+
+            Raising ConfigEntryAuthFailed here would do nothing: pymammotion
+            invokes this callback inside contextlib.suppress(Exception), so the
+            exception is discarded and no reauth flow ever starts.  Schedule the
+            flow explicitly instead.  async_start_reauth is a no-op when a reauth
+            or reconfigure flow is already in progress, so repeated failures from
+            several devices collapse into one prompt.
+
+            The client is deliberately left running: BLE-connected mowers work
+            without any cloud credentials and must keep working while the user
+            re-authenticates.
+            """
             LOGGER.error(
-                "Mammotion account %s: %s auth recovery exhausted",
+                "Mammotion account %s: %s auth recovery exhausted — re-authentication required",
                 account_id,
                 transport_type.value,
             )
-            await mammotion.stop()
-            raise ConfigEntryAuthFailed()
+            entry.async_start_reauth(hass)
 
         mammotion.on_unrecoverable_auth_error = _on_unrecoverable_auth_error
 

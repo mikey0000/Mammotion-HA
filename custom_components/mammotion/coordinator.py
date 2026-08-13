@@ -64,7 +64,6 @@ from pymammotion.mammotion.commands.mammotion_command import MammotionCommand
 from pymammotion.proto import MulSex
 from pymammotion.state.device_state import DeviceShutdownEvent, DeviceSnapshot
 from pymammotion.transport.base import (
-    AuthError,
     BLEUnavailableError,
     CommandTimeoutError,
     ConcurrentRequestError,
@@ -391,16 +390,24 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
                 await handle.disconnect_transport(t_type)
 
     async def async_refresh_login(self, exc: Exception | None = None) -> None:
-        """Refresh login credentials asynchronously.
+        """Refresh whichever credentials the failure actually implicates.
 
-        LoginFailedError means the client already exhausted all recovery options
-        (targeted refresh → force refresh → full re-login).  Raise ConfigEntryAuthFailed
-        so HA tells the user to reconfigure the integration.
+        LoginFailedError means an explicit login attempt was rejected, so the
+        stored password is wrong — ask the user to reconfigure immediately.
 
-        For other auth errors, selectively refresh the affected transport:
-        - SessionExpiredError: refreshes credentials for the specific transport.
-        - AuthError (generic): performs a full login refresh.
-        - Other/unknown: performs a full login refresh.
+        Otherwise route by what failed.  A SessionExpiredError names its transport,
+        so refresh only that one; anything else goes through
+        ``MammotionClient.refresh_login``, which itself routes by the transports the
+        account actually has.
+
+        Crucially, a ReLoginRequiredError does NOT always mean "make the user log in
+        again".  pymammotion also raises it when one cloud transport's credentials
+        are unrenewable while the account's HTTP login is still perfectly valid — it
+        gives up on that transport alone and marks its mowers unavailable.  Forcing a
+        reauth prompt there would cost the user their working credentials, and take
+        down the account's *other* transport, to fix a fault confined to one.  Only
+        ``TokenManager.reauth_required`` — set when the HTTP refresh token itself is
+        rejected — justifies ConfigEntryAuthFailed.
         """
         if not self.has_cloud_account:
             return
@@ -409,23 +416,35 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             raise ConfigEntryAuthFailed(
                 f"Login failed for Mammotion account: {exc}"
             ) from exc
+
+        token_manager = self.manager.token_manager
         try:
-            if (
-                isinstance(exc, SessionExpiredError)
-                and self.manager.token_manager is not None
-            ):
-                await self.manager.token_manager.refresh_aliyun_credentials()
-            elif isinstance(exc, AuthError) and self.manager.token_manager is not None:
-                await self.manager.token_manager.refresh_mqtt_credentials()
+            if isinstance(exc, SessionExpiredError) and token_manager is not None:
+                if exc.transport_type is TransportType.CLOUD_ALIYUN:
+                    await token_manager.refresh_aliyun_credentials()
+                elif exc.transport_type is TransportType.CLOUD_MAMMOTION:
+                    await token_manager.refresh_mqtt_credentials()
+                else:
+                    await self.manager.refresh_login(self.account)
             else:
                 await self.manager.refresh_login(self.account)
-                self.store_cloud_credentials()
+            self.store_cloud_credentials()
         except CloudSetupError as err:
             LOGGER.error("Aliyun cloud setup failed during re-login: %s", err)
             raise HomeAssistantError(
                 translation_domain=DOMAIN, translation_key="cloud_setup_failed"
             ) from err
         except ReLoginRequiredError as err:
+            if token_manager is not None and token_manager.reauth_required is None:
+                # Transport-scoped: the account login is still good.  pymammotion has
+                # already given up on the failing transport and signalled its mowers.
+                LOGGER.warning(
+                    "Mammotion account %s: a cloud transport is unavailable (%s); "
+                    "account login is still valid, keeping stored credentials",
+                    self.account,
+                    err,
+                )
+                return
             raise ConfigEntryAuthFailed(
                 f"Re-authentication required for Mammotion account: {err}"
             ) from err
