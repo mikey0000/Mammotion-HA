@@ -218,18 +218,18 @@ async def _attach_ble_to_mower(
     device: Device,
     ble_address: str,
 ) -> None:
-    """Attach the latest BLE advertisement to a mower."""
+    """Attach a BLE transport to a mower device and register a persistent update callback."""
     mowing_device = mammotion.get_device_by_name(device.device_name)
     if mowing_device is not None:
         mowing_device.mower_state.ble_mac = ble_address
 
-    service_info = bluetooth.async_last_service_info(hass, ble_address.upper(), True)
-    if service_info is not None:
-        await mammotion.update_ble_device(
-            device.device_name,
-            service_info.device,
-            service_info.rssi,
-        )
+    ble_device = bluetooth.async_ble_device_from_address(
+        hass, ble_address.upper(), True
+    )
+    if ble_device:
+        await mammotion.add_ble_to_device(device.device_name, ble_device)
+
+    _device_name = device.device_name
 
 
 async def _attach_ble_to_rtk(
@@ -281,10 +281,7 @@ def _register_ble_reconnect_callback(
         bluetooth.async_register_callback(
             hass,
             _ble_seen,
-            BluetoothCallbackMatcher(
-                address=ble_address.upper(),
-                connectable=True,
-            ),
+            BluetoothCallbackMatcher(address=ble_address.upper()),
             BluetoothScanningMode.ACTIVE,
         )
     )
