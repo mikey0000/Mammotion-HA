@@ -15,10 +15,7 @@ from pymammotion.utility.device_type import DeviceType
 from pymammotion.utility.map_renderer import placeholder_png, render_map_png
 
 from . import MammotionConfigEntry
-from .coordinator import (
-    MammotionMapUpdateCoordinator,
-    MammotionReportUpdateCoordinator,
-)
+from .coordinator import MammotionReportUpdateCoordinator
 from .entity import MammotionBaseEntity
 from .geojson_utils import apply_coord, apply_geojson_offset
 
@@ -32,7 +29,6 @@ async def async_setup_entry(
     async_add_entities(
         MammotionMapImage(
             mower.reporting_coordinator,
-            mower.map_coordinator,
             hass,
         )
         for mower in entry.runtime_data.mowers
@@ -43,6 +39,7 @@ class MammotionMapImage(MammotionBaseEntity, ImageEntity):
     """Static rendered mower map."""
 
     _RENDER_CACHE_SECONDS = 300.0
+    _PLACEHOLDER_CONTENT_KEY = "placeholder"
 
     _attr_translation_key = "map"
     _attr_content_type = "image/png"
@@ -51,66 +48,47 @@ class MammotionMapImage(MammotionBaseEntity, ImageEntity):
     def __init__(
         self,
         coordinator: MammotionReportUpdateCoordinator,
-        map_coordinator: MammotionMapUpdateCoordinator,
         hass: HomeAssistant,
     ) -> None:
         """Initialize the map image."""
         MammotionBaseEntity.__init__(self, coordinator, "map")
         ImageEntity.__init__(self, hass)
-        self._map_coordinator = map_coordinator
         self._attr_image_last_updated = datetime.datetime.now(datetime.UTC)
         self._cached_png: bytes | None = None
         self._last_content_key: str | None = None
+        self._notified_content_key: str | None = None
         self._last_render_time = 0.0
 
     async def async_added_to_hass(self) -> None:
         """Refresh rendered image when the mower map changes."""
         await super().async_added_to_hass()
         self.coordinator.subscribe_map_updated(self._handle_map_update)
-        self.async_on_remove(
-            self._map_coordinator.async_add_listener(self._handle_map_update)
-        )
 
     @callback
     def _handle_coordinator_update(self) -> None:
         """Invalidate image when live mower telemetry changes."""
-        self._attr_image_last_updated = datetime.datetime.now(datetime.UTC)
+        content_key = self._current_content_key()
+        if content_key != self._notified_content_key:
+            self._notified_content_key = content_key
+            self._attr_image_last_updated = datetime.datetime.now(datetime.UTC)
         super()._handle_coordinator_update()
 
     @callback
     def _handle_map_update(self) -> None:
         """Invalidate image when static map data changes."""
+        self._cached_png = None
+        self._notified_content_key = None
         self._attr_image_last_updated = datetime.datetime.now(datetime.UTC)
         self.async_write_ha_state()
 
     async def async_image(self) -> bytes | None:
         """Return a rendered map image."""
-        mower = self.coordinator.manager.get_device_by_name(
-            self.coordinator.device_name
-        )
-        if mower is None:
+        payload = self._image_payload()
+        if payload is None:
+            self._notified_content_key = self._PLACEHOLDER_CONTENT_KEY
             return placeholder_png()
 
-        offset_lat = self.coordinator.map_offset_lat
-        offset_lon = self.coordinator.map_offset_lon
-        geojson = self._merged_geojson(mower)
-        if geojson is not None:
-            geojson = apply_geojson_offset(geojson, offset_lat, offset_lon)
-        mower_location = self._offset_location(
-            mower.location.device, offset_lat, offset_lon
-        )
-        mower_trail = self._offset_trail(
-            list(getattr(self.coordinator, "location_trail", [])),
-            offset_lat,
-            offset_lon,
-        )
-        content_key = self._content_key(
-            geojson,
-            mower_location,
-            mower_trail,
-            offset_lat,
-            offset_lon,
-        )
+        geojson, mower_location, content_key = payload
         now = time.monotonic()
         if (
             self._cached_png is not None
@@ -124,15 +102,58 @@ class MammotionMapImage(MammotionBaseEntity, ImageEntity):
             geojson,
             tile_cache_dir,
             mower_location,
-            mower_trail,
         )
         self._last_content_key = content_key
+        self._notified_content_key = content_key
         self._last_render_time = now
         return self._cached_png
+
+    def _current_content_key(self) -> str:
+        """Return the key for the image Home Assistant should fetch."""
+        payload = self._image_payload()
+        if payload is None:
+            return self._PLACEHOLDER_CONTENT_KEY
+        return payload[2]
+
+    def _image_payload(self) -> tuple[dict[str, Any] | None, Any | None, str] | None:
+        """Return render inputs and their stable content key."""
+        mower = self.coordinator.manager.get_device_by_name(
+            self.coordinator.device_name
+        )
+        if mower is None or not self._has_synced_map(mower):
+            return None
+
+        offset_lat = self.coordinator.map_offset_lat
+        offset_lon = self.coordinator.map_offset_lon
+        geojson = self._merged_geojson(mower)
+        if geojson is not None:
+            geojson = apply_geojson_offset(geojson, offset_lat, offset_lon)
+        mower_location = self._offset_location(
+            mower.location.device, offset_lat, offset_lon
+        )
+        content_key = self._content_key(
+            geojson,
+            mower_location,
+            offset_lat,
+            offset_lon,
+        )
+        return geojson, mower_location, content_key
+
+    def _has_synced_map(self, mower: Any) -> bool:
+        """Return whether the map cache is complete enough to render."""
+        locations = mower.report_data.locations
+        bol_hash = locations[0].bol_hash if locations else 0
+        return (
+            self.coordinator.map_sync_status == "synced"
+            and mower.map.is_map_synced(bol_hash)
+        )
 
     def _merged_geojson(self, mower: Any) -> dict[str, Any] | None:
         base_geojson = MammotionMapImage._base_geojson(
             getattr(mower.map, "generated_geojson", None)
+        )
+        mow_path_geojson = MammotionMapImage._line_geojson(
+            getattr(mower.map, "generated_mow_path_geojson", None)
         )
         device_type = DeviceType.value_of_str(self.coordinator.device_name)
         firmware = mower.device_firmwares.main_controller
@@ -142,6 +163,7 @@ class MammotionMapImage(MammotionBaseEntity, ImageEntity):
             progress_geojson = mower.map.generated_mow_progress_geojson
         feature_collections = [
             base_geojson,
+            mow_path_geojson,
             MammotionMapImage._line_geojson(progress_geojson),
         ]
         features: list[dict[str, Any]] = []
@@ -214,7 +236,6 @@ class MammotionMapImage(MammotionBaseEntity, ImageEntity):
     def _content_key(
         geojson: dict[str, Any] | None,
         mower_location: Any | None,
-        mower_trail: list[tuple[float, float]],
         offset_lat: float,
         offset_lon: float,
     ) -> str:
@@ -227,10 +248,6 @@ class MammotionMapImage(MammotionBaseEntity, ImageEntity):
         payload = {
             "geojson": geojson,
             "location": location_key,
-            "trail": [
-                (round(float(lon), 7), round(float(lat), 7))
-                for lon, lat in mower_trail[-80:]
-            ],
             "offset": (round(offset_lat, 3), round(offset_lon, 3)),
         }
         return json.dumps(payload, sort_keys=True, separators=(",", ":"))
@@ -257,20 +274,3 @@ class MammotionMapImage(MammotionBaseEntity, ImageEntity):
         shifted_location.longitude = shifted[0]
         shifted_location.latitude = shifted[1]
         return shifted_location
-
-    @staticmethod
-    def _offset_trail(
-        trail: list[tuple[float, float]],
-        offset_lat: float,
-        offset_lon: float,
-    ) -> list[tuple[float, float]]:
-        shifted_trail: list[tuple[float, float]] = []
-        for longitude, latitude in trail:
-            shifted = apply_coord(
-                [float(longitude), float(latitude)],
-                float(latitude),
-                offset_lat,
-                offset_lon,
-            )
-            shifted_trail.append((shifted[0], shifted[1]))
-        return shifted_trail
