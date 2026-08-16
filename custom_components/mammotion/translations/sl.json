@@ -449,7 +449,7 @@
         "name": "Glas vklopljeno/izklopljeno"
       },
       "spino_buzzer": {
-        "name": "Brenčalo"
+        "name": "Zvočni signal"
       },
       "spino_turbo_clean": {
         "name": "Turbo čiščenje"

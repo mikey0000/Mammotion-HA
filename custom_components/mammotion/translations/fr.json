@@ -270,8 +270,8 @@
         "name": "Statut",
         "state": {
           "UNKNOWN": "Inconnu",
-          "IDLE": "Veille",
-          "PREPARE": "Veille",
+          "IDLE": "En veille",
+          "PREPARE": "En veille",
           "WAIT_WATER": "Remplissage d'eau",
           "WORKING": "En marche",
           "PAUSE_GO_CHARGE": "Retour en charge (en pause)",
