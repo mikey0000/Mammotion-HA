@@ -285,7 +285,7 @@
         "name": "Tryb czyszczenia",
         "state": {
           "UNKNOWN": "Nieznany",
-          "RECHARGE": "Doładowanie",
+          "OFF": "Wyłączony",
           "AUTO": "Wszystko",
           "FLOOR": "Dno",
           "WALL": "Ściana",
@@ -348,6 +348,11 @@
           "2": "Słaby",
           "3": "Brak"
         }
+      }
+    },
+    "binary_sensor": {
+      "spino_charging": {
+        "name": "Ładowanie"
       }
     },
     "button": {
@@ -552,7 +557,7 @@
         "name": "Tryb czyszczenia",
         "state": {
           "UNKNOWN": "Nieznany",
-          "RECHARGE": "Doładowanie",
+          "OFF": "Wyłączony",
           "AUTO": "Wszystko",
           "FLOOR": "Dno",
           "WALL": "Ściana",

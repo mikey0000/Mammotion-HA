@@ -285,7 +285,7 @@
         "name": "Modalità di pulizia",
         "state": {
           "UNKNOWN": "Sconosciuto",
-          "RECHARGE": "Ricarica",
+          "OFF": "Spento",
           "AUTO": "Tutto",
           "FLOOR": "Fondo",
           "WALL": "Parete",
@@ -348,6 +348,11 @@
           "2": "Debole",
           "3": "Nessuno"
         }
+      }
+    },
+    "binary_sensor": {
+      "spino_charging": {
+        "name": "In carica"
       }
     },
     "button": {
@@ -552,7 +557,7 @@
         "name": "Modalità di pulizia",
         "state": {
           "UNKNOWN": "Sconosciuto",
-          "RECHARGE": "Ricarica",
+          "OFF": "Spento",
           "AUTO": "Tutto",
           "FLOOR": "Fondo",
           "WALL": "Parete",

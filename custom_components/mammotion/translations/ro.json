@@ -285,7 +285,7 @@
         "name": "Mod de curățare",
         "state": {
           "UNKNOWN": "Necunoscut",
-          "RECHARGE": "Reîncărcare",
+          "OFF": "Oprit",
           "AUTO": "Toate",
           "FLOOR": "Fund",
           "WALL": "Perete",
@@ -348,6 +348,11 @@
           "2": "Slab",
           "3": "Niciunul"
         }
+      }
+    },
+    "binary_sensor": {
+      "spino_charging": {
+        "name": "Se încarcă"
       }
     },
     "button": {
@@ -552,7 +557,7 @@
         "name": "Mod de curățare",
         "state": {
           "UNKNOWN": "Necunoscut",
-          "RECHARGE": "Reîncărcare",
+          "OFF": "Oprit",
           "AUTO": "Toate",
           "FLOOR": "Fund",
           "WALL": "Perete",

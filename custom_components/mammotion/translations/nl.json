@@ -285,7 +285,7 @@
         "name": "Reinigingsmodus",
         "state": {
           "UNKNOWN": "Onbekend",
-          "RECHARGE": "Opladen",
+          "OFF": "Uit",
           "AUTO": "Alles",
           "FLOOR": "Bodem",
           "WALL": "Wand",
@@ -348,6 +348,11 @@
           "2": "Zwak",
           "3": "Geen"
         }
+      }
+    },
+    "binary_sensor": {
+      "spino_charging": {
+        "name": "Opladen"
       }
     },
     "button": {
@@ -552,7 +557,7 @@
         "name": "Reinigingsmodus",
         "state": {
           "UNKNOWN": "Onbekend",
-          "RECHARGE": "Opladen",
+          "OFF": "Uit",
           "AUTO": "Alles",
           "FLOOR": "Bodem",
           "WALL": "Wand",

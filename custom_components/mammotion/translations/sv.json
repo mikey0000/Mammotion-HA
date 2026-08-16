@@ -285,7 +285,7 @@
         "name": "Rengöringsläge",
         "state": {
           "UNKNOWN": "Okänd",
-          "RECHARGE": "Ladda om",
+          "OFF": "Av",
           "AUTO": "Alla",
           "FLOOR": "Botten",
           "WALL": "Vägg",
@@ -348,6 +348,11 @@
           "2": "Svag",
           "3": "Ingen"
         }
+      }
+    },
+    "binary_sensor": {
+      "spino_charging": {
+        "name": "Laddar"
       }
     },
     "button": {
@@ -552,7 +557,7 @@
         "name": "Rengöringsläge",
         "state": {
           "UNKNOWN": "Okänd",
-          "RECHARGE": "Ladda om",
+          "OFF": "Av",
           "AUTO": "Alla",
           "FLOOR": "Botten",
           "WALL": "Vägg",

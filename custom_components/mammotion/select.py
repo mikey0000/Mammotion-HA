@@ -65,14 +65,14 @@ class MammotionSpinoSelectEntityDescription(SelectEntityDescription):
 SPINO_SELECT_ENTITIES: tuple[MammotionSpinoSelectEntityDescription, ...] = (
     MammotionSpinoSelectEntityDescription(
         key="spino_work_mode",
-        # Only real cleaning modes are selectable.  RECHARGE (0, return-to-charge)
-        # and UNKNOWN (-1, sentinel) are valid *reported* values — surfaced by the
-        # spino_work_mode sensor — but they're not modes a user can start, so they
-        # are excluded from the select's options.
+        # Only real cleaning modes are selectable.  OFF (0, no mode active — sent
+        # as a command it means return-to-charge) and UNKNOWN (-1, sentinel) are
+        # valid *reported* values — surfaced by the spino_work_mode sensor — but
+        # they're not modes a user can start, so they are excluded here.
         options=[
             mode.name
             for mode in SpinoWorkMode
-            if mode not in (SpinoWorkMode.UNKNOWN, SpinoWorkMode.RECHARGE)
+            if mode not in (SpinoWorkMode.UNKNOWN, SpinoWorkMode.OFF)
         ],
         current_fn=lambda spino_data: spino_data.pool_state.work_mode.name,
         set_fn=lambda coordinator, value: coordinator.async_set_work_mode(
@@ -441,8 +441,14 @@ class MammotionSpinoSelectEntity(MammotionBaseSpinoEntity, SelectEntity):
 
     @property
     def current_option(self) -> str | None:
-        """Return the currently selected option."""
-        return self.entity_description.current_fn(self.coordinator.data)
+        """Return the currently selected option.
+
+        A docked Spino reports work mode OFF on most heartbeats, so the device
+        regularly reports a value that is not a selectable option; return None
+        rather than an option HA would reject.
+        """
+        current = self.entity_description.current_fn(self.coordinator.data)
+        return current if current in self.entity_description.options else None
 
     async def async_select_option(self, option: str) -> None:
         """Change the selected option."""

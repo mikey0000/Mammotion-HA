@@ -17,10 +17,10 @@ from . import MammotionConfigEntry
 from .coordinator import MammotionSpinoCoordinator
 from .entity import MammotionBaseSpinoEntity
 
-# The fan-speed picker maps to the Spino cleaning work modes. RECHARGE (the
-# dock action exposed via return_to_base) and UNKNOWN are excluded — neither is
-# a selectable cleaning speed.
-_FAN_SPEED_EXCLUDED = {SpinoWorkMode.RECHARGE, SpinoWorkMode.UNKNOWN}
+# The fan-speed picker maps to the Spino cleaning work modes. OFF (no mode
+# active; as a command it is the dock action exposed via return_to_base) and
+# UNKNOWN are excluded — neither is a selectable cleaning speed.
+_FAN_SPEED_EXCLUDED = {SpinoWorkMode.OFF, SpinoWorkMode.UNKNOWN}
 FAN_SPEED_MODES = [
     mode.name for mode in SpinoWorkMode if mode not in _FAN_SPEED_EXCLUDED
 ]
@@ -77,9 +77,10 @@ class MammotionSpinoVacuumEntity(MammotionBaseSpinoEntity, StateVacuumEntity):
         )
 
     @property
-    def fan_speed(self) -> str:
+    def fan_speed(self) -> str | None:
         """Return the current cleaning work mode."""
-        return self.coordinator.data.pool_state.work_mode.name
+        mode = self.coordinator.data.pool_state.work_mode.name
+        return mode if mode in FAN_SPEED_MODES else None
 
     async def async_start(self) -> None:
         """Start cleaning in AUTO mode."""

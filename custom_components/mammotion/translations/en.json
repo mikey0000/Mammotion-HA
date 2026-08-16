@@ -285,7 +285,7 @@
         "name": "Cleaning mode",
         "state": {
           "UNKNOWN": "None",
-          "RECHARGE": "Recharge",
+          "OFF": "Off",
           "AUTO": "All",
           "FLOOR": "Floor",
           "WALL": "Wall",
@@ -348,6 +348,11 @@
           "2": "Weak",
           "3": "None"
         }
+      }
+    },
+    "binary_sensor": {
+      "spino_charging": {
+        "name": "Charging"
       }
     },
     "button": {
@@ -552,7 +557,7 @@
         "name": "Cleaning mode",
         "state": {
           "UNKNOWN": "None",
-          "RECHARGE": "Recharge",
+          "OFF": "Off",
           "AUTO": "All",
           "FLOOR": "Floor",
           "WALL": "Wall",

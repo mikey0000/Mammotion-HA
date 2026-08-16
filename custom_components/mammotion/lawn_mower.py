@@ -213,7 +213,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
             return None
 
         LOGGER.debug("activity mode %s", mode)
-        if mode == WorkMode.MODE_PAUSE or (
+        if mode in (WorkMode.MODE_PAUSE, WorkMode.MODE_CHARGING_PAUSE) or (
             mode == WorkMode.MODE_READY and charge_state == 0
         ):
             return LawnMowerActivity.PAUSED

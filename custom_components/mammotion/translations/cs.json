@@ -285,7 +285,7 @@
         "name": "Režim čištění",
         "state": {
           "UNKNOWN": "Neznámý",
-          "RECHARGE": "Dobíjení",
+          "OFF": "Vypnuto",
           "AUTO": "Vše",
           "FLOOR": "Dno",
           "WALL": "Stěna",
@@ -348,6 +348,11 @@
           "2": "Slabý",
           "3": "Žádný"
         }
+      }
+    },
+    "binary_sensor": {
+      "spino_charging": {
+        "name": "Nabíjení"
       }
     },
     "button": {
@@ -552,7 +557,7 @@
         "name": "Režim čištění",
         "state": {
           "UNKNOWN": "Neznámý",
-          "RECHARGE": "Dobíjení",
+          "OFF": "Vypnuto",
           "AUTO": "Vše",
           "FLOOR": "Dno",
           "WALL": "Stěna",

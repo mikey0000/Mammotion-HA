@@ -29,7 +29,6 @@ from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.debounce import Debouncer
 from homeassistant.helpers.event import async_call_later, async_track_time_interval
-from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from mashumaro.exceptions import InvalidFieldValue
 from pymammotion.aliyun.exceptions import (
@@ -82,7 +81,7 @@ from pymammotion.utility.svg import chunk_svg_messages
 from webrtc_models import RTCIceServer
 
 from .agora_api import SERVICE_IDS, AgoraAPIClient, AgoraResponse
-from .config import MammotionConfigStore
+from .config import MammotionConfigStore, async_get_store
 from .const import (
     CONF_ACCOUNTNAME,
     CONF_CONNECT_DATA,
@@ -168,6 +167,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         self.map_offset_lon: float = 0.0
         self._bluetooth_enabled: bool = True
         self._cloud_enabled: bool = True
+        self._store: MammotionConfigStore = async_get_store(hass, config_entry)
 
         mower_device = self.manager.get_device_by_name(self.device_name)
 
@@ -1286,10 +1286,9 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
 
     async def async_restore_data(self) -> None:
         """Restore saved data."""
-        store: MammotionConfigStore = MammotionConfigStore(
-            self.hass, version=1, minor_version=2, key=self.device_name
+        restored_data: Mapping[str, Any] | None = await self._store.async_device_data(
+            self.device_name
         )
-        restored_data: Mapping[str, Any] | None = await store.async_load()
 
         handle = self.manager.mower(self.device_name)
 
@@ -1312,17 +1311,25 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             if handle is not None:
                 handle.restore_device(empty)
 
-    async def async_save_data(self, data: MowingDevice | PoolCleanerDevice) -> None:
-        """Store data."""
-        store: Store = Store(
-            self.hass, version=1, minor_version=2, key=self.device_name
+    @callback
+    def async_save_data(self, data: MowingDevice | PoolCleanerDevice) -> None:
+        """Queue device state for persistence.
+
+        Returns immediately: the state is kept in memory and written at most
+        once per ``SAVE_DELAY``.  Callers on the poll path must not wait for the
+        disk.
+        """
+        self._store.async_update_device_data(
+            self.device_name, cast(dict[str, Any], data.to_dict())
         )
-        await store.async_save(data.to_dict())
+
+    async def async_flush_saved_data(self) -> None:
+        """Write any queued device state to disk immediately."""
+        await self._store.async_flush()
 
     async def remove_saved_data(self) -> None:
         """Remove saved coordinator data from persistent storage."""
-        store = Store(self.hass, version=1, minor_version=2, key=self.device_name)
-        await store.async_remove()
+        await self._store.async_remove_device(self.device_name)
 
     async def _async_update_data(self) -> DataT | None:
         """Update data from the device."""
@@ -1445,7 +1452,8 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         self._subscriptions.append(handle.subscribe_map_updated(_on_map_updated))
 
     async def async_shutdown(self) -> None:
-        """Cancel all RAII subscriptions and delegate to HA coordinator shutdown."""
+        """Flush queued state, cancel RAII subscriptions and shut down the coordinator."""
+        await self.async_flush_saved_data()
         for sub in self._subscriptions:
             sub.cancel()
         self._subscriptions.clear()
@@ -1642,7 +1650,7 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
 
         LOGGER.debug("Updated Mammotion device %s", self.device_name)
         self.update_failures = 0
-        await self.async_save_data(device)
+        self.async_save_data(device)
 
         if self.data.mower_state.ble_mac != "" and len(self._on_stop) == 0:
             self._on_stop.append(
@@ -2335,10 +2343,9 @@ class MammotionRTKCoordinator(MammotionBaseUpdateCoordinator[RTKBaseStationDevic
 
     async def async_restore_data(self) -> None:
         """Restore saved data."""
-        store = MammotionConfigStore(
-            self.hass, version=1, minor_version=2, key=self.device_name
+        restored_data: Mapping[str, Any] | None = await self._store.async_device_data(
+            self.device_name
         )
-        restored_data: Mapping[str, Any] | None = await store.async_load()
 
         handle = self.manager.rtk_device(self.device_name)
 
@@ -2396,13 +2403,6 @@ class MammotionRTKCoordinator(MammotionBaseUpdateCoordinator[RTKBaseStationDevic
                     pass
 
         return self.data
-
-    async def async_shutdown(self) -> None:
-        """Cancel all RAII subscriptions and delegate to HA coordinator shutdown."""
-        for sub in self._subscriptions:
-            sub.cancel()
-        self._subscriptions.clear()
-        await super().async_shutdown()
 
     async def _async_setup(self) -> None:
         """Set up RTK device subscriptions and fetch one-time HTTP data."""
@@ -2515,10 +2515,9 @@ class MammotionSpinoCoordinator(MammotionBaseUpdateCoordinator[PoolCleanerDevice
 
     async def async_restore_data(self) -> None:
         """Restore saved data."""
-        store = MammotionConfigStore(
-            self.hass, version=1, minor_version=2, key=self.device_name
+        restored_data: Mapping[str, Any] | None = await self._store.async_device_data(
+            self.device_name
         )
-        restored_data: Mapping[str, Any] | None = await store.async_load()
 
         handle = self.manager.mower(self.device_name)
 
@@ -2611,7 +2610,7 @@ class MammotionSpinoCoordinator(MammotionBaseUpdateCoordinator[PoolCleanerDevice
                 except (DeviceOfflineException, GatewayTimeoutException):
                     pass
 
-        await self.async_save_data(self.data)
+        self.async_save_data(self.data)
 
         return self.data
 

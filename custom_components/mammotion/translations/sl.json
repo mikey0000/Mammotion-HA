@@ -285,7 +285,7 @@
         "name": "Način čiščenja",
         "state": {
           "UNKNOWN": "Neznano",
-          "RECHARGE": "Ponovno polnjenje",
+          "OFF": "Izklopljeno",
           "AUTO": "Vse",
           "FLOOR": "Dno",
           "WALL": "Stena",
@@ -348,6 +348,11 @@
           "2": "Šibko",
           "3": "Brez"
         }
+      }
+    },
+    "binary_sensor": {
+      "spino_charging": {
+        "name": "Polnjenje"
       }
     },
     "button": {
@@ -552,7 +557,7 @@
         "name": "Način čiščenja",
         "state": {
           "UNKNOWN": "Neznano",
-          "RECHARGE": "Ponovno polnjenje",
+          "OFF": "Izklopljeno",
           "AUTO": "Vse",
           "FLOOR": "Dno",
           "WALL": "Stena",

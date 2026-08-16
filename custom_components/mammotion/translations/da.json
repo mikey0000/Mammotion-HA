@@ -285,7 +285,7 @@
         "name": "Rengøringstilstand",
         "state": {
           "UNKNOWN": "Ukendt",
-          "RECHARGE": "Genoplad",
+          "OFF": "Fra",
           "AUTO": "Alle",
           "FLOOR": "Bund",
           "WALL": "Væg",
@@ -348,6 +348,11 @@
           "2": "Svag",
           "3": "Ingen"
         }
+      }
+    },
+    "binary_sensor": {
+      "spino_charging": {
+        "name": "Oplader"
       }
     },
     "button": {
@@ -552,7 +557,7 @@
         "name": "Rengøringstilstand",
         "state": {
           "UNKNOWN": "Ukendt",
-          "RECHARGE": "Genoplad",
+          "OFF": "Fra",
           "AUTO": "Alle",
           "FLOOR": "Bund",
           "WALL": "Væg",

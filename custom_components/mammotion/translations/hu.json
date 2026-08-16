@@ -285,7 +285,7 @@
         "name": "Tisztítási mód",
         "state": {
           "UNKNOWN": "Ismeretlen",
-          "RECHARGE": "Újratöltés",
+          "OFF": "Kikapcsolva",
           "AUTO": "Mind",
           "FLOOR": "Fenék",
           "WALL": "Fal",
@@ -348,6 +348,11 @@
           "2": "Gyenge",
           "3": "Nincs"
         }
+      }
+    },
+    "binary_sensor": {
+      "spino_charging": {
+        "name": "Töltés"
       }
     },
     "button": {
@@ -552,7 +557,7 @@
         "name": "Tisztítási mód",
         "state": {
           "UNKNOWN": "Ismeretlen",
-          "RECHARGE": "Újratöltés",
+          "OFF": "Kikapcsolva",
           "AUTO": "Mind",
           "FLOOR": "Fenék",
           "WALL": "Fal",
