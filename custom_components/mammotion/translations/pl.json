@@ -392,6 +392,9 @@
       "restart_mower": {
         "name": "Uruchom ponownie kosiarkę"
       },
+      "refresh_status": {
+        "name": "Odśwież stan"
+      },
       "spino_fetch_map": {
         "name": "Pobierz mapę basenu"
       },

@@ -392,6 +392,9 @@
       "restart_mower": {
         "name": "Ponovni zagon kosilnice"
       },
+      "refresh_status": {
+        "name": "Osveži stanje"
+      },
       "spino_fetch_map": {
         "name": "Pridobi zemljevid bazena"
       },

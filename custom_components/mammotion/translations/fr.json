@@ -392,6 +392,9 @@
       "restart_mower": {
         "name": "Redémarrer la tondeuse"
       },
+      "refresh_status": {
+        "name": "Actualiser le statut"
+      },
       "spino_fetch_map": {
         "name": "Récupérer la carte de la piscine"
       },

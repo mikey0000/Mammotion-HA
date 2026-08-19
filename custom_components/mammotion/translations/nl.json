@@ -392,6 +392,9 @@
       "restart_mower": {
         "name": "Maaier herstarten"
       },
+      "refresh_status": {
+        "name": "Status vernieuwen"
+      },
       "spino_fetch_map": {
         "name": "Zwembadkaart ophalen"
       },

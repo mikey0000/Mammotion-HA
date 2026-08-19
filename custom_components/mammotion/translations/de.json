@@ -392,6 +392,9 @@
       "restart_mower": {
         "name": "Mähroboter neustarten"
       },
+      "refresh_status": {
+        "name": "Status aktualisieren"
+      },
       "spino_fetch_map": {
         "name": "Poolkarte abrufen"
       },

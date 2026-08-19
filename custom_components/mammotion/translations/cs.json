@@ -392,6 +392,9 @@
       "restart_mower": {
         "name": "Restartovat sekačku"
       },
+      "refresh_status": {
+        "name": "Obnovit stav"
+      },
       "spino_fetch_map": {
         "name": "Načíst mapu bazénu"
       },
