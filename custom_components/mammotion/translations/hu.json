@@ -392,6 +392,9 @@
       "restart_mower": {
         "name": "Fűnyíró újraindítása"
       },
+      "refresh_status": {
+        "name": "Állapot frissítése"
+      },
       "spino_fetch_map": {
         "name": "Medencetérkép lekérése"
       },

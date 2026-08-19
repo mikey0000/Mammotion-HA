@@ -392,6 +392,9 @@
       "restart_mower": {
         "name": "Riavvia il tagliaerba"
       },
+      "refresh_status": {
+        "name": "Aggiorna stato"
+      },
       "spino_fetch_map": {
         "name": "Recupera mappa della piscina"
       },

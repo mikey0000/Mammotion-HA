@@ -392,6 +392,9 @@
       "restart_mower": {
         "name": "Genstart plæneklipperen"
       },
+      "refresh_status": {
+        "name": "Opdater status"
+      },
       "spino_fetch_map": {
         "name": "Hent poolkort"
       },

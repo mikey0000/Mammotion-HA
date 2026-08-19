@@ -392,6 +392,9 @@
       "restart_mower": {
         "name": "Repornire mașina de tuns"
       },
+      "refresh_status": {
+        "name": "Reîmprospătează starea"
+      },
       "spino_fetch_map": {
         "name": "Preia harta piscinei"
       },

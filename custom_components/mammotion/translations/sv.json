@@ -392,6 +392,9 @@
       "restart_mower": {
         "name": "Starta om gräsklipparen"
       },
+      "refresh_status": {
+        "name": "Uppdatera status"
+      },
       "spino_fetch_map": {
         "name": "Hämta poolkarta"
       },
