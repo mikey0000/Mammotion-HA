@@ -267,13 +267,14 @@ def _register_ble_reconnect_callback(
         handle = mammotion.mower(device_name)
         if handle is None:
             return
-        # Always push the freshest BLEDevice into the transport.  add_ble_to_device
-        # is idempotent: it calls set_ble_device() if a transport already exists, or
-        # creates a new transport if one doesn't.  We must not short-circuit on
-        # has_transport() here because a device registered at startup without being
-        # in range has a transport with no BLEDevice — it needs updating too.
+        # Keep the transport's device and signal strength current so the library
+        # can avoid weak GATT connections and reconnect through a fresh scanner.
         hass.async_create_task(
-            mammotion.add_ble_to_device(device_name, service_info.device)
+            mammotion.update_ble_device(
+                device_name,
+                service_info.device,
+                service_info.rssi,
+            )
         )
 
     entry.async_on_unload(
