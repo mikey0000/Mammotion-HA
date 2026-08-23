@@ -165,7 +165,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         self._subscriptions: list[Subscription] = []
         self.map_offset_lat: float = 0.0
         self.map_offset_lon: float = 0.0
-        self._bluetooth_enabled: bool = True
+        self._bluetooth_enabled: bool = self.config_entry.options.get('prefer_ble_over_wifi', True)
         self._cloud_enabled: bool = True
         self._store: MammotionConfigStore = async_get_store(hass, config_entry)
 
@@ -363,18 +363,12 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         return self._cloud_enabled
 
     async def async_set_bluetooth_enabled(self, enabled: bool) -> None:
-        """Enable or disable Bluetooth transport."""
-        self._bluetooth_enabled = enabled
-        handle = self.manager.mower(self.device_name)
-        if handle is None:
-            return
-        if not enabled:
-            handle.set_prefer_ble(value=False)
-            await handle.disconnect_transport(TransportType.BLE)
-        else:
-            handle.set_prefer_ble(value=True)
-            await self._async_ensure_ble_client()
-
+        """Enable or disable Bluetooth transport and reload integration."""
+        new_options = dict(self.config_entry.options)
+        new_options["prefer_ble_over_wifi"] = enabled
+        self.hass.config_entries.async_update_entry(self.config_entry, options=new_options)
+        self.hass.async_create_task(self.hass.config_entries.async_reload(self.config_entry.entry_id))
+        
     async def async_set_cloud_enabled(self, enabled: bool) -> None:
         """Enable or disable Cloud transport."""
         self._cloud_enabled = enabled
