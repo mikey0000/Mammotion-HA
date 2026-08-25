@@ -364,11 +364,37 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
 
     async def async_set_bluetooth_enabled(self, enabled: bool) -> None:
         """Enable or disable Bluetooth transport and reload integration."""
-        new_options = dict(self.config_entry.options)
-        new_options["prefer_ble_over_wifi"] = enabled
-        self.hass.config_entries.async_update_entry(self.config_entry, options=new_options)
-        self.hass.async_create_task(self.hass.config_entries.async_reload(self.config_entry.entry_id))
+        DOMAIN = self.config_entry.domain
         
+        try:
+            from homeassistant.config_entries import ConfigEntryDisabler
+            disabler_user = ConfigEntryDisabler.USER
+        except ImportError:
+            disabler_user = "user"
+            
+        for entry in self.hass.config_entries.async_entries(DOMAIN):
+            new_options = dict(entry.options)
+            options_changed = False
+            if new_options.get("prefer_ble_over_wifi") != enabled:
+                new_options["prefer_ble_over_wifi"] = enabled
+                self.hass.config_entries.async_update_entry(entry, options=new_options)
+                options_changed = True
+
+            if entry.source == "bluetooth":
+                if not enabled and not entry.disabled_by:
+                    self.hass.async_create_task(
+                        self.hass.config_entries.async_set_disabled_by(entry.entry_id, disabler_user)
+                    )
+                elif enabled and entry.disabled_by:
+                    self.hass.async_create_task(
+                        self.hass.config_entries.async_set_disabled_by(entry.entry_id, None)
+                    )
+                elif options_changed and not entry.disabled_by:
+                    self.hass.async_create_task(self.hass.config_entries.async_reload(entry.entry_id))
+            else:
+                if options_changed:
+                    self.hass.async_create_task(self.hass.config_entries.async_reload(entry.entry_id))
+                    
     async def async_set_cloud_enabled(self, enabled: bool) -> None:
         """Enable or disable Cloud transport."""
         self._cloud_enabled = enabled
@@ -1599,12 +1625,6 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
                     self.service_info.device, self.service_info.rssi
                 )
                 self.hass.create_task(ble.connect())
-
-    async def async_set_bluetooth_enabled(self, enabled: bool) -> None:
-        """Enable or disable Bluetooth, reconnecting if re-enabled."""
-        await super().async_set_bluetooth_enabled(enabled)
-        if enabled:
-            self._add_ble_device()
 
     @callback
     def _async_start(self) -> None:
