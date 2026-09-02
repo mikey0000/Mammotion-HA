@@ -5,6 +5,11 @@
         "default": "mdi:map-marker-radius"
       }
     },
+    "image": {
+      "map": {
+        "default": "mdi:map"
+      }
+    },
     "button": {
       "start_map_sync": {
         "default": "mdi:map-clock"

@@ -50,6 +50,14 @@ class MammotionSpinoNumberEntityDescription(NumberEntityDescription):  # type: i
     set_fn: Callable[[MammotionSpinoCoordinator, float], Awaitable[None]]
 
 
+def _set_map_offset(
+    coordinator: MammotionBaseUpdateCoordinator[Any], attribute: str, value: float
+) -> None:
+    """Set a map offset and refresh entities using the adjusted coordinates."""
+    setattr(coordinator, attribute, value)
+    coordinator.async_update_listeners()
+
+
 SPINO_NUMBER_ENTITIES: tuple[MammotionSpinoNumberEntityDescription, ...] = (
     MammotionSpinoNumberEntityDescription(
         key="spino_floor_speed",
@@ -75,7 +83,9 @@ MAP_OFFSET_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
         native_min_value=-50,
         native_max_value=50,
         mode=NumberMode.BOX,
-        set_fn=lambda coordinator, value: setattr(coordinator, "map_offset_lat", value),
+        set_fn=lambda coordinator, value: _set_map_offset(
+            coordinator, "map_offset_lat", value
+        ),
         get_fn=lambda coordinator: coordinator.map_offset_lat,
     ),
     MammotionConfigNumberEntityDescription(
@@ -86,7 +96,9 @@ MAP_OFFSET_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
         native_min_value=-50,
         native_max_value=50,
         mode=NumberMode.BOX,
-        set_fn=lambda coordinator, value: setattr(coordinator, "map_offset_lon", value),
+        set_fn=lambda coordinator, value: _set_map_offset(
+            coordinator, "map_offset_lon", value
+        ),
         get_fn=lambda coordinator: coordinator.map_offset_lon,
     ),
 )
