@@ -625,6 +625,11 @@
     },
     "device_tracker": {
       "name": "Enhedssporing"
+    },
+    "image": {
+      "map": {
+        "name": "Kort"
+      }
     }
   },
   "selector": {

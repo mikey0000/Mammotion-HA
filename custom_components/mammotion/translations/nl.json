@@ -625,6 +625,11 @@
     },
     "device_tracker": {
       "name": "Apparaat volgen"
+    },
+    "image": {
+      "map": {
+        "name": "Kaart"
+      }
     }
   },
   "selector": {
