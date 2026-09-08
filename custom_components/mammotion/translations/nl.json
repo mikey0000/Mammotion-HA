@@ -21,33 +21,27 @@
     "flow_title": "{name}",
     "step": {
       "bluetooth_confirm": {
-        "description": "Configureer {name}",
-        "data": {
-          "stay_connected_bluetooth": "Houd Bluetooth verbonden"
-        }
+        "description": "Configureer {name}"
       },
       "reconfigure": {
         "data": {
-          "use_wifi": "Gebruik Wi-Fi",
           "account_name": "Mammotion e-mailadres of accountnummer",
           "password": "Mammotion account wachtwoord"
         }
       },
       "user": {
         "data": {
-          "address": "Apparaat",
-          "stay_connected_bluetooth": "Hou bluetooth verbonden"
+          "address": "Apparaat"
         },
         "description": "Kies uw maaimachines"
       },
       "wifi": {
         "data": {
-          "use_wifi": "Gebruik Wi-Fi (haal het vinkje weg en klik \"ga verder\" om Bluetooth te gebruiken)",
           "account_name": "Mammotion e-mailadres of accountnummer",
           "password": "Mammotion account wachtwoord"
         },
         "title": "Verbind met Wi-Fi",
-        "description": "Voer je Mammotion account e-mail of id en wachtwoord in"
+        "description": "Voer je Mammotion account e-mail of id en wachtwoord in. Laat beide velden leeg om alleen Bluetooth te gebruiken, zonder account."
       }
     }
   },
@@ -56,7 +50,6 @@
       "init": {
         "data": {
           "title": "Configuratie bijwerken",
-          "stay_connected_bluetooth": "Houd Bluetooth verbonden",
           "prefer_ble_over_wifi": "Bluetooth verkiezen boven Wi-Fi indien beschikbaar",
           "movement_use_wifi": "Bewegingsopdrachten via Wi-Fi verzenden",
           "mow_path_fetch_enabled": "Maaipad ophalen inschakelen (cloud)",

@@ -256,7 +256,7 @@ UPDATE_SWITCH_ENTITIES: tuple[MammotionAsyncSwitchEntityDescription, ...] = (
     ),
 )
 
-CONNECTIVITY_SWITCH_ENTITIES: tuple[MammotionAsyncSwitchEntityDescription, ...] = (
+BLUETOOTH_SWITCH_ENTITIES: tuple[MammotionAsyncSwitchEntityDescription, ...] = (
     MammotionAsyncSwitchEntityDescription(
         key="bluetooth_enabled",
         is_on_func=lambda coordinator: coordinator.bluetooth_enabled,
@@ -265,6 +265,9 @@ CONNECTIVITY_SWITCH_ENTITIES: tuple[MammotionAsyncSwitchEntityDescription, ...] 
         ),
         entity_category=EntityCategory.CONFIG,
     ),
+)
+
+CLOUD_SWITCH_ENTITIES: tuple[MammotionAsyncSwitchEntityDescription, ...] = (
     MammotionAsyncSwitchEntityDescription(
         key="cloud_enabled",
         is_on_func=lambda coordinator: coordinator.cloud_enabled,
@@ -324,8 +327,13 @@ async def async_setup_entry(
             MammotionUpdateSwitchEntity(coordinator, d) for d in UPDATE_SWITCH_ENTITIES
         )
         entities.extend(
-            MammotionSwitchEntity(coordinator, d) for d in CONNECTIVITY_SWITCH_ENTITIES
+            MammotionSwitchEntity(coordinator, d) for d in BLUETOOTH_SWITCH_ENTITIES
         )
+        # A mower without a cloud identity (BLE-only) has no cloud to switch.
+        if mower.device.iot_id:
+            entities.extend(
+                MammotionSwitchEntity(coordinator, d) for d in CLOUD_SWITCH_ENTITIES
+            )
 
         if DeviceType.is_yuka(device_name) and not DeviceType.is_yuka_mini(device_name):
             entities.extend(

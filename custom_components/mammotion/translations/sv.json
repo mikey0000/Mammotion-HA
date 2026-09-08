@@ -21,33 +21,27 @@
     "flow_title": "{name}",
     "step": {
       "bluetooth_confirm": {
-        "description": "Konfiguration {name}",
-        "data": {
-          "stay_connected_bluetooth": "Behåll Bluetooth anslutningen aktiv"
-        }
+        "description": "Konfiguration {name}"
       },
       "reconfigure": {
         "data": {
-          "use_wifi": "Använd Wi-Fi",
           "account_name": "E-post eller kontonummer för Mammotion",
           "password": "Lösenord för Mammotion-konto"
         }
       },
       "user": {
         "data": {
-          "address": "Enhet",
-          "stay_connected_bluetooth": "Behåll Bluetooth anslutningen aktiv"
+          "address": "Enhet"
         },
         "description": "Välj gräsklippare"
       },
       "wifi": {
         "data": {
-          "use_wifi": "Använd Wi-Fi (avmarkera och klicka på skicka för att använda Bluetooth)",
           "account_name": "E-post eller kontonummer för Mammotion",
           "password": "Lösenord för Mammotion-konto"
         },
         "title": "Anslut till Wi-Fi",
-        "description": "Ange din e-postadress eller kontonummer samt lösenord för ditt Mammotion-konto"
+        "description": "Ange din e-postadress eller kontonummer samt lösenord för ditt Mammotion-konto. Lämna båda fälten tomma för att endast använda Bluetooth, utan konto."
       }
     }
   },
@@ -56,7 +50,6 @@
       "init": {
         "data": {
           "title": "Uppdatera konfigurationen",
-          "stay_connected_bluetooth": "Behåll Bluetooth anslutningen aktiv",
           "prefer_ble_over_wifi": "Föredra Bluetooth framför Wi-Fi när tillgängligt",
           "movement_use_wifi": "Skicka rörelsekommandon via Wi-Fi",
           "mow_path_fetch_enabled": "Aktivera hämtning av klippväg (moln)",

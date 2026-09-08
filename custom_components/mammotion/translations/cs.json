@@ -21,33 +21,27 @@
     "flow_title": "{name}",
     "step": {
       "bluetooth_confirm": {
-        "description": "Nastavení {name}",
-        "data": {
-          "stay_connected_bluetooth": "Udržovat připojení Bluetooth"
-        }
+        "description": "Nastavení {name}"
       },
       "reconfigure": {
         "data": {
-          "use_wifi": "Použít Wi-Fi",
           "account_name": "Mammotion e-mail nebo číslo účtu",
           "password": "Mammotion heslo k účtu"
         }
       },
       "user": {
         "data": {
-          "address": "Zařízení",
-          "stay_connected_bluetooth": "Udržovat připojení Bluetooth"
+          "address": "Zařízení"
         },
         "description": "Vyberte si svou sekačku"
       },
       "wifi": {
         "data": {
-          "use_wifi": "Použít Wi-Fi (odškrtněte a odešlete pro použití Bluetooth)",
           "account_name": "Mammotion e-mail nebo číslo účtu",
           "password": "Heslo k účtu Mammotion"
         },
         "title": "Připojit k Wi-Fi",
-        "description": "Zadejte svůj Mammotion e-mail nebo ID účtu a heslo"
+        "description": "Zadejte svůj Mammotion e-mail nebo ID účtu a heslo. Ponechte obě pole prázdná, pokud chcete používat pouze Bluetooth bez účtu."
       }
     }
   },
@@ -56,7 +50,6 @@
       "init": {
         "data": {
           "title": "Aktualizovat konfiguraci",
-          "stay_connected_bluetooth": "Udržovat připojení Bluetooth",
           "prefer_ble_over_wifi": "Upřednostňovat Bluetooth před Wi-Fi, je-li dostupné",
           "movement_use_wifi": "Odesílat příkazy pohybu přes Wi-Fi",
           "mow_path_fetch_enabled": "Povolit načítání cesty sekání (cloud)",

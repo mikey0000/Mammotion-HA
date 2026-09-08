@@ -21,33 +21,27 @@
     "flow_title": "{name}",
     "step": {
       "bluetooth_confirm": {
-        "description": "A(z) {name} beállítása",
-        "data": {
-          "stay_connected_bluetooth": "Bluetooth maradjon csatlakoztatva"
-        }
+        "description": "A(z) {name} beállítása"
       },
       "reconfigure": {
         "data": {
-          "use_wifi": "Wi-Fi használata",
           "account_name": "Mammotion e-mail vagy fiókszám",
           "password": "Mammotion fiók jelszava"
         }
       },
       "user": {
         "data": {
-          "address": "Eszköz",
-          "stay_connected_bluetooth": "Bluetooth maradjon csatlakoztatva"
+          "address": "Eszköz"
         },
         "description": "Válaszd ki a fűnyírót"
       },
       "wifi": {
         "data": {
-          "use_wifi": "Wi-Fi használata (pipát ki és küldd el a Bluetooth használatához)",
           "account_name": "Mammotion e-mail vagy fiókszám",
           "password": "Mammotion fiók jelszava"
         },
         "title": "Csatlakozás Wi-Fi-hez",
-        "description": "Add meg a Mammotion fiók e-mail-címét vagy azonosítóját és a jelszót"
+        "description": "Add meg a Mammotion fiók e-mail-címét vagy azonosítóját és a jelszót. Hagyd üresen mindkét mezőt, ha fiók nélkül, csak Bluetooth-on keresztül szeretnéd használni."
       }
     }
   },
@@ -56,7 +50,6 @@
       "init": {
         "data": {
           "title": "Konfiguráció frissítése",
-          "stay_connected_bluetooth": "Bluetooth maradjon csatlakoztatva",
           "prefer_ble_over_wifi": "Bluetooth előnyben részesítése Wi-Fi helyett, ha elérhető",
           "movement_use_wifi": "Mozgatási parancsok küldése Wi-Fi-n",
           "mow_path_fetch_enabled": "Nyírási útvonal lekérésének engedélyezése (felhő)",

@@ -21,33 +21,27 @@
     "flow_title": "{name}",
     "step": {
       "bluetooth_confirm": {
-        "description": "{name} einrichten",
-        "data": {
-          "stay_connected_bluetooth": "Bluetooth-Verbindung aufrechterhalten"
-        }
+        "description": "{name} einrichten"
       },
       "reconfigure": {
         "data": {
-          "use_wifi": "WLAN verwenden",
           "account_name": "Mammotion-ID oder E-Mail-Adresse",
           "password": "Mammotion-Kennwort"
         }
       },
       "user": {
         "data": {
-          "address": "Gerät",
-          "stay_connected_bluetooth": "Bluetooth-Verbindung aufrechterhalten"
+          "address": "Gerät"
         },
         "description": "Bitte wählen Sie Ihren Mähroboter aus."
       },
       "wifi": {
         "data": {
-          "use_wifi": "WLAN verwenden (abwählen und senden, um Bluetooth zu nutzen)",
           "account_name": "Mammotion-ID oder E-Mail-Adresse",
           "password": "Mammotion-Kennwort"
         },
         "title": "Mit WLAN verbinden",
-        "description": "Geben Sie Ihre Mammotion-ID oder E-Mail-Adresse und das dazugehörige Kennwort ein."
+        "description": "Geben Sie Ihre Mammotion-ID oder E-Mail-Adresse und das dazugehörige Kennwort ein. Lassen Sie beide Felder leer, um nur Bluetooth ohne Konto zu verwenden."
       }
     }
   },
@@ -56,7 +50,6 @@
       "init": {
         "data": {
           "title": "Konfiguration aktualisieren",
-          "stay_connected_bluetooth": "Bluetooth-Verbindung aufrechterhalten",
           "prefer_ble_over_wifi": "Wenn möglich, Bluetooth statt WLAN verwenden",
           "movement_use_wifi": "Bewegungsbefehle über WLAN senden",
           "mow_path_fetch_enabled": "Mähpfad-Abruf aktivieren (Cloud)",

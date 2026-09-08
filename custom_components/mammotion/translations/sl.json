@@ -21,33 +21,27 @@
     "flow_title": "{name}",
     "step": {
       "bluetooth_confirm": {
-        "description": "Nastavitev {name}",
-        "data": {
-          "stay_connected_bluetooth": "Ohranite bluetooth povezavo"
-        }
+        "description": "Nastavitev {name}"
       },
       "reconfigure": {
         "data": {
-          "use_wifi": "Uporabi Wi-fi",
           "account_name": "E-poštni naslov Mammotion ali številka računa",
           "password": "Geslo Mammotion računa"
         }
       },
       "user": {
         "data": {
-          "address": "Naprava",
-          "stay_connected_bluetooth": "Ohranite bluetooth povezavo"
+          "address": "Naprava"
         },
         "description": "Izberite vašo kosilnico"
       },
       "wifi": {
         "data": {
-          "use_wifi": "Uporabi Wi-fi (obkljukajte in pošljite za uporabo bluetooth)",
           "account_name": "E-poštni naslov Mammotion ali številka računa",
           "password": "Geslo Mammotion računa"
         },
         "title": "Poveži Wi-fi",
-        "description": "Vnesite e-poštni naslov Mammotion računa ali številko računa in geslo"
+        "description": "Vnesite e-poštni naslov Mammotion računa ali številko računa in geslo. Pustite obe polji prazni, če želite uporabljati samo Bluetooth brez računa."
       }
     }
   },
@@ -56,7 +50,6 @@
       "init": {
         "data": {
           "title": "Posodobi nastavitev",
-          "stay_connected_bluetooth": "Ohrani bluetooth povezavo",
           "prefer_ble_over_wifi": "Daj prednost Bluetooth pred Wi-Fi, ko je na voljo",
           "movement_use_wifi": "Pošiljaj ukaze gibanja prek Wi-Fi",
           "mow_path_fetch_enabled": "Omogoči pridobivanje poti košnje (oblak)",

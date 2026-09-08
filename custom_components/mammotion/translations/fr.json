@@ -21,33 +21,27 @@
     "flow_title": "{name}",
     "step": {
       "bluetooth_confirm": {
-        "description": "Configuration de {name}",
-        "data": {
-          "stay_connected_bluetooth": "Garder le Bluetooth connecté"
-        }
+        "description": "Configuration de {name}"
       },
       "reconfigure": {
         "data": {
-          "use_wifi": "Utilisez le Wi-Fi",
           "account_name": "E-mail ou numéro de compte Mammotion",
           "password": "Mot de passe du compte Mammotion"
         }
       },
       "user": {
         "data": {
-          "address": "Appareil",
-          "stay_connected_bluetooth": "Garder le Bluetooth connecté"
+          "address": "Appareil"
         },
         "description": "Choisissez votre tondeuse"
       },
       "wifi": {
         "data": {
-          "use_wifi": "Utiliser le Wi-Fi (décocher et confirmer pour utiliser le Bluetooth)",
           "account_name": "E-mail ou numéro de compte Mammotion",
           "password": "Mot de passe du compte Mammotion"
         },
         "title": "Se connecter au Wi-Fi",
-        "description": "Entrez l'adresse e-mail ou l'identifiant et le mot de passe de votre compte Mammotion"
+        "description": "Entrez l'adresse e-mail ou l'identifiant et le mot de passe de votre compte Mammotion. Laissez les deux champs vides pour utiliser uniquement le Bluetooth, sans compte."
       }
     }
   },
@@ -56,7 +50,6 @@
       "init": {
         "data": {
           "title": "Mettre à jour la configuration",
-          "stay_connected_bluetooth": "Garder le Bluetooth connecté",
           "prefer_ble_over_wifi": "Préférer le Bluetooth au Wi-Fi si disponible",
           "movement_use_wifi": "Envoyer les commandes de mouvement via Wi-Fi",
           "mow_path_fetch_enabled": "Activer la récupération du chemin de tonte (cloud)",

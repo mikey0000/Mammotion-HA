@@ -21,33 +21,27 @@
     "flow_title": "{name}",
     "step": {
       "bluetooth_confirm": {
-        "description": "Configurație{name}",
-        "data": {
-          "stay_connected_bluetooth": "Mențineți bluetooth-ul conectat"
-        }
+        "description": "Configurație{name}"
       },
       "reconfigure": {
         "data": {
-          "use_wifi": "Folosește Wi-Fi",
           "account_name": "Email sau număr de cont Mammotion",
           "password": "Parola contului Mammotion"
         }
       },
       "user": {
         "data": {
-          "address": "Dispozitiv",
-          "stay_connected_bluetooth": "Păstrează Bluetooth conectat"
+          "address": "Dispozitiv"
         },
         "description": "Selectați mașina de tuns iarba"
       },
       "wifi": {
         "data": {
-          "use_wifi": "Folosește Wi-Fi (debifează și trimite pentru a folosi Bluetooth)",
           "account_name": "Email sau număr de cont Mammotion",
           "password": "Parola contului Mammotion"
         },
         "title": "Conectează-te la Wi-Fi",
-        "description": "Introdu adresa de email sau id-ul contului Mammotion și parola"
+        "description": "Introdu adresa de email sau id-ul contului Mammotion și parola. Lasă ambele câmpuri goale pentru a folosi doar Bluetooth, fără cont."
       }
     }
   },
@@ -56,7 +50,6 @@
       "init": {
         "data": {
           "title": "Actualizarea configurației",
-          "stay_connected_bluetooth": "Mențineți bluetooth-ul conectat",
           "prefer_ble_over_wifi": "Preferați Bluetooth față de Wi-Fi când este disponibil",
           "movement_use_wifi": "Trimiteți comenzi de mișcare prin Wi-Fi",
           "mow_path_fetch_enabled": "Activați descărcarea traseului de tuns (cloud)",

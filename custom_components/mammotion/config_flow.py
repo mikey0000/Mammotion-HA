@@ -58,7 +58,15 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
         self._discovered_device: BLEDevice | None = None
         self._discovered_devices: dict[str, str] = {}
 
-    async def check_and_update_bluetooth_device(self, device: BLEDevice) -> ConfigEntry | None:
+    def _ble_device_name(self) -> str | None:
+        """Return the name of the mower this flow was started for, if any."""
+        if self._discovered_device is not None:
+            return self._discovered_device.name
+        return next(iter(self._config.get(CONF_BLE_DEVICES, {})), None)
+
+    async def check_and_update_bluetooth_device(
+        self, device: BLEDevice
+    ) -> ConfigEntry | None:
         """Return the entry that should own *device*, updating its BLE MAC if needed.
 
         A mower already configured by name (in ``CONF_BLE_DEVICES`` or as a device
@@ -191,6 +199,12 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
         """Handle the user step to pick discovered device."""
 
         if user_input is not None:
+            if address := user_input.get(CONF_ADDRESS):
+                name = self._discovered_devices[address]
+                self._discovered_device = bluetooth.async_ble_device_from_address(
+                    self.hass, address
+                )
+                self._config = {CONF_BLE_DEVICES: {name: format_mac(address)}}
             return await self.async_step_wifi(user_input)
 
         current_addresses = self._async_current_ids()
@@ -257,9 +271,7 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                                 CONF_ACCOUNTNAME: account,
                                 CONF_PASSWORD: password,
                                 CONF_ACCOUNT_ID: user_account,
-                                CONF_DEVICE_NAME: self._discovered_device.name
-                                if self._discovered_device
-                                else None,
+                                CONF_DEVICE_NAME: self._ble_device_name(),
                                 CONF_USE_WIFI: True,
                                 CONF_HAS_CLOUD_ACCOUNT: True,
                                 **self._config,
@@ -293,19 +305,18 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                         **existing.data.get(CONF_BLE_DEVICES, {}),
                         **self._config[CONF_BLE_DEVICES],
                     }
-                    await self.async_set_unique_id(existing.unique_id, raise_on_progress=False)
-                    self._abort_if_unique_id_configured(updates={CONF_BLE_DEVICES: merged})
+                    await self.async_set_unique_id(
+                        existing.unique_id, raise_on_progress=False
+                    )
+                    self._abort_if_unique_id_configured(
+                        updates={CONF_BLE_DEVICES: merged}
+                    )
                 if not self.unique_id:
                     first_mac = next(iter(self._config[CONF_BLE_DEVICES].values()))
                     await self.async_set_unique_id(first_mac, raise_on_progress=False)
                     self._abort_if_unique_id_configured()
-                title = (
-                    self._discovered_device.name
-                    if self._discovered_device
-                    else next(iter(self._config[CONF_BLE_DEVICES]))
-                )
                 return self.async_create_entry(
-                    title=title,
+                    title=self._ble_device_name(),
                     data={
                         CONF_USE_WIFI: False,
                         CONF_HAS_CLOUD_ACCOUNT: False,
@@ -338,9 +349,7 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             password = (user_input.get(CONF_PASSWORD) or "").strip()
             integration = await async_get_integration(self.hass, DOMAIN)
-            temp_client = MammotionClient(
-                ha_version=integration.version.split("-")[0]
-            )
+            temp_client = MammotionClient(ha_version=integration.version.split("-")[0])
             try:
                 session = aiohttp_client.async_get_clientsession(self.hass)
                 await temp_client.login_and_initiate_cloud(account, password, session)
@@ -434,8 +443,10 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                         await self.async_set_unique_id(
                             user_account, raise_on_progress=False
                         )
-                        other = self.hass.config_entries.async_entry_for_domain_unique_id(
-                            self.handler, user_account
+                        other = (
+                            self.hass.config_entries.async_entry_for_domain_unique_id(
+                                self.handler, user_account
+                            )
                         )
                         if other is not None and other.entry_id != entry.entry_id:
                             merged = {
@@ -446,8 +457,12 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                                 other, data={**other.data, CONF_BLE_DEVICES: merged}
                             )
                             await self.hass.config_entries.async_remove(entry.entry_id)
-                            self.hass.config_entries.async_schedule_reload(other.entry_id)
-                            return self.async_abort(reason="merged_into_existing_account")
+                            self.hass.config_entries.async_schedule_reload(
+                                other.entry_id
+                            )
+                            return self.async_abort(
+                                reason="merged_into_existing_account"
+                            )
                         data = {
                             k: v
                             for k, v in entry.data.items()

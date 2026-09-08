@@ -84,7 +84,12 @@ from pymammotion.utility.svg import chunk_svg_messages
 from webrtc_models import RTCIceServer
 
 from .agora_api import SERVICE_IDS, AgoraAPIClient, AgoraResponse
-from .config import MammotionConfigStore, async_get_store
+from .config import (
+    TRANSPORT_BLUETOOTH,
+    TRANSPORT_CLOUD,
+    MammotionConfigStore,
+    async_get_store,
+)
 from .const import (
     CONF_ACCOUNTNAME,
     CONF_HAS_CLOUD_ACCOUNT,
@@ -169,9 +174,13 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         self._subscriptions: list[Subscription] = []
         self.map_offset_lat: float = 0.0
         self.map_offset_lon: float = 0.0
-        self._bluetooth_enabled: bool = True
-        self._cloud_enabled: bool = True
         self._store: MammotionConfigStore = async_get_store(hass, config_entry)
+        self._bluetooth_enabled: bool = self._store.transport_enabled(
+            self.device_name, TRANSPORT_BLUETOOTH
+        )
+        self._cloud_enabled: bool = self._store.transport_enabled(
+            self.device_name, TRANSPORT_CLOUD
+        )
 
         mower_device = self.manager.get_device_by_name(self.device_name)
 
@@ -385,12 +394,17 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
     async def async_set_bluetooth_enabled(self, enabled: bool) -> None:
         """Enable or disable Bluetooth transport."""
         self._bluetooth_enabled = enabled
+        await self._store.async_set_transport_enabled(
+            self.device_name, TRANSPORT_BLUETOOTH, enabled
+        )
         handle = self.manager.mower(self.device_name)
         if handle is None:
             return
         if not enabled:
             handle.set_prefer_ble(value=False)
-            await handle.disconnect_transport(TransportType.BLE)
+            # Detach rather than disconnect: a merely disconnected BLE transport is
+            # still selectable and gets reconnected once the cloud path is unusable.
+            await handle.remove_transport(TransportType.BLE)
         else:
             handle.set_prefer_ble(value=True)
             await self._async_ensure_ble_client()
@@ -398,6 +412,9 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
     async def async_set_cloud_enabled(self, enabled: bool) -> None:
         """Enable or disable Cloud transport."""
         self._cloud_enabled = enabled
+        await self._store.async_set_transport_enabled(
+            self.device_name, TRANSPORT_CLOUD, enabled
+        )
         handle = self.manager.mower(self.device_name)
         if handle is None:
             return
@@ -1586,7 +1603,11 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             return self.get_coordinator_data(device)
 
         # Update BLE device address from HA bluetooth scanner if available
-        if device.mower_state.ble_mac != "" and handle is not None:
+        if (
+            self._bluetooth_enabled
+            and device.mower_state.ble_mac != ""
+            and handle is not None
+        ):
             if ble_device := bluetooth.async_ble_device_from_address(
                 self.hass, device.mower_state.ble_mac.upper(), True
             ):

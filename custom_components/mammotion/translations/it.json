@@ -21,33 +21,27 @@
     "flow_title": "{name}",
     "step": {
       "bluetooth_confirm": {
-        "description": "Configura {name}",
-        "data": {
-          "stay_connected_bluetooth": "Mantieni Bluetooth connesso"
-        }
+        "description": "Configura {name}"
       },
       "reconfigure": {
         "data": {
-          "use_wifi": "Usa Wi-Fi",
           "account_name": "Email o numero di conto Mammotion",
           "password": "Password dell'account Mammotion"
         }
       },
       "user": {
         "data": {
-          "address": "Dispositivo",
-          "stay_connected_bluetooth": "Mantieni Bluetooth connesso"
+          "address": "Dispositivo"
         },
         "description": "Seleziona il tuo tagliaerba"
       },
       "wifi": {
         "data": {
-          "use_wifi": "Usa Wi-Fi (deseleziona e invia per utilizzare il Bluetooth)",
           "account_name": "Email o numero di conto Mammotion",
           "password": "Password dell'account Mammotion"
         },
         "title": "Connetti al Wi-Fi",
-        "description": "Inserisci l'email o l'id del tuo account Mammotion e la password"
+        "description": "Inserisci l'email o l'id del tuo account Mammotion e la password. Lascia entrambi i campi vuoti per utilizzare solo il Bluetooth, senza account."
       }
     }
   },
@@ -56,7 +50,6 @@
       "init": {
         "data": {
           "title": "Aggiorna Configurazione",
-          "stay_connected_bluetooth": "Mantieni Bluetooth connesso",
           "prefer_ble_over_wifi": "Preferisci Bluetooth rispetto al Wi-Fi quando disponibile",
           "movement_use_wifi": "Invia comandi di movimento tramite Wi-Fi",
           "mow_path_fetch_enabled": "Abilita recupero percorso di taglio (cloud)",

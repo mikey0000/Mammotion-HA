@@ -21,33 +21,27 @@
     "flow_title": "{name}",
     "step": {
       "bluetooth_confirm": {
-        "description": "Opsætning af {name}",
-        "data": {
-          "stay_connected_bluetooth": "Hold Bluetooth-forbindelsen"
-        }
+        "description": "Opsætning af {name}"
       },
       "reconfigure": {
         "data": {
-          "use_wifi": "Brug Wi-fi",
           "account_name": "Mammotion e-mail eller kontonummer",
           "password": "Mammotion adgangskode"
         }
       },
       "user": {
         "data": {
-          "address": "Enhed",
-          "stay_connected_bluetooth": "Hold Bluetooth-forbindelsen"
+          "address": "Enhed"
         },
         "description": "Vælg din plæneklipper"
       },
       "wifi": {
         "data": {
-          "use_wifi": "Brug Wi-Fi (fjern markeringen, for at bruge Bluetooth)",
           "account_name": "Mammotion e-mail eller kontonummer",
           "password": "Mammotion adgangskode"
         },
         "title": "Opret forbindelse til Wi-Fi",
-        "description": "Indtast din Mammotion e-mail eller -id og adgangskode"
+        "description": "Indtast din Mammotion e-mail eller -id og adgangskode. Lad begge felter være tomme for kun at bruge Bluetooth uden en konto."
       }
     }
   },
@@ -56,7 +50,6 @@
       "init": {
         "data": {
           "title": "Opdater konfiguration",
-          "stay_connected_bluetooth": "Hold Bluetooth-forbindelsen",
           "prefer_ble_over_wifi": "Foretræk Bluetooth frem for Wi-Fi, når det er tilgængeligt",
           "movement_use_wifi": "Send bevægelseskommandoer via Wi-Fi",
           "mow_path_fetch_enabled": "Aktivér hentning af klippesti (sky)",

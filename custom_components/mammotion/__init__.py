@@ -45,7 +45,12 @@ from pymammotion.transport.base import (
 from pymammotion.utility.device_type import DeviceType
 from Tea.exceptions import UnretryableException
 
-from .config import MammotionConfigStore, async_get_store, async_pop_store
+from .config import (
+    TRANSPORT_BLUETOOTH,
+    MammotionConfigStore,
+    async_get_store,
+    async_pop_store,
+)
 from .const import (
     CONF_ACCOUNTNAME,
     CONF_AEP_DATA,
@@ -271,6 +276,11 @@ def _register_ble_reconnect_callback(
     ) -> None:
         handle = mammotion.mower(device_name)
         if handle is None:
+            return
+        # add_ble_to_device would re-create the transport the Bluetooth switch detached.
+        if not async_get_store(hass, entry).transport_enabled(
+            device_name, TRANSPORT_BLUETOOTH
+        ):
             return
         # Always push the freshest BLEDevice into the transport.  add_ble_to_device
         # is idempotent: it calls set_ble_device() if a transport already exists, or
@@ -515,10 +525,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
             LOGGER.warning("Mammotion device %s was not registered — skipping", device_name)
             continue
 
-        mammotion.set_prefer_ble(device_name, prefer_ble=(not use_wifi or prefer_ble))
-        if not use_wifi:
-            for t_type in (TransportType.CLOUD_ALIYUN, TransportType.CLOUD_MAMMOTION):
-                await handle.disconnect_transport(t_type)
         mammotion.set_mow_path_fetch_enabled(device_name, enabled=mow_path_fetch_enabled)
 
         unique_name = device_name
@@ -539,10 +545,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
             hass, entry, device, mammotion, unique_name=unique_name
         )
 
+        # The connectivity switches survive restarts; apply them before the first
+        # connection attempt so a switched-off transport is never brought up.
+        use_ble = report_coordinator.bluetooth_enabled and (not use_wifi or prefer_ble)
+        mammotion.set_prefer_ble(device_name, prefer_ble=use_ble)
+        if not use_wifi or not report_coordinator.cloud_enabled:
+            for t_type in (TransportType.CLOUD_ALIYUN, TransportType.CLOUD_MAMMOTION):
+                await handle.disconnect_transport(t_type)
+        if not report_coordinator.bluetooth_enabled:
+            await handle.remove_transport(TransportType.BLE)
+
         reachable = await _await_device_connection(
-            mammotion,
-            device_name,
-            prefer_ble=(not use_wifi or prefer_ble),
+            mammotion, device_name, prefer_ble=use_ble
         )
 
         await report_coordinator.async_restore_data()

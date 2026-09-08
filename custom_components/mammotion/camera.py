@@ -70,27 +70,26 @@ async def async_setup_entry(
     entry: MammotionConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up the Mammotion camera entities."""
-    mowers = entry.runtime_data.mowers
+    """Set up the Mammotion camera entities.
+
+    The stream token is minted through the cloud, so a mower without an
+    ``iot_id`` (BLE-only, no account) gets no camera at all.
+    """
+    mowers = [
+        mower
+        for mower in entry.runtime_data.mowers
+        if mower.device.iot_id and not DeviceType.is_luba1(mower.device.device_name)
+    ]
+    if not mowers:
+        return
+
     entities = []
     ice_servers = []
-
-    non_luba1_mower = next(
-        (
-            mower
-            for mower in mowers
-            if not DeviceType.is_luba1(mower.device.device_name)
-        ),
-        None,
-    )
-
-    if non_luba1_mower is None:
-        return
 
     (
         stream_data,
         agora_response,
-    ) = await non_luba1_mower.reporting_coordinator.async_check_stream_expiry()
+    ) = await mowers[0].reporting_coordinator.async_check_stream_expiry()
 
     if agora_response is not None:
         ice_servers = [
@@ -103,16 +102,15 @@ async def async_setup_entry(
         ]
 
     for mower in mowers:
-        if not DeviceType.is_luba1(mower.device.device_name):
-            _LOGGER.debug("Config camera for %s", mower.device.device_name)
-            mower.reporting_coordinator._ice_servers = ice_servers
+        _LOGGER.debug("Config camera for %s", mower.device.device_name)
+        mower.reporting_coordinator._ice_servers = ice_servers
 
-            for entity_description in CAMERAS:
-                entities.append(
-                    MammotionWebRTCCamera(
-                        mower.reporting_coordinator, entity_description, hass
-                    )
+        for entity_description in CAMERAS:
+            entities.append(
+                MammotionWebRTCCamera(
+                    mower.reporting_coordinator, entity_description, hass
                 )
+            )
     async_add_entities(entities)
     await async_setup_platform_services(hass, entry)
 
@@ -394,7 +392,7 @@ async def async_setup_platform_services(
                         entity_id,
                         speed_value,
                     )
-            except (ValueError, TypeError):
+            except ValueError, TypeError:
                 _LOGGER.warning(
                     "Invalid speed format for %s: %s. Must be a number. Using default.",
                     entity_id,
@@ -425,7 +423,7 @@ async def async_setup_platform_services(
                         entity_id,
                         speed_value,
                     )
-            except (ValueError, TypeError):
+            except ValueError, TypeError:
                 _LOGGER.warning(
                     "Invalid speed format for %s: %s. Must be a number. Using default.",
                     entity_id,
@@ -456,7 +454,7 @@ async def async_setup_platform_services(
                         entity_id,
                         speed_value,
                     )
-            except (ValueError, TypeError):
+            except ValueError, TypeError:
                 _LOGGER.warning(
                     "Invalid speed format for %s: %s. Must be a number. Using default.",
                     entity_id,
@@ -487,7 +485,7 @@ async def async_setup_platform_services(
                         entity_id,
                         speed_value,
                     )
-            except (ValueError, TypeError):
+            except ValueError, TypeError:
                 _LOGGER.warning(
                     "Invalid speed format for %s: %s. Must be a number. Using default.",
                     entity_id,

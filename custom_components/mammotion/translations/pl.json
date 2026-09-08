@@ -21,33 +21,27 @@
     "flow_title": "{name}",
     "step": {
       "bluetooth_confirm": {
-        "description": "Skonfiguruj {name}",
-        "data": {
-          "stay_connected_bluetooth": "Utrzymuj połączenie Bluetooth"
-        }
+        "description": "Skonfiguruj {name}"
       },
       "reconfigure": {
         "data": {
-          "use_wifi": "Użyj Wi-Fi",
           "account_name": "E-mail lub numer konta Mammotion",
           "password": "Hasło do konta Mammotion"
         }
       },
       "user": {
         "data": {
-          "address": "Urządzenie",
-          "stay_connected_bluetooth": "Utrzymuj połączenie Bluetooth"
+          "address": "Urządzenie"
         },
         "description": "Wybierz swoją kosiarkę"
       },
       "wifi": {
         "data": {
-          "use_wifi": "Użyj Wi-Fi",
           "account_name": "E-mail lub numer konta Mammotion",
           "password": "Hasło do konta Mammotion"
         },
         "title": "Połącz z Wi-Fi",
-        "description": "Wprowadź adres e-mail lub identyfikator oraz hasło do swojego konta Mammotion"
+        "description": "Wprowadź adres e-mail lub identyfikator oraz hasło do swojego konta Mammotion. Pozostaw oba pola puste, aby używać tylko Bluetooth, bez konta."
       }
     }
   },
@@ -56,7 +50,6 @@
       "init": {
         "data": {
           "title": "Aktualizuj konfigurację",
-          "stay_connected_bluetooth": "Użyj połączenia Bluetooth",
           "prefer_ble_over_wifi": "Preferuj Bluetooth zamiast Wi-Fi, gdy dostępne",
           "movement_use_wifi": "Wysyłaj polecenia ruchu przez Wi-Fi",
           "mow_path_fetch_enabled": "Włącz pobieranie ścieżki koszenia (chmura)",
