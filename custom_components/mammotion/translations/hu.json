@@ -9,6 +9,7 @@
       "no_longer_present": "Az eszköz már nem érhető el",
       "not_supported": "Az eszköz nem támogatott",
       "reconfigure_successful": "Újrakonfigurálás sikeres",
+      "merged_into_existing_account": "This account already has an entry; the Bluetooth devices were merged into it and this entry was removed.",
       "api_limit_exceeded": "Az API sebességkorlátját elérte. Próbáld újra később.",
       "account_in_use": "A Mammotion fiókod már aktív egy másik munkamenetben. Jelentkezz ki a Mammotion alkalmazásból, és próbáld újra."
     },

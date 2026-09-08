@@ -1342,7 +1342,7 @@ wheels = [
 
 [[package]]
 name = "mammotion-ha"
-version = "0.6.4b14"
+version = "0.6.5"
 source = { virtual = "." }
 dependencies = [
     { name = "autotyping" },
@@ -1365,7 +1365,7 @@ dev = [
 requires-dist = [
     { name = "autotyping", specifier = ">=24.3.0" },
     { name = "homeassistant", specifier = ">=2026.1.0" },
-    { name = "pymammotion", specifier = "==0.8.14" },
+    { name = "pymammotion", specifier = "==0.9.0b1" },
     { name = "sdp-transform", specifier = ">=1.1.0" },
     { name = "websockets", specifier = ">=15.0.1" },
 ]
@@ -1863,7 +1863,7 @@ wheels = [
 
 [[package]]
 name = "pymammotion"
-version = "0.8.14"
+version = "0.9.0b1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -1888,9 +1888,9 @@ dependencies = [
     { name = "webrtc-models" },
     { name = "websockets" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ec/c8/34ba96945879657d8ec3eb2c31d788e1a24b6129addf478fb4b4c86de6c1/pymammotion-0.8.14.tar.gz", hash = "sha256:14adf61a5dbad470a0786a5d3584a513138ac320fa8a7f34e3ff262e41a3957a", size = 439677, upload-time = "2026-08-16T06:33:25.736Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/77/3b/ca7236c616675c8e8fb08c53cf574e2b29baa69a549c6c7064b893dd4c41/pymammotion-0.9.0b1.tar.gz", hash = "sha256:756809f8b1093f291debff3c3149468a8d4ab95f1e766505000d0dd39613fc39", size = 468323, upload-time = "2026-09-07T23:22:31.165Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/85/20/542cb6bd61397b39ea749409ae0e7404b8b6a123e4dc1b8c4aecc3e10002/pymammotion-0.8.14-py3-none-any.whl", hash = "sha256:18a9d160388c678a0221555b857221ab08a5e875af0d66ee030581fa3a1629a9", size = 508737, upload-time = "2026-08-16T06:33:24.047Z" },
+    { url = "https://files.pythonhosted.org/packages/4b/9c/bb937c1000b0a15d9395dce9917812b979fc3ca14a3e1871c72e92a1debf/pymammotion-0.9.0b1-py3-none-any.whl", hash = "sha256:2100feccac55f6e023d55747e04665d46862e1f1f728d5f8670d2b40afd700c9", size = 545023, upload-time = "2026-09-07T23:22:29.579Z" },
 ]
 
 [[package]]

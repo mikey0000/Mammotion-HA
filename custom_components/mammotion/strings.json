@@ -9,8 +9,11 @@
       "no_longer_present": "Device is no longer present",
       "not_supported": "Device not supported",
       "reconfigure_successful": "Re-configure successful",
+      "merged_into_existing_account": "This account already has an entry; the Bluetooth devices were merged into it and this entry was removed.",
       "api_limit_exceeded": "API rate limit has been exceeded. Please try again later.",
-      "account_in_use": "Your Mammotion account is already in use in another session. Sign out of the Mammotion app and try again."
+      "account_in_use": "Your Mammotion account is already in use in another session. Sign out of the Mammotion app and try again.",
+      "reauth_successful": "Re-authentication was successful",
+      "wrong_account": "These credentials belong to a different Mammotion account. Re-authenticate with the account this entry was set up with."
     },
     "error": {
       "login_failed": "Login failed. Check your account email and password, then try again.",
@@ -47,6 +50,13 @@
         },
         "title": "Connect to Wi-Fi",
         "description": "Enter your Mammotion account email or id and password"
+      },
+      "reauth_confirm": {
+        "title": "Re-authenticate Mammotion",
+        "description": "The Mammotion cloud rejected the stored credentials for {account}. Enter your password to sign in again.",
+        "data": {
+          "password": "Mammotion account password"
+        }
       }
     }
   },

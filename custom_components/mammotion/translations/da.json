@@ -9,6 +9,7 @@
       "no_longer_present": "Enheden er ikke længere til stede",
       "not_supported": "Enheden understøttes ikke",
       "reconfigure_successful": "Omkonfiguration lykkedes",
+      "merged_into_existing_account": "This account already has an entry; the Bluetooth devices were merged into it and this entry was removed.",
       "api_limit_exceeded": "API-anmodningsgrænsen er overskredet. Prøv igen senere.",
       "account_in_use": "Din Mammotion-konto er allerede aktiv i en anden session. Log ud af Mammotion-appen og prøv igen."
     },

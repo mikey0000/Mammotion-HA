@@ -20,6 +20,7 @@ from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import service
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pymammotion.data.model.report_info import DeviceData, ReportData
+from pymammotion.messaging.command_queue import Priority
 from pymammotion.utility.constant.device_constant import WorkMode
 from pymammotion.utility.device_type import DeviceType
 
@@ -278,7 +279,9 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
         ):
             try:
                 if modify_plan:
-                    await self.coordinator.async_modify_plan_route(operational_settings)
+                    await self.coordinator.async_modify_plan_route(
+                        operational_settings, priority=Priority.USER
+                    )
                     return
 
                 if kwargs:
@@ -287,30 +290,44 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
                 if mode == WorkMode.MODE_RETURNING:
                     trans_key = "dock_cancel_failed"
                     await self.coordinator.async_send_and_wait(
-                        "cancel_return_to_dock", "todev_taskctrl_ack"
+                        "cancel_return_to_dock",
+                        "todev_taskctrl_ack",
+                        priority=Priority.USER,
                     )
                     await self.coordinator.async_request_report_snapshot()
                     mode = self.rpt_dev_status.sys_status
                 if mode == WorkMode.MODE_PAUSE:
                     trans_key = "resume_failed"
                     if breakpoint_info != 0:
-                        await self.coordinator.async_send_command("resume_execute_task")
+                        await self.coordinator.async_send_command(
+                            "resume_execute_task", priority=Priority.USER
+                        )
                         await self.coordinator.async_send_and_wait(
-                            "query_generate_route_information", "bidire_reqconver_path"
+                            "query_generate_route_information",
+                            "bidire_reqconver_path",
+                            priority=Priority.USER,
                         )
                 if mode in (WorkMode.MODE_READY, WorkMode.MODE_INITIALIZATION):
                     trans_key = "start_failed"
                     if breakpoint_info != 0:
                         await self.coordinator.async_send_and_wait(
-                            "query_generate_route_information", "bidire_reqconver_path"
+                            "query_generate_route_information",
+                            "bidire_reqconver_path",
+                            priority=Priority.USER,
                         )
                         if not plan_only:
-                            await self.coordinator.async_send_command("start_job")
+                            await self.coordinator.async_send_command(
+                                "start_job", priority=Priority.USER
+                            )
                         return
-                    if await self.coordinator.async_plan_route(operational_settings):
+                    if await self.coordinator.async_plan_route(
+                        operational_settings, priority=Priority.USER
+                    ):
                         if not plan_only:
                             await self.coordinator.async_send_and_wait(
-                                "start_job", "zone_start_precent_t"
+                                "start_job",
+                                "zone_start_precent_t",
+                                priority=Priority.USER,
                             )
 
             except COMMAND_EXCEPTIONS as exc:
@@ -341,14 +358,20 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
             try:
                 if mode == WorkMode.MODE_WORKING:
                     trans_key = "pause_failed"
-                    await self.coordinator.async_send_command("pause_execute_task")
+                    await self.coordinator.async_send_command(
+                        "pause_execute_task", priority=Priority.USER
+                    )
 
                 if mode == WorkMode.MODE_RETURNING:
                     trans_key = "dock_cancel_failed"
-                    await self.coordinator.async_send_command("cancel_return_to_dock")
+                    await self.coordinator.async_send_command(
+                        "cancel_return_to_dock", priority=Priority.USER
+                    )
                 else:
                     trans_key = "dock_failed"
-                    await self.coordinator.async_send_command("return_to_dock")
+                    await self.coordinator.async_send_command(
+                        "return_to_dock", priority=Priority.USER
+                    )
             except COMMAND_EXCEPTIONS as exc:
                 raise HomeAssistantError(
                     translation_domain=DOMAIN, translation_key=trans_key
@@ -374,10 +397,14 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
             try:
                 if mode == WorkMode.MODE_WORKING:
                     trans_key = "pause_failed"
-                    await self.coordinator.async_send_command("pause_execute_task")
+                    await self.coordinator.async_send_command(
+                        "pause_execute_task", priority=Priority.USER
+                    )
                 if mode == WorkMode.MODE_RETURNING:
                     trans_key = "dock_cancel_failed"
-                    await self.coordinator.async_send_command("cancel_return_to_dock")
+                    await self.coordinator.async_send_command(
+                        "cancel_return_to_dock", priority=Priority.USER
+                    )
             except COMMAND_EXCEPTIONS as exc:
                 raise HomeAssistantError(
                     translation_domain=DOMAIN, translation_key=trans_key
@@ -405,18 +432,22 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
                 if mode != WorkMode.MODE_PAUSE:
                     if mode == WorkMode.MODE_WORKING:
                         trans_key = "pause_failed"
-                        await self.coordinator.async_send_command("pause_execute_task")
+                        await self.coordinator.async_send_command(
+                            "pause_execute_task", priority=Priority.USER
+                        )
                     if mode == WorkMode.MODE_RETURNING:
                         trans_key = "dock_failed"
                         await self.coordinator.async_send_command(
-                            "cancel_return_to_dock"
+                            "cancel_return_to_dock", priority=Priority.USER
                         )
                     await self.coordinator.async_request_report_snapshot()
                     mode = self.rpt_dev_status.sys_status
 
                 if mode == WorkMode.MODE_PAUSE:
                     trans_key = "pause_failed"
-                    await self.coordinator.async_send_command("cancel_job")
+                    await self.coordinator.async_send_command(
+                        "cancel_job", priority=Priority.USER
+                    )
 
             except COMMAND_EXCEPTIONS as exc:
                 raise HomeAssistantError(

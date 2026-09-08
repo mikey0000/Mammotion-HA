@@ -62,6 +62,23 @@ CONF_MAMMOTION_DEVICE_LIST = "mammotion_device_list"
 CONF_MAMMOTION_DEVICE_RECORDS = "mammotion_device_records"
 CONF_MAMMOTION_JWT_INFO = "mammotion_jwt_info"
 
+# Every credential-bearing cache blob stored on the config entry.  Cleared as a
+# unit whenever the server rejects the cached session (a rejected refresh token
+# does not become valid by waiting), so the next setup attempt or reauth goes
+# straight to a fresh login instead of re-spending dead tokens — the 40102
+# retry-per-restart loop that got accounts flagged.
+CREDENTIAL_CACHE_KEYS: Final = (
+    CONF_AUTH_DATA,
+    CONF_CONNECT_DATA,
+    CONF_AEP_DATA,
+    CONF_SESSION_DATA,
+    CONF_REGION_DATA,
+    CONF_DEVICE_DATA,
+    CONF_MAMMOTION_DATA,
+    CONF_MAMMOTION_MQTT,
+    CONF_MAMMOTION_JWT_INFO,
+)
+
 NO_REQUEST_MODES = (
     WorkMode.MODE_JOB_DRAW,
     WorkMode.MODE_OBSTACLE_DRAW,

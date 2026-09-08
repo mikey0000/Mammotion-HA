@@ -1,5 +1,7 @@
 """Support for Mammotion switches."""
 
+from __future__ import annotations
+
 import re
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
@@ -31,6 +33,70 @@ from .entity import MammotionBaseEntity, MammotionBaseSpinoEntity
 # Matches pymammotion's auto-generated fallback names ("area 1", "area 2", …).
 # These carry no user intent and must be treated the same as empty names.
 _PYMAMMOTION_AUTO_NAME = re.compile(r"^area\s+\d+$", re.IGNORECASE)
+
+
+def _area_unique_id(coordinator: MammotionBaseUpdateCoordinator, area: int) -> str:
+    """Registry unique_id for an area switch, matching MammotionBaseEntity."""
+    return f"{coordinator.unique_name}_{area}"
+
+
+def _async_rekey_area_unique_id(
+    registry: er.EntityRegistry, entity_id: str, new_unique_id: str
+) -> bool:
+    """Re-key a registry entry to a new unique_id; no-op when the id is taken."""
+    if registry.async_get_entity_id(SWITCH_DOMAIN, DOMAIN, new_unique_id) is not None:
+        return False
+    registry.async_update_entity(entity_id, new_unique_id=new_unique_id)
+    return True
+
+
+def _stale_area_registry_entries(
+    registry: er.EntityRegistry,
+    coordinator: MammotionReportUpdateCoordinator,
+    known_hashes: set[int],
+) -> list[er.RegistryEntry]:
+    """Return the device's area-switch registry entries left from a previous session.
+
+    A leftover is an entry whose hash is neither reported by the device nor
+    tracked in-memory — after an integration reload or HA restart these must be
+    re-keyed to the device's new hashes instead of duplicate "_2" entities
+    being minted.
+    """
+    prefix = f"{coordinator.unique_name}_"
+    stale = []
+    for reg_entry in list(registry.entities.values()):
+        if (
+            reg_entry.domain != SWITCH_DOMAIN
+            or reg_entry.platform != DOMAIN
+            or reg_entry.translation_key != "area"
+            or not reg_entry.unique_id.startswith(prefix)
+        ):
+            continue
+        suffix = reg_entry.unique_id.removeprefix(prefix)
+        if suffix.lstrip("-").isdigit() and int(suffix) not in known_hashes:
+            stale.append(reg_entry)
+    return stale
+
+
+def _async_rekey_stale_entry_for_area(
+    registry: er.EntityRegistry,
+    stale_entries: list[er.RegistryEntry],
+    coordinator: MammotionReportUpdateCoordinator,
+    area_id: int,
+    area_name: str,
+) -> None:
+    """Re-key a stale registry entry matching the area's name, if one exists.
+
+    original_name is the translated "Area {name}", so match on the suffix.
+    """
+    for reg_entry in stale_entries:
+        reg_name = reg_entry.original_name
+        if reg_name and (reg_name == area_name or reg_name.endswith(f" {area_name}")):
+            _async_rekey_area_unique_id(
+                registry, reg_entry.entity_id, _area_unique_id(coordinator, area_id)
+            )
+            stale_entries.remove(reg_entry)
+            return
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -134,12 +200,16 @@ MINI_AND_X_SERIES_CONFIG_SWITCH_ENTITIES: tuple[
 ] = (
     MammotionAsyncSwitchEntityDescription(
         key="manual_light",
-        is_on_func=lambda coordinator: coordinator.data.mower_state.lamp_info.manual_light,
+        is_on_func=lambda coordinator: (
+            coordinator.data.mower_state.lamp_info.manual_light
+        ),
         set_fn=lambda coordinator, value: coordinator.async_set_manual_light(value),
     ),
     MammotionAsyncSwitchEntityDescription(
         key="night_light",
-        is_on_func=lambda coordinator: coordinator.data.mower_state.lamp_info.night_light,
+        is_on_func=lambda coordinator: (
+            coordinator.data.mower_state.lamp_info.night_light
+        ),
         set_fn=lambda coordinator, value: coordinator.async_set_night_light(value),
     ),
 )
@@ -156,8 +226,9 @@ AUDIO_SWITCH_ENTITIES: tuple[MammotionAsyncSwitchEntityDescription, ...] = (
 SWITCH_ENTITIES: tuple[MammotionAsyncSwitchEntityDescription, ...] = (
     MammotionAsyncSwitchEntityDescription(
         key="side_led",
-        is_on_func=lambda coordinator: coordinator.data.mower_state.side_led.enable
-        == 0,
+        is_on_func=lambda coordinator: (
+            coordinator.data.mower_state.side_led.enable == 0
+        ),
         set_fn=lambda coordinator, value: coordinator.async_set_sidelight(int(value)),
         entity_category=EntityCategory.CONFIG,
     ),
@@ -487,6 +558,17 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
         old_area = self.area
         self.area = new_area_id
         self._attr_extra_state_attributes = {"hash": new_area_id}
+        # Re-key the unique_id to the new hash, or the next restart mints a
+        # duplicate entity with a "_2" suffixed entity_id.
+        new_unique_id = _area_unique_id(self.coordinator, new_area_id)
+        if (
+            self.hass is None
+            or self.registry_entry is None
+            or _async_rekey_area_unique_id(
+                er.async_get(self.hass), self.registry_entry.entity_id, new_unique_id
+            )
+        ):
+            self._attr_unique_id = new_unique_id
         if old_area in self.coordinator.operation_settings.areas:
             self.coordinator.operation_settings.areas.remove(old_area)
             if new_area_id not in self.coordinator.operation_settings.areas:
@@ -607,6 +689,11 @@ def async_add_area_entities(
         e.area: (name, e) for name, e in area_entities_by_name.items()
     }
 
+    registry = er.async_get(coordinator.hass)
+    stale_registry_entries = _stale_area_registry_entries(
+        registry, coordinator, added_areas | all_current_areas
+    )
+
     for entry in computed:
         area_id = entry.hash
         new_name = entry.name
@@ -638,7 +725,12 @@ def async_add_area_entities(
             added_areas.add(area_id)
             continue
 
-        # Missing area — add a new entity with the name supplied by computed_areas.
+        # Missing area — re-key a stale registry entry with a matching name so
+        # the previous session's entity_id and customisations are reused, then
+        # add a new entity with the name supplied by computed_areas.
+        _async_rekey_stale_entry_for_area(
+            registry, stale_registry_entries, coordinator, area_id, new_name
+        )
         base_area_switch_entity = MammotionConfigAreaSwitchEntityDescription(
             key=f"{area_id}",
             translation_key="area",
@@ -678,7 +770,7 @@ def async_remove_stale_area_entities(
 
     for area in old_areas:
         entity_id = registry.async_get_entity_id(
-            SWITCH_DOMAIN, DOMAIN, f"{coordinator.unique_name}_{area}"
+            SWITCH_DOMAIN, DOMAIN, _area_unique_id(coordinator, area)
         )
         if entity_id:
             registry.async_remove(entity_id)

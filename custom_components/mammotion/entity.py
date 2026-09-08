@@ -321,5 +321,15 @@ class MammotionCameraBaseEntity(Camera, ABC):  # type: ignore[misc]
 
     @property
     def available(self) -> bool:
-        """Return True if entity is available."""
-        return self.coordinator.data is not None and self.coordinator.is_online()
+        """Return True if the stream can be set up.
+
+        The Agora stream token is minted through the Mammotion HTTP API, so unlike
+        the other entities the camera needs a live cloud login and a cloud
+        ``iot_id`` — a mower running on BLE alone has no stream.
+        """
+        return (
+            self.coordinator.data is not None
+            and self.coordinator.is_online()
+            and self.coordinator.cloud_http_usable
+            and bool(self.coordinator.device.iot_id)
+        )
