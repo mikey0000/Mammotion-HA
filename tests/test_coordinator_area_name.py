@@ -143,6 +143,7 @@ _extend_stub("pymammotion.proto", MulSex=MagicMock())
 _extend_stub("pymammotion.state")
 _extend_stub(
     "pymammotion.state.device_state",
+    DeviceNotification=MagicMock(),
     DeviceShutdownEvent=MagicMock(),
     DeviceSnapshot=MagicMock(),
 )

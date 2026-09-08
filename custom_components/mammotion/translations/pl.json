@@ -619,6 +619,24 @@
     },
     "device_tracker": {
       "name": "Śledzenie urządzenia"
+    },
+    "event": {
+      "notification": {
+        "name": "Powiadomienia",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "device_notification_event": "Powiadomienie",
+              "device_information_event": "Informacja",
+              "device_warning_code_event": "Kody ostrzeżeń",
+              "device_warning_event": "Ostrzeżenie",
+              "device_biz_req_event": "Żądanie biznesowe",
+              "device_log_progress_event": "Postęp przesyłania dziennika",
+              "device_config_req_event": "Żądanie konfiguracji"
+            }
+          }
+        }
+      }
     }
   },
   "selector": {

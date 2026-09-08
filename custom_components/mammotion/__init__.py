@@ -90,6 +90,7 @@ PLATFORMS: list[Platform] = [
     Platform.BINARY_SENSOR,
     Platform.LAWN_MOWER,
     Platform.DEVICE_TRACKER,
+    Platform.EVENT,
     Platform.SENSOR,
     Platform.BUTTON,
     Platform.SWITCH,
@@ -681,7 +682,7 @@ def _build_device_list(
     mower_devices: list[Device] = []
 
     for device in all_devices:
-        if DeviceType.is_swimming_pool(device.device_name):
+        if DeviceType.is_swimming_pool(device.device_name, device.product_key):
             spino_devices.append(device)
             continue
         if not device.device_name.startswith(DEVICE_SUPPORT):

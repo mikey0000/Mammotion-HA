@@ -619,6 +619,24 @@
     },
     "device_tracker": {
       "name": "Monitorizarea dispozitivului"
+    },
+    "event": {
+      "notification": {
+        "name": "Notificări",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "device_notification_event": "Notificare",
+              "device_information_event": "Informație",
+              "device_warning_code_event": "Coduri de avertizare",
+              "device_warning_event": "Avertizare",
+              "device_biz_req_event": "Cerere de serviciu",
+              "device_log_progress_event": "Progresul încărcării jurnalului",
+              "device_config_req_event": "Cerere de configurare"
+            }
+          }
+        }
+      }
     }
   },
   "selector": {

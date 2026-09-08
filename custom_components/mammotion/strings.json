@@ -628,6 +628,24 @@
     },
     "device_tracker": {
       "name": "Device Tracking"
+    },
+    "event": {
+      "notification": {
+        "name": "Notifications",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "device_notification_event": "Notification",
+              "device_information_event": "Information",
+              "device_warning_code_event": "Warning codes",
+              "device_warning_event": "Warning",
+              "device_biz_req_event": "Business request",
+              "device_log_progress_event": "Log upload progress",
+              "device_config_req_event": "Configuration request"
+            }
+          }
+        }
+      }
     }
   },
   "selector": {

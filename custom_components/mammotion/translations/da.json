@@ -619,6 +619,24 @@
     },
     "device_tracker": {
       "name": "Enhedssporing"
+    },
+    "event": {
+      "notification": {
+        "name": "Notifikationer",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "device_notification_event": "Notifikation",
+              "device_information_event": "Information",
+              "device_warning_code_event": "Advarselskoder",
+              "device_warning_event": "Advarsel",
+              "device_biz_req_event": "Forretningsanmodning",
+              "device_log_progress_event": "Fremgang for logupload",
+              "device_config_req_event": "Konfigurationsanmodning"
+            }
+          }
+        }
+      }
     }
   },
   "selector": {

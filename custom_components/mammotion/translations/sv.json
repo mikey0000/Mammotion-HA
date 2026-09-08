@@ -619,6 +619,24 @@
     },
     "device_tracker": {
       "name": "Spårning av enhet"
+    },
+    "event": {
+      "notification": {
+        "name": "Aviseringar",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "device_notification_event": "Avisering",
+              "device_information_event": "Information",
+              "device_warning_code_event": "Varningskoder",
+              "device_warning_event": "Varning",
+              "device_biz_req_event": "Verksamhetsbegäran",
+              "device_log_progress_event": "Förlopp för loggöverföring",
+              "device_config_req_event": "Konfigurationsbegäran"
+            }
+          }
+        }
+      }
     }
   },
   "selector": {

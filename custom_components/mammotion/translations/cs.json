@@ -619,6 +619,24 @@
     },
     "device_tracker": {
       "name": "Sledování zařízení"
+    },
+    "event": {
+      "notification": {
+        "name": "Oznámení",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "device_notification_event": "Oznámení",
+              "device_information_event": "Informace",
+              "device_warning_code_event": "Kódy varování",
+              "device_warning_event": "Varování",
+              "device_biz_req_event": "Obchodní požadavek",
+              "device_log_progress_event": "Průběh nahrávání protokolu",
+              "device_config_req_event": "Požadavek na konfiguraci"
+            }
+          }
+        }
+      }
     }
   },
   "selector": {

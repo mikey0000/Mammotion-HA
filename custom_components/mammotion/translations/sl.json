@@ -619,6 +619,24 @@
     },
     "device_tracker": {
       "name": "Sledenje"
+    },
+    "event": {
+      "notification": {
+        "name": "Obvestila",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "device_notification_event": "Obvestilo",
+              "device_information_event": "Informacija",
+              "device_warning_code_event": "Opozorilne kode",
+              "device_warning_event": "Opozorilo",
+              "device_biz_req_event": "Poslovna zahteva",
+              "device_log_progress_event": "Napredek nalaganja dnevnika",
+              "device_config_req_event": "Zahteva za konfiguracijo"
+            }
+          }
+        }
+      }
     }
   },
   "selector": {

@@ -196,6 +196,11 @@
       "update": {
         "default": "mdi:cellphone-arrow-down"
       }
+    },
+    "event": {
+      "notification": {
+        "default": "mdi:bell-ring"
+      }
     }
   }
 }

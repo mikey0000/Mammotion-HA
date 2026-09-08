@@ -619,6 +619,24 @@
     },
     "device_tracker": {
       "name": "Geräteverfolgung"
+    },
+    "event": {
+      "notification": {
+        "name": "Benachrichtigungen",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "device_notification_event": "Benachrichtigung",
+              "device_information_event": "Information",
+              "device_warning_code_event": "Warncodes",
+              "device_warning_event": "Warnung",
+              "device_biz_req_event": "Geschäftsanfrage",
+              "device_log_progress_event": "Fortschritt des Protokoll-Uploads",
+              "device_config_req_event": "Konfigurationsanfrage"
+            }
+          }
+        }
+      }
     }
   },
   "selector": {

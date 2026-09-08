@@ -619,6 +619,24 @@
     },
     "device_tracker": {
       "name": "Eszközkövetés"
+    },
+    "event": {
+      "notification": {
+        "name": "Értesítések",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "device_notification_event": "Értesítés",
+              "device_information_event": "Információ",
+              "device_warning_code_event": "Figyelmeztető kódok",
+              "device_warning_event": "Figyelmeztetés",
+              "device_biz_req_event": "Üzleti kérés",
+              "device_log_progress_event": "Naplófeltöltés folyamata",
+              "device_config_req_event": "Konfigurációs kérés"
+            }
+          }
+        }
+      }
     }
   },
   "selector": {

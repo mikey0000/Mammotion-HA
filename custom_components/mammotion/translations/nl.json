@@ -619,6 +619,24 @@
     },
     "device_tracker": {
       "name": "Apparaat volgen"
+    },
+    "event": {
+      "notification": {
+        "name": "Meldingen",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "device_notification_event": "Melding",
+              "device_information_event": "Informatie",
+              "device_warning_code_event": "Waarschuwingscodes",
+              "device_warning_event": "Waarschuwing",
+              "device_biz_req_event": "Bedrijfsverzoek",
+              "device_log_progress_event": "Voortgang logupload",
+              "device_config_req_event": "Configuratieverzoek"
+            }
+          }
+        }
+      }
     }
   },
   "selector": {

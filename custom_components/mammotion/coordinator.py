@@ -10,7 +10,7 @@ import json
 import secrets
 import time
 from abc import abstractmethod
-from collections.abc import Callable, Coroutine, Mapping
+from collections.abc import Awaitable, Callable, Coroutine, Mapping
 from datetime import timedelta
 from typing import TYPE_CHECKING, Any, cast
 
@@ -62,7 +62,11 @@ from pymammotion.http.model.http import ErrorInfo, Response, UnauthorizedExcepti
 from pymammotion.mammotion.commands.mammotion_command import MammotionCommand
 from pymammotion.messaging.command_queue import Priority
 from pymammotion.proto import MulSex
-from pymammotion.state.device_state import DeviceShutdownEvent, DeviceSnapshot
+from pymammotion.state.device_state import (
+    DeviceNotification,
+    DeviceShutdownEvent,
+    DeviceSnapshot,
+)
 from pymammotion.transport.base import (
     BLEUnavailableError,
     CommandTimeoutError,
@@ -1711,6 +1715,21 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
                 handler()
 
         self._subscriptions.append(handle.subscribe_map_updated(_on_map_updated))
+
+    @callback
+    def subscribe_notification(
+        self, handler: Callable[[DeviceNotification], Awaitable[None]]
+    ) -> CALLBACK_TYPE:
+        """Subscribe to the device's thing/event notifications; returns an unsubscribe callable."""
+        handle = self.manager.mower(self.device_name)
+        if handle is None:
+            return lambda: None
+
+        async def _on_notification(notification: DeviceNotification) -> None:
+            if not self.hass.is_stopping:
+                await handler(notification)
+
+        return handle.subscribe_notification(_on_notification).cancel
 
     async def async_shutdown(self) -> None:
         """Flush queued state, cancel RAII subscriptions and shut down the coordinator."""
