@@ -1342,7 +1342,7 @@ wheels = [
 
 [[package]]
 name = "mammotion-ha"
-version = "0.6.5b4"
+version = "0.6.5b5"
 source = { virtual = "." }
 dependencies = [
     { name = "autotyping" },
