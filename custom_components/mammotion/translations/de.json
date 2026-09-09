@@ -345,7 +345,7 @@
         "name": "Korrekturzeit RTK"
       },
       "base_link_status": {
-        "name": "Status der Basisverbindung",
+        "name": "Verbindungsstatus zur Basis",
         "state": {
           "0": "Gut",
           "1": "Schwach",
