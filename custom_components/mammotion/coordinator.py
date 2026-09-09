@@ -206,7 +206,10 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         runtime state, so HTTP-only work is skipped — not failed — once the cloud
         side of the account has been quiesced while its mowers carry on over BLE.
         """
-        return self.manager.mammotion_http is not None and self.manager.reauth_required is None
+        return (
+            self.manager.mammotion_http is not None
+            and self.manager.reauth_required is None
+        )
 
     @property
     def handle(self) -> DeviceHandle | None:
@@ -352,11 +355,21 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
                 device.online = True
         await self.manager.set_scheduled_updates(self.device_name, enabled=enabled)
         handle = self.manager.mower(self.device_name)
-        if handle is not None:
-            if enabled:
-                await handle.restart_keep_alive()
-            else:
-                await handle.stop_polling()
+        if handle is None:
+            return
+        if not enabled:
+            await handle.stop_polling()
+            return
+        try:
+            await handle.restart_keep_alive()
+        except TransportError as exc:
+            # A BLE miss here (cooldown, stale cache) must not fail enabling
+            # updates or escape into the state bus; polling carries on over MQTT.
+            LOGGER.debug(
+                "%s: keep-alive restart could not reach the device: %s",
+                self.device_name,
+                exc,
+            )
 
     def is_online(self) -> bool:
         """Return True if the device currently has an active transport connection."""
@@ -457,7 +470,10 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             # The account is dead but this mower still works over BLE: the reauth
             # flow was already started by the client's unrecoverable-auth callback,
             # and raising here would take the whole coordinator down.
-            LOGGER.debug("%s: cloud needs re-authentication; continuing over BLE", self.device_name)
+            LOGGER.debug(
+                "%s: cloud needs re-authentication; continuing over BLE",
+                self.device_name,
+            )
             return
 
         if isinstance(exc, LoginFailedError):
@@ -606,7 +622,9 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         """Mark the device as offline in its state model."""
         device.online = False
 
-    async def _cloud_api_call[ResultT](self, coro: Coroutine[Any, Any, ResultT]) -> ResultT | None:
+    async def _cloud_api_call[ResultT](
+        self, coro: Coroutine[Any, Any, ResultT]
+    ) -> ResultT | None:
         """Await a direct Mammotion HTTP call, mapping a dead login to ConfigEntryAuthFailed.
 
         The library fails these fast with ReLoginRequiredError (no network) once
@@ -621,7 +639,11 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             return await coro
         except ReLoginRequiredError as err:
             if self.has_ble:
-                LOGGER.debug("%s: skipping cloud call, re-authentication pending: %s", self.device_name, err)
+                LOGGER.debug(
+                    "%s: skipping cloud call, re-authentication pending: %s",
+                    self.device_name,
+                    err,
+                )
                 return None
             raise ConfigEntryAuthFailed(
                 f"Re-authentication required for Mammotion account: {err}"
@@ -759,9 +781,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         self, key: str, priority: Priority = Priority.NORMAL, **kwargs: Any
     ) -> None:
         """Send command via BLE transport."""
-        await self.async_send_command(
-            key, priority=priority, prefer_ble=True, **kwargs
-        )
+        await self.async_send_command(key, priority=priority, prefer_ble=True, **kwargs)
 
     async def check_firmware_version(self) -> None:
         """Check if firmware version is updated."""
@@ -1885,7 +1905,12 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
             self.device_name, self.service_info.device, self.service_info.rssi
         )
         ble = handle.get_transport(TransportType.BLE)
-        if ble is not None and not ble.is_connected and self.data is not None and self.data.enabled:
+        if (
+            ble is not None
+            and not ble.is_connected
+            and self.data is not None
+            and self.data.enabled
+        ):
             with contextlib.suppress(TransportError):
                 await ble.connect()
 
@@ -2278,7 +2303,11 @@ class MammotionDeviceVersionUpdateCoordinator(
                         http.get_device_ota_firmware([handle.iot_id])
                     )
                     device = self.manager.get_device_by_name(self.device_name)
-                    if device is not None and ota_info is not None and (check_versions := ota_info.data):
+                    if (
+                        device is not None
+                        and ota_info is not None
+                        and (check_versions := ota_info.data)
+                    ):
                         for check_version in check_versions:
                             if check_version.device_id == handle.iot_id:
                                 device.apply_version_check(check_version)
@@ -2567,7 +2596,9 @@ class MammotionDeviceErrorUpdateCoordinator(
             if not device.errors.error_codes and self.cloud_http_usable:
                 http = self.manager.mammotion_http
                 if http is not None:
-                    if (codes := await self._cloud_api_call(http.get_all_error_codes())) is not None:
+                    if (
+                        codes := await self._cloud_api_call(http.get_all_error_codes())
+                    ) is not None:
                         device.errors.error_codes = codes
         except DeviceOfflineException:
             return device
@@ -2611,7 +2642,9 @@ class MammotionDeviceErrorUpdateCoordinator(
             if not device.errors.error_codes and self.cloud_http_usable:
                 http = self.manager.mammotion_http
                 if http is not None:
-                    if (codes := await self._cloud_api_call(http.get_all_error_codes())) is not None:
+                    if (
+                        codes := await self._cloud_api_call(http.get_all_error_codes())
+                    ) is not None:
                         device.errors.error_codes = codes
 
             self.async_set_updated_data(self.data)
