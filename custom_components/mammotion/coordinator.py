@@ -211,6 +211,27 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             and self.manager.reauth_required is None
         )
 
+    def describe_error_code(self, code: int) -> dict[str, str] | None:
+        """Return the module, level and localised text for an error code, or None if unknown.
+
+        The error table lives on the shared device record, so this works from any
+        of a mower's coordinators regardless of what ``self.data`` holds.
+        """
+        device = self.manager.get_device_by_name(self.device_name)
+        try:
+            error_info: ErrorInfo = device.errors.error_codes[str(abs(code))]  # type: ignore[union-attr]
+        except (AttributeError, KeyError):
+            return None
+        language = self.hass.config.language
+        return {
+            "module": error_info.module,
+            "level": error_info.level,
+            "message": getattr(error_info, f"{language}_implication", "")
+            or error_info.en_implication,
+            "solution": getattr(error_info, f"{language}_solution", "")
+            or error_info.en_solution,
+        }
+
     @property
     def handle(self) -> DeviceHandle | None:
         """Return this device's DeviceHandle, or None when not registered."""
@@ -2535,22 +2556,6 @@ class MammotionDeviceErrorUpdateCoordinator(
             )
         except StopIteration:
             return None
-
-    def describe_error_code(self, code: int) -> dict[str, str] | None:
-        """Return the module, level and localised text for an error code, or None if unknown."""
-        try:
-            error_info: ErrorInfo = self.data.errors.error_codes[str(abs(code))]
-        except (AttributeError, KeyError):
-            return None
-        language = self.hass.config.language
-        return {
-            "module": error_info.module,
-            "level": error_info.level,
-            "message": getattr(error_info, f"{language}_implication", "")
-            or error_info.en_implication,
-            "solution": getattr(error_info, f"{language}_solution", "")
-            or error_info.en_solution,
-        }
 
     def get_error_message(self, number: int) -> str:
         """Return error message."""

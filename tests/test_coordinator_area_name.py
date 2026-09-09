@@ -458,3 +458,42 @@ class TestGetAreaEntityNameHARegistryOverride:
         )
         assert coord.get_area_entity_name(h1) == "My Zone"
         assert coord.get_area_entity_name(h2) == "Area 2"
+
+
+# ---------------------------------------------------------------------------
+# describe_error_code — must exist on the report coordinator (the event entity's
+# coordinator) and read the shared device's error table.
+# ---------------------------------------------------------------------------
+
+
+def _error_coord(language: str = "de", codes: dict | None = None):
+    inst = _MammotionReportUpdateCoordinator.__new__(_MammotionReportUpdateCoordinator)
+    inst.device_name = "Luba-1"
+    inst.hass = MagicMock()
+    inst.hass.config.language = language
+    device = MagicMock()
+    device.errors.error_codes = codes if codes is not None else {}
+    inst.manager = MagicMock()
+    inst.manager.get_device_by_name.return_value = device
+    return inst
+
+
+def test_report_coordinator_describes_known_code_in_ha_language() -> None:
+    info = MagicMock(module="nav", level="warning", en_implication="Lost RTK", en_solution="Move it")
+    info.de_implication = "RTK verloren"
+    info.de_solution = ""  # empty falls back to English
+    coord = _error_coord(codes={"2801": info})
+
+    assert coord.describe_error_code(-2801) == {
+        "module": "nav",
+        "level": "warning",
+        "message": "RTK verloren",
+        "solution": "Move it",
+    }
+
+
+def test_report_coordinator_returns_none_for_unknown_code_or_missing_device() -> None:
+    assert _error_coord().describe_error_code(9999) is None
+    coord = _error_coord()
+    coord.manager.get_device_by_name.return_value = None
+    assert coord.describe_error_code(2801) is None
