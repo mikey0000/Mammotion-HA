@@ -202,6 +202,16 @@ _const_mod = _stub(
     EXPIRED_CREDENTIAL_EXCEPTIONS=(_ReLoginRequiredError, _LoginFailedError, Exception),
     NO_REQUEST_MODES=(),
     LOGGER=MagicMock(),
+    EVENT_NOTIFICATION="mammotion_notification",
+    CONF_NOTIFY="notify",
+    DEFAULT_NOTIFY=["warnings"],
+    NOTIFY_WARNINGS="warnings",
+    NOTIFY_CATEGORY_BY_EVENT={
+        "device_warning_code_event": "warnings",
+        "device_warning_event": "warnings",
+        "device_notification_event": "notifications",
+        "device_information_event": "notifications",
+    },
 )
 
 _coordinator_mod = _stub(

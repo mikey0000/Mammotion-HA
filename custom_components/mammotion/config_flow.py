@@ -23,6 +23,11 @@ from homeassistant.core import callback
 from homeassistant.helpers import aiohttp_client
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers.selector import (
+    SelectSelector,
+    SelectSelectorConfig,
+    SelectSelectorMode,
+)
 from homeassistant.helpers.device_registry import CONNECTION_BLUETOOTH, format_mac
 from homeassistant.loader import async_get_integration
 from pymammotion.aliyun.exceptions import CloudSetupError, TooManyRequestsException
@@ -37,12 +42,15 @@ from .const import (
     CONF_HAS_CLOUD_ACCOUNT,
     CONF_MOVEMENT_USE_WIFI,
     CONF_MOW_PATH_FETCH_ENABLED,
+    CONF_NOTIFY,
     CONF_PREFER_BLE,
     CONF_USE_WIFI,
     CREDENTIAL_CACHE_KEYS,
+    DEFAULT_NOTIFY,
     DEVICE_SUPPORT,
     DOMAIN,
     LOGGER,
+    NOTIFY_CATEGORIES,
 )
 
 
@@ -540,6 +548,7 @@ class MammotionConfigFlowHandler(OptionsFlow):
         self.mow_path_fetch_enabled = config_entry.options.get(
             CONF_MOW_PATH_FETCH_ENABLED, False
         )
+        self.notify = config_entry.options.get(CONF_NOTIFY, DEFAULT_NOTIFY)
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
@@ -574,6 +583,14 @@ class MammotionConfigFlowHandler(OptionsFlow):
                     CONF_MOW_PATH_FETCH_ENABLED,
                     default=self.mow_path_fetch_enabled,
                 ): cv.boolean,
+                vol.Optional(CONF_NOTIFY, default=self.notify): SelectSelector(
+                    SelectSelectorConfig(
+                        options=list(NOTIFY_CATEGORIES),
+                        multiple=True,
+                        mode=SelectSelectorMode.LIST,
+                        translation_key=CONF_NOTIFY,
+                    )
+                ),
             }
         )
 

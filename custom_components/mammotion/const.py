@@ -16,6 +16,20 @@ from pymammotion.transport.base import (
 from pymammotion.utility.constant import WorkMode
 
 DOMAIN: Final = "mammotion"
+EVENT_NOTIFICATION: Final = f"{DOMAIN}_notification"
+
+CONF_NOTIFY: Final = "notify"
+NOTIFY_WARNINGS: Final = "warnings"
+NOTIFY_NOTIFICATIONS: Final = "notifications"
+NOTIFY_CATEGORIES: Final = (NOTIFY_WARNINGS, NOTIFY_NOTIFICATIONS)
+DEFAULT_NOTIFY: Final = [NOTIFY_WARNINGS]
+#: Which persistent-notification category each thing/event identifier belongs to.
+NOTIFY_CATEGORY_BY_EVENT: Final = {
+    "device_warning_code_event": NOTIFY_WARNINGS,
+    "device_warning_event": NOTIFY_WARNINGS,
+    "device_notification_event": NOTIFY_NOTIFICATIONS,
+    "device_information_event": NOTIFY_NOTIFICATIONS,
+}
 
 DEVICE_SUPPORT = ("Luba", "Yuka")
 SCAN_INTERVAL = timedelta(hours=1)

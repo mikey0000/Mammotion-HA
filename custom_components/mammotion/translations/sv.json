@@ -53,7 +53,8 @@
           "prefer_ble_over_wifi": "Föredra Bluetooth framför Wi-Fi när tillgängligt",
           "movement_use_wifi": "Skicka rörelsekommandon via Wi-Fi",
           "mow_path_fetch_enabled": "Aktivera hämtning av klippväg (moln)",
-          "full_map_fetch_enabled": "Aktivera fullständig karthämtning (moln) — när av hämtas endast områdesnamn"
+          "full_map_fetch_enabled": "Aktivera fullständig karthämtning (moln) — när av hämtas endast områdesnamn",
+          "notify": "Visa beständiga aviseringar för"
         }
       }
     }
@@ -692,6 +693,12 @@
         "2": "Två varv",
         "3": "Tre varv",
         "4": "Fyra varv"
+      }
+    },
+    "notify": {
+      "options": {
+        "warnings": "Varningar och felkoder",
+        "notifications": "Enhetsaviseringar och information"
       }
     }
   },

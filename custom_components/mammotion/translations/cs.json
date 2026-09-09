@@ -53,7 +53,8 @@
           "prefer_ble_over_wifi": "Upřednostňovat Bluetooth před Wi-Fi, je-li dostupné",
           "movement_use_wifi": "Odesílat příkazy pohybu přes Wi-Fi",
           "mow_path_fetch_enabled": "Povolit načítání cesty sekání (cloud)",
-          "full_map_fetch_enabled": "Povolit úplné načítání mapy (cloud) — pokud vypnuto, načítají se pouze názvy oblastí"
+          "full_map_fetch_enabled": "Povolit úplné načítání mapy (cloud) — pokud vypnuto, načítají se pouze názvy oblastí",
+          "notify": "Zobrazovat trvalá oznámení pro"
         }
       }
     }
@@ -692,6 +693,12 @@
         "2": "Dvě kola",
         "3": "Tři kola",
         "4": "Čtyři kola"
+      }
+    },
+    "notify": {
+      "options": {
+        "warnings": "Varování a chybové kódy",
+        "notifications": "Oznámení a informace zařízení"
       }
     }
   },

@@ -53,7 +53,8 @@
           "prefer_ble_over_wifi": "Préférer le Bluetooth au Wi-Fi si disponible",
           "movement_use_wifi": "Envoyer les commandes de mouvement via Wi-Fi",
           "mow_path_fetch_enabled": "Activer la récupération du chemin de tonte (cloud)",
-          "full_map_fetch_enabled": "Activer la récupération complète de la carte (cloud) — désactivé, seuls les noms de zones sont récupérés"
+          "full_map_fetch_enabled": "Activer la récupération complète de la carte (cloud) — désactivé, seuls les noms de zones sont récupérés",
+          "notify": "Afficher des notifications persistantes pour"
         }
       }
     }
@@ -692,6 +693,12 @@
         "2": "Deux tours",
         "3": "Trois tours",
         "4": "Quatre tours"
+      }
+    },
+    "notify": {
+      "options": {
+        "warnings": "Avertissements et codes d'erreur",
+        "notifications": "Notifications et informations de l'appareil"
       }
     }
   },

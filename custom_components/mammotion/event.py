@@ -4,15 +4,26 @@ from __future__ import annotations
 
 import contextlib
 import json
+from collections.abc import Callable
+from datetime import UTC, datetime
 from typing import Any
 
+from homeassistant.components import persistent_notification
 from homeassistant.components.event import EventEntity
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pymammotion.state.device_state import DeviceNotification
 
 from . import MammotionConfigEntry
-from .const import LOGGER
+from .const import (
+    CONF_NOTIFY,
+    DEFAULT_NOTIFY,
+    DOMAIN,
+    EVENT_NOTIFICATION,
+    LOGGER,
+    NOTIFY_CATEGORY_BY_EVENT,
+    NOTIFY_WARNINGS,
+)
 from .coordinator import MammotionReportUpdateCoordinator
 from .entity import MammotionBaseEntity
 
@@ -25,6 +36,8 @@ NOTIFICATION_EVENT_TYPES: list[str] = [
     "device_log_progress_event",
     "device_config_req_event",
 ]
+
+DescribeCode = Callable[[int], dict[str, str] | None]
 
 
 async def async_setup_entry(
@@ -39,16 +52,76 @@ async def async_setup_entry(
     )
 
 
-def notification_attributes(value: dict[str, Any] | None) -> dict[str, Any]:
-    """Return event attributes for a notification, decoding the JSON-string ``data`` payload."""
+def _timestamp(millis: Any) -> str | None:
+    """Return an ISO timestamp for a device millisecond epoch, or None."""
+    try:
+        return datetime.fromtimestamp(int(millis) / 1000, UTC).isoformat()
+    except TypeError, ValueError, OSError, OverflowError:
+        return None
+
+
+def _decoded_codes(data: Any) -> list[dict[str, Any]]:
+    """Return the error codes carried by a notification payload.
+
+    Warning-code events carry ``[{"c": -2801, "ct": 1, "ft": <ms>}]``; notification
+    and information events carry ``{"code": "1002", "localTime": <ms>}``.
+    """
+    entries: list[dict[str, Any]] = []
+    if isinstance(data, list):
+        for item in data:
+            if isinstance(item, dict) and "c" in item:
+                with contextlib.suppress(TypeError, ValueError):
+                    entries.append(
+                        {
+                            "code": abs(int(item["c"])),
+                            "count": item.get("ct"),
+                            "time": _timestamp(item.get("ft")),
+                        }
+                    )
+    elif isinstance(data, dict) and "code" in data:
+        with contextlib.suppress(TypeError, ValueError):
+            entries.append(
+                {
+                    "code": abs(int(data["code"])),
+                    "time": _timestamp(data.get("localTime")),
+                }
+            )
+    return entries
+
+
+def notification_attributes(
+    value: dict[str, Any] | None, describe: DescribeCode | None = None
+) -> dict[str, Any]:
+    """Return event attributes: the payload with its JSON ``data`` decoded and codes described."""
     if not value:
         return {}
     attributes = dict(value)
     data = attributes.get("data")
     if isinstance(data, str):
         with contextlib.suppress(ValueError):
-            attributes["data"] = json.loads(data)
+            data = json.loads(data)
+        attributes["data"] = data
+    if codes := _decoded_codes(data):
+        if describe is not None:
+            codes = [{**entry, **(describe(entry["code"]) or {})} for entry in codes]
+        attributes["codes"] = codes
     return attributes
+
+
+def notification_message(attributes: dict[str, Any]) -> str:
+    """Return a readable persistent-notification body: one line per described code."""
+    lines = []
+    for entry in attributes.get("codes", []):
+        if message := entry.get("message"):
+            module = f"{entry['module']}: " if entry.get("module") else ""
+            solution = f" {entry['solution']}" if entry.get("solution") else ""
+            lines.append(f"{module}{message}{solution}")
+        else:
+            lines.append(f"Code {entry['code']}")
+    if lines:
+        return "\n".join(lines)
+    data = attributes.get("data")
+    return json.dumps(data) if isinstance(data, (dict, list)) else str(data or "")
 
 
 class MammotionNotificationEventEntity(MammotionBaseEntity, EventEntity):
@@ -60,6 +133,38 @@ class MammotionNotificationEventEntity(MammotionBaseEntity, EventEntity):
     def __init__(self, coordinator: MammotionReportUpdateCoordinator) -> None:
         """Initialize the notification event entity."""
         super().__init__(coordinator, "notification")
+        self._warning_notified = False
+
+    def _notification_id(self, category: str) -> str:
+        return f"{DOMAIN}_{self.coordinator.device_name}_{category}"
+
+    def _async_notify(self, identifier: str, attributes: dict[str, Any]) -> None:
+        """Raise a persistent notification when the event's category is enabled in options."""
+        category = NOTIFY_CATEGORY_BY_EVENT.get(identifier)
+        enabled = self.coordinator.config_entry.options.get(CONF_NOTIFY, DEFAULT_NOTIFY)
+        if category is None or category not in enabled:
+            return
+        title = f"{self.coordinator.device_name}: {category}"
+        persistent_notification.async_create(
+            self.hass,
+            notification_message(attributes),
+            title=title,
+            notification_id=self._notification_id(category),
+        )
+        if category == NOTIFY_WARNINGS:
+            self._warning_notified = True
+
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        """Dismiss the warning notification once the mower reports no active errors."""
+        if self._warning_notified and not getattr(
+            getattr(self.coordinator.data, "errors", None), "err_code_list", True
+        ):
+            persistent_notification.async_dismiss(
+                self.hass, self._notification_id(NOTIFY_WARNINGS)
+            )
+            self._warning_notified = False
+        super()._handle_coordinator_update()
 
     async def async_added_to_hass(self) -> None:
         """Subscribe to device notifications for as long as the entity lives."""
@@ -78,7 +183,19 @@ class MammotionNotificationEventEntity(MammotionBaseEntity, EventEntity):
                 notification.identifier,
             )
             return
-        self._trigger_event(
-            notification.identifier, notification_attributes(notification.value)
+        attributes = notification_attributes(
+            notification.value, self.coordinator.describe_error_code
         )
+        self._trigger_event(notification.identifier, attributes)
         self.async_write_ha_state()
+        self._async_notify(notification.identifier, attributes)
+        # Also a bus event, so automations can react without the entity.
+        self.hass.bus.async_fire(
+            EVENT_NOTIFICATION,
+            {
+                "entity_id": self.entity_id,
+                "device_name": self.coordinator.device_name,
+                "type": notification.identifier,
+                **attributes,
+            },
+        )

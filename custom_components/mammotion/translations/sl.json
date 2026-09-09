@@ -53,7 +53,8 @@
           "prefer_ble_over_wifi": "Daj prednost Bluetooth pred Wi-Fi, ko je na voljo",
           "movement_use_wifi": "Pošiljaj ukaze gibanja prek Wi-Fi",
           "mow_path_fetch_enabled": "Omogoči pridobivanje poti košnje (oblak)",
-          "full_map_fetch_enabled": "Omogoči pridobivanje celotnega zemljevida (oblak) — če izklopljeno, se pridobijo samo imena območij"
+          "full_map_fetch_enabled": "Omogoči pridobivanje celotnega zemljevida (oblak) — če izklopljeno, se pridobijo samo imena območij",
+          "notify": "Prikaži trajna obvestila za"
         }
       }
     }
@@ -692,6 +693,12 @@
         "2": "Dva kroga",
         "3": "Trije krogi",
         "4": "Štirje krogi"
+      }
+    },
+    "notify": {
+      "options": {
+        "warnings": "Opozorila in kode napak",
+        "notifications": "Obvestila in informacije naprave"
       }
     }
   },

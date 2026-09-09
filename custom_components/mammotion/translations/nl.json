@@ -53,7 +53,8 @@
           "prefer_ble_over_wifi": "Bluetooth verkiezen boven Wi-Fi indien beschikbaar",
           "movement_use_wifi": "Bewegingsopdrachten via Wi-Fi verzenden",
           "mow_path_fetch_enabled": "Maaipad ophalen inschakelen (cloud)",
-          "full_map_fetch_enabled": "Volledig kaart ophalen inschakelen (cloud) — wanneer uit worden alleen gebiednamen opgehaald"
+          "full_map_fetch_enabled": "Volledig kaart ophalen inschakelen (cloud) — wanneer uit worden alleen gebiednamen opgehaald",
+          "notify": "Toon blijvende meldingen voor"
         }
       }
     }
@@ -692,6 +693,12 @@
         "2": "Twee ronden",
         "3": "Drie ronden",
         "4": "Vier ronden"
+      }
+    },
+    "notify": {
+      "options": {
+        "warnings": "Waarschuwingen en foutcodes",
+        "notifications": "Apparaatmeldingen en informatie"
       }
     }
   },

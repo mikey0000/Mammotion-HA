@@ -53,7 +53,8 @@
           "prefer_ble_over_wifi": "Preferați Bluetooth față de Wi-Fi când este disponibil",
           "movement_use_wifi": "Trimiteți comenzi de mișcare prin Wi-Fi",
           "mow_path_fetch_enabled": "Activați descărcarea traseului de tuns (cloud)",
-          "full_map_fetch_enabled": "Activați descărcarea completă a hărții (cloud) — când este oprit, se descarcă doar numele zonelor"
+          "full_map_fetch_enabled": "Activați descărcarea completă a hărții (cloud) — când este oprit, se descarcă doar numele zonelor",
+          "notify": "Afișează notificări persistente pentru"
         }
       }
     }
@@ -692,6 +693,12 @@
         "2": "Două ture",
         "3": "Trei ture",
         "4": "Patru ture"
+      }
+    },
+    "notify": {
+      "options": {
+        "warnings": "Avertizări și coduri de eroare",
+        "notifications": "Notificări și informații despre dispozitiv"
       }
     }
   },

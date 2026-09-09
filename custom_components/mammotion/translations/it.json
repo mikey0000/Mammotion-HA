@@ -53,7 +53,8 @@
           "prefer_ble_over_wifi": "Preferisci Bluetooth rispetto al Wi-Fi quando disponibile",
           "movement_use_wifi": "Invia comandi di movimento tramite Wi-Fi",
           "mow_path_fetch_enabled": "Abilita recupero percorso di taglio (cloud)",
-          "full_map_fetch_enabled": "Abilita recupero completo della mappa (cloud) — se disabilitato, vengono recuperati solo i nomi delle aree"
+          "full_map_fetch_enabled": "Abilita recupero completo della mappa (cloud) — se disabilitato, vengono recuperati solo i nomi delle aree",
+          "notify": "Mostra notifiche persistenti per"
         }
       }
     }
@@ -692,6 +693,12 @@
         "2": "Due giri",
         "3": "Tre giri",
         "4": "Quattro giri"
+      }
+    },
+    "notify": {
+      "options": {
+        "warnings": "Avvisi e codici di errore",
+        "notifications": "Notifiche e informazioni del dispositivo"
       }
     }
   },
