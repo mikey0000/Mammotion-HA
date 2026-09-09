@@ -9,9 +9,11 @@
       "no_longer_present": "Das Gerät ist nicht länger verfügbar.",
       "not_supported": "Das Gerät wird nicht unterstützt.",
       "reconfigure_successful": "Die Neueinrichtung war erfolgreich.",
-      "merged_into_existing_account": "This account already has an entry; the Bluetooth devices were merged into it and this entry was removed.",
+      "merged_into_existing_account": "Dieses Konto enthält bereits einen Eintrag. Die Bluetooth-Geräte wurden darin zusammengeführt und dieser Eintrag wurde entfernt.",
       "api_limit_exceeded": "Das API-Anfragelimit wurde überschritten. Bitte versuchen Sie es später erneut.",
       "account_in_use": "Ihr Mammotion-Konto ist bereits in einer anderen Sitzung aktiv. Melden Sie sich in der Mammotion-App ab und versuchen Sie es erneut."
+      "reauth_successful": "Die erneute Authentifizierung war erfolgreich.",
+      "wrong_account": "Diese Anmeldedaten gehören zu einem anderen Mammotion-Konto. Melden Sie sich bitte erneut mit dem Konto an, mit dem dieser Eintrag eingerichtet wurde."
     },
     "error": {
       "login_failed": "Anmeldung fehlgeschlagen. Überprüfen Sie die E-Mail-Adresse und das Passwort Ihres Kontos und versuchen Sie es erneut.",
@@ -42,6 +44,13 @@
         },
         "title": "Mit WLAN verbinden",
         "description": "Geben Sie Ihre Mammotion-ID oder E-Mail-Adresse und das dazugehörige Kennwort ein. Lassen Sie beide Felder leer, um nur Bluetooth ohne Konto zu verwenden."
+      },
+      "reauth_confirm": {
+        "title": "Erneute Authentifizierung bei Mammotion",
+        "description": "Die Mammotion-Cloud hat die gespeicherten Anmeldedaten für {account} abgelehnt. Geben Sie Ihr Passwort ein, um sich erneut anzumelden.",
+        "data": {
+          "password": "Mammotion-Kennwort"
+        }
       }
     }
   },
@@ -74,16 +83,16 @@
         "name": "Akku"
       },
       "ble_rssi": {
-        "name": "Bluetooth Signalqualität (RSSI)"
+        "name": "Signalqualität (RSSI) Bluetooth"
       },
       "camera_brightness": {
         "name": "Kamerahelligkeit"
       },
       "wifi_rssi": {
-        "name": "WLAN Signalqualität (RSSI)"
+        "name": "Signalqualität (RSSI) WLAN"
       },
       "mnet_rssi": {
-        "name": "Mobilfunk Signalqualität (RSSI)"
+        "name": "Signalqualität (RSSI) Mobilfunk"
       },
       "connect_type": {
         "name": "Verbindungsart"
@@ -113,10 +122,10 @@
         "name": "Aufgabenzeit verbleibend"
       },
       "l1_satellites": {
-        "name": "L1 signal quality"
+        "name": "L1 Signalqualität"
       },
       "l2_satellites": {
-        "name": "L2 signal quality"
+        "name": "L2 Signalqualität"
       },
       "positioning_mode": {
         "name": "RTK-Position"
@@ -213,7 +222,7 @@
         "name": "Gesamtbetriebszeit"
       },
       "maintenance_bat_cycles": {
-        "name": "Batteriezyklen",
+        "name": "Akkuzyklen",
         "unit_of_measurement": "Zyklen"
       },
       "blade_used_time": {
@@ -235,7 +244,7 @@
         "name": "Längengrad"
       },
       "rtk_wifi_rssi": {
-        "name": "WLAN Signalqualität (RSSI)"
+        "name": "Signalqualität (RSSI) WLAN"
       },
       "rtk_sats_num": {
         "name": "Satelliten"
@@ -265,15 +274,15 @@
         "name": "Status",
         "state": {
           "UNKNOWN": "Unbekannt",
-          "IDLE": "Bereitschaft",
-          "PREPARE": "Bereitschaft",
-          "WAIT_WATER": "Füllt mit Wasser",
+          "IDLE": "Im Leerlauf",
+          "PREPARE": "In Vorbereitung",
+          "WAIT_WATER": "Wartet auf Wasser",
           "WORKING": "Arbeitet",
-          "PAUSE_GO_CHARGE": "Rückkehr zum Laden (pausiert)",
-          "END_GO_CHARGE": "Rückkehr zum Laden",
+          "PAUSE_GO_CHARGE": "Fährt zum Laden zurück (pausiert)",
+          "END_GO_CHARGE": "Fährt zum Laden zurück",
           "CHARGING": "Lädt",
-          "LEAVE_DOCK": "Verlässt die Station",
-          "RECALLING": "Kehrt zurück"
+          "LEAVE_DOCK": "Verlässt die Ladestation",
+          "RECALLING": "Rückkehr zur Ladestation"
         }
       },
       "spino_work_mode": {
@@ -281,7 +290,7 @@
         "state": {
           "UNKNOWN": "Unbekannt",
           "OFF": "Aus",
-          "AUTO": "Alle",
+          "AUTO": "Auto",
           "FLOOR": "Boden",
           "WALL": "Wand",
           "ECO": "Eco",
@@ -290,16 +299,16 @@
         }
       },
       "spino_ble_rssi": {
-        "name": "Bluetooth Signalqualität (RSSI)"
+        "name": "Signalqualität (RSSI) Bluetooth"
       },
       "spino_wifi_rssi": {
-        "name": "WLAN Signalqualität (RSSI)"
+        "name": "Signalqualität (RSSI) WLAN"
       },
       "spino_error_time": {
         "name": "Letzter Fehlerzeitpunkt"
       },
       "spino_error_message": {
-        "name": "Letzter Fehler"
+        "name": "Letzte Fehlermeldung"
       },
       "spino_error_code": {
         "name": "Letzter Fehlercode"
@@ -312,19 +321,19 @@
         }
       },
       "co_view_l1": {
-        "name": "L1 satellites (co-viewing)"
+        "name": "L1 Satelliten (Co-Viewing)"
       },
       "co_view_l2": {
-        "name": "L2 satellites (co-viewing)"
+        "name": "L2 Satelliten (Co-Viewing)"
       },
       "pos_level": {
-        "name": "Position level"
+        "name": "Positionsebene"
       },
       "rtk_signal": {
-        "name": "RTK signal quality"
+        "name": "Signalqualität RTK"
       },
       "device_signal": {
-        "name": "Device signal quality",
+        "name": "Signalqualität Gerät",
         "state": {
           "0": "Gut",
           "1": "Gut",
@@ -333,10 +342,10 @@
         }
       },
       "age": {
-        "name": "RTK correction age"
+        "name": "Korrekturzeit RTK"
       },
       "base_link_status": {
-        "name": "Base link status",
+        "name": "Status der Basisverbindung",
         "state": {
           "0": "Gut",
           "1": "Schwach",
@@ -447,7 +456,7 @@
         "name": "Sprache"
       },
       "spino_buzzer": {
-        "name": "Summer"
+        "name": "Signalton"
       },
       "spino_turbo_clean": {
         "name": "Turbo-Reinigung"
@@ -556,7 +565,7 @@
         "state": {
           "UNKNOWN": "Unbekannt",
           "OFF": "Aus",
-          "AUTO": "Alle",
+          "AUTO": "Auto",
           "FLOOR": "Boden",
           "WALL": "Wand",
           "ECO": "Eco",
@@ -569,7 +578,7 @@
         "state": {
           "GLASS": "Glas",
           "CERAMICS": "Fliesen",
-          "SAND_STONE": "Steinbeschichtung",
+          "SAND_STONE": "Sandstein",
           "VINYL": "Vinyl"
         }
       },
@@ -855,7 +864,7 @@
     },
     "svg_add": {
       "name": "SVG-Kachel hinzufügen",
-      "description": "Sendet eine neues SVG-Muster an die Karte des Gerätes. Gibt den geräteinternen Hash zurück.",
+      "description": "Sendet eine neues SVG-Muster an die Karte des Gerätes. Gibt den geräteinternen Hash-Wert zurück.",
       "fields": {
         "entity_id": {
           "name": "Entität",
@@ -863,7 +872,7 @@
         },
         "area_hash": {
           "name": "Bereichs-Hash",
-          "description": "Gibt den Hash des übergeordneten Mähbereichs an."
+          "description": "Gibt den Hash-Wert des übergeordneten Mähbereichs an."
         },
         "svg_data": {
           "name": "SVG-Daten",
@@ -909,11 +918,11 @@
         },
         "device_hash": {
           "name": "Geräte-Hash",
-          "description": "Gibt den vom Gerät zugewiesener Hash an, als die Kachel erstmals hinzugefügt wurde."
+          "description": "Gibt den vom Gerät zugewiesener Hash-Wert an, als die Kachel erstmals hinzugefügt wurde."
         },
         "area_hash": {
           "name": "Bereichs-Hash",
-          "description": "Gibt den Hash des übergeordneten Mähbereichs an."
+          "description": "Gibt den Hash-Wert des übergeordneten Mähbereichs an."
         },
         "svg_data": {
           "name": "SVG-Daten",
@@ -951,7 +960,7 @@
     },
     "svg_delete": {
       "name": "SVG-Kachel löschen",
-      "description": "Entfernt eine SVG-Muster von der Karte des Gerätes anhand ihres geräteinternen Hashes.",
+      "description": "Entfernt eine SVG-Muster von der Karte des Gerätes anhand ihres geräteinternen Hash-Wertes.",
       "fields": {
         "entity_id": {
           "name": "Entität",
@@ -959,219 +968,219 @@
         },
         "device_hash": {
           "name": "Geräte-Hash",
-          "description": "Gibt den vom Gerät zugewiesener Hash an, als die Kachel erstmals hinzugefügt wurde."
+          "description": "Gibt den vom Gerät zugewiesener Hash-Wert an, als die Kachel erstmals hinzugefügt wurde."
         },
         "area_hash": {
           "name": "Bereichs-Hash",
-          "description": "Gibt den Hash des übergeordneten Mähbereichs an."
+          "description": "Gibt den Hash-Wert des übergeordneten Mähbereichs an."
         }
       }
     },
     "rename_task": {
       "name": "Aufgabe umbenennen",
-      "description": "Benennt einen vorhandenen Zeitplan um (Mäher oder Poolreiniger). Wähle die Aufgaben-Tasterentität aus.",
+      "description": "Benennt einen vorhandenen Zeitplan um (Mäh- oder Poolroboter). Wählen Sie die Schaltfläche „Aufgabe“ für den Zeitplan aus, den Sie ändern möchten.",
       "fields": {
         "name": {
           "name": "Neuer Name",
-          "description": "New display name for the task."
+          "description": "Gibt den Neuer Anzeigename für die Aufgabe an."
         }
       }
     },
     "set_task_enabled": {
       "name": "Aufgabe aktivieren / deaktivieren",
-      "description": "Schaltet das Aktivierungsflag eines Zeitplans um, ohne ihn zu löschen.",
+      "description": "Schaltet das Aktivierungsflag eines Zeitplans um, ohne ihn zu löschen. Bei Mährobotern wird dadurch der Plan neu geschrieben, wobei „reserved[2]“ gesetzt wird; bei Poolrobotern wird das (invertierte) Aktivierungsfeld gesetzt.",
       "fields": {
         "enabled": {
           "name": "Aktiviert",
-          "description": "True to enable the schedule, false to disable it."
+          "description": "Verwende „True“, um den Zeitplan zu aktivieren und „False“, um ihn zu deaktivieren."
         }
       }
     },
     "delete_task": {
       "name": "Aufgabe löschen",
-      "description": "Löscht den Zeitplan dauerhaft."
+      "description": "Löscht den, über die Schaltfläche „Aufgabe“, ausgwählten Zeitplan dauerhaft."
     },
     "copy_task": {
       "name": "Aufgabe kopieren",
-      "description": "Dupliziert einen Zeitplan unter einer neuen ID. Ohne Name wird 'Copy-N' verwendet.",
+      "description": "Dupliziert einen Zeitplan unter einer neuen ID. Der Name der neuen Aufgabe lautet standardmäßig „Copy-N“ (nächster freier Platz), sofern er nicht angegeben wird.",
       "fields": {
         "name": {
           "name": "Neuer Name",
-          "description": "Override the auto-generated 'Copy-N' name."
+          "description": "Überschreibt den automatisch generierten Namen „Copy-N“."
         }
       }
     },
     "edit_task": {
       "name": "Aufgabe bearbeiten",
-      "description": "Ändert eine Teilmenge der Zeitplanfelder.",
+      "description": "Sie können beliebige Teilmengen der Felder eines Zeitplans bearbeiten. Nicht angegebene Felder behalten ihren gespeicherten Wert bei (Round-Trip vom Gerät). Felder, die ausschließlich für Mäh- oder Pollroboter gelten, werden jeweils einzeln beschrieben.",
       "fields": {
         "name": {
           "name": "Name",
-          "description": "Display name."
+          "description": "Gibt den Angezeigten Name an."
         },
         "enabled": {
-          "name": "Enabled",
-          "description": "Whether the schedule is active."
+          "name": "Aktiviert",
+          "description": "Gibt an, ob der Zeitplan aktiv ist."
         },
         "weeks": {
-          "name": "Weekdays",
-          "description": "List of weekday integers (0 = Sunday … 6 = Saturday) the schedule runs on."
+          "name": "Wochentage",
+          "description": "Eine Liste der Wochentage (0 = Sonntag … 6 = Samstag), an denen der Zeitplan gilt."
         },
         "start_time": {
-          "name": "Start time",
-          "description": "HH:MM (mower only)."
+          "name": "Startzeitpunkt",
+          "description": "HH:MM (nur Mähroboter)"
         },
         "end_time": {
-          "name": "End time",
-          "description": "HH:MM (mower only)."
+          "name": "Endzeitpunkt",
+          "description": "HH:MM (nur Mähroboter)"
         },
         "start_date": {
-          "name": "Start date",
-          "description": "YYYY-MM-DD."
+          "name": "Startdatum",
+          "description": "YYYY-MM-DD"
         },
         "end_date": {
-          "name": "End date",
-          "description": "YYYY-MM-DD."
+          "name": "Enddatum",
+          "description": "YYYY-MM-DD"
         },
         "trigger_type": {
-          "name": "Trigger type",
-          "description": "0 = weekly, 1 = day interval, 2 = date, 3 = run once."
+          "name": "Auslösertyp",
+          "description": "0 = wöchentlich, 1 = täglicher Intervall, 2 = Datum, 3 = einmal ausführen"
         },
         "day": {
-          "name": "Day interval",
-          "description": "Interval in days when trigger_type is 1 (DAY)."
+          "name": "Täglicher Intervall",
+          "description": "Intervall in Tagen, wenn trigger_type den Wert 1 (DAY) hat."
         },
         "knife_height": {
-          "name": "Cut height",
-          "description": "Mower-only blade height in millimetres."
+          "name": "Schnitthöhe",
+          "description": "Nur Mähroboter: Schnitthöhe in Millimeter"
         },
         "speed": {
-          "name": "Speed",
-          "description": "Mower: driving speed (float). Spino: fixed32 speed value (int)."
+          "name": "Geschwindigkeit",
+          "description": "Mähroboter: Fahrgeschwindigkeit (Float). Poolroboter: fester Geschwindigkeitswert (int)"
         },
         "edge_mode": {
-          "name": "Edge mode",
-          "description": "Mower-only: 0 = none, 1 = once, 2 = twice."
+          "name": "Kantenmodus",
+          "description": "Nur Mähroboter: 0 = keine, 1 = einmal, 2 = zweimal"
         },
         "route_angle": {
-          "name": "Route angle",
-          "description": "Mower-only: mowing pattern angle 0–179 degrees."
+          "name": "Mähpfadwinkel",
+          "description": "Nur Mähroboter: Schnittmusterwinkel 0–179 Grad"
         },
         "route_spacing": {
-          "name": "Route spacing",
-          "description": "Mower-only: spacing between mow lines in cm."
+          "name": "Mähpfadabstand",
+          "description": "Nur Mähroboter: Abstand zwischen den Schnittbahnen in cm"
         },
         "zone_hashs": {
-          "name": "Zone hashes",
-          "description": "Mower-only: list of area hashes (fixed64) covered by this schedule."
+          "name": "Bereichshashes",
+          "description": "Nur Mähroboter: Liste der von diesem Zeitplan abgedeckten Bereichs-Hashes (fixed64)"
         },
         "work_mode": {
-          "name": "Work mode",
-          "description": "Spino-only: 0 = recharge, 1 = AUTO, 2 = FLOOR, 3 = WALL, 4 = ECO, 5 = LINE, 6 = CUSTOM."
+          "name": "Arbeitsmodus",
+          "description": "Nur Poolroboter: 0 = AUFLADEN, 1 = AUTO, 2 = BODEN, 3 = WAND, 4 = ECO, 5 = WASSERLINIE, 6 = BENUTZERDEFINIERT"
         },
         "sub_mode": {
-          "name": "Sub-modes",
-          "description": "Spino-only: list of APP_WORK values for multi-stage cleaning."
+          "name": "Untermodi",
+          "description": "Nur Poolroboter: Liste der APP_WORK-Werte für die mehrstufige Reinigung"
         },
         "operating_power": {
-          "name": "Operating power",
-          "description": "Spino-only: suction power (fixed32 int)."
+          "name": "Betriebsleistung",
+          "description": "Nur Poolroboter: Saugleistung (fest eingestellt auf 32 int)"
         },
         "starttime": {
-          "name": "Start timestamp",
-          "description": "Spino-only: unix timestamp (seconds) for the start of the cleaning session."
+          "name": "Startzeitstempel",
+          "description": "Nur Poolroboter: Unix-Zeitstempel (in Sekunden) für den Beginn der Reinigungssitzung"
         }
       }
     },
     "create_task": {
       "name": "Aufgabe erstellen",
-      "description": "Erstellt einen neuen Zeitplan auf dem Gerät.",
+      "description": "Erstellen Sie einen neuen Zeitplan auf dem Zielgerät. Die Integration generiert automatisch eine neue Plan-ID bzw. Job-ID. Die Felder setzen sich aus den Zeitplaneigenschaften von „Mähroboter“ und „Poolroboter“ zusammen; je nach Gerätetyp wird die entsprechende Teilmenge angewendet.",
       "fields": {
         "name": {
           "name": "Name",
-          "description": "Display name for the new schedule."
+          "description": "Gibt den Anzeigename für den neuen Zeitplan an."
         },
         "enabled": {
-          "name": "Enabled",
-          "description": "Whether the schedule starts enabled."
+          "name": "Aktiviert",
+          "description": "Gibt an, ob der Zeitplan von Anfang an aktiv ist."
         },
         "weeks": {
-          "name": "Weekdays",
-          "description": "List of weekday integers (0 = Sunday … 6 = Saturday)."
+          "name": "Wochentage",
+          "description": "Liste der Wochentagszahlen (0 = Sonntag … 6 = Samstag)"
         },
         "start_time": {
-          "name": "Start time",
-          "description": "HH:MM (mower)."
+          "name": "Startzeitpunkt",
+          "description": "HH:MM (Mähroboter)"
         },
         "end_time": {
-          "name": "End time",
-          "description": "HH:MM (mower)."
+          "name": "Endzeitpunkt",
+          "description": "HH:MM (Mähroboter)"
         },
         "start_date": {
-          "name": "Start date",
-          "description": "YYYY-MM-DD."
+          "name": "Startdatum",
+          "description": "YYYY-MM-DD"
         },
         "end_date": {
-          "name": "End date",
-          "description": "YYYY-MM-DD."
+          "name": "Enddatum",
+          "description": "YYYY-MM-DD"
         },
         "trigger_type": {
-          "name": "Trigger type",
-          "description": "0 = weekly, 1 = day interval, 2 = date, 3 = run once."
+          "name": "Auslösertyp",
+          "description": "0 = wöchentlich, 1 = täglicher Intervall, 2 = Datum, 3 = einmal ausführen"
         },
         "day": {
-          "name": "Day interval",
-          "description": "Interval in days for trigger_type = 1."
+          "name": "Täglicher Intervall",
+          "description": "Intervall in Tagen für trigger_type = 1"
         },
         "knife_height": {
-          "name": "Cut height",
-          "description": "Mower-only blade height in millimetres."
+          "name": "Schnitthöhe",
+          "description": "Nur Mähroboter: Schnitthöhe in Millimeter"
         },
         "speed": {
-          "name": "Speed",
-          "description": "Mower or Spino speed."
+          "name": "Geschwindigkeit",
+          "description": "Gibt die Geschwindigkeit von Mäh- oder Poolroboter an."
         },
         "edge_mode": {
-          "name": "Edge mode",
-          "description": "Mower-only."
+          "name": "Kantenmodus",
+          "description": "Nur Mähroboter"
         },
         "route_angle": {
-          "name": "Route angle",
-          "description": "Mower-only."
+          "name": "Mähpfadwinkel",
+          "description": "Nur Mähroboter"
         },
         "route_spacing": {
-          "name": "Route spacing",
-          "description": "Mower-only."
+          "name": "Mähpfadabstand",
+          "description": "Nur Mähroboter"
         },
         "zone_hashs": {
-          "name": "Zone hashes",
-          "description": "Mower-only: list of area hashes covered."
+          "name": "Bereichshashes",
+          "description": "Nur Mähroboter: Liste der abgedeckten Bereichs-Hashes"
         },
         "work_mode": {
-          "name": "Work mode",
-          "description": "Spino-only cleaning mode."
+          "name": "Arbeitsmodus",
+          "description": "Nur Poolroboter: Reinigungsmodus"
         },
         "sub_mode": {
-          "name": "Sub-modes",
-          "description": "Spino-only: list of APP_WORK values."
+          "name": "Untermodi",
+          "description": "Nur Poolroboter: Liste der APP_WORK-Werte"
         },
         "operating_power": {
-          "name": "Operating power",
-          "description": "Spino-only."
+          "name": "Betriebsleistung",
+          "description": "Nur Poolroboter"
         },
         "starttime": {
-          "name": "Start timestamp",
-          "description": "Spino-only: unix start time."
+          "name": "Startzeitstempel",
+          "description": "Nur Poolroboter: Unix-Startzeit"
         }
       }
     },
     "refresh_tasks": {
       "name": "Aufgaben aktualisieren",
-      "description": "Lädt alle Zeitpläne erneut vom Gerät."
+      "description": "Lade alle Zeitpläne erneut vom Zielgerät. Verwende diese Funktion nach einem „delete-all“-Befehl oder zur Wiederherstellung nach einem versäumten Update."
     },
     "start_task": {
       "name": "Aufgabe starten",
-      "description": "Führt einen gespeicherten Zeitplan sofort aus (auch 'Zeitplan starten' genannt). Nur für Mäher — der Spino-Poolreiniger hat keinen entsprechenden Befehl."
+      "description": "Führt einen gespeicherten Zeitplan sofort aus (auch 'Zeitplan starten' genannt). Nur für Mähroboter — der Spino-Poolreiniger hat keinen entsprechenden Befehl, daher führt die Auswahl einer Spino-Aufgabe zu einer Fehlermeldung."
     }
   },
   "exceptions": {
