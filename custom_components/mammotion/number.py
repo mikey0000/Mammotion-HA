@@ -354,6 +354,10 @@ class MammotionConfigNumberEntity(MammotionBaseEntity, RestoreNumber):  # type: 
             await self.entity_description.set_async_fn(self.coordinator, value)
         self.async_write_ha_state()
 
+    def _normalize_native_value(self, value: float) -> float:
+        """Return a local value suitable for restoring into this entity."""
+        return value
+
     async def async_added_to_hass(self) -> None:
         """Restore last saved value when entity is added to hass."""
         await super().async_added_to_hass()
@@ -361,7 +365,9 @@ class MammotionConfigNumberEntity(MammotionBaseEntity, RestoreNumber):  # type: 
         if (last_number_data is not None) and (
             last_number_data.native_value is not None
         ):
-            self._attr_native_value = last_number_data.native_value
+            self._attr_native_value = self._normalize_native_value(
+                last_number_data.native_value
+            )
             if self.entity_description.set_fn is not None:
                 self.entity_description.set_fn(
                     self.coordinator, cast(float, self._attr_native_value)
@@ -393,10 +399,16 @@ class MammotionWorkingNumberEntity(MammotionConfigNumberEntity):
         if self.entity_description.get_fn is not None:
             self._attr_native_value = self.entity_description.get_fn(self.coordinator)
 
-        native_val = self._attr_native_value
-        native_min = self._attr_native_min_value
-        if native_val is not None and native_min is not None:
-            self._attr_native_value = max(native_val, native_min)
+        if self._attr_native_value is not None:
+            self._attr_native_value = self._normalize_native_value(
+                self._attr_native_value
+            )
+            if self.entity_description.set_fn is not None:
+                self.entity_description.set_fn(self.coordinator, self._attr_native_value)
+
+    def _normalize_native_value(self, value: float) -> float:
+        """Keep initial and restored planning values within the model's limits."""
+        return min(max(value, self.native_min_value), self.native_max_value)
 
     @property
     def native_min_value(self) -> float:
