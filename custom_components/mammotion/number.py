@@ -303,6 +303,11 @@ async def async_setup_entry(
         )
 
 
+def _clamp(value: float, minimum: float, maximum: float) -> float:
+    """Return value limited to the inclusive minimum/maximum range."""
+    return min(max(value, minimum), maximum)
+
+
 class MammotionConfigNumberEntity(MammotionBaseEntity, RestoreNumber):  # type: ignore[misc]
     """Mammotion config number entity."""
 
@@ -354,10 +359,6 @@ class MammotionConfigNumberEntity(MammotionBaseEntity, RestoreNumber):  # type: 
             await self.entity_description.set_async_fn(self.coordinator, value)
         self.async_write_ha_state()
 
-    def _normalize_native_value(self, value: float) -> float:
-        """Return a local value suitable for restoring into this entity."""
-        return value
-
     async def async_added_to_hass(self) -> None:
         """Restore last saved value when entity is added to hass."""
         await super().async_added_to_hass()
@@ -365,8 +366,10 @@ class MammotionConfigNumberEntity(MammotionBaseEntity, RestoreNumber):  # type: 
         if (last_number_data is not None) and (
             last_number_data.native_value is not None
         ):
-            self._attr_native_value = self._normalize_native_value(
-                last_number_data.native_value
+            self._attr_native_value = _clamp(
+                last_number_data.native_value,
+                self.native_min_value,
+                self.native_max_value,
             )
             if self.entity_description.set_fn is not None:
                 self.entity_description.set_fn(
@@ -400,15 +403,15 @@ class MammotionWorkingNumberEntity(MammotionConfigNumberEntity):
             self._attr_native_value = self.entity_description.get_fn(self.coordinator)
 
         if self._attr_native_value is not None:
-            self._attr_native_value = self._normalize_native_value(
-                self._attr_native_value
+            self._attr_native_value = _clamp(
+                self._attr_native_value,
+                self.native_min_value,
+                self.native_max_value,
             )
             if self.entity_description.set_fn is not None:
-                self.entity_description.set_fn(self.coordinator, self._attr_native_value)
-
-    def _normalize_native_value(self, value: float) -> float:
-        """Keep initial and restored planning values within the model's limits."""
-        return min(max(value, self.native_min_value), self.native_max_value)
+                self.entity_description.set_fn(
+                    self.coordinator, self._attr_native_value
+                )
 
     @property
     def native_min_value(self) -> float:

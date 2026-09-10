@@ -10,10 +10,11 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
+WANTED = {"_clamp", "MammotionConfigNumberEntity", "MammotionWorkingNumberEntity"}
 
-@pytest.fixture
-def number_class():
-    """Load the real number classes with only their HA boundaries replaced."""
+
+def _load_number_namespace():
+    """Load the real number entities with only their HA boundaries replaced."""
 
     class BaseEntity:
         def __init__(self, coordinator, key):
@@ -28,15 +29,22 @@ def number_class():
             pass
 
     class RestoreNumber:
-        pass
+        """Stand in for the HA mixin, including its native_min/max defaults."""
+
+        @property
+        def native_min_value(self) -> float:
+            return self._attr_native_min_value
+
+        @property
+        def native_max_value(self) -> float:
+            return self._attr_native_max_value
 
     source = Path(__file__).parent.parent / "custom_components/mammotion/number.py"
     tree = ast.parse(source.read_text())
     tree.body = [
         node
         for node in tree.body
-        if isinstance(node, ast.ClassDef)
-        and node.name in {"MammotionConfigNumberEntity", "MammotionWorkingNumberEntity"}
+        if isinstance(node, ast.ClassDef | ast.FunctionDef) and node.name in WANTED
     ]
     namespace = {
         "Any": Any,
@@ -51,7 +59,19 @@ def number_class():
         "DEGREE": "°",
     }
     exec(compile(tree, str(source), "exec"), namespace)  # noqa: S102
-    return namespace["MammotionWorkingNumberEntity"]
+    return namespace
+
+
+@pytest.fixture
+def number_class():
+    """Return the working number entity under test."""
+    return _load_number_namespace()["MammotionWorkingNumberEntity"]
+
+
+@pytest.fixture
+def config_number_class():
+    """Return the plain config number entity under test."""
+    return _load_number_namespace()["MammotionConfigNumberEntity"]
 
 
 def make_number(number_class, *, minimum=8, maximum=14, height=None):
@@ -133,3 +153,30 @@ def test_no_device_limits_uses_description(number_class):
     assert number.native_min_value == 20
     assert number.native_max_value == 35
     assert number._attr_native_value == settings.channel_width == 20
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(("saved", "expected"), [(150, 100), (-10, 0), (42, 42)])
+async def test_config_restore_respects_its_own_range(
+    config_number_class, saved, expected
+):
+    """A config number restores inside the range it advertises to HA."""
+    settings = SimpleNamespace(cutter_height=0)
+    coordinator = SimpleNamespace(operation_settings=settings)
+    description = SimpleNamespace(
+        key="cutter_height",
+        native_min_value=0,
+        native_max_value=100,
+        native_step=1,
+        native_unit_of_measurement="%",
+        set_fn=lambda coordinator, value: setattr(
+            coordinator.operation_settings, "cutter_height", value
+        ),
+        get_fn=None,
+        set_async_fn=AsyncMock(),
+    )
+    number = config_number_class(coordinator, description)
+    number.async_get_last_number_data.return_value = SimpleNamespace(native_value=saved)
+    await number.async_added_to_hass()
+    assert number._attr_native_value == expected
+    assert settings.cutter_height == expected
