@@ -22,14 +22,14 @@ apply_coord = _mod.apply_coord
 apply_geojson_offset = _mod.apply_geojson_offset
 offset_geometry = _mod.offset_geometry
 
-GEOJSON_PATH = Path(__file__).parent.parent.parent / "Luba-API" / "examples" / "dev_output" / "mow_progress_1.geojson"
+GEOJSON_PATH = Path(__file__).parent / "fixtures" / "mow_progress.geojson"
 
 METERS_PER_DEGREE = 111_111.0
 
 
 @pytest.fixture()
 def mow_progress_geojson() -> dict[str, Any]:
-    """Load the real mow-progress GeoJSON sample."""
+    """Load the synthetic mow-progress sample bundled with this repository."""
     return json.loads(GEOJSON_PATH.read_text())
 
 
@@ -198,8 +198,8 @@ class TestApplyGeojsonOffset:
         result = apply_geojson_offset(g, 10.0, 0.0)
         assert result["coordinates"][1] == pytest.approx(-38.0 + 10.0 / METERS_PER_DEGREE, rel=1e-9)
 
-    def test_real_file_all_features_shifted(self, mow_progress_geojson):
-        """All 14 LineString features in the sample must have every coordinate shifted correctly."""
+    def test_sample_all_features_shifted(self, mow_progress_geojson):
+        """Every coordinate in each sample LineString must shift correctly."""
         lat_offset_m = -13.8
         lon_offset_m = -13.3
         result = apply_geojson_offset(mow_progress_geojson, lat_offset_m, lon_offset_m)

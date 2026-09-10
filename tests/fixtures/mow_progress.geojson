@@ -1,0 +1,29 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {"name": "Synthetic southern pass", "progress": 25},
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[175.0, -38.0], [175.0001, -37.9999], [175.0002, -37.9998]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Synthetic northern pass", "progress": 50},
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[10.0, 60.0], [10.0001, 60.0001], [10.0002, 60.0002]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Synthetic equatorial pass", "progress": 75},
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[0.0, 0.0], [0.0001, 0.0001], [0.0002, 0.0002]]
+      }
+    }
+  ]
+}
