@@ -419,8 +419,14 @@
       "rain_tactics": {
         "name": "Wykrywanie deszczu (podczas koszenia) wł/wył"
       },
+      "auto_change_direction": {
+        "name": "Automatyczna zmiana kierunku koszenia"
+      },
       "rain_detection": {
         "name": "Wykrywanie deszczu (kosiarka) wł/wył"
+      },
+      "smart_charge": {
+        "name": "Inteligentne ładowanie"
       },
       "side_led": {
         "name": "Boczna dioda LED wł/wył"
@@ -586,6 +592,9 @@
     "number": {
       "voice_volume": {
         "name": "Głośność głosu"
+      },
+      "charge_limit": {
+        "name": "Limit ładowania"
       },
       "start_progress": {
         "name": "Rozpocznij koszenie przy x% postępie"

@@ -419,8 +419,14 @@
       "rain_tactics": {
         "name": "Regendetectie (tijdens maaien) aan/uit"
       },
+      "auto_change_direction": {
+        "name": "Maairichting automatisch omkeren"
+      },
       "rain_detection": {
         "name": "Regen­detectie (maaier) aan/uit"
+      },
+      "smart_charge": {
+        "name": "Slim opladen"
       },
       "side_led": {
         "name": "Zijkant LED's aan/uit"
@@ -586,6 +592,9 @@
     "number": {
       "voice_volume": {
         "name": "Stemvolume"
+      },
+      "charge_limit": {
+        "name": "Laadlimiet"
       },
       "start_progress": {
         "name": "Start voortgang"

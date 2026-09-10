@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from asyncio import CancelledError
+import asyncio
+import time
+from collections.abc import Coroutine
 from contextlib import suppress
-from datetime import datetime
 from typing import Any
 
 from aiohttp import ClientConnectorError
@@ -15,21 +16,19 @@ from homeassistant.components.bluetooth import (
     BluetoothScanningMode,
     BluetoothServiceInfoBleak,
 )
-from homeassistant.config_entries import ConfigEntry
+from homeassistant.config_entries import ConfigEntry, ConfigEntryState
 from homeassistant.const import CONF_PASSWORD, EVENT_HOMEASSISTANT_STOP, Platform
-from homeassistant.core import Event, HassJob, HomeAssistant
+from homeassistant.core import Event, HomeAssistant
 from homeassistant.exceptions import (
     ConfigEntryAuthFailed,
     ConfigEntryError,
     ConfigEntryNotReady,
-    HomeAssistantError,
 )
 from homeassistant.helpers import aiohttp_client
 from homeassistant.helpers.device_registry import DeviceEntry
 from homeassistant.helpers.device_registry import (
     async_get as async_get_device_registry,
 )
-from homeassistant.helpers.event import async_call_later
 from homeassistant.loader import async_get_integration
 from pymammotion.aliyun.exceptions import TooManyRequestsException
 from pymammotion.aliyun.model.dev_by_account_response import Device
@@ -335,11 +334,7 @@ async def _await_device_connection(
     ):
         with suppress(TransportError):
             await handle.connect_transport(TransportType.BLE)
-    try:
-        await handle.wait_until_connected(timeout=60, mqtt_stable_for=10)
-    except CancelledError:
-        raise HomeAssistantError("Setup cancelled, transport connection timed out")
-    return True
+    return await handle.wait_until_connected(timeout=60, mqtt_stable_for=10)
 
 
 async def async_migrate_entry(hass: HomeAssistant, entry: MammotionConfigEntry) -> bool:
@@ -362,8 +357,13 @@ async def async_migrate_entry(hass: HomeAssistant, entry: MammotionConfigEntry) 
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) -> bool:
-    """Set up Mammotion from a config entry."""
+    """Set up Mammotion from a config entry.
 
+    Blocks only on the store, BLE registration and the cloud login.  Coordinators
+    are built from restored data and every device round-trip runs afterwards in a
+    background task, so one unreachable mower never delays the others or the entry.
+    """
+    started = time.monotonic()
     addresses = entry.data.get(CONF_BLE_DEVICES, {})
     integration = await async_get_integration(hass, DOMAIN)
     mammotion = MammotionClient(ha_version=integration.version.split("-")[0])
@@ -530,13 +530,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
 
         unique_name = device_name
 
+        # Restore before the other coordinators are built: their constructors copy
+        # the device record, so entities show last-known values straight away.
+        report_coordinator = MammotionReportUpdateCoordinator(
+            hass, entry, device, mammotion, unique_name=unique_name
+        )
+        await report_coordinator.async_restore_data()
         maintenance_coordinator = MammotionMaintenanceUpdateCoordinator(
             hass, entry, device, mammotion, unique_name=unique_name
         )
         version_coordinator = MammotionDeviceVersionUpdateCoordinator(
-            hass, entry, device, mammotion, unique_name=unique_name
-        )
-        report_coordinator = MammotionReportUpdateCoordinator(
             hass, entry, device, mammotion, unique_name=unique_name
         )
         map_coordinator = MammotionMapUpdateCoordinator(
@@ -545,38 +548,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
         error_coordinator = MammotionDeviceErrorUpdateCoordinator(
             hass, entry, device, mammotion, unique_name=unique_name
         )
-
-        # The connectivity switches survive restarts; apply them before the first
-        # connection attempt so a switched-off transport is never brought up.
-        use_ble = report_coordinator.bluetooth_enabled and (not use_wifi or prefer_ble)
-        mammotion.set_prefer_ble(device_name, prefer_ble=use_ble)
-        if not use_wifi or not report_coordinator.cloud_enabled:
-            for t_type in (TransportType.CLOUD_ALIYUN, TransportType.CLOUD_MAMMOTION):
-                await handle.disconnect_transport(t_type)
-        if not report_coordinator.bluetooth_enabled:
-            await handle.remove_transport(TransportType.BLE)
-
-        reachable = await _await_device_connection(
-            mammotion, device_name, prefer_ble=use_ble
-        )
-
-        await report_coordinator.async_restore_data()
-        if reachable:
-            await version_coordinator.async_config_entry_first_refresh()
-            await report_coordinator.async_config_entry_first_refresh()
-            await maintenance_coordinator.async_config_entry_first_refresh()
-            await error_coordinator.async_config_entry_first_refresh()
-        else:
-            # Nothing can carry a command yet (e.g. BLE-only mower out of range).
-            # Best-effort refreshes that won't raise ConfigEntryNotReady: the
-            # coordinators retry on their schedule and entities show unavailable
-            # until the device connects.  Raising here would retry the ENTIRE
-            # entry, orphaning already-registered devices and their BLE links.
-            await version_coordinator.async_refresh()
-            await report_coordinator.async_refresh()
-            await maintenance_coordinator.async_refresh()
-            await error_coordinator.async_refresh()
-        await map_coordinator._async_setup()
 
         mammotion_mowers.append(
             MammotionMowerData(
@@ -591,24 +562,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                 error_coordinator=error_coordinator,
             )
         )
-
-        if reachable:
-
-            async def _async_refresh_map(
-                _: datetime, _coordinator: MammotionMapUpdateCoordinator = map_coordinator
-            ) -> None:
-                """Call the debouncer at a later time."""
-                await _coordinator.async_request_refresh()
-
-            async_call_later(
-                hass,
-                1,
-                HassJob(
-                    _async_refresh_map,
-                    "map-coordinator-refresh",
-                    cancel_on_shutdown=True,
-                ),
-            )
 
     for rtk in mammotion_rtk_devices:
         if rtk_ble_address := addresses.get(rtk.device_name, None):
@@ -625,7 +578,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
             hass, entry, rtk, mammotion, unique_name=rtk_unique_name
         )
         await rtk_coordinator.async_restore_data()
-        await rtk_coordinator.async_config_entry_first_refresh()
         mammotion_rtk.append(
             MammotionRTKData(
                 name=rtk.device_name,
@@ -642,7 +594,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
             hass, entry, spino, mammotion, unique_name=spino_unique_name
         )
         await spino_coordinator.async_restore_data()
-        await spino_coordinator.async_config_entry_first_refresh()
         mammotion_spino.append(
             MammotionSpinoData(
                 name=spino.device_name,
@@ -662,7 +613,125 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
+    # Unload cancels it explicitly (Home Assistant cancels entry tasks only after
+    # async_unload_entry has already torn the device handles down).
+    mammotion_devices.bring_up_task = entry.async_create_background_task(
+        hass,
+        _async_bring_up_devices(
+            mammotion, mammotion_devices, use_wifi=use_wifi, prefer_ble=prefer_ble
+        ),
+        name=f"{DOMAIN}_bring_up_{entry.entry_id}",
+    )
+    LOGGER.debug(
+        "Setup of %s blocked for %.1fs; devices connect in the background",
+        entry.title,
+        time.monotonic() - started,
+    )
+
     return True
+
+
+async def _async_bring_up_devices(
+    mammotion: MammotionClient,
+    devices: MammotionDevices,
+    *,
+    use_wifi: bool,
+    prefer_ble: bool,
+) -> None:
+    """Connect every device and run its first refreshes, concurrently across devices."""
+    await asyncio.gather(
+        *(
+            _async_guarded(
+                mower.name,
+                _async_bring_up_mower(
+                    mammotion, mower, use_wifi=use_wifi, prefer_ble=prefer_ble
+                ),
+            )
+            for mower in devices.mowers
+        ),
+        *(
+            _async_guarded(rtk.name, rtk.coordinator.async_bring_up())
+            for rtk in devices.RTK
+        ),
+        *(
+            _async_guarded(spino.name, spino.coordinator.async_bring_up())
+            for spino in devices.spino
+        ),
+    )
+
+
+async def _async_guarded(name: str, coro: Coroutine[Any, Any, None]) -> None:
+    """Run one device's bring-up; a failure is logged and never reaches its siblings.
+
+    A cancellation that is not ours (bleak_retry_connector raises CancelledError
+    when no BLE slot is free) is logged too, so an aborted bring-up is visible.
+    """
+    try:
+        await coro
+    except asyncio.CancelledError:
+        if (task := asyncio.current_task()) is not None and task.cancelling():
+            raise
+        LOGGER.warning("%s: bring-up cancelled, entities stay on restored data", name)
+    except Exception as exc:  # noqa: BLE001 — one device must not take the others down
+        LOGGER.warning(
+            "%s: bring-up failed, entities stay on restored data: %s",
+            name,
+            exc,
+            exc_info=exc,
+        )
+
+
+async def _async_bring_up_mower(
+    mammotion: MammotionClient,
+    mower: MammotionMowerData,
+    *,
+    use_wifi: bool,
+    prefer_ble: bool,
+) -> None:
+    """Apply the stored transport switches, wait for a link, then bring each coordinator up.
+
+    Coordinators run sequentially within a mower because they share one command
+    queue and the cloud send quota.  ``async_bring_up`` never raises: an
+    unreachable mower keeps its restored data and retries on the normal schedule.
+    """
+    device_name = mower.name
+    handle = mammotion.mower(device_name)
+    if handle is None:
+        return
+    report_coordinator = mower.reporting_coordinator
+
+    # The connectivity switches survive restarts; apply them before the first
+    # connection attempt so a switched-off transport is never brought up.
+    use_ble = report_coordinator.bluetooth_enabled and (not use_wifi or prefer_ble)
+    mammotion.set_prefer_ble(device_name, prefer_ble=use_ble)
+    if not use_wifi or not report_coordinator.cloud_enabled:
+        for t_type in (TransportType.CLOUD_ALIYUN, TransportType.CLOUD_MAMMOTION):
+            await handle.disconnect_transport(t_type)
+    if not report_coordinator.bluetooth_enabled:
+        await handle.remove_transport(TransportType.BLE)
+
+    reachable = await _await_device_connection(
+        mammotion, device_name, prefer_ble=use_ble
+    )
+    if not reachable:
+        LOGGER.debug(
+            "%s: no transport reachable yet; entities fill in once it connects",
+            device_name,
+        )
+
+    for coordinator in (
+        mower.version_coordinator,
+        report_coordinator,
+        mower.maintenance_coordinator,
+        mower.error_coordinator,
+        mower.map_coordinator,
+    ):
+        await coordinator.async_bring_up()
+
+    if reachable:
+        # Let the first report land before the (heavy) map fetch is requested.
+        await asyncio.sleep(1)
+        await mower.map_coordinator.async_request_refresh()
 
 
 def _build_device_list(
@@ -760,6 +829,10 @@ async def _async_update_listener(
 
 async def async_unload_entry(hass: HomeAssistant, entry: MammotionConfigEntry) -> bool:
     """Unload a config entry."""
+    if (task := entry.runtime_data.bring_up_task) is not None and not task.done():
+        task.cancel()
+        with suppress(asyncio.CancelledError):
+            await task
 
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
         if entry.runtime_data.mowers:
@@ -789,7 +862,13 @@ async def async_remove_entry(hass: HomeAssistant, entry: MammotionConfigEntry) -
 async def async_remove_config_entry_device(
     hass: HomeAssistant, config_entry: MammotionConfigEntry, device_entry: DeviceEntry
 ) -> bool:
-    """Remove a config entry from a device."""
+    """Remove a config entry from a device.
+
+    A disabled or otherwise unloaded entry has no runtime data and nothing to
+    protect, so its devices can always be removed.
+    """
+    if config_entry.state is not ConfigEntryState.LOADED:
+        return True
     device_identifier = next(
         (
             identifier[1]

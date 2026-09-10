@@ -419,8 +419,14 @@
       "rain_tactics": {
         "name": "Zaznavanje dežja (med košnjo) vkl/izkl"
       },
+      "auto_change_direction": {
+        "name": "Samodejno menjavanje smeri košnje"
+      },
       "rain_detection": {
         "name": "Zaznavanje dežja (kosilnica) vkl/izkl"
+      },
+      "smart_charge": {
+        "name": "Pametno polnjenje"
       },
       "side_led": {
         "name": "Stranska LED osvetlitev"
@@ -586,6 +592,9 @@
     "number": {
       "voice_volume": {
         "name": "Glasnost glasu"
+      },
+      "charge_limit": {
+        "name": "Omejitev polnjenja"
       },
       "start_progress": {
         "name": "Napredek"

@@ -43,7 +43,7 @@ _stub("aiohttp.web_exceptions", HTTPException=Exception)
 # homeassistant.core
 _core = _stub("homeassistant.core", HomeAssistant=object, callback=lambda f: f, ServiceCall=object, ServiceResponse=object, SupportsResponse=MagicMock(), Event=object, HassJob=object, CALLBACK_TYPE=object)
 
-_stub("homeassistant.config_entries", ConfigEntry=object, ConfigFlow=object, ConfigFlowResult=object, OptionsFlow=object)
+_stub("homeassistant.config_entries", ConfigEntry=object, ConfigFlow=object, ConfigFlowResult=object, OptionsFlow=object, ConfigEntryState=MagicMock(LOADED="loaded"))
 
 _stub("homeassistant.const", CONF_ADDRESS=str, CONF_PASSWORD=str, STATE_ON="on", Platform=MagicMock(), EVENT_HOMEASSISTANT_STOP="homeassistant_stop")
 
@@ -259,6 +259,7 @@ _entity_mod = _stub(
     MammotionBaseRTKEntity=_MammotionBaseRTKEntity,
     MammotionCameraBaseEntity=_MammotionCameraBaseEntity,
     MammotionBaseSpinoEntity=_MammotionBaseSpinoEntity,
+    device_firmware_version=lambda device_state: "",
 )
 
 # ── Load switch.py directly (bypasses __init__.py entirely) ──────────────

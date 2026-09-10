@@ -428,8 +428,14 @@
       "rain_tactics": {
         "name": "Rain detection (during mow) on/off"
       },
+      "auto_change_direction": {
+        "name": "Auto-reverse mowing direction"
+      },
       "rain_detection": {
         "name": "Rain detection (mower) On/Off"
+      },
+      "smart_charge": {
+        "name": "Smart charging"
       },
       "side_led": {
         "name": "Side LED on/off"
@@ -595,6 +601,9 @@
     "number": {
       "voice_volume": {
         "name": "Voice volume"
+      },
+      "charge_limit": {
+        "name": "Charge limit"
       },
       "start_progress": {
         "name": "Start progress"

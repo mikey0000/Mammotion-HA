@@ -419,8 +419,14 @@
       "rain_tactics": {
         "name": "Detekce deště (během sečení) Zap/Vyp"
       },
+      "auto_change_direction": {
+        "name": "Automatické střídání směru sečení"
+      },
       "rain_detection": {
         "name": "Detekce deště (sekačky) Zap/Vyp"
+      },
+      "smart_charge": {
+        "name": "Chytré nabíjení"
       },
       "side_led": {
         "name": "Boční světla"
@@ -586,6 +592,9 @@
     "number": {
       "voice_volume": {
         "name": "Hlasitost hlasu"
+      },
+      "charge_limit": {
+        "name": "Limit nabíjení"
       },
       "start_progress": {
         "name": "Pokrok při zahájení"

@@ -419,8 +419,14 @@
       "rain_tactics": {
         "name": "Regndetektering (under klippning) på/av"
       },
+      "auto_change_direction": {
+        "name": "Automatisk växling av klippriktning"
+      },
       "rain_detection": {
         "name": "Regndetektering (gräsklippare) på/av"
+      },
+      "smart_charge": {
+        "name": "Smart laddning"
       },
       "side_led": {
         "name": "Sido-LED på/av"
@@ -586,6 +592,9 @@
     "number": {
       "voice_volume": {
         "name": "Röstvolym"
+      },
+      "charge_limit": {
+        "name": "Laddningsgräns"
       },
       "start_progress": {
         "name": "Starta klippning"

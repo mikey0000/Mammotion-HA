@@ -419,8 +419,14 @@
       "rain_tactics": {
         "name": "Détection de pluie (Durant la tonte) Activer/ Désactiver"
       },
+      "auto_change_direction": {
+        "name": "Inversion automatique du sens de tonte"
+      },
       "rain_detection": {
         "name": "Détection de pluie (Tonte) Activer/ Désactiver"
+      },
+      "smart_charge": {
+        "name": "Charge intelligente"
       },
       "side_led": {
         "name": "LED latérales"
@@ -586,6 +592,9 @@
     "number": {
       "voice_volume": {
         "name": "Volume de la voix"
+      },
+      "charge_limit": {
+        "name": "Limite de charge"
       },
       "start_progress": {
         "name": "Départ de la progression"

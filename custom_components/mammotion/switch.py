@@ -28,7 +28,11 @@ from .coordinator import (
     MammotionReportUpdateCoordinator,
     MammotionSpinoCoordinator,
 )
-from .entity import MammotionBaseEntity, MammotionBaseSpinoEntity
+from .entity import (
+    MammotionBaseEntity,
+    MammotionBaseSpinoEntity,
+    device_firmware_version,
+)
 
 # Matches pymammotion's auto-generated fallback names ("area 1", "area 2", …).
 # These carry no user intent and must be treated the same as empty names.
@@ -195,7 +199,7 @@ YUKA_CONFIG_SWITCH_ENTITIES: tuple[MammotionConfigSwitchEntityDescription, ...] 
     ),
 )
 
-MINI_AND_X_SERIES_CONFIG_SWITCH_ENTITIES: tuple[
+FILL_LIGHT_CONFIG_SWITCH_ENTITIES: tuple[
     MammotionAsyncSwitchEntityDescription, ...
 ] = (
     MammotionAsyncSwitchEntityDescription(
@@ -236,6 +240,18 @@ SWITCH_ENTITIES: tuple[MammotionAsyncSwitchEntityDescription, ...] = (
         key="rain_detection",
         is_on_func=lambda coordinator: coordinator.data.mower_state.rain_detection,
         set_fn=lambda coordinator, value: coordinator.async_set_rain_detection(value),
+        entity_category=EntityCategory.CONFIG,
+    ),
+)
+
+# Gated per device on DeviceType.supports_charge_limit (pool robots and old firmware excluded).
+CHARGE_SWITCH_ENTITIES: tuple[MammotionAsyncSwitchEntityDescription, ...] = (
+    MammotionAsyncSwitchEntityDescription(
+        key="smart_charge",
+        is_on_func=lambda coordinator: (
+            coordinator.data.mower_state.charge_settings.smart_charge
+        ),
+        set_fn=lambda coordinator, value: coordinator.async_set_smart_charge(value),
         entity_category=EntityCategory.CONFIG,
     ),
 )
@@ -285,6 +301,17 @@ CONFIG_SWITCH_ENTITIES: tuple[MammotionConfigSwitchEntityDescription, ...] = (
     ),
 )
 
+AUTO_CHANGE_DIRECTION_CONFIG_SWITCH_ENTITIES: tuple[
+    MammotionConfigSwitchEntityDescription, ...
+] = (
+    MammotionConfigSwitchEntityDescription(
+        key="auto_change_direction",
+        set_fn=lambda coordinator, value: setattr(
+            coordinator.operation_settings, "auto_change_direction", int(value)
+        ),
+    ),
+)
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -320,9 +347,24 @@ async def async_setup_entry(
                 MammotionSwitchEntity(coordinator, d) for d in AUDIO_SWITCH_ENTITIES
             )
 
+        if DeviceType.supports_charge_limit(
+            device_name, device_firmware_version(coordinator.data)
+        ):
+            entities.extend(
+                MammotionSwitchEntity(coordinator, d) for d in CHARGE_SWITCH_ENTITIES
+            )
+
         entities.extend(
             MammotionConfigSwitchEntity(coordinator, d) for d in CONFIG_SWITCH_ENTITIES
         )
+
+        if DeviceType.supports_auto_change_direction(
+            device_name, device_firmware_version(coordinator.data)
+        ):
+            entities.extend(
+                MammotionConfigSwitchEntity(coordinator, d)
+                for d in AUTO_CHANGE_DIRECTION_CONFIG_SWITCH_ENTITIES
+            )
         entities.extend(
             MammotionUpdateSwitchEntity(coordinator, d) for d in UPDATE_SWITCH_ENTITIES
         )
@@ -346,10 +388,16 @@ async def async_setup_entry(
                 MammotionSwitchEntity(coordinator, d) for d in LUBA_1_SWITCH_ENTITIES
             )
 
-        if DeviceType.is_mini_or_x_series(device_name):
+        if DeviceType.is_support_fill_light(device_name):
+            # The app hides the night-light row on Yuka MV while keeping the manual
+            # light (CarSettingDrawerFragment: `!isSupportFillLight() || isYukaMV()`).
             entities.extend(
                 MammotionSwitchEntity(coordinator, d)
-                for d in MINI_AND_X_SERIES_CONFIG_SWITCH_ENTITIES
+                for d in FILL_LIGHT_CONFIG_SWITCH_ENTITIES
+                if not (
+                    d.key == "night_light"
+                    and DeviceType.value_of_str(device_name).is_yuka_mv()
+                )
             )
 
         async_add_entities(entities)

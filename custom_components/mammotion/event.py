@@ -52,10 +52,20 @@ async def async_setup_entry(
     )
 
 
-def _timestamp(millis: Any) -> str | None:
-    """Return an ISO timestamp for a device millisecond epoch, or None."""
+def _timestamp(epoch: Any, *, millis: bool | None = None) -> str | None:
+    """Return an ISO timestamp for a device epoch, or None.
+
+    ``millis`` says which unit the field uses; ``None`` guesses, since some firmware
+    sends ``localTime`` in seconds and some in milliseconds, and a value below 10^11
+    cannot be milliseconds after 1973.
+    """
     try:
-        return datetime.fromtimestamp(int(millis) / 1000, UTC).isoformat()
+        value = int(epoch)
+        if millis is None:
+            millis = value >= 100_000_000_000
+        if millis:
+            value //= 1000
+        return datetime.fromtimestamp(value, UTC).isoformat()
     except TypeError, ValueError, OSError, OverflowError:
         return None
 
@@ -75,7 +85,7 @@ def _decoded_codes(data: Any) -> list[dict[str, Any]]:
                         {
                             "code": abs(int(item["c"])),
                             "count": item.get("ct"),
-                            "time": _timestamp(item.get("ft")),
+                            "time": _timestamp(item.get("ft"), millis=True),
                         }
                     )
     elif isinstance(data, dict) and "code" in data:
@@ -103,21 +113,22 @@ def notification_attributes(
         attributes["data"] = data
     if codes := _decoded_codes(data):
         if describe is not None:
-            codes = [{**entry, **(describe(entry["code"]) or {})} for entry in codes]
+            codes = [_described(entry, describe(entry["code"])) for entry in codes]
         attributes["codes"] = codes
     return attributes
 
 
+def _described(entry: dict[str, Any], info: dict[str, str] | None) -> dict[str, Any]:
+    """Merge the coordinator's description (including its ``text``) into a code entry."""
+    return {**entry, **info} if info else entry
+
+
 def notification_message(attributes: dict[str, Any]) -> str:
     """Return a readable persistent-notification body: one line per described code."""
-    lines = []
-    for entry in attributes.get("codes", []):
-        if message := entry.get("message"):
-            module = f"{entry['module']}: " if entry.get("module") else ""
-            solution = f" {entry['solution']}" if entry.get("solution") else ""
-            lines.append(f"{module}{message}{solution}")
-        else:
-            lines.append(f"Code {entry['code']}")
+    lines = [
+        entry.get("text") or f"Code {entry['code']}"
+        for entry in attributes.get("codes", [])
+    ]
     if lines:
         return "\n".join(lines)
     data = attributes.get("data")

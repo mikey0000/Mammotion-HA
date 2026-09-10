@@ -419,8 +419,14 @@
       "rain_tactics": {
         "name": "Rilevazione pioggia (durante la falciatura) On/Off"
       },
+      "auto_change_direction": {
+        "name": "Inversione automatica della direzione di taglio"
+      },
       "rain_detection": {
         "name": "Rilevamento pioggia (Tosaerba) On/Off"
+      },
+      "smart_charge": {
+        "name": "Ricarica intelligente"
       },
       "side_led": {
         "name": "LED laterale On/Off"
@@ -586,6 +592,9 @@
     "number": {
       "voice_volume": {
         "name": "Volume della voce"
+      },
+      "charge_limit": {
+        "name": "Limite di ricarica"
       },
       "start_progress": {
         "name": "Avanzamento iniziale"

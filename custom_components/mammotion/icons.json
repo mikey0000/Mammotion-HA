@@ -153,6 +153,9 @@
       },
       "toward_included_angle": {
         "default": "mdi:angle-right"
+      },
+      "charge_limit": {
+        "default": "mdi:battery-charging-80"
       }
     },
     "switch": {
@@ -177,6 +180,12 @@
       },
       "rain_tactics": {
         "default": "mdi:weather-rainy"
+      },
+      "auto_change_direction": {
+        "default": "mdi:swap-horizontal-bold"
+      },
+      "smart_charge": {
+        "default": "mdi:battery-sync"
       },
       "side_led": {
         "default": "mdi:led-off",

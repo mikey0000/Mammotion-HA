@@ -419,8 +419,14 @@
       "rain_tactics": {
         "name": "Esőérzékelés (nyírás közben) be/ki"
       },
+      "auto_change_direction": {
+        "name": "Nyírási irány automatikus váltása"
+      },
       "rain_detection": {
         "name": "Esőérzékelés (fűnyíró) be/ki"
+      },
+      "smart_charge": {
+        "name": "Intelligens töltés"
       },
       "side_led": {
         "name": "Oldalsó LED be/ki"
@@ -586,6 +592,9 @@
     "number": {
       "voice_volume": {
         "name": "Hangerő"
+      },
+      "charge_limit": {
+        "name": "Töltési korlát"
       },
       "start_progress": {
         "name": "Kezdési százalék"

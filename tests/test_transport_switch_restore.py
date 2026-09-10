@@ -125,9 +125,10 @@ def test_removing_a_device_drops_its_transport_settings(config_module: types.Mod
 
 
 def test_setup_applies_restored_switches_before_connecting() -> None:
+    """The switches are applied in the per-mower bring-up, ahead of its first connect."""
     src = (_ROOT / "__init__.py").read_text()
     tree = ast.parse(src)
-    fn = next(n for n in ast.walk(tree) if isinstance(n, ast.AsyncFunctionDef) and n.name == "async_setup_entry")
+    fn = next(n for n in ast.walk(tree) if isinstance(n, ast.AsyncFunctionDef) and n.name == "_async_bring_up_mower")
     body = ast.get_source_segment(src, fn)
     assert "report_coordinator.bluetooth_enabled" in body
     assert "report_coordinator.cloud_enabled" in body

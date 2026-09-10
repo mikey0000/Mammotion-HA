@@ -419,8 +419,14 @@
       "rain_tactics": {
         "name": "Detectare ploaie (tuns) Pornit/Oprit"
       },
+      "auto_change_direction": {
+        "name": "Inversare automată a direcției de tuns"
+      },
       "rain_detection": {
         "name": "Detectare ploaie (Cositor) Pornit/Oprit"
+      },
+      "smart_charge": {
+        "name": "Încărcare inteligentă"
       },
       "side_led": {
         "name": "LED lateral Pornit/Oprit"
@@ -586,6 +592,9 @@
     "number": {
       "voice_volume": {
         "name": "Volumul vocii"
+      },
+      "charge_limit": {
+        "name": "Limită de încărcare"
       },
       "start_progress": {
         "name": "Progresul la start"

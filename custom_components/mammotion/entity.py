@@ -25,6 +25,17 @@ from .coordinator import (
 )
 
 
+def device_firmware_version(device_state: object | None) -> str:
+    """Return the runtime device firmware version, or "" when not yet known.
+
+    Firmware lives on the coordinator's runtime device state, not on the Aliyun
+    ``mower.device`` binding model, and the state can be ``None`` before any
+    telemetry arrives.
+    """
+    device_firmwares = getattr(device_state, "device_firmwares", None)
+    return device_firmwares.device_version if device_firmwares is not None else ""
+
+
 class MammotionBaseEntity(CoordinatorEntity[MammotionBaseUpdateCoordinator[Any]]):  # type: ignore[misc]
     """Representation of a Mammotion Lawn Mower."""
 

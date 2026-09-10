@@ -6,13 +6,13 @@ unreadable 'area 1451834635207421727' string instead of a readable 'Area N'.
 """
 from __future__ import annotations
 
+import asyncio
 import importlib.util
 import sys
 import types
 from enum import IntEnum
 from pathlib import Path
-from unittest.mock import MagicMock
-
+from unittest.mock import AsyncMock, MagicMock
 
 # ---------------------------------------------------------------------------
 # Extend the stubs from conftest.py with the extra imports coordinator.py
@@ -466,8 +466,11 @@ class TestGetAreaEntityNameHARegistryOverride:
 # ---------------------------------------------------------------------------
 
 
-def _error_coord(language: str = "de", codes: dict | None = None):
-    inst = _MammotionReportUpdateCoordinator.__new__(_MammotionReportUpdateCoordinator)
+_MammotionDeviceErrorUpdateCoordinator = _coord_mod.MammotionDeviceErrorUpdateCoordinator
+
+
+def _error_coord(language: str = "de", codes: dict | None = None, cls=_MammotionReportUpdateCoordinator):
+    inst = cls.__new__(cls)
     inst.device_name = "Luba-1"
     inst.hass = MagicMock()
     inst.hass.config.language = language
@@ -489,7 +492,61 @@ def test_report_coordinator_describes_known_code_in_ha_language() -> None:
         "level": "warning",
         "message": "RTK verloren",
         "solution": "Move it",
+        "text": "nav: RTK verloren, Move it",
     }
+
+
+def test_describe_error_code_leaves_text_empty_without_an_implication() -> None:
+    """An empty implication must not yield a bare 'module: ' string that reads as a description."""
+    info = MagicMock(module="nav", level="1", en_implication="", en_solution="Move it")
+    info.de_implication = ""
+    info.de_solution = ""
+    coord = _error_coord(codes={"2801": info}, cls=_MammotionDeviceErrorUpdateCoordinator)
+
+    assert coord.describe_error_code(2801)["text"] == ""
+    coord.data = MagicMock()
+    coord.data.errors.err_code_list = [2801]
+    assert coord.get_error_message(0) == "Error message not found"
+
+
+def test_get_error_message_uses_the_shared_formatter() -> None:
+    info = MagicMock(module="nav", level="1", en_implication="Lost RTK", en_solution="Move it")
+    info.de_implication = "RTK verloren"
+    info.de_solution = "Bewegen"
+    coord = _error_coord(codes={"2801": info}, cls=_MammotionDeviceErrorUpdateCoordinator)
+    coord.data = MagicMock()
+    coord.data.errors.err_code_list = [-2801]
+
+    assert coord.get_error_message(0) == "nav: RTK verloren, Bewegen"
+    coord.data.errors.err_code_list = []
+    assert coord.get_error_message(0) == "No Error"
+
+
+def test_async_bring_up_runs_setup_once_then_refreshes() -> None:
+    """Home Assistant only runs _async_setup from first refresh; bring-up must do it exactly once."""
+    coord = _error_coord()
+    coord._bring_up_done = False
+    coord._async_setup = AsyncMock()
+    coord.async_refresh = AsyncMock()
+
+    loop = asyncio.new_event_loop()
+    loop.run_until_complete(coord.async_bring_up())
+    loop.run_until_complete(coord.async_bring_up())
+
+    coord._async_setup.assert_awaited_once()
+    assert coord.async_refresh.await_count == 2
+
+
+def test_async_bring_up_marks_failure_and_skips_refresh_when_setup_raises() -> None:
+    coord = _error_coord()
+    coord._bring_up_done = False
+    coord._async_setup = AsyncMock(side_effect=RuntimeError("no handle"))
+    coord.async_refresh = AsyncMock()
+
+    asyncio.new_event_loop().run_until_complete(coord.async_bring_up())
+
+    coord.async_refresh.assert_not_awaited()
+    assert coord.last_update_success is False
 
 
 def test_report_coordinator_returns_none_for_unknown_code_or_missing_device() -> None:

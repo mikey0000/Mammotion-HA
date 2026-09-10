@@ -428,8 +428,14 @@
       "rain_tactics": {
         "name": "Regenerkennung (beim Mähen)"
       },
+      "auto_change_direction": {
+        "name": "Mährichtung automatisch umkehren"
+      },
       "rain_detection": {
         "name": "Regenerkennung (Mähroboter)"
+      },
+      "smart_charge": {
+        "name": "Intelligentes Laden"
       },
       "side_led": {
         "name": "LED-Seitenlicht"
@@ -595,6 +601,9 @@
     "number": {
       "voice_volume": {
         "name": "Sprachlautstärke"
+      },
+      "charge_limit": {
+        "name": "Ladelimit"
       },
       "start_progress": {
         "name": "Fortschritt beim Start"

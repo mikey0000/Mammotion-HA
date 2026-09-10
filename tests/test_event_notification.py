@@ -88,7 +88,13 @@ def _added_entity(event_module: types.ModuleType) -> tuple[Any, Any]:
     coordinator.device_name = "Luba-1"
     coordinator.config_entry.options = {"notify": ["warnings"]}
     coordinator.describe_error_code.side_effect = lambda code: (
-        {"module": "nav", "level": "warning", "message": "Lost RTK", "solution": "Move"}
+        {
+            "module": "nav",
+            "level": "warning",
+            "message": "Lost RTK",
+            "solution": "Move",
+            "text": "nav: Lost RTK, Move",
+        }
         if code == 2801
         else None
     )
@@ -121,6 +127,7 @@ def test_warning_code_notification_fires_with_decoded_payload(event_module: type
             "level": "warning",
             "message": "Lost RTK",
             "solution": "Move",
+            "text": "nav: Lost RTK, Move",
         }
     ]
     entity.async_write_ha_state.assert_called_once()
@@ -169,10 +176,40 @@ def test_notification_code_is_described_when_known(event_module: types.ModuleTyp
     assert attributes["codes"] == [{"code": 1002, "time": "2024-09-01T02:58:12+00:00", "message": "Blade stuck"}]
 
 
+def test_notification_local_time_in_seconds_is_decoded(event_module: types.ModuleType) -> None:
+    """Some firmware sends localTime in seconds (1788929118 → 2026-09-09), others in milliseconds."""
+    describe = lambda code: {  # noqa: E731
+        "module": "navigation",
+        "message": "Recharge has failed",
+        "solution": "Clear the route",
+        "text": "navigation: Recharge has failed, Clear the route",
+    }
+
+    attributes = event_module.notification_attributes({"data": '{"localTime":1788929118,"code":"1203"}'}, describe)
+
+    assert attributes["codes"] == [
+        {
+            "code": 1203,
+            "time": "2026-09-09T04:45:18+00:00",
+            "module": "navigation",
+            "message": "Recharge has failed",
+            "solution": "Clear the route",
+            "text": "navigation: Recharge has failed, Clear the route",
+        }
+    ]
+
+
 def test_unknown_code_is_listed_without_description(event_module: types.ModuleType) -> None:
     attributes = event_module.notification_attributes({"data": '[{"c":-9999,"ct":2,"ft":0}]'}, lambda code: None)
 
     assert attributes["codes"] == [{"code": 9999, "count": 2, "time": "1970-01-01T00:00:00+00:00"}]
+
+
+def test_warning_frame_time_is_always_milliseconds(event_module: types.ModuleType) -> None:
+    """``ft`` is documented as milliseconds; a small value (unsynced clock) must not be read as seconds."""
+    attributes = event_module.notification_attributes({"data": '[{"c":-1,"ct":1,"ft":5400000}]'})
+
+    assert attributes["codes"][0]["time"] == "1970-01-01T01:30:00+00:00"
 
 
 def test_event_platform_is_registered() -> None:
@@ -200,7 +237,7 @@ def test_enabled_category_raises_a_persistent_notification(event_module: types.M
     notifications.create.assert_called_once()
     args, kwargs = notifications.create.call_args
     assert args[0] is entity.hass
-    assert args[1] == "nav: Lost RTK Move"
+    assert args[1] == "nav: Lost RTK, Move"
     assert kwargs == {"title": "Luba-1: warnings", "notification_id": "mammotion_Luba-1_warnings"}
 
 

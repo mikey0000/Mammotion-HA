@@ -134,21 +134,23 @@ ASYNC_SELECT_ENTITIES: tuple[MammotionAsyncConfigSelectEntityDescription, ...] =
             TurningMode[value].value
         ),
     ),
-    MammotionAsyncConfigSelectEntityDescription(
-        key="wildlife_safety",
-        options=[mode.name for mode in WildlifeSafety],
-        get_fn=lambda coordinator: (
-            WildlifeSafety.off.value
-            if coordinator.data.mower_state.animal_protection.status == 0
-            else coordinator.data.mower_state.animal_protection.mode
-        ),
-        set_fn=lambda coordinator, value: coordinator.async_set_wildlife_safety(
-            WildlifeSafety[value].value
-        ),
+)
+
+# Gated per device on DeviceType.supports_wildlife_safety (device family + firmware).
+WILDLIFE_SAFETY_SELECT_ENTITY = MammotionAsyncConfigSelectEntityDescription(
+    key="wildlife_safety",
+    options=[mode.name for mode in WildlifeSafety],
+    get_fn=lambda coordinator: (
+        WildlifeSafety.off.value
+        if coordinator.data.mower_state.animal_protection.status == 0
+        else coordinator.data.mower_state.animal_protection.mode
+    ),
+    set_fn=lambda coordinator, value: coordinator.async_set_wildlife_safety(
+        WildlifeSafety[value].value
     ),
 )
 
-MINI_AND_X_SERIES_CONFIG_SELECT_ENTITIES: tuple[
+BLADE_SPEED_CONFIG_SELECT_ENTITIES: tuple[
     MammotionAsyncConfigSelectEntityDescription, ...
 ] = (
     MammotionAsyncConfigSelectEntityDescription(
@@ -267,6 +269,16 @@ async def async_setup_entry(
                 )
             )
 
+        if DeviceType.supports_wildlife_safety(
+            mower.device.device_name,
+            _device_firmware_version(mower.reporting_coordinator.data),
+        ):
+            entities.append(
+                MammotionAsyncConfigSelectEntity(
+                    mower.reporting_coordinator, WILDLIFE_SAFETY_SELECT_ENTITY
+                )
+            )
+
         bypass_mode_desc = MammotionConfigSelectEntityDescription(
             key="bypass_mode",
             options=[
@@ -281,7 +293,9 @@ async def async_setup_entry(
                 "ultra_wave",
                 DetectionStrategy[value].value,
             ),
-            async_set_fn=lambda coordinator: coordinator.async_modify_plan_if_mowing(),
+            async_set_fn=lambda coordinator: (
+                coordinator.async_change_bypass_if_working()
+            ),
         )
         entities.append(
             MammotionConfigSelectEntity(mower.reporting_coordinator, bypass_mode_desc)
@@ -302,8 +316,8 @@ async def async_setup_entry(
                     )
                 )
 
-        if DeviceType.is_mini_or_x_series(mower.device.device_name):
-            for entity_description in MINI_AND_X_SERIES_CONFIG_SELECT_ENTITIES:
+        if DeviceType.is_support_blade_speed(mower.device.device_name):
+            for entity_description in BLADE_SPEED_CONFIG_SELECT_ENTITIES:
                 entities.append(
                     MammotionAsyncConfigSelectEntity(
                         mower.reporting_coordinator, entity_description

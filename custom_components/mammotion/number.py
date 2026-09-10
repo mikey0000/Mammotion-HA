@@ -28,7 +28,11 @@ from pymammotion.utility.device_type import DeviceType
 
 from . import MammotionConfigEntry
 from .coordinator import MammotionBaseUpdateCoordinator, MammotionSpinoCoordinator
-from .entity import MammotionBaseEntity, MammotionBaseSpinoEntity
+from .entity import (
+    MammotionBaseEntity,
+    MammotionBaseSpinoEntity,
+    device_firmware_version,
+)
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -106,6 +110,23 @@ AUDIO_NUMBER_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
     ),
 )
 
+# Same bounds as the app's charge-limit slider; gated on DeviceType.supports_charge_limit.
+CHARGE_LIMIT_NUMBER_ENTITY = MammotionConfigNumberEntityDescription(
+    key="charge_limit",
+    native_min_value=80,
+    native_max_value=100,
+    native_step=5,
+    mode=NumberMode.SLIDER,
+    native_unit_of_measurement=PERCENTAGE,
+    set_async_fn=lambda coordinator, value: coordinator.async_set_charge_limit(
+        int(value)
+    ),
+    # 0 means the device has not reported its settings yet.
+    get_fn=lambda coordinator: (
+        coordinator.data.mower_state.charge_settings.charge_limit or None
+    ),
+)
+
 NUMBER_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
     MammotionConfigNumberEntityDescription(
         key="start_progress",
@@ -167,7 +188,7 @@ LUBA_WORKING_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
             coordinator.operation_settings, "blade_height", int(value)
         ),
         set_async_fn=lambda coordinator,
-        value: coordinator.async_modify_plan_if_mowing(),
+        value: coordinator.async_change_blade_height_if_working(),
         get_fn=lambda coordinator: coordinator.operation_settings.blade_height,
     ),
 )
@@ -182,7 +203,7 @@ NUMBER_WORKING_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
         native_min_value=0.2,
         native_max_value=0.6,
         set_async_fn=lambda coordinator,
-        value: coordinator.async_modify_plan_if_mowing(),
+        value: coordinator.async_change_speed_if_working(),
         set_fn=lambda coordinator, value: setattr(
             coordinator.operation_settings, "speed", value
         ),
@@ -231,6 +252,16 @@ async def async_setup_entry(
                         mower.reporting_coordinator, entity_description
                     )
                 )
+
+        if DeviceType.supports_charge_limit(
+            mower.device.device_name,
+            device_firmware_version(mower.reporting_coordinator.data),
+        ):
+            entities.append(
+                MammotionConfigNumberEntity(
+                    mower.reporting_coordinator, CHARGE_LIMIT_NUMBER_ENTITY
+                )
+            )
 
         for entity_description in MAP_OFFSET_ENTITIES:
             entities.append(

@@ -419,8 +419,14 @@
       "rain_tactics": {
         "name": "Regn detektion (under arbejde) On/Off"
       },
+      "auto_change_direction": {
+        "name": "Automatisk vending af klipperetning"
+      },
       "rain_detection": {
         "name": "Regn detektering (Plæneklipper) Til/Fra"
+      },
+      "smart_charge": {
+        "name": "Smart opladning"
       },
       "side_led": {
         "name": "Side LED til/fra"
@@ -586,6 +592,9 @@
     "number": {
       "voice_volume": {
         "name": "Stemmestyrke"
+      },
+      "charge_limit": {
+        "name": "Opladningsgrænse"
       },
       "start_progress": {
         "name": "Start forløb på"
