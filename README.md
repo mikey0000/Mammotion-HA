@@ -13,7 +13,7 @@ This integration allows you to control and monitor Mammotion products, e.g robot
 - [x] Bluetooth (BLE) support
 - [x] Wi-Fi support (Including SIM 3G/4G)
 - [x] Camera stream
-- [ ] Scheduling
+- [x] Scheduling
 - [ ] Mapping and zone management
 - [x] Maps
 - [x] Firmware updates
@@ -107,6 +107,85 @@ A Lovelace resource that renders GeoJSON mowing areas on the map with area names
 An interactive Lovelace card for placing, editing, and deleting SVG pattern tiles on your mower's map directly from the dashboard. Load an SVG, drag it into position, scale and rotate it, then send it to the device in one click via the `mammotion.svg_add` service.
 
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=mikey0000&repository=ha-mammotion-svg-pick-n-place&category=plugin)
+
+## Scheduling
+
+A community scheduler blueprint is available for Mammotion mowers using the newer Mammotion Home Assistant integration entity model. It is designed for Luba/Yuka-style setups where each mowing area is exposed as a Mammotion area switch, such as switch.my_mower_area_area_1, switch.my_mower_area_area_2, and switch.my_mower_area_area_3.
+
+The scheduler supports 1–6 active zones, up to 4 daily mowing sessions, 1 or 2 zones per session, rain and wet-lawn skipping, manual “Start Next Mow” controls, low-battery resume protection, charge-and-resume handling, and safer recovery after Home Assistant restarts or automation reloads.
+
+Only one blueprint is needed. Earlier versions used a separate completion watcher, but the current scheduler blueprint handles starting, waiting, completion detection, rain recall, timeout handling, helper reset, and mid-mow charging resume inside the main automation.
+
+### What it does
+
+The scheduler rotates through configured Mammotion area switches in order. Before each zone, it turns off the active area switches, waits briefly, turns on the target area switch, waits for the mower/integration to register the selected area, applies optional mower settings, and starts mowing through the lawn_mower entity.
+
+It tracks the last completed zone with an input_number helper and uses an input_boolean helper to know when the scheduler is actively managing a run. It waits for real completion signals before advancing the zone tracker, so a timeout does not count as a completed mow.
+
+If the scheduler-in-progress helper gets stuck on while the mower is clearly docked, charging, ready, and not working, the blueprint can clear the stale helper automatically instead of incorrectly skipping the next session.
+
+If the mower docks to recharge mid-zone, the scheduler can detect the paused charging state and resume the same mowing task once the battery is ready.
+
+### Required helpers
+
+Create these helpers in Settings → Devices & services → Helpers:
+
+* input_number.mower_last_zone
+    * Type: Number
+    * Min: 0
+    * Max: 6
+    * Step: 1
+    * Initial value: 0
+* input_boolean.mower_manual_skip
+    * Type: Toggle
+    * Turn on to temporarily skip scheduled mowing.
+* input_boolean.mower_scheduler_in_progress
+    * Type: Toggle
+    * Used by the scheduler to prevent overlapping runs and recover from restarts/reloads.
+* input_datetime.mower_last_run
+    * Type: Date and time
+    * Stores the last successful scheduler-managed run time.
+* input_datetime.mower_rain_last_seen
+    * Type: Date and time
+    * Stores when rain was last detected for the wet-lawn dry-out delay.
+* input_button.mower_start_next_mow
+    * Type: Button
+    * Optional but recommended for dashboard/manual starts.
+
+### Required entities
+
+You will need:
+
+* A Mammotion lawn_mower.* entity
+* Mammotion area switch.* entities for each work area
+* A Home Assistant weather.* entity
+* Optional Mammotion status sensors, such as battery, activity mode, progress, time left, last error, last error time, last error code, and charging state
+
+For weather, Open-Meteo is a simple option because it provides a weather.* entity without requiring an account or API key. Add it from Settings → Devices & services → Add Integration → Open-Meteo, then select the resulting weather entity in the scheduler blueprint.
+
+### Rain behavior
+
+The scheduler checks weather at session start, during the wet-lawn delay check, before the second zone if mowing 2 zones in one session, and during the active mowing wait window so the mower can be recalled if rain appears mid-session.
+
+Rain states treated as unsafe include:
+
+rainy, pouring, lightning-rainy, hail, snowy-rainy, and exceptional.
+
+Recommended first test
+
+After importing the blueprint, create one automation from it and start conservatively:
+
+* Active Zone Count: 1
+* Zones Per Session: 1
+* Zone Duration Ceiling: 240 minutes
+* Select only one known-good Mammotion area switch
+* Confirm the mower starts, completes, docks, and advances the zone tracker
+
+Once the first zone works reliably, increase the active zone count and add more sessions.
+
+### Blueprint
+
+<a href="https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgist.github.com%2Fliquidbear99%2F1f7448f357524e9281565d289fe98334" target="_blank" rel="noreferrer noopener"><img src="https://my.home-assistant.io/badges/blueprint_import.svg" alt="Open your Home Assistant instance and show the blueprint import dialog with a specific blueprint pre-filled." /></a>
 
 ## Troubleshooting 🔧
 
