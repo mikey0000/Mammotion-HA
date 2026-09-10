@@ -11,7 +11,7 @@
       "reconfigure_successful": "Die Neueinrichtung war erfolgreich.",
       "merged_into_existing_account": "Dieses Konto enthält bereits einen Eintrag. Die Bluetooth-Geräte wurden darin zusammengeführt und dieser Eintrag wurde entfernt.",
       "api_limit_exceeded": "Das API-Anfragelimit wurde überschritten. Bitte versuchen Sie es später erneut.",
-      "account_in_use": "Ihr Mammotion-Konto ist bereits in einer anderen Sitzung aktiv. Melden Sie sich in der Mammotion-App ab und versuchen Sie es erneut."
+      "account_in_use": "Ihr Mammotion-Konto ist bereits in einer anderen Sitzung aktiv. Melden Sie sich in der Mammotion-App ab und versuchen Sie es erneut.",
       "reauth_successful": "Die erneute Authentifizierung war erfolgreich.",
       "wrong_account": "Diese Anmeldedaten gehören zu einem anderen Mammotion-Konto. Melden Sie sich bitte erneut mit dem Konto an, mit dem dieser Eintrag eingerichtet wurde."
     },
