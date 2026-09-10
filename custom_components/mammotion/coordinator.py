@@ -3145,33 +3145,6 @@ class MammotionSpinoCoordinator(MammotionBaseUpdateCoordinator[PoolCleanerDevice
 
     # === Pool cleaner control helpers (called by control entities) ===
 
-    async def _async_update_status(self, status: ThingStatusMessage) -> None:
-        """Re-arm the pool's status stream when it reconnects.
-
-        The pool cleaner only pushes ``dev_statue_t`` frames after
-        ``get_report_cfg_spino``, sent once at setup. If it was offline then that
-        send was suppressed, so a later thing/status CONNECTED must re-subscribe —
-        otherwise no frame arrives, ``PoolStateReducer`` never flips ``online``, and
-        the entity stays unavailable after the device is powered on. Runs in a task
-        so the status-bus callback is not blocked on the command round-trip.
-        """
-        data = self.data
-        if (
-            status.params.status.value == StatusType.CONNECTED
-            and data is not None
-            and not data.online
-        ):
-            self.hass.async_create_task(self._async_resubscribe_status())
-
-    async def _async_resubscribe_status(self) -> None:
-        """Restart the Spino report stream, tolerating a still-flaky transport."""
-        with contextlib.suppress(
-            GatewayTimeoutException,
-            NoTransportAvailableError,
-            DeviceOfflineException,
-        ):
-            await self.async_subscribe_status()
-
     async def async_subscribe_status(self) -> None:
         """Start the Spino status report stream (called once at setup).
 
