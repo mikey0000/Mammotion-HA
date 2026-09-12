@@ -19,10 +19,21 @@ def _stub(name: str, **attrs) -> types.ModuleType:
 
 
 # ── exception classes used across multiple modules ────────────────────────
-class _LoginFailedError(Exception): pass
-class _ReLoginRequiredError(Exception): pass
-class _SessionExpiredError(Exception): pass
-class _BLEUnavailableError(Exception): pass
+class _LoginFailedError(Exception):
+    pass
+
+
+class _ReLoginRequiredError(Exception):
+    pass
+
+
+class _SessionExpiredError(Exception):
+    pass
+
+
+class _BLEUnavailableError(Exception):
+    pass
+
 
 # ── third-party stubs ──────────────────────────────────────────────────────
 _stub("aiousbwatcher", AIOUSBWatcher=MagicMock(), InotifyNotAvailableError=Exception)
@@ -34,30 +45,79 @@ _stub("bleak.backends.device", BLEDevice=MagicMock())
 _stub("bleak.exc", BleakError=Exception)
 _stub("bleak_retry_connector", BleakNotFoundError=Exception)
 
+
 # aiohttp — needs ClientConnectorError as a distinct class so it doesn't shadow other exceptions
-class _ClientConnectorError(Exception): pass
+class _ClientConnectorError(Exception):
+    pass
+
+
 _aiohttp = _stub("aiohttp", ClientConnectorError=_ClientConnectorError)
 _stub("aiohttp.web_exceptions", HTTPException=Exception)
 
 # ── Home Assistant stubs ───────────────────────────────────────────────────
 # homeassistant.core
-_core = _stub("homeassistant.core", HomeAssistant=object, callback=lambda f: f, ServiceCall=object, ServiceResponse=object, SupportsResponse=MagicMock(), Event=object, HassJob=object, CALLBACK_TYPE=object)
+_core = _stub(
+    "homeassistant.core",
+    HomeAssistant=object,
+    callback=lambda f: f,
+    ServiceCall=object,
+    ServiceResponse=object,
+    SupportsResponse=MagicMock(),
+    Event=object,
+    HassJob=object,
+    CALLBACK_TYPE=object,
+)
 
-_stub("homeassistant.config_entries", ConfigEntry=object, ConfigFlow=object, ConfigFlowResult=object, OptionsFlow=object, ConfigEntryState=MagicMock(LOADED="loaded"))
+_stub(
+    "homeassistant.config_entries",
+    ConfigEntry=object,
+    ConfigFlow=object,
+    ConfigFlowResult=object,
+    OptionsFlow=object,
+    ConfigEntryState=MagicMock(LOADED="loaded"),
+)
 
-_stub("homeassistant.const", CONF_ADDRESS=str, CONF_PASSWORD=str, STATE_ON="on", Platform=MagicMock(), EVENT_HOMEASSISTANT_STOP="homeassistant_stop")
+_stub(
+    "homeassistant.const",
+    CONF_ADDRESS=str,
+    CONF_PASSWORD=str,
+    STATE_ON="on",
+    Platform=MagicMock(),
+    EVENT_HOMEASSISTANT_STOP="homeassistant_stop",
+)
 
-class _ConfigEntryAuthFailed(Exception): pass
-class _ConfigEntryNotReady(Exception): pass
-class _ConfigEntryError(Exception): pass
-class _HomeAssistantError(Exception): pass
-_stub("homeassistant.exceptions", ConfigEntryAuthFailed=_ConfigEntryAuthFailed, ConfigEntryNotReady=_ConfigEntryNotReady, ConfigEntryError=_ConfigEntryError, HomeAssistantError=_HomeAssistantError)
 
-from dataclasses import dataclass, field as _field
+class _ConfigEntryAuthFailed(Exception):
+    pass
+
+
+class _ConfigEntryNotReady(Exception):
+    pass
+
+
+class _ConfigEntryError(Exception):
+    pass
+
+
+class _HomeAssistantError(Exception):
+    pass
+
+
+_stub(
+    "homeassistant.exceptions",
+    ConfigEntryAuthFailed=_ConfigEntryAuthFailed,
+    ConfigEntryNotReady=_ConfigEntryNotReady,
+    ConfigEntryError=_ConfigEntryError,
+    HomeAssistantError=_HomeAssistantError,
+)
+
+from dataclasses import dataclass
+
 
 @dataclass(frozen=True, kw_only=True)
 class _SwitchEntityDescription:
     """Minimal stub for SwitchEntityDescription."""
+
     key: str = ""
     name: str | None = None
     entity_category: object = None
@@ -66,29 +126,80 @@ class _SwitchEntityDescription:
     device_class: object = None
     icon: str | None = None
 
+
 class _SwitchEntity:
     """Minimal SwitchEntity stub."""
-    def __init__(self, *args, **kwargs): pass
 
-_switch_mod = _stub("homeassistant.components.switch", DOMAIN="switch", SwitchEntity=_SwitchEntity, SwitchEntityDescription=_SwitchEntityDescription)
+    def __init__(self, *args, **kwargs):
+        pass
 
-_stub("homeassistant.components.bluetooth", async_ble_device_from_address=MagicMock(), BluetoothServiceInfo=object, async_discovered_service_info=MagicMock(), BluetoothCallbackMatcher=MagicMock(), BluetoothChange=MagicMock(), BluetoothScanningMode=MagicMock(), BluetoothServiceInfoBleak=MagicMock(), async_register_callback=MagicMock())
-_stub("homeassistant.components.camera", Camera=object, CameraEntityDescription=object, WebRTCAnswer=object, WebRTCError=object, WebRTCSendMessage=object, CameraEntityFeature=MagicMock())
+
+_switch_mod = _stub(
+    "homeassistant.components.switch",
+    DOMAIN="switch",
+    SwitchEntity=_SwitchEntity,
+    SwitchEntityDescription=_SwitchEntityDescription,
+)
+
+_stub(
+    "homeassistant.components.bluetooth",
+    async_ble_device_from_address=MagicMock(),
+    BluetoothServiceInfo=object,
+    async_discovered_service_info=MagicMock(),
+    BluetoothCallbackMatcher=MagicMock(),
+    BluetoothChange=MagicMock(),
+    BluetoothScanningMode=MagicMock(),
+    BluetoothServiceInfoBleak=MagicMock(),
+    async_register_callback=MagicMock(),
+)
+_stub(
+    "homeassistant.components.camera",
+    Camera=object,
+    CameraEntityDescription=object,
+    WebRTCAnswer=object,
+    WebRTCError=object,
+    WebRTCSendMessage=object,
+    CameraEntityFeature=MagicMock(),
+)
 _stub("homeassistant.components.web_rtc", async_register_ice_servers=MagicMock())
 
 _er_mod = _stub("homeassistant.helpers.entity_registry", async_get=MagicMock())
 _stub("homeassistant.helpers.entity", EntityCategory=MagicMock())
 _stub("homeassistant.helpers.entity_platform", AddEntitiesCallback=object)
+
+
 class _RestoreEntity:
     """Minimal RestoreEntity stub."""
-    def __init__(self, *args, **kwargs): pass
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+
 _stub("homeassistant.helpers.restore_state", RestoreEntity=_RestoreEntity)
-_stub("homeassistant.helpers.update_coordinator", CoordinatorEntity=object, DataUpdateCoordinator=object)
-_stub("homeassistant.helpers.device_registry", CONNECTION_BLUETOOTH="bluetooth", CONNECTION_NETWORK_MAC="network_mac", DeviceInfo=MagicMock(), format_mac=lambda m: m, DeviceEntry=MagicMock(), async_get=MagicMock())
-_helpers_mod = _stub("homeassistant.helpers", aiohttp_client=MagicMock(), config_validation=MagicMock())
+_stub(
+    "homeassistant.helpers.update_coordinator",
+    CoordinatorEntity=object,
+    DataUpdateCoordinator=object,
+)
+_stub(
+    "homeassistant.helpers.device_registry",
+    CONNECTION_BLUETOOTH="bluetooth",
+    CONNECTION_NETWORK_MAC="network_mac",
+    DeviceInfo=MagicMock(),
+    format_mac=lambda m: m,
+    DeviceEntry=MagicMock(),
+    async_get=MagicMock(),
+)
+_helpers_mod = _stub(
+    "homeassistant.helpers", aiohttp_client=MagicMock(), config_validation=MagicMock()
+)
 _helpers_mod.__path__ = []  # mark as package so submodule imports resolve
 _stub("homeassistant.helpers.aiohttp_client", async_get_clientsession=MagicMock())
-_stub("homeassistant.helpers.event", async_call_later=MagicMock(), async_track_time_interval=MagicMock())
+_stub(
+    "homeassistant.helpers.event",
+    async_call_later=MagicMock(),
+    async_track_time_interval=MagicMock(),
+)
 _stub("homeassistant.helpers.storage", Store=MagicMock())
 _stub("homeassistant.loader", async_get_integration=MagicMock())
 
@@ -99,6 +210,7 @@ _stub("pymammotion")
 _stub("pymammotion.data")
 _stub("pymammotion.data.model")
 
+
 # AreaHashNameList is referenced in switch.py at import time via annotation.
 # Provide a real dataclass-like stub.
 class _AreaHashNameList:
@@ -106,9 +218,17 @@ class _AreaHashNameList:
         self.name = name
         self.hash = hash
 
-_hash_list_mod = _stub("pymammotion.data.model.hash_list", AreaHashNameList=_AreaHashNameList)
 
-_stub("pymammotion.data.model.device", MowingDevice=MagicMock(), RTKDevice=MagicMock(), PoolCleanerDevice=MagicMock())
+_hash_list_mod = _stub(
+    "pymammotion.data.model.hash_list", AreaHashNameList=_AreaHashNameList
+)
+
+_stub(
+    "pymammotion.data.model.device",
+    MowingDevice=MagicMock(),
+    RTKDevice=MagicMock(),
+    PoolCleanerDevice=MagicMock(),
+)
 _stub("pymammotion.data.model.pool_state", SpinoToggle=MagicMock())
 _stub("pymammotion.utility")
 _stub("pymammotion.utility.device_type", DeviceType=MagicMock())
@@ -120,19 +240,31 @@ _stub(
     SetupException=Exception,
     CloudSetupError=Exception,
 )
-_stub("pymammotion.aliyun.exceptions", TooManyRequestsException=Exception, CheckSessionException=Exception)
+_stub(
+    "pymammotion.aliyun.exceptions",
+    TooManyRequestsException=Exception,
+    CheckSessionException=Exception,
+)
 _stub("pymammotion.aliyun.model")
 _stub("pymammotion.aliyun.model.dev_by_account_response", Device=MagicMock())
 _stub("pymammotion.http")
 _stub("pymammotion.http.model")
-_stub("pymammotion.http.model.http", UnauthorizedException=Exception, UnauthorizedExceptionError=Exception, ErrorInfo=object)
+_stub(
+    "pymammotion.http.model.http",
+    UnauthorizedException=Exception,
+    UnauthorizedExceptionError=Exception,
+    ErrorInfo=object,
+)
 _stub("Tea")
 _stub("Tea.exceptions", UnretryableException=Exception)
 _stub("pymammotion.data.model.account", Credentials=MagicMock())
 _stub("pymammotion.http.model.camera_stream", StreamSubscriptionResponse=MagicMock())
 _stub("pymammotion.mammotion")
 _stub("pymammotion.mammotion.devices")
-_stub("pymammotion.mammotion.devices.mammotion_bluetooth", CharacteristicMissingError=Exception)
+_stub(
+    "pymammotion.mammotion.devices.mammotion_bluetooth",
+    CharacteristicMissingError=Exception,
+)
 _stub("pymammotion.transport")
 _stub(
     "pymammotion.transport.base",
@@ -225,33 +357,74 @@ _coordinator_mod = _stub(
     MammotionMaintenanceUpdateCoordinator=object,
     MammotionMapUpdateCoordinator=object,
 )
-_stub("custom_components.mammotion.models", MammotionDevices=MagicMock(), MammotionMowerData=MagicMock(), MammotionRTKData=MagicMock(), MammotionSpinoData=MagicMock())
+_stub(
+    "custom_components.mammotion.models",
+    MammotionDevices=MagicMock(),
+    MammotionMowerData=MagicMock(),
+    MammotionRTKData=MagicMock(),
+    MammotionSpinoData=MagicMock(),
+)
 _stub("custom_components.mammotion.services", async_setup_services=MagicMock())
-_stub("custom_components.mammotion.config", MammotionConfigStore=MagicMock(), async_get_store=MagicMock(), async_pop_store=MagicMock(), TRANSPORT_BLUETOOTH="bluetooth_enabled", TRANSPORT_CLOUD="cloud_enabled")
+_stub(
+    "custom_components.mammotion.config",
+    MammotionConfigStore=MagicMock(),
+    async_get_store=MagicMock(),
+    async_pop_store=MagicMock(),
+    TRANSPORT_BLUETOOTH="bluetooth_enabled",
+    TRANSPORT_CLOUD="cloud_enabled",
+)
+
 
 class _MammotionBaseEntity:
     """Minimal MammotionBaseEntity stub."""
+
     hass = None
     coordinator = None
     registry_entry = None
-    def __init__(self, *args, **kwargs): pass
-    def async_write_ha_state(self): pass
-    async def async_remove(self): pass
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def async_write_ha_state(self):
+        pass
+
+    async def async_remove(self):
+        pass
+
 
 class _MammotionBaseRTKEntity:
     """Minimal MammotionBaseRTKEntity stub."""
+
     hass = None
-    def __init__(self, *args, **kwargs): pass
+
+    def __init__(self, *args, **kwargs):
+        pass
+
 
 class _MammotionCameraBaseEntity:
     """Minimal MammotionCameraBaseEntity stub."""
+
     hass = None
-    def __init__(self, *args, **kwargs): pass
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    # Present on the real base via homeassistant Entity; subclasses call super().
+    async def async_added_to_hass(self):
+        pass
+
+    async def async_will_remove_from_hass(self):
+        pass
+
 
 class _MammotionBaseSpinoEntity:
     """Minimal MammotionBaseSpinoEntity stub."""
+
     hass = None
-    def __init__(self, *args, **kwargs): pass
+
+    def __init__(self, *args, **kwargs):
+        pass
+
 
 _entity_mod = _stub(
     "custom_components.mammotion.entity",
@@ -266,8 +439,12 @@ _entity_mod = _stub(
 import importlib.util
 from pathlib import Path
 
-_switch_path = Path(__file__).parent.parent / "custom_components" / "mammotion" / "switch.py"
-_spec = importlib.util.spec_from_file_location("custom_components.mammotion.switch", _switch_path)
+_switch_path = (
+    Path(__file__).parent.parent / "custom_components" / "mammotion" / "switch.py"
+)
+_spec = importlib.util.spec_from_file_location(
+    "custom_components.mammotion.switch", _switch_path
+)
 _switch_real = importlib.util.module_from_spec(_spec)
 sys.modules["custom_components.mammotion.switch"] = _switch_real
 _spec.loader.exec_module(_switch_real)

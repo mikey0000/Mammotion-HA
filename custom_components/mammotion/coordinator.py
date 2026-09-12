@@ -12,7 +12,7 @@ import time
 from abc import abstractmethod
 from collections.abc import Awaitable, Callable, Coroutine, Mapping
 from datetime import timedelta
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any, Protocol, cast
 
 from habluetooth import BluetoothScanningMode
 from habluetooth.models import BluetoothServiceInfoBleak
@@ -108,6 +108,14 @@ if TYPE_CHECKING:
 
     from . import MammotionConfigEntry
 
+
+class WebRTCSessionControl(Protocol):
+    """Teardown surface the WebRTC camera entity exposes to its coordinator."""
+
+    async def async_teardown_stream(self) -> None:
+        """Leave the Agora channel and stop the mower's encoder."""
+
+
 MAINTENANCE_INTERVAL = timedelta(minutes=60)
 DEFAULT_INTERVAL = timedelta(minutes=30)
 REPORT_INTERVAL = timedelta(minutes=5)
@@ -163,6 +171,9 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         )
         self._ice_servers = None
         self._agora_response = None
+        # Set by the WebRTC camera entity so the start/stop_video services and
+        # config-entry unload can drive the same teardown the frontend uses.
+        self._webrtc_session_control: WebRTCSessionControl | None = None
         self.service_info: BluetoothServiceInfoBleak | None = None
         assert config_entry.unique_id
         self.account = config_entry.data.get(CONF_ACCOUNTNAME, "")
@@ -406,11 +417,30 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         except AttributeError:
             return False
 
+    @callback
+    def register_webrtc_session_control(
+        self, control: WebRTCSessionControl | None
+    ) -> None:
+        """Attach (or detach) the camera entity that owns this device's stream."""
+        self._webrtc_session_control = control
+
     async def join_webrtc_channel(self) -> None:
         """Start stream command."""
+        await self.manager.get_stream_subscription(
+            self.device.device_name, self.device.iot_id
+        )
 
     async def leave_webrtc_channel(self) -> None:
-        """End stream command."""
+        """End stream command.
+
+        Runs the same teardown as the frontend closing its session: leave the
+        Agora channel, then stop the mower's encoder.  Without a camera entity
+        attached only the device-side half is possible.
+        """
+        if self._webrtc_session_control is not None:
+            await self._webrtc_session_control.async_teardown_stream()
+            return
+        await self.manager.stop_stream(self.device.device_name)
 
     async def set_scheduled_updates(self, enabled: bool) -> None:
         """Enable or disable scheduled polling updates for this device."""
@@ -1049,7 +1079,11 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             # context=1 on the read, as the app sends it (DrawerSettingsViewModel
             # .readDeviceState: allpowerfullRW(3, 1, 0)).  It is per-id, not a blanket
             # convention — ids 20-23 really do read with context=0.
-            "read_write_device", self._rw_expected_field(3), rw_id=3, context=1, rw=0
+            "read_write_device",
+            self._rw_expected_field(3),
+            rw_id=3,
+            context=1,
+            rw=0,
         )
 
     async def async_read_battery_info(self) -> None:
@@ -1142,7 +1176,11 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         """Read current traversal mode from device."""
         await self.async_send_and_wait(
             # allpowerfullRW(7, 1, 0) in the app
-            "read_write_device", self._rw_expected_field(7), rw_id=7, context=1, rw=0
+            "read_write_device",
+            self._rw_expected_field(7),
+            rw_id=7,
+            context=1,
+            rw=0,
         )
 
     async def async_set_wildlife_safety(self, mode: int) -> None:
@@ -1191,7 +1229,11 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         """Read current turning mode from device."""
         await self.async_send_and_wait(
             # allpowerfullRW(6, 1, 0) in the app
-            "read_write_device", self._rw_expected_field(6), rw_id=6, context=1, rw=0
+            "read_write_device",
+            self._rw_expected_field(6),
+            rw_id=6,
+            context=1,
+            rw=0,
         )
 
     async def async_blade_height(self, height: int) -> int:
@@ -2694,11 +2736,16 @@ class MammotionMapUpdateCoordinator(MammotionBaseUpdateCoordinator[MowerInfo]):
         if device is None:
             return
 
-        if handle := self.manager.mower(self.device_name):
-            handle.watch_field(
-                lambda s: s.raw.report_data.dev.sys_status,
-                self._on_sys_status_changed_dynamics,
-            )
+        # Dropped: pymammotion's own dynamics_line_loop (BLE-gated, firmware-gated,
+        # is_saga_active-guarded) now owns dynamics-line polling. Leaving this
+        # registration active gave a second, unguarded 10s poller that stacked the
+        # same common_data_fetch saga. Commented out rather than deleted so the
+        # HA-side poller can be restored if the library loop is ever removed.
+        # if handle := self.manager.mower(self.device_name):
+        #     handle.watch_field(
+        #         lambda s: s.raw.report_data.dev.sys_status,
+        #         self._on_sys_status_changed_dynamics,
+        #     )
 
         if not device.enabled or not device.online:
             return

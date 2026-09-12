@@ -102,6 +102,14 @@ class AgoraWebSocketHandler:
     # don't run another recovery within the cooldown window (anti-thrash).
     PEER_REJOIN_DEBOUNCE_SECS = 2.0
     PEER_RECOVER_COOLDOWN_SECS = 15.0
+    # A mower that keeps rejoining and quitting is not recoverable by retrying:
+    # without this the handler resurrects it forever, so an unwatched stream
+    # runs until Home Assistant restarts.  Consecutive recoveries with no
+    # viewer-visible progress are capped; a healthy stream resets the count.
+    PEER_RECOVER_MAX_ATTEMPTS = 5
+    # A stream that ran this long since the last recovery clearly settled, so
+    # the next drop starts a fresh budget rather than counting toward the cap.
+    PEER_RECOVER_RESET_SECS = 600.0
 
     def __init__(
         self,
@@ -162,6 +170,7 @@ class AgoraWebSocketHandler:
         # Peer-recovery debounce task + cooldown timestamp (see _schedule_peer_recovery).
         self._peer_recover_task: asyncio.Task | None = None
         self._last_peer_recover_at: float = 0.0
+        self._peer_recover_attempts: int = 0
         self._setup_message_handlers()
 
     def _setup_message_handlers(self) -> None:
@@ -211,6 +220,7 @@ class AgoraWebSocketHandler:
         self._msid_audio_track_id = str(uuid.uuid4())
         # Fresh session — clear any peer-recovery cooldown from a prior stream.
         self._last_peer_recover_at = 0.0
+        self._peer_recover_attempts = 0
 
         # Store for later use in token refresh / rejoin / restart
         self._agora_data = agora_data
@@ -833,6 +843,21 @@ class AgoraWebSocketHandler:
             return  # websocket gone — viewer stopped watching; don't recover
 
         now = time.monotonic()
+        if (
+            self._peer_recover_attempts
+            and now - self._last_peer_recover_at > self.PEER_RECOVER_RESET_SECS
+        ):
+            self._peer_recover_attempts = 0
+
+        if self._peer_recover_attempts >= self.PEER_RECOVER_MAX_ATTEMPTS:
+            _LOGGER.warning(
+                "Peer %s left the channel %s times without the stream settling — "
+                "giving up instead of re-requesting it indefinitely",
+                peer_uid,
+                self._peer_recover_attempts,
+            )
+            return
+
         if now - self._last_peer_recover_at < self.PEER_RECOVER_COOLDOWN_SECS:
             _LOGGER.debug(
                 "Peer %s still gone but stream recovery is within the %.0fs cooldown — skipping",
@@ -841,11 +866,15 @@ class AgoraWebSocketHandler:
             )
             return
         self._last_peer_recover_at = now
+        self._peer_recover_attempts += 1
 
         _LOGGER.debug(
-            "Peer %s did not rejoin within %.0fs — recovering stream (BLE sync + subscription)",
+            "Peer %s did not rejoin within %.0fs — recovering stream "
+            "(BLE sync + subscription, attempt %s/%s)",
             peer_uid,
             self.PEER_REJOIN_DEBOUNCE_SECS,
+            self._peer_recover_attempts,
+            self.PEER_RECOVER_MAX_ATTEMPTS,
         )
         if self._recover_stream is None:
             return
@@ -1935,6 +1964,7 @@ class AgoraWebSocketHandler:
         if self._peer_recover_task and not self._peer_recover_task.done():
             self._peer_recover_task.cancel()
             self._peer_recover_task = None
+        self._peer_recover_attempts = 0
         if self._fpv_keepalive_task and not self._fpv_keepalive_task.done():
             self._fpv_keepalive_task.cancel()
             self._fpv_keepalive_task = None
