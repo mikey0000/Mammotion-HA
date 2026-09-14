@@ -51,6 +51,18 @@ def test_route_generation_carries_the_setting() -> None:
     assert "auto_change_direction=operation_settings.auto_change_direction" in body
 
 
+def test_route_generation_gates_the_setting_on_device_support() -> None:
+    """The send path gates too, not just entity setup.
+
+    operation_settings survive a device swap and the coordinator plans routes from
+    them, so an entity-level gate alone would still write the setting.
+    """
+    src = (_ROOT / "coordinator.py").read_text()
+    body = _function(src, "generate_route_information")
+    gate = body.index("DeviceType.supports_auto_change_direction(")
+    assert "route_information.auto_change_direction = 0" in body[gate:]
+
+
 def test_every_translation_names_the_new_switch() -> None:
     """Every locale and icons.json know the new switch key, each in its own language."""
     files = [_ROOT / "strings.json", *sorted((_ROOT / "translations").glob("*.json"))]

@@ -1551,6 +1551,14 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         if DeviceType.is_luba1(self.device_name):
             route_information.toward_mode = 0
             route_information.toward_included_angle = 0
+        firmware = getattr(
+            getattr(self.data, "device_firmwares", None), "device_version", ""
+        )
+        if not DeviceType.supports_auto_change_direction(
+            self.device_name, firmware or ""
+        ):
+            # The app gates this row on a capability list and firmware; match it.
+            route_information.auto_change_direction = 0
         return route_information
 
     async def async_plan_route(
