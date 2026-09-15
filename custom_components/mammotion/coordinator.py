@@ -534,14 +534,13 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         handle = self.manager.mower(self.device_name)
         if handle is None:
             return
+        # set_cloud_attached detaches this handle instead of disconnecting: the
+        # cloud transports are one object per account, so disconnecting them for
+        # one mower takes cloud down for every other mower on the account.
+        with contextlib.suppress(TransportError):
+            await self.manager.set_cloud_attached(self.device_name, attached=enabled)
         if enabled:
-            for t_type in (TransportType.CLOUD_ALIYUN, TransportType.CLOUD_MAMMOTION):
-                with contextlib.suppress(TransportError):
-                    await handle.connect_transport(t_type)
             await handle.restart_keep_alive()
-        else:
-            for t_type in (TransportType.CLOUD_ALIYUN, TransportType.CLOUD_MAMMOTION):
-                await handle.disconnect_transport(t_type)
 
     async def async_refresh_login(self, exc: Exception | None = None) -> None:
         """Refresh whichever credentials the failure actually implicates.

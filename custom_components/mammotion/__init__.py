@@ -705,8 +705,7 @@ async def _async_bring_up_mower(
     use_ble = report_coordinator.bluetooth_enabled and (not use_wifi or prefer_ble)
     mammotion.set_prefer_ble(device_name, prefer_ble=use_ble)
     if not use_wifi or not report_coordinator.cloud_enabled:
-        for t_type in (TransportType.CLOUD_ALIYUN, TransportType.CLOUD_MAMMOTION):
-            await handle.disconnect_transport(t_type)
+        await mammotion.set_cloud_attached(device_name, attached=False)
     if not report_coordinator.bluetooth_enabled:
         await handle.remove_transport(TransportType.BLE)
 
