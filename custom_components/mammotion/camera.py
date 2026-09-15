@@ -120,6 +120,7 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
 
     entity_description: MammotionCameraEntityDescription
     _attr_capability_attributes = None
+    _unregister_ice_servers: Callable[[], None] | None = None
 
     def __init__(
         self,
@@ -149,16 +150,24 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         self.access_tokens = [secrets.token_hex(16)]
         # Get ICE servers from coordinator (populated in async_setup_entry)
         self.ice_servers = getattr(coordinator, "_ice_servers", [])
-        async_register_ice_servers(hass, self.get_ice_servers)
 
     async def async_added_to_hass(self) -> None:
         """Let the coordinator drive this entity's stream teardown."""
         await super().async_added_to_hass()
         self.coordinator.register_webrtc_session_control(self)
+        # Core appends the getter to a global list and hands back the only way to
+        # take it off again; without releasing it every reload leaves another copy
+        # behind and the browser gathers duplicate relay candidates for each.
+        self._unregister_ice_servers = async_register_ice_servers(
+            self.hass, self.get_ice_servers
+        )
 
     async def async_will_remove_from_hass(self) -> None:
         """Tear the stream down on unload/reload so it cannot outlive the entity."""
         self.coordinator.register_webrtc_session_control(None)
+        if self._unregister_ice_servers is not None:
+            self._unregister_ice_servers()
+            self._unregister_ice_servers = None
         self._sessions.clear()
         await self.async_teardown_stream()
         await super().async_will_remove_from_hass()

@@ -137,3 +137,23 @@ def test_removal_tears_down_and_detaches(camera: Any) -> None:
     camera._agora_handler.disconnect.assert_awaited_once()
     camera.coordinator.manager.stop_stream.assert_awaited_once_with("Luba-Test")
     assert camera._sessions == set()
+
+
+def test_reload_does_not_leave_ice_servers_registered(
+    camera_module: types.ModuleType, camera: Any, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Core keeps the getter in a global list until the returned callback runs.
+
+    Dropping that callback left another copy behind on every reload, and the
+    browser gathered a duplicate set of Agora relay candidates for each one.
+    """
+    unregister = MagicMock()
+    register = MagicMock(return_value=unregister)
+    monkeypatch.setattr(camera_module, "async_register_ice_servers", register)
+    camera.async_write_ha_state = MagicMock()
+
+    _run(camera.async_added_to_hass())
+    _run(camera.async_will_remove_from_hass())
+
+    register.assert_called_once_with(camera.hass, camera.get_ice_servers)
+    unregister.assert_called_once_with()
