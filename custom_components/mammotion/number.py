@@ -303,6 +303,11 @@ async def async_setup_entry(
         )
 
 
+def _clamp(value: float, minimum: float, maximum: float) -> float:
+    """Return value limited to the inclusive minimum/maximum range."""
+    return min(max(value, minimum), maximum)
+
+
 class MammotionConfigNumberEntity(MammotionBaseEntity, RestoreNumber):  # type: ignore[misc]
     """Mammotion config number entity."""
 
@@ -361,7 +366,11 @@ class MammotionConfigNumberEntity(MammotionBaseEntity, RestoreNumber):  # type: 
         if (last_number_data is not None) and (
             last_number_data.native_value is not None
         ):
-            self._attr_native_value = last_number_data.native_value
+            self._attr_native_value = _clamp(
+                last_number_data.native_value,
+                self.native_min_value,
+                self.native_max_value,
+            )
             if self.entity_description.set_fn is not None:
                 self.entity_description.set_fn(
                     self.coordinator, cast(float, self._attr_native_value)
@@ -393,10 +402,16 @@ class MammotionWorkingNumberEntity(MammotionConfigNumberEntity):
         if self.entity_description.get_fn is not None:
             self._attr_native_value = self.entity_description.get_fn(self.coordinator)
 
-        native_val = self._attr_native_value
-        native_min = self._attr_native_min_value
-        if native_val is not None and native_min is not None:
-            self._attr_native_value = max(native_val, native_min)
+        if self._attr_native_value is not None:
+            self._attr_native_value = _clamp(
+                self._attr_native_value,
+                self.native_min_value,
+                self.native_max_value,
+            )
+            if self.entity_description.set_fn is not None:
+                self.entity_description.set_fn(
+                    self.coordinator, self._attr_native_value
+                )
 
     @property
     def native_min_value(self) -> float:
