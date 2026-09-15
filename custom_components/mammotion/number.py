@@ -1,5 +1,6 @@
 """Number entities for the Mammotion integration."""
 
+import asyncio
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from typing import Any, cast
@@ -371,6 +372,8 @@ class MammotionConfigNumberEntity(MammotionBaseEntity, RestoreNumber):  # type: 
 class MammotionWorkingNumberEntity(MammotionConfigNumberEntity):
     """Mammotion working number entity."""
 
+    _last_set_failed = False
+
     def __init__(
         self,
         coordinator: MammotionBaseUpdateCoordinator[Any],
@@ -410,13 +413,19 @@ class MammotionWorkingNumberEntity(MammotionConfigNumberEntity):
 
     async def async_set_native_value(self, value: float) -> None:
         """Set native value for number and call update_fn if defined."""
-        if self._attr_native_value == value:
+        if self._attr_native_value == value and not self._last_set_failed:
             return
         self._attr_native_value = value
-        if self.entity_description.set_fn is not None:
-            self.entity_description.set_fn(self.coordinator, value)
-        if self.entity_description.set_async_fn is not None:
-            await self.entity_description.set_async_fn(self.coordinator, value)
+        self._last_set_failed = False
+        try:
+            if self.entity_description.set_fn is not None:
+                self.entity_description.set_fn(self.coordinator, value)
+            if self.entity_description.set_async_fn is not None:
+                await self.entity_description.set_async_fn(self.coordinator, value)
+        except (Exception, asyncio.CancelledError):
+            # The optimistic value is not proof that the command completed.
+            self._last_set_failed = True
+            raise
         self.async_write_ha_state()
 
 
