@@ -110,6 +110,11 @@ class AgoraWebSocketHandler:
     # A stream that ran this long since the last recovery clearly settled, so
     # the next drop starts a fresh budget rather than counting toward the cap.
     PEER_RECOVER_RESET_SECS = 600.0
+    # The client-level codec spec.  The SDK sends this same value in `join_v3`
+    # and in every `subscribe` (`this.spec.codec` at both call sites), so it is
+    # one setting for the session — not a description of what the publisher
+    # encodes — and the two messages must never disagree.
+    CLIENT_CODEC = "vp8"
 
     def __init__(
         self,
@@ -171,6 +176,9 @@ class AgoraWebSocketHandler:
         self._peer_recover_task: asyncio.Task | None = None
         self._last_peer_recover_at: float = 0.0
         self._peer_recover_attempts: int = 0
+        # Whether the gateway offered RTX payload types for this session — see
+        # _handle_join_success.
+        self._sub_rtx: bool = False
         self._setup_message_handlers()
 
     def _setup_message_handlers(self) -> None:
@@ -613,6 +621,14 @@ class AgoraWebSocketHandler:
                     "Injected %d new fingerprints from Auth Response", injected_count
                 )
 
+        # The gateway only sends RTX for payload types it offered here, and the
+        # answer advertises exactly those, so asking for RTX when it offered none
+        # means the browser drops every retransmission as an unknown payload type.
+        self._sub_rtx = any(
+            (codec.get("rtpMap", {}).get("encodingName") or "").lower() == "rtx"
+            for codec in self._negotiated_caps(ortc).get("videoCodecs", []) or []
+        )
+
         # Generate answer SDP from ORTC parameters.
         # We force 'active' role here to match Agora SDK behavior for the audience role,
         # ensuring the browser behaves as the DTLS server and Agora as the DTLS client.
@@ -718,15 +734,7 @@ class AgoraWebSocketHandler:
                     )
                     stream_info["subscribed"] = True
                     await self._send_subscribe(
-                        stream_id=uid,
-                        ssrc_id=stream_info["ssrcId"],
-                        # Mammotion mowers publish H264 from their hardware
-                        # encoder; subscribing with codec="vp8" tells the SFU to
-                        # forward a non-existent VP8 stream, so no video RTP
-                        # arrives.  Use the codec the publisher actually sent
-                        # (logged on on_add_video_stream) when available, else
-                        # default to h264.
-                        codec=stream_info.get("codec") or "h264",
+                        stream_id=uid, ssrc_id=stream_info["ssrcId"]
                     )
 
     async def _handle_add_video_stream(self, response: dict[str, Any]) -> None:
@@ -741,9 +749,21 @@ class AgoraWebSocketHandler:
         ssrc_id = message.get("ssrcId")
         rtx_ssrc_id = message.get("rtxSsrcId")
         cname = message.get("cname")
-        # Some Agora SFU versions include a codec hint on the add-stream
-        # notification; capture it if present so subscribe asks for the same.
+        # `subscribe` carries the client codec spec, not whatever the publisher
+        # happens to encode (see CLIENT_CODEC).
         stream_codec = (message.get("codec") or "").lower() or None
+        # `pt` is the payload type the gateway will relay this stream on, chosen
+        # from the codecs the browser offered.  0 means it found none it could
+        # use — the mower publishes H265 and the browser no longer offers it, so
+        # the stream arrives on a payload type that decodes to nothing.
+        if message.get("pt") == 0:
+            _LOGGER.warning(
+                "Agora negotiated no video payload type for uid %s (pt=0): the "
+                "browser offered no codec the mower's stream can be sent as. "
+                "Mammotion mowers publish H265; check chrome://gpu for HEVC "
+                "decode support",
+                message.get("uid"),
+            )
 
         if uid:
             # Full message dump so any unknown fields (codec hints, profile, …)
@@ -773,14 +793,7 @@ class AgoraWebSocketHandler:
                     "User %s already online, subscribing to video stream now", uid
                 )
                 self._video_streams[uid]["subscribed"] = True
-                await self._send_subscribe(
-                    stream_id=uid,
-                    ssrc_id=ssrc_id,
-                    # Mammotion mowers publish H264 from their hardware encoder.
-                    # Subscribing with the wrong codec means the SFU has no
-                    # matching stream to forward and no video RTP arrives.
-                    codec=stream_codec or "h264",
-                )
+                await self._send_subscribe(stream_id=uid, ssrc_id=ssrc_id)
 
     async def _handle_user_offline(self, response: dict[str, Any]) -> None:
         """Handle user offline notification.
@@ -939,7 +952,7 @@ class AgoraWebSocketHandler:
                 "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
                 "process_id": process_id,
                 "mode": "live",
-                "codec": "vp8",
+                "codec": self.CLIENT_CODEC,
                 "role": "host",
                 "has_changed_gateway": False,
                 "ap_response": agora_response.to_ap_response(4096),
@@ -1008,12 +1021,10 @@ class AgoraWebSocketHandler:
         self,
         stream_id: int,
         ssrc_id: int,
-        codec: str = "h264",
         stream_type: str = "video",
         mode: str = "live",
         p2p_id: int = 1,
         twcc: bool = True,
-        rtx: bool = True,
         extend: str = "",
     ) -> None:
         """Send subscribe message to Agora.
@@ -1021,12 +1032,10 @@ class AgoraWebSocketHandler:
         Args:
             stream_id: Stream ID (usually the uid)
             ssrc_id: SSRC ID from on_add_video_stream
-            codec: Video codec (default: "h264")
             stream_type: Stream type (default: "video")
             mode: Mode (default: "live")
             p2p_id: P2P ID (default: 1)
             twcc: Enable transport-wide congestion control
-            rtx: Enable retransmission
             extend: Extended info
 
         """
@@ -1042,10 +1051,10 @@ class AgoraWebSocketHandler:
                 "stream_id": stream_id,
                 "stream_type": stream_type,
                 "mode": mode,
-                "codec": codec,
+                "codec": self.CLIENT_CODEC,
                 "p2p_id": p2p_id,
                 "twcc": twcc,
-                "rtx": rtx,
+                "rtx": self._sub_rtx,
                 "extend": extend,
                 "ssrcId": ssrc_id,
             },
@@ -1369,6 +1378,20 @@ class AgoraWebSocketHandler:
             _LOGGER.error("Failed to parse offer SDP with sdp_transform: %s", ex)
             return None
 
+    @staticmethod
+    def _negotiated_caps(ortc: dict[str, Any]) -> dict[str, Any]:
+        """Return the gateway's RTP capabilities.
+
+        The server may return them under 'sendrecv', 'recv' or 'send'.
+        """
+        rtp_capabilities = ortc.get("rtpCapabilities", {})
+        return (
+            rtp_capabilities.get("sendrecv")
+            or rtp_capabilities.get("recv")
+            or rtp_capabilities.get("send")
+            or rtp_capabilities
+        )
+
     def _generate_answer_sdp(
         self, ortc: dict[str, Any], sdp_info: SdpInfo
     ) -> str | None:
@@ -1379,14 +1402,7 @@ class AgoraWebSocketHandler:
 
             ice_params = ortc.get("iceParameters", {})
             dtls_params = ortc.get("dtlsParameters", {})
-            # Server may return caps under 'sendrecv', 'recv', or 'send' keys
-            rtp_capabilities = ortc.get("rtpCapabilities", {})
-            rtp_caps = (
-                rtp_capabilities.get("sendrecv")
-                or rtp_capabilities.get("recv")
-                or rtp_capabilities.get("send")
-                or rtp_capabilities
-            )
+            rtp_caps = self._negotiated_caps(ortc)
 
             _LOGGER.debug("ICE params: %s", ice_params)
             _LOGGER.debug("DTLS params: %s", dtls_params)
@@ -1489,9 +1505,15 @@ class AgoraWebSocketHandler:
             )
             bundle_mids = bundle_group.get("mids", "0 1") if bundle_group else "0 1"
 
-            # Determine answer setup role based on offer
-            # Working SDK Answer shows setup:active
-            answer_setup = "active"
+            # Mirror the DTLS role Agora reports rather than assuming one: server
+            # means we answer passive, so the browser is the client and opens the
+            # handshake from the pair it nominated.  An Agora that insists on being
+            # the client still gets a consistent answer instead of a deadlock.
+            agora_dtls_role = dtls_params.get("role", "client")
+            answer_setup = "passive" if agora_dtls_role == "server" else "active"
+            _LOGGER.debug(
+                "Agora DTLS role %s — answering setup:%s", agora_dtls_role, answer_setup
+            )
 
             # build base sdp header
             # f"o=- {sdp_info.parsed_sdp['origin']['sessionId']} {sdp_info.parsed_sdp['origin']['sessionVersion']} IN IP4 127.0.0.1",
@@ -1611,9 +1633,6 @@ class AgoraWebSocketHandler:
                                 [f"{k}={v}" for k, v in params.items()]
                             )
                             sdp_lines.append(f"a=fmtp:{pt} {param_str}")
-
-                # Working SDK answer DOES NOT include a=ssrc for audience/receiver section
-                # Omit SSRC for receiver role
 
                 # Append candidates from Agora response for trickle ICE initialization
                 # These are the TURN/STUN candidates provided by Agora in the join_success response
