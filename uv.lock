@@ -1365,7 +1365,7 @@ dev = [
 requires-dist = [
     { name = "autotyping", specifier = ">=24.3.0" },
     { name = "homeassistant", specifier = ">=2026.1.0" },
-    { name = "pymammotion", specifier = "==0.9.0b7" },
+    { name = "pymammotion", specifier = "==0.9.0b9" },
     { name = "sdp-transform", specifier = ">=1.1.0" },
     { name = "websockets", specifier = ">=15.0.1" },
 ]
@@ -1863,7 +1863,7 @@ wheels = [
 
 [[package]]
 name = "pymammotion"
-version = "0.9.0b7"
+version = "0.9.0b9"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -1888,9 +1888,9 @@ dependencies = [
     { name = "webrtc-models" },
     { name = "websockets" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/68/25/6855f5f513a917b6d0bda932ed66e8085835c8bd1f494215e863c1dc6f79/pymammotion-0.9.0b7.tar.gz", hash = "sha256:ad75f5018566e3600eaf2effd638bce168fdadd3f59dfb78cf0841fd76ec7a13", size = 677909, upload-time = "2026-09-15T04:25:25.271Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/96/31/7f41363c45395ba1cc48750a6e3afb9105ff4ca9e1661c56cdaf037db6b0/pymammotion-0.9.0b9.tar.gz", hash = "sha256:9ed65e315c9fc5fb4cd082abd348951e0de0baf717657dbe24a8aebeef25f954", size = 678668, upload-time = "2026-09-15T21:38:58.31Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/51/b3/4bb9e0715c899fe6b6792ee93c659d3b71b1c9732ddb7a8752f1e7e88253/pymammotion-0.9.0b7-py3-none-any.whl", hash = "sha256:612aad97869f9dc56718b0a82e03c7f247c1bd97f9517a6f584dffa6d6ccd020", size = 755235, upload-time = "2026-09-15T04:25:23.469Z" },
+    { url = "https://files.pythonhosted.org/packages/1e/99/d805b40b03ec40053c0e0175db5c9b02daf6cfa6e8f23fe9598918358c09/pymammotion-0.9.0b9-py3-none-any.whl", hash = "sha256:33923570f91ec52948791106be482d5519c8a88cc9f78f958fe4e5cbdf080057", size = 755830, upload-time = "2026-09-15T21:38:56.234Z" },
 ]
 
 [[package]]
