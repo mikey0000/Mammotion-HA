@@ -23,18 +23,19 @@ from homeassistant.core import callback
 from homeassistant.helpers import aiohttp_client
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers.device_registry import CONNECTION_BLUETOOTH, format_mac
 from homeassistant.helpers.selector import (
     SelectSelector,
     SelectSelectorConfig,
     SelectSelectorMode,
 )
-from homeassistant.helpers.device_registry import CONNECTION_BLUETOOTH, format_mac
 from homeassistant.loader import async_get_integration
 from pymammotion.aliyun.exceptions import CloudSetupError, TooManyRequestsException
 from pymammotion.client import MammotionClient
 from pymammotion.transport.base import LoginFailedError
 
 from .const import (
+    BLE_SUPPORT,
     CONF_ACCOUNT_ID,
     CONF_ACCOUNTNAME,
     CONF_BLE_DEVICES,
@@ -47,7 +48,6 @@ from .const import (
     CONF_USE_WIFI,
     CREDENTIAL_CACHE_KEYS,
     DEFAULT_NOTIFY,
-    DEVICE_SUPPORT,
     DOMAIN,
     LOGGER,
     NOTIFY_CATEGORIES,
@@ -140,7 +140,7 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
         if device is None:
             return self.async_abort(reason="no_longer_present")
 
-        if device.name is None or not device.name.startswith(DEVICE_SUPPORT):
+        if device.name is None or not device.name.startswith(BLE_SUPPORT):
             return self.async_abort(reason="not_supported")
 
         self.context["title_placeholders"] = {"name": device.name}
@@ -221,7 +221,7 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
             name = discovery_info.name
             if address in current_addresses or address in self._discovered_devices:
                 continue
-            if name is None or not name.startswith(DEVICE_SUPPORT):
+            if name is None or not name.startswith(BLE_SUPPORT):
                 continue
             if self.hass.config_entries.async_entry_for_domain_unique_id(
                 self.handler, name

@@ -6,7 +6,7 @@ import asyncio
 import time
 from collections.abc import Coroutine
 from contextlib import suppress
-from typing import Any
+from typing import Any, cast
 
 from aiohttp import ClientConnectorError
 from homeassistant.components import bluetooth
@@ -33,7 +33,7 @@ from homeassistant.loader import async_get_integration
 from pymammotion.aliyun.exceptions import TooManyRequestsException
 from pymammotion.aliyun.model.dev_by_account_response import Device
 from pymammotion.client import MammotionClient
-from pymammotion.data.model.device import MowingDevice
+from pymammotion.data.model.device import MowingDevice, PoolCleanerDevice
 from pymammotion.transport.base import (
     AccountInUseError,
     LoginFailedError,
@@ -51,6 +51,7 @@ from .config import (
     async_pop_store,
 )
 from .const import (
+    BLE_SUPPORT,
     CONF_ACCOUNTNAME,
     CONF_AEP_DATA,
     CONF_BLE_DEVICES,
@@ -67,6 +68,7 @@ from .const import (
     DOMAIN,
     EXPIRED_CREDENTIAL_EXCEPTIONS,
     LOGGER,
+    POOL_CLEANER_SUPPORT,
 )
 from .coordinator import (
     MammotionDeviceErrorUpdateCoordinator,
@@ -217,8 +219,9 @@ async def _register_ble_devices(
     """
     registered: dict[str, str] = {}
     for device_name, ble_address in entry.data.get(CONF_BLE_DEVICES, {}).items():
-        if not device_name.startswith(DEVICE_SUPPORT):
+        if not device_name.startswith(BLE_SUPPORT):
             continue
+        is_pool_cleaner = device_name.startswith(POOL_CLEANER_SUPPORT)
         ble_device = bluetooth.async_ble_device_from_address(
             hass, ble_address.upper(), True
         )
@@ -228,15 +231,22 @@ async def _register_ble_devices(
                 device_name,
                 ble_address,
             )
+        # The handle picks its reducer from the device name, so the initial
+        # state object has to match or a Spino would be fed mower state.
         await mammotion.add_ble_only_device(
             device_id=device_name,
             device_name=device_name,
-            initial_device=MowingDevice(name=device_name),
+            initial_device=PoolCleanerDevice(name=device_name)
+            if is_pool_cleaner
+            else MowingDevice(name=device_name),
             ble_device=ble_device,
             ble_address=None if ble_device is not None else ble_address,
         )
-        if (mowing_device := mammotion.get_device_by_name(device_name)) is not None:
-            mowing_device.mower_state.ble_mac = ble_address
+        if (device := mammotion.get_device_by_name(device_name)) is not None:
+            if is_pool_cleaner:
+                cast(PoolCleanerDevice, device).bt_mac = ble_address
+            else:
+                device.mower_state.ble_mac = ble_address
         _register_ble_reconnect_callback(
             hass, entry, mammotion, device_name, ble_address
         )
@@ -525,7 +535,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
     # (or every BLE mower when there is no cloud) as synthetic records.
     cloud_names = {device.device_name for device in mower_devices}
     mower_devices.extend(
-        _create_ble_only_device(name) for name in ble_mowers if name not in cloud_names
+        _create_ble_only_device(name)
+        for name in ble_mowers
+        if name not in cloud_names and not name.startswith(POOL_CLEANER_SUPPORT)
+    )
+    # A BLE-only pool cleaner belongs on the Spino path; left in mower_devices it
+    # would be handed mower coordinators and a lawn_mower entity.
+    spino_cloud_names = {device.device_name for device in spino_devices}
+    spino_devices.extend(
+        _create_ble_only_device(name)
+        for name in ble_mowers
+        if name not in spino_cloud_names and name.startswith(POOL_CLEANER_SUPPORT)
     )
 
     for device in mower_devices:

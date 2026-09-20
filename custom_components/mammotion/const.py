@@ -32,6 +32,12 @@ NOTIFY_CATEGORY_BY_EVENT: Final = {
 }
 
 DEVICE_SUPPORT = ("Luba", "Yuka")
+# Pool cleaners, kept apart from DEVICE_SUPPORT because that tuple also answers
+# "is this a mower" on the cloud path.  "SDPX" is deliberately absent: the PC210
+# charging pile is not a cleaner.
+POOL_CLEANER_SUPPORT = ("Spino",)
+# Everything the integration will set up over Bluetooth alone.
+BLE_SUPPORT = DEVICE_SUPPORT + POOL_CLEANER_SUPPORT
 SCAN_INTERVAL = timedelta(hours=1)
 ATTR_DIRECTION = "direction"
 
