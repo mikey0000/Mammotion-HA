@@ -9,7 +9,7 @@ authors = [
 readme = "README.md"
 requires-python = ">=3.14.2"
 dependencies = [
-    "pymammotion==0.9.0b10",
+    "pymammotion==0.9.0b11",
     "homeassistant>=2026.1.0",
     "autotyping>=24.3.0",
     "websockets>=15.0.1",
@@ -23,21 +23,27 @@ dev = [
     "ruff>=0.14.3",
     "mypy>=1.18.2",
     "pytest>=8.0.0",
+    "pytest-homeassistant-custom-component==0.13.366",
+    "aiousbwatcher>=1.1.2",
+    "serialx>=1.10.0",
+    "pyturbojpeg>=2.5.0",
 ]
 
 [tool.uv]
 package = false
 
-# Develop against the sibling pymammotion checkout rather than the pinned
-# wheel, so a change there is picked up without a release.  CI must not see
-# this — `uv lock --no-sources` in the release workflow resolves the pin from
-# the index instead.
-[tool.uv.sources]
-pymammotion = { path = "../Luba-API", editable = true }
-
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+# tests/ replaces parts of homeassistant with stubs so the platform modules can
+# be imported without a running HA; pytest-homeassistant-custom-component
+# patches those same modules and errors on the stubs.  The two cannot share a
+# session, so the plugin is off by default and tests_ha/ re-enables it with
+# `-p homeassistant`.
+addopts = "-p no:homeassistant"
+# pytest-homeassistant-custom-component ships autouse async fixtures, which
+# need asyncio auto mode the way Home Assistant core runs its own suite.
+asyncio_mode = "auto"
 
 [tool.mypy]
 python_version = "3.14"
