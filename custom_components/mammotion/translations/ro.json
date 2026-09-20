@@ -11,7 +11,9 @@
       "reconfigure_successful": "Reconfigurare reușită",
       "merged_into_existing_account": "This account already has an entry; the Bluetooth devices were merged into it and this entry was removed.",
       "api_limit_exceeded": "Limita de solicitări API a fost depășită. Vă rugăm să încercați din nou mai târziu.",
-      "account_in_use": "Contul dvs. Mammotion este deja activ într-o altă sesiune. Deconectați-vă din aplicația Mammotion și încercați din nou."
+      "account_in_use": "Contul dvs. Mammotion este deja activ într-o altă sesiune. Deconectați-vă din aplicația Mammotion și încercați din nou.",
+      "reauth_successful": "Reautentificarea a reușit",
+      "wrong_account": "Aceste date de autentificare aparțin altui cont Mammotion. Reautentificați-vă cu contul cu care a fost configurată această intrare."
     },
     "error": {
       "login_failed": "Autentificare eșuată. Verificați adresa de e-mail și parola contului, apoi încercați din nou.",
@@ -42,6 +44,13 @@
         },
         "title": "Conectează-te la Wi-Fi",
         "description": "Introdu adresa de email sau id-ul contului Mammotion și parola. Lasă ambele câmpuri goale pentru a folosi doar Bluetooth, fără cont."
+      },
+      "reauth_confirm": {
+        "title": "Reautentificare Mammotion",
+        "description": "Cloudul Mammotion a respins datele de autentificare salvate pentru {account}. Introduceți parola pentru a vă conecta din nou.",
+        "data": {
+          "password": "Parola contului Mammotion"
+        }
       }
     }
   },

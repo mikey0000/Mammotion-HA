@@ -11,7 +11,9 @@
       "reconfigure_successful": "Újrakonfigurálás sikeres",
       "merged_into_existing_account": "This account already has an entry; the Bluetooth devices were merged into it and this entry was removed.",
       "api_limit_exceeded": "Az API sebességkorlátját elérte. Próbáld újra később.",
-      "account_in_use": "A Mammotion fiókod már aktív egy másik munkamenetben. Jelentkezz ki a Mammotion alkalmazásból, és próbáld újra."
+      "account_in_use": "A Mammotion fiókod már aktív egy másik munkamenetben. Jelentkezz ki a Mammotion alkalmazásból, és próbáld újra.",
+      "reauth_successful": "Az újrahitelesítés sikerült",
+      "wrong_account": "Ezek a hitelesítő adatok egy másik Mammotion-fiókhoz tartoznak. Hitelesítsen újra azzal a fiókkal, amellyel ezt a bejegyzést beállította."
     },
     "error": {
       "login_failed": "A bejelentkezés sikertelen. Ellenőrizze fiókja e-mail-címét és jelszavát, majd próbálja újra.",
@@ -42,6 +44,13 @@
         },
         "title": "Csatlakozás Wi-Fi-hez",
         "description": "Add meg a Mammotion fiók e-mail-címét vagy azonosítóját és a jelszót. Hagyd üresen mindkét mezőt, ha fiók nélkül, csak Bluetooth-on keresztül szeretnéd használni."
+      },
+      "reauth_confirm": {
+        "title": "Mammotion újrahitelesítése",
+        "description": "A Mammotion felhő elutasította a(z) {account} fiókhoz mentett hitelesítő adatokat. Adja meg a jelszavát az újbóli bejelentkezéshez.",
+        "data": {
+          "password": "Mammotion-fiók jelszava"
+        }
       }
     }
   },

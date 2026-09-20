@@ -11,7 +11,9 @@
       "reconfigure_successful": "Opnieuw instellen gelukt",
       "merged_into_existing_account": "This account already has an entry; the Bluetooth devices were merged into it and this entry was removed.",
       "api_limit_exceeded": "De API-limiet is overschreden. Probeer het later opnieuw.",
-      "account_in_use": "Uw Mammotion-account is al actief in een andere sessie. Log uit de Mammotion-app en probeer het opnieuw."
+      "account_in_use": "Uw Mammotion-account is al actief in een andere sessie. Log uit de Mammotion-app en probeer het opnieuw.",
+      "reauth_successful": "Opnieuw verifiëren is gelukt",
+      "wrong_account": "Deze inloggegevens horen bij een ander Mammotion-account. Verifieer opnieuw met het account waarmee dit item is ingesteld."
     },
     "error": {
       "login_failed": "Inloggen mislukt. Controleer het e-mailadres en wachtwoord van je account en probeer het opnieuw.",
@@ -42,6 +44,13 @@
         },
         "title": "Verbind met Wi-Fi",
         "description": "Voer je Mammotion account e-mail of id en wachtwoord in. Laat beide velden leeg om alleen Bluetooth te gebruiken, zonder account."
+      },
+      "reauth_confirm": {
+        "title": "Mammotion opnieuw verifiëren",
+        "description": "De Mammotion-cloud heeft de opgeslagen inloggegevens voor {account} geweigerd. Voer je wachtwoord in om opnieuw in te loggen.",
+        "data": {
+          "password": "Wachtwoord Mammotion-account"
+        }
       }
     }
   },

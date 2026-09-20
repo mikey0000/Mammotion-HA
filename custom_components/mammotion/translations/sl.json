@@ -11,7 +11,9 @@
       "reconfigure_successful": "Ponastavitev uspešna",
       "merged_into_existing_account": "This account already has an entry; the Bluetooth devices were merged into it and this entry was removed.",
       "api_limit_exceeded": "Prekoračena je bila omejitev API-ja. Poskusite znova pozneje.",
-      "account_in_use": "Vaš račun Mammotion je že aktiven v drugi seji. Odjavite se iz aplikacije Mammotion in poskusite znova."
+      "account_in_use": "Vaš račun Mammotion je že aktiven v drugi seji. Odjavite se iz aplikacije Mammotion in poskusite znova.",
+      "reauth_successful": "Ponovna overitev je uspela",
+      "wrong_account": "Ti poverilnici pripadata drugemu računu Mammotion. Ponovno se overite z računom, s katerim je bil ta vnos nastavljen."
     },
     "error": {
       "login_failed": "Prijava ni uspela. Preverite e-poštni naslov in geslo računa ter poskusite znova.",
@@ -42,6 +44,13 @@
         },
         "title": "Poveži Wi-fi",
         "description": "Vnesite e-poštni naslov Mammotion računa ali številko računa in geslo. Pustite obe polji prazni, če želite uporabljati samo Bluetooth brez računa."
+      },
+      "reauth_confirm": {
+        "title": "Ponovna overitev Mammotion",
+        "description": "Oblak Mammotion je zavrnil shranjene poverilnice za {account}. Vnesite geslo za ponovno prijavo.",
+        "data": {
+          "password": "Geslo računa Mammotion"
+        }
       }
     }
   },

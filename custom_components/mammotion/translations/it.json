@@ -11,7 +11,9 @@
       "reconfigure_successful": "Riconfigurazione avvenuta con successo",
       "merged_into_existing_account": "This account already has an entry; the Bluetooth devices were merged into it and this entry was removed.",
       "api_limit_exceeded": "Il limite di frequenza dell'API è stato superato. Si prega di riprovare più tardi.",
-      "account_in_use": "Il tuo account Mammotion è già attivo in un'altra sessione. Disconnettiti dall'app Mammotion e riprova."
+      "account_in_use": "Il tuo account Mammotion è già attivo in un'altra sessione. Disconnettiti dall'app Mammotion e riprova.",
+      "reauth_successful": "Nuova autenticazione riuscita",
+      "wrong_account": "Queste credenziali appartengono a un altro account Mammotion. Autenticati di nuovo con l'account con cui è stata configurata questa voce."
     },
     "error": {
       "login_failed": "Accesso non riuscito. Controlla l'email e la password del tuo account, quindi riprova.",
@@ -42,6 +44,13 @@
         },
         "title": "Connetti al Wi-Fi",
         "description": "Inserisci l'email o l'id del tuo account Mammotion e la password. Lascia entrambi i campi vuoti per utilizzare solo il Bluetooth, senza account."
+      },
+      "reauth_confirm": {
+        "title": "Autentica di nuovo Mammotion",
+        "description": "Il cloud Mammotion ha rifiutato le credenziali salvate per {account}. Inserisci la password per accedere di nuovo.",
+        "data": {
+          "password": "Password dell'account Mammotion"
+        }
       }
     }
   },

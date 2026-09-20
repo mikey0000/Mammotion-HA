@@ -11,7 +11,9 @@
       "reconfigure_successful": "Omkonfiguration lykkedes",
       "merged_into_existing_account": "This account already has an entry; the Bluetooth devices were merged into it and this entry was removed.",
       "api_limit_exceeded": "API-anmodningsgrænsen er overskredet. Prøv igen senere.",
-      "account_in_use": "Din Mammotion-konto er allerede aktiv i en anden session. Log ud af Mammotion-appen og prøv igen."
+      "account_in_use": "Din Mammotion-konto er allerede aktiv i en anden session. Log ud af Mammotion-appen og prøv igen.",
+      "reauth_successful": "Godkendelsen blev fornyet",
+      "wrong_account": "Disse legitimationsoplysninger tilhører en anden Mammotion-konto. Godkend igen med den konto, denne post blev oprettet med."
     },
     "error": {
       "login_failed": "Login mislykkedes. Kontrollér din kontos e-mail og adgangskode, og prøv igen.",
@@ -42,6 +44,13 @@
         },
         "title": "Opret forbindelse til Wi-Fi",
         "description": "Indtast din Mammotion e-mail eller -id og adgangskode. Lad begge felter være tomme for kun at bruge Bluetooth uden en konto."
+      },
+      "reauth_confirm": {
+        "title": "Forny Mammotion-godkendelse",
+        "description": "Mammotion-skyen afviste de gemte legitimationsoplysninger for {account}. Indtast din adgangskode for at logge ind igen.",
+        "data": {
+          "password": "Adgangskode til Mammotion-konto"
+        }
       }
     }
   },

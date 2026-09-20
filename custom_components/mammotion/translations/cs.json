@@ -11,7 +11,9 @@
       "reconfigure_successful": "Rekonfigurace úspěšná",
       "merged_into_existing_account": "This account already has an entry; the Bluetooth devices were merged into it and this entry was removed.",
       "api_limit_exceeded": "Byl překročen limit požadavků API. Zkuste to prosím znovu později.",
-      "account_in_use": "Váš účet Mammotion je již aktivní v jiné relaci. Odhlaste se z aplikace Mammotion a zkuste to znovu."
+      "account_in_use": "Váš účet Mammotion je již aktivní v jiné relaci. Odhlaste se z aplikace Mammotion a zkuste to znovu.",
+      "reauth_successful": "Opětovné ověření bylo úspěšné",
+      "wrong_account": "Tyto přihlašovací údaje patří k jinému účtu Mammotion. Ověřte se znovu účtem, se kterým byla tato položka nastavena."
     },
     "error": {
       "login_failed": "Přihlášení se nezdařilo. Zkontrolujte e-mail a heslo svého účtu a zkuste to znovu.",
@@ -42,6 +44,13 @@
         },
         "title": "Připojit k Wi-Fi",
         "description": "Zadejte svůj Mammotion e-mail nebo ID účtu a heslo. Ponechte obě pole prázdná, pokud chcete používat pouze Bluetooth bez účtu."
+      },
+      "reauth_confirm": {
+        "title": "Opětovné ověření Mammotion",
+        "description": "Cloud Mammotion odmítl uložené přihlašovací údaje pro {account}. Zadejte heslo a přihlaste se znovu.",
+        "data": {
+          "password": "Heslo k účtu Mammotion"
+        }
       }
     }
   },
