@@ -3202,7 +3202,28 @@ class MammotionRTKCoordinator(MammotionBaseUpdateCoordinator[RTKBaseStationDevic
                 except (DeviceOfflineException, GatewayTimeoutException):
                     pass
 
+        self._sync_firmware_to_registry()
         return self.data
+
+    def _sync_firmware_to_registry(self) -> None:
+        """Push a changed firmware version onto the device-registry entry.
+
+        ``device_info`` is only read when the entity is first registered, so a
+        version that arrives later — and for an RTK it always does, since the
+        base station reports it over MQTT well after setup — never reaches the
+        card.  The mower has ``check_firmware_version`` for this; that one
+        reads ``mower_state``, which an RTK has no equivalent of.
+        """
+        version = self.data.device_version
+        if not version:
+            return
+        device_registry = dr.async_get(self.hass)
+        device_entry = device_registry.async_get_device(
+            identifiers={(DOMAIN, self.unique_name)}
+        )
+        if device_entry is None or device_entry.sw_version == version:
+            return
+        device_registry.async_update_device(device_entry.id, sw_version=version)
 
     async def _async_setup(self) -> None:
         """Set up RTK device subscriptions and fetch one-time HTTP data."""

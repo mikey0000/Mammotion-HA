@@ -10,14 +10,19 @@ does carry the real one: this base station reports
 Same shape as the Spino report in [[test_spino_device_info]].
 """
 
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.device_registry import (
     CONNECTION_BLUETOOTH,
     CONNECTION_NETWORK_MAC,
 )
 from pymammotion.data.model.device import RTKBaseStationDevice
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
+from custom_components.mammotion.const import DOMAIN
+from custom_components.mammotion.coordinator import MammotionRTKCoordinator
 from custom_components.mammotion.entity import MammotionBaseRTKEntity
 
 _NAME = "RTKBAU242721575"
@@ -82,3 +87,88 @@ def test_the_rest_of_the_card_is_unchanged() -> None:
     assert info["sw_version"] == "1.15.1.1"
     assert (CONNECTION_BLUETOOTH, device.bt_mac) in info["connections"]
     assert (CONNECTION_NETWORK_MAC, device.wifi_mac) in info["connections"]
+
+
+async def test_a_firmware_version_that_arrives_late_reaches_the_card(
+    hass: HomeAssistant,
+) -> None:
+    """``device_info`` is read once at registration; an RTK reports later than that.
+
+    The base station returns deviceVersion over MQTT well after setup, so the
+    registry entry kept the empty string it was created with and the card
+    showed no firmware at all.
+    """
+    coordinator = MammotionRTKCoordinator.__new__(MammotionRTKCoordinator)
+    coordinator.hass = hass
+    coordinator.unique_name = _NAME
+    coordinator.data = RTKBaseStationDevice(name=_NAME)
+    coordinator.data.device_version = "1.15.1.1"
+
+    registry = dr.async_get(hass)
+    entry = MockConfigEntry(domain=DOMAIN)
+    entry.add_to_hass(hass)
+    device = registry.async_get_or_create(
+        config_entry_id=entry.entry_id,
+        identifiers={(DOMAIN, _NAME)},
+        name=_NAME,
+    )
+    assert not device.sw_version
+
+    coordinator._sync_firmware_to_registry()
+
+    assert registry.async_get(device.id).sw_version == "1.15.1.1"
+
+
+async def test_an_unreported_version_does_not_blank_the_card(
+    hass: HomeAssistant,
+) -> None:
+    """Before the first report there is nothing to write, and "" is not an update."""
+    coordinator = MammotionRTKCoordinator.__new__(MammotionRTKCoordinator)
+    coordinator.hass = hass
+    coordinator.unique_name = _NAME
+    coordinator.data = RTKBaseStationDevice(name=_NAME)
+
+    registry = dr.async_get(hass)
+    entry = MockConfigEntry(domain=DOMAIN)
+    entry.add_to_hass(hass)
+    device = registry.async_get_or_create(
+        config_entry_id=entry.entry_id,
+        identifiers={(DOMAIN, _NAME)},
+        name=_NAME,
+        sw_version="1.15.1.1",
+    )
+
+    coordinator._sync_firmware_to_registry()
+
+    assert registry.async_get(device.id).sw_version == "1.15.1.1"
+
+
+async def test_the_update_cycle_actually_performs_the_sync(
+    hass: HomeAssistant,
+) -> None:
+    """The helper is only useful if the poll calls it."""
+    coordinator = MammotionRTKCoordinator.__new__(MammotionRTKCoordinator)
+    coordinator.hass = hass
+    coordinator.unique_name = _NAME
+    coordinator.device_name = _NAME
+    coordinator.data = RTKBaseStationDevice(name=_NAME)
+    coordinator.data.device_version = "1.15.1.1"
+    coordinator.manager = MagicMock()
+    coordinator.manager.rtk_device.return_value = MagicMock()
+    coordinator.manager.mammotion_http = None
+    coordinator.manager.reauth_required = None
+    coordinator.async_send_command = AsyncMock()
+    coordinator.async_send_and_wait = AsyncMock()
+
+    registry = dr.async_get(hass)
+    entry = MockConfigEntry(domain=DOMAIN)
+    entry.add_to_hass(hass)
+    device = registry.async_get_or_create(
+        config_entry_id=entry.entry_id,
+        identifiers={(DOMAIN, _NAME)},
+        name=_NAME,
+    )
+
+    await coordinator._async_update_data()
+
+    assert registry.async_get(device.id).sw_version == "1.15.1.1"
