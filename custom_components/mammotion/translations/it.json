@@ -452,6 +452,12 @@
       "voice_on_off": {
         "name": "Voce on/off"
       },
+      "manual_grass_collection": {
+        "name": "Raccolta erba manuale"
+      },
+      "manual_grass_dump": {
+        "name": "Scarico erba manuale"
+      },
       "spino_buzzer": {
         "name": "Cicalino"
       },
@@ -462,7 +468,7 @@
         "name": "Pulizia della piattaforma"
       },
       "spino_waterline_parking": {
-        "name": "Parcheggio a pelo d'acqua"
+        "name": "Aggancio al bordo piscina"
       }
     },
     "select": {
@@ -505,10 +511,10 @@
       "bypass_mode": {
         "name": "Rilevamento ostacoli",
         "state": {
-          "direct_touch": "Disattivato",
+          "off": "Disattivato",
           "slow_touch": "Tocco lento",
-          "less_touch": "Meno tocco",
-          "no_touch": "Standard",
+          "less_touch": "Meno contatto",
+          "standard": "Normale",
           "sensitive": "Sensibile"
         }
       },
@@ -571,10 +577,10 @@
         }
       },
       "spino_wall_material": {
-        "name": "Materiale delle pareti",
+        "name": "Materiale parete",
         "state": {
           "GLASS": "Vetro",
-          "CERAMICS": "Piastrelle",
+          "CERAMICS": "Piastrella",
           "SAND_STONE": "Aggregato",
           "VINYL": "Vinile"
         }
@@ -658,10 +664,10 @@
     },
     "ultra_wave": {
       "options": {
-        "0": "Tocco diretto",
+        "0": "Disattivato",
         "1": "Tocco lento",
-        "2": "Meno tocco",
-        "10": "Nessun tocco",
+        "2": "Meno contatto",
+        "10": "Normale",
         "11": "Sensibile"
       }
     },
@@ -851,6 +857,26 @@
     "reset_blade_time": {
       "name": "Reimposta tempo lama",
       "description": "Reimposta il contatore del tempo di utilizzo della lama."
+    },
+    "start_dump_point_setup": {
+      "name": "Avvia configurazione punti di scarico",
+      "description": "Porta il robot in modalità di configurazione dei punti di scarico dell'erba, così da poterli registrare."
+    },
+    "add_dump_point": {
+      "name": "Aggiungi punto di scarico",
+      "description": "Registra un punto di scarico dell'erba nella posizione attuale del robot."
+    },
+    "undo_dump_point": {
+      "name": "Annulla ultimo punto di scarico",
+      "description": "Scarta l'ultimo punto di scarico registrato."
+    },
+    "finish_dump_point_setup": {
+      "name": "Termina configurazione punti di scarico",
+      "description": "Salva i punti di scarico registrati ed esce dalla modalità di configurazione."
+    },
+    "finish_outside_dump_point": {
+      "name": "Termina punto di scarico fuori area",
+      "description": "Completa la configurazione di un punto di scarico registrato fuori dall'area di taglio."
     },
     "get_map_data": {
       "name": "Ottieni dati mappa",
@@ -1178,6 +1204,10 @@
       "name": "Aggiorna attività",
       "description": "Riscarica tutte le pianificazioni dal dispositivo."
     },
+    "get_tasks": {
+      "name": "Ottieni attività",
+      "description": "Restituisce tutte le pianificazioni che l'integrazione conserva per il dispositivo selezionato, indicando se ciascuna è abilitata. Utile per verificare che una modifica sia stata applicata; «Aggiorna attività» le recupera prima dal dispositivo."
+    },
     "start_task": {
       "name": "Avvia attività",
       "description": "Esegue immediatamente una pianificazione memorizzata (nota anche come 'avvia pianificazione'). Solo per tagliaerba — il robot piscina Spino non ha un comando equivalente."
@@ -1219,6 +1249,9 @@
     },
     "start_task_unsupported_on_spino": {
       "message": "Avviare una pianificazione su richiesta non è supportato sul robot piscina Spino — il firmware non offre un comando di esecuzione immediata per le pianificazioni memorizzate."
+    },
+    "grass_collection_unsupported": {
+      "message": "Questo robot non supporta la raccolta dell'erba."
     }
   }
 }

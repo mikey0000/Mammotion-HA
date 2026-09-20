@@ -265,8 +265,8 @@
         "name": "Status",
         "state": {
           "UNKNOWN": "Ukendt",
-          "IDLE": "Standby",
-          "PREPARE": "Standby",
+          "IDLE": "På venten",
+          "PREPARE": "På venten",
           "WAIT_WATER": "Fylder med vand",
           "WORKING": "Arbejder",
           "PAUSE_GO_CHARGE": "Vender tilbage til opladning (pause)",
@@ -452,6 +452,12 @@
       "voice_on_off": {
         "name": "Stemme til/fra"
       },
+      "manual_grass_collection": {
+        "name": "Manuel græsopsamling"
+      },
+      "manual_grass_dump": {
+        "name": "Manuel græstømning"
+      },
       "spino_buzzer": {
         "name": "Summer"
       },
@@ -459,10 +465,10 @@
         "name": "Turbo-rengøring"
       },
       "spino_platform_cleaning": {
-        "name": "Platformsrengøring"
+        "name": "Platformrengøring"
       },
       "spino_waterline_parking": {
-        "name": "Parkering ved vandlinjen"
+        "name": "Vandlinjeparkering"
       }
     },
     "select": {
@@ -505,10 +511,10 @@
       "bypass_mode": {
         "name": "Forhindringsdetektion",
         "state": {
-          "direct_touch": "Fra",
+          "off": "Fra",
           "slow_touch": "Langsom berøring",
           "less_touch": "Mindre berøring",
-          "no_touch": "Standard",
+          "standard": "Standard",
           "sensitive": "Følsom"
         }
       },
@@ -574,8 +580,8 @@
         "name": "Vægmateriale",
         "state": {
           "GLASS": "Glas",
-          "CERAMICS": "Fliser",
-          "SAND_STONE": "Stenbelægning",
+          "CERAMICS": "Flise",
+          "SAND_STONE": "Aggregat",
           "VINYL": "Vinyl"
         }
       },
@@ -658,10 +664,10 @@
     },
     "ultra_wave": {
       "options": {
-        "0": "Direkte berøring",
+        "0": "Fra",
         "1": "Langsom berøring",
         "2": "Mindre berøring",
-        "10": "Ingen berøring",
+        "10": "Standard",
         "11": "Følsom"
       }
     },
@@ -851,6 +857,26 @@
     "reset_blade_time": {
       "name": "Nulstil klingetid",
       "description": "Nulstil tælleren for klingebrug."
+    },
+    "start_dump_point_setup": {
+      "name": "Start opsætning af tømmepunkter",
+      "description": "Sætter plæneklipperen i opsætningstilstand for tømmepunkter, så punkter kan registreres."
+    },
+    "add_dump_point": {
+      "name": "Tilføj tømmepunkt",
+      "description": "Registrerer et tømmepunkt til græs på plæneklipperens aktuelle position."
+    },
+    "undo_dump_point": {
+      "name": "Fortryd sidste tømmepunkt",
+      "description": "Kasserer det senest registrerede tømmepunkt."
+    },
+    "finish_dump_point_setup": {
+      "name": "Afslut opsætning af tømmepunkter",
+      "description": "Gemmer de registrerede tømmepunkter og forlader opsætningstilstanden."
+    },
+    "finish_outside_dump_point": {
+      "name": "Afslut tømmepunkt uden for området",
+      "description": "Afslutter opsætningen af et tømmepunkt, der er registreret uden for klippeområdet."
     },
     "get_map_data": {
       "name": "Hent kortdata",
@@ -1178,6 +1204,10 @@
       "name": "Opdatér opgaver",
       "description": "Henter alle planer fra enheden igen."
     },
+    "get_tasks": {
+      "name": "Hent opgaver",
+      "description": "Returnerer alle planer, som integrationen har for den valgte enhed, inklusive om hver enkelt er aktiveret. Brug den til at bekræfte, at en ændring blev gennemført; „Opdater opgaver“ henter dem først fra enheden igen."
+    },
     "start_task": {
       "name": "Start opgave",
       "description": "Kører en gemt plan med det samme (også kendt som 'start plan'). Kun til plæneklipper — Spino-poolrobotten har ikke en tilsvarende kommando."
@@ -1219,6 +1249,9 @@
     },
     "start_task_unsupported_on_spino": {
       "message": "Start af en plan på forespørgsel understøttes ikke på Spino-poolrobotten — enhedens firmware har ingen 'kør nu'-kommando for gemte planer."
+    },
+    "grass_collection_unsupported": {
+      "message": "Denne plæneklipper understøtter ikke græsopsamling."
     }
   }
 }

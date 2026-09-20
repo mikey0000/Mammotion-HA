@@ -17,13 +17,9 @@ from . import MammotionConfigEntry
 from .coordinator import MammotionSpinoCoordinator
 from .entity import MammotionBaseSpinoEntity
 
-# The fan-speed picker maps to the Spino cleaning work modes. OFF (no mode
-# active; as a command it is the dock action exposed via return_to_base) and
-# UNKNOWN are excluded — neither is a selectable cleaning speed.
-_FAN_SPEED_EXCLUDED = {SpinoWorkMode.OFF, SpinoWorkMode.UNKNOWN}
-FAN_SPEED_MODES = [
-    mode.name for mode in SpinoWorkMode if mode not in _FAN_SPEED_EXCLUDED
-]
+# The fan-speed picker maps to the Spino cleaning work modes, which differ by
+# model — an E1 has four, the SP six.  OFF (no mode active; as a command it is
+# the dock action exposed via return_to_base) and UNKNOWN are never offered.
 
 # dev_statue_t.sys_status (0-8) collapsed to a HA vacuum activity, following the
 # app's STANDBY / WORKING / RETURNING bucketing in updateDeviceState().
@@ -63,11 +59,16 @@ class MammotionSpinoVacuumEntity(MammotionBaseSpinoEntity, StateVacuumEntity):
         | VacuumEntityFeature.FAN_SPEED
         | VacuumEntityFeature.STATE
     )
-    _attr_fan_speed_list = FAN_SPEED_MODES
 
     def __init__(self, coordinator: MammotionSpinoCoordinator) -> None:
         """Initialize the pool cleaner vacuum entity."""
         super().__init__(coordinator, "vacuum")
+        self._attr_fan_speed_list = [
+            mode.name
+            for mode in SpinoWorkMode.for_device(
+                coordinator.device_name, coordinator.device.product_key
+            )
+        ]
 
     @property
     def activity(self) -> VacuumActivity:
@@ -80,7 +81,7 @@ class MammotionSpinoVacuumEntity(MammotionBaseSpinoEntity, StateVacuumEntity):
     def fan_speed(self) -> str | None:
         """Return the current cleaning work mode."""
         mode = self.coordinator.data.pool_state.work_mode.name
-        return mode if mode in FAN_SPEED_MODES else None
+        return mode if mode in self._attr_fan_speed_list else None
 
     async def async_start(self) -> None:
         """Start cleaning in AUTO mode."""

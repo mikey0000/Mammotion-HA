@@ -265,6 +265,36 @@ reset_blade_time:
       integration: mammotion
       domain: lawn_mower
 
+start_dump_point_setup:
+  target:
+    entity:
+      integration: mammotion
+      domain: lawn_mower
+
+add_dump_point:
+  target:
+    entity:
+      integration: mammotion
+      domain: lawn_mower
+
+undo_dump_point:
+  target:
+    entity:
+      integration: mammotion
+      domain: lawn_mower
+
+finish_dump_point_setup:
+  target:
+    entity:
+      integration: mammotion
+      domain: lawn_mower
+
+finish_outside_dump_point:
+  target:
+    entity:
+      integration: mammotion
+      domain: lawn_mower
+
 get_map_data:
   fields:
     entity_id:
@@ -760,6 +790,13 @@ create_task:
           mode: box
 
 refresh_tasks:
+  target:
+    entity:
+      integration: mammotion
+
+# Read the schedules back out, so a script can confirm a set_task_enabled
+# landed without scraping entity attributes.  Returns a response.
+get_tasks:
   target:
     entity:
       integration: mammotion

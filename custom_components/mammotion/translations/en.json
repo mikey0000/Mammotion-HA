@@ -461,6 +461,12 @@
       "voice_on_off": {
         "name": "Voice on/off"
       },
+      "manual_grass_collection": {
+        "name": "Manual grass sweeping"
+      },
+      "manual_grass_dump": {
+        "name": "Manual grass dumping"
+      },
       "spino_buzzer": {
         "name": "Buzzer"
       },
@@ -514,10 +520,10 @@
       "bypass_mode": {
         "name": "Obstacle detection",
         "state": {
-          "direct_touch": "Off",
+          "off": "Off",
           "slow_touch": "Slow touch",
           "less_touch": "Less touch",
-          "no_touch": "Standard",
+          "standard": "Standard",
           "sensitive": "Sensitive"
         }
       },
@@ -667,10 +673,10 @@
     },
     "ultra_wave": {
       "options": {
-        "0": "Direct touch",
+        "0": "Off",
         "1": "Slow touch",
         "2": "Less touch",
-        "10": "No touch",
+        "10": "Standard",
         "11": "Sensitive"
       }
     },
@@ -860,6 +866,26 @@
     "reset_blade_time": {
       "name": "Reset blade time",
       "description": "Reset the blade usage time counter."
+    },
+    "start_dump_point_setup": {
+      "name": "Start dump point setup",
+      "description": "Put the mower into grass-collection point setup mode, so that collection points can be recorded."
+    },
+    "add_dump_point": {
+      "name": "Add dump point",
+      "description": "Record a grass-collection point at the mower's current position."
+    },
+    "undo_dump_point": {
+      "name": "Undo last dump point",
+      "description": "Discard the grass-collection point recorded most recently."
+    },
+    "finish_dump_point_setup": {
+      "name": "Finish dump point setup",
+      "description": "Save the recorded grass-collection points and leave setup mode."
+    },
+    "finish_outside_dump_point": {
+      "name": "Finish dump point outside area",
+      "description": "Finish setup for a grass-collection point recorded outside the mowing area."
     },
     "get_map_data": {
       "name": "Get map data",
@@ -1187,6 +1213,10 @@
       "name": "Refresh tasks",
       "description": "Re-fetch every schedule from the targeted device. Use after delete-all or to recover from a missed update."
     },
+    "get_tasks": {
+      "name": "Get tasks",
+      "description": "Return every schedule the integration holds for the targeted device, including whether each one is enabled. Use it to confirm a change landed; 'Refresh tasks' re-fetches them from the device first."
+    },
     "start_task": {
       "name": "Start task",
       "description": "Run a stored schedule immediately (also known as 'start schedule'). Mower-only — the Spino pool cleaner has no equivalent command, so targeting a Spino task entity raises an error."
@@ -1228,6 +1258,9 @@
     },
     "start_task_unsupported_on_spino": {
       "message": "Starting a schedule on demand is not supported on the Spino pool cleaner — the device firmware has no execute-now command for stored plans."
+    },
+    "grass_collection_unsupported": {
+      "message": "This mower does not support grass collection."
     }
   }
 }

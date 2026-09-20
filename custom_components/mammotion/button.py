@@ -4,6 +4,7 @@ from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from dataclasses import replace as dataclass_replace
 from functools import partial
+from typing import Any, cast
 
 from homeassistant.components.button import DOMAIN as BUTTON_DOMAIN
 from homeassistant.components.button import ButtonEntity, ButtonEntityDescription
@@ -278,7 +279,27 @@ class MammotionTaskButtonSensorEntity(MammotionBaseEntity, ButtonEntity):
         super().__init__(coordinator, entity_description.key)
         self.entity_description = entity_description
         self._attr_translation_key = entity_description.key
-        self._attr_extra_state_attributes = {"task_id": entity_description.plan_id}
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Expose the schedule's enable flag alongside its id.
+
+        A property rather than a value set in ``__init__``: the flag changes on
+        the device, and a frozen copy would report whatever was true at setup
+        (issue #890).  ``get_tasks`` returns the rest of the schedule.
+        """
+        attributes: dict[str, Any] = {"task_id": self.entity_description.plan_id}
+        plan = self._plan()
+        if plan is not None:
+            attributes["enabled"] = plan.is_enabled()
+        return attributes
+
+    def _plan(self) -> Plan | None:
+        """Return this schedule as the coordinator holds it, None before the first refresh."""
+        data = self.coordinator.data
+        if data is None:
+            return None
+        return cast("Plan | None", data.map.plan.get(self.entity_description.plan_id))
 
     def update_name(self, new_name: str) -> None:
         """Update the display name when the plan's task_name changes."""
@@ -351,7 +372,7 @@ def async_add_task_entities(
                 translation_placeholders={"name": existing_plan.task_name},
                 plan_id=task_id,
                 name=existing_plan.task_name,
-                press_fn=lambda coord, value: (coord.start_task(value)),
+                press_fn=lambda coord, value: coord.start_task(value),
             )
             entity = MammotionTaskButtonSensorEntity(
                 coordinator, base_plan_button_entity
@@ -453,6 +474,15 @@ class MammotionSpinoTaskButtonEntity(MammotionBaseSpinoEntity, ButtonEntity):
             "task_id": str(entity_description.jobid),
             "jobid": entity_description.jobid,
         }
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Expose the schedule's enable flag alongside its ids."""
+        attributes = dict(self._attr_extra_state_attributes)
+        plan = self.coordinator.data.plans.get(self.entity_description.jobid)
+        if plan is not None:
+            attributes["enabled"] = plan.enabled
+        return attributes
 
     def update_name(self, new_name: str) -> None:
         """Update the display name when the plan's jobname changes."""

@@ -237,7 +237,9 @@ async def _register_ble_devices(
         )
         if (mowing_device := mammotion.get_device_by_name(device_name)) is not None:
             mowing_device.mower_state.ble_mac = ble_address
-        _register_ble_reconnect_callback(hass, entry, mammotion, device_name, ble_address)
+        _register_ble_reconnect_callback(
+            hass, entry, mammotion, device_name, ble_address
+        )
         registered[device_name] = ble_address
     return registered
 
@@ -287,8 +289,15 @@ def _register_ble_reconnect_callback(
         # creates a new transport if one doesn't.  We must not short-circuit on
         # has_transport() here because a device registered at startup without being
         # in range has a transport with no BLEDevice — it needs updating too.
+        #
+        # The RSSI has to travel with it: BLETransport.is_usable fails closed below
+        # min_rssi, and only a stronger reading reopens it.  This callback is the one
+        # that always runs, so dropping the RSSI here left a mower that faded out of
+        # range unusable no matter how strongly it came back.
         hass.async_create_task(
-            mammotion.add_ble_to_device(device_name, service_info.device)
+            mammotion.add_ble_to_device(
+                device_name, service_info.device, rssi=service_info.rssi
+            )
         )
 
     entry.async_on_unload(
@@ -523,10 +532,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
         device_name = device.device_name
         handle = mammotion.mower(device_name)
         if handle is None:
-            LOGGER.warning("Mammotion device %s was not registered — skipping", device_name)
+            LOGGER.warning(
+                "Mammotion device %s was not registered — skipping", device_name
+            )
             continue
 
-        mammotion.set_mow_path_fetch_enabled(device_name, enabled=mow_path_fetch_enabled)
+        mammotion.set_mow_path_fetch_enabled(
+            device_name, enabled=mow_path_fetch_enabled
+        )
 
         unique_name = device_name
 
@@ -750,7 +763,12 @@ def _build_device_list(
     mower_devices: list[Device] = []
 
     for device in all_devices:
-        if DeviceType.is_swimming_pool(device.device_name, device.product_key):
+        device_type = DeviceType.value_of_str(device.device_name, device.product_key)
+        # is_swimming_pool() also claims SD_PX, the PC210's charging pile, which has
+        # none of the cleaner state the Spino platform entities read.
+        if device_type is not DeviceType.SD_PX and DeviceType.is_swimming_pool(
+            device.device_name, device.product_key
+        ):
             spino_devices.append(device)
             continue
         if not device.device_name.startswith(DEVICE_SUPPORT):

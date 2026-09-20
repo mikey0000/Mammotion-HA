@@ -16,6 +16,7 @@ from homeassistant.helpers.device_registry import (
 )
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from pymammotion.data.model.device import PoolCleanerDevice, RTKBaseStationDevice
+from pymammotion.utility.device_type import DeviceType
 
 from .const import DOMAIN
 from .coordinator import (
@@ -34,6 +35,30 @@ def device_firmware_version(device_state: object | None) -> str:
     """
     device_firmwares = getattr(device_state, "device_firmwares", None)
     return device_firmwares.device_version if device_firmwares is not None else ""
+
+
+def device_serial_number(device_name: str, device_type: DeviceType) -> str:
+    """Return *device_name* without its device-type prefix, i.e. the bare serial.
+
+    A type may claim several comma-separated prefixes (``"Spino-SP,Spino-S1"``)
+    while a name carries exactly one of them; an unrecognised name is returned
+    whole rather than truncated at an arbitrary separator.
+    """
+    for prefix in device_type.get_name().split(","):
+        stripped = device_name.removeprefix(prefix)
+        if stripped != device_name:
+            return stripped
+    return device_name
+
+
+def supports_grass_collection(device_name: str) -> bool:
+    """Return True for the mowers that take the grass-collection attachment.
+
+    Mirrors the app's ``DeviceType.isSupportGrassCutting()``, which gates the
+    sweep, dump and collection-point controls on the original Yuka and Yuka VP.
+    """
+    device_type = DeviceType.value_of_str(device_name)
+    return device_type.is_yu_ka() or device_type.is_yu_ka_pro()
 
 
 class MammotionBaseEntity(CoordinatorEntity[MammotionBaseUpdateCoordinator[Any]]):  # type: ignore[misc]
@@ -239,16 +264,26 @@ class MammotionBaseSpinoEntity(CoordinatorEntity[MammotionSpinoCoordinator]):  #
     def device_info(self) -> DeviceInfo:
         """Return the HA device-registry info for this pool cleaner entity."""
         spino_device: PoolCleanerDevice = self.coordinator.data
+        device_type = self.coordinator.device_type
+
+        connections: set[tuple[str, str]] = set()
+        if spino_device.bt_mac != "":
+            connections.add((CONNECTION_BLUETOOTH, format_mac(spino_device.bt_mac)))
+        if spino_device.wifi_mac != "":
+            connections.add((CONNECTION_NETWORK_MAC, format_mac(spino_device.wifi_mac)))
 
         return DeviceInfo(
             identifiers={(DOMAIN, self.coordinator.unique_name)},
             name=self.coordinator.device_name,
             manufacturer="Mammotion",
-            serial_number=self.coordinator.device_name,
-            model=spino_device.name,
-            model_id=self.coordinator.device.product_key,
+            serial_number=device_serial_number(
+                self.coordinator.device_name, device_type
+            ),
+            model=self.coordinator.device.product_model
+            or device_type.get_model().replace("-", " "),
             sw_version=spino_device.device_firmwares.device_version,
             suggested_area="Pool",
+            connections=connections,
         )
 
     @property
@@ -260,6 +295,37 @@ class MammotionBaseSpinoEntity(CoordinatorEntity[MammotionSpinoCoordinator]):  #
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
         super()._handle_coordinator_update()
+
+    async def async_added_to_hass(self) -> None:
+        """Handle entity added to hass."""
+        await super().async_added_to_hass()
+        self._cleanup_stale_connections()
+
+    @callback  # type: ignore[misc]
+    def _cleanup_stale_connections(self) -> None:
+        """Replace device registry connections with only the valid pool cleaner values."""
+        spino_data = self.coordinator.data
+
+        device_registry = async_get_device_registry(self.hass)
+        device = device_registry.async_get_device(
+            identifiers={(DOMAIN, self.coordinator.unique_name)}
+        )
+        if device is None:
+            return
+
+        new_connections: set[tuple[str, str]] = set()
+        if spino_data.bt_mac != "":
+            new_connections.add((CONNECTION_BLUETOOTH, format_mac(spino_data.bt_mac)))
+        if spino_data.wifi_mac != "":
+            new_connections.add(
+                (CONNECTION_NETWORK_MAC, format_mac(spino_data.wifi_mac))
+            )
+
+        nick_name = self.coordinator.device.nick_name
+        update_kwargs: dict[str, Any] = {"new_connections": new_connections}
+        if nick_name and not device.name_by_user:
+            update_kwargs["name_by_user"] = nick_name
+        device_registry.async_update_device(device.id, **update_kwargs)
 
 
 class MammotionCameraBaseEntity(Camera, ABC):  # type: ignore[misc]

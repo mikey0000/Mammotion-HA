@@ -2,6 +2,7 @@
 
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
+from functools import partial
 
 from homeassistant.components.select import SelectEntity, SelectEntityDescription
 from homeassistant.const import EntityCategory
@@ -63,22 +64,6 @@ class MammotionSpinoSelectEntityDescription(SelectEntityDescription):
 
 
 SPINO_SELECT_ENTITIES: tuple[MammotionSpinoSelectEntityDescription, ...] = (
-    MammotionSpinoSelectEntityDescription(
-        key="spino_work_mode",
-        # Only real cleaning modes are selectable.  OFF (0, no mode active — sent
-        # as a command it means return-to-charge) and UNKNOWN (-1, sentinel) are
-        # valid *reported* values — surfaced by the spino_work_mode sensor — but
-        # they're not modes a user can start, so they are excluded here.
-        options=[
-            mode.name
-            for mode in SpinoWorkMode
-            if mode not in (SpinoWorkMode.UNKNOWN, SpinoWorkMode.OFF)
-        ],
-        current_fn=lambda spino_data: spino_data.pool_state.work_mode.name,
-        set_fn=lambda coordinator, value: coordinator.async_set_work_mode(
-            SpinoWorkMode[value].value
-        ),
-    ),
     MammotionSpinoSelectEntityDescription(
         key="spino_wall_material",
         # UNKNOWN (-1) is a sentinel for an unreported value, not a user choice.
@@ -236,6 +221,17 @@ def _device_firmware_version(device_state: object | None) -> str:
 
 
 # Define the setup entry function
+def _set_bypass_mode(
+    options: list[DetectionStrategy],
+    coordinator: MammotionBaseUpdateCoordinator,
+    value: str,
+) -> None:
+    """Store the ultra_wave value the device uses for the chosen label key."""
+    coordinator.operation_settings.ultra_wave = DetectionStrategy.from_option_key(
+        value, options
+    ).value
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: MammotionConfigEntry,
@@ -279,20 +275,19 @@ async def async_setup_entry(
                 )
             )
 
+        # Options are the app's label keys, not the protocol member names: the
+        # same value reads differently depending on which list the device has
+        # (value 1 is "Slow touch" beside a 0, and the off position without one).
+        bypass_options = DetectionStrategy.for_device(
+            mower.device.device_name,
+            _device_firmware_version(mower.reporting_coordinator.data),
+        )
         bypass_mode_desc = MammotionConfigSelectEntityDescription(
             key="bypass_mode",
-            options=[
-                s.name
-                for s in DetectionStrategy.for_device(
-                    mower.device.device_name,
-                    _device_firmware_version(mower.reporting_coordinator.data),
-                )
-            ],
-            set_fn=lambda coordinator, value: setattr(
-                coordinator.operation_settings,
-                "ultra_wave",
-                DetectionStrategy[value].value,
-            ),
+            options=[s.option_key(bypass_options) for s in bypass_options],
+            # The list is bound here, not closed over: the description outlives
+            # this loop iteration and a closure would read the last mower's list.
+            set_fn=partial(_set_bypass_mode, bypass_options),
             async_set_fn=lambda coordinator: (
                 coordinator.async_change_bypass_if_working()
             ),
@@ -327,9 +322,27 @@ async def async_setup_entry(
         async_add_entities(entities)
 
     for spino in entry.runtime_data.spino:
+        # Which cleaning modes exist is a property of the model, so this one is
+        # built per device rather than sitting in the static tuple.  OFF and
+        # UNKNOWN are reported states, not modes a user can start, and
+        # ``for_device`` already leaves them out.
+        work_mode_desc = MammotionSpinoSelectEntityDescription(
+            key="spino_work_mode",
+            options=[
+                mode.name
+                for mode in SpinoWorkMode.for_device(
+                    spino.coordinator.device_name,
+                    spino.coordinator.device.product_key,
+                )
+            ],
+            current_fn=lambda spino_data: spino_data.pool_state.work_mode.name,
+            set_fn=lambda coordinator, value: coordinator.async_set_work_mode(
+                SpinoWorkMode[value].value
+            ),
+        )
         async_add_entities(
             MammotionSpinoSelectEntity(spino.coordinator, entity_description)
-            for entity_description in SPINO_SELECT_ENTITIES
+            for entity_description in (work_mode_desc, *SPINO_SELECT_ENTITIES)
         )
 
 

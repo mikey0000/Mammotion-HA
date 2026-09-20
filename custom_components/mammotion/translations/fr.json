@@ -452,8 +452,14 @@
       "voice_on_off": {
         "name": "Voix activée/désactivée"
       },
+      "manual_grass_collection": {
+        "name": "Ramassage manuel de l'herbe"
+      },
+      "manual_grass_dump": {
+        "name": "Vidage manuel de l'herbe"
+      },
       "spino_buzzer": {
-        "name": "Avertisseur sonore"
+        "name": "Alarme sonore"
       },
       "spino_turbo_clean": {
         "name": "Nettoyage turbo"
@@ -505,10 +511,10 @@
       "bypass_mode": {
         "name": "Détection d'obstacles",
         "state": {
-          "direct_touch": "Désactivé",
-          "slow_touch": "Toucher lent",
+          "off": "Désactivé",
+          "slow_touch": "Contact lent",
           "less_touch": "Moins de contact",
-          "no_touch": "Standard",
+          "standard": "Standard",
           "sensitive": "Sensible"
         }
       },
@@ -571,7 +577,7 @@
         }
       },
       "spino_wall_material": {
-        "name": "Matériau des parois",
+        "name": "Matériau du mur",
         "state": {
           "GLASS": "Verre",
           "CERAMICS": "Carrelage",
@@ -658,10 +664,10 @@
     },
     "ultra_wave": {
       "options": {
-        "0": "Toucher direct",
-        "1": "Toucher lent",
+        "0": "Désactivé",
+        "1": "Contact lent",
         "2": "Moins de contact",
-        "10": "Pas de contact",
+        "10": "Standard",
         "11": "Sensible"
       }
     },
@@ -851,6 +857,26 @@
     "reset_blade_time": {
       "name": "Réinitialiser le temps de lame",
       "description": "Réinitialiser le compteur de temps d'utilisation de la lame."
+    },
+    "start_dump_point_setup": {
+      "name": "Démarrer la configuration des points de vidage",
+      "description": "Met la tondeuse en mode de configuration des points de vidage afin de pouvoir enregistrer des points."
+    },
+    "add_dump_point": {
+      "name": "Ajouter un point de vidage",
+      "description": "Enregistre un point de vidage de l'herbe à la position actuelle de la tondeuse."
+    },
+    "undo_dump_point": {
+      "name": "Annuler le dernier point de vidage",
+      "description": "Supprime le point de vidage enregistré en dernier."
+    },
+    "finish_dump_point_setup": {
+      "name": "Terminer la configuration des points de vidage",
+      "description": "Enregistre les points de vidage relevés et quitte le mode de configuration."
+    },
+    "finish_outside_dump_point": {
+      "name": "Terminer le point de vidage hors zone",
+      "description": "Termine la configuration d'un point de vidage enregistré en dehors de la zone de tonte."
     },
     "get_map_data": {
       "name": "Obtenir les données de la carte",
@@ -1178,6 +1204,10 @@
       "name": "Actualiser les tâches",
       "description": "Récupère à nouveau tous les programmes de l'appareil."
     },
+    "get_tasks": {
+      "name": "Obtenir les tâches",
+      "description": "Renvoie tous les programmes que l'intégration détient pour l'appareil ciblé, en indiquant si chacun est activé. À utiliser pour vérifier qu'une modification a bien été appliquée ; « Actualiser les tâches » les récupère d'abord depuis l'appareil."
+    },
     "start_task": {
       "name": "Démarrer la tâche",
       "description": "Exécute immédiatement un programme enregistré (aussi appelé « démarrer le programme »). Uniquement pour la tondeuse — le robot de piscine Spino n'a pas de commande équivalente."
@@ -1219,6 +1249,9 @@
     },
     "start_task_unsupported_on_spino": {
       "message": "Démarrer un programme à la demande n'est pas pris en charge sur le robot de piscine Spino — le firmware ne propose aucune commande d'exécution immédiate pour les programmes enregistrés."
+    },
+    "grass_collection_unsupported": {
+      "message": "Cette tondeuse ne prend pas en charge le ramassage de l'herbe."
     }
   }
 }

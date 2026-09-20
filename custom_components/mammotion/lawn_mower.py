@@ -27,7 +27,7 @@ from pymammotion.utility.device_type import DeviceType
 from . import MammotionConfigEntry
 from .const import COMMAND_EXCEPTIONS, DOMAIN, LOGGER
 from .coordinator import MammotionReportUpdateCoordinator
-from .entity import MammotionBaseEntity
+from .entity import MammotionBaseEntity, supports_grass_collection
 
 SERVICE_START_MOWING = "start_mow"
 SERVICE_CANCEL_JOB = "cancel_job"
@@ -35,6 +35,15 @@ SERVICE_START_STOP_BLADES = "start_stop_blades"
 SERVICE_SET_NON_WORK_HOURS = "set_non_work_hours"
 SERVICE_RESET_BLADE_TIME = "reset_blade_time"
 SERVICE_SET_BLADE_WARNING_TIME = "set_blade_warning_time"
+
+# Grass-collection point editing.  Services rather than buttons: a point is
+# recorded at the mower's current position, so they are only useful driven in
+# sequence against a mower that already has a map.
+SERVICE_START_DUMP_POINT_SETUP = "start_dump_point_setup"
+SERVICE_ADD_DUMP_POINT = "add_dump_point"
+SERVICE_UNDO_DUMP_POINT = "undo_dump_point"
+SERVICE_FINISH_DUMP_POINT_SETUP = "finish_dump_point_setup"
+SERVICE_FINISH_OUTSIDE_DUMP_POINT = "finish_outside_dump_point"
 
 START_MOW_SCHEMA = {
     vol.Optional("modify", default=False): cv.boolean,
@@ -177,6 +186,46 @@ async def async_setup_entry(
         entity_domain=LAWN_MOWER_DOMAIN,
         schema=SET_BLADE_WARNING_TIME_SCHEMA,
         func="async_set_blade_warning_time",
+    )
+    service.async_register_platform_entity_service(
+        hass,
+        DOMAIN,
+        SERVICE_START_DUMP_POINT_SETUP,
+        entity_domain=LAWN_MOWER_DOMAIN,
+        schema=None,
+        func="async_start_dump_point_setup",
+    )
+    service.async_register_platform_entity_service(
+        hass,
+        DOMAIN,
+        SERVICE_ADD_DUMP_POINT,
+        entity_domain=LAWN_MOWER_DOMAIN,
+        schema=None,
+        func="async_add_dump_point",
+    )
+    service.async_register_platform_entity_service(
+        hass,
+        DOMAIN,
+        SERVICE_UNDO_DUMP_POINT,
+        entity_domain=LAWN_MOWER_DOMAIN,
+        schema=None,
+        func="async_undo_dump_point",
+    )
+    service.async_register_platform_entity_service(
+        hass,
+        DOMAIN,
+        SERVICE_FINISH_DUMP_POINT_SETUP,
+        entity_domain=LAWN_MOWER_DOMAIN,
+        schema=None,
+        func="async_finish_dump_point_setup",
+    )
+    service.async_register_platform_entity_service(
+        hass,
+        DOMAIN,
+        SERVICE_FINISH_OUTSIDE_DUMP_POINT,
+        entity_domain=LAWN_MOWER_DOMAIN,
+        schema=None,
+        func="async_finish_outside_dump_point",
     )
 
 
@@ -480,6 +529,39 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
         if DeviceType.is_luba1(self.coordinator.device_name):
             return
         await self.coordinator.async_set_blade_warning_time(hours=hours)
+
+    def _assert_grass_collection(self) -> None:
+        """Reject the dump-point services on mowers that take no collector."""
+        if not supports_grass_collection(self.coordinator.device_name):
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="grass_collection_unsupported",
+            )
+
+    async def async_start_dump_point_setup(self) -> None:
+        """Put the mower into grass-collection point setup mode."""
+        self._assert_grass_collection()
+        await self.coordinator.async_enter_dump_point_setup()
+
+    async def async_add_dump_point(self) -> None:
+        """Record a grass-collection point at the mower's current position."""
+        self._assert_grass_collection()
+        await self.coordinator.async_add_dump_point()
+
+    async def async_undo_dump_point(self) -> None:
+        """Undo the last recorded grass-collection point."""
+        self._assert_grass_collection()
+        await self.coordinator.async_revoke_dump_point()
+
+    async def async_finish_dump_point_setup(self) -> None:
+        """Save the recorded grass-collection points and leave setup mode."""
+        self._assert_grass_collection()
+        await self.coordinator.async_exit_dump_point_setup()
+
+    async def async_finish_outside_dump_point(self) -> None:
+        """Finish a collection point recorded outside the mowing area."""
+        self._assert_grass_collection()
+        await self.coordinator.async_finish_outside_dump_point()
 
     async def async_added_to_hass(self) -> None:
         """Register callbacks and verify device linkage after HA setup."""

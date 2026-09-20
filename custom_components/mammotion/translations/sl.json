@@ -452,6 +452,12 @@
       "voice_on_off": {
         "name": "Glas vklopljeno/izklopljeno"
       },
+      "manual_grass_collection": {
+        "name": "Ročno zbiranje trave"
+      },
+      "manual_grass_dump": {
+        "name": "Ročno praznjenje trave"
+      },
       "spino_buzzer": {
         "name": "Zvočni signal"
       },
@@ -459,10 +465,10 @@
         "name": "Turbo čiščenje"
       },
       "spino_platform_cleaning": {
-        "name": "Čiščenje ploščadi"
+        "name": "Čiščenje platforme"
       },
       "spino_waterline_parking": {
-        "name": "Parkiranje na vodni gladini"
+        "name": "Parkiranje na vodni črti"
       }
     },
     "select": {
@@ -505,10 +511,10 @@
       "bypass_mode": {
         "name": "Zaznavanje ovir",
         "state": {
-          "direct_touch": "Izklopljeno",
-          "slow_touch": "Počasni dotik",
+          "off": "Izklopljeno",
+          "slow_touch": "Počasno dotikanje",
           "less_touch": "Manj dotika",
-          "no_touch": "Standard",
+          "standard": "Standardno",
           "sensitive": "Občutljivo"
         }
       },
@@ -571,10 +577,10 @@
         }
       },
       "spino_wall_material": {
-        "name": "Material sten",
+        "name": "Material stene",
         "state": {
           "GLASS": "Steklo",
-          "CERAMICS": "Ploščice",
+          "CERAMICS": "Ploščica",
           "SAND_STONE": "Agregat",
           "VINYL": "Vinil"
         }
@@ -658,10 +664,10 @@
     },
     "ultra_wave": {
       "options": {
-        "0": "Polni dotik",
-        "1": "Počasni dotik",
+        "0": "Izklopljeno",
+        "1": "Počasno dotikanje",
         "2": "Manj dotika",
-        "10": "Brez dotika",
+        "10": "Standardno",
         "11": "Občutljivo"
       }
     },
@@ -851,6 +857,26 @@
     "reset_blade_time": {
       "name": "Ponastavi čas rezila",
       "description": "Ponastavi števec časa uporabe rezila."
+    },
+    "start_dump_point_setup": {
+      "name": "Začni nastavitev točk praznjenja",
+      "description": "Kosilnico preklopi v način nastavitve točk praznjenja trave, da jih je mogoče zabeležiti."
+    },
+    "add_dump_point": {
+      "name": "Dodaj točko praznjenja",
+      "description": "Zabeleži točko praznjenja trave na trenutnem položaju kosilnice."
+    },
+    "undo_dump_point": {
+      "name": "Razveljavi zadnjo točko praznjenja",
+      "description": "Zavrže nazadnje zabeleženo točko praznjenja trave."
+    },
+    "finish_dump_point_setup": {
+      "name": "Končaj nastavitev točk praznjenja",
+      "description": "Shrani zabeležene točke praznjenja in zapusti način nastavitve."
+    },
+    "finish_outside_dump_point": {
+      "name": "Končaj točko praznjenja zunaj območja",
+      "description": "Dokonča nastavitev točke praznjenja, zabeležene zunaj območja košnje."
     },
     "get_map_data": {
       "name": "Pridobi podatke zemljevida",
@@ -1178,6 +1204,10 @@
       "name": "Osveži opravila",
       "description": "Znova pridobi vse urnike iz naprave."
     },
+    "get_tasks": {
+      "name": "Pridobi opravila",
+      "description": "Vrne vse urnike, ki jih integracija hrani za izbrano napravo, vključno s tem, ali je posamezen urnik omogočen. Uporabite za potrditev, da je sprememba obveljala; »Osveži opravila« jih najprej znova prebere z naprave."
+    },
     "start_task": {
       "name": "Zaženi opravilo",
       "description": "Takoj zažene shranjen urnik (znano tudi kot „zaženi urnik“). Samo kosilnica — bazenski robot Spino nima enakovrednega ukaza."
@@ -1219,6 +1249,9 @@
     },
     "start_task_unsupported_on_spino": {
       "message": "Zagon urnika na zahtevo ni podprt na bazenskem robotu Spino — vdelana programska oprema ne ponuja ukaza za takojšen zagon shranjenih urnikov."
+    },
+    "grass_collection_unsupported": {
+      "message": "Ta kosilnica ne podpira zbiranja trave."
     }
   }
 }

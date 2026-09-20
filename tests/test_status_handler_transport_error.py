@@ -20,4 +20,4 @@ def test_keep_alive_restart_catches_transport_error() -> None:
     ]
     assert len(handlers) == 1
     body = ast.get_source_segment(_src, fn)
-    assert body.index("await handle.restart_keep_alive()") > body.index("try:")
+    assert body.index("await handle.resume_polling()") > body.index("try:")

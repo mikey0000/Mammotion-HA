@@ -452,6 +452,12 @@
       "voice_on_off": {
         "name": "Głos wł./wył."
       },
+      "manual_grass_collection": {
+        "name": "Ręczne zbieranie trawy"
+      },
+      "manual_grass_dump": {
+        "name": "Ręczne wysypywanie trawy"
+      },
       "spino_buzzer": {
         "name": "Brzęczyk"
       },
@@ -462,7 +468,7 @@
         "name": "Czyszczenie platformy"
       },
       "spino_waterline_parking": {
-        "name": "Parkowanie na linii wody"
+        "name": "Parkowanie przy linii wodnej"
       }
     },
     "select": {
@@ -505,10 +511,10 @@
       "bypass_mode": {
         "name": "Wykrywanie przeszkód",
         "state": {
-          "direct_touch": "Wyłączone",
+          "off": "Wyłączony",
           "slow_touch": "Wolne dotknięcie",
           "less_touch": "Mniej dotyku",
-          "no_touch": "Standard",
+          "standard": "Standard",
           "sensitive": "Czułe"
         }
       },
@@ -571,11 +577,11 @@
         }
       },
       "spino_wall_material": {
-        "name": "Materiał ścian",
+        "name": "Materiał ściany",
         "state": {
           "GLASS": "Szkło",
-          "CERAMICS": "Płytki",
-          "SAND_STONE": "Kruszywo",
+          "CERAMICS": "Płytka",
+          "SAND_STONE": "Agregat",
           "VINYL": "Winyl"
         }
       },
@@ -658,10 +664,10 @@
     },
     "ultra_wave": {
       "options": {
-        "0": "Bezpośrednie dotknięcie",
+        "0": "Wyłączony",
         "1": "Wolne dotknięcie",
         "2": "Mniej dotyku",
-        "10": "Brak dotyku",
+        "10": "Standard",
         "11": "Czułe"
       }
     },
@@ -851,6 +857,26 @@
     "reset_blade_time": {
       "name": "Resetuj czas noża",
       "description": "Resetuj licznik czasu użytkowania noża."
+    },
+    "start_dump_point_setup": {
+      "name": "Rozpocznij konfigurację punktów wysypu",
+      "description": "Przełącza kosiarkę w tryb konfiguracji punktów wysypu trawy, aby można było je zapisać."
+    },
+    "add_dump_point": {
+      "name": "Dodaj punkt wysypu",
+      "description": "Zapisuje punkt wysypu trawy w bieżącym położeniu kosiarki."
+    },
+    "undo_dump_point": {
+      "name": "Cofnij ostatni punkt wysypu",
+      "description": "Odrzuca ostatnio zapisany punkt wysypu trawy."
+    },
+    "finish_dump_point_setup": {
+      "name": "Zakończ konfigurację punktów wysypu",
+      "description": "Zapisuje zarejestrowane punkty wysypu i kończy tryb konfiguracji."
+    },
+    "finish_outside_dump_point": {
+      "name": "Zakończ punkt wysypu poza obszarem",
+      "description": "Kończy konfigurację punktu wysypu zapisanego poza obszarem koszenia."
     },
     "get_map_data": {
       "name": "Pobierz dane mapy",
@@ -1178,6 +1204,10 @@
       "name": "Odśwież zadania",
       "description": "Pobiera ponownie wszystkie plany z urządzenia."
     },
+    "get_tasks": {
+      "name": "Pobierz zadania",
+      "description": "Zwraca wszystkie harmonogramy przechowywane przez integrację dla wybranego urządzenia, w tym informację, czy każdy z nich jest włączony. Służy do potwierdzenia, że zmiana została zastosowana; „Odśwież zadania” najpierw pobiera je ponownie z urządzenia."
+    },
     "start_task": {
       "name": "Uruchom zadanie",
       "description": "Natychmiast uruchamia zapisany plan (znane też jako „uruchom plan”). Tylko kosiarka — robot basenowy Spino nie ma równoważnego polecenia."
@@ -1219,6 +1249,9 @@
     },
     "start_task_unsupported_on_spino": {
       "message": "Uruchomienie planu na żądanie nie jest obsługiwane na robocie basenowym Spino — firmware urządzenia nie ma polecenia natychmiastowego uruchomienia zapisanego planu."
+    },
+    "grass_collection_unsupported": {
+      "message": "Ta kosiarka nie obsługuje zbierania trawy."
     }
   }
 }

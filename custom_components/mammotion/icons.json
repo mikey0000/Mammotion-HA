@@ -199,6 +199,12 @@
       },
       "schedule_updates": {
         "default": "mdi:update"
+      },
+      "manual_grass_collection": {
+        "default": "mdi:broom"
+      },
+      "manual_grass_dump": {
+        "default": "mdi:dump-truck"
       }
     },
     "update": {

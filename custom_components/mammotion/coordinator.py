@@ -12,6 +12,7 @@ import time
 from abc import abstractmethod
 from collections.abc import Awaitable, Callable, Coroutine, Mapping
 from datetime import timedelta
+from functools import cached_property
 from typing import TYPE_CHECKING, Any, Protocol, cast
 
 from habluetooth import BluetoothScanningMode
@@ -49,6 +50,7 @@ from pymammotion.data.model.device import (
     RTKBaseStationDevice,
 )
 from pymammotion.data.model.device_config import OperationSettings, create_path_order
+from pymammotion.data.model.enums import CollectorState, DumpState
 from pymammotion.data.model.hash_list import Plan, SvgMessage
 from pymammotion.data.model.pool_state import PoolPlan, SpinoToggle
 from pymammotion.data.model.report_info import Maintain, NetUsedType
@@ -442,25 +444,39 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             return
         await self.manager.stop_stream(self.device.device_name)
 
-    async def set_scheduled_updates(self, enabled: bool) -> None:
-        """Enable or disable scheduled polling updates for this device."""
+    async def set_scheduled_updates(self, enabled: bool) -> bool:
+        """Enable or disable scheduled polling updates for this device.
+
+        Only the poll loop is touched.  Transport state belongs to the Bluetooth
+        and Cloud switches: detaching it here left every entity of the device
+        unavailable — this switch included, so there was no way back short of
+        reloading the entry — and re-attached on enable whatever the user had
+        switched off (issue #889).
+        """
         device = self.manager.get_device_by_name(self.device_name)
         if device is None:
-            return
+            return False
+        changed = device.enabled != enabled
         device.enabled = enabled
-        if enabled:
-            self.update_failures = 0
-            if not device.online:
-                device.online = True
-        await self.manager.set_scheduled_updates(self.device_name, enabled=enabled)
+        if changed:
+            # Once polling stops nothing else writes the snapshot, so a restart
+            # would come back with updates on. The inbound handlers re-assert
+            # ``True`` on every frame, hence the change check before the flush.
+            self.async_save_data(device)
+            await self.async_flush_saved_data()
         handle = self.manager.mower(self.device_name)
         if handle is None:
-            return
+            return False
         if not enabled:
             await handle.stop_polling()
-            return
+            return changed
+        self.update_failures = 0
+        if not device.online:
+            device.online = True
         try:
-            await handle.restart_keep_alive()
+            # resume_polling, not restart_keep_alive: the latter honours the stop
+            # this switch set, so on its own it would never bring the loops back.
+            await handle.resume_polling()
         except TransportError as exc:
             # A BLE miss here (cooldown, stale cache) must not fail enabling
             # updates or escape into the state bus; polling carries on over MQTT.
@@ -469,6 +485,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
                 self.device_name,
                 exc,
             )
+        return changed
 
     def is_online(self) -> bool:
         """Return True if the device currently has an active transport connection."""
@@ -1294,6 +1311,69 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         await self.send_command_and_update(
             "cancel_job", "todev_taskctrl_ack", priority=Priority.USER
         )
+
+    @property
+    def grass_collector_installed(self) -> bool:
+        """Return True while the mower reports a grass collector fitted."""
+        device = cast(MowingDevice | None, self.data)
+        return device is not None and device.report_data.dev.collector_installed
+
+    @property
+    def grass_collection_state(self) -> CollectorState:
+        """Return the sweep state, or IDLE before the first report lands."""
+        device = cast(MowingDevice | None, self.data)
+        if device is None:
+            return CollectorState.IDLE
+        return device.report_data.dev.collector_state
+
+    @property
+    def grass_dump_state(self) -> DumpState:
+        """Return the bin-tipping state, or LOWERED before the first report lands."""
+        device = cast(MowingDevice | None, self.data)
+        if device is None:
+            return DumpState.LOWERED
+        return device.report_data.dev.dump_state
+
+    async def async_set_grass_collection(self, start: bool) -> None:
+        """Start or stop manual grass collection (sweeping)."""
+        await self.async_send_command(
+            "manual_grass_collection",
+            priority=Priority.USER,
+            collect_ctrl=int(start),
+        )
+
+    async def async_set_grass_dump(self, start: bool) -> None:
+        """Raise the collector bin to pour the clippings out, or lower it again."""
+        await self.async_send_command(
+            "manual_pour_grass",
+            priority=Priority.USER,
+            unload_ctrl=int(start),
+        )
+
+    async def async_enter_dump_point_setup(self) -> None:
+        """Put the mower into grass-collection point setup mode."""
+        await self.async_send_command("enter_dumping_status", priority=Priority.USER)
+
+    async def async_add_dump_point(self) -> None:
+        """Record a grass-collection point at the mower's current position."""
+        await self.async_send_command("add_dump_point", priority=Priority.USER)
+
+    async def async_revoke_dump_point(self) -> None:
+        """Undo the last recorded grass-collection point."""
+        await self.async_send_command("revoke_dump_point", priority=Priority.USER)
+
+    async def async_exit_dump_point_setup(self) -> None:
+        """Save the recorded grass-collection points and leave setup mode."""
+        await self.async_send_command("exit_dumping_status", priority=Priority.USER)
+
+    async def async_finish_outside_dump_point(self) -> None:
+        """Finish a collection point recorded outside the mowing area.
+
+        The app sends this instead of ``exit_dumping_status`` when the point was
+        added while the mower sat off-map
+        (``PlanMapLandFragment.onClickCompleteDump``).
+        """
+        await self.async_send_command("out_drop_dumping_add", priority=Priority.USER)
 
     async def _async_ensure_ble_client(self) -> None:
         """Attach a BLE transport if we have an address but no client yet.
@@ -2195,18 +2275,23 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
 
     @callback
     def _async_start(self) -> None:
-        """Start the callbacks."""
-        if self.data.mower_state.ble_mac != "":
-            self._on_stop.append(
-                async_register_callback(
-                    self.hass,
-                    self._async_handle_bluetooth_event,
-                    BluetoothCallbackMatcher(
-                        address=self.data.mower_state.ble_mac, connectable=True
-                    ),
-                    BluetoothScanningMode.ACTIVE,
-                )
+        """Subscribe to this mower's advertisements once its MAC is known.
+
+        Idempotent, and called from both setup and the refresh: a mower first
+        seen after startup has no MAC at setup time.
+        """
+        if self._on_stop or self.data.mower_state.ble_mac == "":
+            return
+        self._on_stop.append(
+            async_register_callback(
+                self.hass,
+                self._async_handle_bluetooth_event,
+                BluetoothCallbackMatcher(
+                    address=self.data.mower_state.ble_mac, connectable=True
+                ),
+                BluetoothScanningMode.ACTIVE,
             )
+        )
 
     @callback
     def _async_stop(self) -> None:
@@ -2215,12 +2300,46 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
             unsub()
         self._on_stop.clear()
 
+    async def async_shutdown(self) -> None:
+        """Drop the advertisement subscription along with the rest."""
+        self._async_stop()
+        await super().async_shutdown()
+
+    async def _async_reconnect_ble(self) -> None:
+        """Reconnect a usable-but-idle BLE link.
+
+        Runs before the refresh delegates to the base, which returns early
+        while ``is_online()`` is False.  On a mower whose only transport is
+        this one, BLE being down *is* being offline, so leaving the retry
+        behind that early return meant it ran only while already connected
+        and the link never came back by itself.
+        """
+        if not self._bluetooth_enabled or not self.data.enabled:
+            return
+        handle = self.manager.mower(self.device_name)
+        if handle is None or not handle.prefer_ble:
+            return
+        ble = handle.get_transport(TransportType.BLE)
+        if ble is None or ble.is_connected or not ble.is_usable:
+            return
+        try:
+            await ble.connect()
+        except BLEUnavailableError as exc:
+            LOGGER.debug(
+                "BLE unavailable for %s during update — continuing via cloud: %s",
+                self.device_name,
+                exc,
+            )
+
     def get_coordinator_data(self, device: MowingDevice) -> MowingDevice:
         """Get coordinator data."""
         return device
 
     async def _async_update_data(self) -> MowingDevice:
         """Get data from the device."""
+        self._async_start()
+        await self._async_reconnect_ble()
+
         if data := await super()._async_update_data():
             return data
 
@@ -2232,35 +2351,6 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
         LOGGER.debug("Updated Mammotion device %s", self.device_name)
         self.update_failures = 0
         self.async_save_data(device)
-
-        if self.data.mower_state.ble_mac != "" and len(self._on_stop) == 0:
-            self._on_stop.append(
-                async_register_callback(
-                    self.hass,
-                    self._async_handle_bluetooth_event,
-                    BluetoothCallbackMatcher(
-                        address=self.data.mower_state.ble_mac, connectable=True
-                    ),
-                    BluetoothScanningMode.ACTIVE,
-                )
-            )
-
-        if handle := self.manager.mower(self.device_name):
-            if ble := handle.get_transport(TransportType.BLE):
-                if (
-                    handle.prefer_ble
-                    and ble.is_usable
-                    and not ble.is_connected
-                    and self._bluetooth_enabled
-                ):
-                    try:
-                        await ble.connect()
-                    except BLEUnavailableError as exc:
-                        LOGGER.debug(
-                            "BLE unavailable for %s during update — continuing via cloud: %s",
-                            self.device_name,
-                            exc,
-                        )
 
         return device
 
@@ -2296,7 +2386,46 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
 
     async def _async_setup(self) -> None:
         await super()._async_setup()
+        self._async_start()
 
+        # With the updates switch off this coordinator sends nothing until it goes
+        # back on.  Only the outbound reads are skipped — the sys_status watch is
+        # wired below either way, because _async_setup runs once per session and
+        # skipping it here would strand the watch until a config-entry reload.
+        if not self.data.enabled:
+            if handle := self.manager.mower(self.device_name):
+                await handle.stop_polling()
+        else:
+            await self._async_run_startup_reads()
+
+        # Watch sys_status changes so we can refresh the full status when the
+        # device transitions states.  Skipped when the BLE polling loop is
+        # already feeding a continuous count=0 stream — the stream is fresher
+        # than any count=1 poll we could fire.
+        if (handle := self.manager.mower(self.device_name)) is not None:
+            handle.watch_field(
+                lambda s: s.raw.report_data.dev.sys_status,
+                self._on_sys_status_changed_refresh,
+            )
+
+    async def set_scheduled_updates(self, enabled: bool) -> bool:
+        """Run the startup reads that setup skipped when updates were off.
+
+        Backgrounded: the reads carry SETUP_COMMAND_BUDGET, so awaiting them here
+        would hold ``switch.turn_on`` open for up to a minute against a mower that
+        is not answering.
+        """
+        changed = await super().set_scheduled_updates(enabled)
+        if changed and enabled and (entry := self.config_entry) is not None:
+            entry.async_create_background_task(
+                self.hass,
+                self._async_run_startup_reads(),
+                f"{self.device_name} updates-on reads",
+            )
+        return changed
+
+    async def _async_run_startup_reads(self) -> None:
+        """Read back the settings the entities show, under one time budget."""
         # Common commands for all device types
         commands = [
             ("send_todev_ble_sync", {"sync_type": 3}),
@@ -2365,18 +2494,10 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
                 ", ".join(pending),
             )
 
-        # Watch sys_status changes so we can refresh the full status when the
-        # device transitions states.  Skipped when the BLE polling loop is
-        # already feeding a continuous count=0 stream — the stream is fresher
-        # than any count=1 poll we could fire.
-        if (handle := self.manager.mower(self.device_name)) is not None:
-            handle.watch_field(
-                lambda s: s.raw.report_data.dev.sys_status,
-                self._on_sys_status_changed_refresh,
-            )
-
     async def _on_sys_status_changed_refresh(self, sys_status: int) -> None:
         """Trigger a one-shot count=1 poll on sys_status transitions when not streaming."""
+        if not self.data.enabled:
+            return
         try:
             await self.async_request_report_snapshot()
         except (DeviceOfflineException, NoTransportAvailableError):
@@ -3055,6 +3176,15 @@ class MammotionSpinoCoordinator(MammotionBaseUpdateCoordinator[PoolCleanerDevice
             unique_name=unique_name,
         )
 
+    @cached_property
+    def device_type(self) -> DeviceType:
+        """Return the resolved Spino variant.
+
+        The pool models are sold under names the prefix table covers only in
+        part, so the product key identifies the ones the name cannot.
+        """
+        return DeviceType.value_of_str(self.device_name, self.device.product_key)
+
     async def _async_setup(self) -> None:
         """Subscribe to device events, then read the initial toggle states once.
 
@@ -3066,6 +3196,13 @@ class MammotionSpinoCoordinator(MammotionBaseUpdateCoordinator[PoolCleanerDevice
         pushed to entities via the inherited ``_on_state_changed`` callback.
         """
         await super()._async_setup()
+        # async_restore_data restores a bare device, so re-seed the cloud identity.
+        if handle := self.manager.pool_cleaner_device(self.device_name):
+            updated = cast(PoolCleanerDevice, handle.snapshot.raw)
+            updated.product_key = self.device.product_key
+            updated.iot_id = self.device.iot_id
+            updated.name = self.device.device_name
+            handle.state_machine.apply(updated, handle.availability)
         # Start the status report stream so the device pushes dev_statue_t
         # (sys_status / work_mode / battery) — the pool cleaner doesn't report
         # unsolicited otherwise. See get_report_cfg_spino / async_subscribe_status.
@@ -3112,7 +3249,7 @@ class MammotionSpinoCoordinator(MammotionBaseUpdateCoordinator[PoolCleanerDevice
             self.device_name
         )
 
-        handle = self.manager.mower(self.device_name)
+        handle = self.manager.pool_cleaner_device(self.device_name)
 
         if restored_data is None:
             empty = PoolCleanerDevice()
@@ -3165,7 +3302,7 @@ class MammotionSpinoCoordinator(MammotionBaseUpdateCoordinator[PoolCleanerDevice
         the only polling work here is the HTTP OTA firmware check, which is not
         pushed over MQTT.
         """
-        handle = self.manager.mower(self.device_name)
+        handle = self.manager.pool_cleaner_device(self.device_name)
         if handle is None:
             return self.data
 

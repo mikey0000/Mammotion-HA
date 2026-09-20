@@ -452,17 +452,23 @@
       "voice_on_off": {
         "name": "Voce pornit/oprit"
       },
+      "manual_grass_collection": {
+        "name": "Colectare manuală a ierbii"
+      },
+      "manual_grass_dump": {
+        "name": "Golire manuală a ierbii"
+      },
       "spino_buzzer": {
-        "name": "Avertizor sonor"
+        "name": "Buzzer"
       },
       "spino_turbo_clean": {
         "name": "Curățare turbo"
       },
       "spino_platform_cleaning": {
-        "name": "Curățarea platformei"
+        "name": "Curățare platformă"
       },
       "spino_waterline_parking": {
-        "name": "Parcare la linia de apă"
+        "name": "Parcare la linia apei"
       }
     },
     "select": {
@@ -505,10 +511,10 @@
       "bypass_mode": {
         "name": "Detectare obstacole",
         "state": {
-          "direct_touch": "Oprit",
+          "off": "Oprit",
           "slow_touch": "Atingere lentă",
           "less_touch": "Mai puțin atins",
-          "no_touch": "Standard",
+          "standard": "Standard",
           "sensitive": "Sensibil"
         }
       },
@@ -571,7 +577,7 @@
         }
       },
       "spino_wall_material": {
-        "name": "Materialul pereților",
+        "name": "Material perete",
         "state": {
           "GLASS": "Sticlă",
           "CERAMICS": "Faianță",
@@ -658,10 +664,10 @@
     },
     "ultra_wave": {
       "options": {
-        "0": "Atingere directă",
+        "0": "Oprit",
         "1": "Atingere lentă",
-        "2": "Atingere redusă",
-        "10": "Fără atingere",
+        "2": "Mai puțin atins",
+        "10": "Standard",
         "11": "Sensibil"
       }
     },
@@ -851,6 +857,26 @@
     "reset_blade_time": {
       "name": "Resetați timpul lamei",
       "description": "Resetați contorul de timp de utilizare a lamei."
+    },
+    "start_dump_point_setup": {
+      "name": "Pornește configurarea punctelor de golire",
+      "description": "Trece mașina în modul de configurare a punctelor de golire a ierbii, pentru a putea înregistra puncte."
+    },
+    "add_dump_point": {
+      "name": "Adaugă punct de golire",
+      "description": "Înregistrează un punct de golire a ierbii în poziția curentă a mașinii."
+    },
+    "undo_dump_point": {
+      "name": "Anulează ultimul punct de golire",
+      "description": "Renunță la ultimul punct de golire înregistrat."
+    },
+    "finish_dump_point_setup": {
+      "name": "Finalizează configurarea punctelor de golire",
+      "description": "Salvează punctele de golire înregistrate și iese din modul de configurare."
+    },
+    "finish_outside_dump_point": {
+      "name": "Finalizează punctul de golire din afara zonei",
+      "description": "Finalizează configurarea unui punct de golire înregistrat în afara zonei de tuns."
     },
     "get_map_data": {
       "name": "Obțineți datele hărții",
@@ -1178,6 +1204,10 @@
       "name": "Reîmprospătează sarcinile",
       "description": "Reia toate programele de pe dispozitiv."
     },
+    "get_tasks": {
+      "name": "Obține sarcinile",
+      "description": "Returnează toate programările pe care integrarea le deține pentru dispozitivul vizat, inclusiv dacă fiecare este activată. Folosiți-o pentru a confirma că o modificare a fost aplicată; „Reîmprospătează sarcinile” le preia mai întâi din nou de pe dispozitiv."
+    },
     "start_task": {
       "name": "Pornește sarcina",
       "description": "Pornește imediat un program stocat (cunoscut și ca „pornește programul”). Doar pentru cositoare — robotul de piscină Spino nu are o comandă echivalentă."
@@ -1219,6 +1249,9 @@
     },
     "start_task_unsupported_on_spino": {
       "message": "Pornirea unui program la cerere nu este acceptată pe robotul de piscină Spino — firmware-ul nu oferă o comandă de execuție imediată pentru programele stocate."
+    },
+    "grass_collection_unsupported": {
+      "message": "Această mașină de tuns nu acceptă colectarea ierbii."
     }
   }
 }

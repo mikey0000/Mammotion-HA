@@ -452,6 +452,12 @@
       "voice_on_off": {
         "name": "Stem aan/uit"
       },
+      "manual_grass_collection": {
+        "name": "Handmatig gras opvangen"
+      },
+      "manual_grass_dump": {
+        "name": "Handmatig gras legen"
+      },
       "spino_buzzer": {
         "name": "Zoemer"
       },
@@ -462,7 +468,7 @@
         "name": "Platformreiniging"
       },
       "spino_waterline_parking": {
-        "name": "Parkeren bij de waterlijn"
+        "name": "Parkeren bij waterlijn"
       }
     },
     "select": {
@@ -505,10 +511,10 @@
       "bypass_mode": {
         "name": "Obstakeldetectie",
         "state": {
-          "direct_touch": "Uit",
-          "slow_touch": "Langzame aanraking",
+          "off": "Uit",
+          "slow_touch": "Langzaam aanraken",
           "less_touch": "Minder aanraking",
-          "no_touch": "Standaard",
+          "standard": "Standaard",
           "sensitive": "Gevoelig"
         }
       },
@@ -574,7 +580,7 @@
         "name": "Wandmateriaal",
         "state": {
           "GLASS": "Glas",
-          "CERAMICS": "Tegels",
+          "CERAMICS": "Tegel",
           "SAND_STONE": "Aggregaat",
           "VINYL": "Vinyl"
         }
@@ -658,10 +664,10 @@
     },
     "ultra_wave": {
       "options": {
-        "0": "Directe aanraking",
-        "1": "Langzame aanraking",
+        "0": "Uit",
+        "1": "Langzaam aanraken",
         "2": "Minder aanraking",
-        "10": "Zonder aanraking",
+        "10": "Standaard",
         "11": "Gevoelig"
       }
     },
@@ -851,6 +857,26 @@
     "reset_blade_time": {
       "name": "Mestijd resetten",
       "description": "Reset de teller voor de gebruikstijd van het mes."
+    },
+    "start_dump_point_setup": {
+      "name": "Instellen van stortpunten starten",
+      "description": "Zet de maaier in de instelmodus voor stortpunten, zodat punten kunnen worden vastgelegd."
+    },
+    "add_dump_point": {
+      "name": "Stortpunt toevoegen",
+      "description": "Legt een stortpunt vast op de huidige positie van de maaier."
+    },
+    "undo_dump_point": {
+      "name": "Laatste stortpunt ongedaan maken",
+      "description": "Verwijdert het laatst vastgelegde stortpunt."
+    },
+    "finish_dump_point_setup": {
+      "name": "Instellen van stortpunten voltooien",
+      "description": "Slaat de vastgelegde stortpunten op en verlaat de instelmodus."
+    },
+    "finish_outside_dump_point": {
+      "name": "Stortpunt buiten gebied voltooien",
+      "description": "Rondt het instellen af van een stortpunt dat buiten het maaigebied is vastgelegd."
     },
     "get_map_data": {
       "name": "Kaartgegevens ophalen",
@@ -1178,6 +1204,10 @@
       "name": "Taken vernieuwen",
       "description": "Haalt alle schema's opnieuw op van het apparaat."
     },
+    "get_tasks": {
+      "name": "Taken ophalen",
+      "description": "Geeft alle schema's terug die de integratie voor het geselecteerde apparaat bijhoudt, inclusief of elk schema is ingeschakeld. Gebruik dit om te bevestigen dat een wijziging is doorgevoerd; 'Taken vernieuwen' haalt ze eerst opnieuw op van het apparaat."
+    },
     "start_task": {
       "name": "Taak starten",
       "description": "Voert een opgeslagen schema direct uit (ook bekend als 'schema starten'). Alleen maaier — de Spino zwembadrobot heeft geen equivalent commando."
@@ -1219,6 +1249,9 @@
     },
     "start_task_unsupported_on_spino": {
       "message": "Een schema op aanvraag starten wordt niet ondersteund op de Spino zwembadrobot — de firmware heeft geen 'nu uitvoeren' commando voor opgeslagen schema's."
+    },
+    "grass_collection_unsupported": {
+      "message": "Deze maaier ondersteunt het opvangen van gras niet."
     }
   }
 }

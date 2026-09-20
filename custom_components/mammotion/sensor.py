@@ -611,14 +611,6 @@ SPINO_SENSOR_TYPES: tuple[MammotionSpinoSensorEntityDescription, ...] = (
         value_fn=lambda spino_data: spino_data.pool_state.sys_status.name,
     ),
     MammotionSpinoSensorEntityDescription(
-        key="spino_work_mode",
-        state_class=None,
-        device_class=SensorDeviceClass.ENUM,
-        options=[mode.name for mode in SpinoWorkMode],
-        value_fn=lambda spino_data: spino_data.pool_state.work_mode.name,
-        entity_category=EntityCategory.DIAGNOSTIC,
-    ),
-    MammotionSpinoSensorEntityDescription(
         key="spino_ble_rssi",
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.SIGNAL_STRENGTH,
@@ -754,9 +746,29 @@ async def async_setup_entry(
 
     mammotion_spinos = entry.runtime_data.spino
     for spino in mammotion_spinos:
+        # Unlike the select, the sensor reports rather than commands, so it also
+        # has to cover the two non-mode states the cleaner can sit in.
+        work_mode_desc = MammotionSpinoSensorEntityDescription(
+            key="spino_work_mode",
+            state_class=None,
+            device_class=SensorDeviceClass.ENUM,
+            options=[
+                mode.name
+                for mode in (
+                    SpinoWorkMode.UNKNOWN,
+                    SpinoWorkMode.OFF,
+                    *SpinoWorkMode.for_device(
+                        spino.coordinator.device_name,
+                        spino.coordinator.device.product_key,
+                    ),
+                )
+            ],
+            value_fn=lambda spino_data: spino_data.pool_state.work_mode.name,
+            entity_category=EntityCategory.DIAGNOSTIC,
+        )
         entities.extend(
             MammotionSpinoSensorEntity(spino.coordinator, description)
-            for description in SPINO_SENSOR_TYPES
+            for description in (work_mode_desc, *SPINO_SENSOR_TYPES)
         )
         entities.extend(
             MammotionSpinoErrorSensorEntity(spino.coordinator, description)

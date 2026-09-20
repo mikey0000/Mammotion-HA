@@ -452,6 +452,12 @@
       "voice_on_off": {
         "name": "Hlas zapnuto/vypnuto"
       },
+      "manual_grass_collection": {
+        "name": "Ruční sběr trávy"
+      },
+      "manual_grass_dump": {
+        "name": "Ruční vysypání trávy"
+      },
       "spino_buzzer": {
         "name": "Bzučák"
       },
@@ -462,7 +468,7 @@
         "name": "Čištění plošiny"
       },
       "spino_waterline_parking": {
-        "name": "Parkování na hladině"
+        "name": "Parkování u hladiny"
       }
     },
     "select": {
@@ -505,10 +511,10 @@
       "bypass_mode": {
         "name": "Detekce překážek",
         "state": {
-          "direct_touch": "Vypnuto",
-          "slow_touch": "Pomalý dotek",
+          "off": "Vypnuto",
+          "slow_touch": "Pomalý dotyk",
           "less_touch": "Méně dotyků",
-          "no_touch": "Standard",
+          "standard": "Standard",
           "sensitive": "Citlivý"
         }
       },
@@ -571,11 +577,11 @@
         }
       },
       "spino_wall_material": {
-        "name": "Materiál stěn",
+        "name": "Materiál stěny",
         "state": {
           "GLASS": "Sklo",
           "CERAMICS": "Dlaždice",
-          "SAND_STONE": "Kamenivo",
+          "SAND_STONE": "Agregát",
           "VINYL": "Vinyl"
         }
       },
@@ -658,10 +664,10 @@
     },
     "ultra_wave": {
       "options": {
-        "0": "Přímý dotek",
-        "1": "Pomalý dotek",
-        "2": "Méně dotyku",
-        "10": "Bez dotyku",
+        "0": "Vypnuto",
+        "1": "Pomalý dotyk",
+        "2": "Méně dotyků",
+        "10": "Standard",
         "11": "Citlivý"
       }
     },
@@ -851,6 +857,26 @@
     "reset_blade_time": {
       "name": "Resetovat čas nože",
       "description": "Resetovat čítač doby používání nože."
+    },
+    "start_dump_point_setup": {
+      "name": "Zahájit nastavení míst vysypání",
+      "description": "Přepne sekačku do režimu nastavení míst vysypání trávy, aby bylo možné místa zaznamenat."
+    },
+    "add_dump_point": {
+      "name": "Přidat místo vysypání",
+      "description": "Zaznamená místo vysypání trávy na aktuální pozici sekačky."
+    },
+    "undo_dump_point": {
+      "name": "Zrušit poslední místo vysypání",
+      "description": "Zahodí naposledy zaznamenané místo vysypání trávy."
+    },
+    "finish_dump_point_setup": {
+      "name": "Dokončit nastavení míst vysypání",
+      "description": "Uloží zaznamenaná místa vysypání trávy a ukončí režim nastavení."
+    },
+    "finish_outside_dump_point": {
+      "name": "Dokončit místo vysypání mimo oblast",
+      "description": "Dokončí nastavení místa vysypání trávy zaznamenaného mimo sekanou oblast."
     },
     "get_map_data": {
       "name": "Získat data mapy",
@@ -1178,6 +1204,10 @@
       "name": "Obnovit úlohy",
       "description": "Znovu načte všechny plány ze zařízení."
     },
+    "get_tasks": {
+      "name": "Získat úlohy",
+      "description": "Vrátí všechny plány, které integrace pro cílové zařízení uchovává, včetně toho, zda je každý z nich povolen. Slouží k ověření, že se změna projevila; „Obnovit úlohy“ je nejprve znovu načte ze zařízení."
+    },
     "start_task": {
       "name": "Spustit úlohu",
       "description": "Okamžitě spustí uložený plán (známé také jako „spustit plán“). Pouze pro sekačku — robot bazénový čistič Spino nemá ekvivalentní příkaz."
@@ -1219,6 +1249,9 @@
     },
     "start_task_unsupported_on_spino": {
       "message": "Spuštění plánu na vyžádání není u bazénového čističe Spino podporováno — firmware nemá příkaz pro okamžité spuštění uloženého plánu."
+    },
+    "grass_collection_unsupported": {
+      "message": "Tato sekačka nepodporuje sběr trávy."
     }
   }
 }

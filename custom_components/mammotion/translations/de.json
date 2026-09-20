@@ -290,7 +290,7 @@
         "state": {
           "UNKNOWN": "Unbekannt",
           "OFF": "Aus",
-          "AUTO": "Auto",
+          "AUTO": "Alles",
           "FLOOR": "Boden",
           "WALL": "Wand",
           "ECO": "Eco",
@@ -461,8 +461,14 @@
       "voice_on_off": {
         "name": "Sprache"
       },
+      "manual_grass_collection": {
+        "name": "Manuelles Grasaufsammeln"
+      },
+      "manual_grass_dump": {
+        "name": "Manuelles Grasentleeren"
+      },
       "spino_buzzer": {
-        "name": "Signalton"
+        "name": "Summer"
       },
       "spino_turbo_clean": {
         "name": "Turbo-Reinigung"
@@ -471,7 +477,7 @@
         "name": "Plattformreinigung"
       },
       "spino_waterline_parking": {
-        "name": "Wasserlinien-Parken"
+        "name": "Wasserlinienparken"
       }
     },
     "select": {
@@ -514,11 +520,11 @@
       "bypass_mode": {
         "name": "Hinderniserkennung",
         "state": {
-          "direct_touch": "Aus",
+          "off": "Aus",
           "slow_touch": "Langsame Berührung",
           "less_touch": "Weniger Berührung",
-          "no_touch": "Standard",
-          "sensitive": "Sensitiv"
+          "standard": "Standard",
+          "sensitive": "Empfindlich"
         }
       },
       "cutting_angle_mode": {
@@ -571,7 +577,7 @@
         "state": {
           "UNKNOWN": "Unbekannt",
           "OFF": "Aus",
-          "AUTO": "Auto",
+          "AUTO": "Alles",
           "FLOOR": "Boden",
           "WALL": "Wand",
           "ECO": "Eco",
@@ -583,8 +589,8 @@
         "name": "Wandmaterial",
         "state": {
           "GLASS": "Glas",
-          "CERAMICS": "Fliesen",
-          "SAND_STONE": "Sandstein",
+          "CERAMICS": "Fliese",
+          "SAND_STONE": "Aggregat",
           "VINYL": "Vinyl"
         }
       },
@@ -667,11 +673,11 @@
     },
     "ultra_wave": {
       "options": {
-        "0": "Direkte Berührung",
+        "0": "Aus",
         "1": "Langsame Berührung",
-        "2": "Wenig Berührung",
-        "10": "Keine Berührung",
-        "11": "Sensitiv"
+        "2": "Weniger Berührung",
+        "10": "Standard",
+        "11": "Empfindlich"
       }
     },
     "channel_mode": {
@@ -860,6 +866,26 @@
     "reset_blade_time": {
       "name": "Betriebsstunden der Klingen zurücksetzen",
       "description": "Setzt den Betriebsstundenzähler für die Klingen zurück."
+    },
+    "start_dump_point_setup": {
+      "name": "Einrichtung der Entleerpunkte starten",
+      "description": "Versetzt den Mäher in den Einrichtungsmodus für Entleerpunkte, damit Punkte aufgezeichnet werden können."
+    },
+    "add_dump_point": {
+      "name": "Entleerpunkt hinzufügen",
+      "description": "Zeichnet an der aktuellen Position des Mähers einen Entleerpunkt auf."
+    },
+    "undo_dump_point": {
+      "name": "Letzten Entleerpunkt rückgängig machen",
+      "description": "Verwirft den zuletzt aufgezeichneten Entleerpunkt."
+    },
+    "finish_dump_point_setup": {
+      "name": "Einrichtung der Entleerpunkte abschließen",
+      "description": "Speichert die aufgezeichneten Entleerpunkte und verlässt den Einrichtungsmodus."
+    },
+    "finish_outside_dump_point": {
+      "name": "Entleerpunkt außerhalb des Bereichs abschließen",
+      "description": "Schließt die Einrichtung eines Entleerpunkts ab, der außerhalb des Mähbereichs aufgezeichnet wurde."
     },
     "get_map_data": {
       "name": "Kartendaten abrufen",
@@ -1187,6 +1213,10 @@
       "name": "Aufgaben aktualisieren",
       "description": "Lade alle Zeitpläne erneut vom Zielgerät. Verwende diese Funktion nach einem „delete-all“-Befehl oder zur Wiederherstellung nach einem versäumten Update."
     },
+    "get_tasks": {
+      "name": "Aufgaben abrufen",
+      "description": "Gibt alle Zeitpläne zurück, die die Integration für das ausgewählte Gerät vorhält, einschließlich der Angabe, ob der jeweilige Zeitplan aktiviert ist. Damit lässt sich prüfen, ob eine Änderung angekommen ist; „Aufgaben aktualisieren“ lädt sie zuvor erneut vom Gerät."
+    },
     "start_task": {
       "name": "Aufgabe starten",
       "description": "Führt einen gespeicherten Zeitplan sofort aus (auch 'Zeitplan starten' genannt). Nur für Mähroboter — der Spino-Poolreiniger hat keinen entsprechenden Befehl, daher führt die Auswahl einer Spino-Aufgabe zu einer Fehlermeldung."
@@ -1228,6 +1258,9 @@
     },
     "start_task_unsupported_on_spino": {
       "message": "Das Starten eines Zeitplans auf Abruf wird vom Spino-Poolreiniger nicht unterstützt — die Geräte-Firmware hat keinen 'jetzt ausführen'-Befehl für gespeicherte Pläne."
+    },
+    "grass_collection_unsupported": {
+      "message": "Dieser Mäher unterstützt keine Grasaufnahme."
     }
   }
 }

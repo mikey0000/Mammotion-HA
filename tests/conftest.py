@@ -6,6 +6,7 @@ don't drag in native-extension modules (bluetooth, usb, aiousbwatcher …).
 
 import sys
 import types
+from enum import IntEnum
 from unittest.mock import MagicMock
 
 
@@ -230,6 +231,29 @@ _stub(
     PoolCleanerDevice=MagicMock(),
 )
 _stub("pymammotion.data.model.pool_state", SpinoToggle=MagicMock())
+
+
+# Mirrors pymammotion.data.model.enums — real IntEnums so the switch entity
+# descriptions' identity comparisons still mean something under the stubs.
+class _CollectorState(IntEnum):
+    IDLE = 0
+    COLLECTING = 1
+    FAULT = 2
+
+
+class _DumpState(IntEnum):
+    UNKNOWN = -1
+    LOWERED = 0
+    RAISED = 1
+    ADJUSTING = 2
+    POURING = 3
+
+
+_stub(
+    "pymammotion.data.model.enums",
+    CollectorState=_CollectorState,
+    DumpState=_DumpState,
+)
 _stub("pymammotion.utility")
 _stub("pymammotion.utility.device_type", DeviceType=MagicMock())
 _stub("pymammotion.utility.constant", WorkMode=MagicMock())
@@ -433,6 +457,9 @@ _entity_mod = _stub(
     MammotionCameraBaseEntity=_MammotionCameraBaseEntity,
     MammotionBaseSpinoEntity=_MammotionBaseSpinoEntity,
     device_firmware_version=lambda device_state: "",
+    # DeviceType is a MagicMock here, so the real capability check cannot run;
+    # the grass-collection entities are covered by source inspection instead.
+    supports_grass_collection=lambda device_name: False,
 )
 
 # ── Load switch.py directly (bypasses __init__.py entirely) ──────────────

@@ -265,8 +265,8 @@
         "name": "Status",
         "state": {
           "UNKNOWN": "Okänd",
-          "IDLE": "Standby",
-          "PREPARE": "Standby",
+          "IDLE": "Väntar",
+          "PREPARE": "Väntar",
           "WAIT_WATER": "Fyller med vatten",
           "WORKING": "Arbetar",
           "PAUSE_GO_CHARGE": "Återvänder för laddning (pausad)",
@@ -452,14 +452,20 @@
       "voice_on_off": {
         "name": "Röst på/av"
       },
+      "manual_grass_collection": {
+        "name": "Manuell gräsuppsamling"
+      },
+      "manual_grass_dump": {
+        "name": "Manuell grästömning"
+      },
       "spino_buzzer": {
-        "name": "Summer"
+        "name": "Summerton"
       },
       "spino_turbo_clean": {
-        "name": "Turborengöring"
+        "name": "Turbo-rengöring"
       },
       "spino_platform_cleaning": {
-        "name": "Plattformsrengöring"
+        "name": "Plattformrengöring"
       },
       "spino_waterline_parking": {
         "name": "Parkering vid vattenlinjen"
@@ -505,10 +511,10 @@
       "bypass_mode": {
         "name": "Hinderdetektering",
         "state": {
-          "direct_touch": "Av",
-          "slow_touch": "Långsam kontakt",
-          "less_touch": "Mindre kontakt",
-          "no_touch": "Standard",
+          "off": "Av",
+          "slow_touch": "Långsam beröring",
+          "less_touch": "Mindre beröring",
+          "standard": "Standard",
           "sensitive": "Känslig"
         }
       },
@@ -575,7 +581,7 @@
         "state": {
           "GLASS": "Glas",
           "CERAMICS": "Kakel",
-          "SAND_STONE": "Stenmaterial",
+          "SAND_STONE": "Aggregat",
           "VINYL": "Vinyl"
         }
       },
@@ -658,10 +664,10 @@
     },
     "ultra_wave": {
       "options": {
-        "0": "Direkt kontakt",
-        "1": "Långsam kontakt",
-        "2": "Mindre kontakt",
-        "10": "Ingen kontakt",
+        "0": "Av",
+        "1": "Långsam beröring",
+        "2": "Mindre beröring",
+        "10": "Standard",
         "11": "Känslig"
       }
     },
@@ -851,6 +857,26 @@
     "reset_blade_time": {
       "name": "Återställ bladtid",
       "description": "Återställ räknaren för bladanvändningstid."
+    },
+    "start_dump_point_setup": {
+      "name": "Starta inställning av tömningspunkter",
+      "description": "Försätter klipparen i inställningsläge för tömningspunkter så att punkter kan registreras."
+    },
+    "add_dump_point": {
+      "name": "Lägg till tömningspunkt",
+      "description": "Registrerar en tömningspunkt vid klipparens aktuella position."
+    },
+    "undo_dump_point": {
+      "name": "Ångra senaste tömningspunkten",
+      "description": "Förkastar den senast registrerade tömningspunkten."
+    },
+    "finish_dump_point_setup": {
+      "name": "Slutför inställning av tömningspunkter",
+      "description": "Sparar de registrerade tömningspunkterna och lämnar inställningsläget."
+    },
+    "finish_outside_dump_point": {
+      "name": "Slutför tömningspunkt utanför området",
+      "description": "Slutför inställningen av en tömningspunkt som registrerats utanför klippområdet."
     },
     "get_map_data": {
       "name": "Hämta kartdata",
@@ -1178,6 +1204,10 @@
       "name": "Uppdatera uppgifter",
       "description": "Hämtar om alla scheman från enheten."
     },
+    "get_tasks": {
+      "name": "Hämta uppgifter",
+      "description": "Returnerar alla scheman som integrationen har för den valda enheten, inklusive om respektive schema är aktiverat. Använd den för att bekräfta att en ändring gick igenom; ”Uppdatera uppgifter” hämtar dem först på nytt från enheten."
+    },
     "start_task": {
       "name": "Starta uppgift",
       "description": "Kör ett sparat schema omedelbart (även kallat 'starta schema'). Endast gräsklippare — Spino-poolroboten har inte motsvarande kommando."
@@ -1219,6 +1249,9 @@
     },
     "start_task_unsupported_on_spino": {
       "message": "Att starta ett schema på begäran stöds inte på Spino-poolroboten — enhetens firmware har inget 'kör nu'-kommando för sparade scheman."
+    },
+    "grass_collection_unsupported": {
+      "message": "Den här klipparen har inte stöd för gräsuppsamling."
     }
   }
 }
