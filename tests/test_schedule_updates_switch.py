@@ -59,7 +59,7 @@ def test_a_restored_disabled_device_stays_quiet() -> None:
     guard = setup.index("if not self.data.enabled:")
     assert "stop_polling()" in setup[guard:]
     # The startup reads are skipped, not run and discarded.
-    assert "_async_run_startup_reads()" in setup
+    assert "_async_ensure_startup_reads()" in setup
     assert "send_todev_ble_sync" not in setup
 
 
@@ -79,7 +79,7 @@ def test_re_enabling_runs_the_reads_setup_skipped() -> None:
     report = src[src.index("class MammotionReportUpdateCoordinator") :]
     body = _function(report, "set_scheduled_updates")
     assert "if changed and enabled and" in body
-    assert "_async_run_startup_reads()" in body
+    assert "_async_ensure_startup_reads()" in body
 
 
 def test_enabling_resumes_polling_rather_than_only_restarting_keepalive() -> None:
@@ -125,7 +125,7 @@ def test_the_startup_reads_do_not_block_the_service_call() -> None:
     report = src[src.index("class MammotionReportUpdateCoordinator") :]
     body = _function(report, "set_scheduled_updates")
     assert "async_create_background_task" in body
-    assert "await self._async_run_startup_reads()" not in body
+    assert "await self._async_ensure_startup_reads()" not in body
 
 
 def test_the_transition_comes_from_the_base_not_a_second_read() -> None:

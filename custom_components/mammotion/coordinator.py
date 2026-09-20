@@ -206,6 +206,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         self.map_offset_lon: float = 0.0
         self._store: MammotionConfigStore = async_get_store(hass, config_entry)
         self._bring_up_done = False
+        self._startup_reads_done = False
         self._bluetooth_enabled: bool = self._store.transport_enabled(
             self.device_name, TRANSPORT_BLUETOOTH
         )
@@ -486,6 +487,25 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
                 exc,
             )
         return changed
+
+    async def _async_startup_reads(self) -> None:
+        """Read back the settings this coordinator's entities show.
+
+        Outbound and one-off, so it is kept apart from ``_async_setup``: the
+        wiring there has to happen whatever the updates switch says, because
+        ``_async_setup`` runs once per session, while these sends must not go
+        out to a device whose polling the user turned off.
+        """
+
+    async def _async_ensure_startup_reads(self) -> None:
+        """Run :meth:`_async_startup_reads` once, and only while enabled."""
+        if self._startup_reads_done:
+            return
+        device = self.manager.get_device_by_name(self.device_name)
+        if device is None or not device.enabled:
+            return
+        self._startup_reads_done = True
+        await self._async_startup_reads()
 
     def is_online(self) -> bool:
         """Return True if the device currently has an active transport connection."""
@@ -1969,6 +1989,11 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         if not device.enabled:
             return self.get_coordinator_data(device)
 
+        # Reads skipped at setup because updates were off: the switch only ever
+        # reaches the report coordinator, so its siblings pick them up here on
+        # their first enabled refresh rather than waiting for a reload.
+        await self._async_ensure_startup_reads()
+
         handle = self.manager.mower(self.device_name)
 
         if not self.is_online():
@@ -2395,8 +2420,7 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
         if not self.data.enabled:
             if handle := self.manager.mower(self.device_name):
                 await handle.stop_polling()
-        else:
-            await self._async_run_startup_reads()
+        await self._async_ensure_startup_reads()
 
         # Watch sys_status changes so we can refresh the full status when the
         # device transitions states.  Skipped when the BLE polling loop is
@@ -2419,12 +2443,12 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
         if changed and enabled and (entry := self.config_entry) is not None:
             entry.async_create_background_task(
                 self.hass,
-                self._async_run_startup_reads(),
+                self._async_ensure_startup_reads(),
                 f"{self.device_name} updates-on reads",
             )
         return changed
 
-    async def _async_run_startup_reads(self) -> None:
+    async def _async_startup_reads(self) -> None:
         """Read back the settings the entities show, under one time budget."""
         # Common commands for all device types
         commands = [
@@ -2570,6 +2594,10 @@ class MammotionMaintenanceUpdateCoordinator(MammotionBaseUpdateCoordinator[Maint
                 self._on_sys_status_changed,
             )
 
+        await self._async_ensure_startup_reads()
+
+    async def _async_startup_reads(self) -> None:
+        """Fetch the maintenance counters and the do-not-disturb window."""
         try:
             await self.async_send_command("get_maintenance")
             await self.async_send_and_wait(
@@ -2670,7 +2698,10 @@ class MammotionDeviceVersionUpdateCoordinator(
     async def _async_setup(self) -> None:
         """Set up device version coordinator."""
         await super()._async_setup()
+        await self._async_ensure_startup_reads()
 
+    async def _async_startup_reads(self) -> None:
+        """Fill in whichever firmware and model fields are still unknown."""
         try:
             device = self.manager.get_device_by_name(self.device_name)
             if device is None:
@@ -3010,6 +3041,13 @@ class MammotionDeviceErrorUpdateCoordinator(
                 self._on_sys_status_changed,
             )
 
+        await self._async_ensure_startup_reads()
+
+    async def _async_startup_reads(self) -> None:
+        """Read the two error registers and, if needed, the code table."""
+        device = self.manager.get_device_by_name(self.device_name)
+        if device is None:
+            return
         try:
             await self.async_send_and_wait(
                 "read_write_device", "bidire_comm_cmd", rw_id=5, rw=1, context=2
