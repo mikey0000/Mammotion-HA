@@ -9,7 +9,7 @@ authors = [
 readme = "README.md"
 requires-python = ">=3.14.2"
 dependencies = [
-    "pymammotion==0.9.0b9",
+    "pymammotion==0.9.0b10",
     "homeassistant>=2026.1.0",
     "autotyping>=24.3.0",
     "websockets>=15.0.1",
@@ -27,6 +27,13 @@ dev = [
 
 [tool.uv]
 package = false
+
+# Develop against the sibling pymammotion checkout rather than the pinned
+# wheel, so a change there is picked up without a release.  CI must not see
+# this — `uv lock --no-sources` in the release workflow resolves the pin from
+# the index instead.
+[tool.uv.sources]
+pymammotion = { path = "../Luba-API", editable = true }
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
