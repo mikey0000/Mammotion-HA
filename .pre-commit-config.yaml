@@ -9,7 +9,7 @@ repos:
         args:
           - --fix
       - id: ruff-format
-        files: ^((custom_components|tests)/.+)?[^/]+\.(py|pyi)$
+        files: ^((custom_components|tests|tests_ha)/.+)?[^/]+\.(py|pyi)$
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.1
     hooks:
@@ -62,3 +62,21 @@ repos:
       - id: mypy
         args: [--strict, --ignore-missing-imports]
         files: ^((custom_components)/.+)?[^/]+\.(py|pyi)$
+  - repo: local
+    hooks:
+      # Two suites, two invocations: tests/ stubs parts of homeassistant so the
+      # platform modules import without a running HA, and
+      # pytest-homeassistant-custom-component patches those same modules, so the
+      # plugin is off by default (pyproject addopts) and re-enabled only here.
+      - id: pytest
+        name: pytest (stubbed)
+        entry: uv run --no-sync pytest -q
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: pytest-ha
+        name: pytest (real Home Assistant)
+        entry: uv run --no-sync pytest -q -p homeassistant tests_ha
+        language: system
+        pass_filenames: false
+        always_run: true
