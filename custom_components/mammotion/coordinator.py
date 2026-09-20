@@ -31,6 +31,7 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.debounce import Debouncer
 from homeassistant.helpers.event import async_call_later, async_track_time_interval
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
+from homeassistant.util import dt as dt_util
 from mashumaro.exceptions import InvalidFieldValue
 from pymammotion.aliyun.exceptions import (
     CloudSetupError,
@@ -123,6 +124,8 @@ DEFAULT_INTERVAL = timedelta(minutes=30)
 REPORT_INTERVAL = timedelta(minutes=5)
 DYNAMICS_LINE_INTERVAL = timedelta(seconds=10)
 DEVICE_VERSION_INTERVAL = timedelta(weeks=1)
+# How long a failed firmware check waits before another push may retry it.
+FIRMWARE_CHECK_RETRY_INTERVAL = timedelta(hours=1)
 MAP_INTERVAL = timedelta(minutes=60)
 RTK_INTERVAL = timedelta(hours=5)
 SPINO_INTERVAL = timedelta(weeks=1)
@@ -171,7 +174,9 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             update_interval=update_interval,
             config_entry=config_entry,
         )
-        self._ice_servers = None
+        # Public because the camera platform populates it from Agora and the
+        # camera entity reads it back; the refresh below keeps it current.
+        self.ice_servers: list[RTCIceServer] = []
         self._agora_response = None
         # Set by the WebRTC camera entity so the start/stop_video services and
         # config-entry unload can drive the same teardown the frontend uses.
@@ -383,7 +388,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
                         ]
 
                         # Store ICE servers in coordinator
-                        self._ice_servers = ice_servers
+                        self.ice_servers = ice_servers
                         self._agora_response = agora_response
                         LOGGER.info(
                             "Retrieved %d ICE servers from Agora API",
@@ -391,7 +396,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
                         )
                 except Exception as e:
                     LOGGER.error("Failed to get ICE servers from Agora API: %s", e)
-                    self._ice_servers = []
+                    self.ice_servers = []
 
             LOGGER.debug("Stream token refreshed successfully")
         except Exception as ex:
@@ -2141,6 +2146,10 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             getattr(snapshot.raw, "online", None),
         )
         self.async_set_updated_data(snapshot.raw)
+        await self._async_device_reported_in()
+
+    async def _async_device_reported_in(self) -> None:
+        """React to fresh contact from the device."""
 
     def find_entity_by_attribute_in_registry(
         self, attribute_name: str, attribute_value: Any
@@ -2630,6 +2639,8 @@ class MammotionDeviceVersionUpdateCoordinator(
             unique_name=unique_name,
         )
 
+        self._firmware_check_attempted: datetime.datetime | None = None
+
         mowing_device = self.manager.get_device_by_name(self.device_name)
         if self.data is None:
             self.data = mowing_device
@@ -2685,8 +2696,11 @@ class MammotionDeviceVersionUpdateCoordinator(
                     http.get_device_ota_firmware([handle.iot_id])
                 )
                 LOGGER.debug("OTA info: %s", ota_info.data if ota_info else None)
-                if ota_info is not None and (check_versions := ota_info.data):
-                    for check_version in check_versions:
+                if ota_info is not None:
+                    await self._store.async_set_firmware_checked(
+                        self.device_name, dt_util.utcnow()
+                    )
+                    for check_version in ota_info.data or ():
                         if check_version.device_id == handle.iot_id:
                             device.apply_version_check(check_version)
 
@@ -2699,6 +2713,40 @@ class MammotionDeviceVersionUpdateCoordinator(
         """Set up device version coordinator."""
         await super()._async_setup()
         await self._async_ensure_startup_reads()
+
+    async def _async_device_reported_in(self) -> None:
+        """Check for new firmware on first contact if the last check has aged out.
+
+        The poll runs weekly, so a device that was offline when its turn came
+        waits out another whole interval before anyone looks again.  There is
+        no online/offline edge to hang this on: ``self.device`` is the account
+        record, shared by every coordinator of this device, and nothing ever
+        marks it offline.  The week-old test is its own rate limiter instead —
+        a completed check records a timestamp, so this fires at most once a
+        week per device however many pushes arrive.
+        """
+        if not self._firmware_check_due():
+            return
+        # A failed check records nothing, so attempts are throttled separately
+        # or every later push would retry it.
+        self._firmware_check_attempted = dt_util.utcnow()
+        LOGGER.debug(
+            "%s: firmware check has aged out, refreshing now", self.device_name
+        )
+        await self.async_request_refresh()
+
+    def _firmware_check_due(self) -> bool:
+        """Return True when the cloud could tell us something new right now."""
+        # The check is an HTTP call against the account; with no usable cloud
+        # login there is no source to ask, however old the last answer is.
+        if not self.cloud_http_usable:
+            return False
+        now = dt_util.utcnow()
+        attempted = self._firmware_check_attempted
+        if attempted is not None and now - attempted < FIRMWARE_CHECK_RETRY_INTERVAL:
+            return False
+        last = self._store.firmware_checked_at(self.device_name)
+        return last is None or now - last >= DEVICE_VERSION_INTERVAL
 
     async def _async_startup_reads(self) -> None:
         """Fill in whichever firmware and model fields are still unknown."""

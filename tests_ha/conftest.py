@@ -1,13 +1,13 @@
-"""Fixtures for tests that run against a real Home Assistant.
+"""Fixtures for the test suite, which runs against a real Home Assistant.
 
-Unlike ``tests/``, nothing here is stubbed: ``pytest-homeassistant-custom-component``
-supplies a real ``hass``, the entity and device registries and the rest, so these
-assert on behaviour rather than on source text.
+Nothing here is stubbed: ``pytest-homeassistant-custom-component`` supplies a
+real ``hass``, the entity and device registries and the rest, so these assert
+on behaviour rather than on source text.  This replaced an earlier ``tests/``
+that stubbed out parts of ``homeassistant`` so the platform modules could be
+imported without one.
 
-Run them with the plugin re-enabled, which ``pyproject.toml`` disables globally
-for the stubbed suite::
-
-    uv run pytest -p homeassistant tests_ha
+``pyproject.toml`` points ``testpaths`` here, so ``uv run pytest`` is all it
+takes; the plugin loads by itself.
 """
 
 import pytest

@@ -1,5 +1,6 @@
 """Config for Mammotion."""
 
+from datetime import datetime
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
@@ -17,7 +18,7 @@ SAVE_DELAY = 300
 STORE_DATA_KEY = f"{DOMAIN}_store"
 
 STORE_VERSION = 1
-STORE_MINOR_VERSION = 2
+STORE_MINOR_VERSION = 3
 
 TRANSPORT_BLUETOOTH = "bluetooth_enabled"
 TRANSPORT_CLOUD = "cloud_enabled"
@@ -41,6 +42,9 @@ class MammotionConfigStore(Store):  # type: ignore[misc]
         self.device_data: dict[str, Any] = {}
         # Connectivity switch positions per device, keyed by device name
         self.transport_settings: dict[str, dict[str, bool]] = {}
+        # When each device's firmware was last checked against the cloud, as an
+        # ISO timestamp keyed by device name
+        self.firmware_checks: dict[str, str] = {}
         self._save_pending = False
 
     async def _async_migrate_func(
@@ -48,7 +52,9 @@ class MammotionConfigStore(Store):  # type: ignore[misc]
     ) -> dict[str, Any]:
         """Nest the flat device map so transport settings get their own section."""
         if old_major_version == 1 and old_minor_version < 2:
-            return {"devices": old_data, "transports": {}}
+            old_data = {"devices": old_data, "transports": {}}
+        if old_major_version == 1 and old_minor_version < 3:
+            old_data = {**old_data, "firmware_checks": {}}
         return old_data
 
     async def async_load_device_data(self) -> None:
@@ -56,6 +62,7 @@ class MammotionConfigStore(Store):  # type: ignore[misc]
         data = await self.async_load() or {}
         self.device_data = data.get("devices", {})
         self.transport_settings = data.get("transports", {})
+        self.firmware_checks = data.get("firmware_checks", {})
 
     def transport_enabled(self, device_name: str, transport: str) -> bool:
         """Return the stored switch position of a device's transport, on by default."""
@@ -66,6 +73,26 @@ class MammotionConfigStore(Store):  # type: ignore[misc]
     ) -> None:
         """Persist a connectivity switch position right away; toggles are rare."""
         self.transport_settings.setdefault(device_name, {})[transport] = enabled
+        await self.async_save(self._data_to_save())
+
+    def firmware_checked_at(self, device_name: str) -> datetime | None:
+        """Return when this device's firmware was last checked, if ever."""
+        if (raw := self.firmware_checks.get(device_name)) is None:
+            return None
+        try:
+            parsed = datetime.fromisoformat(raw)
+        except (TypeError, ValueError):
+            # A corrupted timestamp should read as never checked, so the next
+            # contact fixes it rather than suppressing checks forever.
+            return None
+        # A naive value would raise when subtracted from an aware utcnow().
+        return parsed if parsed.tzinfo is not None else None
+
+    async def async_set_firmware_checked(
+        self, device_name: str, when: datetime
+    ) -> None:
+        """Persist a firmware check straight away; it happens about once a week."""
+        self.firmware_checks[device_name] = when.isoformat()
         await self.async_save(self._data_to_save())
 
     async def async_device_data(self, device_name: str) -> dict[str, Any] | None:
@@ -100,6 +127,7 @@ class MammotionConfigStore(Store):  # type: ignore[misc]
         return {
             "devices": dict(self.device_data),
             "transports": dict(self.transport_settings),
+            "firmware_checks": dict(self.firmware_checks),
         }
 
     async def async_flush(self) -> None:
@@ -112,7 +140,8 @@ class MammotionConfigStore(Store):  # type: ignore[misc]
         """Drop the stored state and transport settings of a single device."""
         had_data = self.device_data.pop(device_name, None) is not None
         had_settings = self.transport_settings.pop(device_name, None) is not None
-        if not (had_data or had_settings):
+        had_check = self.firmware_checks.pop(device_name, None) is not None
+        if not (had_data or had_settings or had_check):
             return
         self._save_pending = True
         await self.async_flush()

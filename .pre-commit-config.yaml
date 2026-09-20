@@ -42,6 +42,9 @@ repos:
     rev: v4.0.0-alpha.8
     hooks:
       - id: prettier
+        # hassfest rewrites the manifest with one array element per line, which
+        # prettier then collapses; the two rewrite each other forever.
+        exclude: ^custom_components/mammotion/manifest\.json$
   - repo: https://github.com/cdce8p/python-typing-update
     rev: v0.7.2
     hooks:
@@ -64,19 +67,9 @@ repos:
         files: ^((custom_components)/.+)?[^/]+\.(py|pyi)$
   - repo: local
     hooks:
-      # Two suites, two invocations: tests/ stubs parts of homeassistant so the
-      # platform modules import without a running HA, and
-      # pytest-homeassistant-custom-component patches those same modules, so the
-      # plugin is off by default (pyproject addopts) and re-enabled only here.
       - id: pytest
-        name: pytest (stubbed)
+        name: pytest
         entry: uv run --no-sync pytest -q
-        language: system
-        pass_filenames: false
-        always_run: true
-      - id: pytest-ha
-        name: pytest (real Home Assistant)
-        entry: uv run --no-sync pytest -q -p homeassistant tests_ha
         language: system
         pass_filenames: false
         always_run: true

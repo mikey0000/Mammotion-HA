@@ -103,7 +103,7 @@ async def async_setup_entry(
 
     for mower in mowers:
         _LOGGER.debug("Config camera for %s", mower.device.device_name)
-        mower.reporting_coordinator._ice_servers = ice_servers
+        mower.reporting_coordinator.ice_servers = ice_servers
 
         for entity_description in CAMERAS:
             entities.append(
@@ -148,8 +148,6 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         self._teardown_lock = asyncio.Lock()
         self._attr_model = coordinator.device.device_name
         self.access_tokens = [secrets.token_hex(16)]
-        # Get ICE servers from coordinator (populated in async_setup_entry)
-        self.ice_servers = getattr(coordinator, "_ice_servers", [])
 
     async def async_added_to_hass(self) -> None:
         """Let the coordinator drive this entity's stream teardown."""
@@ -361,8 +359,14 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
             return None
 
     def get_ice_servers(self) -> list[RTCIceServer]:
-        """Return the ICE servers from Agora API."""
-        return self.ice_servers
+        """Return the ICE servers from Agora API.
+
+        Read through rather than snapshotted at construction: the coordinator
+        rebinds this list whenever it refreshes the stream token, and core
+        calls this again for every new WebRTC session.  A session already
+        running keeps the servers it negotiated with.
+        """
+        return self.coordinator.ice_servers
 
 
 # Global

@@ -6,3 +6,10 @@
 # GITHUB Proposed Python stuff:
 *.py[cod]
 __pycache__
+
+# Android app data pulled off a device for protocol work; holds account
+# tokens and keys (shared_prefs/SecureDataStore.xml, APPLICATION_KEYS.xml).
+data/
+
+# Throwaway Home Assistant instance created by scripts/develop.
+config/

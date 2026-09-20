@@ -65,6 +65,9 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
         self._config: dict = {}
         self._discovered_device: BLEDevice | None = None
         self._discovered_devices: dict[str, str] = {}
+        # Set when check_and_update_bluetooth_device has already asked for the
+        # one reload this flow may cause.
+        self._reload_scheduled = False
 
     def _ble_device_name(self) -> str | None:
         """Return the name of the mower this flow was started for, if any."""
@@ -110,6 +113,7 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                     )
                     if entry.state == config_entries.ConfigEntryState.LOADED:
                         self.hass.config_entries.async_schedule_reload(entry.entry_id)
+                        self._reload_scheduled = True
                 return entry
 
         ble_only_entries = [
@@ -154,12 +158,14 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                 ),
                 **entry.data.get(CONF_BLE_DEVICES, {}),
             }
-            # check_and_update_bluetooth_device already schedules the one reload a
-            # new address needs.  A second one here would set up a competing client
-            # while the first still holds the MQTT session; both connect with the
-            # same client_id and the broker rejects them.
+            # Exactly one reload: check_and_update_bluetooth_device schedules it
+            # when an address changed, and core schedules it here when this adds a
+            # device to the entry.  Two would set up a competing client while the
+            # first still holds the MQTT session; both connect with the same
+            # client_id and the broker rejects them.
             self._abort_if_unique_id_configured(
-                updates={CONF_BLE_DEVICES: ble_devices}, reload_on_update=False
+                updates={CONF_BLE_DEVICES: ble_devices},
+                reload_on_update=not self._reload_scheduled,
             )
 
         return await self.async_step_bluetooth_confirm()
@@ -181,7 +187,8 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                 **entry.data.get(CONF_BLE_DEVICES, {}),
             }
             self._abort_if_unique_id_configured(
-                updates={CONF_BLE_DEVICES: merged}, reload_on_update=False
+                updates={CONF_BLE_DEVICES: merged},
+                reload_on_update=not self._reload_scheduled,
             )
 
         ble_devices: dict[str, str] = {
@@ -489,6 +496,7 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                         return self.async_update_reload_and_abort(
                             entry,
                             unique_id=user_account,
+                            title=account,
                             data=data,
                             reason="reconfigure_successful",
                         )
@@ -517,8 +525,12 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                 )
                 data = {k: v for k, v in entry.data.items() if k not in stale}
                 data.update({CONF_USE_WIFI: False, CONF_HAS_CLOUD_ACCOUNT: False})
+                ble_name = next(iter(entry.data.get(CONF_BLE_DEVICES, {})), None)
                 return self.async_update_reload_and_abort(
-                    entry, data=data, reason="reconfigure_successful"
+                    entry,
+                    title=ble_name or entry.title,
+                    data=data,
+                    reason="reconfigure_successful",
                 )
 
         schema = {

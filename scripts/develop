@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# Run a throwaway Home Assistant against the integration in this checkout.
+#
+# The venv already holds a real `hass` (pytest-homeassistant-custom-component
+# pins an exact Home Assistant), so this needs no container — which is also why
+# Bluetooth works: hass talks to the host's BlueZ over the session D-Bus the
+# way a native install does.
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+CONFIG="${HASS_CONFIG:-config}"
+
+mkdir -p "$CONFIG/custom_components"
+
+# A symlink, not a copy, so an edit only needs a restart.  Clear the path first:
+# ln -sfn would nest the link inside a real directory left by an earlier run.
+rm -rf "$CONFIG/custom_components/mammotion"
+ln -s "$PWD/custom_components/mammotion" "$CONFIG/custom_components/mammotion"
+
+if [ ! -f "$CONFIG/configuration.yaml" ]; then
+  cat > "$CONFIG/configuration.yaml" <<'YAML'
+default_config:
+
+logger:
+  default: info
+  logs:
+    custom_components.mammotion: debug
+    pymammotion: debug
+    homeassistant.components.bluetooth: debug
+    habluetooth: debug
+    bleak: info
+YAML
+fi
+
+exec uv run --no-sync hass --config "$CONFIG" --debug "$@"
