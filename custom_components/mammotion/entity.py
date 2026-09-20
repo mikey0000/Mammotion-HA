@@ -200,8 +200,10 @@ class MammotionBaseRTKEntity(CoordinatorEntity[MammotionRTKCoordinator]):  # typ
             name=self.coordinator.device_name,
             manufacturer="Mammotion",
             serial_number=self.coordinator.device_name,
-            model=rtk_device.name,
-            model_id=self.coordinator.device.product_key,
+            # The state model carries no product name, so take it off the account
+            # record the way the mower does; falling back to the product key put
+            # the raw "a1Nc68bGZzX" where the model should be.
+            model=self.coordinator.device.product_model or rtk_device.name or None,
             sw_version=self.coordinator.data.device_version,
             suggested_area="Garden",
             connections={
