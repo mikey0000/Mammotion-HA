@@ -18,7 +18,7 @@ SAVE_DELAY = 300
 STORE_DATA_KEY = f"{DOMAIN}_store"
 
 STORE_VERSION = 1
-STORE_MINOR_VERSION = 3
+STORE_MINOR_VERSION = 4
 
 TRANSPORT_BLUETOOTH = "bluetooth_enabled"
 TRANSPORT_CLOUD = "cloud_enabled"
@@ -55,6 +55,14 @@ class MammotionConfigStore(Store):  # type: ignore[misc]
             old_data = {"devices": old_data, "transports": {}}
         if old_major_version == 1 and old_minor_version < 3:
             old_data = {**old_data, "firmware_checks": {}}
+        if old_major_version == 1 and old_minor_version < 4:
+            # The error-code table moved out of the device record and into one
+            # process-wide copy.  Stored blobs are ignored on load, but each was
+            # ~470 rows in 26 languages and there was one per device, so drop
+            # them rather than carry them until the device next saves.
+            for device in old_data.get("devices", {}).values():
+                if isinstance(device, dict) and isinstance(device.get("errors"), dict):
+                    device["errors"].pop("error_codes", None)
         return old_data
 
     async def async_load_device_data(self) -> None:

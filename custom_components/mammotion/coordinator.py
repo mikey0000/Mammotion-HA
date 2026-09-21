@@ -42,6 +42,11 @@ from pymammotion.aliyun.exceptions import (
 )
 from pymammotion.aliyun.model.dev_by_account_response import Device
 from pymammotion.client import MammotionClient
+from pymammotion.data.error_codes import (
+    fetched_error_codes,
+    get_error_info,
+    set_fetched_error_codes,
+)
 from pymammotion.data.model import GenerateRouteInformation
 from pymammotion.data.model.device import (
     MowerDevice,
@@ -248,14 +253,13 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         """Return module, level, localised message and solution, and the display text, for a code.
 
         ``text`` is the one formatter for error strings — the error sensors and the
-        notification event all read it — so the three can never drift.  The error
-        table lives on the shared device record, so this works from any of a
-        mower's coordinators regardless of what ``self.data`` holds.
+        notification event all read it — so the three can never drift.  The table
+        is process-wide, so this works from any of a mower's coordinators
+        regardless of what ``self.data`` holds, and falls back to the bundled
+        table when no account has been fetched from.
         """
-        device = self.manager.get_device_by_name(self.device_name)
-        try:
-            error_info: ErrorInfo = device.errors.error_codes[str(abs(code))]  # type: ignore[union-attr]
-        except (AttributeError, KeyError):
+        error_info: ErrorInfo | None = get_error_info(code)
+        if error_info is None:
             return None
         language = self.hass.config.language
         message = (
@@ -3050,13 +3054,16 @@ class MammotionDeviceErrorUpdateCoordinator(
         device = self.manager.get_device_by_name(self.device_name)
         assert device is not None
         try:
-            if not device.errors.error_codes and self.cloud_http_usable:
+            if not fetched_error_codes() and self.cloud_http_usable:
                 http = self.manager.mammotion_http
                 if http is not None:
                     if (
                         codes := await self._cloud_api_call(http.get_all_error_codes())
                     ) is not None:
-                        device.errors.error_codes = codes
+                        # One table for every device: it is ~470 rows and identical
+                        # per account, and held per device it was persisted and
+                        # dumped in diagnostics once for each of them.
+                        set_fetched_error_codes(codes)
         except DeviceOfflineException:
             return device
 
@@ -3103,13 +3110,16 @@ class MammotionDeviceErrorUpdateCoordinator(
             await self.async_send_and_wait(
                 "read_write_device", "bidire_comm_cmd", rw_id=5, rw=1, context=3
             )
-            if not device.errors.error_codes and self.cloud_http_usable:
+            if not fetched_error_codes() and self.cloud_http_usable:
                 http = self.manager.mammotion_http
                 if http is not None:
                     if (
                         codes := await self._cloud_api_call(http.get_all_error_codes())
                     ) is not None:
-                        device.errors.error_codes = codes
+                        # One table for every device: it is ~470 rows and identical
+                        # per account, and held per device it was persisted and
+                        # dumped in diagnostics once for each of them.
+                        set_fetched_error_codes(codes)
 
             self.async_set_updated_data(self.data)
         except DeviceOfflineException:
@@ -3424,10 +3434,10 @@ class MammotionSpinoCoordinator(MammotionBaseUpdateCoordinator[PoolCleanerDevice
                         for check_version in check_versions:
                             if check_version.device_id == self.device.iot_id:
                                 self.data.apply_version_check(check_version)
-                    if not self.data.errors.error_codes:
+                    if not fetched_error_codes():
                         codes = await self._cloud_api_call(http.get_all_error_codes())
                         if codes is not None:
-                            self.data.errors.error_codes = codes
+                            set_fetched_error_codes(codes)
                 except (DeviceOfflineException, GatewayTimeoutException):
                     pass
 

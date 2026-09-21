@@ -7,10 +7,13 @@ unreadable ``area 1451834635207421727``.  The stubbed version re-implemented
 so a renamed entity is genuinely renamed and the numbering is the library's.
 """
 
+from collections.abc import Iterator
 from unittest.mock import AsyncMock, MagicMock
 
+import pytest
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
+from pymammotion.data.error_codes import set_fetched_error_codes
 from pymammotion.data.model.device import MowingDevice
 from pymammotion.data.model.hash_list import AreaHashNameList, FrameList
 from pymammotion.http.model.http import ErrorInfo
@@ -188,16 +191,26 @@ def _error_coordinator(
     codes: dict[str, ErrorInfo] | None = None,
     cls: type = MammotionReportUpdateCoordinator,
 ) -> MammotionReportUpdateCoordinator | MammotionDeviceErrorUpdateCoordinator:
-    """Build a coordinator wired only to the device record's error table."""
+    """Build a coordinator over the process-wide error table.
+
+    The table used to hang off each device record; it is installed once now, so
+    the helper installs it and ``_clear_error_table`` takes it away again.
+    """
     coordinator = cls.__new__(cls)
     coordinator.device_name = "Luba-1"
     coordinator.hass = hass
     hass.config.language = language
-    device = MagicMock()
-    device.errors.error_codes = codes if codes is not None else {}
+    set_fetched_error_codes(codes)
     coordinator.manager = MagicMock()
-    coordinator.manager.get_device_by_name.return_value = device
+    coordinator.manager.get_device_by_name.return_value = MagicMock()
     return coordinator
+
+
+@pytest.fixture(autouse=True)
+def _clear_error_table() -> Iterator[None]:
+    """Clear the process-wide fetched table so it cannot leak between tests."""
+    yield
+    set_fetched_error_codes(None)
 
 
 async def test_report_coordinator_describes_known_code_in_ha_language(
@@ -302,8 +315,13 @@ async def test_async_bring_up_marks_failure_and_skips_refresh_when_setup_raises(
 async def test_describe_error_code_returns_none_when_it_cannot_look_one_up(
     hass: HomeAssistant,
 ) -> None:
-    """An unknown code and a device that has gone away both yield no text."""
-    assert _error_coordinator(hass).describe_error_code(9999) is None
+    """A code neither the fetched table nor the bundle knows yields no text.
+
+    The device record is no longer consulted — the table is process-wide — so a
+    device that has gone away no longer affects the answer, which is the point.
+    """
+    assert _error_coordinator(hass).describe_error_code(999999) is None
+
     coordinator = _error_coordinator(hass)
     coordinator.manager.get_device_by_name.return_value = None
-    assert coordinator.describe_error_code(2801) is None
+    assert coordinator.describe_error_code(999999) is None

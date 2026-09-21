@@ -107,3 +107,62 @@ async def test_the_written_file_carries_the_current_version(
     assert written["version"] == STORE_VERSION
     assert written["minor_version"] == STORE_MINOR_VERSION
     assert set(written["data"]) == {"devices", "transports", "firmware_checks"}
+
+
+async def test_the_per_device_error_table_is_dropped_on_migration(
+    hass: HomeAssistant, hass_storage: dict
+) -> None:
+    """It was ~470 rows in 26 languages, stored once per device.
+
+    The table now lives once per process, and a stored copy is ignored on load
+    — but it would sit in the file until that device next saved, and show up in
+    every diagnostics download until then.
+    """
+    hass_storage["mammotion.entry1"] = {
+        "version": 1,
+        "minor_version": 3,
+        "key": "mammotion.entry1",
+        "data": {
+            "devices": {
+                _DEVICE: {
+                    "name": _DEVICE,
+                    "errors": {
+                        "err_code_list": [-1201],
+                        "error_codes": {
+                            "1201": {"code": "1201", "en_implication": "stuck"}
+                        },
+                    },
+                },
+                "Spino-E1": {"name": "Spino-E1", "errors": {"error_codes": {"1": {}}}},
+            },
+            "transports": {},
+            "firmware_checks": {},
+        },
+    }
+    store = MammotionConfigStore(hass, "entry1")
+    await store.async_load_device_data()
+
+    for name in (_DEVICE, "Spino-E1"):
+        assert "error_codes" not in store.device_data[name]["errors"], name
+    # What the device actually reported is state, and must survive.
+    assert store.device_data[_DEVICE]["errors"]["err_code_list"] == [-1201]
+
+
+async def test_a_device_without_an_errors_block_migrates_cleanly(
+    hass: HomeAssistant, hass_storage: dict
+) -> None:
+    """Not every stored device has one; the step must not assume it does."""
+    hass_storage["mammotion.entry1"] = {
+        "version": 1,
+        "minor_version": 3,
+        "key": "mammotion.entry1",
+        "data": {
+            "devices": {_DEVICE: {"name": _DEVICE}},
+            "transports": {},
+            "firmware_checks": {},
+        },
+    }
+    store = MammotionConfigStore(hass, "entry1")
+    await store.async_load_device_data()
+
+    assert store.device_data[_DEVICE] == {"name": _DEVICE}
