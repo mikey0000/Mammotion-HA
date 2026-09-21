@@ -1335,6 +1335,18 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             "leave_dock", "todev_taskctrl_ack", priority=Priority.USER
         )
 
+    async def async_start_no_area_work(self) -> None:
+        """Start a map-free mow from where the mower stands (the app's DropMow).
+
+        No map and no boundary: the mower works from the direction it is
+        currently facing.  The app only offers this on the X5 models and only
+        while the mower is idle, which is what ``supports_no_area_work`` and the
+        button's availability mirror.
+        """
+        await self.send_command_and_update(
+            "start_no_area_work", "todev_taskctrl_ack", priority=Priority.USER
+        )
+
     async def async_cancel_task(self) -> None:
         """Cancel task."""
         await self.send_command_and_update(

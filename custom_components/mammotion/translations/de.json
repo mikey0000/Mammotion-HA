@@ -372,6 +372,9 @@
       "release_from_dock": {
         "name": "Abdocken"
       },
+      "start_dropmow": {
+        "name": "DropMow starten"
+      },
       "emergency_nudge_forward": {
         "name": "Notfall-Schub vorwärts"
       },

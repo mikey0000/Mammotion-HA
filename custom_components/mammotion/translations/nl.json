@@ -372,6 +372,9 @@
       "release_from_dock": {
         "name": "Laadstation uitrijden"
       },
+      "start_dropmow": {
+        "name": "DropMow starten"
+      },
       "emergency_nudge_forward": {
         "name": "Nood Duwtje vooruit"
       },

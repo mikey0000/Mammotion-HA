@@ -372,6 +372,9 @@
       "release_from_dock": {
         "name": "Quitter la base"
       },
+      "start_dropmow": {
+        "name": "Démarrer DropMow"
+      },
       "emergency_nudge_forward": {
         "name": "Mouvement d'urgence en avant"
       },

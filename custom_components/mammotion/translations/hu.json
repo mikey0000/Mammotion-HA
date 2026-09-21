@@ -372,6 +372,9 @@
       "release_from_dock": {
         "name": "Kidokkolás"
       },
+      "start_dropmow": {
+        "name": "DropMow indítása"
+      },
       "emergency_nudge_forward": {
         "name": "Vészmozgatás előre"
       },

@@ -32,6 +32,9 @@
       },
       "clear_all_mapdata": {
         "default": "mdi:map-marker-remove"
+      },
+      "start_dropmow": {
+        "default": "mdi:mower-on"
       }
     },
     "sensor": {

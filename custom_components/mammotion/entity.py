@@ -51,6 +51,15 @@ def device_serial_number(device_name: str, device_type: DeviceType) -> str:
     return device_name
 
 
+def supports_no_area_work(device_name: str) -> bool:
+    """Return True for the mowers the app offers map-free mowing ("DropMow") on.
+
+    Mirrors ``DeviceType.isX5DeviceTyp()``, which is what gates the app's
+    ``noAreaWork`` entry point.
+    """
+    return DeviceType.is_x5_series(device_name)
+
+
 def supports_grass_collection(device_name: str) -> bool:
     """Return True for the mowers that take the grass-collection attachment.
 

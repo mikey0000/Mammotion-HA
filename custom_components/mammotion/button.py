@@ -15,6 +15,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pymammotion.data.model.hash_list import Plan
 from pymammotion.data.model.pool_state import PoolPlan
 from pymammotion.transport.base import TransportType
+from pymammotion.utility.constant import WorkMode
 from pymammotion.utility.device_type import DeviceType
 
 from . import MammotionConfigEntry
@@ -24,7 +25,11 @@ from .coordinator import (
     MammotionReportUpdateCoordinator,
     MammotionSpinoCoordinator,
 )
-from .entity import MammotionBaseEntity, MammotionBaseSpinoEntity
+from .entity import (
+    MammotionBaseEntity,
+    MammotionBaseSpinoEntity,
+    supports_no_area_work,
+)
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -93,6 +98,31 @@ def _nudge_available(coordinator: MammotionBaseUpdateCoordinator) -> bool:
         return False
     ble = handle.get_transport(TransportType.BLE)
     return ble is not None and ble.is_usable
+
+
+#: The two states the app's DropMowHandler accepts a map-free mow in.
+_DROPMOW_MODES = (WorkMode.MODE_READY, WorkMode.MODE_CORRIDOR_DRAW)
+
+
+def _is_idle(coordinator: MammotionBaseUpdateCoordinator) -> bool:
+    """Whether the mower is in a state that accepts a map-free mow."""
+    data = coordinator.data
+    if data is None:
+        return False
+    return data.report_data.dev.sys_status in _DROPMOW_MODES
+
+
+#: Map-free mowing, which the app keeps behind its Beta Features screen and
+#: offers only on the X5 platform.
+BUTTON_DROPMOW: tuple[MammotionButtonSensorEntityDescription, ...] = (
+    MammotionButtonSensorEntityDescription(
+        key="start_dropmow",
+        press_fn=lambda coordinator: coordinator.async_start_no_area_work(),
+        # The device rejects it outside these two modes ("Robot is mowing.
+        # Please retry when the robot is idle"), so do not offer it then.
+        available_fn=_is_idle,
+    ),
+)
 
 
 BUTTON_SENSORS: tuple[MammotionButtonSensorEntityDescription, ...] = (
@@ -202,6 +232,14 @@ async def async_setup_entry(
             MammotionButtonSensorEntity(mower.reporting_coordinator, entity_description)
             for entity_description in BUTTON_SENSORS
         )
+
+        if supports_no_area_work(mower.device.device_name):
+            async_add_entities(
+                MammotionButtonSensorEntity(
+                    mower.reporting_coordinator, entity_description
+                )
+                for entity_description in BUTTON_DROPMOW
+            )
 
         if not DeviceType.is_luba1(mower.device.device_name):
             async_add_entities(

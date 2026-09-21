@@ -372,6 +372,9 @@
       "release_from_dock": {
         "name": "Oddokuj"
       },
+      "start_dropmow": {
+        "name": "Uruchom DropMow"
+      },
       "emergency_nudge_forward": {
         "name": "Awaryjne ruszenie do przodu"
       },
