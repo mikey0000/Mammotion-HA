@@ -18,7 +18,7 @@ SAVE_DELAY = 300
 STORE_DATA_KEY = f"{DOMAIN}_store"
 
 STORE_VERSION = 1
-STORE_MINOR_VERSION = 4
+STORE_MINOR_VERSION = 5
 
 TRANSPORT_BLUETOOTH = "bluetooth_enabled"
 TRANSPORT_CLOUD = "cloud_enabled"
@@ -45,6 +45,10 @@ class MammotionConfigStore(Store):  # type: ignore[misc]
         # When each device's firmware was last checked against the cloud, as an
         # ISO timestamp keyed by device name
         self.firmware_checks: dict[str, str] = {}
+        # The work-setting schema the cloud serves per hardware model, keyed
+        # "<product_key>/<int_mod>" rather than by device: it describes the
+        # model, so two mowers of the same model share one copy.
+        self.capabilities: dict[str, dict[str, Any]] = {}
         self._save_pending = False
 
     async def _async_migrate_func(
@@ -63,6 +67,8 @@ class MammotionConfigStore(Store):  # type: ignore[misc]
             for device in old_data.get("devices", {}).values():
                 if isinstance(device, dict) and isinstance(device.get("errors"), dict):
                     device["errors"].pop("error_codes", None)
+        if old_major_version == 1 and old_minor_version < 5:
+            old_data = {**old_data, "capabilities": {}}
         return old_data
 
     async def async_load_device_data(self) -> None:
@@ -71,6 +77,7 @@ class MammotionConfigStore(Store):  # type: ignore[misc]
         self.device_data = data.get("devices", {})
         self.transport_settings = data.get("transports", {})
         self.firmware_checks = data.get("firmware_checks", {})
+        self.capabilities = data.get("capabilities", {})
 
     def transport_enabled(self, device_name: str, transport: str) -> bool:
         """Return the stored switch position of a device's transport, on by default."""
@@ -89,7 +96,7 @@ class MammotionConfigStore(Store):  # type: ignore[misc]
             return None
         try:
             parsed = datetime.fromisoformat(raw)
-        except (TypeError, ValueError):
+        except TypeError, ValueError:
             # A corrupted timestamp should read as never checked, so the next
             # contact fixes it rather than suppressing checks forever.
             return None
@@ -101,6 +108,24 @@ class MammotionConfigStore(Store):  # type: ignore[misc]
     ) -> None:
         """Persist a firmware check straight away; it happens about once a week."""
         self.firmware_checks[device_name] = when.isoformat()
+        await self.async_save(self._data_to_save())
+
+    @staticmethod
+    def capability_key(product_key: str, int_mod: str) -> str:
+        """Return the key a model's schema is stored under."""
+        return f"{product_key}/{int_mod}"
+
+    def model_capabilities(
+        self, product_key: str, int_mod: str
+    ) -> dict[str, Any] | None:
+        """Return the stored schema for a model, or None when it has none yet."""
+        return self.capabilities.get(self.capability_key(product_key, int_mod))
+
+    async def async_set_model_capabilities(
+        self, product_key: str, int_mod: str, schema: dict[str, Any]
+    ) -> None:
+        """Persist a model's schema right away; it is fetched about once per model."""
+        self.capabilities[self.capability_key(product_key, int_mod)] = schema
         await self.async_save(self._data_to_save())
 
     async def async_device_data(self, device_name: str) -> dict[str, Any] | None:
@@ -136,6 +161,7 @@ class MammotionConfigStore(Store):  # type: ignore[misc]
             "devices": dict(self.device_data),
             "transports": dict(self.transport_settings),
             "firmware_checks": dict(self.firmware_checks),
+            "capabilities": dict(self.capabilities),
         }
 
     async def async_flush(self) -> None:

@@ -804,7 +804,7 @@ class AgoraAPIClient:
                         session, domain, request_payload, proxy_server
                     )
                     return response
-                except (TimeoutError, aiohttp.ClientError, Exception):
+                except TimeoutError, aiohttp.ClientError, Exception:
                     continue
 
             # Fall back to backup servers
@@ -814,7 +814,7 @@ class AgoraAPIClient:
                         session, domain, request_payload, proxy_server
                     )
                     return response
-                except (TimeoutError, aiohttp.ClientError, Exception):
+                except TimeoutError, aiohttp.ClientError, Exception:
                     continue
 
             raise Exception("All Agora API servers failed to respond")

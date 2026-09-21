@@ -524,7 +524,7 @@
         "name": "Wykrywanie przeszkód",
         "state": {
           "off": "Wyłączony",
-          "slow_touch": "Wolne dotknięcie",
+          "slow_touch": "Podstawowy",
           "less_touch": "Mniej dotyku",
           "standard": "Standard",
           "sensitive": "Czułe"
@@ -677,7 +677,7 @@
     "ultra_wave": {
       "options": {
         "0": "Wyłączony",
-        "1": "Wolne dotknięcie",
+        "1": "Podstawowy",
         "2": "Mniej dotyku",
         "10": "Standard",
         "11": "Czułe"

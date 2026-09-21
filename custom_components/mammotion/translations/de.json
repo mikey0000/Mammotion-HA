@@ -524,7 +524,7 @@
         "name": "Hinderniserkennung",
         "state": {
           "off": "Aus",
-          "slow_touch": "Langsame Berührung",
+          "slow_touch": "Basis",
           "less_touch": "Weniger Berührung",
           "standard": "Standard",
           "sensitive": "Empfindlich"
@@ -677,7 +677,7 @@
     "ultra_wave": {
       "options": {
         "0": "Aus",
-        "1": "Langsame Berührung",
+        "1": "Basis",
         "2": "Weniger Berührung",
         "10": "Standard",
         "11": "Empfindlich"

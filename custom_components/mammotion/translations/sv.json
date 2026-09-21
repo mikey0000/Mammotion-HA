@@ -524,7 +524,7 @@
         "name": "Hinderdetektering",
         "state": {
           "off": "Av",
-          "slow_touch": "Långsam beröring",
+          "slow_touch": "Grundläggande",
           "less_touch": "Mindre beröring",
           "standard": "Standard",
           "sensitive": "Känslig"
@@ -677,7 +677,7 @@
     "ultra_wave": {
       "options": {
         "0": "Av",
-        "1": "Långsam beröring",
+        "1": "Grundläggande",
         "2": "Mindre beröring",
         "10": "Standard",
         "11": "Känslig"

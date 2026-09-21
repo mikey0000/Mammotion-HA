@@ -524,7 +524,7 @@
         "name": "Obstakeldetectie",
         "state": {
           "off": "Uit",
-          "slow_touch": "Langzaam aanraken",
+          "slow_touch": "Basis",
           "less_touch": "Minder aanraking",
           "standard": "Standaard",
           "sensitive": "Gevoelig"
@@ -677,7 +677,7 @@
     "ultra_wave": {
       "options": {
         "0": "Uit",
-        "1": "Langzaam aanraken",
+        "1": "Basis",
         "2": "Minder aanraking",
         "10": "Standaard",
         "11": "Gevoelig"

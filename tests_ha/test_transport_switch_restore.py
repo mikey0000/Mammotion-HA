@@ -114,6 +114,7 @@ async def test_transport_switch_is_saved_immediately_and_read_back(
         "devices": {},
         "transports": {_MOWER: {"bluetooth_enabled": False}},
         "firmware_checks": {},
+        "capabilities": {},
     }
     assert store.transport_enabled(_MOWER, TRANSPORT_BLUETOOTH) is False
     assert store.transport_enabled(_MOWER, TRANSPORT_CLOUD) is True
@@ -139,6 +140,7 @@ async def test_removing_a_device_drops_its_transport_settings(
         "devices": {},
         "transports": {},
         "firmware_checks": {},
+        "capabilities": {},
     }
 
 

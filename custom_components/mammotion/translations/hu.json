@@ -524,7 +524,7 @@
         "name": "Akadályészlelés",
         "state": {
           "off": "Ki",
-          "slow_touch": "Lassú érintés",
+          "slow_touch": "Alap",
           "less_touch": "Kevesebb érintés",
           "standard": "Standard",
           "sensitive": "Érzékeny"
@@ -677,7 +677,7 @@
     "ultra_wave": {
       "options": {
         "0": "Ki",
-        "1": "Lassú érintés",
+        "1": "Alap",
         "2": "Kevesebb érintés",
         "10": "Standard",
         "11": "Érzékeny"

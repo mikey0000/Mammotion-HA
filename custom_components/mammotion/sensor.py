@@ -175,9 +175,9 @@ LUBA_2_YUKA_ONLY_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         state_class=None,
         device_class=SensorDeviceClass.ENUM,
         native_unit_of_measurement=None,
-        value_fn=lambda mower_data: VioState(
-            mower_data.report_data.vision_info.vio_state
-        ).name,
+        value_fn=lambda mower_data: (
+            VioState(mower_data.report_data.vision_info.vio_state).name
+        ),
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     MammotionSensorEntityDescription(
@@ -203,7 +203,9 @@ LUBA_2_YUKA_ONLY_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.DURATION,
         native_unit_of_measurement=UnitOfTime.SECONDS,
-        value_fn=lambda mower_data: mower_data.report_data.maintenance.blade_used_time.blade_used_time,
+        value_fn=lambda mower_data: (
+            mower_data.report_data.maintenance.blade_used_time.blade_used_time
+        ),
         entity_category=EntityCategory.DIAGNOSTIC,
         suggested_unit_of_measurement=UnitOfTime.HOURS,
     ),
@@ -212,7 +214,9 @@ LUBA_2_YUKA_ONLY_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.DURATION,
         native_unit_of_measurement=UnitOfTime.SECONDS,
-        value_fn=lambda mower_data: mower_data.report_data.maintenance.blade_used_time.blade_used_warn_time,
+        value_fn=lambda mower_data: (
+            mower_data.report_data.maintenance.blade_used_time.blade_used_warn_time
+        ),
         entity_category=EntityCategory.DIAGNOSTIC,
         suggested_unit_of_measurement=UnitOfTime.HOURS,
     ),
@@ -312,8 +316,10 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.DURATION,
         native_unit_of_measurement=UnitOfTime.MINUTES,
-        value_fn=lambda mower_data: (mower_data.report_data.work.progress & 65535)
-        - (mower_data.report_data.work.progress >> 16),
+        value_fn=lambda mower_data: (
+            (mower_data.report_data.work.progress & 65535)
+            - (mower_data.report_data.work.progress >> 16)
+        ),
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     MammotionSensorEntityDescription(
@@ -376,9 +382,9 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         key="position_mode",
         state_class=None,
         device_class=SensorDeviceClass.ENUM,
-        value_fn=lambda mower_data: RTKPositionMode(
-            mower_data.report_data.basestation_info.rtk_status
-        ).name,
+        value_fn=lambda mower_data: (
+            RTKPositionMode(mower_data.report_data.basestation_info.rtk_status).name
+        ),
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     MammotionSensorEntityDescription(
@@ -478,8 +484,9 @@ LUBA_2_YUKA_SIGNAL_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         device_class=None,
         native_unit_of_measurement=None,
-        value_fn=lambda mower_data: (mower_data.report_data.rtk.co_view_stars >> 8)
-        & 255,
+        value_fn=lambda mower_data: (
+            (mower_data.report_data.rtk.co_view_stars >> 8) & 255
+        ),
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     MammotionSensorEntityDescription(
@@ -659,9 +666,9 @@ SPINO_ERROR_SENSOR_TYPES: tuple[MammotionSpinoErrorSensorEntityDescription, ...]
         native_unit_of_measurement=None,
         device_class=SensorDeviceClass.ENUM,
         options=["online", "offline"],
-        value_fn=lambda coordinator: "online"
-        if coordinator.mqtt_device_online
-        else "offline",
+        value_fn=lambda coordinator: (
+            "online" if coordinator.mqtt_device_online else "offline"
+        ),
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
 )

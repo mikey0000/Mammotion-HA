@@ -524,7 +524,7 @@
         "name": "Forhindringsdetektion",
         "state": {
           "off": "Fra",
-          "slow_touch": "Langsom berøring",
+          "slow_touch": "Grundlæggende",
           "less_touch": "Mindre berøring",
           "standard": "Standard",
           "sensitive": "Følsom"
@@ -677,7 +677,7 @@
     "ultra_wave": {
       "options": {
         "0": "Fra",
-        "1": "Langsom berøring",
+        "1": "Grundlæggende",
         "2": "Mindre berøring",
         "10": "Standard",
         "11": "Følsom"

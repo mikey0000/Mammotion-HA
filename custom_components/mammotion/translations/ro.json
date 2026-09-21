@@ -524,7 +524,7 @@
         "name": "Detectare obstacole",
         "state": {
           "off": "Oprit",
-          "slow_touch": "Atingere lentă",
+          "slow_touch": "De bază",
           "less_touch": "Mai puțin atins",
           "standard": "Standard",
           "sensitive": "Sensibil"
@@ -677,7 +677,7 @@
     "ultra_wave": {
       "options": {
         "0": "Oprit",
-        "1": "Atingere lentă",
+        "1": "De bază",
         "2": "Mai puțin atins",
         "10": "Standard",
         "11": "Sensibil"

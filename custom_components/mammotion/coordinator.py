@@ -67,6 +67,7 @@ from pymammotion.http.model.camera_stream import (
     StreamSubscriptionResponse,
 )
 from pymammotion.http.model.http import ErrorInfo, Response, UnauthorizedExceptionError
+from pymammotion.http.model.product_params import ProductParam, ProductParamData
 from pymammotion.mammotion.commands.mammotion_command import MammotionCommand
 from pymammotion.messaging.command_queue import Priority
 from pymammotion.proto import MulSex
@@ -208,7 +209,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             _user_account = int(
                 _mammotion_data["data"]["userInformation"]["userAccount"]
             )
-        except (KeyError, TypeError, ValueError):
+        except KeyError, TypeError, ValueError:
             _user_account = 0
         self.commands = MammotionCommand(device.device_name, _user_account)
         self._subscriptions: list[Subscription] = []
@@ -2549,7 +2550,7 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
             return
         try:
             await self.async_request_report_snapshot()
-        except (DeviceOfflineException, NoTransportAvailableError):
+        except DeviceOfflineException, NoTransportAvailableError:
             LOGGER.debug(
                 "report-coordinator [%s]: skipping sys_status refresh — device offline / no transport",
                 self.device_name,
@@ -2597,7 +2598,7 @@ class MammotionMaintenanceUpdateCoordinator(MammotionBaseUpdateCoordinator[Maint
         if was_working and sys_status == WorkMode.MODE_READY:
             try:
                 await self.async_send_command("get_maintenance")
-            except (DeviceOfflineException, GatewayTimeoutException):
+            except DeviceOfflineException, GatewayTimeoutException:
                 pass
 
     async def _async_update_data(self) -> Maintain:
@@ -2628,7 +2629,7 @@ class MammotionMaintenanceUpdateCoordinator(MammotionBaseUpdateCoordinator[Maint
             await self.async_send_and_wait(
                 "read_job_do_not_disturb", "todev_unable_time_set"
             )
-        except (DeviceOfflineException, GatewayTimeoutException):
+        except DeviceOfflineException, GatewayTimeoutException:
             pass
 
 
@@ -2656,6 +2657,10 @@ class MammotionDeviceVersionUpdateCoordinator(
         )
 
         self._firmware_check_attempted: datetime.datetime | None = None
+        #: (product_key, int_mod) -> the firmware we asked at and got nothing for.
+        self._capability_miss: dict[tuple[str, str], str] = {}
+        #: (product_key, int_mod) -> the parsed schema, so a lookup is cheap.
+        self._capability_cache: dict[tuple[str, str], dict[str, ProductParam]] = {}
 
         mowing_device = self.manager.get_device_by_name(self.device_name)
         if self.data is None:
@@ -2720,6 +2725,10 @@ class MammotionDeviceVersionUpdateCoordinator(
                         if check_version.device_id == handle.iot_id:
                             device.apply_version_check(check_version)
 
+        # After the firmware work, not before: this lookup is informational and
+        # must not be able to cost the firmware check its turn.
+        await self._async_ensure_capabilities(device)
+
         if device.mower_state.model_id != "":
             self.update_interval = DEVICE_VERSION_INTERVAL
 
@@ -2750,6 +2759,103 @@ class MammotionDeviceVersionUpdateCoordinator(
             "%s: firmware check has aged out, refreshing now", self.device_name
         )
         await self.async_request_refresh()
+
+    async def _async_ensure_capabilities(self, device: MowingDevice) -> None:
+        """Fetch this model's work-setting schema once, then read it from the store.
+
+        The cloud describes which settings a model exposes and the bounds of
+        each, where the integration otherwise hard-codes them.  It describes
+        the hardware rather than the moment, so it is fetched once per model
+        and persisted, and two mowers of one model share the copy.
+
+        Informational only: every failure here is swallowed, because a mower is
+        perfectly usable without it and this must not strand the entities.
+        """
+        product_key = self.device.product_key
+        int_mod = device.mower_state.internal_model
+        firmware = device.device_firmwares.device_version
+        # intMod identifies the model, and the endpoint rejects it or the
+        # version blank, so there is nothing to ask until the device reports.
+        if not product_key or not int_mod or not firmware:
+            return
+
+        # The schema is firmware-dependent — under a model's minProductVersion
+        # the cloud serves none at all — so a copy fetched at an older firmware
+        # is re-fetched rather than served for the life of the device.
+        stored = self._store.model_capabilities(product_key, int_mod)
+        if stored is not None and stored.get("fetched_for_version") == firmware:
+            return
+        if self._capability_miss.get((product_key, int_mod)) == firmware:
+            return
+        if not self.cloud_http_usable:
+            return
+        http = self.manager.mammotion_http
+        if http is None:
+            return
+
+        try:
+            params = await self._cloud_api_call(
+                http.get_product_params(
+                    product_key, int_mod=int_mod, device_version=firmware
+                )
+            )
+        except Exception:  # noqa: BLE001
+            LOGGER.debug(
+                "%s: work-setting schema lookup failed",
+                self.device_name,
+                exc_info=True,
+            )
+            return
+
+        if params is None or not params.detail_vos:
+            # Many models legitimately have none; remember that for this
+            # firmware so the poll stops re-asking every interval.
+            self._capability_miss[(product_key, int_mod)] = firmware
+            LOGGER.debug(
+                "%s: no work-setting schema for %s/%s at %s",
+                self.device_name,
+                product_key,
+                int_mod,
+                firmware,
+            )
+            return
+
+        LOGGER.debug(
+            "%s: stored %d work-setting parameters for %s/%s",
+            self.device_name,
+            len(params.detail_vos),
+            product_key,
+            int_mod,
+        )
+        self._capability_cache.pop((product_key, int_mod), None)
+        await self._store.async_set_model_capabilities(
+            product_key,
+            int_mod,
+            {**params.to_dict(), "fetched_for_version": firmware},
+        )
+
+    def capability(self, code: str) -> ProductParam | None:
+        """Return the cloud's description of one work setting, when it is known.
+
+        ``code`` is what ``WorkingSettingManage`` switches on in the app: "3"
+        is blade height, "12" the bypass strategy, "15" ride-boundary distance.
+
+        The bounds are advisory and must not be used to clamp: the cloud
+        reports ``max`` 0.6 for work speed on models that run at 1.0.
+        """
+        int_mod = getattr(getattr(self.data, "mower_state", None), "internal_model", "")
+        product_key = self.device.product_key
+        if not int_mod or not product_key:
+            return None
+        cached = self._capability_cache.get((product_key, int_mod))
+        if cached is None:
+            stored = self._store.model_capabilities(product_key, int_mod)
+            if stored is None:
+                return None
+            # Parsed once per model: a lookup runs per entity per update.
+            cached = ProductParamData.from_dict(stored).by_code()
+            self._capability_cache[(product_key, int_mod)] = cached
+        return cached.get(code)
 
     def _firmware_check_due(self) -> bool:
         """Return True when the cloud could tell us something new right now."""
@@ -2892,7 +2998,7 @@ class MammotionMapUpdateCoordinator(MammotionBaseUpdateCoordinator[MowerInfo]):
                 return device.mower_state
         except GatewayTimeoutException:
             pass
-        except (ConcurrentRequestError, NoTransportAvailableError):
+        except ConcurrentRequestError, NoTransportAvailableError:
             pass
 
         _d = self.manager.get_device_by_name(self.device_name)
@@ -3221,7 +3327,7 @@ class MammotionRTKCoordinator(MammotionBaseUpdateCoordinator[RTKBaseStationDevic
                         for check_version in check_versions:
                             if check_version.device_id == self.device.iot_id:
                                 self.data.apply_version_check(check_version)
-                except (DeviceOfflineException, GatewayTimeoutException):
+                except DeviceOfflineException, GatewayTimeoutException:
                     pass
 
         self._sync_firmware_to_registry()
@@ -3450,7 +3556,7 @@ class MammotionSpinoCoordinator(MammotionBaseUpdateCoordinator[PoolCleanerDevice
                         codes = await self._cloud_api_call(http.get_all_error_codes())
                         if codes is not None:
                             set_fetched_error_codes(codes)
-                except (DeviceOfflineException, GatewayTimeoutException):
+                except DeviceOfflineException, GatewayTimeoutException:
                     pass
 
         self.async_save_data(self.data)

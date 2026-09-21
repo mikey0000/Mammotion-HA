@@ -43,7 +43,7 @@ def _coordinator(
     coordinator.data = device
     # The account record another coordinator has already marked online, as it
     # would be by the time this one sees the same push.
-    coordinator.device = SimpleNamespace(online=True)
+    coordinator.device = SimpleNamespace(online=True, product_key="uY54W5rM8YH")
     coordinator.device_name = _DEVICE_NAME
     coordinator._firmware_check_attempted = None
 

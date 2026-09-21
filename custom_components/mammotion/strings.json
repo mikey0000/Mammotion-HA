@@ -524,7 +524,7 @@
         "name": "Obstacle detection",
         "state": {
           "off": "Off",
-          "slow_touch": "Slow touch",
+          "slow_touch": "Basic",
           "less_touch": "Less touch",
           "standard": "Standard",
           "sensitive": "Sensitive"
@@ -677,7 +677,7 @@
     "ultra_wave": {
       "options": {
         "0": "Off",
-        "1": "Slow touch",
+        "1": "Basic",
         "2": "Less touch",
         "10": "Standard",
         "11": "Sensitive"

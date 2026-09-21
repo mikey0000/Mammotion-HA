@@ -524,7 +524,7 @@
         "name": "Rilevamento ostacoli",
         "state": {
           "off": "Disattivato",
-          "slow_touch": "Tocco lento",
+          "slow_touch": "Base",
           "less_touch": "Meno contatto",
           "standard": "Normale",
           "sensitive": "Sensibile"
@@ -677,7 +677,7 @@
     "ultra_wave": {
       "options": {
         "0": "Disattivato",
-        "1": "Tocco lento",
+        "1": "Base",
         "2": "Meno contatto",
         "10": "Normale",
         "11": "Sensibile"

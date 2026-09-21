@@ -524,7 +524,7 @@
         "name": "Detekce překážek",
         "state": {
           "off": "Vypnuto",
-          "slow_touch": "Pomalý dotyk",
+          "slow_touch": "Základní",
           "less_touch": "Méně dotyků",
           "standard": "Standard",
           "sensitive": "Citlivý"
@@ -677,7 +677,7 @@
     "ultra_wave": {
       "options": {
         "0": "Vypnuto",
-        "1": "Pomalý dotyk",
+        "1": "Základní",
         "2": "Méně dotyků",
         "10": "Standard",
         "11": "Citlivý"

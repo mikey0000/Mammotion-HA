@@ -524,7 +524,7 @@
         "name": "Zaznavanje ovir",
         "state": {
           "off": "Izklopljeno",
-          "slow_touch": "Počasno dotikanje",
+          "slow_touch": "Osnovno",
           "less_touch": "Manj dotika",
           "standard": "Standardno",
           "sensitive": "Občutljivo"
@@ -677,7 +677,7 @@
     "ultra_wave": {
       "options": {
         "0": "Izklopljeno",
-        "1": "Počasno dotikanje",
+        "1": "Osnovno",
         "2": "Manj dotika",
         "10": "Standardno",
         "11": "Občutljivo"

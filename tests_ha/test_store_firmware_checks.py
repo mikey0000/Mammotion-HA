@@ -106,7 +106,12 @@ async def test_the_written_file_carries_the_current_version(
     written = hass_storage["mammotion.entry1"]
     assert written["version"] == STORE_VERSION
     assert written["minor_version"] == STORE_MINOR_VERSION
-    assert set(written["data"]) == {"devices", "transports", "firmware_checks"}
+    assert set(written["data"]) == {
+        "devices",
+        "transports",
+        "firmware_checks",
+        "capabilities",
+    }
 
 
 async def test_the_per_device_error_table_is_dropped_on_migration(
