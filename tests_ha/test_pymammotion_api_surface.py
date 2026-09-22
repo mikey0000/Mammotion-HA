@@ -26,7 +26,7 @@ from pathlib import Path
 import pytest
 
 #: Last release that predates the APIs below.  The pin must move past it.
-_RELEASE_WITHOUT_THESE_APIS = "0.9.0b9"
+_RELEASE_WITHOUT_THESE_APIS = "0.9.0"
 
 _MANIFEST = (
     Path(__file__).parent.parent / "custom_components" / "mammotion" / "manifest.json"
@@ -98,12 +98,31 @@ def test_add_ble_to_device_accepts_an_rssi() -> None:
     assert "rssi" in source[start : source.index(")", source.index("->", start))]
 
 
+@pytest.mark.parametrize(
+    "method",
+    [
+        "get_map_backups",
+        "get_map_backup_devices",
+        "start_map_backup",
+        "update_map_backup",
+        "restore_map_backup",
+        "get_map_backup_progress",
+        "cancel_map_backup",
+        "cancel_map_restore",
+        "delete_map_backup",
+    ],
+)
+def test_the_http_client_wraps_the_map_backup_endpoints(method: str) -> None:
+    """The map backup services call these; coordinator.py imports their models."""
+    assert f"async def {method}(" in _source("http/http.py")
+    assert "class BackupMapItem(" in _source("http/model/map_backup.py")
+
+
 def test_the_shipped_pin_has_moved_past_the_release_without_these_apis() -> None:
     """What HACS installs — which the local source override hides in development."""
     requirements = json.loads(_MANIFEST.read_text())["requirements"]
     pins = [r for r in requirements if r.startswith("pymammotion")]
     assert pins != [f"pymammotion=={_RELEASE_WITHOUT_THESE_APIS}"], (
         f"manifest.json still pins {_RELEASE_WITHOUT_THESE_APIS}, which predates "
-        "the collector/dump accessors, resume_polling, the pool-cleaner MACs and "
-        "SpinoWorkMode.for_device — cut a release and bump the pin before shipping"
+        "the map backup endpoints — cut a release and bump the pin before shipping"
     )

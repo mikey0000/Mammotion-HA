@@ -29,6 +29,7 @@ def _coordinator(handle: MagicMock) -> MammotionReportUpdateCoordinator:
     coordinator.manager.mower.return_value = handle
     coordinator.async_save_data = MagicMock()
     coordinator.async_flush_saved_data = AsyncMock()
+    coordinator.async_set_updated_data = MagicMock()
     coordinator._async_ensure_startup_reads = AsyncMock()
     coordinator.hass = MagicMock()
     coordinator.config_entry = MagicMock()

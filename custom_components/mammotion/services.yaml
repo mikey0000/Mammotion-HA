@@ -3,6 +3,93 @@ cancel_job:
     entity:
       integration: mammotion
       domain: lawn_mower
+modify_running_job:
+  target:
+    entity:
+      integration: mammotion
+      domain: lawn_mower
+  fields:
+    blade_height:
+      example: 45
+      required: false
+      selector:
+        number:
+          min: 15
+          max: 100
+          step: 1
+          unit_of_measurement: mm
+    speed:
+      example: 0.6
+      required: false
+      selector:
+        number:
+          min: 0.2
+          max: 1.2
+          step: 0.1
+    ultra_wave:
+      example: 10
+      required: false
+      selector:
+        select:
+          translation_key: "ultra_wave"
+          options:
+            - "0"
+            - "1"
+            - "2"
+            - "10"
+            - "11"
+            - "12"
+    channel_width:
+      example: 25
+      required: false
+      selector:
+        number:
+          min: 5
+          max: 35
+          step: 1
+          unit_of_measurement: cm
+    channel_mode:
+      example: 0
+      required: false
+      selector:
+        number:
+          min: 0
+          max: 3
+          step: 1
+    obstacle_laps:
+      example: 1
+      required: false
+      selector:
+        number:
+          min: 0
+          max: 4
+          step: 1
+    rain_tactics:
+      example: 1
+      required: false
+      selector:
+        number:
+          min: 0
+          max: 1
+          step: 1
+    auto_change_direction:
+      example: 1
+      required: false
+      selector:
+        number:
+          min: 0
+          max: 1
+          step: 1
+    start_progress:
+      example: 25
+      required: false
+      selector:
+        number:
+          min: 0
+          max: 99
+          step: 1
+          unit_of_measurement: "%"
+
 start_mow:
   target:
     entity:
@@ -259,6 +346,21 @@ set_blade_warning_time:
           min: 1
           max: 9999
           unit_of_measurement: "h"
+set_blade_height:
+  target:
+    entity:
+      integration: mammotion
+      domain: lawn_mower
+  fields:
+    height:
+      example: 45
+      required: true
+      selector:
+        number:
+          min: 15
+          max: 100
+          step: 1
+          unit_of_measurement: mm
 reset_blade_time:
   target:
     entity:
@@ -800,6 +902,80 @@ get_tasks:
   target:
     entity:
       integration: mammotion
+
+backup_map:
+  target:
+    entity:
+      integration: mammotion
+      domain: lawn_mower
+  fields:
+    name:
+      example: "Back garden"
+      required: true
+      selector:
+        text:
+    backup_id:
+      example: "1987654321"
+      required: false
+      selector:
+        text:
+restore_map:
+  target:
+    entity:
+      integration: mammotion
+      domain: lawn_mower
+  fields:
+    backup_id:
+      example: "1987654321"
+      required: true
+      selector:
+        text:
+get_map_backups:
+  target:
+    entity:
+      integration: mammotion
+      domain: lawn_mower
+get_map_backup_progress:
+  target:
+    entity:
+      integration: mammotion
+      domain: lawn_mower
+  fields:
+    backup_id:
+      example: "1987654321"
+      required: true
+      selector:
+        text:
+    restore:
+      default: false
+      selector:
+        boolean:
+cancel_map_backup:
+  target:
+    entity:
+      integration: mammotion
+      domain: lawn_mower
+  fields:
+    backup_id:
+      example: "1987654321"
+      required: true
+      selector:
+        text:
+    restore:
+      default: false
+      selector:
+        boolean:
+delete_map_backup:
+  target:
+    entity:
+      integration: mammotion
+      domain: lawn_mower
+  fields:
+    backup_id:
+      example: "1987654321"
+      required: true
+      selector:
+        text:
 
 # Run a stored mower schedule immediately ("start task" / "start schedule").
 # Mower-only — Spino has no execute-now command in the proto; the service

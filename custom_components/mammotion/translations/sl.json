@@ -828,6 +828,48 @@
         }
       }
     },
+    "modify_running_job": {
+      "name": "Spremeni izvajajoče se opravilo",
+      "description": "Spremeni nastavitve opravila, ki ga kosilnica že izvaja, brez ponovnega zagona. Na voljo le na Luba 2 in novejših med izvajanjem opravila.",
+      "fields": {
+        "blade_height": {
+          "name": "Višina rezila",
+          "description": "Višina rezila"
+        },
+        "speed": {
+          "name": "Delovna hitrost",
+          "description": "Delovna hitrost"
+        },
+        "ultra_wave": {
+          "name": "Zaznavanje ovir",
+          "description": "Zaznavanje ovir"
+        },
+        "channel_width": {
+          "name": "Razmik poti",
+          "description": "Razmik poti"
+        },
+        "channel_mode": {
+          "name": "Način poti",
+          "description": "Način poti"
+        },
+        "obstacle_laps": {
+          "name": "Krogi prepovedanega območja",
+          "description": "Krogi prepovedanega območja"
+        },
+        "rain_tactics": {
+          "name": "Taktika ob dežju",
+          "description": "Taktika ob dežju"
+        },
+        "auto_change_direction": {
+          "name": "Samodejna sprememba smeri",
+          "description": "Samodejna sprememba smeri"
+        },
+        "start_progress": {
+          "name": "Napredek",
+          "description": "Napredek"
+        }
+      }
+    },
     "start_stop_blades": {
       "name": "Zaženi ali ustavi rezila",
       "description": "Ročno zaženite ali ustavite rezila.",
@@ -863,6 +905,16 @@
         "hours": {
           "name": "Ure",
           "description": "Prag opozorila v urah pred priporočeno zamenjavo rezila."
+        }
+      }
+    },
+    "set_blade_height": {
+      "name": "Nastavi višino rezila",
+      "description": "Pošlje višino rezila neposredno motorju rezila kosilnice.",
+      "fields": {
+        "height": {
+          "name": "Višina",
+          "description": "Višina rezila v milimetrih."
         }
       }
     },
@@ -1223,6 +1275,72 @@
     "start_task": {
       "name": "Zaženi opravilo",
       "description": "Takoj zažene shranjen urnik (znano tudi kot „zaženi urnik“). Samo kosilnica — bazenski robot Spino nima enakovrednega ukaza."
+    },
+    "backup_map": {
+      "name": "Varnostno kopiraj zemljevid",
+      "description": "Naloži zemljevid kosilnice v vaš oblačni račun Mammotion. Vrne ID varnostne kopije. Z ID-jem obstoječe varnostne kopije jo prepišete, namesto da ustvarite novo.",
+      "fields": {
+        "name": {
+          "name": "Ime",
+          "description": "Ime varnostne kopije."
+        },
+        "backup_id": {
+          "name": "ID varnostne kopije",
+          "description": "Obstoječa varnostna kopija za prepis. Pustite prazno za novo varnostno kopijo."
+        }
+      }
+    },
+    "restore_map": {
+      "name": "Obnovi zemljevid",
+      "description": "Trenutni zemljevid kosilnice zamenja z varnostno kopijo iz računa Mammotion, s katerim je prijavljena ta integracija. Po končani obnovi se kosilnica znova zažene.",
+      "fields": {
+        "backup_id": {
+          "name": "ID varnostne kopije",
+          "description": "Varnostna kopija za obnovo, kot jo vrne 'Pridobi varnostne kopije zemljevidov'."
+        }
+      }
+    },
+    "get_map_backups": {
+      "name": "Pridobi varnostne kopije zemljevidov",
+      "description": "Vrne varnostne kopije zemljevidov iz računa Mammotion, s katerim je prijavljena ta integracija. Varnostne kopije pripadajo računu, zato kopije, ustvarjene v aplikaciji z drugim računom, niso prikazane."
+    },
+    "get_map_backup_progress": {
+      "name": "Pridobi napredek varnostne kopije",
+      "description": "Vrne, kako daleč je varnostno kopiranje ali obnova zemljevida.",
+      "fields": {
+        "backup_id": {
+          "name": "ID varnostne kopije",
+          "description": "Varnostna kopija, katere opravilo preverite."
+        },
+        "restore": {
+          "name": "Obnova",
+          "description": "Preveri obnovo namesto varnostnega kopiranja."
+        }
+      }
+    },
+    "cancel_map_backup": {
+      "name": "Prekliči varnostno kopijo zemljevida",
+      "description": "Prekliče varnostno kopiranje ali obnovo zemljevida, ki še poteka.",
+      "fields": {
+        "backup_id": {
+          "name": "ID varnostne kopije",
+          "description": "Varnostna kopija, katere opravilo prekličete."
+        },
+        "restore": {
+          "name": "Obnova",
+          "description": "Prekliči obnovo namesto varnostnega kopiranja."
+        }
+      }
+    },
+    "delete_map_backup": {
+      "name": "Izbriši varnostno kopijo zemljevida",
+      "description": "Izbriše varnostno kopijo zemljevida iz oblaka Mammotion.",
+      "fields": {
+        "backup_id": {
+          "name": "ID varnostne kopije",
+          "description": "Varnostna kopija za izbris."
+        }
+      }
     }
   },
   "exceptions": {
@@ -1264,6 +1382,18 @@
     },
     "grass_collection_unsupported": {
       "message": "Ta kosilnica ne podpira zbiranja trave."
+    },
+    "map_backup_cloud_unavailable": {
+      "message": "Varnostne kopije zemljevidov zahtevajo delujočo prijavo v oblak Mammotion."
+    },
+    "map_backup_failed": {
+      "message": "Oblak Mammotion je zavrnil zahtevo za varnostno kopijo zemljevida: {reason}"
+    },
+    "map_backup_device_not_found": {
+      "message": "{device_name} v tem računu Mammotion ni na seznamu za varnostne kopije zemljevidov."
+    },
+    "map_backup_mower_not_found": {
+      "message": "{entity_id} ni kosilnica Mammotion."
     }
   }
 }

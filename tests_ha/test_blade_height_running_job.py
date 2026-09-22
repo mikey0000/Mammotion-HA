@@ -46,6 +46,8 @@ _METHODS = (
     "async_modify_plan_if_mowing",
     "async_change_blade_height_if_working",
     "_apply_route_field_if_working",
+    "async_modify_running_job",
+    "async_change_progress_if_working",
     "async_change_speed_if_working",
     "async_change_bypass_if_working",
 )

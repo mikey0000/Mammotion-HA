@@ -119,6 +119,8 @@ class MammotionAsyncSwitchEntityDescription(MammotionSwitchEntityDescription):
     is_on_func: Callable[[MammotionBaseUpdateCoordinator], bool] | None = None
     set_fn: Callable[[MammotionBaseUpdateCoordinator, bool], Awaitable[None]]
     available_fn: Callable[[MammotionBaseUpdateCoordinator], bool] | None = None
+    #: For switches that restore a transport: gating them on one would strand them.
+    available_without_transport: bool = False
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -311,6 +313,7 @@ BLUETOOTH_SWITCH_ENTITIES: tuple[MammotionAsyncSwitchEntityDescription, ...] = (
         set_fn=lambda coordinator, value: coordinator.async_set_bluetooth_enabled(
             value
         ),
+        available_without_transport=True,
         entity_category=EntityCategory.CONFIG,
     ),
 )
@@ -320,6 +323,7 @@ CLOUD_SWITCH_ENTITIES: tuple[MammotionAsyncSwitchEntityDescription, ...] = (
         key="cloud_enabled",
         is_on_func=lambda coordinator: coordinator.cloud_enabled,
         set_fn=lambda coordinator, value: coordinator.async_set_cloud_enabled(value),
+        available_without_transport=True,
         entity_category=EntityCategory.CONFIG,
     ),
 )
@@ -497,6 +501,8 @@ class MammotionSwitchEntity(MammotionBaseEntity, SwitchEntity, RestoreEntity):
     @property
     def available(self) -> bool:
         """Return True if entity is available."""
+        if self.entity_description.available_without_transport:
+            return self.coordinator.data is not None
         if self.entity_description.available_fn is not None:
             return super().available and self.entity_description.available_fn(
                 self.coordinator

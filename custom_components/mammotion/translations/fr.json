@@ -828,6 +828,48 @@
         }
       }
     },
+    "modify_running_job": {
+      "name": "Modifier la tâche en cours",
+      "description": "Modifie les réglages de la tâche déjà en cours sans la redémarrer. Disponible uniquement sur Luba 2 et plus récent pendant une tâche en cours.",
+      "fields": {
+        "blade_height": {
+          "name": "Hauteur de lame",
+          "description": "Hauteur de lame"
+        },
+        "speed": {
+          "name": "Vitesse de travail",
+          "description": "Vitesse de travail"
+        },
+        "ultra_wave": {
+          "name": "Détection d'obstacles",
+          "description": "Détection d'obstacles"
+        },
+        "channel_width": {
+          "name": "Espacement des passages",
+          "description": "Espacement des passages"
+        },
+        "channel_mode": {
+          "name": "Mode d'itinéraire",
+          "description": "Mode d'itinéraire"
+        },
+        "obstacle_laps": {
+          "name": "Tours en zone interdite",
+          "description": "Tours en zone interdite"
+        },
+        "rain_tactics": {
+          "name": "Stratégie pluie",
+          "description": "Stratégie pluie"
+        },
+        "auto_change_direction": {
+          "name": "Changement de sens automatique",
+          "description": "Changement de sens automatique"
+        },
+        "start_progress": {
+          "name": "Progression",
+          "description": "Progression"
+        }
+      }
+    },
     "start_stop_blades": {
       "name": "Démarrer ou arrêter les lames",
       "description": "Démarrer ou arrêter les lames manuellement.",
@@ -863,6 +905,16 @@
         "hours": {
           "name": "Heures",
           "description": "Seuil d'avertissement en heures avant le remplacement recommandé de la lame."
+        }
+      }
+    },
+    "set_blade_height": {
+      "name": "Définir la hauteur de coupe",
+      "description": "Envoie une hauteur de lame directement au moteur de coupe de la tondeuse.",
+      "fields": {
+        "height": {
+          "name": "Hauteur",
+          "description": "Hauteur de la lame en millimètres."
         }
       }
     },
@@ -1223,6 +1275,72 @@
     "start_task": {
       "name": "Démarrer la tâche",
       "description": "Exécute immédiatement un programme enregistré (aussi appelé « démarrer le programme »). Uniquement pour la tondeuse — le robot de piscine Spino n'a pas de commande équivalente."
+    },
+    "backup_map": {
+      "name": "Sauvegarder la carte",
+      "description": "Envoie la carte de la tondeuse vers votre compte cloud Mammotion. Renvoie l'identifiant de la sauvegarde. Indiquez l'identifiant d'une sauvegarde existante pour l'écraser au lieu d'en créer une nouvelle.",
+      "fields": {
+        "name": {
+          "name": "Nom",
+          "description": "Nom de la sauvegarde."
+        },
+        "backup_id": {
+          "name": "Identifiant de sauvegarde",
+          "description": "Sauvegarde existante à écraser. Laissez vide pour créer une nouvelle sauvegarde."
+        }
+      }
+    },
+    "restore_map": {
+      "name": "Restaurer la carte",
+      "description": "Remplace la carte actuelle de la tondeuse par une sauvegarde du compte Mammotion avec lequel cette intégration est connectée. La tondeuse redémarre une fois la restauration terminée.",
+      "fields": {
+        "backup_id": {
+          "name": "Identifiant de sauvegarde",
+          "description": "Sauvegarde à restaurer, telle que renvoyée par « Obtenir les sauvegardes de carte »."
+        }
+      }
+    },
+    "get_map_backups": {
+      "name": "Obtenir les sauvegardes de carte",
+      "description": "Renvoie les sauvegardes de carte du compte Mammotion avec lequel cette intégration est connectée. Les sauvegardes sont propres à chaque compte : celles créées dans l'application avec un autre compte n'apparaissent pas."
+    },
+    "get_map_backup_progress": {
+      "name": "Obtenir la progression de la sauvegarde",
+      "description": "Renvoie l'avancement d'une sauvegarde ou d'une restauration de carte.",
+      "fields": {
+        "backup_id": {
+          "name": "Identifiant de sauvegarde",
+          "description": "Sauvegarde dont la tâche est à vérifier."
+        },
+        "restore": {
+          "name": "Restauration",
+          "description": "Vérifier une restauration plutôt qu'une sauvegarde."
+        }
+      }
+    },
+    "cancel_map_backup": {
+      "name": "Annuler la sauvegarde de carte",
+      "description": "Annule une sauvegarde ou une restauration de carte en cours.",
+      "fields": {
+        "backup_id": {
+          "name": "Identifiant de sauvegarde",
+          "description": "Sauvegarde dont la tâche est à annuler."
+        },
+        "restore": {
+          "name": "Restauration",
+          "description": "Annuler une restauration plutôt qu'une sauvegarde."
+        }
+      }
+    },
+    "delete_map_backup": {
+      "name": "Supprimer la sauvegarde de carte",
+      "description": "Supprime une sauvegarde de carte du cloud Mammotion.",
+      "fields": {
+        "backup_id": {
+          "name": "Identifiant de sauvegarde",
+          "description": "Sauvegarde à supprimer."
+        }
+      }
     }
   },
   "exceptions": {
@@ -1264,6 +1382,18 @@
     },
     "grass_collection_unsupported": {
       "message": "Cette tondeuse ne prend pas en charge le ramassage de l'herbe."
+    },
+    "map_backup_cloud_unavailable": {
+      "message": "Les sauvegardes de carte nécessitent une connexion fonctionnelle au cloud Mammotion."
+    },
+    "map_backup_failed": {
+      "message": "Le cloud Mammotion a refusé la demande de sauvegarde de carte : {reason}"
+    },
+    "map_backup_device_not_found": {
+      "message": "{device_name} ne figure pas parmi les appareils à sauvegarder sur ce compte Mammotion."
+    },
+    "map_backup_mower_not_found": {
+      "message": "{entity_id} n'est pas une tondeuse Mammotion."
     }
   }
 }

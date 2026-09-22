@@ -828,6 +828,48 @@
         }
       }
     },
+    "modify_running_job": {
+      "name": "Modify running job",
+      "description": "Changes settings on the job the mower is already running, without restarting it. Only available on Luba 2 and newer while a route job is in progress.",
+      "fields": {
+        "blade_height": {
+          "name": "Blade height",
+          "description": "Blade height"
+        },
+        "speed": {
+          "name": "Working speed",
+          "description": "Working speed"
+        },
+        "ultra_wave": {
+          "name": "Obstacle detection",
+          "description": "Obstacle detection"
+        },
+        "channel_width": {
+          "name": "Path spacing",
+          "description": "Path spacing"
+        },
+        "channel_mode": {
+          "name": "Route mode",
+          "description": "Route mode"
+        },
+        "obstacle_laps": {
+          "name": "No-go zone laps",
+          "description": "No-go zone laps"
+        },
+        "rain_tactics": {
+          "name": "Rain tactics",
+          "description": "Rain tactics"
+        },
+        "auto_change_direction": {
+          "name": "Auto change direction",
+          "description": "Auto change direction"
+        },
+        "start_progress": {
+          "name": "Progress",
+          "description": "Progress"
+        }
+      }
+    },
     "start_stop_blades": {
       "name": "Start or stop blades",
       "description": "Start or stop the blades manually.",
@@ -863,6 +905,16 @@
         "hours": {
           "name": "Hours",
           "description": "Warning threshold in hours before blade replacement is recommended."
+        }
+      }
+    },
+    "set_blade_height": {
+      "name": "Set blade height",
+      "description": "Send a blade height directly to the mower's cutter motor.",
+      "fields": {
+        "height": {
+          "name": "Height",
+          "description": "Blade height in millimetres."
         }
       }
     },
@@ -1223,6 +1275,72 @@
     "start_task": {
       "name": "Start task",
       "description": "Run a stored schedule immediately (also known as 'start schedule'). Mower-only — the Spino pool cleaner has no equivalent command, so targeting a Spino task entity raises an error."
+    },
+    "backup_map": {
+      "name": "Back up map",
+      "description": "Upload the mower's map to your Mammotion cloud account. Returns the backup ID. Pass an existing backup ID to overwrite that backup instead of creating a new one.",
+      "fields": {
+        "name": {
+          "name": "Name",
+          "description": "Name for the backup."
+        },
+        "backup_id": {
+          "name": "Backup ID",
+          "description": "Existing backup to overwrite. Leave empty to create a new backup."
+        }
+      }
+    },
+    "restore_map": {
+      "name": "Restore map",
+      "description": "Replace the mower's current map with a backup from the Mammotion account this integration is signed in with. The mower restarts once the restore finishes.",
+      "fields": {
+        "backup_id": {
+          "name": "Backup ID",
+          "description": "Backup to restore, as returned by 'Get map backups'."
+        }
+      }
+    },
+    "get_map_backups": {
+      "name": "Get map backups",
+      "description": "Return the map backups stored on the Mammotion account this integration is signed in with. Backups are per account, so ones made in the app under a different account are not listed."
+    },
+    "get_map_backup_progress": {
+      "name": "Get map backup progress",
+      "description": "Return how far a map backup or restore has got.",
+      "fields": {
+        "backup_id": {
+          "name": "Backup ID",
+          "description": "Backup whose job to check."
+        },
+        "restore": {
+          "name": "Restore",
+          "description": "Check a restore instead of a backup."
+        }
+      }
+    },
+    "cancel_map_backup": {
+      "name": "Cancel map backup",
+      "description": "Cancel a map backup or restore that is still running.",
+      "fields": {
+        "backup_id": {
+          "name": "Backup ID",
+          "description": "Backup whose job to cancel."
+        },
+        "restore": {
+          "name": "Restore",
+          "description": "Cancel a restore instead of a backup."
+        }
+      }
+    },
+    "delete_map_backup": {
+      "name": "Delete map backup",
+      "description": "Delete a map backup from the Mammotion cloud.",
+      "fields": {
+        "backup_id": {
+          "name": "Backup ID",
+          "description": "Backup to delete."
+        }
+      }
     }
   },
   "exceptions": {
@@ -1264,6 +1382,18 @@
     },
     "grass_collection_unsupported": {
       "message": "This mower does not support grass collection."
+    },
+    "map_backup_cloud_unavailable": {
+      "message": "Map backups need a working Mammotion cloud login."
+    },
+    "map_backup_failed": {
+      "message": "The Mammotion cloud refused the map backup request: {reason}"
+    },
+    "map_backup_device_not_found": {
+      "message": "{device_name} is not listed for map backups on this Mammotion account."
+    },
+    "map_backup_mower_not_found": {
+      "message": "{entity_id} is not a Mammotion mower."
     }
   }
 }

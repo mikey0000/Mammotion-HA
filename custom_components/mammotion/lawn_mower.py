@@ -30,11 +30,13 @@ from .coordinator import MammotionReportUpdateCoordinator
 from .entity import MammotionBaseEntity, supports_grass_collection
 
 SERVICE_START_MOWING = "start_mow"
+SERVICE_MODIFY_RUNNING_JOB = "modify_running_job"
 SERVICE_CANCEL_JOB = "cancel_job"
 SERVICE_START_STOP_BLADES = "start_stop_blades"
 SERVICE_SET_NON_WORK_HOURS = "set_non_work_hours"
 SERVICE_RESET_BLADE_TIME = "reset_blade_time"
 SERVICE_SET_BLADE_WARNING_TIME = "set_blade_warning_time"
+SERVICE_SET_BLADE_HEIGHT = "set_blade_height"
 
 # Grass-collection point editing.  Services rather than buttons: a point is
 # recorded at the mower's current position, so they are only useful driven in
@@ -92,6 +94,23 @@ START_MOW_SCHEMA = {
     vol.Optional("areas", default=[]): vol.All(cv.ensure_list, [cv.entity_id]),
 }
 
+#: Everything the app's in-job editor can change on a job already running.
+#: Deliberately excludes the job's identity and geometry — areas, route angle,
+#: route-angle mode and perimeter laps — which ``async_modify_plan_route``
+#: forces back from the device so a tweak cannot re-plan the job.
+MODIFY_RUNNING_JOB_SCHEMA: dict[str | vol.Marker, Any] = {
+    vol.Optional("blade_height"): vol.All(vol.Coerce(int), vol.Range(min=15, max=100)),
+    vol.Optional("speed"): vol.All(vol.Coerce(float), vol.Range(min=0.2, max=1.2)),
+    vol.Optional("ultra_wave"): vol.All(vol.Coerce(int), vol.In([0, 1, 2, 10, 11, 12])),
+    vol.Optional("channel_width"): vol.All(vol.Coerce(int), vol.Range(min=5, max=35)),
+    vol.Optional("channel_mode"): vol.All(vol.Coerce(int), vol.In([0, 1, 2, 3])),
+    vol.Optional("obstacle_laps"): vol.All(vol.Coerce(int), vol.In([0, 1, 2, 3, 4])),
+    vol.Optional("rain_tactics"): vol.All(vol.Coerce(int), vol.In([0, 1])),
+    vol.Optional("auto_change_direction"): vol.All(vol.Coerce(int), vol.In([0, 1])),
+    # The cloud schema caps progress at 99.
+    vol.Optional("start_progress"): vol.All(vol.Coerce(int), vol.Range(min=0, max=99)),
+}
+
 START_STOP_BLADES_SCHEMA = {
     vol.Required("start_stop", default=True): cv.boolean,
     vol.Optional("blade_height", default=30): vol.All(
@@ -106,6 +125,10 @@ SET_NON_WORK_HOURS_SCHEMA = {
 
 SET_BLADE_WARNING_TIME_SCHEMA = {
     vol.Required("hours"): vol.All(vol.Coerce(int), vol.Range(min=1, max=9999)),
+}
+
+SET_BLADE_HEIGHT_SCHEMA = {
+    vol.Required("height"): vol.All(vol.Coerce(int), vol.Range(min=15, max=100)),
 }
 
 
@@ -150,6 +173,14 @@ async def async_setup_entry(
     service.async_register_platform_entity_service(
         hass,
         DOMAIN,
+        SERVICE_MODIFY_RUNNING_JOB,
+        entity_domain=LAWN_MOWER_DOMAIN,
+        schema=MODIFY_RUNNING_JOB_SCHEMA,
+        func="async_modify_running_job",
+    )
+    service.async_register_platform_entity_service(
+        hass,
+        DOMAIN,
         SERVICE_CANCEL_JOB,
         entity_domain=LAWN_MOWER_DOMAIN,
         schema=None,
@@ -186,6 +217,14 @@ async def async_setup_entry(
         entity_domain=LAWN_MOWER_DOMAIN,
         schema=SET_BLADE_WARNING_TIME_SCHEMA,
         func="async_set_blade_warning_time",
+    )
+    service.async_register_platform_entity_service(
+        hass,
+        DOMAIN,
+        SERVICE_SET_BLADE_HEIGHT,
+        entity_domain=LAWN_MOWER_DOMAIN,
+        schema=SET_BLADE_HEIGHT_SCHEMA,
+        func="async_set_blade_height",
     )
     service.async_register_platform_entity_service(
         hass,
@@ -529,6 +568,10 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
         if DeviceType.is_luba1(self.coordinator.device_name):
             return
         await self.coordinator.async_set_blade_warning_time(hours=hours)
+
+    async def async_set_blade_height(self, height: int) -> None:
+        """Send a blade height directly to the mower's cutter motor."""
+        await self.coordinator.async_blade_height(height)
 
     def _assert_grass_collection(self) -> None:
         """Reject the dump-point services on mowers that take no collector."""

@@ -828,6 +828,48 @@
         }
       }
     },
+    "modify_running_job": {
+      "name": "Futó feladat módosítása",
+      "description": "Módosítja a robot által éppen végzett feladat beállításait újraindítás nélkül. Csak Luba 2 és újabb készülékeken, futó feladat közben érhető el.",
+      "fields": {
+        "blade_height": {
+          "name": "Késmagasság",
+          "description": "Késmagasság"
+        },
+        "speed": {
+          "name": "Munkasebesség",
+          "description": "Munkasebesség"
+        },
+        "ultra_wave": {
+          "name": "Akadályérzékelés",
+          "description": "Akadályérzékelés"
+        },
+        "channel_width": {
+          "name": "Nyomtávolság",
+          "description": "Nyomtávolság"
+        },
+        "channel_mode": {
+          "name": "Útvonal mód",
+          "description": "Útvonal mód"
+        },
+        "obstacle_laps": {
+          "name": "Tiltott zóna körök",
+          "description": "Tiltott zóna körök"
+        },
+        "rain_tactics": {
+          "name": "Esőtaktika",
+          "description": "Esőtaktika"
+        },
+        "auto_change_direction": {
+          "name": "Automatikus irányváltás",
+          "description": "Automatikus irányváltás"
+        },
+        "start_progress": {
+          "name": "Előrehaladás",
+          "description": "Előrehaladás"
+        }
+      }
+    },
     "start_stop_blades": {
       "name": "Kések indítása vagy leállítása",
       "description": "A kések kézi indítása vagy leállítása.",
@@ -863,6 +905,16 @@
         "hours": {
           "name": "Óra",
           "description": "Figyelmeztetési küszöb órában a javasolt késcsere előtt."
+        }
+      }
+    },
+    "set_blade_height": {
+      "name": "Késmagasság beállítása",
+      "description": "Késmagasságot küld közvetlenül a fűnyíró vágómotorjának.",
+      "fields": {
+        "height": {
+          "name": "Magasság",
+          "description": "Késmagasság milliméterben."
         }
       }
     },
@@ -1223,6 +1275,72 @@
     "start_task": {
       "name": "Feladat indítása",
       "description": "Egy tárolt ütemezést azonnal végrehajt (másik neve „ütemezés indítása”). Csak fűnyíró — a Spino medencetisztítónak nincs ezzel egyenértékű parancsa."
+    },
+    "backup_map": {
+      "name": "Térkép mentése",
+      "description": "Feltölti a fűnyíró térképét a Mammotion felhőfiókjába. Visszaadja a mentés azonosítóját. Egy meglévő mentés azonosítójának megadásával azt írja felül új létrehozása helyett.",
+      "fields": {
+        "name": {
+          "name": "Név",
+          "description": "A mentés neve."
+        },
+        "backup_id": {
+          "name": "Mentésazonosító",
+          "description": "Felülírandó meglévő mentés. Hagyja üresen új mentés létrehozásához."
+        }
+      }
+    },
+    "restore_map": {
+      "name": "Térkép visszaállítása",
+      "description": "A fűnyíró jelenlegi térképét annak a Mammotion-fióknak egy mentésére cseréli, amellyel ez az integráció be van jelentkezve. A visszaállítás befejeztével a fűnyíró újraindul.",
+      "fields": {
+        "backup_id": {
+          "name": "Mentésazonosító",
+          "description": "A visszaállítandó mentés, ahogy a 'Térképmentések lekérése' visszaadja."
+        }
+      }
+    },
+    "get_map_backups": {
+      "name": "Térképmentések lekérése",
+      "description": "Visszaadja annak a Mammotion-fióknak a térképmentéseit, amellyel ez az integráció be van jelentkezve. A mentések fiókhoz tartoznak, így az alkalmazásban más fiókkal készült mentések nem jelennek meg."
+    },
+    "get_map_backup_progress": {
+      "name": "Térképmentés állapotának lekérése",
+      "description": "Visszaadja, hol tart egy térképmentés vagy -visszaállítás.",
+      "fields": {
+        "backup_id": {
+          "name": "Mentésazonosító",
+          "description": "A mentés, amelynek feladatát ellenőrizni kell."
+        },
+        "restore": {
+          "name": "Visszaállítás",
+          "description": "Mentés helyett visszaállítás ellenőrzése."
+        }
+      }
+    },
+    "cancel_map_backup": {
+      "name": "Térképmentés megszakítása",
+      "description": "Megszakít egy folyamatban lévő térképmentést vagy -visszaállítást.",
+      "fields": {
+        "backup_id": {
+          "name": "Mentésazonosító",
+          "description": "A mentés, amelynek feladatát meg kell szakítani."
+        },
+        "restore": {
+          "name": "Visszaállítás",
+          "description": "Mentés helyett visszaállítás megszakítása."
+        }
+      }
+    },
+    "delete_map_backup": {
+      "name": "Térképmentés törlése",
+      "description": "Töröl egy térképmentést a Mammotion felhőből.",
+      "fields": {
+        "backup_id": {
+          "name": "Mentésazonosító",
+          "description": "A törlendő mentés."
+        }
+      }
     }
   },
   "exceptions": {
@@ -1264,6 +1382,18 @@
     },
     "grass_collection_unsupported": {
       "message": "Ez a fűnyíró nem támogatja a fűgyűjtést."
+    },
+    "map_backup_cloud_unavailable": {
+      "message": "A térképmentésekhez működő Mammotion felhőbejelentkezés szükséges."
+    },
+    "map_backup_failed": {
+      "message": "A Mammotion felhő elutasította a térképmentési kérést: {reason}"
+    },
+    "map_backup_device_not_found": {
+      "message": "{device_name} nem szerepel a térképmentésre elérhető eszközök között ebben a Mammotion fiókban."
+    },
+    "map_backup_mower_not_found": {
+      "message": "{entity_id} nem Mammotion fűnyíró."
     }
   }
 }

@@ -22,7 +22,11 @@ from pymammotion.data.model.device import MowingDevice
 from custom_components.mammotion.coordinator import MammotionReportUpdateCoordinator
 from custom_components.mammotion.entity import MammotionBaseEntity
 from custom_components.mammotion.switch import (
+    BLUETOOTH_SWITCH_ENTITIES,
+    CLOUD_SWITCH_ENTITIES,
     UPDATE_SWITCH_ENTITIES,
+    MammotionAsyncSwitchEntityDescription,
+    MammotionSwitchEntity,
     MammotionUpdateSwitchEntity,
 )
 
@@ -232,3 +236,46 @@ async def test_the_sys_status_watch_stays_quiet_while_off() -> None:
     await coordinator._on_sys_status_changed_refresh(13)
 
     coordinator.async_request_report_snapshot.assert_not_awaited()
+
+
+@pytest.mark.parametrize(
+    "description",
+    [BLUETOOTH_SWITCH_ENTITIES[0], CLOUD_SWITCH_ENTITIES[0]],
+    ids=lambda d: d.key,
+)
+def test_transport_switches_stay_available_with_no_transport(
+    description: MammotionAsyncSwitchEntityDescription,
+) -> None:
+    """With Bluetooth and Cloud both off nothing is usable, and these switches are the way back.
+
+    They used the transport-based base check, so turning both off left neither
+    switch able to turn its transport on again.
+    """
+    coordinator = _coordinator()
+    coordinator._cloud_enabled = False
+    coordinator._bluetooth_enabled = False
+    coordinator.is_online = MagicMock(return_value=False)
+    entity = MammotionSwitchEntity.__new__(MammotionSwitchEntity)
+    entity.coordinator = coordinator
+    entity.entity_description = description
+
+    assert MammotionBaseEntity.available.fget(entity) is False
+    assert entity.available is True
+
+
+async def test_re_enabling_publishes_the_flag_the_entities_read() -> None:
+    """The flag was written to the library's latest device object only.
+
+    ``coordinator.data`` can be an earlier object — the state bus re-emits only on a
+    change — so the switch kept showing off and the BLE reconnect gates, which read
+    ``coordinator.data``, never let the link come back.
+    """
+    coordinator = _coordinator(enabled=False)
+    latest = MowingDevice()
+    latest.enabled = False
+    coordinator.manager.get_device_by_name.return_value = latest
+
+    await coordinator.set_scheduled_updates(True)
+
+    coordinator.async_set_updated_data.assert_called_with(latest)
+    assert latest.enabled is True

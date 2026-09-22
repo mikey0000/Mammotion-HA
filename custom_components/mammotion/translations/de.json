@@ -828,6 +828,48 @@
         }
       }
     },
+    "modify_running_job": {
+      "name": "Laufenden Auftrag ändern",
+      "description": "Ändert Einstellungen des gerade laufenden Auftrags, ohne ihn neu zu starten. Nur auf Luba 2 und neuer während eines laufenden Auftrags verfügbar.",
+      "fields": {
+        "blade_height": {
+          "name": "Schnitthöhe",
+          "description": "Schnitthöhe"
+        },
+        "speed": {
+          "name": "Arbeitsgeschwindigkeit",
+          "description": "Arbeitsgeschwindigkeit"
+        },
+        "ultra_wave": {
+          "name": "Hinderniserkennung",
+          "description": "Hinderniserkennung"
+        },
+        "channel_width": {
+          "name": "Bahnabstand",
+          "description": "Bahnabstand"
+        },
+        "channel_mode": {
+          "name": "Routenmodus",
+          "description": "Routenmodus"
+        },
+        "obstacle_laps": {
+          "name": "Runden in Sperrzone",
+          "description": "Runden in Sperrzone"
+        },
+        "rain_tactics": {
+          "name": "Regenstrategie",
+          "description": "Regenstrategie"
+        },
+        "auto_change_direction": {
+          "name": "Richtung automatisch wechseln",
+          "description": "Richtung automatisch wechseln"
+        },
+        "start_progress": {
+          "name": "Fortschritt",
+          "description": "Fortschritt"
+        }
+      }
+    },
     "start_stop_blades": {
       "name": "Mähwerk starten oder stoppen",
       "description": "Manuelles Starten oder Stoppen des Mähwerks",
@@ -863,6 +905,16 @@
         "hours": {
           "name": "Stunden",
           "description": "Legt die Warnschwelle fest, bevor ein Austausch der Klingen empfohlen wird. (in Stunden)"
+        }
+      }
+    },
+    "set_blade_height": {
+      "name": "Klingenhöhe festlegen",
+      "description": "Sendet eine Klingenhöhe direkt an den Schneidmotor des Mähers.",
+      "fields": {
+        "height": {
+          "name": "Höhe",
+          "description": "Klingenhöhe in Millimetern."
         }
       }
     },
@@ -1223,6 +1275,72 @@
     "start_task": {
       "name": "Aufgabe starten",
       "description": "Führt einen gespeicherten Zeitplan sofort aus (auch 'Zeitplan starten' genannt). Nur für Mähroboter — der Spino-Poolreiniger hat keinen entsprechenden Befehl, daher führt die Auswahl einer Spino-Aufgabe zu einer Fehlermeldung."
+    },
+    "backup_map": {
+      "name": "Karte sichern",
+      "description": "Lädt die Karte des Mähers in dein Mammotion-Cloudkonto hoch. Gibt die Sicherungs-ID zurück. Gib eine vorhandene Sicherungs-ID an, um diese Sicherung zu überschreiben, statt eine neue anzulegen.",
+      "fields": {
+        "name": {
+          "name": "Name",
+          "description": "Name der Sicherung."
+        },
+        "backup_id": {
+          "name": "Sicherungs-ID",
+          "description": "Vorhandene Sicherung, die überschrieben werden soll. Leer lassen, um eine neue Sicherung anzulegen."
+        }
+      }
+    },
+    "restore_map": {
+      "name": "Karte wiederherstellen",
+      "description": "Ersetzt die aktuelle Karte des Mähers durch eine Sicherung aus dem Mammotion-Konto, mit dem diese Integration angemeldet ist. Der Mäher startet nach der Wiederherstellung neu.",
+      "fields": {
+        "backup_id": {
+          "name": "Sicherungs-ID",
+          "description": "Wiederherzustellende Sicherung, wie von 'Kartensicherungen abrufen' zurückgegeben."
+        }
+      }
+    },
+    "get_map_backups": {
+      "name": "Kartensicherungen abrufen",
+      "description": "Gibt die Kartensicherungen des Mammotion-Kontos zurück, mit dem diese Integration angemeldet ist. Sicherungen gehören zum Konto, daher erscheinen in der App unter einem anderen Konto erstellte Sicherungen nicht."
+    },
+    "get_map_backup_progress": {
+      "name": "Fortschritt der Kartensicherung abrufen",
+      "description": "Gibt zurück, wie weit eine Sicherung oder Wiederherstellung der Karte fortgeschritten ist.",
+      "fields": {
+        "backup_id": {
+          "name": "Sicherungs-ID",
+          "description": "Sicherung, deren Vorgang geprüft werden soll."
+        },
+        "restore": {
+          "name": "Wiederherstellung",
+          "description": "Eine Wiederherstellung statt einer Sicherung prüfen."
+        }
+      }
+    },
+    "cancel_map_backup": {
+      "name": "Kartensicherung abbrechen",
+      "description": "Bricht eine laufende Sicherung oder Wiederherstellung der Karte ab.",
+      "fields": {
+        "backup_id": {
+          "name": "Sicherungs-ID",
+          "description": "Sicherung, deren Vorgang abgebrochen werden soll."
+        },
+        "restore": {
+          "name": "Wiederherstellung",
+          "description": "Eine Wiederherstellung statt einer Sicherung abbrechen."
+        }
+      }
+    },
+    "delete_map_backup": {
+      "name": "Kartensicherung löschen",
+      "description": "Löscht eine Kartensicherung aus der Mammotion-Cloud.",
+      "fields": {
+        "backup_id": {
+          "name": "Sicherungs-ID",
+          "description": "Zu löschende Sicherung."
+        }
+      }
     }
   },
   "exceptions": {
@@ -1264,6 +1382,18 @@
     },
     "grass_collection_unsupported": {
       "message": "Dieser Mäher unterstützt keine Grasaufnahme."
+    },
+    "map_backup_cloud_unavailable": {
+      "message": "Kartensicherungen erfordern eine funktionierende Anmeldung bei der Mammotion-Cloud."
+    },
+    "map_backup_failed": {
+      "message": "Die Mammotion-Cloud hat die Anfrage zur Kartensicherung abgelehnt: {reason}"
+    },
+    "map_backup_device_not_found": {
+      "message": "{device_name} ist in diesem Mammotion-Konto nicht für Kartensicherungen aufgeführt."
+    },
+    "map_backup_mower_not_found": {
+      "message": "{entity_id} ist kein Mammotion-Mäher."
     }
   }
 }

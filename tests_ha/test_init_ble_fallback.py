@@ -18,7 +18,8 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryAuthFailed
+from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
+from pymammotion.aliyun.exceptions import CloudSetupError
 from pymammotion.transport.base import LoginFailedError, ReLoginRequiredError
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -121,4 +122,34 @@ async def test_a_rejected_cache_is_cleared_before_the_retry(
     client.restore_credentials.assert_awaited_once()
     client.login_and_initiate_cloud.assert_awaited_once()
     assert CONF_AEP_DATA not in entry.data
+    assert entry.data[CONF_HAS_CLOUD_ACCOUNT] is True
+
+
+async def test_cloud_setup_failure_without_ble_is_not_ready(
+    hass: HomeAssistant,
+) -> None:
+    """An Aliyun setup failure fell into the catch-all and left setup with no reason shown."""
+    entry = _entry(hass)
+    client = _client(CloudSetupError("Error in getting mqtt credentials: refused"))
+
+    with pytest.raises(ConfigEntryNotReady) as err:
+        await _async_attempt_login(
+            hass, entry, client, _ACCOUNT, "password", ble_fallback=False
+        )
+
+    assert err.value.translation_key == "cloud_setup_failed"
+
+
+async def test_cloud_setup_failure_with_ble_falls_back(
+    hass: HomeAssistant,
+) -> None:
+    """With a BLE fallback available, an Aliyun setup failure continues BLE-only."""
+    entry = _entry(hass)
+    client = _client(CloudSetupError("Error in getting mqtt credentials: refused"))
+
+    result = await _async_attempt_login(
+        hass, entry, client, _ACCOUNT, "password", ble_fallback=True
+    )
+
+    assert result is False
     assert entry.data[CONF_HAS_CLOUD_ACCOUNT] is True

@@ -828,6 +828,48 @@
         }
       }
     },
+    "modify_running_job": {
+      "name": "Rediger igangværende opgave",
+      "description": "Ændrer indstillinger for den opgave, robotten allerede udfører, uden at genstarte den. Kun tilgængelig på Luba 2 og nyere under en igangværende opgave.",
+      "fields": {
+        "blade_height": {
+          "name": "Knivhøjde",
+          "description": "Knivhøjde"
+        },
+        "speed": {
+          "name": "Arbejdshastighed",
+          "description": "Arbejdshastighed"
+        },
+        "ultra_wave": {
+          "name": "Forhindringsregistrering",
+          "description": "Forhindringsregistrering"
+        },
+        "channel_width": {
+          "name": "Baneafstand",
+          "description": "Baneafstand"
+        },
+        "channel_mode": {
+          "name": "Rutetilstand",
+          "description": "Rutetilstand"
+        },
+        "obstacle_laps": {
+          "name": "Omgange i forbudt zone",
+          "description": "Omgange i forbudt zone"
+        },
+        "rain_tactics": {
+          "name": "Regntaktik",
+          "description": "Regntaktik"
+        },
+        "auto_change_direction": {
+          "name": "Automatisk retningsskift",
+          "description": "Automatisk retningsskift"
+        },
+        "start_progress": {
+          "name": "Forløb",
+          "description": "Forløb"
+        }
+      }
+    },
     "start_stop_blades": {
       "name": "Start eller stop blade",
       "description": "Start eller stop blade manuelt.",
@@ -863,6 +905,16 @@
         "hours": {
           "name": "Timer",
           "description": "Advarselstærskel i timer inden anbefalet klingeudskiftning."
+        }
+      }
+    },
+    "set_blade_height": {
+      "name": "Indstil knivhøjde",
+      "description": "Sender en knivhøjde direkte til plæneklipperens knivmotor.",
+      "fields": {
+        "height": {
+          "name": "Højde",
+          "description": "Knivhøjde i millimeter."
         }
       }
     },
@@ -1223,6 +1275,72 @@
     "start_task": {
       "name": "Start opgave",
       "description": "Kører en gemt plan med det samme (også kendt som 'start plan'). Kun til plæneklipper — Spino-poolrobotten har ikke en tilsvarende kommando."
+    },
+    "backup_map": {
+      "name": "Sikkerhedskopiér kort",
+      "description": "Uploader plæneklipperens kort til din Mammotion-cloudkonto. Returnerer sikkerhedskopiens ID. Angiv et eksisterende sikkerhedskopi-ID for at overskrive den i stedet for at oprette en ny.",
+      "fields": {
+        "name": {
+          "name": "Navn",
+          "description": "Navn på sikkerhedskopien."
+        },
+        "backup_id": {
+          "name": "Sikkerhedskopi-ID",
+          "description": "Eksisterende sikkerhedskopi, der skal overskrives. Lad feltet være tomt for at oprette en ny."
+        }
+      }
+    },
+    "restore_map": {
+      "name": "Gendan kort",
+      "description": "Erstatter plæneklipperens nuværende kort med en sikkerhedskopi fra den Mammotion-konto, som denne integration er logget ind med. Plæneklipperen genstarter, når gendannelsen er færdig.",
+      "fields": {
+        "backup_id": {
+          "name": "Sikkerhedskopi-ID",
+          "description": "Sikkerhedskopi, der skal gendannes, som returneret af 'Hent kortsikkerhedskopier'."
+        }
+      }
+    },
+    "get_map_backups": {
+      "name": "Hent kortsikkerhedskopier",
+      "description": "Returnerer kortsikkerhedskopierne på den Mammotion-konto, som denne integration er logget ind med. Sikkerhedskopier hører til kontoen, så dem, der er lavet i appen med en anden konto, vises ikke."
+    },
+    "get_map_backup_progress": {
+      "name": "Hent status for kortsikkerhedskopi",
+      "description": "Returnerer, hvor langt en sikkerhedskopiering eller gendannelse af kortet er nået.",
+      "fields": {
+        "backup_id": {
+          "name": "Sikkerhedskopi-ID",
+          "description": "Sikkerhedskopi, hvis job skal kontrolleres."
+        },
+        "restore": {
+          "name": "Gendannelse",
+          "description": "Kontrollér en gendannelse i stedet for en sikkerhedskopiering."
+        }
+      }
+    },
+    "cancel_map_backup": {
+      "name": "Annullér kortsikkerhedskopi",
+      "description": "Annullerer en igangværende sikkerhedskopiering eller gendannelse af kortet.",
+      "fields": {
+        "backup_id": {
+          "name": "Sikkerhedskopi-ID",
+          "description": "Sikkerhedskopi, hvis job skal annulleres."
+        },
+        "restore": {
+          "name": "Gendannelse",
+          "description": "Annullér en gendannelse i stedet for en sikkerhedskopiering."
+        }
+      }
+    },
+    "delete_map_backup": {
+      "name": "Slet kortsikkerhedskopi",
+      "description": "Sletter en kortsikkerhedskopi fra Mammotion-skyen.",
+      "fields": {
+        "backup_id": {
+          "name": "Sikkerhedskopi-ID",
+          "description": "Sikkerhedskopi, der skal slettes."
+        }
+      }
     }
   },
   "exceptions": {
@@ -1264,6 +1382,18 @@
     },
     "grass_collection_unsupported": {
       "message": "Denne plæneklipper understøtter ikke græsopsamling."
+    },
+    "map_backup_cloud_unavailable": {
+      "message": "Kortsikkerhedskopier kræver et fungerende login til Mammotion-skyen."
+    },
+    "map_backup_failed": {
+      "message": "Mammotion-skyen afviste anmodningen om kortsikkerhedskopi: {reason}"
+    },
+    "map_backup_device_not_found": {
+      "message": "{device_name} er ikke angivet til kortsikkerhedskopier på denne Mammotion-konto."
+    },
+    "map_backup_mower_not_found": {
+      "message": "{entity_id} er ikke en Mammotion-plæneklipper."
     }
   }
 }

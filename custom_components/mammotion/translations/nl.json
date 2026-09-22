@@ -828,6 +828,48 @@
         }
       }
     },
+    "modify_running_job": {
+      "name": "Lopende taak wijzigen",
+      "description": "Wijzigt instellingen van de taak die de maaier al uitvoert, zonder deze opnieuw te starten. Alleen beschikbaar op Luba 2 en nieuwer tijdens een lopende taak.",
+      "fields": {
+        "blade_height": {
+          "name": "Meshoogte",
+          "description": "Meshoogte"
+        },
+        "speed": {
+          "name": "Werksnelheid",
+          "description": "Werksnelheid"
+        },
+        "ultra_wave": {
+          "name": "Obstakeldetectie",
+          "description": "Obstakeldetectie"
+        },
+        "channel_width": {
+          "name": "Baanafstand",
+          "description": "Baanafstand"
+        },
+        "channel_mode": {
+          "name": "Routemodus",
+          "description": "Routemodus"
+        },
+        "obstacle_laps": {
+          "name": "Rondes verboden zone",
+          "description": "Rondes verboden zone"
+        },
+        "rain_tactics": {
+          "name": "Regenstrategie",
+          "description": "Regenstrategie"
+        },
+        "auto_change_direction": {
+          "name": "Richting automatisch wisselen",
+          "description": "Richting automatisch wisselen"
+        },
+        "start_progress": {
+          "name": "Voortgang",
+          "description": "Voortgang"
+        }
+      }
+    },
     "start_stop_blades": {
       "name": "Start of stop de messen",
       "description": "Start of stop de messen handmatig.",
@@ -863,6 +905,16 @@
         "hours": {
           "name": "Uren",
           "description": "Waarschuwingsdrempel in uren voor aanbevolen mesvervanging."
+        }
+      }
+    },
+    "set_blade_height": {
+      "name": "Meshoogte instellen",
+      "description": "Stuurt een meshoogte rechtstreeks naar de maaimotor van de maaier.",
+      "fields": {
+        "height": {
+          "name": "Hoogte",
+          "description": "Meshoogte in millimeters."
         }
       }
     },
@@ -1223,6 +1275,72 @@
     "start_task": {
       "name": "Taak starten",
       "description": "Voert een opgeslagen schema direct uit (ook bekend als 'schema starten'). Alleen maaier — de Spino zwembadrobot heeft geen equivalent commando."
+    },
+    "backup_map": {
+      "name": "Kaart back-uppen",
+      "description": "Uploadt de kaart van de maaier naar je Mammotion-cloudaccount. Geeft de back-up-ID terug. Geef een bestaande back-up-ID op om die back-up te overschrijven in plaats van een nieuwe te maken.",
+      "fields": {
+        "name": {
+          "name": "Naam",
+          "description": "Naam van de back-up."
+        },
+        "backup_id": {
+          "name": "Back-up-ID",
+          "description": "Bestaande back-up om te overschrijven. Laat leeg om een nieuwe back-up te maken."
+        }
+      }
+    },
+    "restore_map": {
+      "name": "Kaart herstellen",
+      "description": "Vervangt de huidige kaart van de maaier door een back-up van het Mammotion-account waarmee deze integratie is aangemeld. De maaier herstart zodra het herstel klaar is.",
+      "fields": {
+        "backup_id": {
+          "name": "Back-up-ID",
+          "description": "Te herstellen back-up, zoals teruggegeven door 'Kaartback-ups ophalen'."
+        }
+      }
+    },
+    "get_map_backups": {
+      "name": "Kaartback-ups ophalen",
+      "description": "Geeft de kaartback-ups van het Mammotion-account waarmee deze integratie is aangemeld. Back-ups horen bij een account, dus back-ups die in de app onder een ander account zijn gemaakt, worden niet getoond."
+    },
+    "get_map_backup_progress": {
+      "name": "Voortgang kaartback-up ophalen",
+      "description": "Geeft terug hoe ver een back-up of herstel van de kaart is.",
+      "fields": {
+        "backup_id": {
+          "name": "Back-up-ID",
+          "description": "Back-up waarvan de taak gecontroleerd moet worden."
+        },
+        "restore": {
+          "name": "Herstel",
+          "description": "Een herstel controleren in plaats van een back-up."
+        }
+      }
+    },
+    "cancel_map_backup": {
+      "name": "Kaartback-up annuleren",
+      "description": "Annuleert een lopende back-up of herstel van de kaart.",
+      "fields": {
+        "backup_id": {
+          "name": "Back-up-ID",
+          "description": "Back-up waarvan de taak geannuleerd moet worden."
+        },
+        "restore": {
+          "name": "Herstel",
+          "description": "Een herstel annuleren in plaats van een back-up."
+        }
+      }
+    },
+    "delete_map_backup": {
+      "name": "Kaartback-up verwijderen",
+      "description": "Verwijdert een kaartback-up uit de Mammotion-cloud.",
+      "fields": {
+        "backup_id": {
+          "name": "Back-up-ID",
+          "description": "Te verwijderen back-up."
+        }
+      }
     }
   },
   "exceptions": {
@@ -1264,6 +1382,18 @@
     },
     "grass_collection_unsupported": {
       "message": "Deze maaier ondersteunt het opvangen van gras niet."
+    },
+    "map_backup_cloud_unavailable": {
+      "message": "Kaartback-ups vereisen een werkende aanmelding bij de Mammotion-cloud."
+    },
+    "map_backup_failed": {
+      "message": "De Mammotion-cloud heeft het verzoek voor de kaartback-up geweigerd: {reason}"
+    },
+    "map_backup_device_not_found": {
+      "message": "{device_name} staat in dit Mammotion-account niet vermeld voor kaartback-ups."
+    },
+    "map_backup_mower_not_found": {
+      "message": "{entity_id} is geen Mammotion-maaier."
     }
   }
 }

@@ -828,6 +828,48 @@
         }
       }
     },
+    "modify_running_job": {
+      "name": "Upravit probíhající úlohu",
+      "description": "Změní nastavení úlohy, kterou sekačka právě provádí, bez jejího restartování. Dostupné pouze na Luba 2 a novějších během probíhající úlohy.",
+      "fields": {
+        "blade_height": {
+          "name": "Výška nože",
+          "description": "Výška nože"
+        },
+        "speed": {
+          "name": "Pracovní rychlost",
+          "description": "Pracovní rychlost"
+        },
+        "ultra_wave": {
+          "name": "Detekce překážek",
+          "description": "Detekce překážek"
+        },
+        "channel_width": {
+          "name": "Rozteč drah",
+          "description": "Rozteč drah"
+        },
+        "channel_mode": {
+          "name": "Režim trasy",
+          "description": "Režim trasy"
+        },
+        "obstacle_laps": {
+          "name": "Okruhy zakázané zóny",
+          "description": "Okruhy zakázané zóny"
+        },
+        "rain_tactics": {
+          "name": "Taktika za deště",
+          "description": "Taktika za deště"
+        },
+        "auto_change_direction": {
+          "name": "Automatická změna směru",
+          "description": "Automatická změna směru"
+        },
+        "start_progress": {
+          "name": "Průběh",
+          "description": "Průběh"
+        }
+      }
+    },
     "start_stop_blades": {
       "name": "Spustit nebo zastavit nože",
       "description": "Manuální spuštění nebo zastavení břitů.",
@@ -863,6 +905,16 @@
         "hours": {
           "name": "Hodiny",
           "description": "Práh varování v hodinách před doporučenou výměnou nože."
+        }
+      }
+    },
+    "set_blade_height": {
+      "name": "Nastavit výšku nože",
+      "description": "Odešle výšku nože přímo do motoru sekačky.",
+      "fields": {
+        "height": {
+          "name": "Výška",
+          "description": "Výška nože v milimetrech."
         }
       }
     },
@@ -1223,6 +1275,72 @@
     "start_task": {
       "name": "Spustit úlohu",
       "description": "Okamžitě spustí uložený plán (známé také jako „spustit plán“). Pouze pro sekačku — robot bazénový čistič Spino nemá ekvivalentní příkaz."
+    },
+    "backup_map": {
+      "name": "Zálohovat mapu",
+      "description": "Nahraje mapu sekačky do vašeho cloudového účtu Mammotion. Vrátí ID zálohy. Zadáním ID existující zálohy ji přepíšete místo vytvoření nové.",
+      "fields": {
+        "name": {
+          "name": "Název",
+          "description": "Název zálohy."
+        },
+        "backup_id": {
+          "name": "ID zálohy",
+          "description": "Existující záloha k přepsání. Ponechte prázdné pro vytvoření nové zálohy."
+        }
+      }
+    },
+    "restore_map": {
+      "name": "Obnovit mapu",
+      "description": "Nahradí aktuální mapu sekačky zálohou z účtu Mammotion, ke kterému je tato integrace přihlášena. Po dokončení obnovy se sekačka restartuje.",
+      "fields": {
+        "backup_id": {
+          "name": "ID zálohy",
+          "description": "Záloha k obnovení, jak ji vrací 'Získat zálohy map'."
+        }
+      }
+    },
+    "get_map_backups": {
+      "name": "Získat zálohy map",
+      "description": "Vrátí zálohy map uložené v účtu Mammotion, ke kterému je tato integrace přihlášena. Zálohy patří k účtu, takže zálohy vytvořené v aplikaci pod jiným účtem se nezobrazí."
+    },
+    "get_map_backup_progress": {
+      "name": "Získat průběh zálohy mapy",
+      "description": "Vrátí, jak daleko je záloha nebo obnova mapy.",
+      "fields": {
+        "backup_id": {
+          "name": "ID zálohy",
+          "description": "Záloha, jejíž úlohu zkontrolovat."
+        },
+        "restore": {
+          "name": "Obnova",
+          "description": "Zkontrolovat obnovu místo zálohy."
+        }
+      }
+    },
+    "cancel_map_backup": {
+      "name": "Zrušit zálohu mapy",
+      "description": "Zruší probíhající zálohu nebo obnovu mapy.",
+      "fields": {
+        "backup_id": {
+          "name": "ID zálohy",
+          "description": "Záloha, jejíž úlohu zrušit."
+        },
+        "restore": {
+          "name": "Obnova",
+          "description": "Zrušit obnovu místo zálohy."
+        }
+      }
+    },
+    "delete_map_backup": {
+      "name": "Smazat zálohu mapy",
+      "description": "Smaže zálohu mapy z cloudu Mammotion.",
+      "fields": {
+        "backup_id": {
+          "name": "ID zálohy",
+          "description": "Záloha ke smazání."
+        }
+      }
     }
   },
   "exceptions": {
@@ -1264,6 +1382,18 @@
     },
     "grass_collection_unsupported": {
       "message": "Tato sekačka nepodporuje sběr trávy."
+    },
+    "map_backup_cloud_unavailable": {
+      "message": "Zálohy map vyžadují funkční přihlášení ke cloudu Mammotion."
+    },
+    "map_backup_failed": {
+      "message": "Cloud Mammotion odmítl požadavek na zálohu mapy: {reason}"
+    },
+    "map_backup_device_not_found": {
+      "message": "{device_name} není v tomto účtu Mammotion uvedeno pro zálohy map."
+    },
+    "map_backup_mower_not_found": {
+      "message": "{entity_id} není sekačka Mammotion."
     }
   }
 }

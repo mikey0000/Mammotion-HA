@@ -30,7 +30,7 @@ from homeassistant.helpers.device_registry import (
     async_get as async_get_device_registry,
 )
 from homeassistant.loader import async_get_integration
-from pymammotion.aliyun.exceptions import TooManyRequestsException
+from pymammotion.aliyun.exceptions import CloudSetupError, TooManyRequestsException
 from pymammotion.aliyun.model.dev_by_account_response import Device
 from pymammotion.client import MammotionClient
 from pymammotion.data.model.device import MowingDevice, PoolCleanerDevice
@@ -193,6 +193,16 @@ async def _async_attempt_login(
             return False
         raise ConfigEntryError(
             translation_domain=DOMAIN, translation_key="api_limit_exceeded"
+        ) from err
+    except CloudSetupError as err:
+        # Raised only when the Aliyun platform is the account's sole transport.
+        if ble_fallback:
+            LOGGER.warning(
+                "Mammotion cloud setup failed; continuing in BLE-only mode: %s", err
+            )
+            return False
+        raise ConfigEntryNotReady(
+            translation_domain=DOMAIN, translation_key="cloud_setup_failed"
         ) from err
     except UnretryableException as err:
         if ble_fallback:

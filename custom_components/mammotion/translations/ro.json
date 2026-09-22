@@ -828,6 +828,48 @@
         }
       }
     },
+    "modify_running_job": {
+      "name": "Modifică sarcina în curs",
+      "description": "Modifică setările sarcinii pe care robotul o execută deja, fără a o reporni. Disponibil doar pe Luba 2 și mai noi, în timpul unei sarcini în curs.",
+      "fields": {
+        "blade_height": {
+          "name": "Înălțime lamă",
+          "description": "Înălțime lamă"
+        },
+        "speed": {
+          "name": "Viteză de lucru",
+          "description": "Viteză de lucru"
+        },
+        "ultra_wave": {
+          "name": "Detectare obstacole",
+          "description": "Detectare obstacole"
+        },
+        "channel_width": {
+          "name": "Distanță între treceri",
+          "description": "Distanță între treceri"
+        },
+        "channel_mode": {
+          "name": "Mod traseu",
+          "description": "Mod traseu"
+        },
+        "obstacle_laps": {
+          "name": "Ture zonă interzisă",
+          "description": "Ture zonă interzisă"
+        },
+        "rain_tactics": {
+          "name": "Tactică ploaie",
+          "description": "Tactică ploaie"
+        },
+        "auto_change_direction": {
+          "name": "Schimbare automată a direcției",
+          "description": "Schimbare automată a direcției"
+        },
+        "start_progress": {
+          "name": "Progres",
+          "description": "Progres"
+        }
+      }
+    },
     "start_stop_blades": {
       "name": "Pornire sau oprire lame",
       "description": "Porniți sau opriți lamele manual.",
@@ -863,6 +905,16 @@
         "hours": {
           "name": "Ore",
           "description": "Pragul de avertizare în ore înainte de înlocuirea recomandată a lamei."
+        }
+      }
+    },
+    "set_blade_height": {
+      "name": "Setează înălțimea lamei",
+      "description": "Trimite o înălțime a lamei direct către motorul de tăiere al mașinii de tuns.",
+      "fields": {
+        "height": {
+          "name": "Înălțime",
+          "description": "Înălțimea lamei în milimetri."
         }
       }
     },
@@ -1223,6 +1275,72 @@
     "start_task": {
       "name": "Pornește sarcina",
       "description": "Pornește imediat un program stocat (cunoscut și ca „pornește programul”). Doar pentru cositoare — robotul de piscină Spino nu are o comandă echivalentă."
+    },
+    "backup_map": {
+      "name": "Salvează harta",
+      "description": "Încarcă harta mașinii de tuns în contul tău cloud Mammotion. Returnează ID-ul copiei de rezervă. Indică ID-ul unei copii existente pentru a o suprascrie în loc să creezi una nouă.",
+      "fields": {
+        "name": {
+          "name": "Nume",
+          "description": "Numele copiei de rezervă."
+        },
+        "backup_id": {
+          "name": "ID copie de rezervă",
+          "description": "Copie de rezervă existentă de suprascris. Lasă gol pentru a crea o copie nouă."
+        }
+      }
+    },
+    "restore_map": {
+      "name": "Restaurează harta",
+      "description": "Înlocuiește harta curentă a mașinii de tuns cu o copie de rezervă din contul Mammotion cu care este conectată această integrare. Mașina de tuns repornește după terminarea restaurării.",
+      "fields": {
+        "backup_id": {
+          "name": "ID copie de rezervă",
+          "description": "Copia de rezervă de restaurat, așa cum o returnează „Obține copiile de rezervă ale hărților”."
+        }
+      }
+    },
+    "get_map_backups": {
+      "name": "Obține copiile de rezervă ale hărților",
+      "description": "Returnează copiile de rezervă ale hărților din contul Mammotion cu care este conectată această integrare. Copiile aparțin contului, așa că cele create în aplicație cu alt cont nu sunt afișate."
+    },
+    "get_map_backup_progress": {
+      "name": "Obține progresul copiei de rezervă",
+      "description": "Returnează cât de departe a ajuns o salvare sau o restaurare a hărții.",
+      "fields": {
+        "backup_id": {
+          "name": "ID copie de rezervă",
+          "description": "Copia de rezervă a cărei operațiuni se verifică."
+        },
+        "restore": {
+          "name": "Restaurare",
+          "description": "Verifică o restaurare în loc de o salvare."
+        }
+      }
+    },
+    "cancel_map_backup": {
+      "name": "Anulează copia de rezervă a hărții",
+      "description": "Anulează o salvare sau o restaurare a hărții aflată în desfășurare.",
+      "fields": {
+        "backup_id": {
+          "name": "ID copie de rezervă",
+          "description": "Copia de rezervă a cărei operațiuni se anulează."
+        },
+        "restore": {
+          "name": "Restaurare",
+          "description": "Anulează o restaurare în loc de o salvare."
+        }
+      }
+    },
+    "delete_map_backup": {
+      "name": "Șterge copia de rezervă a hărții",
+      "description": "Șterge o copie de rezervă a hărții din cloudul Mammotion.",
+      "fields": {
+        "backup_id": {
+          "name": "ID copie de rezervă",
+          "description": "Copia de rezervă de șters."
+        }
+      }
     }
   },
   "exceptions": {
@@ -1264,6 +1382,18 @@
     },
     "grass_collection_unsupported": {
       "message": "Această mașină de tuns nu acceptă colectarea ierbii."
+    },
+    "map_backup_cloud_unavailable": {
+      "message": "Copiile de rezervă ale hărților necesită o autentificare funcțională în cloudul Mammotion."
+    },
+    "map_backup_failed": {
+      "message": "Cloudul Mammotion a refuzat cererea de copie de rezervă a hărții: {reason}"
+    },
+    "map_backup_device_not_found": {
+      "message": "{device_name} nu este listat pentru copii de rezervă ale hărților în acest cont Mammotion."
+    },
+    "map_backup_mower_not_found": {
+      "message": "{entity_id} nu este o mașină de tuns Mammotion."
     }
   }
 }

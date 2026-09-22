@@ -828,6 +828,48 @@
         }
       }
     },
+    "modify_running_job": {
+      "name": "Modifica lavoro in corso",
+      "description": "Modifica le impostazioni del lavoro già in esecuzione senza riavviarlo. Disponibile solo su Luba 2 e successivi durante un lavoro in corso.",
+      "fields": {
+        "blade_height": {
+          "name": "Altezza lama",
+          "description": "Altezza lama"
+        },
+        "speed": {
+          "name": "Velocità di lavoro",
+          "description": "Velocità di lavoro"
+        },
+        "ultra_wave": {
+          "name": "Rilevamento ostacoli",
+          "description": "Rilevamento ostacoli"
+        },
+        "channel_width": {
+          "name": "Distanza tra i passaggi",
+          "description": "Distanza tra i passaggi"
+        },
+        "channel_mode": {
+          "name": "Modalità percorso",
+          "description": "Modalità percorso"
+        },
+        "obstacle_laps": {
+          "name": "Giri zona vietata",
+          "description": "Giri zona vietata"
+        },
+        "rain_tactics": {
+          "name": "Strategia pioggia",
+          "description": "Strategia pioggia"
+        },
+        "auto_change_direction": {
+          "name": "Cambio direzione automatico",
+          "description": "Cambio direzione automatico"
+        },
+        "start_progress": {
+          "name": "Avanzamento",
+          "description": "Avanzamento"
+        }
+      }
+    },
     "start_stop_blades": {
       "name": "Avvia o ferma lame",
       "description": "Avvia o arresta le lame manualmente.",
@@ -863,6 +905,16 @@
         "hours": {
           "name": "Ore",
           "description": "Soglia di avviso in ore prima della sostituzione raccomandata della lama."
+        }
+      }
+    },
+    "set_blade_height": {
+      "name": "Imposta altezza lama",
+      "description": "Invia un'altezza della lama direttamente al motore di taglio del tosaerba.",
+      "fields": {
+        "height": {
+          "name": "Altezza",
+          "description": "Altezza della lama in millimetri."
         }
       }
     },
@@ -1223,6 +1275,72 @@
     "start_task": {
       "name": "Avvia attività",
       "description": "Esegue immediatamente una pianificazione memorizzata (nota anche come 'avvia pianificazione'). Solo per tagliaerba — il robot piscina Spino non ha un comando equivalente."
+    },
+    "backup_map": {
+      "name": "Esegui backup mappa",
+      "description": "Carica la mappa del tosaerba sul tuo account cloud Mammotion. Restituisce l'ID del backup. Indica l'ID di un backup esistente per sovrascriverlo invece di crearne uno nuovo.",
+      "fields": {
+        "name": {
+          "name": "Nome",
+          "description": "Nome del backup."
+        },
+        "backup_id": {
+          "name": "ID backup",
+          "description": "Backup esistente da sovrascrivere. Lascia vuoto per creare un nuovo backup."
+        }
+      }
+    },
+    "restore_map": {
+      "name": "Ripristina mappa",
+      "description": "Sostituisce la mappa attuale del tosaerba con un backup dell'account Mammotion con cui è connessa questa integrazione. Il tosaerba si riavvia al termine del ripristino.",
+      "fields": {
+        "backup_id": {
+          "name": "ID backup",
+          "description": "Backup da ripristinare, come restituito da 'Ottieni backup mappe'."
+        }
+      }
+    },
+    "get_map_backups": {
+      "name": "Ottieni backup mappe",
+      "description": "Restituisce i backup delle mappe dell'account Mammotion con cui è connessa questa integrazione. I backup appartengono all'account, quindi quelli creati nell'app con un altro account non vengono elencati."
+    },
+    "get_map_backup_progress": {
+      "name": "Ottieni avanzamento backup mappa",
+      "description": "Restituisce a che punto è un backup o un ripristino della mappa.",
+      "fields": {
+        "backup_id": {
+          "name": "ID backup",
+          "description": "Backup di cui controllare l'operazione."
+        },
+        "restore": {
+          "name": "Ripristino",
+          "description": "Controlla un ripristino invece di un backup."
+        }
+      }
+    },
+    "cancel_map_backup": {
+      "name": "Annulla backup mappa",
+      "description": "Annulla un backup o un ripristino della mappa ancora in corso.",
+      "fields": {
+        "backup_id": {
+          "name": "ID backup",
+          "description": "Backup di cui annullare l'operazione."
+        },
+        "restore": {
+          "name": "Ripristino",
+          "description": "Annulla un ripristino invece di un backup."
+        }
+      }
+    },
+    "delete_map_backup": {
+      "name": "Elimina backup mappa",
+      "description": "Elimina un backup della mappa dal cloud Mammotion.",
+      "fields": {
+        "backup_id": {
+          "name": "ID backup",
+          "description": "Backup da eliminare."
+        }
+      }
     }
   },
   "exceptions": {
@@ -1264,6 +1382,18 @@
     },
     "grass_collection_unsupported": {
       "message": "Questo robot non supporta la raccolta dell'erba."
+    },
+    "map_backup_cloud_unavailable": {
+      "message": "I backup delle mappe richiedono un accesso funzionante al cloud Mammotion."
+    },
+    "map_backup_failed": {
+      "message": "Il cloud Mammotion ha rifiutato la richiesta di backup della mappa: {reason}"
+    },
+    "map_backup_device_not_found": {
+      "message": "{device_name} non è elencato per i backup delle mappe in questo account Mammotion."
+    },
+    "map_backup_mower_not_found": {
+      "message": "{entity_id} non è un tosaerba Mammotion."
     }
   }
 }

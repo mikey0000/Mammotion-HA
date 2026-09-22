@@ -828,6 +828,48 @@
         }
       }
     },
+    "modify_running_job": {
+      "name": "Ändra pågående uppdrag",
+      "description": "Ändrar inställningar för uppdraget som klipparen redan utför, utan att starta om det. Endast tillgängligt på Luba 2 och nyare under ett pågående uppdrag.",
+      "fields": {
+        "blade_height": {
+          "name": "Knivhöjd",
+          "description": "Knivhöjd"
+        },
+        "speed": {
+          "name": "Arbetshastighet",
+          "description": "Arbetshastighet"
+        },
+        "ultra_wave": {
+          "name": "Hinderdetektering",
+          "description": "Hinderdetektering"
+        },
+        "channel_width": {
+          "name": "Banavstånd",
+          "description": "Banavstånd"
+        },
+        "channel_mode": {
+          "name": "Ruttläge",
+          "description": "Ruttläge"
+        },
+        "obstacle_laps": {
+          "name": "Varv i förbjuden zon",
+          "description": "Varv i förbjuden zon"
+        },
+        "rain_tactics": {
+          "name": "Regnstrategi",
+          "description": "Regnstrategi"
+        },
+        "auto_change_direction": {
+          "name": "Automatiskt riktningsbyte",
+          "description": "Automatiskt riktningsbyte"
+        },
+        "start_progress": {
+          "name": "Förlopp",
+          "description": "Förlopp"
+        }
+      }
+    },
     "start_stop_blades": {
       "name": "Starta eller stoppa knivar",
       "description": "Starta eller stoppa knivarna manuellt.",
@@ -863,6 +905,16 @@
         "hours": {
           "name": "Timmar",
           "description": "Varningströskel i timmar innan bladbyte rekommenderas."
+        }
+      }
+    },
+    "set_blade_height": {
+      "name": "Ställ in klipphöjd",
+      "description": "Skickar en knivhöjd direkt till klipparens knivmotor.",
+      "fields": {
+        "height": {
+          "name": "Höjd",
+          "description": "Knivhöjd i millimeter."
         }
       }
     },
@@ -1223,6 +1275,72 @@
     "start_task": {
       "name": "Starta uppgift",
       "description": "Kör ett sparat schema omedelbart (även kallat 'starta schema'). Endast gräsklippare — Spino-poolroboten har inte motsvarande kommando."
+    },
+    "backup_map": {
+      "name": "Säkerhetskopiera karta",
+      "description": "Laddar upp gräsklipparens karta till ditt Mammotion-molnkonto. Returnerar säkerhetskopians ID. Ange ett befintligt säkerhetskopie-ID för att skriva över den i stället för att skapa en ny.",
+      "fields": {
+        "name": {
+          "name": "Namn",
+          "description": "Namn på säkerhetskopian."
+        },
+        "backup_id": {
+          "name": "Säkerhetskopie-ID",
+          "description": "Befintlig säkerhetskopia att skriva över. Lämna tomt för att skapa en ny."
+        }
+      }
+    },
+    "restore_map": {
+      "name": "Återställ karta",
+      "description": "Ersätter gräsklipparens nuvarande karta med en säkerhetskopia från det Mammotion-konto som den här integrationen är inloggad med. Gräsklipparen startar om när återställningen är klar.",
+      "fields": {
+        "backup_id": {
+          "name": "Säkerhetskopie-ID",
+          "description": "Säkerhetskopia att återställa, som returneras av 'Hämta kartsäkerhetskopior'."
+        }
+      }
+    },
+    "get_map_backups": {
+      "name": "Hämta kartsäkerhetskopior",
+      "description": "Returnerar kartsäkerhetskopiorna på det Mammotion-konto som den här integrationen är inloggad med. Säkerhetskopior hör till kontot, så de som gjorts i appen med ett annat konto visas inte."
+    },
+    "get_map_backup_progress": {
+      "name": "Hämta förlopp för kartsäkerhetskopia",
+      "description": "Returnerar hur långt en säkerhetskopiering eller återställning av kartan har kommit.",
+      "fields": {
+        "backup_id": {
+          "name": "Säkerhetskopie-ID",
+          "description": "Säkerhetskopia vars jobb ska kontrolleras."
+        },
+        "restore": {
+          "name": "Återställning",
+          "description": "Kontrollera en återställning i stället för en säkerhetskopiering."
+        }
+      }
+    },
+    "cancel_map_backup": {
+      "name": "Avbryt kartsäkerhetskopia",
+      "description": "Avbryter en pågående säkerhetskopiering eller återställning av kartan.",
+      "fields": {
+        "backup_id": {
+          "name": "Säkerhetskopie-ID",
+          "description": "Säkerhetskopia vars jobb ska avbrytas."
+        },
+        "restore": {
+          "name": "Återställning",
+          "description": "Avbryt en återställning i stället för en säkerhetskopiering."
+        }
+      }
+    },
+    "delete_map_backup": {
+      "name": "Ta bort kartsäkerhetskopia",
+      "description": "Tar bort en kartsäkerhetskopia från Mammotion-molnet.",
+      "fields": {
+        "backup_id": {
+          "name": "Säkerhetskopie-ID",
+          "description": "Säkerhetskopia att ta bort."
+        }
+      }
     }
   },
   "exceptions": {
@@ -1264,6 +1382,18 @@
     },
     "grass_collection_unsupported": {
       "message": "Den här klipparen har inte stöd för gräsuppsamling."
+    },
+    "map_backup_cloud_unavailable": {
+      "message": "Kartsäkerhetskopior kräver en fungerande inloggning i Mammotion-molnet."
+    },
+    "map_backup_failed": {
+      "message": "Mammotion-molnet avvisade begäran om kartsäkerhetskopia: {reason}"
+    },
+    "map_backup_device_not_found": {
+      "message": "{device_name} finns inte med för kartsäkerhetskopior på det här Mammotion-kontot."
+    },
+    "map_backup_mower_not_found": {
+      "message": "{entity_id} är inte en Mammotion-gräsklippare."
     }
   }
 }

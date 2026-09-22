@@ -828,6 +828,48 @@
         }
       }
     },
+    "modify_running_job": {
+      "name": "Zmień trwające zadanie",
+      "description": "Zmienia ustawienia zadania już wykonywanego przez kosiarkę, bez jego restartu. Dostępne tylko na Luba 2 i nowszych w trakcie trwania zadania.",
+      "fields": {
+        "blade_height": {
+          "name": "Wysokość ostrza",
+          "description": "Wysokość ostrza"
+        },
+        "speed": {
+          "name": "Prędkość pracy",
+          "description": "Prędkość pracy"
+        },
+        "ultra_wave": {
+          "name": "Wykrywanie przeszkód",
+          "description": "Wykrywanie przeszkód"
+        },
+        "channel_width": {
+          "name": "Odstęp ścieżek",
+          "description": "Odstęp ścieżek"
+        },
+        "channel_mode": {
+          "name": "Tryb trasy",
+          "description": "Tryb trasy"
+        },
+        "obstacle_laps": {
+          "name": "Okrążenia strefy zakazanej",
+          "description": "Okrążenia strefy zakazanej"
+        },
+        "rain_tactics": {
+          "name": "Taktyka deszczowa",
+          "description": "Taktyka deszczowa"
+        },
+        "auto_change_direction": {
+          "name": "Automatyczna zmiana kierunku",
+          "description": "Automatyczna zmiana kierunku"
+        },
+        "start_progress": {
+          "name": "Postęp",
+          "description": "Postęp"
+        }
+      }
+    },
     "start_stop_blades": {
       "name": "Uruchom lub zatrzymaj ostrza",
       "description": "Uruchom lub zatrzymaj ostrza ręcznie.",
@@ -863,6 +905,16 @@
         "hours": {
           "name": "Godziny",
           "description": "Próg ostrzeżenia w godzinach przed zalecaną wymianą noża."
+        }
+      }
+    },
+    "set_blade_height": {
+      "name": "Ustaw wysokość noża",
+      "description": "Wysyła wysokość noża bezpośrednio do silnika tnącego kosiarki.",
+      "fields": {
+        "height": {
+          "name": "Wysokość",
+          "description": "Wysokość noża w milimetrach."
         }
       }
     },
@@ -1223,6 +1275,72 @@
     "start_task": {
       "name": "Uruchom zadanie",
       "description": "Natychmiast uruchamia zapisany plan (znane też jako „uruchom plan”). Tylko kosiarka — robot basenowy Spino nie ma równoważnego polecenia."
+    },
+    "backup_map": {
+      "name": "Utwórz kopię mapy",
+      "description": "Przesyła mapę kosiarki na Twoje konto w chmurze Mammotion. Zwraca identyfikator kopii. Podaj identyfikator istniejącej kopii, aby ją nadpisać zamiast tworzyć nową.",
+      "fields": {
+        "name": {
+          "name": "Nazwa",
+          "description": "Nazwa kopii zapasowej."
+        },
+        "backup_id": {
+          "name": "Identyfikator kopii",
+          "description": "Istniejąca kopia do nadpisania. Pozostaw puste, aby utworzyć nową kopię."
+        }
+      }
+    },
+    "restore_map": {
+      "name": "Przywróć mapę",
+      "description": "Zastępuje bieżącą mapę kosiarki kopią z konta Mammotion, na które zalogowana jest ta integracja. Po zakończeniu przywracania kosiarka uruchomi się ponownie.",
+      "fields": {
+        "backup_id": {
+          "name": "Identyfikator kopii",
+          "description": "Kopia do przywrócenia, zwrócona przez 'Pobierz kopie map'."
+        }
+      }
+    },
+    "get_map_backups": {
+      "name": "Pobierz kopie map",
+      "description": "Zwraca kopie map zapisane na koncie Mammotion, na które zalogowana jest ta integracja. Kopie należą do konta, więc kopie utworzone w aplikacji na innym koncie nie są wyświetlane."
+    },
+    "get_map_backup_progress": {
+      "name": "Pobierz postęp kopii mapy",
+      "description": "Zwraca postęp tworzenia lub przywracania kopii mapy.",
+      "fields": {
+        "backup_id": {
+          "name": "Identyfikator kopii",
+          "description": "Kopia, której zadanie sprawdzić."
+        },
+        "restore": {
+          "name": "Przywracanie",
+          "description": "Sprawdź przywracanie zamiast tworzenia kopii."
+        }
+      }
+    },
+    "cancel_map_backup": {
+      "name": "Anuluj kopię mapy",
+      "description": "Anuluje trwające tworzenie lub przywracanie kopii mapy.",
+      "fields": {
+        "backup_id": {
+          "name": "Identyfikator kopii",
+          "description": "Kopia, której zadanie anulować."
+        },
+        "restore": {
+          "name": "Przywracanie",
+          "description": "Anuluj przywracanie zamiast tworzenia kopii."
+        }
+      }
+    },
+    "delete_map_backup": {
+      "name": "Usuń kopię mapy",
+      "description": "Usuwa kopię mapy z chmury Mammotion.",
+      "fields": {
+        "backup_id": {
+          "name": "Identyfikator kopii",
+          "description": "Kopia do usunięcia."
+        }
+      }
     }
   },
   "exceptions": {
@@ -1264,6 +1382,18 @@
     },
     "grass_collection_unsupported": {
       "message": "Ta kosiarka nie obsługuje zbierania trawy."
+    },
+    "map_backup_cloud_unavailable": {
+      "message": "Kopie map wymagają działającego logowania do chmury Mammotion."
+    },
+    "map_backup_failed": {
+      "message": "Chmura Mammotion odrzuciła żądanie kopii mapy: {reason}"
+    },
+    "map_backup_device_not_found": {
+      "message": "{device_name} nie jest dostępne do tworzenia kopii map na tym koncie Mammotion."
+    },
+    "map_backup_mower_not_found": {
+      "message": "{entity_id} nie jest kosiarką Mammotion."
     }
   }
 }

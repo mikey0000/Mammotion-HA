@@ -131,12 +131,16 @@ NUMBER_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
     MammotionConfigNumberEntityDescription(
         key="start_progress",
         native_min_value=0,
-        native_max_value=100,
+        # The cloud's own schema caps this at 99, not 100.
+        native_max_value=99,
         native_step=1,
         mode=NumberMode.SLIDER,
         native_unit_of_measurement=PERCENTAGE,
         set_fn=lambda coordinator, value: setattr(
-            coordinator.operation_settings, "start_progress", value
+            coordinator.operation_settings, "start_progress", int(value)
+        ),
+        set_async_fn=lambda coordinator, value: (
+            coordinator.async_change_progress_if_working()
         ),
     ),
     MammotionConfigNumberEntityDescription(
