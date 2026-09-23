@@ -5,8 +5,8 @@ hook Home Assistant invokes for a *native* WebRTC camera (``camera/webrtc.py``
 registers ``functools.partial(camera.close_webrtc_session, session_id)`` as the
 websocket subscription's teardown, and the base implementation no-ops because
 native cameras have no ``_webrtc_provider``).  A coroutine named
-``async_close_webrtc_session`` is never called by core, so the Agora socket, its
-ping loop and the mower's encoder all outlive the viewer.
+``async_close_webrtc_session`` is never called by core; the synchronous hook
+schedules it so the coordinator can stop the mower after the final feed closes.
 
 Here the hook is invoked exactly as core invokes it — synchronously, return
 value discarded, on a real event loop — and the ICE-server registration is read
@@ -49,6 +49,7 @@ async def camera(hass: HomeAssistant) -> MammotionWebRTCCamera:
     coordinator.unique_name = _DEVICE
     coordinator.device.device_name = _DEVICE
     coordinator.manager.stop_stream = AsyncMock()
+    coordinator.async_release_camera_session = AsyncMock()
     coordinator.ice_servers = [_ICE_SERVER]
     entity = MammotionWebRTCCamera(coordinator, CAMERAS[0], hass)
     entity.hass = hass
@@ -74,12 +75,16 @@ async def test_closing_the_last_session_tears_the_stream_down(
 ) -> None:
     """The frontend dropping its only session tears the stream down."""
     camera._sessions.add("session-1")
+    camera._active_session_id = "session-1"
 
     _core_teardown(camera, "session-1")
     await hass.async_block_till_done()
 
     camera._agora_handler.disconnect.assert_awaited_once()
-    camera.coordinator.manager.stop_stream.assert_awaited_once_with(_DEVICE)
+    camera.coordinator.async_release_camera_session.assert_awaited_once_with(
+        "webrtc_camera", "session-1"
+    )
+    camera.coordinator.manager.stop_stream.assert_not_awaited()
 
 
 async def test_teardown_waits_for_the_last_viewer(
@@ -87,6 +92,7 @@ async def test_teardown_waits_for_the_last_viewer(
 ) -> None:
     """A second viewer still watching keeps the stream up."""
     camera._sessions.update({"session-1", "session-2"})
+    camera._active_session_id = "session-2"
 
     _core_teardown(camera, "session-1")
     await hass.async_block_till_done()
@@ -95,6 +101,9 @@ async def test_teardown_waits_for_the_last_viewer(
     _core_teardown(camera, "session-2")
     await hass.async_block_till_done()
     camera._agora_handler.disconnect.assert_awaited_once()
+    camera.coordinator.async_release_camera_session.assert_awaited_once_with(
+        "webrtc_camera", "session-2"
+    )
 
 
 async def test_teardown_leaves_the_channel_before_stopping_the_encoder(
@@ -148,7 +157,9 @@ async def test_entity_registers_itself_for_service_driven_teardown(
     """
     await camera.async_added_to_hass()
 
-    camera.coordinator.register_webrtc_session_control.assert_called_once_with(camera)
+    camera.coordinator.register_webrtc_session_control.assert_called_once_with(
+        camera, "webrtc_camera"
+    )
 
 
 async def test_removal_tears_down_and_detaches(
@@ -159,7 +170,9 @@ async def test_removal_tears_down_and_detaches(
 
     await camera.async_will_remove_from_hass()
 
-    camera.coordinator.register_webrtc_session_control.assert_called_once_with(None)
+    camera.coordinator.register_webrtc_session_control.assert_called_once_with(
+        None, "webrtc_camera"
+    )
     camera._agora_handler.disconnect.assert_awaited_once()
     camera.coordinator.manager.stop_stream.assert_awaited_once_with(_DEVICE)
     assert camera._sessions == set()

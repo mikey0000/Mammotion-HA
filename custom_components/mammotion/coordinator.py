@@ -26,6 +26,7 @@ from homeassistant.components.bluetooth import (
 from homeassistant.const import CONF_PASSWORD
 from homeassistant.core import CALLBACK_TYPE, HassJob, HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
+from homeassistant.helpers import aiohttp_client
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.debounce import Debouncer
@@ -42,6 +43,7 @@ from pymammotion.aliyun.exceptions import (
 )
 from pymammotion.aliyun.model.dev_by_account_response import Device
 from pymammotion.client import MammotionClient
+from pymammotion.const import MAMMOTION_API_DOMAIN
 from pymammotion.data.error_codes import get_error_info, table_language
 from pymammotion.data.model import GenerateRouteInformation
 from pymammotion.data.model.device import (
@@ -70,6 +72,7 @@ from pymammotion.http.model.map_backup import (
     BackupProgressType,
 )
 from pymammotion.http.model.product_params import ProductParam, ProductParamData
+from pymammotion.http.model.response_factory import response_factory
 from pymammotion.mammotion.commands.mammotion_command import MammotionCommand
 from pymammotion.messaging.command_queue import Priority
 from pymammotion.proto import MulSex
@@ -125,8 +128,8 @@ if TYPE_CHECKING:
 class WebRTCSessionControl(Protocol):
     """Teardown surface the WebRTC camera entity exposes to its coordinator."""
 
-    async def async_teardown_stream(self) -> None:
-        """Leave the Agora channel and stop the mower's encoder."""
+    async def async_teardown_stream(self, *, stop_device: bool = True) -> None:
+        """Leave this camera's Agora session and optionally stop the encoder."""
 
 
 MAINTENANCE_INTERVAL = timedelta(minutes=60)
@@ -211,7 +214,10 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         self._agora_response = None
         # Set by the WebRTC camera entity so the start/stop_video services and
         # config-entry unload can drive the same teardown the frontend uses.
-        self._webrtc_session_control: WebRTCSessionControl | None = None
+        self._webrtc_session_controls: dict[str, WebRTCSessionControl] = {}
+        self._dual_camera_stream_available = False
+        self._active_camera_sessions: dict[str, str] = {}
+        self._camera_session_lock = asyncio.Lock()
         self.service_info: BluetoothServiceInfoBleak | None = None
         assert config_entry.unique_id
         self.account = config_entry.data.get(CONF_ACCOUNTNAME, "")
@@ -367,11 +373,41 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             return cached_data.data, self._agora_response
 
         stream_data = None
+        request_dual = DeviceType.value_of_str(self.device_name).is_luba2()
+        self._dual_camera_stream_available = False
 
         try:
+            # Keep PyMammotion's normal path responsible for starting the video
+            # encoder, including its firmware-aware start/stop behavior.
             stream_data = await self.manager.get_stream_subscription(
                 self.device_name, self.device.iot_id
             )
+            if request_dual:
+                try:
+                    dual_stream_data = await self._request_dual_camera_stream()
+                except Exception as err:  # noqa: BLE001 — dual mode is optional
+                    LOGGER.warning(
+                        "Dual-camera token request failed (%s); using single camera",
+                        type(err).__name__,
+                    )
+                else:
+                    if (
+                        dual_stream_data is not None
+                        and dual_stream_data.data is not None
+                    ):
+                        stream_data = dual_stream_data
+                        self._dual_camera_stream_available = True
+                    elif dual_stream_data is None or dual_stream_data.code not in (
+                        DEVICE_NOT_RESPONDING_CODE,
+                        401,
+                    ):
+                        LOGGER.warning(
+                            "Dual-camera token request was not accepted (code %s); "
+                            "using single camera",
+                            dual_stream_data.code
+                            if dual_stream_data
+                            else "no_response",
+                        )
             self.set_stream_data(stream_data)
             self._stream_data_fetched_at = time.monotonic()
 
@@ -441,6 +477,41 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             self._agora_response,
         )
 
+    async def _request_dual_camera_stream(self) -> Response[StreamSubscriptionResponse]:
+        """Request both Luba 2 vision feeds from the app's stream-token endpoint."""
+        http = self.manager.mammotion_http
+        if http is None:
+            return Response(code=503, msg="Cloud session unavailable")
+        await http.ensure_token_valid(caller="dual_camera_stream")
+        login_info = http.login_info
+        if login_info is None:
+            return Response(code=401, msg="Not logged in")
+        session = aiohttp_client.async_get_clientsession(self.hass)
+        async with asyncio.timeout(30):
+            async with session.post(
+                f"{MAMMOTION_API_DOMAIN}/device-server/v1/stream/token",
+                json={
+                    "deviceId": self.device.iot_id,
+                    "mode": 0,
+                    "cameraStates": [
+                        {"cameraState": 1},
+                        {"cameraState": 1},
+                        {"cameraState": 0},
+                    ],
+                },
+                headers={
+                    **http._headers,  # noqa: SLF001 - match PyMammotion request headers
+                    "Authorization": f"Bearer {login_info.access_token}",
+                    "Content-Type": "application/json",
+                },
+            ) as response:
+                if response.status != 200:
+                    return Response(code=response.status, msg="HTTP error")
+                body = await response.json(content_type=None)
+        if not isinstance(body, dict):
+            return Response(code=502, msg="Invalid response")
+        return response_factory(Response[StreamSubscriptionResponse], body)
+
     def set_stream_data(
         self, stream_data: Response[StreamSubscriptionResponse]
     ) -> None:
@@ -450,6 +521,11 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
     def get_stream_data(self) -> Response[StreamSubscriptionResponse]:
         """Return stream data."""
         return self._stream_data
+
+    @property
+    def dual_camera_stream_available(self) -> bool:
+        """Whether the latest token request enabled both Luba 2 feeds."""
+        return self._dual_camera_stream_available
 
     @property
     def is_on_4g(self) -> bool:
@@ -462,10 +538,38 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
 
     @callback
     def register_webrtc_session_control(
-        self, control: WebRTCSessionControl | None
+        self,
+        control: WebRTCSessionControl | None,
+        camera_key: str = "default",
     ) -> None:
-        """Attach (or detach) the camera entity that owns this device's stream."""
-        self._webrtc_session_control = control
+        """Attach or detach one camera entity that owns this device's stream."""
+        if control is None:
+            self._webrtc_session_controls.pop(camera_key, None)
+        else:
+            self._webrtc_session_controls[camera_key] = control
+
+    async def async_register_camera_session(
+        self, camera_key: str, session_id: str
+    ) -> None:
+        """Track an active viewer for one of this mower's camera entities."""
+        async with self._camera_session_lock:
+            self._active_camera_sessions[camera_key] = session_id
+
+    async def async_release_camera_session(
+        self, camera_key: str, session_id: str
+    ) -> None:
+        """Stop the mower stream only after the last camera viewer has closed."""
+        async with self._camera_session_lock:
+            if self._active_camera_sessions.get(camera_key) != session_id:
+                return
+            del self._active_camera_sessions[camera_key]
+            if not self._active_camera_sessions:
+                await self.leave_webrtc_channel()
+
+    @property
+    def has_active_camera_sessions(self) -> bool:
+        """Whether either Luba 2 camera entity still has a viewer."""
+        return bool(self._active_camera_sessions)
 
     async def join_webrtc_channel(self) -> None:
         """Start stream command."""
@@ -480,9 +584,13 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         Agora channel, then stop the mower's encoder.  Without a camera entity
         attached only the device-side half is possible.
         """
-        if self._webrtc_session_control is not None:
-            await self._webrtc_session_control.async_teardown_stream()
-            return
+        if self._webrtc_session_controls:
+            await asyncio.gather(
+                *(
+                    control.async_teardown_stream(stop_device=False)
+                    for control in self._webrtc_session_controls.values()
+                )
+            )
         await self.manager.stop_stream(self.device.device_name)
 
     async def set_scheduled_updates(self, enabled: bool) -> bool:

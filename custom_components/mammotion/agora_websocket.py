@@ -123,6 +123,7 @@ class AgoraWebSocketHandler:
         hass: HomeAssistant,
         recover_stream: Callable[[], Awaitable[None]] | None = None,
         keepalive: Callable[[], Awaitable[bool]] | None = None,
+        target_uid: int | None = None,
     ) -> None:
         """Initialize the Agora WebSocket handler.
 
@@ -140,6 +141,9 @@ class AgoraWebSocketHandler:
         self.hass = hass
         self._recover_stream = recover_stream
         self._keepalive = keepalive
+        # Luba 2 publishes the two vision feeds as separate Agora peers.
+        # Other mower models keep the existing subscribe-all behavior.
+        self._target_uid = target_uid
         self._websocket: ClientConnection | None = None
         self._connection_state = "DISCONNECTED"
         self._message_handlers: dict[str, Callable[..., Any]] = {}
@@ -718,6 +722,8 @@ class AgoraWebSocketHandler:
         """
         message = response.get("_message", {})
         uid = message.get("uid")
+        if self._target_uid is not None and str(uid) != str(self._target_uid):
+            return
         if uid:
             self._online_users.add(uid)
             _LOGGER.debug("User %s came online", uid)
@@ -744,6 +750,8 @@ class AgoraWebSocketHandler:
         """
         message = response.get("_message", {})
         uid = message.get("uid")
+        if self._target_uid is not None and str(uid) != str(self._target_uid):
+            return
         ssrc_id = message.get("ssrcId")
         rtx_ssrc_id = message.get("rtxSsrcId")
         cname = message.get("cname")
@@ -804,6 +812,8 @@ class AgoraWebSocketHandler:
         """
         message = response.get("_message", {})
         uid = message.get("uid")
+        if self._target_uid is not None and str(uid) != str(self._target_uid):
+            return
         reason = message.get("reason", "unknown")
         if uid:
             _LOGGER.debug("User %s went offline (reason: %s)", uid, reason)

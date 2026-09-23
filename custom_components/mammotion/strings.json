@@ -72,6 +72,14 @@
     }
   },
   "entity": {
+    "camera": {
+      "webrtc_camera": {
+        "name": "Left vision camera"
+      },
+      "webrtc_camera_right": {
+        "name": "Right vision camera"
+      }
+    },
     "sensor": {
       "error_1_message": {
         "name": "Last error"

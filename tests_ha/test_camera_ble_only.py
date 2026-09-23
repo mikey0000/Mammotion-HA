@@ -81,18 +81,24 @@ async def test_luba1_gets_no_camera(
     assert not hass.services.has_service("mammotion", "start_video")
 
 
-async def test_only_cloud_mowers_get_a_camera(
+async def test_only_cloud_mowers_get_cameras(
     hass: HomeAssistant, added: list[MammotionWebRTCCamera], add_entities: MagicMock
 ) -> None:
-    """The cloud mower alongside a BLE-only one is the only entity created."""
+    """A cloud Luba 2 gets two cameras; the BLE-only mower gets none."""
     ble_mower = _mower(_LUBA2_BLE, "")
     cloud_mower = _mower(_LUBA2_CLOUD, "iot-123")
 
     await async_setup_entry(hass, _entry(ble_mower, cloud_mower), add_entities)
 
     assert [entity.coordinator for entity in added] == [
-        cloud_mower.reporting_coordinator
+        cloud_mower.reporting_coordinator,
+        cloud_mower.reporting_coordinator,
     ]
-    assert isinstance(added[0], MammotionWebRTCCamera)
+    assert all(isinstance(entity, MammotionWebRTCCamera) for entity in added)
+    assert [entity.entity_description.key for entity in added] == [
+        "webrtc_camera",
+        "webrtc_camera_right",
+    ]
+    assert [entity._agora_handler._target_uid for entity in added] == [1, 2]
     assert hass.services.has_service("mammotion", "start_video")
     assert hass.services.has_service("mammotion", "stop_video")
