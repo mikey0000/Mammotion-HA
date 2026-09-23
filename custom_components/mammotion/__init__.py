@@ -60,6 +60,7 @@ from .const import (
     CONF_MAMMOTION_DEVICE_RECORDS,
     CONF_MAMMOTION_MQTT,
     CONF_MOW_PATH_FETCH_ENABLED,
+    CONF_NOTIFY,
     CONF_PREFER_BLE,
     CONF_STAY_CONNECTED_BLUETOOTH,
     CONF_USE_WIFI,
@@ -68,6 +69,7 @@ from .const import (
     DOMAIN,
     EXPIRED_CREDENTIAL_EXCEPTIONS,
     LOGGER,
+    NOTIFY_WARNINGS,
     POOL_CLEANER_SUPPORT,
 )
 from .coordinator import (
@@ -85,6 +87,7 @@ from .models import (
     MammotionRTKData,
     MammotionSpinoData,
 )
+from .notifications import MowerNotifier
 from .services import async_setup_services
 
 PLATFORMS: list[Platform] = [
@@ -382,6 +385,14 @@ async def async_migrate_entry(hass: HomeAssistant, entry: MammotionConfigEntry) 
             entry, data=data, version=1, minor_version=2
         )
 
+    if entry.version == 1 and entry.minor_version < 3:
+        # Persistent notifications became opt-in; keep them on for existing users.
+        options = dict(entry.options)
+        options.setdefault(CONF_NOTIFY, [NOTIFY_WARNINGS])
+        hass.config_entries.async_update_entry(
+            entry, options=options, version=1, minor_version=3
+        )
+
     return True
 
 
@@ -603,6 +614,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                 version_coordinator=version_coordinator,
                 map_coordinator=map_coordinator,
                 error_coordinator=error_coordinator,
+                notifier=MowerNotifier(hass, report_coordinator),
             )
         )
 
@@ -653,6 +665,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
     entry.runtime_data = mammotion_devices
 
     mammotion.setup_all_mower_watchers()
+    for mower in mammotion_mowers:
+        entry.async_on_unload(mower.notifier.async_start())
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 

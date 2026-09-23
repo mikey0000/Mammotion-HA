@@ -64,6 +64,9 @@
           "mow_path_fetch_enabled": "Enable mow path fetching (cloud)",
           "full_map_fetch_enabled": "Enable full map fetching (cloud) — when off, only area names are fetched",
           "notify": "Show persistent notifications for"
+        },
+        "data_description": {
+          "notify": "Off by default. Every notification also fires the mower's notification event entity and a mammotion_event bus event, which automations can use instead."
         }
       }
     }

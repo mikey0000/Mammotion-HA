@@ -8,7 +8,7 @@ so a renamed entity is genuinely renamed and the numbering is the library's.
 """
 
 from collections.abc import Iterator
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from homeassistant.core import HomeAssistant
@@ -228,9 +228,9 @@ async def test_report_coordinator_describes_known_code_in_ha_language(
         en_solution="Move it",
         de_implication="RTK verloren",
     )
-    coordinator = _error_coordinator(hass, codes={"2801": info})
+    coordinator = _error_coordinator(hass, codes={"99801": info})
 
-    assert coordinator.describe_error_code(-2801) == {
+    assert coordinator.describe_error_code(-99801) == {
         "module": "nav",
         "level": "warning",
         "message": "RTK verloren",
@@ -245,12 +245,12 @@ async def test_describe_error_code_leaves_text_empty_without_an_implication(
     """A bare "nav: " would read as a description of the fault."""
     info = _error_info(module="nav", level="1", en_solution="Move it")
     coordinator = _error_coordinator(
-        hass, codes={"2801": info}, cls=MammotionDeviceErrorUpdateCoordinator
+        hass, codes={"99801": info}, cls=MammotionDeviceErrorUpdateCoordinator
     )
 
-    assert coordinator.describe_error_code(2801)["text"] == ""
+    assert coordinator.describe_error_code(99801)["text"] == ""
     coordinator.data = MagicMock()
-    coordinator.data.errors.err_code_list = [2801]
+    coordinator.data.errors.err_code_list = [99801]
     assert coordinator.get_error_message(0) == "Error message not found"
 
 
@@ -267,10 +267,10 @@ async def test_get_error_message_uses_the_shared_formatter(
         de_solution="Bewegen",
     )
     coordinator = _error_coordinator(
-        hass, codes={"2801": info}, cls=MammotionDeviceErrorUpdateCoordinator
+        hass, codes={"99801": info}, cls=MammotionDeviceErrorUpdateCoordinator
     )
     coordinator.data = MagicMock()
-    coordinator.data.errors.err_code_list = [-2801]
+    coordinator.data.errors.err_code_list = [-99801]
 
     assert coordinator.get_error_message(0) == "nav: RTK verloren, Bewegen"
     coordinator.data.errors.err_code_list = []
@@ -325,3 +325,50 @@ async def test_describe_error_code_returns_none_when_it_cannot_look_one_up(
     coordinator = _error_coordinator(hass)
     coordinator.manager.get_device_by_name.return_value = None
     assert coordinator.describe_error_code(999999) is None
+
+
+async def test_describe_error_code_keeps_bundled_text_over_a_blank_fetched_row(
+    hass: HomeAssistant,
+) -> None:
+    """Some accounts' export lists 1304 with no text; the notification read "Code 1304"."""
+    blank = _error_info(
+        code="1304", module="navigation", level="1", description="定位状态差"
+    )
+    coordinator = _error_coordinator(hass, language="en", codes={"1304": blank})
+
+    info = coordinator.describe_error_code(-1304)
+
+    assert info is not None
+    assert info["message"] == "Poor positioning status"
+    assert info["solution"].startswith("The robot has reset the onboard RTK module")
+
+
+async def test_describe_error_code_reads_a_region_tagged_language(
+    hass: HomeAssistant,
+) -> None:
+    """HA's language is a BCP 47 tag such as ``de-CH``; the table is keyed by ``de``."""
+    info = _error_info(en_implication="Lost RTK", de_implication="RTK verloren")
+    coordinator = _error_coordinator(hass, language="de-CH", codes={"99801": info})
+
+    assert coordinator.describe_error_code(99801)["message"] == "RTK verloren"
+
+
+@pytest.mark.parametrize(
+    ("reauth_required", "expects_http"),
+    [(None, True), ("rejected", False)],
+    ids=["live-login", "awaiting-reauth"],
+)
+async def test_error_code_refresh_offers_the_cloud_only_while_the_login_is_live(
+    hass: HomeAssistant, reauth_required: str | None, expects_http: bool
+) -> None:
+    """A login awaiting re-authentication must not be used; the stored table still installs."""
+    coordinator = _error_coordinator(hass)
+    coordinator.manager.reauth_required = reauth_required
+
+    with patch(
+        "custom_components.mammotion.coordinator.async_refresh_error_codes", AsyncMock()
+    ) as refresh:
+        await coordinator._async_refresh_error_codes()  # noqa: SLF001
+
+    expected = coordinator.manager.mammotion_http if expects_http else None
+    refresh.assert_awaited_once_with(hass, expected)

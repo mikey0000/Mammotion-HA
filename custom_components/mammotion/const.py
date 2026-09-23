@@ -16,13 +16,14 @@ from pymammotion.transport.base import (
 from pymammotion.utility.constant import WorkMode
 
 DOMAIN: Final = "mammotion"
-EVENT_NOTIFICATION: Final = f"{DOMAIN}_notification"
+EVENT_MAMMOTION: Final = f"{DOMAIN}_event"
 
 CONF_NOTIFY: Final = "notify"
 NOTIFY_WARNINGS: Final = "warnings"
 NOTIFY_NOTIFICATIONS: Final = "notifications"
 NOTIFY_CATEGORIES: Final = (NOTIFY_WARNINGS, NOTIFY_NOTIFICATIONS)
-DEFAULT_NOTIFY: Final = [NOTIFY_WARNINGS]
+#: Off by default; entries created before 0.6.8 are migrated to ``[NOTIFY_WARNINGS]``.
+DEFAULT_NOTIFY: Final[list[str]] = []
 #: Which persistent-notification category each thing/event identifier belongs to.
 NOTIFY_CATEGORY_BY_EVENT: Final = {
     "device_warning_code_event": NOTIFY_WARNINGS,

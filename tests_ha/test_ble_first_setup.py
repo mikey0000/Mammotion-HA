@@ -36,6 +36,7 @@ from custom_components.mammotion.const import (
     DOMAIN,
 )
 from custom_components.mammotion.models import MammotionDevices, MammotionMowerData
+from custom_components.mammotion.notifications import MowerNotifier
 from tests_ha.ble_advertisements import inject_advertisement
 
 _MOWER = "Luba-VS123456"
@@ -405,6 +406,7 @@ def _mower_data(name: str, api: MagicMock) -> MammotionMowerData:
             async_bring_up=AsyncMock(), async_request_refresh=AsyncMock()
         ),
         error_coordinator=MagicMock(async_bring_up=AsyncMock()),
+        notifier=MagicMock(),
     )
 
 
@@ -539,3 +541,26 @@ async def test_devices_still_present_on_a_loaded_entry_are_protected(
 
     assert await async_remove_config_entry_device(hass, entry, present) is False
     assert await async_remove_config_entry_device(hass, entry, orphan) is True
+
+
+async def test_the_notifier_runs_from_setup_not_from_the_event_entity(
+    hass: HomeAssistant,
+) -> None:
+    """A disabled event entity is never added, so notifications must not depend on it."""
+    entry = _entry(hass, {_MOWER: _MOWER_MAC})
+    client = _client()
+    bring_up, release, _ = _blocked_bring_up()
+    stop = MagicMock()
+
+    with patch.object(
+        MowerNotifier, "async_start", autospec=True, return_value=stop
+    ) as start:
+        await _setup(hass, entry, client, bring_up)
+
+    mower = entry.runtime_data.mowers[0]
+    start.assert_called_once_with(mower.notifier)
+    assert mower.notifier.coordinator is mower.reporting_coordinator
+
+    release.set()
+    await hass.config_entries.async_unload(entry.entry_id)
+    stop.assert_called_once_with()

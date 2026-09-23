@@ -15,6 +15,7 @@ from .coordinator import (
     MammotionRTKCoordinator,
     MammotionSpinoCoordinator,
 )
+from .notifications import MowerNotifier
 
 
 @dataclass
@@ -29,6 +30,7 @@ class MammotionMowerData:
     version_coordinator: MammotionDeviceVersionUpdateCoordinator
     map_coordinator: MammotionMapUpdateCoordinator
     error_coordinator: MammotionDeviceErrorUpdateCoordinator
+    notifier: MowerNotifier
     device: Device
 
 

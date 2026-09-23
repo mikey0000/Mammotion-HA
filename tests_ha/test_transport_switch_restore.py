@@ -238,6 +238,7 @@ async def test_setup_applies_restored_switches_before_connecting(
             async_bring_up=AsyncMock(), async_request_refresh=AsyncMock()
         ),
         error_coordinator=MagicMock(async_bring_up=AsyncMock()),
+        notifier=MagicMock(),
     )
 
     async def _connect(*_args: Any, **_kwargs: Any) -> bool:
