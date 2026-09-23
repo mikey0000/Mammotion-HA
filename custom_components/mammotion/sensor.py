@@ -5,6 +5,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import time
 from functools import partial
+from typing import Any
 
 from homeassistant.components.sensor import DOMAIN as SENSOR_DOMAIN
 from homeassistant.components.sensor import (
@@ -682,7 +683,7 @@ async def async_setup_entry(
     """Set up sensor platform."""
     mammotion_mowers = entry.runtime_data.mowers
 
-    entities = []
+    entities: list[SensorEntity] = []
     for mower in mammotion_mowers:
         if not DeviceType.is_yuka(mower.device.device_name):
             entities.extend(
@@ -1019,7 +1020,7 @@ def async_add_task_area_entities(
 
 
 def _async_remove_task_area_entities(
-    coordinator: MammotionBaseUpdateCoordinator,
+    coordinator: MammotionBaseUpdateCoordinator[Any],
     old_hashes: set[int],
 ) -> None:
     """Remove task-area sensor entities from the HA entity registry."""

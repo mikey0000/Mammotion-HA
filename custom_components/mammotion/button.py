@@ -36,8 +36,8 @@ from .entity import (
 class MammotionButtonSensorEntityDescription(ButtonEntityDescription):
     """Describes Mammotion button sensor entity."""
 
-    press_fn: Callable[[MammotionBaseUpdateCoordinator], Awaitable[None]]
-    available_fn: Callable[[MammotionBaseUpdateCoordinator], bool] | None = None
+    press_fn: Callable[[MammotionBaseUpdateCoordinator[Any]], Awaitable[None]]
+    available_fn: Callable[[MammotionBaseUpdateCoordinator[Any]], bool] | None = None
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -45,7 +45,7 @@ class MammotionTaskButtonSensorEntityDescription(ButtonEntityDescription):
     """Describes Mammotion button sensor entity."""
 
     plan_id: str
-    press_fn: Callable[[MammotionBaseUpdateCoordinator, str], Awaitable[None]]
+    press_fn: Callable[[MammotionBaseUpdateCoordinator[Any], str], Awaitable[None]]
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -89,7 +89,7 @@ SPINO_BUTTON_SENSORS: tuple[MammotionSpinoButtonEntityDescription, ...] = (
 )
 
 
-def _nudge_available(coordinator: MammotionBaseUpdateCoordinator) -> bool:
+def _nudge_available(coordinator: MammotionBaseUpdateCoordinator[Any]) -> bool:
     """Return True when movement via BLE or Wi-Fi is possible."""
     if coordinator.config_entry.options.get(CONF_MOVEMENT_USE_WIFI, False):
         return True
@@ -104,7 +104,7 @@ def _nudge_available(coordinator: MammotionBaseUpdateCoordinator) -> bool:
 _DROPMOW_MODES = (WorkMode.MODE_READY, WorkMode.MODE_CORRIDOR_DRAW)
 
 
-def _is_idle(coordinator: MammotionBaseUpdateCoordinator) -> bool:
+def _is_idle(coordinator: MammotionBaseUpdateCoordinator[Any]) -> bool:
     """Whether the mower is in a state that accepts a map-free mow."""
     data = coordinator.data
     if data is None:
@@ -280,7 +280,7 @@ class MammotionButtonSensorEntity(MammotionBaseEntity, ButtonEntity):
 
     def __init__(
         self,
-        coordinator: MammotionBaseUpdateCoordinator,
+        coordinator: MammotionBaseUpdateCoordinator[Any],
         entity_description: MammotionButtonSensorEntityDescription,
     ) -> None:
         """Initialize the button sensor entity."""
@@ -310,7 +310,7 @@ class MammotionTaskButtonSensorEntity(MammotionBaseEntity, ButtonEntity):
 
     def __init__(
         self,
-        coordinator: MammotionBaseUpdateCoordinator,
+        coordinator: MammotionBaseUpdateCoordinator[Any],
         entity_description: MammotionTaskButtonSensorEntityDescription,
     ) -> None:
         """Initialize the button task sensor entity."""
@@ -431,13 +431,13 @@ def async_add_task_entities(
         async_add_entities(button_entities)
 
 
-def _task_unique_id(coordinator: MammotionBaseUpdateCoordinator, task_id: str) -> str:
+def _task_unique_id(coordinator: MammotionBaseUpdateCoordinator[Any], task_id: str) -> str:
     """Registry unique_id for a task button, matching MammotionBaseEntity."""
     return f"{coordinator.unique_name}_{task_id}"
 
 
 def async_remove_entities(
-    coordinator: MammotionBaseUpdateCoordinator,
+    coordinator: MammotionBaseUpdateCoordinator[Any],
     old_tasks: set[str],
 ) -> None:
     """Remove task buttons from Home Assistant."""

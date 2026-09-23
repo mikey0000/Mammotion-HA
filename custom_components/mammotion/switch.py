@@ -41,7 +41,7 @@ from .entity import (
 _PYMAMMOTION_AUTO_NAME = re.compile(r"^area\s+\d+$", re.IGNORECASE)
 
 
-def _area_unique_id(coordinator: MammotionBaseUpdateCoordinator, area: int) -> str:
+def _area_unique_id(coordinator: MammotionBaseUpdateCoordinator[Any], area: int) -> str:
     """Registry unique_id for an area switch, matching MammotionBaseEntity."""
     return f"{coordinator.unique_name}_{area}"
 
@@ -116,9 +116,9 @@ class MammotionSwitchEntityDescription(SwitchEntityDescription):
 class MammotionAsyncSwitchEntityDescription(MammotionSwitchEntityDescription):
     """Describes Mammotion switch entity."""
 
-    is_on_func: Callable[[MammotionBaseUpdateCoordinator], bool] | None = None
-    set_fn: Callable[[MammotionBaseUpdateCoordinator, bool], Awaitable[None]]
-    available_fn: Callable[[MammotionBaseUpdateCoordinator], bool] | None = None
+    is_on_func: Callable[[MammotionBaseUpdateCoordinator[Any]], bool] | None = None
+    set_fn: Callable[[MammotionBaseUpdateCoordinator[Any], bool], Awaitable[None]]
+    available_fn: Callable[[MammotionBaseUpdateCoordinator[Any]], bool] | None = None
     #: For switches that restore a transport: gating them on one would strand them.
     available_without_transport: bool = False
 
@@ -127,7 +127,7 @@ class MammotionAsyncSwitchEntityDescription(MammotionSwitchEntityDescription):
 class MammotionConfigSwitchEntityDescription(MammotionSwitchEntityDescription):
     """Describes Mammotion Config switch entity."""
 
-    set_fn: Callable[[MammotionBaseUpdateCoordinator, bool], None]
+    set_fn: Callable[[MammotionBaseUpdateCoordinator[Any], bool], None]
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -135,7 +135,7 @@ class MammotionConfigAreaSwitchEntityDescription(MammotionSwitchEntityDescriptio
     """Describes the Areas entities."""
 
     area: int
-    set_fn: Callable[[MammotionBaseUpdateCoordinator, bool, int], None]
+    set_fn: Callable[[MammotionBaseUpdateCoordinator[Any], bool, int], None]
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -292,7 +292,7 @@ LUBA_1_SWITCH_ENTITIES: tuple[MammotionAsyncSwitchEntityDescription, ...] = (
 
 
 async def _async_set_scheduled_updates(
-    coordinator: MammotionBaseUpdateCoordinator, value: bool
+    coordinator: MammotionBaseUpdateCoordinator[Any], value: bool
 ) -> None:
     """Adapt the coordinator's setter, which reports whether the position changed."""
     await coordinator.set_scheduled_updates(value)
@@ -350,7 +350,7 @@ AUTO_CHANGE_DIRECTION_CONFIG_SWITCH_ENTITIES: tuple[
 
 
 def _grass_collection_entities(
-    coordinator: MammotionBaseUpdateCoordinator, device_name: str
+    coordinator: MammotionBaseUpdateCoordinator[Any], device_name: str
 ) -> list[MammotionSwitchEntity]:
     """Manual sweep and dump toggles, for mowers that take a grass collector."""
     if not supports_grass_collection(device_name):
@@ -403,7 +403,7 @@ async def async_setup_entry(
         coordinator.subscribe_map_updated(update_areas)
 
         device_name = mower.device.device_name
-        entities: list = [
+        entities: list[SwitchEntity] = [
             MammotionSwitchEntity(coordinator, d) for d in SWITCH_ENTITIES
         ]
 
@@ -485,7 +485,7 @@ class MammotionSwitchEntity(MammotionBaseEntity, SwitchEntity, RestoreEntity):
 
     def __init__(
         self,
-        coordinator: MammotionBaseUpdateCoordinator,
+        coordinator: MammotionBaseUpdateCoordinator[Any],
         entity_description: MammotionAsyncSwitchEntityDescription,
     ) -> None:
         """Initialize the switch entity."""
@@ -561,7 +561,7 @@ class MammotionUpdateSwitchEntity(MammotionBaseEntity, SwitchEntity, RestoreEnti
 
     def __init__(
         self,
-        coordinator: MammotionBaseUpdateCoordinator,
+        coordinator: MammotionBaseUpdateCoordinator[Any],
         entity_description: MammotionAsyncSwitchEntityDescription,
     ) -> None:
         """Initialize the update switch entity."""
@@ -619,7 +619,7 @@ class MammotionConfigSwitchEntity(MammotionBaseEntity, SwitchEntity, RestoreEnti
 
     def __init__(
         self,
-        coordinator: MammotionBaseUpdateCoordinator,
+        coordinator: MammotionBaseUpdateCoordinator[Any],
         entity_description: MammotionConfigSwitchEntityDescription,
     ) -> None:
         """Initialize the config switch entities."""
@@ -668,7 +668,7 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
 
     def __init__(
         self,
-        coordinator: MammotionBaseUpdateCoordinator,
+        coordinator: MammotionBaseUpdateCoordinator[Any],
         entity_description: MammotionConfigAreaSwitchEntityDescription,
     ) -> None:
         """Initialize the area switch entity."""
@@ -907,7 +907,7 @@ def async_add_area_entities(
 
 
 def async_remove_stale_area_entities(
-    coordinator: MammotionBaseUpdateCoordinator,
+    coordinator: MammotionBaseUpdateCoordinator[Any],
     old_areas: set[int],
 ) -> None:
     """Remove area switch sensors from Home Assistant."""

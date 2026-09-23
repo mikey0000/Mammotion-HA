@@ -4,7 +4,6 @@ from collections.abc import Mapping
 from typing import TYPE_CHECKING, Any
 
 import voluptuous as vol
-from aiohttp.web_exceptions import HTTPException
 from bleak.backends.device import BLEDevice
 from homeassistant import config_entries, data_entry_flow
 from homeassistant.components import bluetooth
@@ -62,7 +61,7 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
 
     def __init__(self) -> None:
         """Initialize the config flow."""
-        self._config: dict = {}
+        self._config: dict[str, Any] = {}
         self._discovered_device: BLEDevice | None = None
         self._discovered_devices: dict[str, str] = {}
         # Set when check_and_update_bluetooth_device has already asked for the
@@ -300,8 +299,8 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                 except CloudSetupError as err:
                     LOGGER.error("Aliyun cloud setup failed during login: %s", err)
                     errors["base"] = "cannot_connect"
-                except (HTTPException, Exception) as err:
-                    LOGGER.error("Unexpected error during login: %s", err)
+                except Exception:
+                    LOGGER.exception("Unexpected error during login")
                     errors["base"] = "cannot_connect"
                 finally:
                     await temp_client.stop()
@@ -396,8 +395,8 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
             except LoginFailedError as err:
                 LOGGER.error("Login failed during re-authentication: %s", err)
                 errors["base"] = "login_failed"
-            except (CloudSetupError, HTTPException, Exception) as err:
-                LOGGER.error("Unexpected error during re-authentication: %s", err)
+            except Exception:
+                LOGGER.exception("Unexpected error during re-authentication")
                 errors["base"] = "cannot_connect"
             finally:
                 await temp_client.stop()
@@ -507,8 +506,8 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                 except LoginFailedError as err:
                     LOGGER.error("Login failed during reconfigure: %s", err)
                     errors["base"] = "login_failed"
-                except (CloudSetupError, HTTPException, Exception) as err:
-                    LOGGER.error("Login failed during reconfigure: %s", err)
+                except Exception:
+                    LOGGER.exception("Login failed during reconfigure")
                     errors["base"] = "cannot_connect"
                 finally:
                     await temp_client.stop()

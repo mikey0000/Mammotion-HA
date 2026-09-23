@@ -1,6 +1,6 @@
 [project]
 name = "mammotion-ha"
-version = "0.6.8"
+version = "0.6.9"
 description = "Mammotion integration for HACS"
 authors = [
     {name = "Michael Arthur", email = "michael@jumblesoft.co.nz"},
@@ -351,6 +351,8 @@ max-line-length-suggestions = 72
 required-version = ">=0.4.3"
 
 [tool.ruff.lint]
+# So BLE001 and the logging rules recognise the integration's shared logger.
+logger-objects = ["custom_components.mammotion.const.LOGGER"]
 select = [
     "A001", # Variable {name} is shadowing a Python builtin
     "B002", # Python does not support the unary prefix increment

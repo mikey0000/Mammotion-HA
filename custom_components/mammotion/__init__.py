@@ -146,9 +146,8 @@ async def _async_attempt_login(
             )
         else:
             await mammotion.login_and_initiate_cloud(account, password, session)
-        return True
     except ClientConnectorError as err:
-        raise ConfigEntryNotReady(err)
+        raise ConfigEntryNotReady(err) from err
     except LoginFailedError as err:
         # restore_credentials only raises this after the cached login was rejected
         # AND its fallback password login failed — the cache is dead either way.
@@ -171,7 +170,6 @@ async def _async_attempt_login(
             await mammotion.login_and_initiate_cloud(
                 account, password, aiohttp_client.async_get_clientsession(hass)
             )
-            return True
         except (LoginFailedError, ReLoginRequiredError) as retry_err:
             if ble_fallback:
                 LOGGER.warning(
@@ -180,6 +178,8 @@ async def _async_attempt_login(
                 )
                 return False
             raise ConfigEntryAuthFailed(retry_err) from retry_err
+        else:
+            return True
     except AccountInUseError as err:
         if ble_fallback:
             LOGGER.warning(
@@ -213,9 +213,12 @@ async def _async_attempt_login(
                 "Unretryable login error; continuing in BLE-only mode: %s", err
             )
             return False
-        raise ConfigEntryError(err)
+        raise ConfigEntryError(err) from err
     except Exception:
+        LOGGER.exception("Unexpected error during Mammotion login")
         return False
+    else:
+        return True
 
 
 async def _register_ble_devices(

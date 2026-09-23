@@ -12,7 +12,7 @@ class SDPParser:
     @staticmethod
     def parse(sdp: str) -> dict[str, Any]:
         """Parse an SDP string into a structured dictionary."""
-        parsed = {"media": []}
+        parsed: dict[str, Any] = {"media": []}
         current_media = None
 
         for line in sdp.splitlines():
@@ -143,8 +143,7 @@ class SDPParser:
         )
         lines.append(f"s={parsed.get('name', '-')}")
         lines.append("t=0 0")
-        for g in parsed.get("groups", []):
-            lines.append(f"a=group:{g['type']} {g['mids']}")
+        lines.extend(f"a=group:{g['type']} {g['mids']}" for g in parsed.get("groups", []))
         if "msidSemantic" in parsed:
             lines.append(
                 f"a=msid-semantic: {parsed['msidSemantic']['semantic']} {parsed['msidSemantic']['token']}"
@@ -171,8 +170,10 @@ class SDPParser:
                 lines.append(
                     f"a=fingerprint:{m['fingerprint']['hash']} {m['fingerprint']['fingerprint']}"
                 )
-            for fp in m.get("fingerprints", []):
-                lines.append(f"a=fingerprint:{fp['hash']} {fp['fingerprint']}")
+            lines.extend(
+                f"a=fingerprint:{fp['hash']} {fp['fingerprint']}"
+                for fp in m.get("fingerprints", [])
+            )
             if "setup" in m:
                 lines.append(f"a=setup:{m['setup']}")
             if "mid" in m:
@@ -189,16 +190,16 @@ class SDPParser:
                 if fb.get("subtype"):
                     val += f" {fb['subtype']}"
                 lines.append(f"a=rtcp-fb:{val}")
-            for f in m.get("fmtp", []):
-                lines.append(f"a=fmtp:{f['payload']} {f['config']}")
-            for e in m.get("ext", []):
-                lines.append(f"a=extmap:{e['value']} {e['uri']}")
+            lines.extend(f"a=fmtp:{f['payload']} {f['config']}" for f in m.get("fmtp", []))
+            lines.extend(f"a=extmap:{e['value']} {e['uri']}" for e in m.get("ext", []))
             if "rtcpMux" in m:
                 lines.append("a=rtcp-mux")
             if "rtcpRsize" in m:
                 lines.append("a=rtcp-rsize")
-            for s in m.get("ssrcs", []):
-                lines.append(f"a=ssrc:{s['id']} {s['attribute']}:{s['value']}")
+            lines.extend(
+                f"a=ssrc:{s['id']} {s['attribute']}:{s['value']}"
+                for s in m.get("ssrcs", [])
+            )
             for c in m.get("candidates", []):
                 val = f"{c['foundation']} {c['component']} {c['protocol']} {c['priority']} {c['ip']} {c['port']} typ {c['type']}"
                 lines.append(f"a=candidate:{val}")
@@ -212,7 +213,7 @@ def parse_offer_to_ortc(offer_sdp: str) -> dict[str, Any]:
     dtls_params = {}
 
     # Helper: Check if codec can be sent
-    def can_send(codec_obj: dict) -> bool:
+    def can_send(codec_obj: dict[str, Any]) -> bool:
         name = codec_obj["rtpMap"]["encodingName"].upper()
         params = codec_obj.get("fmtp", {}).get("parameters", {})
 
@@ -246,7 +247,7 @@ def parse_offer_to_ortc(offer_sdp: str) -> dict[str, Any]:
         }
 
     # Iterate media sections to extract params and build caps
-    caps = {
+    caps: dict[str, Any] = {
         "send": {
             "audioCodecs": [],
             "audioExtensions": [],
@@ -372,7 +373,6 @@ def generate_answer_from_ortc(
     dtls = ortc_params.get("dtlsParameters", {})
     ice = ortc_params.get("iceParameters", {})
     rtp_caps = ortc_params.get("rtpCapabilities", {})
-    cname = ortc_params.get("cname", "")
     offer_parsed = offer_sdp
 
     # setup logic from yx(): server -> passive, client -> active, auto -> actpass

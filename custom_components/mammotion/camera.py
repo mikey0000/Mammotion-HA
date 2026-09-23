@@ -54,7 +54,7 @@ class MammotionCameraEntityDescription(CameraEntityDescription):
     """Describes Mammotion camera entity."""
 
     key: str
-    stream_fn: Callable[[MammotionBaseUpdateCoordinator], StreamSubscriptionResponse]
+    stream_fn: Callable[[MammotionBaseUpdateCoordinator[Any]], StreamSubscriptionResponse]
 
 
 CAMERAS: tuple[MammotionCameraEntityDescription, ...] = (
@@ -83,7 +83,7 @@ async def async_setup_entry(
     if not mowers:
         return
 
-    entities = []
+    entities: list[MammotionWebRTCCamera] = []
     ice_servers = []
 
     (
@@ -105,12 +105,10 @@ async def async_setup_entry(
         _LOGGER.debug("Config camera for %s", mower.device.device_name)
         mower.reporting_coordinator.ice_servers = ice_servers
 
-        for entity_description in CAMERAS:
-            entities.append(
-                MammotionWebRTCCamera(
-                    mower.reporting_coordinator, entity_description, hass
-                )
-            )
+        entities.extend(
+            MammotionWebRTCCamera(mower.reporting_coordinator, entity_description, hass)
+            for entity_description in CAMERAS
+        )
     async_add_entities(entities)
     await async_setup_platform_services(hass, entry)
 
@@ -124,14 +122,14 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
 
     def __init__(
         self,
-        coordinator: MammotionBaseUpdateCoordinator,
+        coordinator: MammotionBaseUpdateCoordinator[Any],
         entity_description: MammotionCameraEntityDescription,
         hass: HomeAssistant,
     ) -> None:
         """Initialize the WebRTC camera entity."""
         super().__init__(coordinator, entity_description.key)
         self._cache: dict[str, Any] = {}
-        self.access_tokens: collections.deque = collections.deque([], 2)
+        self.access_tokens: collections.deque[str] = collections.deque([], 2)
         self.async_update_token()
         self._create_stream_lock: asyncio.Lock | None = None
         self._join_lock = asyncio.Lock()
@@ -343,20 +341,18 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
             answer_sdp = await self._agora_handler.connect_and_join(
                 agora_data, offer_sdp, session_id, agora_response
             )
-
-            if answer_sdp:
-                _LOGGER.info("Successfully negotiated WebRTC through Agora")
-                return answer_sdp
-
-            _LOGGER.error(
-                "Failed to get answer SDP from Agora negotiation, using handler fallback"
-            )
-            # Use the handler's fallback SDP generation as last resort
-            return None
-
         except (OSError, ValueError, TypeError) as ex:
             _LOGGER.error("WebRTC negotiation failed: %s", ex)
             return None
+
+        if answer_sdp:
+            _LOGGER.info("Successfully negotiated WebRTC through Agora")
+            return answer_sdp
+
+        _LOGGER.error(
+            "Failed to get answer SDP from Agora negotiation, using handler fallback"
+        )
+        return None
 
     def get_ice_servers(self) -> list[RTCIceServer]:
         """Return the ICE servers from Agora API.
@@ -399,13 +395,13 @@ async def async_setup_platform_services(
             mower.reporting_coordinator.set_stream_data(stream_data)
             mower.reporting_coordinator.async_update_listeners()
 
-    async def handle_start_video(call) -> None:
+    async def handle_start_video(call: ServiceCall) -> None:
         entity_id = call.data["entity_id"]
         mower: MammotionMowerData = _get_mower_by_entity_id(entity_id)
         if mower:
             await mower.reporting_coordinator.join_webrtc_channel()
 
-    async def handle_stop_video(call) -> None:
+    async def handle_stop_video(call: ServiceCall) -> None:
         entity_id = call.data["entity_id"]
         mower: MammotionMowerData = _get_mower_by_entity_id(entity_id)
         if mower:
