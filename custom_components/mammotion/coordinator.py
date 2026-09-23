@@ -2506,8 +2506,9 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
             async_register_callback(
                 self.hass,
                 self._async_handle_bluetooth_event,
+                # Home Assistant matches the address verbatim, and advertisements are upper-case.
                 BluetoothCallbackMatcher(
-                    address=self.data.mower_state.ble_mac, connectable=True
+                    address=self.data.mower_state.ble_mac.upper(), connectable=True
                 ),
                 BluetoothScanningMode.ACTIVE,
             )
