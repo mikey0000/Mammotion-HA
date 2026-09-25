@@ -944,22 +944,12 @@
     },
     "get_map_data": {
       "name": "Hämta kartdata",
-      "description": "Returnerar rå kartdata (områden, SVG-brickor, områdesnamn) för användning med SVG-kartkortet.",
-      "fields": {
-        "entity_id": {
-          "name": "Enhet",
-          "description": "Vilken som helst Mammotion-enhet som tillhör enheten."
-        }
-      }
+      "description": "Returnerar rå kartdata (områden, SVG-brickor, områdesnamn) för användning med SVG-kartkortet."
     },
     "svg_add": {
       "name": "Lägg till SVG-bricka",
       "description": "Skickar en ny SVG-bricka till enhetens karta. Returnerar den enhetstilldelade hashen.",
       "fields": {
-        "entity_id": {
-          "name": "Enhet",
-          "description": "Vilken som helst Mammotion-enhet som tillhör enheten."
-        },
         "area_hash": {
           "name": "Områdeshash",
           "description": "Hash för det överordnade klipområdet."
@@ -1002,10 +992,6 @@
       "name": "Uppdatera SVG-bricka",
       "description": "Ersätter en befintlig SVG-bricka på enhetens karta. Använd device_hash returnerad av svg_add.",
       "fields": {
-        "entity_id": {
-          "name": "Enhet",
-          "description": "Vilken som helst Mammotion-enhet som tillhör enheten."
-        },
         "device_hash": {
           "name": "Enhetshash",
           "description": "Hash tilldelad av enheten när brickan lades till första gången."
@@ -1052,10 +1038,6 @@
       "name": "Ta bort SVG-bricka",
       "description": "Tar bort en SVG-bricka från enhetens karta via dess enhetstilldelade hash.",
       "fields": {
-        "entity_id": {
-          "name": "Enhet",
-          "description": "Vilken som helst Mammotion-enhet som tillhör enheten."
-        },
         "device_hash": {
           "name": "Enhetshash",
           "description": "Hash tilldelad av enheten när brickan lades till."
@@ -1304,6 +1286,22 @@
       "name": "Hämta kartsäkerhetskopior",
       "description": "Returnerar kartsäkerhetskopiorna på det Mammotion-konto som den här integrationen är inloggad med. Säkerhetskopior hör till kontot, så de som gjorts i appen med ett annat konto visas inte."
     },
+    "get_geojson": {
+      "name": "Hämta kart-GeoJSON",
+      "description": "Returnerar gräsklipparens karta (områden, hinder, vägar, laddstation och RTK-station) som en GeoJSON FeatureCollection för kartkortet och låter gräsklipparen rapportera sin position under de närmaste minuterna."
+    },
+    "get_mow_path_geojson": {
+      "name": "Hämta klippvägs-GeoJSON",
+      "description": "Returnerar den planerade klippvägen för det aktuella jobbet som en GeoJSON FeatureCollection. Tom tills vägen har hämtats."
+    },
+    "get_mow_progress_geojson": {
+      "name": "Hämta klippförlopps-GeoJSON",
+      "description": "Returnerar den redan klippta delen av det aktuella jobbets klippväg som en GeoJSON FeatureCollection; gräsklippare som skickar en dynamisk linje returnerar den i stället. När ett jobb pågår och inget kan visas än hämtar den även det lagret ritas från, högst en gång i minuten. Via Bluetooth håller en dynamisk linje sig själv uppdaterad."
+    },
+    "fetch_mow_path": {
+      "name": "Hämta klippväg",
+      "description": "Hämtar klippvägen för jobbet som gräsklipparen kör, om inte en komplett väg redan finns sparad, och räknar sedan om klippförloppet utifrån den. Gräsklippare med en dynamisk linje hämtar också sin senaste linje. Via molnet sker det bara när 'Aktivera hämtning av klippväg (moln)' är påslaget i alternativen; via Bluetooth alltid. Returnerar om en hämtning startades."
+    },
     "get_map_backup_progress": {
       "name": "Hämta förlopp för kartsäkerhetskopia",
       "description": "Returnerar hur långt en säkerhetskopiering eller återställning av kartan har kommit.",
@@ -1392,7 +1390,7 @@
     "map_backup_device_not_found": {
       "message": "{device_name} finns inte med för kartsäkerhetskopior på det här Mammotion-kontot."
     },
-    "map_backup_mower_not_found": {
+    "mower_not_found": {
       "message": "{entity_id} är inte en Mammotion-gräsklippare."
     }
   }

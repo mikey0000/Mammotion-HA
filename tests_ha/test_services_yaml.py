@@ -109,3 +109,58 @@ def test_required_field_has_selector_or_example(services):
     assert not violations, (
         "Required fields missing selector and example:\n" + "\n".join(violations)
     )
+
+
+async def test_every_registered_service_is_declared_and_translated(hass) -> None:
+    """A service missing here has no UI and can only be called from YAML."""
+    import json  # noqa: PLC0415
+
+    from custom_components.mammotion.const import DOMAIN  # noqa: PLC0415
+    from custom_components.mammotion.services import (  # noqa: PLC0415
+        async_setup_services,
+    )
+
+    async_setup_services(hass)
+    registered = set(hass.services.async_services_for_domain(DOMAIN))
+    declared = set(yaml.safe_load(SERVICES_YAML.read_text()))
+    assert registered - declared == set()
+
+    root = SERVICES_YAML.parent
+    for path in [
+        root / "strings.json",
+        *sorted((root / "translations").glob("*.json")),
+    ]:
+        translated = json.loads(path.read_text(encoding="utf-8"))["services"]
+        missing = {
+            name for name in registered if not translated.get(name, {}).get("name")
+        }
+        assert missing == set(), path.name
+
+
+def test_targeted_services_take_no_entity_id_field(services) -> None:
+    """A target already supplies entity_id; a field for it too duplicates the picker."""
+    doubled = [
+        name
+        for name, svc in services.items()
+        if "target" in svc and "entity_id" in (svc.get("fields") or {})
+    ]
+    assert doubled == []
+
+
+def test_translations_only_name_fields_the_services_have(services) -> None:
+    """A field dropped from services.yaml must be dropped from every locale too."""
+    import json  # noqa: PLC0415
+
+    root = SERVICES_YAML.parent
+    for path in [
+        root / "strings.json",
+        *sorted((root / "translations").glob("*.json")),
+    ]:
+        translated = json.loads(path.read_text(encoding="utf-8"))["services"]
+        stale = {
+            f"{name}.{field}"
+            for name, entry in translated.items()
+            for field in entry.get("fields") or {}
+            if field not in ((services.get(name) or {}).get("fields") or {})
+        }
+        assert stale == set(), path.name

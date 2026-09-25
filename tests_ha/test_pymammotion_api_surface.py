@@ -26,7 +26,7 @@ from pathlib import Path
 import pytest
 
 #: Last release that predates the APIs below.  The pin must move past it.
-_RELEASE_WITHOUT_THESE_APIS = "0.9.0"
+_RELEASE_WITHOUT_THESE_APIS = "0.9.4"
 
 _MANIFEST = (
     Path(__file__).parent.parent / "custom_components" / "mammotion" / "manifest.json"
@@ -118,11 +118,26 @@ def test_the_http_client_wraps_the_map_backup_endpoints(method: str) -> None:
     assert "class BackupMapItem(" in _source("http/model/map_backup.py")
 
 
+def test_check_and_get_mow_path_reports_whether_it_fetched() -> None:
+    """``fetch_mow_path`` returns this as ``fetch_started``; 0.9.4 returns None.
+
+    The same release fixes the cache check it relies on: the report's
+    ``path_hash`` is now compared with the hash of the whole line list.
+    """
+    source = _source("client.py")
+    assert "async def check_and_get_mow_path(self, device_name: str) -> bool:" in source
+    assert (
+        "async def check_and_get_dynamics_line(self, device_name: str) -> bool:"
+        in source
+    )
+    assert "def is_mow_path_current(" in _source("data/model/hash_list.py")
+
+
 def test_the_shipped_pin_has_moved_past_the_release_without_these_apis() -> None:
     """What HACS installs — which the local source override hides in development."""
     requirements = json.loads(_MANIFEST.read_text())["requirements"]
     pins = [r for r in requirements if r.startswith("pymammotion")]
     assert pins != [f"pymammotion=={_RELEASE_WITHOUT_THESE_APIS}"], (
         f"manifest.json still pins {_RELEASE_WITHOUT_THESE_APIS}, which predates "
-        "the map backup endpoints — cut a release and bump the pin before shipping"
+        "the APIs above — cut a release and bump the pin before shipping"
     )

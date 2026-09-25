@@ -947,22 +947,12 @@
     },
     "get_map_data": {
       "name": "Get map data",
-      "description": "Returns the raw map data (areas, SVG tiles, area names) for use with the SVG map card.",
-      "fields": {
-        "entity_id": {
-          "name": "Entity",
-          "description": "Any Mammotion entity belonging to the device."
-        }
-      }
+      "description": "Returns the raw map data (areas, SVG tiles, area names) for use with the SVG map card."
     },
     "svg_add": {
       "name": "Add SVG tile",
       "description": "Send a new SVG tile to the device map. Returns the device-assigned hash.",
       "fields": {
-        "entity_id": {
-          "name": "Entity",
-          "description": "Any Mammotion entity belonging to the device."
-        },
         "area_hash": {
           "name": "Area hash",
           "description": "Hash of the parent mowing area."
@@ -1005,10 +995,6 @@
       "name": "Update SVG tile",
       "description": "Replace an existing SVG tile on the device map. Use the device_hash returned by svg_add.",
       "fields": {
-        "entity_id": {
-          "name": "Entity",
-          "description": "Any Mammotion entity belonging to the device."
-        },
         "device_hash": {
           "name": "Device hash",
           "description": "Hash assigned by the device when the tile was first added."
@@ -1055,10 +1041,6 @@
       "name": "Delete SVG tile",
       "description": "Remove an SVG tile from the device map by its device-assigned hash.",
       "fields": {
-        "entity_id": {
-          "name": "Entity",
-          "description": "Any Mammotion entity belonging to the device."
-        },
         "device_hash": {
           "name": "Device hash",
           "description": "Hash assigned by the device when the tile was added."
@@ -1307,6 +1289,22 @@
       "name": "Get map backups",
       "description": "Return the map backups stored on the Mammotion account this integration is signed in with. Backups are per account, so ones made in the app under a different account are not listed."
     },
+    "get_geojson": {
+      "name": "Get map GeoJSON",
+      "description": "Return the mower's map (areas, obstacles, paths, dock and RTK station) as a GeoJSON FeatureCollection for the map card, and keep the mower reporting its position for the next few minutes."
+    },
+    "get_mow_path_geojson": {
+      "name": "Get mow path GeoJSON",
+      "description": "Return the planned mow path of the current job as a GeoJSON FeatureCollection. Empty until the cover path has been fetched."
+    },
+    "get_mow_progress_geojson": {
+      "name": "Get mow progress GeoJSON",
+      "description": "Return the part of the current job's mow path already covered, as a GeoJSON FeatureCollection; mowers that stream a dynamics line return that line instead. While a job is running and nothing can be shown yet, it also fetches what this layer is drawn from, at most once a minute. Over Bluetooth a dynamics line keeps itself up to date."
+    },
+    "fetch_mow_path": {
+      "name": "Fetch mow path",
+      "description": "Fetch the cover path of the job the mower is running, unless a complete one is already cached, then rebuild the mow progress from it. Mowers that stream a dynamics line also get their latest line. Over the cloud this only happens with 'Enable mow path fetching (cloud)' switched on in the options; over Bluetooth it always does. Returns whether a fetch was started."
+    },
     "get_map_backup_progress": {
       "name": "Get map backup progress",
       "description": "Return how far a map backup or restore has got.",
@@ -1395,7 +1393,7 @@
     "map_backup_device_not_found": {
       "message": "{device_name} is not listed for map backups on this Mammotion account."
     },
-    "map_backup_mower_not_found": {
+    "mower_not_found": {
       "message": "{entity_id} is not a Mammotion mower."
     }
   }

@@ -944,22 +944,12 @@
     },
     "get_map_data": {
       "name": "Kaartgegevens ophalen",
-      "description": "Geeft de ruwe kaartgegevens terug (gebieden, SVG-tegels, gebiednamen) voor gebruik met de SVG-kaartkaart.",
-      "fields": {
-        "entity_id": {
-          "name": "Entiteit",
-          "description": "Elke Mammotion-entiteit die bij het apparaat hoort."
-        }
-      }
+      "description": "Geeft de ruwe kaartgegevens terug (gebieden, SVG-tegels, gebiednamen) voor gebruik met de SVG-kaartkaart."
     },
     "svg_add": {
       "name": "SVG-tegel toevoegen",
       "description": "Stuurt een nieuwe SVG-tegel naar de apparaatkaart. Geeft de door het apparaat toegewezen hash terug.",
       "fields": {
-        "entity_id": {
-          "name": "Entiteit",
-          "description": "Elke Mammotion-entiteit die bij het apparaat hoort."
-        },
         "area_hash": {
           "name": "Gebiedshash",
           "description": "Hash van het bovenliggende maaigebied."
@@ -1002,10 +992,6 @@
       "name": "SVG-tegel bijwerken",
       "description": "Vervangt een bestaande SVG-tegel op de apparaatkaart. Gebruik de device_hash die door svg_add is geretourneerd.",
       "fields": {
-        "entity_id": {
-          "name": "Entiteit",
-          "description": "Elke Mammotion-entiteit die bij het apparaat hoort."
-        },
         "device_hash": {
           "name": "Apparaathash",
           "description": "Hash toegewezen door het apparaat toen de tegel voor het eerst werd toegevoegd."
@@ -1052,10 +1038,6 @@
       "name": "SVG-tegel verwijderen",
       "description": "Verwijdert een SVG-tegel van de apparaatkaart via de door het apparaat toegewezen hash.",
       "fields": {
-        "entity_id": {
-          "name": "Entiteit",
-          "description": "Elke Mammotion-entiteit die bij het apparaat hoort."
-        },
         "device_hash": {
           "name": "Apparaathash",
           "description": "Hash toegewezen door het apparaat toen de tegel werd toegevoegd."
@@ -1304,6 +1286,22 @@
       "name": "Kaartback-ups ophalen",
       "description": "Geeft de kaartback-ups van het Mammotion-account waarmee deze integratie is aangemeld. Back-ups horen bij een account, dus back-ups die in de app onder een ander account zijn gemaakt, worden niet getoond."
     },
+    "get_geojson": {
+      "name": "Kaart-GeoJSON ophalen",
+      "description": "Geeft de kaart van de maaier (gebieden, obstakels, paden, laadstation en RTK-station) terug als GeoJSON FeatureCollection voor de kaartkaart en laat de maaier de komende minuten zijn positie doorgeven."
+    },
+    "get_mow_path_geojson": {
+      "name": "Maaipad-GeoJSON ophalen",
+      "description": "Geeft het geplande maaipad van de huidige taak terug als GeoJSON FeatureCollection. Leeg totdat het pad is opgehaald."
+    },
+    "get_mow_progress_geojson": {
+      "name": "Maaivoortgang-GeoJSON ophalen",
+      "description": "Geeft het al gemaaide deel van het maaipad van de huidige taak terug als GeoJSON FeatureCollection; maaiers met een dynamische lijn geven in plaats daarvan die lijn terug. Loopt er een taak en is er nog niets te tonen, dan haalt het ook de gegevens van deze laag op, hooguit eens per minuut. Via Bluetooth houdt een dynamische lijn zichzelf bij."
+    },
+    "fetch_mow_path": {
+      "name": "Maaipad ophalen",
+      "description": "Haalt het maaipad op van de taak die de maaier uitvoert, tenzij er al een volledig pad in de cache staat, en berekent daaruit de maaivoortgang opnieuw. Maaiers met een dynamische lijn halen ook hun nieuwste lijn op. Via de cloud gebeurt dit alleen als 'Maaipad ophalen inschakelen (cloud)' in de opties is ingeschakeld; via Bluetooth altijd. Geeft terug of het ophalen is gestart."
+    },
     "get_map_backup_progress": {
       "name": "Voortgang kaartback-up ophalen",
       "description": "Geeft terug hoe ver een back-up of herstel van de kaart is.",
@@ -1392,7 +1390,7 @@
     "map_backup_device_not_found": {
       "message": "{device_name} staat in dit Mammotion-account niet vermeld voor kaartback-ups."
     },
-    "map_backup_mower_not_found": {
+    "mower_not_found": {
       "message": "{entity_id} is geen Mammotion-maaier."
     }
   }

@@ -944,22 +944,12 @@
     },
     "get_map_data": {
       "name": "Kartendaten abrufen",
-      "description": "Gibt die Karten-Rohdaten zur Verwendung mit der Mammotion-SVG-Karte zurück. (Bereiche, Bereichsnamen, SVG-Muster)",
-      "fields": {
-        "entity_id": {
-          "name": "Entität",
-          "description": "Eine beliebige Mammotion-Entität, die zum Gerät gehört."
-        }
-      }
+      "description": "Gibt die Karten-Rohdaten zur Verwendung mit der Mammotion-SVG-Karte zurück. (Bereiche, Bereichsnamen, SVG-Muster)"
     },
     "svg_add": {
       "name": "SVG-Kachel hinzufügen",
       "description": "Sendet eine neues SVG-Muster an die Karte des Gerätes. Gibt den geräteinternen Hash-Wert zurück.",
       "fields": {
-        "entity_id": {
-          "name": "Entität",
-          "description": "Eine beliebige Mammotion-Entität, die zum Gerät gehört."
-        },
         "area_hash": {
           "name": "Bereichs-Hash",
           "description": "Gibt den Hash-Wert des übergeordneten Mähbereichs an."
@@ -1002,10 +992,6 @@
       "name": "SVG-Kachel aktualisieren",
       "description": "Ersetzt ein vorhandenes SVG-Muster auf der Karte des Gerätes. Verwende den von svg_add zurückgegebenen device_hash.",
       "fields": {
-        "entity_id": {
-          "name": "Entität",
-          "description": "Eine beliebige Mammotion-Entität, die zum Gerät gehört."
-        },
         "device_hash": {
           "name": "Geräte-Hash",
           "description": "Gibt den vom Gerät zugewiesener Hash-Wert an, als die Kachel erstmals hinzugefügt wurde."
@@ -1052,10 +1038,6 @@
       "name": "SVG-Kachel löschen",
       "description": "Entfernt eine SVG-Muster von der Karte des Gerätes anhand ihres geräteinternen Hash-Wertes.",
       "fields": {
-        "entity_id": {
-          "name": "Entität",
-          "description": "Eine beliebige Mammotion-Entität, die zum Gerät gehört."
-        },
         "device_hash": {
           "name": "Geräte-Hash",
           "description": "Gibt den vom Gerät zugewiesener Hash-Wert an, als die Kachel erstmals hinzugefügt wurde."
@@ -1304,6 +1286,22 @@
       "name": "Kartensicherungen abrufen",
       "description": "Gibt die Kartensicherungen des Mammotion-Kontos zurück, mit dem diese Integration angemeldet ist. Sicherungen gehören zum Konto, daher erscheinen in der App unter einem anderen Konto erstellte Sicherungen nicht."
     },
+    "get_geojson": {
+      "name": "Karten-GeoJSON abrufen",
+      "description": "Gibt die Karte des Mähers (Bereiche, Hindernisse, Wege, Ladestation und RTK-Station) als GeoJSON-FeatureCollection für die Kartenkarte zurück und lässt den Mäher für die nächsten Minuten seine Position melden."
+    },
+    "get_mow_path_geojson": {
+      "name": "Mähpfad-GeoJSON abrufen",
+      "description": "Gibt den geplanten Mähpfad des aktuellen Auftrags als GeoJSON-FeatureCollection zurück. Leer, bis der Mähpfad abgerufen wurde."
+    },
+    "get_mow_progress_geojson": {
+      "name": "Mähfortschritt-GeoJSON abrufen",
+      "description": "Gibt den bereits gemähten Teil des Mähpfads des aktuellen Auftrags als GeoJSON-FeatureCollection zurück; Mäher mit dynamischer Linie liefern stattdessen diese. Läuft ein Auftrag und kann noch nichts angezeigt werden, werden außerdem die Daten dieser Ebene abgerufen, höchstens einmal pro Minute. Über Bluetooth hält sich eine dynamische Linie selbst aktuell."
+    },
+    "fetch_mow_path": {
+      "name": "Mähpfad abrufen",
+      "description": "Ruft den Mähpfad des laufenden Auftrags ab, sofern noch kein vollständiger zwischengespeichert ist, und berechnet daraus den Mähfortschritt neu. Mäher mit dynamischer Linie rufen zusätzlich ihre aktuelle Linie ab. Über die Cloud geschieht das nur, wenn 'Mähpfad-Abruf aktivieren (Cloud)' in den Optionen aktiviert ist; über Bluetooth immer. Gibt zurück, ob ein Abruf gestartet wurde."
+    },
     "get_map_backup_progress": {
       "name": "Fortschritt der Kartensicherung abrufen",
       "description": "Gibt zurück, wie weit eine Sicherung oder Wiederherstellung der Karte fortgeschritten ist.",
@@ -1392,7 +1390,7 @@
     "map_backup_device_not_found": {
       "message": "{device_name} ist in diesem Mammotion-Konto nicht für Kartensicherungen aufgeführt."
     },
-    "map_backup_mower_not_found": {
+    "mower_not_found": {
       "message": "{entity_id} ist kein Mammotion-Mäher."
     }
   }

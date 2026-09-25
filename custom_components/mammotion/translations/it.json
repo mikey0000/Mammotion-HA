@@ -944,22 +944,12 @@
     },
     "get_map_data": {
       "name": "Ottieni dati mappa",
-      "description": "Restituisce i dati grezzi della mappa (aree, tessere SVG, nomi delle aree) per l'uso con la scheda mappa SVG.",
-      "fields": {
-        "entity_id": {
-          "name": "Entità",
-          "description": "Qualsiasi entità Mammotion appartenente al dispositivo."
-        }
-      }
+      "description": "Restituisce i dati grezzi della mappa (aree, tessere SVG, nomi delle aree) per l'uso con la scheda mappa SVG."
     },
     "svg_add": {
       "name": "Aggiungi tessera SVG",
       "description": "Invia una nuova tessera SVG alla mappa del dispositivo. Restituisce l'hash assegnato dal dispositivo.",
       "fields": {
-        "entity_id": {
-          "name": "Entità",
-          "description": "Qualsiasi entità Mammotion appartenente al dispositivo."
-        },
         "area_hash": {
           "name": "Hash area",
           "description": "Hash dell'area di falciatura principale."
@@ -1002,10 +992,6 @@
       "name": "Aggiorna tessera SVG",
       "description": "Sostituisce una tessera SVG esistente sulla mappa del dispositivo. Usa il device_hash restituito da svg_add.",
       "fields": {
-        "entity_id": {
-          "name": "Entità",
-          "description": "Qualsiasi entità Mammotion appartenente al dispositivo."
-        },
         "device_hash": {
           "name": "Hash dispositivo",
           "description": "Hash assegnato dal dispositivo quando la tessera è stata aggiunta per la prima volta."
@@ -1052,10 +1038,6 @@
       "name": "Elimina tessera SVG",
       "description": "Rimuove una tessera SVG dalla mappa del dispositivo tramite il suo hash assegnato dal dispositivo.",
       "fields": {
-        "entity_id": {
-          "name": "Entità",
-          "description": "Qualsiasi entità Mammotion appartenente al dispositivo."
-        },
         "device_hash": {
           "name": "Hash dispositivo",
           "description": "Hash assegnato dal dispositivo quando la tessera è stata aggiunta."
@@ -1304,6 +1286,22 @@
       "name": "Ottieni backup mappe",
       "description": "Restituisce i backup delle mappe dell'account Mammotion con cui è connessa questa integrazione. I backup appartengono all'account, quindi quelli creati nell'app con un altro account non vengono elencati."
     },
+    "get_geojson": {
+      "name": "Ottieni GeoJSON della mappa",
+      "description": "Restituisce la mappa del tosaerba (aree, ostacoli, percorsi, base di ricarica e stazione RTK) come FeatureCollection GeoJSON per la scheda mappa e fa segnalare al tosaerba la sua posizione per i minuti successivi."
+    },
+    "get_mow_path_geojson": {
+      "name": "Ottieni GeoJSON del percorso di taglio",
+      "description": "Restituisce il percorso di taglio pianificato del lavoro in corso come FeatureCollection GeoJSON. Vuoto finché il percorso non è stato recuperato."
+    },
+    "get_mow_progress_geojson": {
+      "name": "Ottieni GeoJSON dell'avanzamento",
+      "description": "Restituisce la parte del percorso del lavoro in corso già tagliata, come FeatureCollection GeoJSON; i tosaerba che inviano una linea dinamica restituiscono invece quella. Durante un lavoro, finché non c'è nulla da mostrare, recupera anche i dati di questo livello, al massimo una volta al minuto. Tramite Bluetooth una linea dinamica si aggiorna da sola."
+    },
+    "fetch_mow_path": {
+      "name": "Recupera percorso di taglio",
+      "description": "Recupera il percorso di taglio del lavoro in corso, a meno che uno completo non sia già in memoria, e ricalcola da esso l'avanzamento del taglio. I tosaerba con linea dinamica recuperano anche la loro linea più recente. Tramite cloud avviene solo con 'Abilita recupero percorso di taglio (cloud)' attivo nelle opzioni; tramite Bluetooth sempre. Restituisce se è stato avviato un recupero."
+    },
     "get_map_backup_progress": {
       "name": "Ottieni avanzamento backup mappa",
       "description": "Restituisce a che punto è un backup o un ripristino della mappa.",
@@ -1392,7 +1390,7 @@
     "map_backup_device_not_found": {
       "message": "{device_name} non è elencato per i backup delle mappe in questo account Mammotion."
     },
-    "map_backup_mower_not_found": {
+    "mower_not_found": {
       "message": "{entity_id} non è un tosaerba Mammotion."
     }
   }

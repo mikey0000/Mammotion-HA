@@ -944,22 +944,12 @@
     },
     "get_map_data": {
       "name": "Hent kortdata",
-      "description": "Returnerer de rå kortdata (områder, SVG-fliser, områdenavne) til brug med SVG-kortkortet.",
-      "fields": {
-        "entity_id": {
-          "name": "Enhed",
-          "description": "En hvilken som helst Mammotion-enhed tilhørende enheden."
-        }
-      }
+      "description": "Returnerer de rå kortdata (områder, SVG-fliser, områdenavne) til brug med SVG-kortkortet."
     },
     "svg_add": {
       "name": "Tilføj SVG-flise",
       "description": "Sender en ny SVG-flise til enhedskortet. Returnerer den enhedstildelte hash.",
       "fields": {
-        "entity_id": {
-          "name": "Enhed",
-          "description": "En hvilken som helst Mammotion-enhed tilhørende enheden."
-        },
         "area_hash": {
           "name": "Områdehash",
           "description": "Hash for det overordnede klippeområde."
@@ -1002,10 +992,6 @@
       "name": "Opdater SVG-flise",
       "description": "Erstatter en eksisterende SVG-flise på enhedskortet. Brug device_hash returneret af svg_add.",
       "fields": {
-        "entity_id": {
-          "name": "Enhed",
-          "description": "En hvilken som helst Mammotion-enhed tilhørende enheden."
-        },
         "device_hash": {
           "name": "Enhedshash",
           "description": "Hash tildelt af enheden, da flisen første gang blev tilføjet."
@@ -1052,10 +1038,6 @@
       "name": "Slet SVG-flise",
       "description": "Fjerner en SVG-flise fra enhedskortet via dens enhedstildelte hash.",
       "fields": {
-        "entity_id": {
-          "name": "Enhed",
-          "description": "En hvilken som helst Mammotion-enhed tilhørende enheden."
-        },
         "device_hash": {
           "name": "Enhedshash",
           "description": "Hash tildelt af enheden, da flisen blev tilføjet."
@@ -1304,6 +1286,22 @@
       "name": "Hent kortsikkerhedskopier",
       "description": "Returnerer kortsikkerhedskopierne på den Mammotion-konto, som denne integration er logget ind med. Sikkerhedskopier hører til kontoen, så dem, der er lavet i appen med en anden konto, vises ikke."
     },
+    "get_geojson": {
+      "name": "Hent kort-GeoJSON",
+      "description": "Returnerer plæneklipperens kort (områder, forhindringer, stier, ladestation og RTK-station) som en GeoJSON FeatureCollection til kortkortet og holder plæneklipperen i gang med at rapportere sin position de næste par minutter."
+    },
+    "get_mow_path_geojson": {
+      "name": "Hent klippesti-GeoJSON",
+      "description": "Returnerer den planlagte klippesti for det aktuelle job som en GeoJSON FeatureCollection. Tom, indtil stien er hentet."
+    },
+    "get_mow_progress_geojson": {
+      "name": "Hent klippefremskridt-GeoJSON",
+      "description": "Returnerer den del af det aktuelle jobs klippesti, der allerede er klippet, som en GeoJSON FeatureCollection; plæneklippere, der sender en dynamisk linje, returnerer den i stedet. Når et job kører, og intet kan vises endnu, henter den også det, laget tegnes ud fra, højst én gang i minuttet. Via Bluetooth holder en dynamisk linje sig selv opdateret."
+    },
+    "fetch_mow_path": {
+      "name": "Hent klippesti",
+      "description": "Henter klippestien for det job, plæneklipperen kører, medmindre en komplet sti allerede er gemt, og genopbygger klippefremskridtet ud fra den. Plæneklippere med en dynamisk linje henter også deres seneste linje. Via skyen sker det kun, når 'Aktivér hentning af klippesti (sky)' er slået til i indstillingerne; via Bluetooth altid. Returnerer, om en hentning blev startet."
+    },
     "get_map_backup_progress": {
       "name": "Hent status for kortsikkerhedskopi",
       "description": "Returnerer, hvor langt en sikkerhedskopiering eller gendannelse af kortet er nået.",
@@ -1392,7 +1390,7 @@
     "map_backup_device_not_found": {
       "message": "{device_name} er ikke angivet til kortsikkerhedskopier på denne Mammotion-konto."
     },
-    "map_backup_mower_not_found": {
+    "mower_not_found": {
       "message": "{entity_id} er ikke en Mammotion-plæneklipper."
     }
   }

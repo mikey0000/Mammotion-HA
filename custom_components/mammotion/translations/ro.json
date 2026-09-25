@@ -944,22 +944,12 @@
     },
     "get_map_data": {
       "name": "Obțineți datele hărții",
-      "description": "Returnează datele brute ale hărții (zone, plăci SVG, nume de zone) pentru utilizare cu cardul de hartă SVG.",
-      "fields": {
-        "entity_id": {
-          "name": "Entitate",
-          "description": "Orice entitate Mammotion aparținând dispozitivului."
-        }
-      }
+      "description": "Returnează datele brute ale hărții (zone, plăci SVG, nume de zone) pentru utilizare cu cardul de hartă SVG."
     },
     "svg_add": {
       "name": "Adăugați placă SVG",
       "description": "Trimite o nouă placă SVG pe harta dispozitivului. Returnează hash-ul atribuit de dispozitiv.",
       "fields": {
-        "entity_id": {
-          "name": "Entitate",
-          "description": "Orice entitate Mammotion aparținând dispozitivului."
-        },
         "area_hash": {
           "name": "Hash zonă",
           "description": "Hash-ul zonei de cosit principale."
@@ -1002,10 +992,6 @@
       "name": "Actualizați placă SVG",
       "description": "Înlocuiește o placă SVG existentă pe harta dispozitivului. Utilizați device_hash returnat de svg_add.",
       "fields": {
-        "entity_id": {
-          "name": "Entitate",
-          "description": "Orice entitate Mammotion aparținând dispozitivului."
-        },
         "device_hash": {
           "name": "Hash dispozitiv",
           "description": "Hash atribuit de dispozitiv când placa a fost adăugată prima dată."
@@ -1052,10 +1038,6 @@
       "name": "Ștergeți placă SVG",
       "description": "Elimină o placă SVG din harta dispozitivului prin hash-ul atribuit de dispozitiv.",
       "fields": {
-        "entity_id": {
-          "name": "Entitate",
-          "description": "Orice entitate Mammotion aparținând dispozitivului."
-        },
         "device_hash": {
           "name": "Hash dispozitiv",
           "description": "Hash atribuit de dispozitiv când placa a fost adăugată."
@@ -1304,6 +1286,22 @@
       "name": "Obține copiile de rezervă ale hărților",
       "description": "Returnează copiile de rezervă ale hărților din contul Mammotion cu care este conectată această integrare. Copiile aparțin contului, așa că cele create în aplicație cu alt cont nu sunt afișate."
     },
+    "get_geojson": {
+      "name": "Obține GeoJSON-ul hărții",
+      "description": "Returnează harta mașinii de tuns (zone, obstacole, trasee, stația de încărcare și stația RTK) ca GeoJSON FeatureCollection pentru cardul hărții și face ca mașina să își raporteze poziția în următoarele minute."
+    },
+    "get_mow_path_geojson": {
+      "name": "Obține GeoJSON-ul traseului de tuns",
+      "description": "Returnează traseul de tuns planificat al sarcinii curente ca GeoJSON FeatureCollection. Gol până când traseul este descărcat."
+    },
+    "get_mow_progress_geojson": {
+      "name": "Obține GeoJSON-ul progresului",
+      "description": "Returnează partea deja tunsă a traseului sarcinii curente ca GeoJSON FeatureCollection; mașinile care transmit o linie dinamică returnează în schimb acea linie. Când o sarcină rulează și încă nu se poate afișa nimic, descarcă și datele acestui strat, cel mult o dată pe minut. Prin Bluetooth, o linie dinamică se actualizează singură."
+    },
+    "fetch_mow_path": {
+      "name": "Descarcă traseul de tuns",
+      "description": "Descarcă traseul de tuns al sarcinii pe care o execută mașina, dacă nu există deja unul complet în cache, apoi reconstruiește progresul tunsului. Mașinile cu linie dinamică își descarcă și linia cea mai recentă. Prin cloud se întâmplă doar cu 'Activați descărcarea traseului de tuns (cloud)' activat în opțiuni; prin Bluetooth întotdeauna. Returnează dacă descărcarea a început."
+    },
     "get_map_backup_progress": {
       "name": "Obține progresul copiei de rezervă",
       "description": "Returnează cât de departe a ajuns o salvare sau o restaurare a hărții.",
@@ -1392,7 +1390,7 @@
     "map_backup_device_not_found": {
       "message": "{device_name} nu este listat pentru copii de rezervă ale hărților în acest cont Mammotion."
     },
-    "map_backup_mower_not_found": {
+    "mower_not_found": {
       "message": "{entity_id} nu este o mașină de tuns Mammotion."
     }
   }

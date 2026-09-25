@@ -944,22 +944,12 @@
     },
     "get_map_data": {
       "name": "Získat data mapy",
-      "description": "Vrací surová data mapy (oblasti, SVG dlaždice, názvy oblastí) pro použití s kartou SVG mapy.",
-      "fields": {
-        "entity_id": {
-          "name": "Entita",
-          "description": "Jakákoli Mammotion entita patřící k zařízení."
-        }
-      }
+      "description": "Vrací surová data mapy (oblasti, SVG dlaždice, názvy oblastí) pro použití s kartou SVG mapy."
     },
     "svg_add": {
       "name": "Přidat SVG dlaždici",
       "description": "Odešle novou SVG dlaždici na mapu zařízení. Vrací hash přiřazený zařízením.",
       "fields": {
-        "entity_id": {
-          "name": "Entita",
-          "description": "Jakákoli Mammotion entita patřící k zařízení."
-        },
         "area_hash": {
           "name": "Hash oblasti",
           "description": "Hash nadřazené sekací oblasti."
@@ -1002,10 +992,6 @@
       "name": "Aktualizovat SVG dlaždici",
       "description": "Nahradí existující SVG dlaždici na mapě zařízení. Použijte device_hash vrácený funkcí svg_add.",
       "fields": {
-        "entity_id": {
-          "name": "Entita",
-          "description": "Jakákoli Mammotion entita patřící k zařízení."
-        },
         "device_hash": {
           "name": "Hash zařízení",
           "description": "Hash přiřazený zařízením při prvním přidání dlaždice."
@@ -1052,10 +1038,6 @@
       "name": "Smazat SVG dlaždici",
       "description": "Odstraní SVG dlaždici z mapy zařízení pomocí jejího hashe přiřazeného zařízením.",
       "fields": {
-        "entity_id": {
-          "name": "Entita",
-          "description": "Jakákoli Mammotion entita patřící k zařízení."
-        },
         "device_hash": {
           "name": "Hash zařízení",
           "description": "Hash přiřazený zařízením při přidání dlaždice."
@@ -1304,6 +1286,22 @@
       "name": "Získat zálohy map",
       "description": "Vrátí zálohy map uložené v účtu Mammotion, ke kterému je tato integrace přihlášena. Zálohy patří k účtu, takže zálohy vytvořené v aplikaci pod jiným účtem se nezobrazí."
     },
+    "get_geojson": {
+      "name": "Získat GeoJSON mapy",
+      "description": "Vrátí mapu sekačky (oblasti, překážky, cesty, stanici a RTK základnu) jako GeoJSON FeatureCollection pro kartu mapy a na několik minut nechá sekačku hlásit polohu."
+    },
+    "get_mow_path_geojson": {
+      "name": "Získat GeoJSON trasy sekání",
+      "description": "Vrátí plánovanou trasu sekání aktuální úlohy jako GeoJSON FeatureCollection. Je prázdná, dokud trasa není načtena."
+    },
+    "get_mow_progress_geojson": {
+      "name": "Získat GeoJSON průběhu sekání",
+      "description": "Vrátí již posekanou část trasy aktuální úlohy jako GeoJSON FeatureCollection; sekačky, které posílají dynamickou čáru, vrací místo toho tu. Když úloha běží a zatím není co zobrazit, také načte data, ze kterých se tato vrstva kreslí, nejvýše jednou za minutu. Přes Bluetooth se dynamická čára aktualizuje sama."
+    },
+    "fetch_mow_path": {
+      "name": "Načíst cestu sekání",
+      "description": "Načte trasu úlohy, kterou sekačka právě provádí, pokud už není kompletně uložena, a z ní obnoví průběh sekání. Sekačky s dynamickou čárou načtou také svou aktuální čáru. Přes cloud se to stane jen se zapnutou volbou 'Povolit načítání cesty sekání (cloud)'; přes Bluetooth vždy. Vrací, zda bylo načítání spuštěno."
+    },
     "get_map_backup_progress": {
       "name": "Získat průběh zálohy mapy",
       "description": "Vrátí, jak daleko je záloha nebo obnova mapy.",
@@ -1392,7 +1390,7 @@
     "map_backup_device_not_found": {
       "message": "{device_name} není v tomto účtu Mammotion uvedeno pro zálohy map."
     },
-    "map_backup_mower_not_found": {
+    "mower_not_found": {
       "message": "{entity_id} není sekačka Mammotion."
     }
   }

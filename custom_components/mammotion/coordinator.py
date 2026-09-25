@@ -1839,6 +1839,13 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         )
         return True
 
+    def _ble_is_connected(self) -> bool:
+        """Return True if BLE transport exists and is currently connected."""
+        if handle := self.manager.mower(self.device_name):
+            if ble := handle.get_transport(TransportType.BLE):
+                return ble.is_connected
+        return False
+
     async def async_get_plan_route(self, operation_settings: OperationSettings) -> None:
         """Fetch the previously generated mow path from the device without replanning."""
         route_information = self.generate_route_information(operation_settings)
@@ -2434,6 +2441,73 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
             function=self._add_ble_device,
             background=True,
         )
+        # The map card polls mow progress every few seconds; this caps the
+        # fetches those polls trigger at one a minute.
+        self._mow_progress_debouncer = Debouncer(
+            hass,
+            LOGGER,
+            cooldown=60,
+            immediate=True,
+            function=self._async_refresh_mow_progress_source,
+            background=True,
+        )
+
+    @property
+    def supports_dynamics_line(self) -> bool:
+        """Return True if the mower streams its cut path as a dynamics line."""
+        # The whole-device version (e.g. 1.30.29.26) the APK compares; main_controller
+        # is a module version on its own numbering (e.g. 5.1.2.1600).
+        firmware = self.data.device_firmwares.device_version if self.data else None
+        return DeviceType.value_of_str(self.device_name).is_support_dynamics_line(
+            firmware or None
+        )
+
+    async def async_check_and_get_mow_path(self) -> bool:
+        """Fetch the running job's mow path data; return True if a fetch was queued.
+
+        The cover path is fetched unless a complete one is cached (mow progress is
+        rebuilt from it instead).  Dynamics-line mowers also get their live line,
+        as the APK fetches both for them.  Over MQTT both are skipped while
+        ``mow_path_fetch_enabled`` is off.
+        """
+        started = await self.manager.check_and_get_mow_path(self.device_name)
+        if self.supports_dynamics_line:
+            started = (
+                await self.manager.check_and_get_dynamics_line(self.device_name)
+                or started
+            )
+        return started
+
+    async def _async_refresh_mow_progress_source(self) -> None:
+        """Fetch whatever the map's progress layer is drawn from."""
+        if self.supports_dynamics_line:
+            await self.manager.check_and_get_dynamics_line(self.device_name)
+        else:
+            await self.manager.check_and_get_mow_path(self.device_name)
+
+    @callback
+    def async_request_mow_progress(self) -> None:
+        """Fetch the progress layer's data after the map card polled it, if it is missing.
+
+        Only during a job, and only while nothing can be shown yet: every fetch
+        over the cloud costs several invokes (request, per-frame acks, re-sync).
+        Over BLE a dynamics line is left to pymammotion's 10 s dynamics_line_loop,
+        which already keeps it current.
+        """
+        if (data := self.data) is None:
+            return
+        if data.report_data.dev.sys_status not in MOWING_ACTIVE_MODES:
+            return
+        if self.supports_dynamics_line:
+            if self._ble_is_connected() or data.map.generated_dynamics_line_geojson.get(
+                "features"
+            ):
+                return
+        elif data.report_data.work.path_hash <= 1 or (
+            data.map.generated_mow_progress_geojson.get("features")
+        ):
+            return
+        self._mow_progress_debouncer.async_schedule_call()
 
     @callback
     def _async_handle_bluetooth_event(
@@ -2524,6 +2598,7 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
     async def async_shutdown(self) -> None:
         """Drop the advertisement subscription along with the rest."""
         self._async_stop()
+        self._mow_progress_debouncer.async_shutdown()
         await super().async_shutdown()
 
     async def _async_reconnect_ble(self) -> None:
@@ -3174,17 +3249,10 @@ class MammotionMapUpdateCoordinator(MammotionBaseUpdateCoordinator[MowerInfo]):
     def _device_supports_dynamics_line(self) -> bool:
         """Return True if this device supports the dynamics-line mow-progress stream."""
         device = self.manager.get_device_by_name(self.device_name)
-        firmware = device.device_firmwares.main_controller if device else None
+        firmware = device.device_firmwares.device_version if device else None
         return DeviceType.value_of_str(self.device_name).is_support_dynamics_line(
-            firmware
+            firmware or None
         )
-
-    def _ble_is_connected(self) -> bool:
-        """Return True if BLE transport exists and is currently connected."""
-        if handle := self.manager.mower(self.device_name):
-            if ble := handle.get_transport(TransportType.BLE):
-                return ble.is_connected
-        return False
 
     def _stop_dynamics_line_poll(self) -> None:
         if self._dynamics_line_cancel is not None:

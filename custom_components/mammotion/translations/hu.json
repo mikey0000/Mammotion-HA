@@ -944,22 +944,12 @@
     },
     "get_map_data": {
       "name": "Térképadatok lekérése",
-      "description": "Visszaadja a nyers térképadatokat (területek, SVG-csempék, területnevek) az SVG térkép kártyával való használathoz.",
-      "fields": {
-        "entity_id": {
-          "name": "Entitás",
-          "description": "Bármely, az eszközhöz tartozó Mammotion entitás."
-        }
-      }
+      "description": "Visszaadja a nyers térképadatokat (területek, SVG-csempék, területnevek) az SVG térkép kártyával való használathoz."
     },
     "svg_add": {
       "name": "SVG-csempe hozzáadása",
       "description": "Új SVG-csempét küld az eszköztérképre. Visszaadja az eszköz által hozzárendelt hasht.",
       "fields": {
-        "entity_id": {
-          "name": "Entitás",
-          "description": "Bármely, az eszközhöz tartozó Mammotion entitás."
-        },
         "area_hash": {
           "name": "Terület hash",
           "description": "A szülő nyírási terület hashje."
@@ -1002,10 +992,6 @@
       "name": "SVG-csempe frissítése",
       "description": "Lecseréli a meglévő SVG-csempét az eszköztérképen. Használja az svg_add által visszaadott device_hash értéket.",
       "fields": {
-        "entity_id": {
-          "name": "Entitás",
-          "description": "Bármely, az eszközhöz tartozó Mammotion entitás."
-        },
         "device_hash": {
           "name": "Eszköz hash",
           "description": "Az eszköz által hozzárendelt hash a csempe első hozzáadásakor."
@@ -1052,10 +1038,6 @@
       "name": "SVG-csempe törlése",
       "description": "Eltávolít egy SVG-csempét az eszköztérképről az eszköz által hozzárendelt hash alapján.",
       "fields": {
-        "entity_id": {
-          "name": "Entitás",
-          "description": "Bármely, az eszközhöz tartozó Mammotion entitás."
-        },
         "device_hash": {
           "name": "Eszköz hash",
           "description": "Az eszköz által hozzárendelt hash a csempe hozzáadásakor."
@@ -1304,6 +1286,22 @@
       "name": "Térképmentések lekérése",
       "description": "Visszaadja annak a Mammotion-fióknak a térképmentéseit, amellyel ez az integráció be van jelentkezve. A mentések fiókhoz tartoznak, így az alkalmazásban más fiókkal készült mentések nem jelennek meg."
     },
+    "get_geojson": {
+      "name": "Térkép GeoJSON lekérése",
+      "description": "Visszaadja a fűnyíró térképét (területek, akadályok, útvonalak, töltőállomás és RTK-állomás) GeoJSON FeatureCollection formában a térképkártyához, és a következő néhány percben a fűnyíró jelenti a helyzetét."
+    },
+    "get_mow_path_geojson": {
+      "name": "Nyírási útvonal GeoJSON lekérése",
+      "description": "Visszaadja az aktuális feladat tervezett nyírási útvonalát GeoJSON FeatureCollection formában. Üres, amíg az útvonal nincs lekérve."
+    },
+    "get_mow_progress_geojson": {
+      "name": "Nyírási előrehaladás GeoJSON lekérése",
+      "description": "Visszaadja az aktuális feladat útvonalának már lenyírt részét GeoJSON FeatureCollection formában; a dinamikus vonalat küldő fűnyírók ehelyett azt adják vissza. Ha fut feladat, de még nincs mit megjeleníteni, a réteg adatait is lekéri, legfeljebb percenként egyszer. Bluetooth-on a dinamikus vonal magától frissül."
+    },
+    "fetch_mow_path": {
+      "name": "Nyírási útvonal lekérése",
+      "description": "Lekéri a fűnyíró által éppen végzett feladat nyírási útvonalát, ha még nincs teljes útvonal tárolva, majd abból újraszámolja a nyírás előrehaladását. A dinamikus vonalas fűnyírók a legfrissebb vonalukat is lekérik. Felhőn keresztül csak akkor, ha a(z) 'Nyírási útvonal lekérésének engedélyezése (felhő)' be van kapcsolva a beállításokban; Bluetooth-on mindig. Visszaadja, hogy elindult-e a lekérés."
+    },
     "get_map_backup_progress": {
       "name": "Térképmentés állapotának lekérése",
       "description": "Visszaadja, hol tart egy térképmentés vagy -visszaállítás.",
@@ -1392,7 +1390,7 @@
     "map_backup_device_not_found": {
       "message": "{device_name} nem szerepel a térképmentésre elérhető eszközök között ebben a Mammotion fiókban."
     },
-    "map_backup_mower_not_found": {
+    "mower_not_found": {
       "message": "{entity_id} nem Mammotion fűnyíró."
     }
   }

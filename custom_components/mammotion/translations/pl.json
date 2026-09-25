@@ -944,22 +944,12 @@
     },
     "get_map_data": {
       "name": "Pobierz dane mapy",
-      "description": "Zwraca surowe dane mapy (obszary, kafelki SVG, nazwy obszarów) do użytku z kartą mapy SVG.",
-      "fields": {
-        "entity_id": {
-          "name": "Encja",
-          "description": "Dowolna encja Mammotion należąca do urządzenia."
-        }
-      }
+      "description": "Zwraca surowe dane mapy (obszary, kafelki SVG, nazwy obszarów) do użytku z kartą mapy SVG."
     },
     "svg_add": {
       "name": "Dodaj kafelek SVG",
       "description": "Wysyła nowy kafelek SVG do mapy urządzenia. Zwraca hash przydzielony przez urządzenie.",
       "fields": {
-        "entity_id": {
-          "name": "Encja",
-          "description": "Dowolna encja Mammotion należąca do urządzenia."
-        },
         "area_hash": {
           "name": "Hash obszaru",
           "description": "Hash nadrzędnego obszaru koszenia."
@@ -1002,10 +992,6 @@
       "name": "Aktualizuj kafelek SVG",
       "description": "Zastępuje istniejący kafelek SVG na mapie urządzenia. Użyj device_hash zwróconego przez svg_add.",
       "fields": {
-        "entity_id": {
-          "name": "Encja",
-          "description": "Dowolna encja Mammotion należąca do urządzenia."
-        },
         "device_hash": {
           "name": "Hash urządzenia",
           "description": "Hash przydzielony przez urządzenie podczas pierwszego dodania kafelka."
@@ -1052,10 +1038,6 @@
       "name": "Usuń kafelek SVG",
       "description": "Usuwa kafelek SVG z mapy urządzenia na podstawie jego hasha przydzielonego przez urządzenie.",
       "fields": {
-        "entity_id": {
-          "name": "Encja",
-          "description": "Dowolna encja Mammotion należąca do urządzenia."
-        },
         "device_hash": {
           "name": "Hash urządzenia",
           "description": "Hash przydzielony przez urządzenie podczas dodawania kafelka."
@@ -1304,6 +1286,22 @@
       "name": "Pobierz kopie map",
       "description": "Zwraca kopie map zapisane na koncie Mammotion, na które zalogowana jest ta integracja. Kopie należą do konta, więc kopie utworzone w aplikacji na innym koncie nie są wyświetlane."
     },
+    "get_geojson": {
+      "name": "Pobierz GeoJSON mapy",
+      "description": "Zwraca mapę kosiarki (obszary, przeszkody, ścieżki, stację ładowania i stację RTK) jako GeoJSON FeatureCollection dla karty mapy i przez kilka następnych minut kosiarka zgłasza swoją pozycję."
+    },
+    "get_mow_path_geojson": {
+      "name": "Pobierz GeoJSON ścieżki koszenia",
+      "description": "Zwraca zaplanowaną ścieżkę koszenia bieżącego zadania jako GeoJSON FeatureCollection. Pusta, dopóki ścieżka nie zostanie pobrana."
+    },
+    "get_mow_progress_geojson": {
+      "name": "Pobierz GeoJSON postępu koszenia",
+      "description": "Zwraca już skoszoną część ścieżki bieżącego zadania jako GeoJSON FeatureCollection; kosiarki przesyłające linię dynamiczną zwracają zamiast tego tę linię. Gdy zadanie trwa, a nie ma jeszcze czego pokazać, pobiera też dane tej warstwy, najwyżej raz na minutę. Przez Bluetooth linia dynamiczna aktualizuje się sama."
+    },
+    "fetch_mow_path": {
+      "name": "Pobierz ścieżkę koszenia",
+      "description": "Pobiera ścieżkę koszenia bieżącego zadania kosiarki, chyba że pełna ścieżka jest już zapisana, i na jej podstawie odtwarza postęp koszenia. Kosiarki z linią dynamiczną pobierają też swoją najnowszą linię. Przez chmurę dzieje się to tylko przy włączonej opcji 'Włącz pobieranie ścieżki koszenia (chmura)'; przez Bluetooth zawsze. Zwraca, czy pobieranie zostało rozpoczęte."
+    },
     "get_map_backup_progress": {
       "name": "Pobierz postęp kopii mapy",
       "description": "Zwraca postęp tworzenia lub przywracania kopii mapy.",
@@ -1392,7 +1390,7 @@
     "map_backup_device_not_found": {
       "message": "{device_name} nie jest dostępne do tworzenia kopii map na tym koncie Mammotion."
     },
-    "map_backup_mower_not_found": {
+    "mower_not_found": {
       "message": "{entity_id} nie jest kosiarką Mammotion."
     }
   }

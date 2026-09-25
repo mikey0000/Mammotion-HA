@@ -944,22 +944,12 @@
     },
     "get_map_data": {
       "name": "Obtenir les données de la carte",
-      "description": "Retourne les données brutes de la carte (zones, tuiles SVG, noms de zones) pour utilisation avec la carte SVG.",
-      "fields": {
-        "entity_id": {
-          "name": "Entité",
-          "description": "Toute entité Mammotion appartenant à l'appareil."
-        }
-      }
+      "description": "Retourne les données brutes de la carte (zones, tuiles SVG, noms de zones) pour utilisation avec la carte SVG."
     },
     "svg_add": {
       "name": "Ajouter une tuile SVG",
       "description": "Envoie une nouvelle tuile SVG à la carte de l'appareil. Retourne le hash attribué par l'appareil.",
       "fields": {
-        "entity_id": {
-          "name": "Entité",
-          "description": "Toute entité Mammotion appartenant à l'appareil."
-        },
         "area_hash": {
           "name": "Hash de zone",
           "description": "Hash de la zone de tonte parente."
@@ -1002,10 +992,6 @@
       "name": "Mettre à jour une tuile SVG",
       "description": "Remplace une tuile SVG existante sur la carte de l'appareil. Utilisez le device_hash retourné par svg_add.",
       "fields": {
-        "entity_id": {
-          "name": "Entité",
-          "description": "Toute entité Mammotion appartenant à l'appareil."
-        },
         "device_hash": {
           "name": "Hash de l'appareil",
           "description": "Hash attribué par l'appareil lors du premier ajout de la tuile."
@@ -1052,10 +1038,6 @@
       "name": "Supprimer une tuile SVG",
       "description": "Supprime une tuile SVG de la carte de l'appareil par son hash attribué par l'appareil.",
       "fields": {
-        "entity_id": {
-          "name": "Entité",
-          "description": "Toute entité Mammotion appartenant à l'appareil."
-        },
         "device_hash": {
           "name": "Hash de l'appareil",
           "description": "Hash attribué par l'appareil lors de l'ajout de la tuile."
@@ -1304,6 +1286,22 @@
       "name": "Obtenir les sauvegardes de carte",
       "description": "Renvoie les sauvegardes de carte du compte Mammotion avec lequel cette intégration est connectée. Les sauvegardes sont propres à chaque compte : celles créées dans l'application avec un autre compte n'apparaissent pas."
     },
+    "get_geojson": {
+      "name": "Obtenir le GeoJSON de la carte",
+      "description": "Renvoie la carte de la tondeuse (zones, obstacles, chemins, station de charge et station RTK) sous forme de FeatureCollection GeoJSON pour la carte, et fait remonter la position de la tondeuse pendant les minutes suivantes."
+    },
+    "get_mow_path_geojson": {
+      "name": "Obtenir le GeoJSON du chemin de tonte",
+      "description": "Renvoie le chemin de tonte prévu de la tâche en cours sous forme de FeatureCollection GeoJSON. Vide tant que le chemin n'a pas été récupéré."
+    },
+    "get_mow_progress_geojson": {
+      "name": "Obtenir le GeoJSON de la progression",
+      "description": "Renvoie la partie du chemin de tonte de la tâche en cours déjà tondue, sous forme de FeatureCollection GeoJSON ; les tondeuses qui diffusent une ligne dynamique renvoient cette ligne à la place. Pendant une tâche, tant que rien ne peut être affiché, récupère aussi les données de cette couche, au plus une fois par minute. Via Bluetooth, une ligne dynamique se met à jour d'elle-même."
+    },
+    "fetch_mow_path": {
+      "name": "Récupérer le chemin de tonte",
+      "description": "Récupère le chemin de tonte de la tâche en cours, sauf si un chemin complet est déjà en cache, puis recalcule la progression de tonte. Les tondeuses à ligne dynamique récupèrent aussi leur dernière ligne. Via le cloud, cela n'a lieu que si 'Activer la récupération du chemin de tonte (cloud)' est activé dans les options ; via Bluetooth, toujours. Indique si une récupération a été lancée."
+    },
     "get_map_backup_progress": {
       "name": "Obtenir la progression de la sauvegarde",
       "description": "Renvoie l'avancement d'une sauvegarde ou d'une restauration de carte.",
@@ -1392,7 +1390,7 @@
     "map_backup_device_not_found": {
       "message": "{device_name} ne figure pas parmi les appareils à sauvegarder sur ce compte Mammotion."
     },
-    "map_backup_mower_not_found": {
+    "mower_not_found": {
       "message": "{entity_id} n'est pas une tondeuse Mammotion."
     }
   }

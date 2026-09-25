@@ -57,7 +57,7 @@ _EXCEPTIONS = [
     "map_backup_cloud_unavailable",
     "map_backup_failed",
     "map_backup_device_not_found",
-    "map_backup_mower_not_found",
+    "mower_not_found",
 ]
 
 
@@ -395,7 +395,7 @@ async def test_a_non_mower_entity_is_rejected(
             return_response=True,
         )
 
-    assert err.value.translation_key == "map_backup_mower_not_found"
+    assert err.value.translation_key == "mower_not_found"
 
 
 def test_services_yaml_declares_every_backup_service() -> None:

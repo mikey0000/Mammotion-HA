@@ -944,22 +944,12 @@
     },
     "get_map_data": {
       "name": "Pridobi podatke zemljevida",
-      "description": "Vrne surove podatke zemljevida (področja, SVG ploščice, imena področij) za uporabo s kartico SVG zemljevida.",
-      "fields": {
-        "entity_id": {
-          "name": "Entiteta",
-          "description": "Katera koli Mammotion entiteta, ki pripada napravi."
-        }
-      }
+      "description": "Vrne surove podatke zemljevida (področja, SVG ploščice, imena področij) za uporabo s kartico SVG zemljevida."
     },
     "svg_add": {
       "name": "Dodaj SVG ploščico",
       "description": "Pošlje novo SVG ploščico na zemljevid naprave. Vrne hash, ki ga dodeli naprava.",
       "fields": {
-        "entity_id": {
-          "name": "Entiteta",
-          "description": "Katera koli Mammotion entiteta, ki pripada napravi."
-        },
         "area_hash": {
           "name": "Hash področja",
           "description": "Hash nadrejenega področja košnje."
@@ -1002,10 +992,6 @@
       "name": "Posodobi SVG ploščico",
       "description": "Zamenja obstoječo SVG ploščico na zemljevidu naprave. Uporabite device_hash, ki ga vrne svg_add.",
       "fields": {
-        "entity_id": {
-          "name": "Entiteta",
-          "description": "Katera koli Mammotion entiteta, ki pripada napravi."
-        },
         "device_hash": {
           "name": "Hash naprave",
           "description": "Hash, ki ga je naprava dodelila ob prvem dodajanju ploščice."
@@ -1052,10 +1038,6 @@
       "name": "Izbriši SVG ploščico",
       "description": "Odstrani SVG ploščico z zemljevida naprave z njenim hashom, ki ga je dodelila naprava.",
       "fields": {
-        "entity_id": {
-          "name": "Entiteta",
-          "description": "Katera koli Mammotion entiteta, ki pripada napravi."
-        },
         "device_hash": {
           "name": "Hash naprave",
           "description": "Hash, ki ga je naprava dodelila ob dodajanju ploščice."
@@ -1304,6 +1286,22 @@
       "name": "Pridobi varnostne kopije zemljevidov",
       "description": "Vrne varnostne kopije zemljevidov iz računa Mammotion, s katerim je prijavljena ta integracija. Varnostne kopije pripadajo računu, zato kopije, ustvarjene v aplikaciji z drugim računom, niso prikazane."
     },
+    "get_geojson": {
+      "name": "Pridobi GeoJSON zemljevida",
+      "description": "Vrne zemljevid kosilnice (območja, ovire, poti, polnilno postajo in postajo RTK) kot GeoJSON FeatureCollection za kartico zemljevida in naslednjih nekaj minut kosilnica sporoča svoj položaj."
+    },
+    "get_mow_path_geojson": {
+      "name": "Pridobi GeoJSON poti košnje",
+      "description": "Vrne načrtovano pot košnje trenutnega opravila kot GeoJSON FeatureCollection. Prazna, dokler pot ni pridobljena."
+    },
+    "get_mow_progress_geojson": {
+      "name": "Pridobi GeoJSON napredka košnje",
+      "description": "Vrne že pokošeni del poti trenutnega opravila kot GeoJSON FeatureCollection; kosilnice, ki pošiljajo dinamično črto, namesto tega vrnejo to črto. Ko opravilo teče in še ni ničesar za prikaz, pridobi tudi podatke te plasti, največ enkrat na minuto. Prek Bluetootha se dinamična črta posodablja sama."
+    },
+    "fetch_mow_path": {
+      "name": "Pridobi pot košnje",
+      "description": "Pridobi pot košnje opravila, ki ga kosilnica izvaja, razen če je popolna pot že shranjena, nato iz nje znova izračuna napredek košnje. Kosilnice z dinamično črto pridobijo tudi svojo najnovejšo črto. Prek oblaka se to zgodi le, ko je v možnostih vklopljeno 'Omogoči pridobivanje poti košnje (oblak)'; prek Bluetootha vedno. Vrne, ali se je pridobivanje začelo."
+    },
     "get_map_backup_progress": {
       "name": "Pridobi napredek varnostne kopije",
       "description": "Vrne, kako daleč je varnostno kopiranje ali obnova zemljevida.",
@@ -1392,7 +1390,7 @@
     "map_backup_device_not_found": {
       "message": "{device_name} v tem računu Mammotion ni na seznamu za varnostne kopije zemljevidov."
     },
-    "map_backup_mower_not_found": {
+    "mower_not_found": {
       "message": "{entity_id} ni kosilnica Mammotion."
     }
   }

@@ -398,20 +398,17 @@ finish_outside_dump_point:
       domain: lawn_mower
 
 get_map_data:
-  fields:
-    entity_id:
-      required: true
-      selector:
-        entity:
-          integration: mammotion
+  target:
+    entity:
+      integration: mammotion
+      domain: lawn_mower
 
 svg_add:
+  target:
+    entity:
+      integration: mammotion
+      domain: lawn_mower
   fields:
-    entity_id:
-      required: true
-      selector:
-        entity:
-          integration: mammotion
     area_hash:
       required: true
       example: 123456789
@@ -489,12 +486,11 @@ svg_add:
           unit_of_measurement: "m"
 
 svg_update:
+  target:
+    entity:
+      integration: mammotion
+      domain: lawn_mower
   fields:
-    entity_id:
-      required: true
-      selector:
-        entity:
-          integration: mammotion
     device_hash:
       required: true
       example: 987654321
@@ -571,12 +567,11 @@ svg_update:
           unit_of_measurement: "m"
 
 svg_delete:
+  target:
+    entity:
+      integration: mammotion
+      domain: lawn_mower
   fields:
-    entity_id:
-      required: true
-      selector:
-        entity:
-          integration: mammotion
     device_hash:
       required: true
       example: 987654321
@@ -931,6 +926,33 @@ restore_map:
       selector:
         text:
 get_map_backups:
+  target:
+    entity:
+      integration: mammotion
+      domain: lawn_mower
+
+# Map layers for the GeoJSON map card.  Each returns a GeoJSON FeatureCollection.
+get_geojson:
+  target:
+    entity:
+      integration: mammotion
+      domain: lawn_mower
+
+get_mow_path_geojson:
+  target:
+    entity:
+      integration: mammotion
+      domain: lawn_mower
+
+get_mow_progress_geojson:
+  target:
+    entity:
+      integration: mammotion
+      domain: lawn_mower
+
+# Fetch the running job's cover path when the map shows no mow progress.
+# Returns whether a fetch was started.
+fetch_mow_path:
   target:
     entity:
       integration: mammotion
