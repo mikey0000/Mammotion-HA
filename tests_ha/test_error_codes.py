@@ -1,17 +1,24 @@
 """Persisting pymammotion's error-code cache; the refresh logic itself is tested in pymammotion."""
 
+import threading
+from pathlib import Path
 from typing import Any
 from unittest.mock import create_autospec, patch
 
 import pytest
 from homeassistant.core import HomeAssistant
-from pymammotion.data.error_codes import describe, set_fetched_error_codes
+from pymammotion.data.error_codes import (
+    bundled_error_codes,
+    describe,
+    set_fetched_error_codes,
+)
 from pymammotion.http.http import MammotionHTTP
 from pymammotion.http.model.http import ErrorCodeRecord, Response
 
 from custom_components.mammotion.error_codes import (
     _DATA_KEY,
     STORE_KEY,
+    async_preload_error_codes,
     async_refresh_error_codes,
 )
 
@@ -79,3 +86,24 @@ async def test_nothing_is_saved_when_the_table_is_current(
 
     http.get_all_error_codes_paged.assert_not_awaited()
     assert hass_storage[STORE_KEY]["data"]["marker"] == "untouched"
+
+
+async def test_the_bundled_table_is_parsed_off_the_event_loop(
+    hass: HomeAssistant,
+) -> None:
+    """Setup reads the CSV once in the executor; a later lookup on the loop reads nothing."""
+    bundled_error_codes.cache_clear()
+    loop_thread = threading.get_ident()
+    read_on_loop: list[bool] = []
+    real_read_text = Path.read_text
+
+    def spy(self: Path, *args: Any, **kwargs: Any) -> str:
+        if self.name == "error_codes.csv":
+            read_on_loop.append(threading.get_ident() == loop_thread)
+        return real_read_text(self, *args, **kwargs)
+
+    with patch.object(Path, "read_text", spy):
+        await async_preload_error_codes(hass)
+        describe(-1304, "de")
+
+    assert read_on_loop == [False]
