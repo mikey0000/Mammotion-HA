@@ -81,6 +81,7 @@ from .coordinator import (
     MammotionRTKCoordinator,
     MammotionSpinoCoordinator,
 )
+from .error_codes import async_preload_error_codes
 from .models import (
     MammotionDevices,
     MammotionMowerData,
@@ -413,6 +414,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
 
     store = async_get_store(hass, entry)
     await store.async_load_device_data()
+    await async_preload_error_codes(hass)
 
     async def shutdown_mammotion(_: Event | None = None) -> None:
         await mammotion.stop()
