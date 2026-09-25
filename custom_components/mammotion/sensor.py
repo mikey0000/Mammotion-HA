@@ -47,7 +47,7 @@ from pymammotion.utility.constant.device_constant import (
 from pymammotion.utility.device_type import DeviceType
 
 from . import MammotionConfigEntry
-from .const import DOMAIN
+from .const import DOMAIN, SELF_CHECK_OTHER, SELF_CHECK_STATES
 from .coordinator import (
     MAP_SYNC_STATUSES,
     MammotionBaseUpdateCoordinator,
@@ -239,7 +239,6 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.BATTERY,
         native_unit_of_measurement=PERCENTAGE,
         value_fn=lambda mower_data: mower_data.report_data.dev.battery_val,
-        entity_category=EntityCategory.DIAGNOSTIC,
     ),
     MammotionSensorEntityDescription(
         key="ble_rssi",
@@ -286,7 +285,6 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         device_class=None,
         native_unit_of_measurement=UnitOfArea.SQUARE_METERS,
         value_fn=lambda mower_data: mower_data.report_data.work.area & 65535,
-        entity_category=EntityCategory.DIAGNOSTIC,
     ),
     MammotionSensorEntityDescription(
         key="mowing_speed",
@@ -302,7 +300,6 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         device_class=None,
         native_unit_of_measurement=PERCENTAGE,
         value_fn=lambda mower_data: mower_data.report_data.work.area >> 16,
-        entity_category=EntityCategory.DIAGNOSTIC,
     ),
     MammotionSensorEntityDescription(
         key="total_time",
@@ -321,7 +318,6 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
             (mower_data.report_data.work.progress & 65535)
             - (mower_data.report_data.work.progress >> 16)
         ),
-        entity_category=EntityCategory.DIAGNOSTIC,
     ),
     MammotionSensorEntityDescription(
         key="left_time",
@@ -329,7 +325,6 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.DURATION,
         native_unit_of_measurement=UnitOfTime.MINUTES,
         value_fn=lambda mower_data: mower_data.report_data.work.progress >> 16,
-        entity_category=EntityCategory.DIAGNOSTIC,
     ),
     MammotionSensorEntityDescription(
         key="non_work_hours",
@@ -362,6 +357,15 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
     #     native_unit_of_measurement=None,
     #     value_fn=lambda mower_data: (mower_data.report_data.dev.vslam_status & 65280) >> 8,
     # ),
+    MammotionSensorEntityDescription(
+        key="self_check",
+        state_class=None,
+        device_class=SensorDeviceClass.ENUM,
+        options=[*dict.fromkeys(SELF_CHECK_STATES.values()), SELF_CHECK_OTHER],
+        value_fn=lambda mower_data: SELF_CHECK_STATES.get(
+            mower_data.report_data.dev.self_check_status, SELF_CHECK_OTHER
+        ),
+    ),
     MammotionSensorEntityDescription(
         key="activity_mode",
         state_class=None,
@@ -441,7 +445,6 @@ SENSOR_ERROR_TYPES: tuple[MammotionErrorSensorEntityDescription, ...] = (
         value_fn=lambda coordinator, mower_data: (
             msg[:255] if (msg := coordinator.get_error_message(1)) is not None else None
         ),
-        entity_category=EntityCategory.DIAGNOSTIC,
     ),
     MammotionErrorSensorEntityDescription(
         key="error_1_code",
@@ -531,7 +534,6 @@ WORK_SENSOR_TYPES: tuple[MammotionWorkSensorEntityDescription, ...] = (
             coordinator.get_area_entity_name(mower_data.location.work_zone)
             or "Not working"
         ),
-        entity_category=EntityCategory.DIAGNOSTIC,
     ),
     MammotionWorkSensorEntityDescription(
         key="map_sync_status",
@@ -998,7 +1000,6 @@ def async_add_task_area_entities(
             device_class=SensorDeviceClass.ENUM,
             state_class=None,
             options=_TASK_AREA_OPTIONS,
-            entity_category=EntityCategory.DIAGNOSTIC,
             value_fn=lambda mower_data, h=area_hash: getattr(
                 mower_data.events.work_tasks_event.hash_area_map.get(h), "name", None
             ),

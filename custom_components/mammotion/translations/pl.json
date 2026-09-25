@@ -64,6 +64,9 @@
           "mow_path_fetch_enabled": "Włącz pobieranie ścieżki koszenia (chmura)",
           "full_map_fetch_enabled": "Włącz pełne pobieranie mapy (chmura) — gdy wyłączone, pobierane są tylko nazwy obszarów",
           "notify": "Pokazuj trwałe powiadomienia dla"
+        },
+        "data_description": {
+          "notify": "Powiadomienia autotestu są domyślnie włączone, pozostałe wyłączone. Każde powiadomienie wyzwala też encję zdarzeń powiadomień kosiarki i zdarzenie mammotion_event na magistrali, których automatyzacje mogą użyć zamiast tego."
         }
       }
     }
@@ -352,11 +355,43 @@
           "2": "Słaby",
           "3": "Brak"
         }
+      },
+      "self_check": {
+        "name": "Autotest",
+        "state": {
+          "normal": "OK",
+          "emergency_stop": "Aktywowano zatrzymanie awaryjne",
+          "stop_button": "Naciśnięto przycisk STOP",
+          "safety_key_missing": "Klucz bezpieczeństwa nie jest włożony",
+          "lifted": "Podniesiona",
+          "tilted": "Przechylona",
+          "tipped_over": "Przewrócona",
+          "bumper_missing": "Boczny zderzak nie jest zamontowany",
+          "rain": "Wykryto deszcz",
+          "low_battery": "Niski poziom baterii",
+          "non_working_hours": "Poza godzinami pracy",
+          "rtk_station_moved": "Stacja referencyjna RTK przesunięta",
+          "outside_task_area": "Poza obszarem zadania",
+          "wheel_motor_error": "Błąd silnika piasty koła",
+          "blade_motor_overheated": "Silnik noża zbyt gorący",
+          "dock_moved": "Stacja ładująca przesunięta",
+          "no_task_area": "Brak obszaru zadania",
+          "night_protection": "Ochrona nocna",
+          "rtk_not_ready": "Stacja referencyjna RTK nie jest gotowa",
+          "weak_satellite_signal": "Słaby sygnał satelitarny",
+          "positioning_failure": "Awaria systemu pozycjonowania",
+          "inavi_unavailable": "Usługa iNavi niedostępna",
+          "weak_rtk_signal": "Słaby sygnał RTK",
+          "other": "Inne"
+        }
       }
     },
     "binary_sensor": {
       "spino_charging": {
         "name": "Ładowanie"
+      },
+      "rain_detected": {
+        "name": "Wykryto deszcz"
       }
     },
     "button": {
@@ -725,7 +760,8 @@
     "notify": {
       "options": {
         "warnings": "Ostrzeżenia i kody błędów",
-        "notifications": "Powiadomienia i informacje urządzenia"
+        "notifications": "Powiadomienia i informacje urządzenia",
+        "self_check": "Autotest: dlaczego kosiarka nie może ruszyć"
       }
     }
   },
@@ -1392,6 +1428,87 @@
     },
     "mower_not_found": {
       "message": "{entity_id} nie jest kosiarką Mammotion."
+    },
+    "notification_unknown_code": {
+      "message": "Nieznany kod błędu {code}"
+    },
+    "notification_title_warnings": {
+      "message": "{device_name}: ostrzeżenia"
+    },
+    "notification_title_notifications": {
+      "message": "{device_name}: powiadomienia"
+    },
+    "notification_title_self_check": {
+      "message": "{device_name}: {state}"
+    },
+    "self_check_emergency_stop": {
+      "message": "Zatrzymanie awaryjne jest aktywne. Zwolnij je na kosiarce przed ponownym uruchomieniem."
+    },
+    "self_check_stop_button": {
+      "message": "Naciśnięto przycisk STOP na kosiarce. Zresetuj go na kosiarce przed ponownym uruchomieniem."
+    },
+    "self_check_safety_key_missing": {
+      "message": "Klucz bezpieczeństwa nie jest włożony. Włóż go, aby rozpocząć koszenie."
+    },
+    "self_check_lifted": {
+      "message": "Kosiarka została podniesiona z ziemi. Postaw ją z powrotem na trawniku."
+    },
+    "self_check_tilted": {
+      "message": "Kosiarka jest przechylona. Przenieś ją na równe podłoże."
+    },
+    "self_check_tipped_over": {
+      "message": "Kosiarka się przewróciła. Postaw ją z powrotem na kołach."
+    },
+    "self_check_bumper_missing": {
+      "message": "Boczny zderzak nie jest zamontowany. Zamontuj go przed koszeniem."
+    },
+    "self_check_rain": {
+      "message": "Wykryto deszcz, a funkcja „Bez koszenia w deszczowe dni” jest włączona. Koszenie może się rozpocząć, gdy przestanie padać, lub wyłącz tę funkcję."
+    },
+    "self_check_low_battery": {
+      "message": "Bateria jest zbyt słaba do koszenia. Pozwól kosiarce się naładować."
+    },
+    "self_check_non_working_hours": {
+      "message": "Jest poza godzinami pracy kosiarki."
+    },
+    "self_check_rtk_station_moved": {
+      "message": "Stacja referencyjna RTK została przesunięta. Sprawdź jej położenie w aplikacji."
+    },
+    "self_check_outside_task_area": {
+      "message": "Kosiarka jest poza swoim obszarem zadania. Przenieś ją z powrotem do zmapowanego obszaru."
+    },
+    "self_check_wheel_motor_error": {
+      "message": "Silnik piasty koła zgłosił błąd."
+    },
+    "self_check_blade_motor_overheated": {
+      "message": "Silnik noża jest zbyt gorący. Pozwól mu ostygnąć."
+    },
+    "self_check_dock_moved": {
+      "message": "Stacja ładująca została przesunięta. Sprawdź jej położenie w aplikacji."
+    },
+    "self_check_no_task_area": {
+      "message": "Nie znaleziono obszaru zadania. Utwórz mapę w aplikacji."
+    },
+    "self_check_night_protection": {
+      "message": "Ochrona nocna jest włączona, więc kosiarka nie kosi w nocy."
+    },
+    "self_check_rtk_not_ready": {
+      "message": "Stacja referencyjna RTK nie jest jeszcze gotowa."
+    },
+    "self_check_weak_satellite_signal": {
+      "message": "Sygnał satelitarny kosiarki jest zbyt słaby, aby ustalić jej położenie."
+    },
+    "self_check_positioning_failure": {
+      "message": "System pozycjonowania uległ awarii."
+    },
+    "self_check_inavi_unavailable": {
+      "message": "Usługa iNavi jest niedostępna."
+    },
+    "self_check_weak_rtk_signal": {
+      "message": "Sygnał RTK jest słaby. Sprawdź, gdzie stoi stacja referencyjna."
+    },
+    "self_check_other": {
+      "message": "Kosiarka zgłosiła nieznany kod autotestu {code}."
     }
   }
 }

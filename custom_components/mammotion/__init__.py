@@ -69,6 +69,7 @@ from .const import (
     DOMAIN,
     EXPIRED_CREDENTIAL_EXCEPTIONS,
     LOGGER,
+    NOTIFY_SELF_CHECK,
     NOTIFY_WARNINGS,
     POOL_CLEANER_SUPPORT,
 )
@@ -395,6 +396,18 @@ async def async_migrate_entry(hass: HomeAssistant, entry: MammotionConfigEntry) 
         options.setdefault(CONF_NOTIFY, [NOTIFY_WARNINGS])
         hass.config_entries.async_update_entry(
             entry, options=options, version=1, minor_version=3
+        )
+
+    if entry.version == 1 and entry.minor_version < 4:
+        # Self-check notifications are on by default; a list saved before the
+        # category existed cannot have turned it off, so add it.
+        options = dict(entry.options)
+        if (notify := options.get(CONF_NOTIFY)) is not None and (
+            NOTIFY_SELF_CHECK not in notify
+        ):
+            options[CONF_NOTIFY] = [*notify, NOTIFY_SELF_CHECK]
+        hass.config_entries.async_update_entry(
+            entry, options=options, version=1, minor_version=4
         )
 
     return True

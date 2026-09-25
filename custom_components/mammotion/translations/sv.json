@@ -64,6 +64,9 @@
           "mow_path_fetch_enabled": "Aktivera hämtning av klippväg (moln)",
           "full_map_fetch_enabled": "Aktivera fullständig karthämtning (moln) — när av hämtas endast områdesnamn",
           "notify": "Visa beständiga aviseringar för"
+        },
+        "data_description": {
+          "notify": "Självtestaviseringar är på som standard, de andra är av. Varje avisering utlöser också gräsklipparens aviseringshändelseentitet och en mammotion_event-händelse på bussen, som automatiseringar kan använda i stället."
         }
       }
     }
@@ -352,11 +355,43 @@
           "2": "Svag",
           "3": "Ingen"
         }
+      },
+      "self_check": {
+        "name": "Självtest",
+        "state": {
+          "normal": "OK",
+          "emergency_stop": "Nödstopp aktiverat",
+          "stop_button": "STOPP-knappen nedtryckt",
+          "safety_key_missing": "Säkerhetsnyckeln är inte isatt",
+          "lifted": "Lyft",
+          "tilted": "Lutad",
+          "tipped_over": "Vält",
+          "bumper_missing": "Sidostötfångaren är inte monterad",
+          "rain": "Regn upptäckt",
+          "low_battery": "Lågt batteri",
+          "non_working_hours": "Utanför arbetstid",
+          "rtk_station_moved": "RTK-referensstationen har flyttats",
+          "outside_task_area": "Utanför uppgiftsområdet",
+          "wheel_motor_error": "Fel på navmotorn",
+          "blade_motor_overheated": "Knivmotorn är för varm",
+          "dock_moved": "Laddstationen har flyttats",
+          "no_task_area": "Inget uppgiftsområde",
+          "night_protection": "Nattskydd",
+          "rtk_not_ready": "RTK-referensstationen är inte redo",
+          "weak_satellite_signal": "Svag satellitsignal",
+          "positioning_failure": "Fel i positioneringssystemet",
+          "inavi_unavailable": "iNavi-tjänsten är inte tillgänglig",
+          "weak_rtk_signal": "Svag RTK-signal",
+          "other": "Övrigt"
+        }
       }
     },
     "binary_sensor": {
       "spino_charging": {
         "name": "Laddar"
+      },
+      "rain_detected": {
+        "name": "Regn upptäckt"
       }
     },
     "button": {
@@ -725,7 +760,8 @@
     "notify": {
       "options": {
         "warnings": "Varningar och felkoder",
-        "notifications": "Enhetsaviseringar och information"
+        "notifications": "Enhetsaviseringar och information",
+        "self_check": "Självtest: varför gräsklipparen inte kan starta"
       }
     }
   },
@@ -1392,6 +1428,87 @@
     },
     "mower_not_found": {
       "message": "{entity_id} är inte en Mammotion-gräsklippare."
+    },
+    "notification_unknown_code": {
+      "message": "Okänd felkod {code}"
+    },
+    "notification_title_warnings": {
+      "message": "{device_name}: varningar"
+    },
+    "notification_title_notifications": {
+      "message": "{device_name}: aviseringar"
+    },
+    "notification_title_self_check": {
+      "message": "{device_name}: {state}"
+    },
+    "self_check_emergency_stop": {
+      "message": "Nödstoppet är aktiverat. Frigör det på gräsklipparen innan du startar igen."
+    },
+    "self_check_stop_button": {
+      "message": "STOPP-knappen på gräsklipparen har tryckts in. Återställ den på gräsklipparen innan du startar igen."
+    },
+    "self_check_safety_key_missing": {
+      "message": "Säkerhetsnyckeln är inte isatt. Sätt i den för att börja klippa."
+    },
+    "self_check_lifted": {
+      "message": "Gräsklipparen har lyfts från marken. Ställ tillbaka den på gräsmattan."
+    },
+    "self_check_tilted": {
+      "message": "Gräsklipparen lutar. Flytta den till plan mark."
+    },
+    "self_check_tipped_over": {
+      "message": "Gräsklipparen har vält. Ställ upp den på hjulen igen."
+    },
+    "self_check_bumper_missing": {
+      "message": "Sidostötfångaren är inte monterad. Montera den innan du klipper."
+    },
+    "self_check_rain": {
+      "message": "Regn har upptäckts och ”Ingen klippning under regniga dagar” är på. Klippningen kan starta när regnet slutar, eller stäng av funktionen."
+    },
+    "self_check_low_battery": {
+      "message": "Batteriet är för svagt för att klippa. Låt gräsklipparen ladda."
+    },
+    "self_check_non_working_hours": {
+      "message": "Det är utanför gräsklipparens arbetstid."
+    },
+    "self_check_rtk_station_moved": {
+      "message": "RTK-referensstationen har flyttats. Kontrollera dess position i appen."
+    },
+    "self_check_outside_task_area": {
+      "message": "Gräsklipparen är utanför sitt uppgiftsområde. Flytta tillbaka den till ett kartlagt område."
+    },
+    "self_check_wheel_motor_error": {
+      "message": "En navmotor har rapporterat ett fel."
+    },
+    "self_check_blade_motor_overheated": {
+      "message": "Knivmotorn är för varm. Låt den svalna."
+    },
+    "self_check_dock_moved": {
+      "message": "Laddstationen har flyttats. Kontrollera dess position i appen."
+    },
+    "self_check_no_task_area": {
+      "message": "Inget uppgiftsområde hittades. Skapa en karta i appen."
+    },
+    "self_check_night_protection": {
+      "message": "Nattskydd är på, så gräsklipparen klipper inte på natten."
+    },
+    "self_check_rtk_not_ready": {
+      "message": "RTK-referensstationen är inte redo än."
+    },
+    "self_check_weak_satellite_signal": {
+      "message": "Gräsklipparens satellitsignal är för svag för att positionera den."
+    },
+    "self_check_positioning_failure": {
+      "message": "Positioneringssystemet har slutat fungera."
+    },
+    "self_check_inavi_unavailable": {
+      "message": "iNavi-tjänsten är inte tillgänglig."
+    },
+    "self_check_weak_rtk_signal": {
+      "message": "RTK-signalen är svag. Kontrollera var referensstationen står."
+    },
+    "self_check_other": {
+      "message": "Gräsklipparen rapporterade en okänd självtestkod {code}."
     }
   }
 }

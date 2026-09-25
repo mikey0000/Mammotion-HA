@@ -64,6 +64,9 @@
           "mow_path_fetch_enabled": "Omogoči pridobivanje poti košnje (oblak)",
           "full_map_fetch_enabled": "Omogoči pridobivanje celotnega zemljevida (oblak) — če izklopljeno, se pridobijo samo imena območij",
           "notify": "Prikaži trajna obvestila za"
+        },
+        "data_description": {
+          "notify": "Obvestila samopreverjanja so privzeto vklopljena, ostala izklopljena. Vsako obvestilo sproži tudi entiteto dogodkov obvestil kosilnice in dogodek mammotion_event na vodilu, ki ju lahko namesto tega uporabijo avtomatizacije."
         }
       }
     }
@@ -352,11 +355,43 @@
           "2": "Šibko",
           "3": "Brez"
         }
+      },
+      "self_check": {
+        "name": "Samopreverjanje",
+        "state": {
+          "normal": "V redu",
+          "emergency_stop": "Zasilna zaustavitev vklopljena",
+          "stop_button": "Pritisnjen gumb STOP",
+          "safety_key_missing": "Varnostni ključ ni vstavljen",
+          "lifted": "Dvignjena",
+          "tilted": "Nagnjena",
+          "tipped_over": "Prevrnjena",
+          "bumper_missing": "Stranski odbijač ni nameščen",
+          "rain": "Zaznan dež",
+          "low_battery": "Nizka baterija",
+          "non_working_hours": "Izven delovnega časa",
+          "rtk_station_moved": "Referenčna postaja RTK premaknjena",
+          "outside_task_area": "Izven območja opravila",
+          "wheel_motor_error": "Napaka motorja pesta kolesa",
+          "blade_motor_overheated": "Motor rezila je prevroč",
+          "dock_moved": "Polnilna postaja premaknjena",
+          "no_task_area": "Ni območja opravila",
+          "night_protection": "Nočna zaščita",
+          "rtk_not_ready": "Referenčna postaja RTK ni pripravljena",
+          "weak_satellite_signal": "Šibek satelitski signal",
+          "positioning_failure": "Okvara sistema za določanje položaja",
+          "inavi_unavailable": "Storitev iNavi ni na voljo",
+          "weak_rtk_signal": "Šibek signal RTK",
+          "other": "Drugo"
+        }
       }
     },
     "binary_sensor": {
       "spino_charging": {
         "name": "Polnjenje"
+      },
+      "rain_detected": {
+        "name": "Zaznan dež"
       }
     },
     "button": {
@@ -725,7 +760,8 @@
     "notify": {
       "options": {
         "warnings": "Opozorila in kode napak",
-        "notifications": "Obvestila in informacije naprave"
+        "notifications": "Obvestila in informacije naprave",
+        "self_check": "Samopreverjanje: zakaj kosilnica ne more začeti"
       }
     }
   },
@@ -1392,6 +1428,87 @@
     },
     "mower_not_found": {
       "message": "{entity_id} ni kosilnica Mammotion."
+    },
+    "notification_unknown_code": {
+      "message": "Neznana koda napake {code}"
+    },
+    "notification_title_warnings": {
+      "message": "{device_name}: opozorila"
+    },
+    "notification_title_notifications": {
+      "message": "{device_name}: obvestila"
+    },
+    "notification_title_self_check": {
+      "message": "{device_name}: {state}"
+    },
+    "self_check_emergency_stop": {
+      "message": "Zasilna zaustavitev je vklopljena. Pred ponovnim zagonom jo sprostite na kosilnici."
+    },
+    "self_check_stop_button": {
+      "message": "Pritisnjen je bil gumb STOP na kosilnici. Pred ponovnim zagonom ga ponastavite na kosilnici."
+    },
+    "self_check_safety_key_missing": {
+      "message": "Varnostni ključ ni vstavljen. Vstavite ga, da začnete kositi."
+    },
+    "self_check_lifted": {
+      "message": "Kosilnica je bila dvignjena s tal. Postavite jo nazaj na trato."
+    },
+    "self_check_tilted": {
+      "message": "Kosilnica je nagnjena. Premaknite jo na ravna tla."
+    },
+    "self_check_tipped_over": {
+      "message": "Kosilnica se je prevrnila. Postavite jo nazaj na kolesa."
+    },
+    "self_check_bumper_missing": {
+      "message": "Stranski odbijač ni nameščen. Namestite ga pred košnjo."
+    },
+    "self_check_rain": {
+      "message": "Zaznan je bil dež in funkcija »Brez košnje v deževnih dneh« je vklopljena. Košnja se lahko začne, ko dež preneha, ali pa funkcijo izklopite."
+    },
+    "self_check_low_battery": {
+      "message": "Baterija je preveč prazna za košnjo. Pustite, da se kosilnica napolni."
+    },
+    "self_check_non_working_hours": {
+      "message": "Je izven delovnega časa kosilnice."
+    },
+    "self_check_rtk_station_moved": {
+      "message": "Referenčna postaja RTK je bila premaknjena. Preverite njen položaj v aplikaciji."
+    },
+    "self_check_outside_task_area": {
+      "message": "Kosilnica je izven svojega območja opravila. Premaknite jo nazaj v kartirano območje."
+    },
+    "self_check_wheel_motor_error": {
+      "message": "Motor pesta kolesa je javil napako."
+    },
+    "self_check_blade_motor_overheated": {
+      "message": "Motor rezila je prevroč. Pustite, da se ohladi."
+    },
+    "self_check_dock_moved": {
+      "message": "Polnilna postaja je bila premaknjena. Preverite njen položaj v aplikaciji."
+    },
+    "self_check_no_task_area": {
+      "message": "Območje opravila ni bilo najdeno. Ustvarite zemljevid v aplikaciji."
+    },
+    "self_check_night_protection": {
+      "message": "Nočna zaščita je vklopljena, zato kosilnica ponoči ne kosi."
+    },
+    "self_check_rtk_not_ready": {
+      "message": "Referenčna postaja RTK še ni pripravljena."
+    },
+    "self_check_weak_satellite_signal": {
+      "message": "Satelitski signal kosilnice je prešibek za določitev položaja."
+    },
+    "self_check_positioning_failure": {
+      "message": "Sistem za določanje položaja je odpovedal."
+    },
+    "self_check_inavi_unavailable": {
+      "message": "Storitev iNavi ni na voljo."
+    },
+    "self_check_weak_rtk_signal": {
+      "message": "Signal RTK je šibek. Preverite, kje stoji referenčna postaja."
+    },
+    "self_check_other": {
+      "message": "Kosilnica je javila neznano kodo samopreverjanja {code}."
     }
   }
 }

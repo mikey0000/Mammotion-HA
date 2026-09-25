@@ -64,6 +64,9 @@
           "mow_path_fetch_enabled": "Nyírási útvonal lekérésének engedélyezése (felhő)",
           "full_map_fetch_enabled": "Teljes térkép lekérésének engedélyezése (felhő) — kikapcsolva csak a területnevek kerülnek lekérésre",
           "notify": "Állandó értesítések megjelenítése"
+        },
+        "data_description": {
+          "notify": "Az önellenőrzési értesítések alapértelmezés szerint be vannak kapcsolva, a többi ki. Minden értesítés a fűnyíró értesítési eseményentitását és egy mammotion_event buszeseményt is kivált, amelyeket az automatizálások helyette használhatnak."
         }
       }
     }
@@ -352,11 +355,43 @@
           "2": "Gyenge",
           "3": "Nincs"
         }
+      },
+      "self_check": {
+        "name": "Önellenőrzés",
+        "state": {
+          "normal": "OK",
+          "emergency_stop": "Vészleállítás aktiválva",
+          "stop_button": "STOP gomb megnyomva",
+          "safety_key_missing": "Biztonsági kulcs nincs behelyezve",
+          "lifted": "Felemelve",
+          "tilted": "Megdöntve",
+          "tipped_over": "Felborult",
+          "bumper_missing": "Oldalsó ütköző nincs felszerelve",
+          "rain": "Eső észlelve",
+          "low_battery": "Alacsony akkumulátor",
+          "non_working_hours": "Munkaidőn kívül",
+          "rtk_station_moved": "RTK referenciaállomás elmozdult",
+          "outside_task_area": "A feladatterületen kívül",
+          "wheel_motor_error": "Kerékagymotor-hiba",
+          "blade_motor_overheated": "A késmotor túl forró",
+          "dock_moved": "Töltőállomás elmozdult",
+          "no_task_area": "Nincs feladatterület",
+          "night_protection": "Éjszakai védelem",
+          "rtk_not_ready": "RTK referenciaállomás nem kész",
+          "weak_satellite_signal": "Gyenge műholdjel",
+          "positioning_failure": "Helymeghatározó rendszer hibája",
+          "inavi_unavailable": "Az iNavi szolgáltatás nem érhető el",
+          "weak_rtk_signal": "Gyenge RTK-jel",
+          "other": "Egyéb"
+        }
       }
     },
     "binary_sensor": {
       "spino_charging": {
         "name": "Töltés"
+      },
+      "rain_detected": {
+        "name": "Eső észlelve"
       }
     },
     "button": {
@@ -725,7 +760,8 @@
     "notify": {
       "options": {
         "warnings": "Figyelmeztetések és hibakódok",
-        "notifications": "Eszközértesítések és információk"
+        "notifications": "Eszközértesítések és információk",
+        "self_check": "Önellenőrzés: miért nem tud elindulni a fűnyíró"
       }
     }
   },
@@ -1392,6 +1428,87 @@
     },
     "mower_not_found": {
       "message": "{entity_id} nem Mammotion fűnyíró."
+    },
+    "notification_unknown_code": {
+      "message": "Ismeretlen hibakód: {code}"
+    },
+    "notification_title_warnings": {
+      "message": "{device_name}: figyelmeztetések"
+    },
+    "notification_title_notifications": {
+      "message": "{device_name}: értesítések"
+    },
+    "notification_title_self_check": {
+      "message": "{device_name}: {state}"
+    },
+    "self_check_emergency_stop": {
+      "message": "A vészleállítás aktív. Oldja fel a fűnyírón az újraindítás előtt."
+    },
+    "self_check_stop_button": {
+      "message": "Megnyomták a fűnyíró STOP gombját. Az újraindítás előtt oldja fel a fűnyírón."
+    },
+    "self_check_safety_key_missing": {
+      "message": "A biztonsági kulcs nincs behelyezve. Helyezze be a nyírás megkezdéséhez."
+    },
+    "self_check_lifted": {
+      "message": "A fűnyírót felemelték a földről. Tegye vissza a gyepre."
+    },
+    "self_check_tilted": {
+      "message": "A fűnyíró megdőlt. Tegye sík talajra."
+    },
+    "self_check_tipped_over": {
+      "message": "A fűnyíró felborult. Állítsa vissza a kerekeire."
+    },
+    "self_check_bumper_missing": {
+      "message": "Az oldalsó ütköző nincs felszerelve. Szerelje fel nyírás előtt."
+    },
+    "self_check_rain": {
+      "message": "Esőt észlelt, és a „Nincs nyírás esős napokon” be van kapcsolva. A nyírás az eső elállta után indulhat, vagy kapcsolja ki a funkciót."
+    },
+    "self_check_low_battery": {
+      "message": "Az akkumulátor túl alacsony a nyíráshoz. Hagyja tölteni a fűnyírót."
+    },
+    "self_check_non_working_hours": {
+      "message": "A fűnyíró munkaidején kívül van."
+    },
+    "self_check_rtk_station_moved": {
+      "message": "Az RTK referenciaállomást elmozdították. Ellenőrizze a helyzetét az alkalmazásban."
+    },
+    "self_check_outside_task_area": {
+      "message": "A fűnyíró a feladatterületén kívül van. Vigye vissza egy feltérképezett területre."
+    },
+    "self_check_wheel_motor_error": {
+      "message": "Egy kerékagymotor hibát jelzett."
+    },
+    "self_check_blade_motor_overheated": {
+      "message": "A késmotor túl forró. Hagyja lehűlni."
+    },
+    "self_check_dock_moved": {
+      "message": "A töltőállomást elmozdították. Ellenőrizze a helyzetét az alkalmazásban."
+    },
+    "self_check_no_task_area": {
+      "message": "Nem található feladatterület. Hozzon létre térképet az alkalmazásban."
+    },
+    "self_check_night_protection": {
+      "message": "Az éjszakai védelem be van kapcsolva, ezért a fűnyíró éjjel nem nyír."
+    },
+    "self_check_rtk_not_ready": {
+      "message": "Az RTK referenciaállomás még nem kész."
+    },
+    "self_check_weak_satellite_signal": {
+      "message": "A fűnyíró műholdjele túl gyenge a helymeghatározáshoz."
+    },
+    "self_check_positioning_failure": {
+      "message": "A helymeghatározó rendszer meghibásodott."
+    },
+    "self_check_inavi_unavailable": {
+      "message": "Az iNavi szolgáltatás nem érhető el."
+    },
+    "self_check_weak_rtk_signal": {
+      "message": "Az RTK-jel gyenge. Ellenőrizze a referenciaállomás elhelyezését."
+    },
+    "self_check_other": {
+      "message": "A fűnyíró ismeretlen önellenőrzési kódot jelzett: {code}."
     }
   }
 }

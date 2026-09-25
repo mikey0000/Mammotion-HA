@@ -9,7 +9,6 @@ from homeassistant.components.binary_sensor import (
     BinarySensorEntity,
     BinarySensorEntityDescription,
 )
-from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pymammotion.data.model.device import MowingDevice, PoolCleanerDevice
@@ -17,6 +16,10 @@ from pymammotion.data.model.device import MowingDevice, PoolCleanerDevice
 from . import MammotionConfigEntry
 from .coordinator import MammotionBaseUpdateCoordinator, MammotionSpinoCoordinator
 from .entity import MammotionBaseEntity, MammotionBaseSpinoEntity
+
+# ``rpt_dev_status.self_check_status`` is a single code, not a bitmask; the app shows
+# "Mowing is disabled on rainy days" for this one (BlockErrorBeanChangeUtils).
+SELF_CHECK_RAIN_DETECTED = 20
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -42,7 +45,14 @@ BINARY_SENSORS: tuple[MammotionBinarySensorEntityDescription, ...] = (
         key="charging",
         device_class=BinarySensorDeviceClass.BATTERY_CHARGING,
         is_on_fn=lambda mower_data: mower_data.report_data.dev.charge_state in (1, 2),
-        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    MammotionBinarySensorEntityDescription(
+        key="rain_detected",
+        translation_key="rain_detected",
+        device_class=BinarySensorDeviceClass.MOISTURE,
+        is_on_fn=lambda mower_data: (
+            mower_data.report_data.dev.self_check_status == SELF_CHECK_RAIN_DETECTED
+        ),
     ),
 )
 
@@ -51,7 +61,6 @@ SPINO_BINARY_SENSORS: tuple[MammotionSpinoBinarySensorEntityDescription, ...] = 
         key="spino_charging",
         device_class=BinarySensorDeviceClass.BATTERY_CHARGING,
         is_on_fn=lambda spino_data: spino_data.pool_state.charging,
-        entity_category=EntityCategory.DIAGNOSTIC,
     ),
 )
 

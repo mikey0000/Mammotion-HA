@@ -64,6 +64,9 @@
           "mow_path_fetch_enabled": "Mähpfad-Abruf aktivieren (Cloud)",
           "full_map_fetch_enabled": "Vollständigen Kartenabruf aktivieren (Cloud) — wenn aus, werden nur Bereichsnamen abgerufen",
           "notify": "Dauerhafte Benachrichtigungen anzeigen für"
+        },
+        "data_description": {
+          "notify": "Selbsttest-Benachrichtigungen sind standardmäßig aktiviert, die anderen deaktiviert. Jede Benachrichtigung löst außerdem die Benachrichtigungs-Ereignisentität des Mähers und ein mammotion_event auf dem Bus aus, die Automatisierungen stattdessen nutzen können."
         }
       }
     }
@@ -352,11 +355,43 @@
           "2": "Schwach",
           "3": "Keine"
         }
+      },
+      "self_check": {
+        "name": "Selbsttest",
+        "state": {
+          "normal": "OK",
+          "emergency_stop": "Not-Aus aktiviert",
+          "stop_button": "STOP-Taste gedrückt",
+          "safety_key_missing": "Sicherheitsschlüssel nicht eingesteckt",
+          "lifted": "Angehoben",
+          "tilted": "Geneigt",
+          "tipped_over": "Umgekippt",
+          "bumper_missing": "Seitlicher Stoßfänger nicht montiert",
+          "rain": "Regen erkannt",
+          "low_battery": "Akku schwach",
+          "non_working_hours": "Außerhalb der Arbeitszeit",
+          "rtk_station_moved": "RTK-Referenzstation verschoben",
+          "outside_task_area": "Außerhalb des Aufgabenbereichs",
+          "wheel_motor_error": "Fehler am Radnabenmotor",
+          "blade_motor_overheated": "Messermotor zu heiß",
+          "dock_moved": "Ladestation verschoben",
+          "no_task_area": "Kein Aufgabenbereich",
+          "night_protection": "Nachtschutz",
+          "rtk_not_ready": "RTK-Referenzstation nicht bereit",
+          "weak_satellite_signal": "Schwaches Satellitensignal",
+          "positioning_failure": "Fehler im Positionierungssystem",
+          "inavi_unavailable": "iNavi-Dienst nicht verfügbar",
+          "weak_rtk_signal": "Schwaches RTK-Signal",
+          "other": "Sonstiges"
+        }
       }
     },
     "binary_sensor": {
       "spino_charging": {
         "name": "Lädt"
+      },
+      "rain_detected": {
+        "name": "Regen erkannt"
       }
     },
     "button": {
@@ -725,7 +760,8 @@
     "notify": {
       "options": {
         "warnings": "Warnungen und Fehlercodes",
-        "notifications": "Gerätebenachrichtigungen und Informationen"
+        "notifications": "Gerätebenachrichtigungen und Informationen",
+        "self_check": "Selbsttest: warum der Mäher nicht starten kann"
       }
     }
   },
@@ -1392,6 +1428,87 @@
     },
     "mower_not_found": {
       "message": "{entity_id} ist kein Mammotion-Mäher."
+    },
+    "notification_unknown_code": {
+      "message": "Unbekannter Fehlercode {code}"
+    },
+    "notification_title_warnings": {
+      "message": "{device_name}: Warnungen"
+    },
+    "notification_title_notifications": {
+      "message": "{device_name}: Benachrichtigungen"
+    },
+    "notification_title_self_check": {
+      "message": "{device_name}: {state}"
+    },
+    "self_check_emergency_stop": {
+      "message": "Der Not-Aus ist aktiv. Löse ihn am Mäher, bevor du erneut startest."
+    },
+    "self_check_stop_button": {
+      "message": "Die STOP-Taste am Mäher wurde gedrückt. Setze sie am Mäher zurück, bevor du erneut startest."
+    },
+    "self_check_safety_key_missing": {
+      "message": "Der Sicherheitsschlüssel ist nicht eingesteckt. Stecke ihn ein, um mit dem Mähen zu beginnen."
+    },
+    "self_check_lifted": {
+      "message": "Der Mäher wurde vom Boden angehoben. Stelle ihn zurück auf den Rasen."
+    },
+    "self_check_tilted": {
+      "message": "Der Mäher ist geneigt. Stelle ihn auf ebenen Boden."
+    },
+    "self_check_tipped_over": {
+      "message": "Der Mäher ist umgekippt. Stelle ihn wieder auf."
+    },
+    "self_check_bumper_missing": {
+      "message": "Der seitliche Stoßfänger ist nicht montiert. Montiere ihn vor dem Mähen."
+    },
+    "self_check_rain": {
+      "message": "Es wurde Regen erkannt und „Bei Regen nicht mähen“ ist aktiviert. Gemäht werden kann, sobald der Regen aufhört, oder deaktiviere die Funktion."
+    },
+    "self_check_low_battery": {
+      "message": "Der Akku ist zu schwach zum Mähen. Lass den Mäher laden."
+    },
+    "self_check_non_working_hours": {
+      "message": "Es ist außerhalb der Arbeitszeit des Mähers."
+    },
+    "self_check_rtk_station_moved": {
+      "message": "Die RTK-Referenzstation wurde verschoben. Prüfe ihre Position in der App."
+    },
+    "self_check_outside_task_area": {
+      "message": "Der Mäher ist außerhalb seines Aufgabenbereichs. Bringe ihn zurück in einen kartierten Bereich."
+    },
+    "self_check_wheel_motor_error": {
+      "message": "Ein Radnabenmotor hat einen Fehler gemeldet."
+    },
+    "self_check_blade_motor_overheated": {
+      "message": "Der Messermotor ist zu heiß. Lass ihn abkühlen."
+    },
+    "self_check_dock_moved": {
+      "message": "Die Ladestation wurde verschoben. Prüfe ihre Position in der App."
+    },
+    "self_check_no_task_area": {
+      "message": "Es wurde kein Aufgabenbereich gefunden. Erstelle eine Karte in der App."
+    },
+    "self_check_night_protection": {
+      "message": "Der Nachtschutz ist aktiv, daher mäht der Mäher nachts nicht."
+    },
+    "self_check_rtk_not_ready": {
+      "message": "Die RTK-Referenzstation ist noch nicht bereit."
+    },
+    "self_check_weak_satellite_signal": {
+      "message": "Das Satellitensignal des Mähers ist zu schwach für die Positionsbestimmung."
+    },
+    "self_check_positioning_failure": {
+      "message": "Das Positionierungssystem ist ausgefallen."
+    },
+    "self_check_inavi_unavailable": {
+      "message": "Der iNavi-Dienst ist nicht verfügbar."
+    },
+    "self_check_weak_rtk_signal": {
+      "message": "Das RTK-Signal ist schwach. Prüfe den Standort der Referenzstation."
+    },
+    "self_check_other": {
+      "message": "Der Mäher hat den unbekannten Selbsttest-Code {code} gemeldet."
     }
   }
 }

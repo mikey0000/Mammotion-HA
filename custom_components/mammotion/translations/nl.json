@@ -64,6 +64,9 @@
           "mow_path_fetch_enabled": "Maaipad ophalen inschakelen (cloud)",
           "full_map_fetch_enabled": "Volledig kaart ophalen inschakelen (cloud) — wanneer uit worden alleen gebiednamen opgehaald",
           "notify": "Toon blijvende meldingen voor"
+        },
+        "data_description": {
+          "notify": "Zelftestmeldingen staan standaard aan, de andere uit. Elke melding activeert ook de meldingsgebeurtenis-entiteit van de maaier en een mammotion_event op de bus, die automatiseringen in plaats daarvan kunnen gebruiken."
         }
       }
     }
@@ -352,11 +355,43 @@
           "2": "Zwak",
           "3": "Geen"
         }
+      },
+      "self_check": {
+        "name": "Zelftest",
+        "state": {
+          "normal": "OK",
+          "emergency_stop": "Noodstop geactiveerd",
+          "stop_button": "STOP-knop ingedrukt",
+          "safety_key_missing": "Veiligheidssleutel niet ingestoken",
+          "lifted": "Opgetild",
+          "tilted": "Gekanteld",
+          "tipped_over": "Omgevallen",
+          "bumper_missing": "Zijbumper niet gemonteerd",
+          "rain": "Regen gedetecteerd",
+          "low_battery": "Batterij bijna leeg",
+          "non_working_hours": "Buiten werktijden",
+          "rtk_station_moved": "RTK-referentiestation verplaatst",
+          "outside_task_area": "Buiten het taakgebied",
+          "wheel_motor_error": "Fout in wielnaafmotor",
+          "blade_motor_overheated": "Maaimesmotor te heet",
+          "dock_moved": "Laadstation verplaatst",
+          "no_task_area": "Geen taakgebied",
+          "night_protection": "Nachtbescherming",
+          "rtk_not_ready": "RTK-referentiestation niet gereed",
+          "weak_satellite_signal": "Zwak satellietsignaal",
+          "positioning_failure": "Storing in positioneringssysteem",
+          "inavi_unavailable": "iNavi-dienst niet beschikbaar",
+          "weak_rtk_signal": "Zwak RTK-signaal",
+          "other": "Overig"
+        }
       }
     },
     "binary_sensor": {
       "spino_charging": {
         "name": "Opladen"
+      },
+      "rain_detected": {
+        "name": "Regen gedetecteerd"
       }
     },
     "button": {
@@ -725,7 +760,8 @@
     "notify": {
       "options": {
         "warnings": "Waarschuwingen en foutcodes",
-        "notifications": "Apparaatmeldingen en informatie"
+        "notifications": "Apparaatmeldingen en informatie",
+        "self_check": "Zelftest: waarom de maaier niet kan starten"
       }
     }
   },
@@ -1392,6 +1428,87 @@
     },
     "mower_not_found": {
       "message": "{entity_id} is geen Mammotion-maaier."
+    },
+    "notification_unknown_code": {
+      "message": "Onbekende foutcode {code}"
+    },
+    "notification_title_warnings": {
+      "message": "{device_name}: waarschuwingen"
+    },
+    "notification_title_notifications": {
+      "message": "{device_name}: meldingen"
+    },
+    "notification_title_self_check": {
+      "message": "{device_name}: {state}"
+    },
+    "self_check_emergency_stop": {
+      "message": "De noodstop is actief. Ontgrendel hem op de maaier voordat je opnieuw start."
+    },
+    "self_check_stop_button": {
+      "message": "De STOP-knop op de maaier is ingedrukt. Reset hem op de maaier voordat je opnieuw start."
+    },
+    "self_check_safety_key_missing": {
+      "message": "De veiligheidssleutel is niet ingestoken. Steek hem in om te beginnen met maaien."
+    },
+    "self_check_lifted": {
+      "message": "De maaier is van de grond getild. Zet hem terug op het gazon."
+    },
+    "self_check_tilted": {
+      "message": "De maaier staat scheef. Zet hem op vlakke grond."
+    },
+    "self_check_tipped_over": {
+      "message": "De maaier is omgevallen. Zet hem weer rechtop."
+    },
+    "self_check_bumper_missing": {
+      "message": "De zijbumper is niet gemonteerd. Monteer hem voor het maaien."
+    },
+    "self_check_rain": {
+      "message": "Er is regen gedetecteerd en 'Niet maaien op regenachtige dagen' staat aan. Maaien kan starten zodra het droog is, of zet de functie uit."
+    },
+    "self_check_low_battery": {
+      "message": "De batterij is te leeg om te maaien. Laat de maaier opladen."
+    },
+    "self_check_non_working_hours": {
+      "message": "Het is buiten de werktijden van de maaier."
+    },
+    "self_check_rtk_station_moved": {
+      "message": "Het RTK-referentiestation is verplaatst. Controleer de positie in de app."
+    },
+    "self_check_outside_task_area": {
+      "message": "De maaier staat buiten zijn taakgebied. Zet hem terug in een gekarteerd gebied."
+    },
+    "self_check_wheel_motor_error": {
+      "message": "Een wielnaafmotor heeft een fout gemeld."
+    },
+    "self_check_blade_motor_overheated": {
+      "message": "De maaimesmotor is te heet. Laat hem afkoelen."
+    },
+    "self_check_dock_moved": {
+      "message": "Het laadstation is verplaatst. Controleer de positie in de app."
+    },
+    "self_check_no_task_area": {
+      "message": "Er is geen taakgebied gevonden. Maak een kaart in de app."
+    },
+    "self_check_night_protection": {
+      "message": "Nachtbescherming staat aan, dus de maaier maait 's nachts niet."
+    },
+    "self_check_rtk_not_ready": {
+      "message": "Het RTK-referentiestation is nog niet gereed."
+    },
+    "self_check_weak_satellite_signal": {
+      "message": "Het satellietsignaal van de maaier is te zwak om hem te lokaliseren."
+    },
+    "self_check_positioning_failure": {
+      "message": "Het positioneringssysteem is uitgevallen."
+    },
+    "self_check_inavi_unavailable": {
+      "message": "De iNavi-dienst is niet beschikbaar."
+    },
+    "self_check_weak_rtk_signal": {
+      "message": "Het RTK-signaal is zwak. Controleer waar het referentiestation staat."
+    },
+    "self_check_other": {
+      "message": "De maaier meldde een onbekende zelftestcode {code}."
     }
   }
 }

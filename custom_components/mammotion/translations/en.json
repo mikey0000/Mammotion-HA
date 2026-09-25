@@ -66,7 +66,7 @@
           "notify": "Show persistent notifications for"
         },
         "data_description": {
-          "notify": "Off by default. Every notification also fires the mower's notification event entity and a mammotion_event bus event, which automations can use instead."
+          "notify": "Self-check notifications are on by default; the others are off. Every notification also fires the mower's notification event entity and a mammotion_event bus event, which automations can use instead."
         }
       }
     }
@@ -355,11 +355,43 @@
           "2": "Weak",
           "3": "None"
         }
+      },
+      "self_check": {
+        "name": "Self-check",
+        "state": {
+          "normal": "OK",
+          "emergency_stop": "Emergency stop activated",
+          "stop_button": "STOP button pressed",
+          "safety_key_missing": "Safety key not inserted",
+          "lifted": "Lifted",
+          "tilted": "Tilted",
+          "tipped_over": "Tipped over",
+          "bumper_missing": "Side bumper not installed",
+          "rain": "Rain detected",
+          "low_battery": "Low battery",
+          "non_working_hours": "Non-working hours",
+          "rtk_station_moved": "RTK reference station moved",
+          "outside_task_area": "Outside the task area",
+          "wheel_motor_error": "Wheel hub motor error",
+          "blade_motor_overheated": "Blade motor too hot",
+          "dock_moved": "Charging station moved",
+          "no_task_area": "No task area",
+          "night_protection": "Night protection",
+          "rtk_not_ready": "RTK reference station not ready",
+          "weak_satellite_signal": "Weak satellite signal",
+          "positioning_failure": "Positioning system failure",
+          "inavi_unavailable": "iNavi service unavailable",
+          "weak_rtk_signal": "Weak RTK signal",
+          "other": "Other"
+        }
       }
     },
     "binary_sensor": {
       "spino_charging": {
         "name": "Charging"
+      },
+      "rain_detected": {
+        "name": "Rain detected"
       }
     },
     "button": {
@@ -728,7 +760,8 @@
     "notify": {
       "options": {
         "warnings": "Warnings and error codes",
-        "notifications": "Device notifications and information"
+        "notifications": "Device notifications and information",
+        "self_check": "Self-check: why the mower can't start"
       }
     }
   },
@@ -1395,6 +1428,87 @@
     },
     "mower_not_found": {
       "message": "{entity_id} is not a Mammotion mower."
+    },
+    "notification_unknown_code": {
+      "message": "Unknown error code {code}"
+    },
+    "notification_title_warnings": {
+      "message": "{device_name}: warnings"
+    },
+    "notification_title_notifications": {
+      "message": "{device_name}: notifications"
+    },
+    "notification_title_self_check": {
+      "message": "{device_name}: {state}"
+    },
+    "self_check_emergency_stop": {
+      "message": "The emergency stop is active. Release it on the mower before starting again."
+    },
+    "self_check_stop_button": {
+      "message": "The STOP button on the mower was pressed. Clear it on the mower before starting again."
+    },
+    "self_check_safety_key_missing": {
+      "message": "The safety key is not inserted. Insert it to start mowing."
+    },
+    "self_check_lifted": {
+      "message": "The mower has been lifted off the ground. Put it back down on the lawn."
+    },
+    "self_check_tilted": {
+      "message": "The mower is tilted. Move it onto level ground."
+    },
+    "self_check_tipped_over": {
+      "message": "The mower has tipped over. Turn it back upright."
+    },
+    "self_check_bumper_missing": {
+      "message": "The side bumper is not installed. Fit it before mowing."
+    },
+    "self_check_rain": {
+      "message": "Rain was detected and 'No mowing on rainy days' is on. Mowing can start once the rain stops, or turn the feature off."
+    },
+    "self_check_low_battery": {
+      "message": "The battery is too low to mow. Let the mower charge."
+    },
+    "self_check_non_working_hours": {
+      "message": "It is outside the mower's working hours."
+    },
+    "self_check_rtk_station_moved": {
+      "message": "The RTK reference station has been moved. Check its position in the app."
+    },
+    "self_check_outside_task_area": {
+      "message": "The mower is outside its task area. Move it back into a mapped area."
+    },
+    "self_check_wheel_motor_error": {
+      "message": "A wheel hub motor has reported an error."
+    },
+    "self_check_blade_motor_overheated": {
+      "message": "The cutting blade motor is too hot. Let it cool down."
+    },
+    "self_check_dock_moved": {
+      "message": "The charging station has been moved. Check its position in the app."
+    },
+    "self_check_no_task_area": {
+      "message": "No task area was found. Create a map in the app."
+    },
+    "self_check_night_protection": {
+      "message": "Night protection is on, so the mower will not mow at night."
+    },
+    "self_check_rtk_not_ready": {
+      "message": "The RTK reference station is not ready yet."
+    },
+    "self_check_weak_satellite_signal": {
+      "message": "The mower's satellite signal is too weak to position it."
+    },
+    "self_check_positioning_failure": {
+      "message": "The positioning system has failed."
+    },
+    "self_check_inavi_unavailable": {
+      "message": "The iNavi service is not available."
+    },
+    "self_check_weak_rtk_signal": {
+      "message": "The RTK signal is weak. Check where the reference station is placed."
+    },
+    "self_check_other": {
+      "message": "The mower reported self-check code {code}, which is not recognised."
     }
   }
 }

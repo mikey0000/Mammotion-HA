@@ -82,6 +82,16 @@
       },
       "position_type": {
         "default": "mdi:land-plots-marker"
+      },
+      "self_check": {
+        "default": "mdi:alert-circle-outline",
+        "state": {
+          "normal": "mdi:check-circle-outline",
+          "rain": "mdi:weather-rainy",
+          "low_battery": "mdi:battery-alert",
+          "night_protection": "mdi:weather-night",
+          "non_working_hours": "mdi:clock-alert-outline"
+        }
       }
     },
     "select": {
@@ -218,6 +228,14 @@
     "event": {
       "notification": {
         "default": "mdi:bell-ring"
+      }
+    },
+    "binary_sensor": {
+      "rain_detected": {
+        "default": "mdi:weather-sunny",
+        "state": {
+          "on": "mdi:weather-rainy"
+        }
       }
     }
   }

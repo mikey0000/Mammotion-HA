@@ -64,6 +64,9 @@
           "mow_path_fetch_enabled": "Abilita recupero percorso di taglio (cloud)",
           "full_map_fetch_enabled": "Abilita recupero completo della mappa (cloud) — se disabilitato, vengono recuperati solo i nomi delle aree",
           "notify": "Mostra notifiche persistenti per"
+        },
+        "data_description": {
+          "notify": "Le notifiche di autodiagnosi sono attive per impostazione predefinita, le altre no. Ogni notifica attiva anche l'entità evento di notifica del tosaerba e un evento mammotion_event sul bus, che le automazioni possono usare al loro posto."
         }
       }
     }
@@ -352,11 +355,43 @@
           "2": "Debole",
           "3": "Nessuno"
         }
+      },
+      "self_check": {
+        "name": "Autodiagnosi",
+        "state": {
+          "normal": "OK",
+          "emergency_stop": "Arresto di emergenza attivato",
+          "stop_button": "Pulsante STOP premuto",
+          "safety_key_missing": "Chiave di sicurezza non inserita",
+          "lifted": "Sollevato",
+          "tilted": "Inclinato",
+          "tipped_over": "Ribaltato",
+          "bumper_missing": "Paraurti laterale non installato",
+          "rain": "Pioggia rilevata",
+          "low_battery": "Batteria scarica",
+          "non_working_hours": "Fuori orario di lavoro",
+          "rtk_station_moved": "Stazione di riferimento RTK spostata",
+          "outside_task_area": "Fuori dall'area di lavoro",
+          "wheel_motor_error": "Errore motore mozzo ruota",
+          "blade_motor_overheated": "Motore lama troppo caldo",
+          "dock_moved": "Stazione di ricarica spostata",
+          "no_task_area": "Nessuna area di lavoro",
+          "night_protection": "Protezione notturna",
+          "rtk_not_ready": "Stazione di riferimento RTK non pronta",
+          "weak_satellite_signal": "Segnale satellitare debole",
+          "positioning_failure": "Guasto del sistema di posizionamento",
+          "inavi_unavailable": "Servizio iNavi non disponibile",
+          "weak_rtk_signal": "Segnale RTK debole",
+          "other": "Altro"
+        }
       }
     },
     "binary_sensor": {
       "spino_charging": {
         "name": "In carica"
+      },
+      "rain_detected": {
+        "name": "Pioggia rilevata"
       }
     },
     "button": {
@@ -725,7 +760,8 @@
     "notify": {
       "options": {
         "warnings": "Avvisi e codici di errore",
-        "notifications": "Notifiche e informazioni del dispositivo"
+        "notifications": "Notifiche e informazioni del dispositivo",
+        "self_check": "Autodiagnosi: perché il tosaerba non può partire"
       }
     }
   },
@@ -1392,6 +1428,87 @@
     },
     "mower_not_found": {
       "message": "{entity_id} non è un tosaerba Mammotion."
+    },
+    "notification_unknown_code": {
+      "message": "Codice di errore sconosciuto {code}"
+    },
+    "notification_title_warnings": {
+      "message": "{device_name}: avvisi"
+    },
+    "notification_title_notifications": {
+      "message": "{device_name}: notifiche"
+    },
+    "notification_title_self_check": {
+      "message": "{device_name}: {state}"
+    },
+    "self_check_emergency_stop": {
+      "message": "L'arresto di emergenza è attivo. Sbloccalo sul tosaerba prima di ripartire."
+    },
+    "self_check_stop_button": {
+      "message": "È stato premuto il pulsante STOP del tosaerba. Ripristinalo sul tosaerba prima di ripartire."
+    },
+    "self_check_safety_key_missing": {
+      "message": "La chiave di sicurezza non è inserita. Inseriscila per iniziare a tagliare."
+    },
+    "self_check_lifted": {
+      "message": "Il tosaerba è stato sollevato da terra. Rimettilo sul prato."
+    },
+    "self_check_tilted": {
+      "message": "Il tosaerba è inclinato. Spostalo su un terreno piano."
+    },
+    "self_check_tipped_over": {
+      "message": "Il tosaerba si è ribaltato. Rimettilo in piedi."
+    },
+    "self_check_bumper_missing": {
+      "message": "Il paraurti laterale non è installato. Montalo prima di tagliare."
+    },
+    "self_check_rain": {
+      "message": "È stata rilevata pioggia e «Nessun taglio nei giorni di pioggia» è attivo. Il taglio può iniziare quando smette di piovere, oppure disattiva la funzione."
+    },
+    "self_check_low_battery": {
+      "message": "La batteria è troppo scarica per tagliare. Lascia ricaricare il tosaerba."
+    },
+    "self_check_non_working_hours": {
+      "message": "È fuori dall'orario di lavoro del tosaerba."
+    },
+    "self_check_rtk_station_moved": {
+      "message": "La stazione di riferimento RTK è stata spostata. Controlla la sua posizione nell'app."
+    },
+    "self_check_outside_task_area": {
+      "message": "Il tosaerba è fuori dalla sua area di lavoro. Riportalo in un'area mappata."
+    },
+    "self_check_wheel_motor_error": {
+      "message": "Un motore del mozzo ruota ha segnalato un errore."
+    },
+    "self_check_blade_motor_overheated": {
+      "message": "Il motore della lama è troppo caldo. Lascialo raffreddare."
+    },
+    "self_check_dock_moved": {
+      "message": "La stazione di ricarica è stata spostata. Controlla la sua posizione nell'app."
+    },
+    "self_check_no_task_area": {
+      "message": "Non è stata trovata alcuna area di lavoro. Crea una mappa nell'app."
+    },
+    "self_check_night_protection": {
+      "message": "La protezione notturna è attiva, quindi il tosaerba non taglia di notte."
+    },
+    "self_check_rtk_not_ready": {
+      "message": "La stazione di riferimento RTK non è ancora pronta."
+    },
+    "self_check_weak_satellite_signal": {
+      "message": "Il segnale satellitare del tosaerba è troppo debole per localizzarlo."
+    },
+    "self_check_positioning_failure": {
+      "message": "Il sistema di posizionamento si è guastato."
+    },
+    "self_check_inavi_unavailable": {
+      "message": "Il servizio iNavi non è disponibile."
+    },
+    "self_check_weak_rtk_signal": {
+      "message": "Il segnale RTK è debole. Controlla dove è posizionata la stazione di riferimento."
+    },
+    "self_check_other": {
+      "message": "Il tosaerba ha segnalato il codice di autodiagnosi sconosciuto {code}."
     }
   }
 }

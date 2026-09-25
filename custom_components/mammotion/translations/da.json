@@ -64,6 +64,9 @@
           "mow_path_fetch_enabled": "Aktivér hentning af klippesti (sky)",
           "full_map_fetch_enabled": "Aktivér fuld korthentning (sky) — når slået fra, hentes kun områdenavne",
           "notify": "Vis vedvarende notifikationer for"
+        },
+        "data_description": {
+          "notify": "Selvtestmeddelelser er slået til som standard; de andre er slået fra. Hver meddelelse udløser også plæneklipperens meddelelseshændelsesenhed og en mammotion_event-hændelse på bussen, som automatiseringer kan bruge i stedet."
         }
       }
     }
@@ -352,11 +355,43 @@
           "2": "Svag",
           "3": "Ingen"
         }
+      },
+      "self_check": {
+        "name": "Selvtest",
+        "state": {
+          "normal": "OK",
+          "emergency_stop": "Nødstop aktiveret",
+          "stop_button": "STOP-knap trykket",
+          "safety_key_missing": "Sikkerhedsnøgle ikke isat",
+          "lifted": "Løftet",
+          "tilted": "Vippet",
+          "tipped_over": "Væltet",
+          "bumper_missing": "Sidekofanger ikke monteret",
+          "rain": "Regn registreret",
+          "low_battery": "Lavt batteri",
+          "non_working_hours": "Uden for arbejdstid",
+          "rtk_station_moved": "RTK-referencestation flyttet",
+          "outside_task_area": "Uden for opgaveområdet",
+          "wheel_motor_error": "Fejl i hjulnavsmotor",
+          "blade_motor_overheated": "Knivmotor for varm",
+          "dock_moved": "Ladestation flyttet",
+          "no_task_area": "Intet opgaveområde",
+          "night_protection": "Natbeskyttelse",
+          "rtk_not_ready": "RTK-referencestation ikke klar",
+          "weak_satellite_signal": "Svagt satellitsignal",
+          "positioning_failure": "Fejl i positioneringssystem",
+          "inavi_unavailable": "iNavi-tjeneste utilgængelig",
+          "weak_rtk_signal": "Svagt RTK-signal",
+          "other": "Andet"
+        }
       }
     },
     "binary_sensor": {
       "spino_charging": {
         "name": "Oplader"
+      },
+      "rain_detected": {
+        "name": "Regn registreret"
       }
     },
     "button": {
@@ -725,7 +760,8 @@
     "notify": {
       "options": {
         "warnings": "Advarsler og fejlkoder",
-        "notifications": "Enhedsnotifikationer og information"
+        "notifications": "Enhedsnotifikationer og information",
+        "self_check": "Selvtest: hvorfor plæneklipperen ikke kan starte"
       }
     }
   },
@@ -1392,6 +1428,87 @@
     },
     "mower_not_found": {
       "message": "{entity_id} er ikke en Mammotion-plæneklipper."
+    },
+    "notification_unknown_code": {
+      "message": "Ukendt fejlkode {code}"
+    },
+    "notification_title_warnings": {
+      "message": "{device_name}: advarsler"
+    },
+    "notification_title_notifications": {
+      "message": "{device_name}: meddelelser"
+    },
+    "notification_title_self_check": {
+      "message": "{device_name}: {state}"
+    },
+    "self_check_emergency_stop": {
+      "message": "Nødstoppet er aktivt. Udløs det på plæneklipperen, før du starter igen."
+    },
+    "self_check_stop_button": {
+      "message": "STOP-knappen på plæneklipperen er trykket. Nulstil den på plæneklipperen, før du starter igen."
+    },
+    "self_check_safety_key_missing": {
+      "message": "Sikkerhedsnøglen er ikke isat. Sæt den i for at begynde at klippe."
+    },
+    "self_check_lifted": {
+      "message": "Plæneklipperen er løftet fra jorden. Sæt den tilbage på græsplænen."
+    },
+    "self_check_tilted": {
+      "message": "Plæneklipperen hælder. Flyt den til plant underlag."
+    },
+    "self_check_tipped_over": {
+      "message": "Plæneklipperen er væltet. Vend den tilbage på hjulene."
+    },
+    "self_check_bumper_missing": {
+      "message": "Sidekofangeren er ikke monteret. Montér den før klipning."
+    },
+    "self_check_rain": {
+      "message": "Der er registreret regn, og 'Ingen klipning på regnvejrsdage' er slået til. Klipningen kan starte, når regnen stopper, eller slå funktionen fra."
+    },
+    "self_check_low_battery": {
+      "message": "Batteriet er for lavt til at klippe. Lad plæneklipperen oplade."
+    },
+    "self_check_non_working_hours": {
+      "message": "Det er uden for plæneklipperens arbejdstid."
+    },
+    "self_check_rtk_station_moved": {
+      "message": "RTK-referencestationen er flyttet. Kontrollér dens placering i appen."
+    },
+    "self_check_outside_task_area": {
+      "message": "Plæneklipperen er uden for sit opgaveområde. Flyt den tilbage i et kortlagt område."
+    },
+    "self_check_wheel_motor_error": {
+      "message": "En hjulnavsmotor har meldt en fejl."
+    },
+    "self_check_blade_motor_overheated": {
+      "message": "Knivmotoren er for varm. Lad den køle af."
+    },
+    "self_check_dock_moved": {
+      "message": "Ladestationen er flyttet. Kontrollér dens placering i appen."
+    },
+    "self_check_no_task_area": {
+      "message": "Der blev ikke fundet noget opgaveområde. Opret et kort i appen."
+    },
+    "self_check_night_protection": {
+      "message": "Natbeskyttelse er slået til, så plæneklipperen klipper ikke om natten."
+    },
+    "self_check_rtk_not_ready": {
+      "message": "RTK-referencestationen er ikke klar endnu."
+    },
+    "self_check_weak_satellite_signal": {
+      "message": "Plæneklipperens satellitsignal er for svagt til at bestemme positionen."
+    },
+    "self_check_positioning_failure": {
+      "message": "Positioneringssystemet har svigtet."
+    },
+    "self_check_inavi_unavailable": {
+      "message": "iNavi-tjenesten er ikke tilgængelig."
+    },
+    "self_check_weak_rtk_signal": {
+      "message": "RTK-signalet er svagt. Kontrollér, hvor referencestationen er placeret."
+    },
+    "self_check_other": {
+      "message": "Plæneklipperen meldte en ukendt selvtestkode {code}."
     }
   }
 }

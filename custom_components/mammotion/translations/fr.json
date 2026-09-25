@@ -64,6 +64,9 @@
           "mow_path_fetch_enabled": "Activer la récupération du chemin de tonte (cloud)",
           "full_map_fetch_enabled": "Activer la récupération complète de la carte (cloud) — désactivé, seuls les noms de zones sont récupérés",
           "notify": "Afficher des notifications persistantes pour"
+        },
+        "data_description": {
+          "notify": "Les notifications d'autotest sont activées par défaut, les autres sont désactivées. Chaque notification déclenche aussi l'entité d'événement de notification de la tondeuse et un événement mammotion_event sur le bus, que les automatisations peuvent utiliser à la place."
         }
       }
     }
@@ -352,11 +355,43 @@
           "2": "Faible",
           "3": "Aucun"
         }
+      },
+      "self_check": {
+        "name": "Autotest",
+        "state": {
+          "normal": "OK",
+          "emergency_stop": "Arrêt d'urgence activé",
+          "stop_button": "Bouton STOP enfoncé",
+          "safety_key_missing": "Clé de sécurité non insérée",
+          "lifted": "Soulevé",
+          "tilted": "Incliné",
+          "tipped_over": "Renversé",
+          "bumper_missing": "Pare-chocs latéral non installé",
+          "rain": "Pluie détectée",
+          "low_battery": "Batterie faible",
+          "non_working_hours": "Hors des heures de travail",
+          "rtk_station_moved": "Station de référence RTK déplacée",
+          "outside_task_area": "Hors de la zone de tâche",
+          "wheel_motor_error": "Erreur du moteur de moyeu de roue",
+          "blade_motor_overheated": "Moteur de lame trop chaud",
+          "dock_moved": "Station de charge déplacée",
+          "no_task_area": "Aucune zone de tâche",
+          "night_protection": "Protection nocturne",
+          "rtk_not_ready": "Station de référence RTK non prête",
+          "weak_satellite_signal": "Signal satellite faible",
+          "positioning_failure": "Défaillance du système de positionnement",
+          "inavi_unavailable": "Service iNavi indisponible",
+          "weak_rtk_signal": "Signal RTK faible",
+          "other": "Autre"
+        }
       }
     },
     "binary_sensor": {
       "spino_charging": {
         "name": "En charge"
+      },
+      "rain_detected": {
+        "name": "Pluie détectée"
       }
     },
     "button": {
@@ -725,7 +760,8 @@
     "notify": {
       "options": {
         "warnings": "Avertissements et codes d'erreur",
-        "notifications": "Notifications et informations de l'appareil"
+        "notifications": "Notifications et informations de l'appareil",
+        "self_check": "Autotest : pourquoi la tondeuse ne peut pas démarrer"
       }
     }
   },
@@ -1392,6 +1428,87 @@
     },
     "mower_not_found": {
       "message": "{entity_id} n'est pas une tondeuse Mammotion."
+    },
+    "notification_unknown_code": {
+      "message": "Code d'erreur inconnu {code}"
+    },
+    "notification_title_warnings": {
+      "message": "{device_name} : avertissements"
+    },
+    "notification_title_notifications": {
+      "message": "{device_name} : notifications"
+    },
+    "notification_title_self_check": {
+      "message": "{device_name} : {state}"
+    },
+    "self_check_emergency_stop": {
+      "message": "L'arrêt d'urgence est activé. Libérez-le sur la tondeuse avant de redémarrer."
+    },
+    "self_check_stop_button": {
+      "message": "Le bouton STOP de la tondeuse a été enfoncé. Réinitialisez-le sur la tondeuse avant de redémarrer."
+    },
+    "self_check_safety_key_missing": {
+      "message": "La clé de sécurité n'est pas insérée. Insérez-la pour commencer la tonte."
+    },
+    "self_check_lifted": {
+      "message": "La tondeuse a été soulevée du sol. Reposez-la sur la pelouse."
+    },
+    "self_check_tilted": {
+      "message": "La tondeuse est inclinée. Placez-la sur un sol plat."
+    },
+    "self_check_tipped_over": {
+      "message": "La tondeuse s'est renversée. Remettez-la sur ses roues."
+    },
+    "self_check_bumper_missing": {
+      "message": "Le pare-chocs latéral n'est pas installé. Montez-le avant de tondre."
+    },
+    "self_check_rain": {
+      "message": "De la pluie a été détectée et « Pas de tonte par temps de pluie » est activé. La tonte pourra démarrer quand la pluie cessera, ou désactivez la fonction."
+    },
+    "self_check_low_battery": {
+      "message": "La batterie est trop faible pour tondre. Laissez la tondeuse se recharger."
+    },
+    "self_check_non_working_hours": {
+      "message": "C'est en dehors des heures de travail de la tondeuse."
+    },
+    "self_check_rtk_station_moved": {
+      "message": "La station de référence RTK a été déplacée. Vérifiez sa position dans l'application."
+    },
+    "self_check_outside_task_area": {
+      "message": "La tondeuse est hors de sa zone de tâche. Ramenez-la dans une zone cartographiée."
+    },
+    "self_check_wheel_motor_error": {
+      "message": "Un moteur de moyeu de roue a signalé une erreur."
+    },
+    "self_check_blade_motor_overheated": {
+      "message": "Le moteur de lame est trop chaud. Laissez-le refroidir."
+    },
+    "self_check_dock_moved": {
+      "message": "La station de charge a été déplacée. Vérifiez sa position dans l'application."
+    },
+    "self_check_no_task_area": {
+      "message": "Aucune zone de tâche n'a été trouvée. Créez une carte dans l'application."
+    },
+    "self_check_night_protection": {
+      "message": "La protection nocturne est activée, la tondeuse ne tond donc pas la nuit."
+    },
+    "self_check_rtk_not_ready": {
+      "message": "La station de référence RTK n'est pas encore prête."
+    },
+    "self_check_weak_satellite_signal": {
+      "message": "Le signal satellite de la tondeuse est trop faible pour la localiser."
+    },
+    "self_check_positioning_failure": {
+      "message": "Le système de positionnement est défaillant."
+    },
+    "self_check_inavi_unavailable": {
+      "message": "Le service iNavi n'est pas disponible."
+    },
+    "self_check_weak_rtk_signal": {
+      "message": "Le signal RTK est faible. Vérifiez l'emplacement de la station de référence."
+    },
+    "self_check_other": {
+      "message": "La tondeuse a signalé le code d'autotest inconnu {code}."
     }
   }
 }

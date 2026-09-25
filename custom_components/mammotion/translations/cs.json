@@ -64,6 +64,9 @@
           "mow_path_fetch_enabled": "Povolit načítání cesty sekání (cloud)",
           "full_map_fetch_enabled": "Povolit úplné načítání mapy (cloud) — pokud vypnuto, načítají se pouze názvy oblastí",
           "notify": "Zobrazovat trvalá oznámení pro"
+        },
+        "data_description": {
+          "notify": "Oznámení autotestu jsou ve výchozím stavu zapnutá, ostatní vypnutá. Každé oznámení také spustí entitu událostí oznámení sekačky a událost mammotion_event na sběrnici, které mohou místo toho využít automatizace."
         }
       }
     }
@@ -352,11 +355,43 @@
           "2": "Slabý",
           "3": "Žádný"
         }
+      },
+      "self_check": {
+        "name": "Autotest",
+        "state": {
+          "normal": "OK",
+          "emergency_stop": "Aktivováno nouzové zastavení",
+          "stop_button": "Stisknuto tlačítko STOP",
+          "safety_key_missing": "Bezpečnostní klíč není vložen",
+          "lifted": "Zvednuto",
+          "tilted": "Nakloněno",
+          "tipped_over": "Převráceno",
+          "bumper_missing": "Boční nárazník není nainstalován",
+          "rain": "Zjištěn déšť",
+          "low_battery": "Slabá baterie",
+          "non_working_hours": "Mimo pracovní dobu",
+          "rtk_station_moved": "RTK referenční stanice přesunuta",
+          "outside_task_area": "Mimo oblast úlohy",
+          "wheel_motor_error": "Chyba motoru kola",
+          "blade_motor_overheated": "Motor nože je příliš horký",
+          "dock_moved": "Nabíjecí stanice přesunuta",
+          "no_task_area": "Žádná oblast úlohy",
+          "night_protection": "Noční ochrana",
+          "rtk_not_ready": "RTK referenční stanice není připravena",
+          "weak_satellite_signal": "Slabý satelitní signál",
+          "positioning_failure": "Porucha polohovacího systému",
+          "inavi_unavailable": "Služba iNavi není dostupná",
+          "weak_rtk_signal": "Slabý signál RTK",
+          "other": "Jiné"
+        }
       }
     },
     "binary_sensor": {
       "spino_charging": {
         "name": "Nabíjení"
+      },
+      "rain_detected": {
+        "name": "Zjištěn déšť"
       }
     },
     "button": {
@@ -725,7 +760,8 @@
     "notify": {
       "options": {
         "warnings": "Varování a chybové kódy",
-        "notifications": "Oznámení a informace zařízení"
+        "notifications": "Oznámení a informace zařízení",
+        "self_check": "Autotest: proč sekačka nemůže začít"
       }
     }
   },
@@ -1392,6 +1428,87 @@
     },
     "mower_not_found": {
       "message": "{entity_id} není sekačka Mammotion."
+    },
+    "notification_unknown_code": {
+      "message": "Neznámý chybový kód {code}"
+    },
+    "notification_title_warnings": {
+      "message": "{device_name}: varování"
+    },
+    "notification_title_notifications": {
+      "message": "{device_name}: oznámení"
+    },
+    "notification_title_self_check": {
+      "message": "{device_name}: {state}"
+    },
+    "self_check_emergency_stop": {
+      "message": "Je aktivní nouzové zastavení. Před dalším spuštěním jej na sekačce uvolněte."
+    },
+    "self_check_stop_button": {
+      "message": "Na sekačce bylo stisknuto tlačítko STOP. Před dalším spuštěním jej na sekačce zrušte."
+    },
+    "self_check_safety_key_missing": {
+      "message": "Bezpečnostní klíč není vložen. Vložte jej, abyste mohli začít sekat."
+    },
+    "self_check_lifted": {
+      "message": "Sekačka byla zvednuta ze země. Položte ji zpět na trávník."
+    },
+    "self_check_tilted": {
+      "message": "Sekačka je nakloněná. Přesuňte ji na rovný povrch."
+    },
+    "self_check_tipped_over": {
+      "message": "Sekačka se převrátila. Postavte ji zpět."
+    },
+    "self_check_bumper_missing": {
+      "message": "Boční nárazník není nainstalován. Před sečením jej nasaďte."
+    },
+    "self_check_rain": {
+      "message": "Byl zjištěn déšť a je zapnuto „Nesekat v dešti“. Sečení může začít, až přestane pršet, nebo funkci vypněte."
+    },
+    "self_check_low_battery": {
+      "message": "Baterie je příliš slabá na sečení. Nechte sekačku nabít."
+    },
+    "self_check_non_working_hours": {
+      "message": "Je mimo pracovní dobu sekačky."
+    },
+    "self_check_rtk_station_moved": {
+      "message": "RTK referenční stanice byla přesunuta. Zkontrolujte její polohu v aplikaci."
+    },
+    "self_check_outside_task_area": {
+      "message": "Sekačka je mimo oblast úlohy. Přesuňte ji zpět do zmapované oblasti."
+    },
+    "self_check_wheel_motor_error": {
+      "message": "Motor náboje kola hlásí chybu."
+    },
+    "self_check_blade_motor_overheated": {
+      "message": "Motor nože je příliš horký. Nechte jej vychladnout."
+    },
+    "self_check_dock_moved": {
+      "message": "Nabíjecí stanice byla přesunuta. Zkontrolujte její polohu v aplikaci."
+    },
+    "self_check_no_task_area": {
+      "message": "Nebyla nalezena žádná oblast úlohy. Vytvořte mapu v aplikaci."
+    },
+    "self_check_night_protection": {
+      "message": "Je zapnutá noční ochrana, sekačka v noci nesečí."
+    },
+    "self_check_rtk_not_ready": {
+      "message": "RTK referenční stanice ještě není připravena."
+    },
+    "self_check_weak_satellite_signal": {
+      "message": "Satelitní signál sekačky je příliš slabý pro určení polohy."
+    },
+    "self_check_positioning_failure": {
+      "message": "Polohovací systém selhal."
+    },
+    "self_check_inavi_unavailable": {
+      "message": "Služba iNavi není dostupná."
+    },
+    "self_check_weak_rtk_signal": {
+      "message": "Signál RTK je slabý. Zkontrolujte umístění referenční stanice."
+    },
+    "self_check_other": {
+      "message": "Sekačka nahlásila neznámý kód autotestu {code}."
     }
   }
 }
