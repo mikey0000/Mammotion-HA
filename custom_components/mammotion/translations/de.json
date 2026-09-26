@@ -72,6 +72,17 @@
     }
   },
   "entity": {
+    "camera": {
+      "webrtc_camera": {
+        "name": "Linke Kamera"
+      },
+      "webrtc_camera_right": {
+        "name": "Rechte Kamera"
+      },
+      "webrtc_camera_rear": {
+        "name": "Rückkamera"
+      }
+    },
     "sensor": {
       "error_1_message": {
         "name": "Letzte Fehlermeldung"
