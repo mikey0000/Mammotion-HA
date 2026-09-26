@@ -132,20 +132,6 @@ class WebRTCSessionControl(Protocol):
         """Leave this camera's Agora session and optionally stop the encoder."""
 
 
-def vision_camera_slots(device_name: str) -> int:
-    """Return how many vision cameras the stream token should enable.
-
-    The token request always carries three ``cameraStates`` slots, and the
-    mower publishes slot ``n`` as Agora uid ``n + 1``.  Vision mowers expose
-    two front cameras; Yuka adds a rear camera in slot 2.
-    """
-    if DeviceType.is_luba1(device_name):
-        return 0
-    if DeviceType.is_yuka(device_name):
-        return 3
-    return 2
-
-
 MAINTENANCE_INTERVAL = timedelta(minutes=60)
 DEFAULT_INTERVAL = timedelta(minutes=30)
 REPORT_INTERVAL = timedelta(minutes=5)
@@ -387,7 +373,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             return cached_data.data, self._agora_response
 
         stream_data = None
-        request_dual = vision_camera_slots(self.device_name) > 1
+        request_dual = not DeviceType.is_luba1(self.device_name)
         self._dual_camera_stream_available = False
 
         try:
@@ -500,7 +486,9 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         login_info = http.login_info
         if login_info is None:
             return Response(code=401, msg="Not logged in")
-        slots = vision_camera_slots(self.device_name)
+        # The mower publishes cameraStates slot n as Agora uid n + 1: both
+        # front cameras on every vision mower, the rear one only on Yuka.
+        camera_states = [1, 1, int(DeviceType.is_yuka(self.device_name))]
         session = aiohttp_client.async_get_clientsession(self.hass)
         async with asyncio.timeout(30):
             async with session.post(
@@ -508,9 +496,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
                 json={
                     "deviceId": self.device.iot_id,
                     "mode": 0,
-                    "cameraStates": [
-                        {"cameraState": int(slot < slots)} for slot in range(3)
-                    ],
+                    "cameraStates": [{"cameraState": state} for state in camera_states],
                 },
                 headers={
                     **http._headers,  # noqa: SLF001 - match PyMammotion request headers

@@ -40,7 +40,7 @@ from webrtc_models import RTCIceCandidateInit, RTCIceServer
 from . import MammotionConfigEntry
 from .agora_api import AgoraResponse
 from .agora_websocket import AgoraWebSocketHandler
-from .coordinator import MammotionBaseUpdateCoordinator, vision_camera_slots
+from .coordinator import MammotionBaseUpdateCoordinator
 from .entity import MammotionCameraBaseEntity
 from .models import MammotionMowerData
 
@@ -59,6 +59,8 @@ class MammotionCameraEntityDescription(CameraEntityDescription):
     ]
     # Agora uid the mower publishes this feed under: cameraStates slot + 1.
     target_uid: int
+    # Whether a mower (by device name) has this camera at all.
+    exists_fn: Callable[[str], bool] = lambda _device_name: True
 
 
 # One description per cameraStates slot, in slot order.
@@ -77,6 +79,7 @@ CAMERAS: tuple[MammotionCameraEntityDescription, ...] = (
         key="webrtc_camera_rear",
         stream_fn=lambda coordinator: coordinator.get_stream_data(),
         target_uid=3,
+        exists_fn=DeviceType.is_yuka,
     ),
 )
 
@@ -121,10 +124,10 @@ async def async_setup_entry(
         _LOGGER.debug("Config camera for %s", mower.device.device_name)
         mower.reporting_coordinator.ice_servers = ice_servers
 
-        slots = vision_camera_slots(mower.device.device_name)
         entities.extend(
             MammotionWebRTCCamera(mower.reporting_coordinator, description, hass)
-            for description in CAMERAS[:slots]
+            for description in CAMERAS
+            if description.exists_fn(mower.device.device_name)
         )
     async_add_entities(entities)
     await async_setup_platform_services(hass, entry)

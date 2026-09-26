@@ -3,29 +3,25 @@
 from __future__ import annotations
 
 from types import SimpleNamespace
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
 from custom_components.mammotion.camera import CAMERAS, MammotionWebRTCCamera
-from custom_components.mammotion.coordinator import (
-    MammotionBaseUpdateCoordinator,
-    vision_camera_slots,
-)
+from custom_components.mammotion.coordinator import MammotionBaseUpdateCoordinator
 
 
 @pytest.mark.parametrize(
-    ("device_name", "slots"),
-    [
-        ("Luba-AAAAAA", 0),
-        ("Luba-VS00CLD", 2),
-        ("Luba-VP00CLD", 2),
-        ("Yuka-000CLD", 3),
-    ],
+    ("device_name", "has_rear"),
+    [("Luba-VS00CLD", False), ("Luba-VP00CLD", False), ("Yuka-000CLD", True)],
 )
-def test_vision_camera_slots(device_name: str, slots: int) -> None:
-    """Every vision mower gets two feeds; Yuka adds the rear one."""
-    assert vision_camera_slots(device_name) == slots
+def test_only_yuka_has_the_rear_camera(device_name: str, has_rear: bool) -> None:
+    """Left and right exist on every vision mower; rear is gated on Yuka."""
+    assert [description.exists_fn(device_name) for description in CAMERAS] == [
+        True,
+        True,
+        has_rear,
+    ]
 
 
 async def test_stop_video_forgets_every_viewer() -> None:
@@ -61,3 +57,35 @@ def test_camera_names_come_from_the_translation_key() -> None:
         names.append(camera._name_internal(None, translations))
 
     assert names == ["webrtc_camera", "webrtc_camera_right", "webrtc_camera_rear"]
+
+
+@pytest.mark.parametrize(
+    ("device_name", "states"),
+    [("Luba-VS00CLD", [1, 1, 0]), ("Yuka-000CLD", [1, 1, 1])],
+)
+async def test_token_request_enables_the_rear_slot_only_on_yuka(
+    device_name: str, states: list[int]
+) -> None:
+    """The token asks for both front feeds, and the rear one only on Yuka."""
+    response = MagicMock(status=200)
+    response.json = AsyncMock(return_value={"code": 0, "msg": "ok", "data": None})
+    context = MagicMock()
+    context.__aenter__ = AsyncMock(return_value=response)
+    context.__aexit__ = AsyncMock(return_value=None)
+    session = MagicMock()
+    session.post.return_value = context
+    coordinator = MagicMock()
+    coordinator.device_name = device_name
+    coordinator.device.iot_id = "iot-123"
+    coordinator.manager.mammotion_http.ensure_token_valid = AsyncMock()
+    coordinator.manager.mammotion_http._headers = {}
+
+    with patch(
+        "custom_components.mammotion.coordinator.aiohttp_client.async_get_clientsession",
+        return_value=session,
+    ):
+        await MammotionBaseUpdateCoordinator._request_dual_camera_stream(coordinator)
+
+    assert session.post.call_args.kwargs["json"]["cameraStates"] == [
+        {"cameraState": state} for state in states
+    ]

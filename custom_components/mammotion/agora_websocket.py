@@ -141,8 +141,6 @@ class AgoraWebSocketHandler:
         self.hass = hass
         self._recover_stream = recover_stream
         self._keepalive = keepalive
-        # Luba 2 publishes the two vision feeds as separate Agora peers.
-        # Other mower models keep the existing subscribe-all behavior.
         self._target_uid = target_uid
         self._websocket: ClientConnection | None = None
         self._connection_state = "DISCONNECTED"
