@@ -343,7 +343,6 @@ class MammotionCameraBaseEntity(Camera, ABC):  # type: ignore[misc]
     """Devices that support cameras."""
 
     _attr_has_entity_name = True
-    _attr_name = None
     _attr_is_streaming = True
     _attr_supported_features = CameraEntityFeature.STREAM
 

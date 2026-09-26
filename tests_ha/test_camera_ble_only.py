@@ -24,6 +24,7 @@ from custom_components.mammotion.camera import (
 _LUBA2_BLE = "Luba-VS00BLE"
 _LUBA2_CLOUD = "Luba-VS00CLD"
 _LUBA1_CLOUD = "Luba-AAAAAA"
+_YUKA_CLOUD = "Yuka-000CLD"
 
 
 def _mower(name: str, iot_id: str) -> MagicMock:
@@ -102,3 +103,17 @@ async def test_only_cloud_mowers_get_cameras(
     assert [entity._agora_handler._target_uid for entity in added] == [1, 2]
     assert hass.services.has_service("mammotion", "start_video")
     assert hass.services.has_service("mammotion", "stop_video")
+
+
+async def test_yuka_also_gets_the_rear_camera(
+    hass: HomeAssistant, added: list[MammotionWebRTCCamera], add_entities: MagicMock
+) -> None:
+    """Yuka publishes a third, rear feed in cameraStates slot 2 (uid 3)."""
+    await async_setup_entry(hass, _entry(_mower(_YUKA_CLOUD, "iot-456")), add_entities)
+
+    assert [entity.entity_description.key for entity in added] == [
+        "webrtc_camera",
+        "webrtc_camera_right",
+        "webrtc_camera_rear",
+    ]
+    assert [entity._agora_handler._target_uid for entity in added] == [1, 2, 3]

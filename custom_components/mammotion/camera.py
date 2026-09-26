@@ -40,7 +40,7 @@ from webrtc_models import RTCIceCandidateInit, RTCIceServer
 from . import MammotionConfigEntry
 from .agora_api import AgoraResponse
 from .agora_websocket import AgoraWebSocketHandler
-from .coordinator import MammotionBaseUpdateCoordinator
+from .coordinator import MammotionBaseUpdateCoordinator, vision_camera_slots
 from .entity import MammotionCameraBaseEntity
 from .models import MammotionMowerData
 
@@ -57,20 +57,27 @@ class MammotionCameraEntityDescription(CameraEntityDescription):
     stream_fn: Callable[
         [MammotionBaseUpdateCoordinator[Any]], StreamSubscriptionResponse
     ]
-    target_uid: int | None = None
+    # Agora uid the mower publishes this feed under: cameraStates slot + 1.
+    target_uid: int
 
 
+# One description per cameraStates slot, in slot order.
 CAMERAS: tuple[MammotionCameraEntityDescription, ...] = (
     MammotionCameraEntityDescription(
         key="webrtc_camera",
         stream_fn=lambda coordinator: coordinator.get_stream_data(),
+        target_uid=1,
     ),
-)
-
-RIGHT_VISION_CAMERA = MammotionCameraEntityDescription(
-    key="webrtc_camera_right",
-    stream_fn=lambda coordinator: coordinator.get_stream_data(),
-    target_uid=2,
+    MammotionCameraEntityDescription(
+        key="webrtc_camera_right",
+        stream_fn=lambda coordinator: coordinator.get_stream_data(),
+        target_uid=2,
+    ),
+    MammotionCameraEntityDescription(
+        key="webrtc_camera_rear",
+        stream_fn=lambda coordinator: coordinator.get_stream_data(),
+        target_uid=3,
+    ),
 )
 
 
@@ -114,12 +121,10 @@ async def async_setup_entry(
         _LOGGER.debug("Config camera for %s", mower.device.device_name)
         mower.reporting_coordinator.ice_servers = ice_servers
 
-        descriptions = CAMERAS
-        if DeviceType.value_of_str(mower.device.device_name).is_luba2():
-            descriptions = (*CAMERAS, RIGHT_VISION_CAMERA)
+        slots = vision_camera_slots(mower.device.device_name)
         entities.extend(
             MammotionWebRTCCamera(mower.reporting_coordinator, description, hass)
-            for description in descriptions
+            for description in CAMERAS[:slots]
         )
     async_add_entities(entities)
     await async_setup_platform_services(hass, entry)
@@ -146,18 +151,11 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         self._create_stream_lock: asyncio.Lock | None = None
         self._join_lock = asyncio.Lock()
         self.coordinator = coordinator
-        is_luba2 = DeviceType.value_of_str(coordinator.device.device_name).is_luba2()
         self._agora_handler = AgoraWebSocketHandler(
             hass,
             recover_stream=self._recover_stream,
             keepalive=self._fpv_keepalive,
-            target_uid=(
-                entity_description.target_uid
-                if entity_description.target_uid is not None
-                else 1
-                if is_luba2
-                else None
-            ),
+            target_uid=entity_description.target_uid,
         )
         self.entity_description = entity_description
         self._attr_translation_key = entity_description.key
@@ -166,12 +164,6 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         self._active_session_id: str | None = None
         self._teardown_lock = asyncio.Lock()
         self._attr_model = coordinator.device.device_name
-        if is_luba2:
-            self._attr_name = (
-                "Right vision camera"
-                if entity_description.target_uid == 2
-                else "Left vision camera"
-            )
         self.access_tokens = [secrets.token_hex(16)]
 
     async def async_added_to_hass(self) -> None:
@@ -197,11 +189,13 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
             self._unregister_ice_servers = None
         self._sessions.clear()
         active_session_id = self._active_session_id
-        self._active_session_id = None
-        await self.async_teardown_stream(stop_device=active_session_id is None)
         if active_session_id is not None:
-            await self.coordinator.async_release_camera_session(
-                self.entity_description.key, active_session_id
+            # Releasing this viewer stops the mower only if no sibling feed
+            # still has one.
+            await self.async_close_webrtc_session(active_session_id)
+        else:
+            await self.async_teardown_stream(
+                stop_device=not self.coordinator.has_active_camera_sessions
             )
         await super().async_will_remove_from_hass()
 
@@ -262,10 +256,10 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
                     return
 
                 if (
-                    self.entity_description.target_uid == 2
+                    self.entity_description.target_uid != 1
                     and not self.coordinator.dual_camera_stream_available
                 ):
-                    send_message(WebRTCError("503", "Second vision stream unavailable"))
+                    send_message(WebRTCError("503", "Vision stream unavailable"))
                     return
 
                 agora_data = stream_data
@@ -340,6 +334,9 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         the stop half always runs.
         """
         async with self._teardown_lock:
+            # A service-driven stop ends this viewer too; a later frontend close
+            # for the same session must not release it a second time.
+            self._active_session_id = None
             await self._agora_handler.disconnect()
             if not stop_device:
                 return

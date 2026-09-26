@@ -69,6 +69,17 @@
     }
   },
   "entity": {
+    "camera": {
+      "webrtc_camera": {
+        "name": "Bal kamera"
+      },
+      "webrtc_camera_right": {
+        "name": "Jobb kamera"
+      },
+      "webrtc_camera_rear": {
+        "name": "Hátsó kamera"
+      }
+    },
     "sensor": {
       "error_1_message": {
         "name": "Utolsó hiba"

@@ -132,6 +132,20 @@ class WebRTCSessionControl(Protocol):
         """Leave this camera's Agora session and optionally stop the encoder."""
 
 
+def vision_camera_slots(device_name: str) -> int:
+    """Return how many vision cameras the stream token should enable.
+
+    The token request always carries three ``cameraStates`` slots, and the
+    mower publishes slot ``n`` as Agora uid ``n + 1``.  Vision mowers expose
+    two front cameras; Yuka adds a rear camera in slot 2.
+    """
+    if DeviceType.is_luba1(device_name):
+        return 0
+    if DeviceType.is_yuka(device_name):
+        return 3
+    return 2
+
+
 MAINTENANCE_INTERVAL = timedelta(minutes=60)
 DEFAULT_INTERVAL = timedelta(minutes=30)
 REPORT_INTERVAL = timedelta(minutes=5)
@@ -373,7 +387,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             return cached_data.data, self._agora_response
 
         stream_data = None
-        request_dual = DeviceType.value_of_str(self.device_name).is_luba2()
+        request_dual = vision_camera_slots(self.device_name) > 1
         self._dual_camera_stream_available = False
 
         try:
@@ -478,7 +492,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         )
 
     async def _request_dual_camera_stream(self) -> Response[StreamSubscriptionResponse]:
-        """Request both Luba 2 vision feeds from the app's stream-token endpoint."""
+        """Request every vision feed from the app's stream-token endpoint."""
         http = self.manager.mammotion_http
         if http is None:
             return Response(code=503, msg="Cloud session unavailable")
@@ -486,6 +500,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         login_info = http.login_info
         if login_info is None:
             return Response(code=401, msg="Not logged in")
+        slots = vision_camera_slots(self.device_name)
         session = aiohttp_client.async_get_clientsession(self.hass)
         async with asyncio.timeout(30):
             async with session.post(
@@ -494,9 +509,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
                     "deviceId": self.device.iot_id,
                     "mode": 0,
                     "cameraStates": [
-                        {"cameraState": 1},
-                        {"cameraState": 1},
-                        {"cameraState": 0},
+                        {"cameraState": int(slot < slots)} for slot in range(3)
                     ],
                 },
                 headers={
@@ -524,7 +537,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
 
     @property
     def dual_camera_stream_available(self) -> bool:
-        """Whether the latest token request enabled both Luba 2 feeds."""
+        """Whether the latest token request enabled every vision feed."""
         return self._dual_camera_stream_available
 
     @property
@@ -568,7 +581,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
 
     @property
     def has_active_camera_sessions(self) -> bool:
-        """Whether either Luba 2 camera entity still has a viewer."""
+        """Whether any of this mower's camera entities still has a viewer."""
         return bool(self._active_camera_sessions)
 
     async def join_webrtc_channel(self) -> None:
@@ -582,8 +595,11 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
 
         Runs the same teardown as the frontend closing its session: leave the
         Agora channel, then stop the mower's encoder.  Without a camera entity
-        attached only the device-side half is possible.
+        attached only the device-side half is possible.  Every viewer is
+        forgotten, so the next offer mints a fresh token instead of reusing
+        the one for the stream just stopped.
         """
+        self._active_camera_sessions.clear()
         if self._webrtc_session_controls:
             await asyncio.gather(
                 *(

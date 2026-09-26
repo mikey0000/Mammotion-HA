@@ -50,6 +50,7 @@ async def camera(hass: HomeAssistant) -> MammotionWebRTCCamera:
     coordinator.device.device_name = _DEVICE
     coordinator.manager.stop_stream = AsyncMock()
     coordinator.async_release_camera_session = AsyncMock()
+    coordinator.has_active_camera_sessions = False
     coordinator.ice_servers = [_ICE_SERVER]
     entity = MammotionWebRTCCamera(coordinator, CAMERAS[0], hass)
     entity.hass = hass
@@ -176,6 +177,49 @@ async def test_removal_tears_down_and_detaches(
     camera._agora_handler.disconnect.assert_awaited_once()
     camera.coordinator.manager.stop_stream.assert_awaited_once_with(_DEVICE)
     assert camera._sessions == set()
+
+
+async def test_removal_leaves_a_sibling_feed_running(
+    camera: MammotionWebRTCCamera,
+) -> None:
+    """Removing a camera with no viewer must not stop another camera's stream."""
+    camera.coordinator.has_active_camera_sessions = True
+
+    await camera.async_will_remove_from_hass()
+
+    camera._agora_handler.disconnect.assert_awaited_once()
+    camera.coordinator.manager.stop_stream.assert_not_awaited()
+
+
+async def test_removal_with_a_viewer_releases_it_through_the_coordinator(
+    camera: MammotionWebRTCCamera,
+) -> None:
+    """The coordinator decides whether this was the last feed to stop."""
+    camera._sessions.add("session-1")
+    camera._active_session_id = "session-1"
+
+    await camera.async_will_remove_from_hass()
+
+    camera.coordinator.async_release_camera_session.assert_awaited_once_with(
+        "webrtc_camera", "session-1"
+    )
+    camera.coordinator.manager.stop_stream.assert_not_awaited()
+    assert camera._active_session_id is None
+
+
+async def test_a_close_after_stop_video_is_not_released_twice(
+    hass: HomeAssistant, camera: MammotionWebRTCCamera
+) -> None:
+    """``stop_video`` ends the viewer, so the frontend's later close is a no-op."""
+    camera._sessions.add("session-1")
+    camera._active_session_id = "session-1"
+
+    await camera.async_teardown_stream(stop_device=False)
+    _core_teardown(camera, "session-1")
+    await hass.async_block_till_done()
+
+    assert camera._active_session_id is None
+    camera.coordinator.async_release_camera_session.assert_not_awaited()
 
 
 async def test_reload_does_not_leave_ice_servers_registered(
