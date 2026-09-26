@@ -233,7 +233,11 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
                 stream_data,
                 agora_response,
             ) = await self.coordinator.async_check_stream_expiry(
-                force=not self.coordinator.has_active_camera_sessions
+                # Every viewer joins with its own token.  Agora treats a second
+                # join carrying the same token as the same session and quits
+                # the first (on_notification code 2003), freezing the sibling
+                # camera; a fresh token for the same Agora uid coexists.
+                force=True
             )
             # Reset candidates list for new session
             await self.coordinator.async_send_command(

@@ -297,3 +297,16 @@ async def test_a_token_refresh_reaches_the_next_session(
     servers = async_get_ice_servers(hass)
     assert rotated in servers
     assert _ICE_SERVER not in servers
+
+
+async def test_second_camera_offer_mints_its_own_token(
+    camera: MammotionWebRTCCamera,
+) -> None:
+    """Reusing a sibling's token makes Agora quit the sibling (code 2003)."""
+    camera.coordinator.has_active_camera_sessions = True
+    camera.coordinator.async_check_stream_expiry = AsyncMock(return_value=(None, None))
+    camera.coordinator.async_send_command = AsyncMock()
+
+    await camera.async_handle_async_webrtc_offer("offer-sdp", "session-2", MagicMock())
+
+    camera.coordinator.async_check_stream_expiry.assert_awaited_once_with(force=True)
