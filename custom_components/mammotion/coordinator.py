@@ -1110,8 +1110,8 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             if self._can_retry_after_refresh():
                 await self.manager.start_map_sync(self.device_name)
 
-    async def async_sync_schedule(self) -> None:
-        """Sync all scheduled mowing plans from the device via PlanFetchSaga."""
+    async def async_sync_tasks(self) -> None:
+        """Sync all mowing tasks (plans) from the device via PlanFetchSaga."""
         try:
             await self.manager.start_plan_sync(self.device_name)
         except EXPIRED_CREDENTIAL_EXCEPTIONS as exc:
@@ -2441,6 +2441,15 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
             function=self._add_ble_device,
             background=True,
         )
+        # Caps the route query at one a minute while its reply is on the way.
+        self._job_id_query_debouncer = Debouncer(
+            hass,
+            LOGGER,
+            cooldown=60,
+            immediate=True,
+            function=self._async_query_job_id,
+            background=True,
+        )
         # The map card polls mow progress every few seconds; this caps the
         # fetches those polls trigger at one a minute.
         self._mow_progress_debouncer = Debouncer(
@@ -2450,6 +2459,107 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
             immediate=True,
             function=self._async_refresh_mow_progress_source,
             background=True,
+        )
+
+    async def async_sync_tasks_if_unfetched(self) -> None:
+        """Fetch the tasks if none were ever fetched here, or they are marked stale.
+
+        pymammotion only re-fetches when ``init_cfg_hash`` changes, and never on the
+        first value it sees, so a mower whose tasks were never fetched (an empty,
+        restored plan list) would otherwise stay empty.  ``plans_fetched`` is
+        persisted, so this runs once per install rather than on every restart.
+        """
+        if (data := self.data) is None:
+            return
+        if data.map.plans_fetched and not data.map.plans_stale:
+            return
+        await self.async_sync_tasks()
+
+    async def _on_state_changed(self, snapshot: DeviceSnapshot) -> None:
+        """Push the update, then find out which task is running if HA does not know."""
+        await super()._on_state_changed(snapshot)
+        self._async_request_missing_job_id()
+        self._async_sync_tasks_for_unknown_job()
+
+    @callback
+    def _async_request_missing_job_id(self) -> None:
+        """Ask for the running job's route settings when HA has none for it.
+
+        The mower sends ``bidire_reqconver_path`` (with the job id) when a job
+        starts, so after a Home Assistant restart mid-job ``work`` is empty.  Only
+        then, and only while the report shows a mow in progress, is the route
+        queried (sub_cmd 2).  Its reply fills ``work``, which ends the condition.
+        """
+        if (data := self.data) is None:
+            return
+        report_work = data.report_data.work
+        # sys_status alone also covers returning home after a finished job.
+        mowing = data.report_data.dev.sys_status in MOWING_ACTIVE_MODES and bool(
+            report_work.ub_path_hash or report_work.path_hash > 1
+        )
+        if not mowing or data.work.job_id or data.work.zone_hashs:
+            return
+        self._job_id_query_debouncer.async_schedule_call()
+
+    async def _async_query_job_id(self) -> None:
+        LOGGER.debug("%s: job running with no job id, querying it", self.device_name)
+        await self.async_send_command("query_generate_route_information")
+
+    @callback
+    def _async_sync_tasks_for_unknown_job(self) -> None:
+        """Fetch the task list when a running job belongs to no stored task.
+
+        A task created or changed elsewhere (the app, another client) since the
+        last fetch leaves its job without a plan here.  An ad-hoc job reports
+        ``job_id`` 0 and never gets this far.  ``plans_fetched_job_id`` records the
+        job a fetch completed during, so a task job still unmatched after one (e.g.
+        its task was deleted) is not fetched for again.
+        """
+        if (data := self.data) is None:
+            return
+        if data.report_data.dev.sys_status not in MOWING_ACTIVE_MODES:
+            return
+        job_id = data.work.job_id
+        if not job_id or job_id == data.map.plans_fetched_job_id:
+            return
+        if self.running_plan is not None:
+            return
+        handle = self.manager.mower(self.device_name)
+        if handle is not None and handle.has_queued_commands():
+            # A fetch (this one or the start-up one) is queued or running; look
+            # again once it has landed rather than queueing another.
+            return
+        LOGGER.debug(
+            "%s: job %s matches no stored task, syncing tasks", self.device_name, job_id
+        )
+        if (entry := self.config_entry) is not None:
+            entry.async_create_background_task(
+                self.hass, self.async_sync_tasks(), f"{self.device_name} task sync"
+            )
+
+    @property
+    def running_plan(self) -> Plan | None:
+        """Return the stored task (plan) the mower is running, if the job is one.
+
+        A job the mower starts from a plan reports a ``job_id`` in
+        ``bidire_reqconver_path`` that is the plan's 21-digit ``plan_id`` cut to
+        fit an int64 (its leading 17 digits), so the plan whose id starts with it
+        is the one running.  An ad-hoc "mow these areas" job reports ``job_id`` 0.
+        """
+        if (data := self.data) is None:
+            return None
+        if data.report_data.dev.sys_status not in MOWING_ACTIVE_MODES:
+            return None
+        if not (job_id := data.work.job_id):
+            return None
+        prefix = str(job_id)
+        return next(
+            (
+                plan
+                for plan in data.map.plan.values()
+                if plan.plan_id.startswith(prefix)
+            ),
+            None,
         )
 
     @property
@@ -2599,6 +2709,7 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
         """Drop the advertisement subscription along with the rest."""
         self._async_stop()
         self._mow_progress_debouncer.async_shutdown()
+        self._job_id_query_debouncer.async_shutdown()
         await super().async_shutdown()
 
     async def _async_reconnect_ble(self) -> None:
@@ -2750,6 +2861,7 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
         if DeviceType.supports_charge_limit(self.device_name, firmware or ""):
             commands.append(("async_read_battery_info", {}))
 
+        commands.append(("async_sync_tasks_if_unfetched", {}))
         # Final command for all devices
         commands.append(("async_request_report_snapshot", {}))
 

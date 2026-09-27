@@ -384,6 +384,15 @@
           "weak_rtk_signal": "Zwak RTK-signaal",
           "other": "Overig"
         }
+      },
+      "running_task": {
+        "name": "Taak {name}",
+        "state": {
+          "mowing": "Maaien",
+          "paused": "Gepauzeerd",
+          "returning": "Keert terug",
+          "charging_pause": "Laadt, gaat daarna verder"
+        }
       }
     },
     "binary_sensor": {
@@ -398,8 +407,8 @@
       "start_map_sync": {
         "name": "Synchroniseer kaarten"
       },
-      "start_schedule_sync": {
-        "name": "Schema's synchroniseren"
+      "start_task_sync": {
+        "name": "Taken synchroniseren"
       },
       "resync_rtk_dock": {
         "name": "Synchroniseer RTK en laadstation"
@@ -1290,6 +1299,16 @@
       "name": "Taken ophalen",
       "description": "Geeft alle schema's terug die de integratie voor het geselecteerde apparaat bijhoudt, inclusief of elk schema is ingeschakeld. Gebruik dit om te bevestigen dat een wijziging is doorgevoerd; 'Taken vernieuwen' haalt ze eerst opnieuw op van het apparaat."
     },
+    "get_task": {
+      "name": "Taak ophalen",
+      "description": "Geeft één schema van de geselecteerde maaier terug op basis van de taak-ID: de huidige instellingen onder de veldnamen die 'Taak bewerken' accepteert, en of het is ingeschakeld en loopt. Gebruik dit om een taak uit te lezen voordat je hem bewerkt.",
+      "fields": {
+        "task_id": {
+          "name": "Taak-ID",
+          "description": "ID van de taak, zoals weergegeven in het attribuut task_id van de taakknop of teruggegeven door 'Taken ophalen'."
+        }
+      }
+    },
     "start_task": {
       "name": "Taak starten",
       "description": "Voert een opgeslagen schema direct uit (ook bekend als 'schema starten'). Alleen maaier — de Spino zwembadrobot heeft geen equivalent commando."
@@ -1410,6 +1429,9 @@
     },
     "task_not_found": {
       "message": "Taak {plan_id} is niet gevonden op het apparaat. Vernieuw het schema en probeer opnieuw."
+    },
+    "task_id_not_found": {
+      "message": "Taak {task_id} is niet gevonden voor {entity_id}. Vernieuw de taken en probeer opnieuw."
     },
     "start_task_unsupported_on_spino": {
       "message": "Een schema op aanvraag starten wordt niet ondersteund op de Spino zwembadrobot — de firmware heeft geen 'nu uitvoeren' commando voor opgeslagen schema's."

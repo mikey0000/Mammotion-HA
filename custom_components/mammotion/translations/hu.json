@@ -384,6 +384,15 @@
           "weak_rtk_signal": "Gyenge RTK-jel",
           "other": "Egyéb"
         }
+      },
+      "running_task": {
+        "name": "Feladat: {name}",
+        "state": {
+          "mowing": "Nyírás",
+          "paused": "Szüneteltetve",
+          "returning": "Visszatérés",
+          "charging_pause": "Töltés, utána folytatja"
+        }
       }
     },
     "binary_sensor": {
@@ -398,8 +407,8 @@
       "start_map_sync": {
         "name": "Térképek szinkronizálása"
       },
-      "start_schedule_sync": {
-        "name": "Ütemezések szinkronizálása"
+      "start_task_sync": {
+        "name": "Feladatok szinkronizálása"
       },
       "resync_rtk_dock": {
         "name": "RTK és dokk szinkronizálása"
@@ -1290,6 +1299,16 @@
       "name": "Feladatok lekérése",
       "description": "Visszaadja az integráció által a kiválasztott eszközhöz tárolt összes ütemezést, azt is beleértve, hogy engedélyezve vannak-e. Ezzel ellenőrizhető, hogy egy módosítás érvénybe lépett-e; a „Feladatok frissítése” előbb újra lekéri őket az eszközről."
     },
+    "get_task": {
+      "name": "Feladat lekérése",
+      "description": "Visszaadja a kiválasztott fűnyíró egyik ütemezését a feladatazonosító alapján: az aktuális beállításait a „Feladat szerkesztése” által elfogadott mezőnevekkel, valamint azt, hogy engedélyezve van-e és éppen fut-e. Ezzel kiolvasható egy feladat a szerkesztése előtt.",
+      "fields": {
+        "task_id": {
+          "name": "Feladatazonosító",
+          "description": "A feladat azonosítója, ahogy a feladatgomb task_id attribútumában szerepel, vagy ahogy a „Feladatok lekérése” visszaadja."
+        }
+      }
+    },
     "start_task": {
       "name": "Feladat indítása",
       "description": "Egy tárolt ütemezést azonnal végrehajt (másik neve „ütemezés indítása”). Csak fűnyíró — a Spino medencetisztítónak nincs ezzel egyenértékű parancsa."
@@ -1410,6 +1429,9 @@
     },
     "task_not_found": {
       "message": "A(z) {plan_id} feladat nem található az eszközön. Frissítsd az ütemezést, és próbáld újra."
+    },
+    "task_id_not_found": {
+      "message": "A(z) {task_id} feladat nem található ehhez: {entity_id}. Frissítsd a feladatokat, és próbáld újra."
     },
     "start_task_unsupported_on_spino": {
       "message": "A Spino medencetisztító nem támogatja az ütemezés kérésre történő indítását — a firmware nem rendelkezik „azonnali futtatás” paranccsal a tárolt ütemezésekhez."

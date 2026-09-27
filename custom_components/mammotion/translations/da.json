@@ -384,6 +384,15 @@
           "weak_rtk_signal": "Svagt RTK-signal",
           "other": "Andet"
         }
+      },
+      "running_task": {
+        "name": "Opgave {name}",
+        "state": {
+          "mowing": "Klipper",
+          "paused": "Sat på pause",
+          "returning": "Vender tilbage",
+          "charging_pause": "Oplader, fortsætter bagefter"
+        }
       }
     },
     "binary_sensor": {
@@ -398,8 +407,8 @@
       "start_map_sync": {
         "name": "Synkroniser kort"
       },
-      "start_schedule_sync": {
-        "name": "Synkroniser tidsplaner"
+      "start_task_sync": {
+        "name": "Synkroniser opgaver"
       },
       "resync_rtk_dock": {
         "name": "Synkroniser RTK og ladestation"
@@ -1290,6 +1299,16 @@
       "name": "Hent opgaver",
       "description": "Returnerer alle planer, som integrationen har for den valgte enhed, inklusive om hver enkelt er aktiveret. Brug den til at bekræfte, at en ændring blev gennemført; „Opdater opgaver“ henter dem først fra enheden igen."
     },
+    "get_task": {
+      "name": "Hent opgave",
+      "description": "Returnerer en af den valgte robotplæneklippers planer ud fra opgave-id'et: dens nuværende indstillinger under de feltnavne, som „Redigér opgave“ accepterer, samt om den er aktiveret og kører. Brug den til at læse en opgave, før du redigerer den.",
+      "fields": {
+        "task_id": {
+          "name": "Opgave-id",
+          "description": "Opgavens id, som vist i opgaveknappens task_id-attribut eller returneret af „Hent opgaver“."
+        }
+      }
+    },
     "start_task": {
       "name": "Start opgave",
       "description": "Kører en gemt plan med det samme (også kendt som 'start plan'). Kun til plæneklipper — Spino-poolrobotten har ikke en tilsvarende kommando."
@@ -1410,6 +1429,9 @@
     },
     "task_not_found": {
       "message": "Opgave {plan_id} findes ikke på enheden. Opdater planen og prøv igen."
+    },
+    "task_id_not_found": {
+      "message": "Opgave {task_id} blev ikke fundet for {entity_id}. Opdatér opgaverne og prøv igen."
     },
     "start_task_unsupported_on_spino": {
       "message": "Start af en plan på forespørgsel understøttes ikke på Spino-poolrobotten — enhedens firmware har ingen 'kør nu'-kommando for gemte planer."

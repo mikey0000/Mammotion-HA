@@ -897,6 +897,21 @@ get_tasks:
   target:
     entity:
       integration: mammotion
+      domain:
+        - lawn_mower
+        - vacuum
+
+get_task:
+  target:
+    entity:
+      integration: mammotion
+      domain: lawn_mower
+  fields:
+    task_id:
+      required: true
+      example: "202405201230451234567"
+      selector:
+        text:
 
 backup_map:
   target:

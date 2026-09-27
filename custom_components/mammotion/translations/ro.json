@@ -384,6 +384,15 @@
           "weak_rtk_signal": "Semnal RTK slab",
           "other": "Altele"
         }
+      },
+      "running_task": {
+        "name": "Sarcina {name}",
+        "state": {
+          "mowing": "Tunde",
+          "paused": "În pauză",
+          "returning": "Se întoarce",
+          "charging_pause": "Se încarcă, apoi continuă"
+        }
       }
     },
     "binary_sensor": {
@@ -398,8 +407,8 @@
       "start_map_sync": {
         "name": "Sincronizați harta"
       },
-      "start_schedule_sync": {
-        "name": "Sincronizați programele"
+      "start_task_sync": {
+        "name": "Sincronizați sarcinile"
       },
       "resync_rtk_dock": {
         "name": "Sincronizați RTK și docul"
@@ -1290,6 +1299,16 @@
       "name": "Obține sarcinile",
       "description": "Returnează toate programările pe care integrarea le deține pentru dispozitivul vizat, inclusiv dacă fiecare este activată. Folosiți-o pentru a confirma că o modificare a fost aplicată; „Reîmprospătează sarcinile” le preia mai întâi din nou de pe dispozitiv."
     },
+    "get_task": {
+      "name": "Obține sarcina",
+      "description": "Returnează una dintre programările mașinii de tuns vizate după ID-ul sarcinii: setările curente cu numele de câmpuri acceptate de „Editează sarcina”, precum și dacă este activată și în desfășurare. Folosiți-o pentru a citi o sarcină înainte de a o edita.",
+      "fields": {
+        "task_id": {
+          "name": "ID sarcină",
+          "description": "ID-ul sarcinii, așa cum apare în atributul task_id al butonului sarcinii sau cum este returnat de „Obține sarcinile”."
+        }
+      }
+    },
     "start_task": {
       "name": "Pornește sarcina",
       "description": "Pornește imediat un program stocat (cunoscut și ca „pornește programul”). Doar pentru cositoare — robotul de piscină Spino nu are o comandă echivalentă."
@@ -1410,6 +1429,9 @@
     },
     "task_not_found": {
       "message": "Sarcina {plan_id} nu a fost găsită pe dispozitiv. Reîmprospătează programul și încearcă din nou."
+    },
+    "task_id_not_found": {
+      "message": "Sarcina {task_id} nu a fost găsită pentru {entity_id}. Reîmprospătează sarcinile și încearcă din nou."
     },
     "start_task_unsupported_on_spino": {
       "message": "Pornirea unui program la cerere nu este acceptată pe robotul de piscină Spino — firmware-ul nu oferă o comandă de execuție imediată pentru programele stocate."

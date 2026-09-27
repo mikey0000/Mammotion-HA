@@ -384,6 +384,15 @@
           "weak_rtk_signal": "Segnale RTK debole",
           "other": "Altro"
         }
+      },
+      "running_task": {
+        "name": "Attività {name}",
+        "state": {
+          "mowing": "Taglio",
+          "paused": "In pausa",
+          "returning": "Rientro",
+          "charging_pause": "In carica, poi riprende"
+        }
       }
     },
     "binary_sensor": {
@@ -398,8 +407,8 @@
       "start_map_sync": {
         "name": "Sincronizza mappe"
       },
-      "start_schedule_sync": {
-        "name": "Sincronizza programmi"
+      "start_task_sync": {
+        "name": "Sincronizza attività"
       },
       "resync_rtk_dock": {
         "name": "Sincronizza base e RTK"
@@ -1290,6 +1299,16 @@
       "name": "Ottieni attività",
       "description": "Restituisce tutte le pianificazioni che l'integrazione conserva per il dispositivo selezionato, indicando se ciascuna è abilitata. Utile per verificare che una modifica sia stata applicata; «Aggiorna attività» le recupera prima dal dispositivo."
     },
+    "get_task": {
+      "name": "Ottieni attività singola",
+      "description": "Restituisce una delle pianificazioni del rasaerba selezionato in base al suo ID attività: le impostazioni attuali con i nomi dei campi accettati da «Modifica attività», oltre a se è abilitata e in esecuzione. Utile per leggere un'attività prima di modificarla.",
+      "fields": {
+        "task_id": {
+          "name": "ID attività",
+          "description": "ID dell'attività, come indicato nell'attributo task_id del pulsante dell'attività o restituito da «Ottieni attività»."
+        }
+      }
+    },
     "start_task": {
       "name": "Avvia attività",
       "description": "Esegue immediatamente una pianificazione memorizzata (nota anche come 'avvia pianificazione'). Solo per tagliaerba — il robot piscina Spino non ha un comando equivalente."
@@ -1410,6 +1429,9 @@
     },
     "task_not_found": {
       "message": "L'attività {plan_id} non è stata trovata sul dispositivo. Aggiorna la pianificazione e riprova."
+    },
+    "task_id_not_found": {
+      "message": "L'attività {task_id} non è stata trovata per {entity_id}. Aggiorna le attività e riprova."
     },
     "start_task_unsupported_on_spino": {
       "message": "Avviare una pianificazione su richiesta non è supportato sul robot piscina Spino — il firmware non offre un comando di esecuzione immediata per le pianificazioni memorizzate."

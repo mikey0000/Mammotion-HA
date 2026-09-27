@@ -384,6 +384,15 @@
           "weak_rtk_signal": "Słaby sygnał RTK",
           "other": "Inne"
         }
+      },
+      "running_task": {
+        "name": "Zadanie {name}",
+        "state": {
+          "mowing": "Koszenie",
+          "paused": "Wstrzymane",
+          "returning": "Powrót",
+          "charging_pause": "Ładowanie, potem wznowi"
+        }
       }
     },
     "binary_sensor": {
@@ -398,8 +407,8 @@
       "start_map_sync": {
         "name": "Synchronizuj mapy"
       },
-      "start_schedule_sync": {
-        "name": "Synchronizuj harmonogramy"
+      "start_task_sync": {
+        "name": "Synchronizuj zadania"
       },
       "resync_rtk_dock": {
         "name": "Zsynchronizuj RTK i stację ładującą"
@@ -1290,6 +1299,16 @@
       "name": "Pobierz zadania",
       "description": "Zwraca wszystkie harmonogramy przechowywane przez integrację dla wybranego urządzenia, w tym informację, czy każdy z nich jest włączony. Służy do potwierdzenia, że zmiana została zastosowana; „Odśwież zadania” najpierw pobiera je ponownie z urządzenia."
     },
+    "get_task": {
+      "name": "Pobierz zadanie",
+      "description": "Zwraca jeden z harmonogramów wybranej kosiarki na podstawie identyfikatora zadania: jego bieżące ustawienia pod nazwami pól akceptowanymi przez „Edytuj zadanie” oraz informację, czy jest włączony i czy właśnie działa. Służy do odczytania zadania przed jego edycją.",
+      "fields": {
+        "task_id": {
+          "name": "Identyfikator zadania",
+          "description": "Identyfikator zadania widoczny w atrybucie task_id przycisku zadania lub zwracany przez „Pobierz zadania”."
+        }
+      }
+    },
     "start_task": {
       "name": "Uruchom zadanie",
       "description": "Natychmiast uruchamia zapisany plan (znane też jako „uruchom plan”). Tylko kosiarka — robot basenowy Spino nie ma równoważnego polecenia."
@@ -1410,6 +1429,9 @@
     },
     "task_not_found": {
       "message": "Nie znaleziono zadania {plan_id} na urządzeniu. Odśwież plan i spróbuj ponownie."
+    },
+    "task_id_not_found": {
+      "message": "Nie znaleziono zadania {task_id} dla {entity_id}. Odśwież zadania i spróbuj ponownie."
     },
     "start_task_unsupported_on_spino": {
       "message": "Uruchomienie planu na żądanie nie jest obsługiwane na robocie basenowym Spino — firmware urządzenia nie ma polecenia natychmiastowego uruchomienia zapisanego planu."

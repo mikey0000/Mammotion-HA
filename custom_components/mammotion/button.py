@@ -132,8 +132,8 @@ BUTTON_SENSORS: tuple[MammotionButtonSensorEntityDescription, ...] = (
         entity_category=EntityCategory.CONFIG,
     ),
     MammotionButtonSensorEntityDescription(
-        key="start_schedule_sync",
-        press_fn=lambda coordinator: coordinator.async_sync_schedule(),
+        key="start_task_sync",
+        press_fn=lambda coordinator: coordinator.async_sync_tasks(),
         entity_category=EntityCategory.CONFIG,
     ),
     MammotionButtonSensorEntityDescription(
@@ -215,6 +215,7 @@ async def async_setup_entry(
         task_entities_by_id: dict[str, MammotionTaskButtonSensorEntity] = {}
 
         coordinator = mower.reporting_coordinator
+        _async_migrate_task_sync_unique_id(hass, coordinator)
 
         update_tasks = partial(
             async_add_task_entities,
@@ -330,6 +331,12 @@ class MammotionTaskButtonSensorEntity(MammotionBaseEntity, ButtonEntity):
         plan = self._plan()
         if plan is not None:
             attributes["enabled"] = plan.is_enabled()
+            running = cast(
+                MammotionReportUpdateCoordinator, self.coordinator
+            ).running_plan
+            attributes["running"] = running is not None and running.plan_id == (
+                self.entity_description.plan_id
+            )
         return attributes
 
     def _plan(self) -> Plan | None:
@@ -346,8 +353,15 @@ class MammotionTaskButtonSensorEntity(MammotionBaseEntity, ButtonEntity):
             name=new_name,
             translation_placeholders={"name": new_name},
         )
-        if self.hass is not None:
-            self.async_write_ha_state()
+        # Entity.name is a cached_property cleared only by assigning _attr_name.
+        self._attr_name = new_name
+        if self.hass is None:
+            return
+        if self.registry_entry is not None:
+            er.async_get(self.hass).async_update_entity(
+                self.entity_id, original_name=new_name
+            )
+        self.async_write_ha_state()
 
     async def async_press(self) -> None:
         """Trigger a one-time task."""
@@ -431,7 +445,31 @@ def async_add_task_entities(
         async_add_entities(button_entities)
 
 
-def _task_unique_id(coordinator: MammotionBaseUpdateCoordinator[Any], task_id: str) -> str:
+@callback
+def _async_migrate_task_sync_unique_id(
+    hass: HomeAssistant, coordinator: MammotionReportUpdateCoordinator
+) -> None:
+    """Move the "sync schedules" button's registry entry to its "sync tasks" key.
+
+    The unique_id embeds the key, so renaming it would otherwise orphan the old
+    entity and create a new one with a different entity_id.
+    """
+    registry = er.async_get(hass)
+    old_id = f"{coordinator.unique_name}_start_schedule_sync"
+    new_id = f"{coordinator.unique_name}_start_task_sync"
+    if (
+        entity_id := registry.async_get_entity_id(BUTTON_DOMAIN, DOMAIN, old_id)
+    ) is None:
+        return
+    if registry.async_get_entity_id(BUTTON_DOMAIN, DOMAIN, new_id) is None:
+        registry.async_update_entity(entity_id, new_unique_id=new_id)
+    else:
+        registry.async_remove(entity_id)
+
+
+def _task_unique_id(
+    coordinator: MammotionBaseUpdateCoordinator[Any], task_id: str
+) -> str:
     """Registry unique_id for a task button, matching MammotionBaseEntity."""
     return f"{coordinator.unique_name}_{task_id}"
 

@@ -384,6 +384,15 @@
           "weak_rtk_signal": "Svag RTK-signal",
           "other": "Övrigt"
         }
+      },
+      "running_task": {
+        "name": "Uppgift {name}",
+        "state": {
+          "mowing": "Klipper",
+          "paused": "Pausad",
+          "returning": "Återvänder",
+          "charging_pause": "Laddar, fortsätter sedan"
+        }
       }
     },
     "binary_sensor": {
@@ -398,8 +407,8 @@
       "start_map_sync": {
         "name": "Synkronisera kartor"
       },
-      "start_schedule_sync": {
-        "name": "Synkronisera scheman"
+      "start_task_sync": {
+        "name": "Synkronisera uppgifter"
       },
       "resync_rtk_dock": {
         "name": "Synkronisera RTK och laddstationen"
@@ -1290,6 +1299,16 @@
       "name": "Hämta uppgifter",
       "description": "Returnerar alla scheman som integrationen har för den valda enheten, inklusive om respektive schema är aktiverat. Använd den för att bekräfta att en ändring gick igenom; ”Uppdatera uppgifter” hämtar dem först på nytt från enheten."
     },
+    "get_task": {
+      "name": "Hämta uppgift",
+      "description": "Returnerar ett av den valda gräsklipparens scheman utifrån uppgifts-ID: dess nuvarande inställningar under de fältnamn som ”Redigera uppgift” accepterar, samt om det är aktiverat och körs. Använd den för att läsa en uppgift innan du redigerar den.",
+      "fields": {
+        "task_id": {
+          "name": "Uppgifts-ID",
+          "description": "Uppgiftens ID, som det visas i uppgiftsknappens attribut task_id eller returneras av ”Hämta uppgifter”."
+        }
+      }
+    },
     "start_task": {
       "name": "Starta uppgift",
       "description": "Kör ett sparat schema omedelbart (även kallat 'starta schema'). Endast gräsklippare — Spino-poolroboten har inte motsvarande kommando."
@@ -1410,6 +1429,9 @@
     },
     "task_not_found": {
       "message": "Uppgiften {plan_id} kunde inte hittas på enheten. Uppdatera schemat och försök igen."
+    },
+    "task_id_not_found": {
+      "message": "Uppgiften {task_id} kunde inte hittas för {entity_id}. Uppdatera uppgifterna och försök igen."
     },
     "start_task_unsupported_on_spino": {
       "message": "Att starta ett schema på begäran stöds inte på Spino-poolroboten — enhetens firmware har inget 'kör nu'-kommando för sparade scheman."

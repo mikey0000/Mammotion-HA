@@ -92,6 +92,15 @@
           "night_protection": "mdi:weather-night",
           "non_working_hours": "mdi:clock-alert-outline"
         }
+      },
+      "running_task": {
+        "default": "mdi:calendar-clock",
+        "state": {
+          "mowing": "mdi:robot-mower",
+          "paused": "mdi:pause-circle-outline",
+          "returning": "mdi:home-import-outline",
+          "charging_pause": "mdi:battery-charging"
+        }
       }
     },
     "select": {

@@ -26,7 +26,7 @@ from pathlib import Path
 import pytest
 
 #: Last release that predates the APIs below.  The pin must move past it.
-_RELEASE_WITHOUT_THESE_APIS = "0.9.4"
+_RELEASE_WITHOUT_THESE_APIS = "0.9.6"
 
 _MANIFEST = (
     Path(__file__).parent.parent / "custom_components" / "mammotion" / "manifest.json"
@@ -131,6 +131,12 @@ def test_check_and_get_mow_path_reports_whether_it_fetched() -> None:
         in source
     )
     assert "def is_mow_path_current(" in _source("data/model/hash_list.py")
+
+
+def test_work_ends_with_the_job_and_fetches_record_their_job() -> None:
+    """running_plan and the unknown-job task sync read these from the data."""
+    assert "plans_fetched_job_id: int = 0" in _source("data/model/hash_list.py")
+    assert "self.work = CurrentTaskSettings()" in _source("data/model/device.py")
 
 
 def test_the_shipped_pin_has_moved_past_the_release_without_these_apis() -> None:

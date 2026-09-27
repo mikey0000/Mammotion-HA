@@ -384,6 +384,15 @@
           "weak_rtk_signal": "Šibek signal RTK",
           "other": "Drugo"
         }
+      },
+      "running_task": {
+        "name": "Opravilo {name}",
+        "state": {
+          "mowing": "Košnja",
+          "paused": "Začasno ustavljeno",
+          "returning": "Vračanje",
+          "charging_pause": "Polnjenje, nato nadaljuje"
+        }
       }
     },
     "binary_sensor": {
@@ -398,8 +407,8 @@
       "start_map_sync": {
         "name": "Sinhronizacija zemljevidov"
       },
-      "start_schedule_sync": {
-        "name": "Sinhronizacija urnikov"
+      "start_task_sync": {
+        "name": "Sinhronizacija opravil"
       },
       "resync_rtk_dock": {
         "name": "Sinhronizacija položaja RTK in polnilne postaje"
@@ -1290,6 +1299,16 @@
       "name": "Pridobi opravila",
       "description": "Vrne vse urnike, ki jih integracija hrani za izbrano napravo, vključno s tem, ali je posamezen urnik omogočen. Uporabite za potrditev, da je sprememba obveljala; »Osveži opravila« jih najprej znova prebere z naprave."
     },
+    "get_task": {
+      "name": "Pridobi opravilo",
+      "description": "Vrne enega od urnikov izbrane kosilnice glede na ID opravila: njegove trenutne nastavitve pod imeni polj, ki jih sprejme »Uredi opravilo«, ter ali je omogočen in se trenutno izvaja. Uporabite za branje opravila, preden ga uredite.",
+      "fields": {
+        "task_id": {
+          "name": "ID opravila",
+          "description": "ID opravila, kot je prikazan v atributu task_id gumba opravila ali kot ga vrne »Pridobi opravila«."
+        }
+      }
+    },
     "start_task": {
       "name": "Zaženi opravilo",
       "description": "Takoj zažene shranjen urnik (znano tudi kot „zaženi urnik“). Samo kosilnica — bazenski robot Spino nima enakovrednega ukaza."
@@ -1410,6 +1429,9 @@
     },
     "task_not_found": {
       "message": "Opravila {plan_id} ni mogoče najti na napravi. Osveži urnik in poskusi znova."
+    },
+    "task_id_not_found": {
+      "message": "Opravila {task_id} ni mogoče najti za {entity_id}. Osveži opravila in poskusi znova."
     },
     "start_task_unsupported_on_spino": {
       "message": "Zagon urnika na zahtevo ni podprt na bazenskem robotu Spino — vdelana programska oprema ne ponuja ukaza za takojšen zagon shranjenih urnikov."

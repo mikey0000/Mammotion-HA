@@ -65,6 +65,7 @@ def _coordinator(
     coordinator._on_stop = []
     coordinator._subscriptions = []
     coordinator._mow_progress_debouncer = MagicMock()
+    coordinator._job_id_query_debouncer = MagicMock()
     coordinator.hass = MagicMock()
     coordinator.manager = MagicMock()
     coordinator.manager.get_device_by_name.return_value = device

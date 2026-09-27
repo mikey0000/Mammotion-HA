@@ -384,6 +384,15 @@
           "weak_rtk_signal": "Signal RTK faible",
           "other": "Autre"
         }
+      },
+      "running_task": {
+        "name": "Tâche {name}",
+        "state": {
+          "mowing": "Tonte",
+          "paused": "En pause",
+          "returning": "Retour",
+          "charging_pause": "En charge, reprendra ensuite"
+        }
       }
     },
     "binary_sensor": {
@@ -398,8 +407,8 @@
       "start_map_sync": {
         "name": "Synchroniser les cartes"
       },
-      "start_schedule_sync": {
-        "name": "Synchroniser les plannings"
+      "start_task_sync": {
+        "name": "Synchroniser les tâches"
       },
       "resync_rtk_dock": {
         "name": "Synchroniser RTK et base"
@@ -1290,6 +1299,16 @@
       "name": "Obtenir les tâches",
       "description": "Renvoie tous les programmes que l'intégration détient pour l'appareil ciblé, en indiquant si chacun est activé. À utiliser pour vérifier qu'une modification a bien été appliquée ; « Actualiser les tâches » les récupère d'abord depuis l'appareil."
     },
+    "get_task": {
+      "name": "Obtenir la tâche",
+      "description": "Renvoie l'un des programmes de la tondeuse ciblée à partir de son identifiant de tâche : ses paramètres actuels sous les noms de champs acceptés par « Modifier la tâche », ainsi que son état activé et en cours d'exécution. À utiliser pour lire une tâche avant de la modifier.",
+      "fields": {
+        "task_id": {
+          "name": "Identifiant de la tâche",
+          "description": "Identifiant de la tâche, tel qu'indiqué dans l'attribut task_id du bouton de la tâche ou renvoyé par « Obtenir les tâches »."
+        }
+      }
+    },
     "start_task": {
       "name": "Démarrer la tâche",
       "description": "Exécute immédiatement un programme enregistré (aussi appelé « démarrer le programme »). Uniquement pour la tondeuse — le robot de piscine Spino n'a pas de commande équivalente."
@@ -1410,6 +1429,9 @@
     },
     "task_not_found": {
       "message": "La tâche {plan_id} est introuvable sur l'appareil. Actualisez le programme puis réessayez."
+    },
+    "task_id_not_found": {
+      "message": "La tâche {task_id} est introuvable pour {entity_id}. Actualisez les tâches puis réessayez."
     },
     "start_task_unsupported_on_spino": {
       "message": "Démarrer un programme à la demande n'est pas pris en charge sur le robot de piscine Spino — le firmware ne propose aucune commande d'exécution immédiate pour les programmes enregistrés."

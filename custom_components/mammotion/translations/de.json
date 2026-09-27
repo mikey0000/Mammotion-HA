@@ -384,6 +384,15 @@
           "weak_rtk_signal": "Schwaches RTK-Signal",
           "other": "Sonstiges"
         }
+      },
+      "running_task": {
+        "name": "Aufgabe {name}",
+        "state": {
+          "mowing": "Mäht",
+          "paused": "Pausiert",
+          "returning": "Kehrt zurück",
+          "charging_pause": "Lädt, setzt danach fort"
+        }
       }
     },
     "binary_sensor": {
@@ -398,8 +407,8 @@
       "start_map_sync": {
         "name": "Synchronisiere Karte"
       },
-      "start_schedule_sync": {
-        "name": "Synchronisiere Zeitpläne"
+      "start_task_sync": {
+        "name": "Aufgaben synchronisieren"
       },
       "resync_rtk_dock": {
         "name": "Synchronisiere RTK und Ladestation"
@@ -1290,6 +1299,16 @@
       "name": "Aufgaben abrufen",
       "description": "Gibt alle Zeitpläne zurück, die die Integration für das ausgewählte Gerät vorhält, einschließlich der Angabe, ob der jeweilige Zeitplan aktiviert ist. Damit lässt sich prüfen, ob eine Änderung angekommen ist; „Aufgaben aktualisieren“ lädt sie zuvor erneut vom Gerät."
     },
+    "get_task": {
+      "name": "Aufgabe abrufen",
+      "description": "Gibt einen Zeitplan des ausgewählten Mähers anhand seiner Aufgaben-ID zurück: die aktuellen Einstellungen unter den Feldnamen, die „Aufgabe bearbeiten“ akzeptiert, sowie ob er aktiviert ist und gerade läuft. Damit lässt sich eine Aufgabe vor dem Bearbeiten auslesen.",
+      "fields": {
+        "task_id": {
+          "name": "Aufgaben-ID",
+          "description": "ID der Aufgabe, wie sie im Attribut task_id der Aufgabenschaltfläche steht oder von „Aufgaben abrufen“ zurückgegeben wird."
+        }
+      }
+    },
     "start_task": {
       "name": "Aufgabe starten",
       "description": "Führt einen gespeicherten Zeitplan sofort aus (auch 'Zeitplan starten' genannt). Nur für Mähroboter — der Spino-Poolreiniger hat keinen entsprechenden Befehl, daher führt die Auswahl einer Spino-Aufgabe zu einer Fehlermeldung."
@@ -1410,6 +1429,9 @@
     },
     "task_not_found": {
       "message": "Aufgabe {plan_id} wurde auf dem Gerät nicht gefunden. Aktualisiere den Zeitplan und versuche es erneut."
+    },
+    "task_id_not_found": {
+      "message": "Aufgabe {task_id} wurde für {entity_id} nicht gefunden. Aktualisiere die Aufgaben und versuche es erneut."
     },
     "start_task_unsupported_on_spino": {
       "message": "Das Starten eines Zeitplans auf Abruf wird vom Spino-Poolreiniger nicht unterstützt — die Geräte-Firmware hat keinen 'jetzt ausführen'-Befehl für gespeicherte Pläne."

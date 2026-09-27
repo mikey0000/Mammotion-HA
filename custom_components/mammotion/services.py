@@ -50,6 +50,7 @@ SERVICE_REFRESH_TASKS = "refresh_tasks"
 # this returns what the integration now holds, so a script can confirm a
 # ``set_task_enabled`` actually landed (issue #890).
 SERVICE_GET_TASKS = "get_tasks"
+SERVICE_GET_TASK = "get_task"
 # "start task" === "start schedule" — runs a stored mower schedule now.
 # Backed by ``NavPlanTaskExecute(sub_cmd=1, id=plan_id)`` on the wire (see
 # APK ``MACommandHelper.singleSchedule`` / docs/tasks_and_schedules.md § 1.6).
@@ -180,6 +181,8 @@ GET_TASKS_SCHEMA = vol.Schema(
 MOWER_TARGET_SCHEMA = vol.Schema(
     {vol.Required(ATTR_ENTITY_ID): _single_entity_id}, extra=vol.ALLOW_EXTRA
 )
+
+GET_TASK_SCHEMA = MOWER_TARGET_SCHEMA.extend({vol.Required("task_id"): cv.string})
 
 BACKUP_MAP_SCHEMA = MOWER_TARGET_SCHEMA.extend(
     {
@@ -399,16 +402,32 @@ def _mower_coordinator(
     return mower.reporting_coordinator
 
 
-def _mower_task_info(plan: Plan) -> dict[str, Any]:
-    """Describe a mower schedule for the get_tasks response.
+def _task_button_entity_id(
+    hass: HomeAssistant,
+    coordinator: MammotionReportUpdateCoordinator | MammotionSpinoCoordinator,
+    task_id: str,
+) -> str | None:
+    """Return the entity_id of a task's button, the target edit_task takes."""
+    return er.async_get(hass).async_get_entity_id(
+        "button", DOMAIN, f"{coordinator.unique_name}_{task_id}"
+    )
 
-    ``task_id`` matches the task button's attribute of the same name, so a
-    script can line a response row up with the entity it came from.
+
+def _mower_task_info(
+    hass: HomeAssistant, coordinator: MammotionReportUpdateCoordinator, plan: Plan
+) -> dict[str, Any]:
+    """Describe a mower schedule for the get_task / get_tasks responses.
+
+    ``task_id`` matches the task button's attribute of the same name, and the
+    settings use edit_task's field names, so a row can be fed back into it.
     """
+    running = coordinator.running_plan
     return {
         "task_id": plan.plan_id,
+        "entity_id": _task_button_entity_id(hass, coordinator, plan.plan_id),
         "name": plan.task_name,
         "enabled": plan.is_enabled(),
+        "running": running is not None and running.plan_id == plan.plan_id,
         "start_time": plan.start_time,
         "end_time": plan.end_time,
         "weeks": list(plan.weeks),
@@ -425,13 +444,21 @@ def _mower_task_info(plan: Plan) -> dict[str, Any]:
     }
 
 
-def _spino_task_info(plan: PoolPlan) -> dict[str, Any]:
-    """Describe a Spino schedule for the get_tasks response."""
+def _spino_task_info(
+    hass: HomeAssistant, coordinator: MammotionSpinoCoordinator, plan: PoolPlan
+) -> dict[str, Any]:
+    """Describe a Spino schedule for the get_tasks response.
+
+    ``start_time`` predates the edit_task-compatible ``starttime`` and is kept
+    for existing scripts.
+    """
     return {
         "task_id": str(plan.jobid),
+        "entity_id": _task_button_entity_id(hass, coordinator, str(plan.jobid)),
         "name": plan.jobname,
         "enabled": plan.enabled,
         "start_time": plan.starttime,
+        "starttime": plan.starttime,
         "weeks": list(plan.weeks),
         "start_date": plan.startdate,
         "end_date": plan.enddate,
@@ -795,12 +822,34 @@ def async_setup_services(hass: HomeAssistant) -> None:  # noqa: C901
             return {}
         coord, kind = resolved
         if kind == "mower":
-            plans = cast(MammotionReportUpdateCoordinator, coord).data.map.plan
-            tasks = [_mower_task_info(plan) for plan in plans.values()]
+            mower = cast(MammotionReportUpdateCoordinator, coord)
+            tasks = [
+                _mower_task_info(hass, mower, plan)
+                for plan in mower.data.map.plan.values()
+            ]
         else:
-            pool_plans = cast(MammotionSpinoCoordinator, coord).data.plans
-            tasks = [_spino_task_info(plan) for plan in pool_plans.values()]
+            spino = cast(MammotionSpinoCoordinator, coord)
+            tasks = [
+                _spino_task_info(hass, spino, plan)
+                for plan in spino.data.plans.values()
+            ]
         return cast(dict[str, Any], _stringify_large_ints({"tasks": tasks}))
+
+    async def handle_get_task(call: ServiceCall) -> dict[str, Any]:
+        """Return one of a mower's schedules, in the shape edit_task accepts."""
+        entity_id = call.data[ATTR_ENTITY_ID]
+        task_id = call.data["task_id"]
+        coordinator = _mower_coordinator(hass, entity_id)
+        if (plan := coordinator.data.map.plan.get(task_id)) is None:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="task_id_not_found",
+                translation_placeholders={"task_id": task_id, "entity_id": entity_id},
+            )
+        return cast(
+            dict[str, Any],
+            _stringify_large_ints(_mower_task_info(hass, coordinator, plan)),
+        )
 
     async def handle_start_task(call: ServiceCall) -> None:
         """Run a stored mower schedule immediately ("start task" / "start schedule").
@@ -822,27 +871,15 @@ def async_setup_services(hass: HomeAssistant) -> None:  # noqa: C901
             )
         _raise_task_not_found(entity_id)
 
-    hass.services.async_register(
-        DOMAIN, SERVICE_RENAME_TASK, handle_rename_task, schema=RENAME_TASK_SCHEMA
-    )
-    hass.services.async_register(
-        DOMAIN,
-        SERVICE_SET_TASK_ENABLED,
-        handle_set_task_enabled,
-        schema=SET_TASK_ENABLED_SCHEMA,
-    )
-    hass.services.async_register(
-        DOMAIN, SERVICE_DELETE_TASK, handle_delete_task, schema=DELETE_TASK_SCHEMA
-    )
-    hass.services.async_register(
-        DOMAIN, SERVICE_COPY_TASK, handle_copy_task, schema=COPY_TASK_SCHEMA
-    )
-    hass.services.async_register(
-        DOMAIN, SERVICE_EDIT_TASK, handle_edit_task, schema=EDIT_TASK_SCHEMA
-    )
-    hass.services.async_register(
-        DOMAIN, SERVICE_CREATE_TASK, handle_create_task, schema=CREATE_TASK_SCHEMA
-    )
+    for service, handler, schema in (
+        (SERVICE_RENAME_TASK, handle_rename_task, RENAME_TASK_SCHEMA),
+        (SERVICE_SET_TASK_ENABLED, handle_set_task_enabled, SET_TASK_ENABLED_SCHEMA),
+        (SERVICE_DELETE_TASK, handle_delete_task, DELETE_TASK_SCHEMA),
+        (SERVICE_COPY_TASK, handle_copy_task, COPY_TASK_SCHEMA),
+        (SERVICE_EDIT_TASK, handle_edit_task, EDIT_TASK_SCHEMA),
+        (SERVICE_CREATE_TASK, handle_create_task, CREATE_TASK_SCHEMA),
+    ):
+        async_register_admin_service(hass, DOMAIN, service, handler, schema=schema)
     hass.services.async_register(
         DOMAIN, SERVICE_REFRESH_TASKS, handle_refresh_tasks, schema=REFRESH_TASKS_SCHEMA
     )
@@ -854,6 +891,13 @@ def async_setup_services(hass: HomeAssistant) -> None:  # noqa: C901
         SERVICE_GET_TASKS,
         handle_get_tasks,
         schema=GET_TASKS_SCHEMA,
+        supports_response=SupportsResponse.ONLY,
+    )
+    hass.services.async_register(
+        DOMAIN,
+        SERVICE_GET_TASK,
+        handle_get_task,
+        schema=GET_TASK_SCHEMA,
         supports_response=SupportsResponse.ONLY,
     )
 

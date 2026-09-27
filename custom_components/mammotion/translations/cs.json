@@ -384,6 +384,15 @@
           "weak_rtk_signal": "Slabý signál RTK",
           "other": "Jiné"
         }
+      },
+      "running_task": {
+        "name": "Úloha {name}",
+        "state": {
+          "mowing": "Sečení",
+          "paused": "Pozastaveno",
+          "returning": "Návrat",
+          "charging_pause": "Nabíjení, bude pokračovat"
+        }
       }
     },
     "binary_sensor": {
@@ -398,8 +407,8 @@
       "start_map_sync": {
         "name": "Synchronizace mapy"
       },
-      "start_schedule_sync": {
-        "name": "Synchronizovat plány"
+      "start_task_sync": {
+        "name": "Synchronizovat úlohy"
       },
       "resync_rtk_dock": {
         "name": "Synchronizovat RTK a dok"
@@ -1290,6 +1299,16 @@
       "name": "Získat úlohy",
       "description": "Vrátí všechny plány, které integrace pro cílové zařízení uchovává, včetně toho, zda je každý z nich povolen. Slouží k ověření, že se změna projevila; „Obnovit úlohy“ je nejprve znovu načte ze zařízení."
     },
+    "get_task": {
+      "name": "Získat úlohu",
+      "description": "Vrátí jeden z plánů cílové sekačky podle ID úlohy: jeho aktuální nastavení pod názvy polí, které přijímá „Upravit úlohu“, a také zda je povolen a právě běží. Slouží k načtení úlohy před její úpravou.",
+      "fields": {
+        "task_id": {
+          "name": "ID úlohy",
+          "description": "ID úlohy, jak je uvedeno v atributu task_id tlačítka úlohy nebo jak ho vrací „Získat úlohy“."
+        }
+      }
+    },
     "start_task": {
       "name": "Spustit úlohu",
       "description": "Okamžitě spustí uložený plán (známé také jako „spustit plán“). Pouze pro sekačku — robot bazénový čistič Spino nemá ekvivalentní příkaz."
@@ -1410,6 +1429,9 @@
     },
     "task_not_found": {
       "message": "Úloha {plan_id} nebyla v zařízení nalezena. Obnovte plán a zkuste to znovu."
+    },
+    "task_id_not_found": {
+      "message": "Úloha {task_id} nebyla pro {entity_id} nalezena. Obnovte úlohy a zkuste to znovu."
     },
     "start_task_unsupported_on_spino": {
       "message": "Spuštění plánu na vyžádání není u bazénového čističe Spino podporováno — firmware nemá příkaz pro okamžité spuštění uloženého plánu."
