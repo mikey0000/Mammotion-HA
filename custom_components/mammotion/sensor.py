@@ -35,7 +35,7 @@ from pymammotion.data.model.device import (
 )
 from pymammotion.data.model.enums import RTKStatus, TaskAreaStatus
 from pymammotion.data.model.pool_state import SpinoSysStatus, SpinoWorkMode
-from pymammotion.utility.constant import VioState
+from pymammotion.utility.constant import VioState, WorkMode
 from pymammotion.utility.constant.device_constant import (
     AppConnectType,
     PosType,
@@ -47,7 +47,7 @@ from pymammotion.utility.constant.device_constant import (
 from pymammotion.utility.device_type import DeviceType
 
 from . import MammotionConfigEntry
-from .const import DOMAIN
+from .const import DOMAIN, SELF_CHECK_OTHER, SELF_CHECK_STATES
 from .coordinator import (
     MAP_SYNC_STATUSES,
     MammotionBaseUpdateCoordinator,
@@ -239,7 +239,6 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.BATTERY,
         native_unit_of_measurement=PERCENTAGE,
         value_fn=lambda mower_data: mower_data.report_data.dev.battery_val,
-        entity_category=EntityCategory.DIAGNOSTIC,
     ),
     MammotionSensorEntityDescription(
         key="ble_rssi",
@@ -286,7 +285,6 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         device_class=None,
         native_unit_of_measurement=UnitOfArea.SQUARE_METERS,
         value_fn=lambda mower_data: mower_data.report_data.work.area & 65535,
-        entity_category=EntityCategory.DIAGNOSTIC,
     ),
     MammotionSensorEntityDescription(
         key="mowing_speed",
@@ -302,7 +300,6 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         device_class=None,
         native_unit_of_measurement=PERCENTAGE,
         value_fn=lambda mower_data: mower_data.report_data.work.area >> 16,
-        entity_category=EntityCategory.DIAGNOSTIC,
     ),
     MammotionSensorEntityDescription(
         key="total_time",
@@ -321,7 +318,6 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
             (mower_data.report_data.work.progress & 65535)
             - (mower_data.report_data.work.progress >> 16)
         ),
-        entity_category=EntityCategory.DIAGNOSTIC,
     ),
     MammotionSensorEntityDescription(
         key="left_time",
@@ -329,7 +325,6 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.DURATION,
         native_unit_of_measurement=UnitOfTime.MINUTES,
         value_fn=lambda mower_data: mower_data.report_data.work.progress >> 16,
-        entity_category=EntityCategory.DIAGNOSTIC,
     ),
     MammotionSensorEntityDescription(
         key="non_work_hours",
@@ -362,6 +357,15 @@ SENSOR_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
     #     native_unit_of_measurement=None,
     #     value_fn=lambda mower_data: (mower_data.report_data.dev.vslam_status & 65280) >> 8,
     # ),
+    MammotionSensorEntityDescription(
+        key="self_check",
+        state_class=None,
+        device_class=SensorDeviceClass.ENUM,
+        options=[*dict.fromkeys(SELF_CHECK_STATES.values()), SELF_CHECK_OTHER],
+        value_fn=lambda mower_data: SELF_CHECK_STATES.get(
+            mower_data.report_data.dev.self_check_status, SELF_CHECK_OTHER
+        ),
+    ),
     MammotionSensorEntityDescription(
         key="activity_mode",
         state_class=None,
@@ -441,7 +445,6 @@ SENSOR_ERROR_TYPES: tuple[MammotionErrorSensorEntityDescription, ...] = (
         value_fn=lambda coordinator, mower_data: (
             msg[:255] if (msg := coordinator.get_error_message(1)) is not None else None
         ),
-        entity_category=EntityCategory.DIAGNOSTIC,
     ),
     MammotionErrorSensorEntityDescription(
         key="error_1_code",
@@ -531,7 +534,6 @@ WORK_SENSOR_TYPES: tuple[MammotionWorkSensorEntityDescription, ...] = (
             coordinator.get_area_entity_name(mower_data.location.work_zone)
             or "Not working"
         ),
-        entity_category=EntityCategory.DIAGNOSTIC,
     ),
     MammotionWorkSensorEntityDescription(
         key="map_sync_status",
@@ -743,6 +745,19 @@ async def async_setup_entry(
         update_task_areas()
         entry.async_on_unload(
             mower.reporting_coordinator.async_add_listener(update_task_areas)
+        )
+
+        _async_remove_orphaned_running_task_entities(mower.reporting_coordinator)
+        running_task_entities: dict[str, MammotionTaskAreaSensorEntity] = {}
+        update_running_task = partial(
+            async_sync_running_task_entity,
+            mower.reporting_coordinator,
+            running_task_entities,
+            async_add_entities,
+        )
+        update_running_task()
+        entry.async_on_unload(
+            mower.reporting_coordinator.async_add_listener(update_running_task)
         )
 
     mammotion_rtks = entry.runtime_data.RTK
@@ -998,7 +1013,6 @@ def async_add_task_area_entities(
             device_class=SensorDeviceClass.ENUM,
             state_class=None,
             options=_TASK_AREA_OPTIONS,
-            entity_category=EntityCategory.DIAGNOSTIC,
             value_fn=lambda mower_data, h=area_hash: getattr(
                 mower_data.events.work_tasks_event.hash_area_map.get(h), "name", None
             ),
@@ -1017,6 +1031,80 @@ def async_add_task_area_entities(
 
     if sensor_entities:
         async_add_entities(sensor_entities)
+
+
+RUNNING_TASK_STATES: dict[int, str] = {
+    WorkMode.MODE_WORKING.value: "mowing",
+    WorkMode.MODE_PAUSE.value: "paused",
+    WorkMode.MODE_RETURNING.value: "returning",
+    WorkMode.MODE_CHARGING_PAUSE.value: "charging_pause",
+}
+_RUNNING_TASK_SUFFIX = "_running_task"
+
+
+@callback
+def async_sync_running_task_entity(
+    coordinator: MammotionReportUpdateCoordinator,
+    entities_by_plan: dict[str, MammotionTaskAreaSensorEntity],
+    async_add_entities: AddEntitiesCallback,
+) -> None:
+    """Show a sensor for the stored task the mower is running, like the zone sensors.
+
+    Called on every coordinator update: the running task gets a sensor named after
+    it, which follows renames and is removed once the job ends or changes.
+    """
+    plan = coordinator.running_plan
+    running_id = plan.plan_id if plan is not None else None
+
+    stale = {plan_id for plan_id in entities_by_plan if plan_id != running_id}
+    if stale:
+        registry = er.async_get(coordinator.hass)
+        for plan_id in stale:
+            entities_by_plan.pop(plan_id)
+            if entity_id := registry.async_get_entity_id(
+                SENSOR_DOMAIN,
+                DOMAIN,
+                f"{coordinator.unique_name}_{plan_id}{_RUNNING_TASK_SUFFIX}",
+            ):
+                registry.async_remove(entity_id)
+
+    if plan is None:
+        return
+    if (entity := entities_by_plan.get(plan.plan_id)) is not None:
+        if entity.translation_placeholders.get("name") != plan.task_name:
+            entity.update_name(plan.task_name)
+        return
+    description = MammotionSensorEntityDescription(
+        key=f"{plan.plan_id}{_RUNNING_TASK_SUFFIX}",
+        translation_key="running_task",
+        translation_placeholders={"name": plan.task_name},
+        device_class=SensorDeviceClass.ENUM,
+        state_class=None,
+        options=list(dict.fromkeys(RUNNING_TASK_STATES.values())),
+        value_fn=lambda mower_data: RUNNING_TASK_STATES.get(
+            mower_data.report_data.dev.sys_status
+        ),
+    )
+    entity = MammotionTaskAreaSensorEntity(coordinator, description)
+    entities_by_plan[plan.plan_id] = entity
+    async_add_entities([entity])
+
+
+@callback
+def _async_remove_orphaned_running_task_entities(
+    coordinator: MammotionReportUpdateCoordinator,
+) -> None:
+    """Drop running-task sensors a previous session left in the registry."""
+    registry = er.async_get(coordinator.hass)
+    prefix = f"{coordinator.unique_name}_"
+    for entry in list(registry.entities.values()):
+        if (
+            entry.platform == DOMAIN
+            and entry.domain == SENSOR_DOMAIN
+            and entry.unique_id.startswith(prefix)
+            and entry.unique_id.endswith(_RUNNING_TASK_SUFFIX)
+        ):
+            registry.async_remove(entry.entity_id)
 
 
 def _async_remove_task_area_entities(

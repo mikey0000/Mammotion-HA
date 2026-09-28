@@ -14,6 +14,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 from pymammotion.data.model.device import MowingDevice
 from pymammotion.data.model.hash_list import Plan
+from pytest_homeassistant_custom_component.common import MockEntityPlatform
 
 from custom_components.mammotion.button import (
     async_add_task_entities,
@@ -203,3 +204,27 @@ async def test_setup_entry_sweeps_orphans_before_first_sync(
     assert er.async_get(hass).async_get(stale) is None
     task_entities = add_entities.call_args_list[0].args[0]
     assert [e.entity_description.plan_id for e in task_entities] == [PLAN_A]
+
+
+async def test_a_renamed_task_updates_its_button_name(
+    hass: HomeAssistant, entity_registry: er.EntityRegistry
+) -> None:
+    """A todev_planjob_set with a new taskName renames the button in Home Assistant.
+
+    ``Entity.name`` is cached; replacing only ``entity_description`` kept the old name.
+    """
+    added: list[Any] = []
+    coordinator = _coordinator(hass, {PLAN_A: _plan(PLAN_A, "Bottom lawn")})
+    tasks: set[str] = set()
+    by_id: dict[str, Any] = {}
+    async_add_task_entities(coordinator, tasks, by_id, added.extend)
+    entity = by_id[PLAN_A]
+    entity.entity_id = "button.luba_bottom_lawn"
+    entity.add_to_platform_start(hass, MockEntityPlatform(hass), None)
+    assert entity.name == "Bottom lawn"
+
+    coordinator.data.map.plan[PLAN_A] = _plan(PLAN_A, "Top half of bottom lawn")
+    async_add_task_entities(coordinator, tasks, by_id, added.extend)
+
+    assert entity.name == "Top half of bottom lawn"
+    assert len(added) == 1, "a rename must not add a second button"

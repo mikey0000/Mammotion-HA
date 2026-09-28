@@ -64,6 +64,9 @@
           "mow_path_fetch_enabled": "Nyírási útvonal lekérésének engedélyezése (felhő)",
           "full_map_fetch_enabled": "Teljes térkép lekérésének engedélyezése (felhő) — kikapcsolva csak a területnevek kerülnek lekérésre",
           "notify": "Állandó értesítések megjelenítése"
+        },
+        "data_description": {
+          "notify": "Az önellenőrzési értesítések alapértelmezés szerint be vannak kapcsolva, a többi ki. Minden értesítés a fűnyíró értesítési eseményentitását és egy mammotion_event buszeseményt is kivált, amelyeket az automatizálások helyette használhatnak."
         }
       }
     }
@@ -363,19 +366,60 @@
           "2": "Gyenge",
           "3": "Nincs"
         }
+      },
+      "self_check": {
+        "name": "Önellenőrzés",
+        "state": {
+          "normal": "OK",
+          "emergency_stop": "Vészleállítás aktiválva",
+          "stop_button": "STOP gomb megnyomva",
+          "safety_key_missing": "Biztonsági kulcs nincs behelyezve",
+          "lifted": "Felemelve",
+          "tilted": "Megdöntve",
+          "tipped_over": "Felborult",
+          "bumper_missing": "Oldalsó ütköző nincs felszerelve",
+          "rain": "Eső észlelve",
+          "low_battery": "Alacsony akkumulátor",
+          "non_working_hours": "Munkaidőn kívül",
+          "rtk_station_moved": "RTK referenciaállomás elmozdult",
+          "outside_task_area": "A feladatterületen kívül",
+          "wheel_motor_error": "Kerékagymotor-hiba",
+          "blade_motor_overheated": "A késmotor túl forró",
+          "dock_moved": "Töltőállomás elmozdult",
+          "no_task_area": "Nincs feladatterület",
+          "night_protection": "Éjszakai védelem",
+          "rtk_not_ready": "RTK referenciaállomás nem kész",
+          "weak_satellite_signal": "Gyenge műholdjel",
+          "positioning_failure": "Helymeghatározó rendszer hibája",
+          "inavi_unavailable": "Az iNavi szolgáltatás nem érhető el",
+          "weak_rtk_signal": "Gyenge RTK-jel",
+          "other": "Egyéb"
+        }
+      },
+      "running_task": {
+        "name": "Feladat: {name}",
+        "state": {
+          "mowing": "Nyírás",
+          "paused": "Szüneteltetve",
+          "returning": "Visszatérés",
+          "charging_pause": "Töltés, utána folytatja"
+        }
       }
     },
     "binary_sensor": {
       "spino_charging": {
         "name": "Töltés"
+      },
+      "rain_detected": {
+        "name": "Eső észlelve"
       }
     },
     "button": {
       "start_map_sync": {
         "name": "Térképek szinkronizálása"
       },
-      "start_schedule_sync": {
-        "name": "Ütemezések szinkronizálása"
+      "start_task_sync": {
+        "name": "Feladatok szinkronizálása"
       },
       "resync_rtk_dock": {
         "name": "RTK és dokk szinkronizálása"
@@ -736,7 +780,8 @@
     "notify": {
       "options": {
         "warnings": "Figyelmeztetések és hibakódok",
-        "notifications": "Eszközértesítések és információk"
+        "notifications": "Eszközértesítések és információk",
+        "self_check": "Önellenőrzés: miért nem tud elindulni a fűnyíró"
       }
     }
   },
@@ -955,22 +1000,12 @@
     },
     "get_map_data": {
       "name": "Térképadatok lekérése",
-      "description": "Visszaadja a nyers térképadatokat (területek, SVG-csempék, területnevek) az SVG térkép kártyával való használathoz.",
-      "fields": {
-        "entity_id": {
-          "name": "Entitás",
-          "description": "Bármely, az eszközhöz tartozó Mammotion entitás."
-        }
-      }
+      "description": "Visszaadja a nyers térképadatokat (területek, SVG-csempék, területnevek) az SVG térkép kártyával való használathoz."
     },
     "svg_add": {
       "name": "SVG-csempe hozzáadása",
       "description": "Új SVG-csempét küld az eszköztérképre. Visszaadja az eszköz által hozzárendelt hasht.",
       "fields": {
-        "entity_id": {
-          "name": "Entitás",
-          "description": "Bármely, az eszközhöz tartozó Mammotion entitás."
-        },
         "area_hash": {
           "name": "Terület hash",
           "description": "A szülő nyírási terület hashje."
@@ -1013,10 +1048,6 @@
       "name": "SVG-csempe frissítése",
       "description": "Lecseréli a meglévő SVG-csempét az eszköztérképen. Használja az svg_add által visszaadott device_hash értéket.",
       "fields": {
-        "entity_id": {
-          "name": "Entitás",
-          "description": "Bármely, az eszközhöz tartozó Mammotion entitás."
-        },
         "device_hash": {
           "name": "Eszköz hash",
           "description": "Az eszköz által hozzárendelt hash a csempe első hozzáadásakor."
@@ -1063,10 +1094,6 @@
       "name": "SVG-csempe törlése",
       "description": "Eltávolít egy SVG-csempét az eszköztérképről az eszköz által hozzárendelt hash alapján.",
       "fields": {
-        "entity_id": {
-          "name": "Entitás",
-          "description": "Bármely, az eszközhöz tartozó Mammotion entitás."
-        },
         "device_hash": {
           "name": "Eszköz hash",
           "description": "Az eszköz által hozzárendelt hash a csempe hozzáadásakor."
@@ -1283,6 +1310,16 @@
       "name": "Feladatok lekérése",
       "description": "Visszaadja az integráció által a kiválasztott eszközhöz tárolt összes ütemezést, azt is beleértve, hogy engedélyezve vannak-e. Ezzel ellenőrizhető, hogy egy módosítás érvénybe lépett-e; a „Feladatok frissítése” előbb újra lekéri őket az eszközről."
     },
+    "get_task": {
+      "name": "Feladat lekérése",
+      "description": "Visszaadja a kiválasztott fűnyíró egyik ütemezését a feladatazonosító alapján: az aktuális beállításait a „Feladat szerkesztése” által elfogadott mezőnevekkel, valamint azt, hogy engedélyezve van-e és éppen fut-e. Ezzel kiolvasható egy feladat a szerkesztése előtt.",
+      "fields": {
+        "task_id": {
+          "name": "Feladatazonosító",
+          "description": "A feladat azonosítója, ahogy a feladatgomb task_id attribútumában szerepel, vagy ahogy a „Feladatok lekérése” visszaadja."
+        }
+      }
+    },
     "start_task": {
       "name": "Feladat indítása",
       "description": "Egy tárolt ütemezést azonnal végrehajt (másik neve „ütemezés indítása”). Csak fűnyíró — a Spino medencetisztítónak nincs ezzel egyenértékű parancsa."
@@ -1314,6 +1351,22 @@
     "get_map_backups": {
       "name": "Térképmentések lekérése",
       "description": "Visszaadja annak a Mammotion-fióknak a térképmentéseit, amellyel ez az integráció be van jelentkezve. A mentések fiókhoz tartoznak, így az alkalmazásban más fiókkal készült mentések nem jelennek meg."
+    },
+    "get_geojson": {
+      "name": "Térkép GeoJSON lekérése",
+      "description": "Visszaadja a fűnyíró térképét (területek, akadályok, útvonalak, töltőállomás és RTK-állomás) GeoJSON FeatureCollection formában a térképkártyához, és a következő néhány percben a fűnyíró jelenti a helyzetét."
+    },
+    "get_mow_path_geojson": {
+      "name": "Nyírási útvonal GeoJSON lekérése",
+      "description": "Visszaadja az aktuális feladat tervezett nyírási útvonalát GeoJSON FeatureCollection formában. Üres, amíg az útvonal nincs lekérve."
+    },
+    "get_mow_progress_geojson": {
+      "name": "Nyírási előrehaladás GeoJSON lekérése",
+      "description": "Visszaadja az aktuális feladat útvonalának már lenyírt részét GeoJSON FeatureCollection formában; a dinamikus vonalat küldő fűnyírók ehelyett azt adják vissza. Ha fut feladat, de még nincs mit megjeleníteni, a réteg adatait is lekéri, legfeljebb percenként egyszer. Bluetooth-on a dinamikus vonal magától frissül."
+    },
+    "fetch_mow_path": {
+      "name": "Nyírási útvonal lekérése",
+      "description": "Lekéri a fűnyíró által éppen végzett feladat nyírási útvonalát, ha még nincs teljes útvonal tárolva, majd abból újraszámolja a nyírás előrehaladását. A dinamikus vonalas fűnyírók a legfrissebb vonalukat is lekérik. Felhőn keresztül csak akkor, ha a(z) 'Nyírási útvonal lekérésének engedélyezése (felhő)' be van kapcsolva a beállításokban; Bluetooth-on mindig. Visszaadja, hogy elindult-e a lekérés."
     },
     "get_map_backup_progress": {
       "name": "Térképmentés állapotának lekérése",
@@ -1388,6 +1441,9 @@
     "task_not_found": {
       "message": "A(z) {plan_id} feladat nem található az eszközön. Frissítsd az ütemezést, és próbáld újra."
     },
+    "task_id_not_found": {
+      "message": "A(z) {task_id} feladat nem található ehhez: {entity_id}. Frissítsd a feladatokat, és próbáld újra."
+    },
     "start_task_unsupported_on_spino": {
       "message": "A Spino medencetisztító nem támogatja az ütemezés kérésre történő indítását — a firmware nem rendelkezik „azonnali futtatás” paranccsal a tárolt ütemezésekhez."
     },
@@ -1403,8 +1459,89 @@
     "map_backup_device_not_found": {
       "message": "{device_name} nem szerepel a térképmentésre elérhető eszközök között ebben a Mammotion fiókban."
     },
-    "map_backup_mower_not_found": {
+    "mower_not_found": {
       "message": "{entity_id} nem Mammotion fűnyíró."
+    },
+    "notification_unknown_code": {
+      "message": "Ismeretlen hibakód: {code}"
+    },
+    "notification_title_warnings": {
+      "message": "{device_name}: figyelmeztetések"
+    },
+    "notification_title_notifications": {
+      "message": "{device_name}: értesítések"
+    },
+    "notification_title_self_check": {
+      "message": "{device_name}: {state}"
+    },
+    "self_check_emergency_stop": {
+      "message": "A vészleállítás aktív. Oldja fel a fűnyírón az újraindítás előtt."
+    },
+    "self_check_stop_button": {
+      "message": "Megnyomták a fűnyíró STOP gombját. Az újraindítás előtt oldja fel a fűnyírón."
+    },
+    "self_check_safety_key_missing": {
+      "message": "A biztonsági kulcs nincs behelyezve. Helyezze be a nyírás megkezdéséhez."
+    },
+    "self_check_lifted": {
+      "message": "A fűnyírót felemelték a földről. Tegye vissza a gyepre."
+    },
+    "self_check_tilted": {
+      "message": "A fűnyíró megdőlt. Tegye sík talajra."
+    },
+    "self_check_tipped_over": {
+      "message": "A fűnyíró felborult. Állítsa vissza a kerekeire."
+    },
+    "self_check_bumper_missing": {
+      "message": "Az oldalsó ütköző nincs felszerelve. Szerelje fel nyírás előtt."
+    },
+    "self_check_rain": {
+      "message": "Esőt észlelt, és a „Nincs nyírás esős napokon” be van kapcsolva. A nyírás az eső elállta után indulhat, vagy kapcsolja ki a funkciót."
+    },
+    "self_check_low_battery": {
+      "message": "Az akkumulátor túl alacsony a nyíráshoz. Hagyja tölteni a fűnyírót."
+    },
+    "self_check_non_working_hours": {
+      "message": "A fűnyíró munkaidején kívül van."
+    },
+    "self_check_rtk_station_moved": {
+      "message": "Az RTK referenciaállomást elmozdították. Ellenőrizze a helyzetét az alkalmazásban."
+    },
+    "self_check_outside_task_area": {
+      "message": "A fűnyíró a feladatterületén kívül van. Vigye vissza egy feltérképezett területre."
+    },
+    "self_check_wheel_motor_error": {
+      "message": "Egy kerékagymotor hibát jelzett."
+    },
+    "self_check_blade_motor_overheated": {
+      "message": "A késmotor túl forró. Hagyja lehűlni."
+    },
+    "self_check_dock_moved": {
+      "message": "A töltőállomást elmozdították. Ellenőrizze a helyzetét az alkalmazásban."
+    },
+    "self_check_no_task_area": {
+      "message": "Nem található feladatterület. Hozzon létre térképet az alkalmazásban."
+    },
+    "self_check_night_protection": {
+      "message": "Az éjszakai védelem be van kapcsolva, ezért a fűnyíró éjjel nem nyír."
+    },
+    "self_check_rtk_not_ready": {
+      "message": "Az RTK referenciaállomás még nem kész."
+    },
+    "self_check_weak_satellite_signal": {
+      "message": "A fűnyíró műholdjele túl gyenge a helymeghatározáshoz."
+    },
+    "self_check_positioning_failure": {
+      "message": "A helymeghatározó rendszer meghibásodott."
+    },
+    "self_check_inavi_unavailable": {
+      "message": "Az iNavi szolgáltatás nem érhető el."
+    },
+    "self_check_weak_rtk_signal": {
+      "message": "Az RTK-jel gyenge. Ellenőrizze a referenciaállomás elhelyezését."
+    },
+    "self_check_other": {
+      "message": "A fűnyíró ismeretlen önellenőrzési kódot jelzett: {code}."
     }
   }
 }

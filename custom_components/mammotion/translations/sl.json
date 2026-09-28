@@ -64,6 +64,9 @@
           "mow_path_fetch_enabled": "Omogoči pridobivanje poti košnje (oblak)",
           "full_map_fetch_enabled": "Omogoči pridobivanje celotnega zemljevida (oblak) — če izklopljeno, se pridobijo samo imena območij",
           "notify": "Prikaži trajna obvestila za"
+        },
+        "data_description": {
+          "notify": "Obvestila samopreverjanja so privzeto vklopljena, ostala izklopljena. Vsako obvestilo sproži tudi entiteto dogodkov obvestil kosilnice in dogodek mammotion_event na vodilu, ki ju lahko namesto tega uporabijo avtomatizacije."
         }
       }
     }
@@ -363,19 +366,60 @@
           "2": "Šibko",
           "3": "Brez"
         }
+      },
+      "self_check": {
+        "name": "Samopreverjanje",
+        "state": {
+          "normal": "V redu",
+          "emergency_stop": "Zasilna zaustavitev vklopljena",
+          "stop_button": "Pritisnjen gumb STOP",
+          "safety_key_missing": "Varnostni ključ ni vstavljen",
+          "lifted": "Dvignjena",
+          "tilted": "Nagnjena",
+          "tipped_over": "Prevrnjena",
+          "bumper_missing": "Stranski odbijač ni nameščen",
+          "rain": "Zaznan dež",
+          "low_battery": "Nizka baterija",
+          "non_working_hours": "Izven delovnega časa",
+          "rtk_station_moved": "Referenčna postaja RTK premaknjena",
+          "outside_task_area": "Izven območja opravila",
+          "wheel_motor_error": "Napaka motorja pesta kolesa",
+          "blade_motor_overheated": "Motor rezila je prevroč",
+          "dock_moved": "Polnilna postaja premaknjena",
+          "no_task_area": "Ni območja opravila",
+          "night_protection": "Nočna zaščita",
+          "rtk_not_ready": "Referenčna postaja RTK ni pripravljena",
+          "weak_satellite_signal": "Šibek satelitski signal",
+          "positioning_failure": "Okvara sistema za določanje položaja",
+          "inavi_unavailable": "Storitev iNavi ni na voljo",
+          "weak_rtk_signal": "Šibek signal RTK",
+          "other": "Drugo"
+        }
+      },
+      "running_task": {
+        "name": "Opravilo {name}",
+        "state": {
+          "mowing": "Košnja",
+          "paused": "Začasno ustavljeno",
+          "returning": "Vračanje",
+          "charging_pause": "Polnjenje, nato nadaljuje"
+        }
       }
     },
     "binary_sensor": {
       "spino_charging": {
         "name": "Polnjenje"
+      },
+      "rain_detected": {
+        "name": "Zaznan dež"
       }
     },
     "button": {
       "start_map_sync": {
         "name": "Sinhronizacija zemljevidov"
       },
-      "start_schedule_sync": {
-        "name": "Sinhronizacija urnikov"
+      "start_task_sync": {
+        "name": "Sinhronizacija opravil"
       },
       "resync_rtk_dock": {
         "name": "Sinhronizacija položaja RTK in polnilne postaje"
@@ -736,7 +780,8 @@
     "notify": {
       "options": {
         "warnings": "Opozorila in kode napak",
-        "notifications": "Obvestila in informacije naprave"
+        "notifications": "Obvestila in informacije naprave",
+        "self_check": "Samopreverjanje: zakaj kosilnica ne more začeti"
       }
     }
   },
@@ -955,22 +1000,12 @@
     },
     "get_map_data": {
       "name": "Pridobi podatke zemljevida",
-      "description": "Vrne surove podatke zemljevida (področja, SVG ploščice, imena področij) za uporabo s kartico SVG zemljevida.",
-      "fields": {
-        "entity_id": {
-          "name": "Entiteta",
-          "description": "Katera koli Mammotion entiteta, ki pripada napravi."
-        }
-      }
+      "description": "Vrne surove podatke zemljevida (področja, SVG ploščice, imena področij) za uporabo s kartico SVG zemljevida."
     },
     "svg_add": {
       "name": "Dodaj SVG ploščico",
       "description": "Pošlje novo SVG ploščico na zemljevid naprave. Vrne hash, ki ga dodeli naprava.",
       "fields": {
-        "entity_id": {
-          "name": "Entiteta",
-          "description": "Katera koli Mammotion entiteta, ki pripada napravi."
-        },
         "area_hash": {
           "name": "Hash področja",
           "description": "Hash nadrejenega področja košnje."
@@ -1013,10 +1048,6 @@
       "name": "Posodobi SVG ploščico",
       "description": "Zamenja obstoječo SVG ploščico na zemljevidu naprave. Uporabite device_hash, ki ga vrne svg_add.",
       "fields": {
-        "entity_id": {
-          "name": "Entiteta",
-          "description": "Katera koli Mammotion entiteta, ki pripada napravi."
-        },
         "device_hash": {
           "name": "Hash naprave",
           "description": "Hash, ki ga je naprava dodelila ob prvem dodajanju ploščice."
@@ -1063,10 +1094,6 @@
       "name": "Izbriši SVG ploščico",
       "description": "Odstrani SVG ploščico z zemljevida naprave z njenim hashom, ki ga je dodelila naprava.",
       "fields": {
-        "entity_id": {
-          "name": "Entiteta",
-          "description": "Katera koli Mammotion entiteta, ki pripada napravi."
-        },
         "device_hash": {
           "name": "Hash naprave",
           "description": "Hash, ki ga je naprava dodelila ob dodajanju ploščice."
@@ -1283,6 +1310,16 @@
       "name": "Pridobi opravila",
       "description": "Vrne vse urnike, ki jih integracija hrani za izbrano napravo, vključno s tem, ali je posamezen urnik omogočen. Uporabite za potrditev, da je sprememba obveljala; »Osveži opravila« jih najprej znova prebere z naprave."
     },
+    "get_task": {
+      "name": "Pridobi opravilo",
+      "description": "Vrne enega od urnikov izbrane kosilnice glede na ID opravila: njegove trenutne nastavitve pod imeni polj, ki jih sprejme »Uredi opravilo«, ter ali je omogočen in se trenutno izvaja. Uporabite za branje opravila, preden ga uredite.",
+      "fields": {
+        "task_id": {
+          "name": "ID opravila",
+          "description": "ID opravila, kot je prikazan v atributu task_id gumba opravila ali kot ga vrne »Pridobi opravila«."
+        }
+      }
+    },
     "start_task": {
       "name": "Zaženi opravilo",
       "description": "Takoj zažene shranjen urnik (znano tudi kot „zaženi urnik“). Samo kosilnica — bazenski robot Spino nima enakovrednega ukaza."
@@ -1314,6 +1351,22 @@
     "get_map_backups": {
       "name": "Pridobi varnostne kopije zemljevidov",
       "description": "Vrne varnostne kopije zemljevidov iz računa Mammotion, s katerim je prijavljena ta integracija. Varnostne kopije pripadajo računu, zato kopije, ustvarjene v aplikaciji z drugim računom, niso prikazane."
+    },
+    "get_geojson": {
+      "name": "Pridobi GeoJSON zemljevida",
+      "description": "Vrne zemljevid kosilnice (območja, ovire, poti, polnilno postajo in postajo RTK) kot GeoJSON FeatureCollection za kartico zemljevida in naslednjih nekaj minut kosilnica sporoča svoj položaj."
+    },
+    "get_mow_path_geojson": {
+      "name": "Pridobi GeoJSON poti košnje",
+      "description": "Vrne načrtovano pot košnje trenutnega opravila kot GeoJSON FeatureCollection. Prazna, dokler pot ni pridobljena."
+    },
+    "get_mow_progress_geojson": {
+      "name": "Pridobi GeoJSON napredka košnje",
+      "description": "Vrne že pokošeni del poti trenutnega opravila kot GeoJSON FeatureCollection; kosilnice, ki pošiljajo dinamično črto, namesto tega vrnejo to črto. Ko opravilo teče in še ni ničesar za prikaz, pridobi tudi podatke te plasti, največ enkrat na minuto. Prek Bluetootha se dinamična črta posodablja sama."
+    },
+    "fetch_mow_path": {
+      "name": "Pridobi pot košnje",
+      "description": "Pridobi pot košnje opravila, ki ga kosilnica izvaja, razen če je popolna pot že shranjena, nato iz nje znova izračuna napredek košnje. Kosilnice z dinamično črto pridobijo tudi svojo najnovejšo črto. Prek oblaka se to zgodi le, ko je v možnostih vklopljeno 'Omogoči pridobivanje poti košnje (oblak)'; prek Bluetootha vedno. Vrne, ali se je pridobivanje začelo."
     },
     "get_map_backup_progress": {
       "name": "Pridobi napredek varnostne kopije",
@@ -1388,6 +1441,9 @@
     "task_not_found": {
       "message": "Opravila {plan_id} ni mogoče najti na napravi. Osveži urnik in poskusi znova."
     },
+    "task_id_not_found": {
+      "message": "Opravila {task_id} ni mogoče najti za {entity_id}. Osveži opravila in poskusi znova."
+    },
     "start_task_unsupported_on_spino": {
       "message": "Zagon urnika na zahtevo ni podprt na bazenskem robotu Spino — vdelana programska oprema ne ponuja ukaza za takojšen zagon shranjenih urnikov."
     },
@@ -1403,8 +1459,89 @@
     "map_backup_device_not_found": {
       "message": "{device_name} v tem računu Mammotion ni na seznamu za varnostne kopije zemljevidov."
     },
-    "map_backup_mower_not_found": {
+    "mower_not_found": {
       "message": "{entity_id} ni kosilnica Mammotion."
+    },
+    "notification_unknown_code": {
+      "message": "Neznana koda napake {code}"
+    },
+    "notification_title_warnings": {
+      "message": "{device_name}: opozorila"
+    },
+    "notification_title_notifications": {
+      "message": "{device_name}: obvestila"
+    },
+    "notification_title_self_check": {
+      "message": "{device_name}: {state}"
+    },
+    "self_check_emergency_stop": {
+      "message": "Zasilna zaustavitev je vklopljena. Pred ponovnim zagonom jo sprostite na kosilnici."
+    },
+    "self_check_stop_button": {
+      "message": "Pritisnjen je bil gumb STOP na kosilnici. Pred ponovnim zagonom ga ponastavite na kosilnici."
+    },
+    "self_check_safety_key_missing": {
+      "message": "Varnostni ključ ni vstavljen. Vstavite ga, da začnete kositi."
+    },
+    "self_check_lifted": {
+      "message": "Kosilnica je bila dvignjena s tal. Postavite jo nazaj na trato."
+    },
+    "self_check_tilted": {
+      "message": "Kosilnica je nagnjena. Premaknite jo na ravna tla."
+    },
+    "self_check_tipped_over": {
+      "message": "Kosilnica se je prevrnila. Postavite jo nazaj na kolesa."
+    },
+    "self_check_bumper_missing": {
+      "message": "Stranski odbijač ni nameščen. Namestite ga pred košnjo."
+    },
+    "self_check_rain": {
+      "message": "Zaznan je bil dež in funkcija »Brez košnje v deževnih dneh« je vklopljena. Košnja se lahko začne, ko dež preneha, ali pa funkcijo izklopite."
+    },
+    "self_check_low_battery": {
+      "message": "Baterija je preveč prazna za košnjo. Pustite, da se kosilnica napolni."
+    },
+    "self_check_non_working_hours": {
+      "message": "Je izven delovnega časa kosilnice."
+    },
+    "self_check_rtk_station_moved": {
+      "message": "Referenčna postaja RTK je bila premaknjena. Preverite njen položaj v aplikaciji."
+    },
+    "self_check_outside_task_area": {
+      "message": "Kosilnica je izven svojega območja opravila. Premaknite jo nazaj v kartirano območje."
+    },
+    "self_check_wheel_motor_error": {
+      "message": "Motor pesta kolesa je javil napako."
+    },
+    "self_check_blade_motor_overheated": {
+      "message": "Motor rezila je prevroč. Pustite, da se ohladi."
+    },
+    "self_check_dock_moved": {
+      "message": "Polnilna postaja je bila premaknjena. Preverite njen položaj v aplikaciji."
+    },
+    "self_check_no_task_area": {
+      "message": "Območje opravila ni bilo najdeno. Ustvarite zemljevid v aplikaciji."
+    },
+    "self_check_night_protection": {
+      "message": "Nočna zaščita je vklopljena, zato kosilnica ponoči ne kosi."
+    },
+    "self_check_rtk_not_ready": {
+      "message": "Referenčna postaja RTK še ni pripravljena."
+    },
+    "self_check_weak_satellite_signal": {
+      "message": "Satelitski signal kosilnice je prešibek za določitev položaja."
+    },
+    "self_check_positioning_failure": {
+      "message": "Sistem za določanje položaja je odpovedal."
+    },
+    "self_check_inavi_unavailable": {
+      "message": "Storitev iNavi ni na voljo."
+    },
+    "self_check_weak_rtk_signal": {
+      "message": "Signal RTK je šibek. Preverite, kje stoji referenčna postaja."
+    },
+    "self_check_other": {
+      "message": "Kosilnica je javila neznano kodo samopreverjanja {code}."
     }
   }
 }

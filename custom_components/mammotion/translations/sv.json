@@ -64,6 +64,9 @@
           "mow_path_fetch_enabled": "Aktivera hämtning av klippväg (moln)",
           "full_map_fetch_enabled": "Aktivera fullständig karthämtning (moln) — när av hämtas endast områdesnamn",
           "notify": "Visa beständiga aviseringar för"
+        },
+        "data_description": {
+          "notify": "Självtestaviseringar är på som standard, de andra är av. Varje avisering utlöser också gräsklipparens aviseringshändelseentitet och en mammotion_event-händelse på bussen, som automatiseringar kan använda i stället."
         }
       }
     }
@@ -363,19 +366,60 @@
           "2": "Svag",
           "3": "Ingen"
         }
+      },
+      "self_check": {
+        "name": "Självtest",
+        "state": {
+          "normal": "OK",
+          "emergency_stop": "Nödstopp aktiverat",
+          "stop_button": "STOPP-knappen nedtryckt",
+          "safety_key_missing": "Säkerhetsnyckeln är inte isatt",
+          "lifted": "Lyft",
+          "tilted": "Lutad",
+          "tipped_over": "Vält",
+          "bumper_missing": "Sidostötfångaren är inte monterad",
+          "rain": "Regn upptäckt",
+          "low_battery": "Lågt batteri",
+          "non_working_hours": "Utanför arbetstid",
+          "rtk_station_moved": "RTK-referensstationen har flyttats",
+          "outside_task_area": "Utanför uppgiftsområdet",
+          "wheel_motor_error": "Fel på navmotorn",
+          "blade_motor_overheated": "Knivmotorn är för varm",
+          "dock_moved": "Laddstationen har flyttats",
+          "no_task_area": "Inget uppgiftsområde",
+          "night_protection": "Nattskydd",
+          "rtk_not_ready": "RTK-referensstationen är inte redo",
+          "weak_satellite_signal": "Svag satellitsignal",
+          "positioning_failure": "Fel i positioneringssystemet",
+          "inavi_unavailable": "iNavi-tjänsten är inte tillgänglig",
+          "weak_rtk_signal": "Svag RTK-signal",
+          "other": "Övrigt"
+        }
+      },
+      "running_task": {
+        "name": "Uppgift {name}",
+        "state": {
+          "mowing": "Klipper",
+          "paused": "Pausad",
+          "returning": "Återvänder",
+          "charging_pause": "Laddar, fortsätter sedan"
+        }
       }
     },
     "binary_sensor": {
       "spino_charging": {
         "name": "Laddar"
+      },
+      "rain_detected": {
+        "name": "Regn upptäckt"
       }
     },
     "button": {
       "start_map_sync": {
         "name": "Synkronisera kartor"
       },
-      "start_schedule_sync": {
-        "name": "Synkronisera scheman"
+      "start_task_sync": {
+        "name": "Synkronisera uppgifter"
       },
       "resync_rtk_dock": {
         "name": "Synkronisera RTK och laddstationen"
@@ -736,7 +780,8 @@
     "notify": {
       "options": {
         "warnings": "Varningar och felkoder",
-        "notifications": "Enhetsaviseringar och information"
+        "notifications": "Enhetsaviseringar och information",
+        "self_check": "Självtest: varför gräsklipparen inte kan starta"
       }
     }
   },
@@ -955,22 +1000,12 @@
     },
     "get_map_data": {
       "name": "Hämta kartdata",
-      "description": "Returnerar rå kartdata (områden, SVG-brickor, områdesnamn) för användning med SVG-kartkortet.",
-      "fields": {
-        "entity_id": {
-          "name": "Enhet",
-          "description": "Vilken som helst Mammotion-enhet som tillhör enheten."
-        }
-      }
+      "description": "Returnerar rå kartdata (områden, SVG-brickor, områdesnamn) för användning med SVG-kartkortet."
     },
     "svg_add": {
       "name": "Lägg till SVG-bricka",
       "description": "Skickar en ny SVG-bricka till enhetens karta. Returnerar den enhetstilldelade hashen.",
       "fields": {
-        "entity_id": {
-          "name": "Enhet",
-          "description": "Vilken som helst Mammotion-enhet som tillhör enheten."
-        },
         "area_hash": {
           "name": "Områdeshash",
           "description": "Hash för det överordnade klipområdet."
@@ -1013,10 +1048,6 @@
       "name": "Uppdatera SVG-bricka",
       "description": "Ersätter en befintlig SVG-bricka på enhetens karta. Använd device_hash returnerad av svg_add.",
       "fields": {
-        "entity_id": {
-          "name": "Enhet",
-          "description": "Vilken som helst Mammotion-enhet som tillhör enheten."
-        },
         "device_hash": {
           "name": "Enhetshash",
           "description": "Hash tilldelad av enheten när brickan lades till första gången."
@@ -1063,10 +1094,6 @@
       "name": "Ta bort SVG-bricka",
       "description": "Tar bort en SVG-bricka från enhetens karta via dess enhetstilldelade hash.",
       "fields": {
-        "entity_id": {
-          "name": "Enhet",
-          "description": "Vilken som helst Mammotion-enhet som tillhör enheten."
-        },
         "device_hash": {
           "name": "Enhetshash",
           "description": "Hash tilldelad av enheten när brickan lades till."
@@ -1283,6 +1310,16 @@
       "name": "Hämta uppgifter",
       "description": "Returnerar alla scheman som integrationen har för den valda enheten, inklusive om respektive schema är aktiverat. Använd den för att bekräfta att en ändring gick igenom; ”Uppdatera uppgifter” hämtar dem först på nytt från enheten."
     },
+    "get_task": {
+      "name": "Hämta uppgift",
+      "description": "Returnerar ett av den valda gräsklipparens scheman utifrån uppgifts-ID: dess nuvarande inställningar under de fältnamn som ”Redigera uppgift” accepterar, samt om det är aktiverat och körs. Använd den för att läsa en uppgift innan du redigerar den.",
+      "fields": {
+        "task_id": {
+          "name": "Uppgifts-ID",
+          "description": "Uppgiftens ID, som det visas i uppgiftsknappens attribut task_id eller returneras av ”Hämta uppgifter”."
+        }
+      }
+    },
     "start_task": {
       "name": "Starta uppgift",
       "description": "Kör ett sparat schema omedelbart (även kallat 'starta schema'). Endast gräsklippare — Spino-poolroboten har inte motsvarande kommando."
@@ -1314,6 +1351,22 @@
     "get_map_backups": {
       "name": "Hämta kartsäkerhetskopior",
       "description": "Returnerar kartsäkerhetskopiorna på det Mammotion-konto som den här integrationen är inloggad med. Säkerhetskopior hör till kontot, så de som gjorts i appen med ett annat konto visas inte."
+    },
+    "get_geojson": {
+      "name": "Hämta kart-GeoJSON",
+      "description": "Returnerar gräsklipparens karta (områden, hinder, vägar, laddstation och RTK-station) som en GeoJSON FeatureCollection för kartkortet och låter gräsklipparen rapportera sin position under de närmaste minuterna."
+    },
+    "get_mow_path_geojson": {
+      "name": "Hämta klippvägs-GeoJSON",
+      "description": "Returnerar den planerade klippvägen för det aktuella jobbet som en GeoJSON FeatureCollection. Tom tills vägen har hämtats."
+    },
+    "get_mow_progress_geojson": {
+      "name": "Hämta klippförlopps-GeoJSON",
+      "description": "Returnerar den redan klippta delen av det aktuella jobbets klippväg som en GeoJSON FeatureCollection; gräsklippare som skickar en dynamisk linje returnerar den i stället. När ett jobb pågår och inget kan visas än hämtar den även det lagret ritas från, högst en gång i minuten. Via Bluetooth håller en dynamisk linje sig själv uppdaterad."
+    },
+    "fetch_mow_path": {
+      "name": "Hämta klippväg",
+      "description": "Hämtar klippvägen för jobbet som gräsklipparen kör, om inte en komplett väg redan finns sparad, och räknar sedan om klippförloppet utifrån den. Gräsklippare med en dynamisk linje hämtar också sin senaste linje. Via molnet sker det bara när 'Aktivera hämtning av klippväg (moln)' är påslaget i alternativen; via Bluetooth alltid. Returnerar om en hämtning startades."
     },
     "get_map_backup_progress": {
       "name": "Hämta förlopp för kartsäkerhetskopia",
@@ -1388,6 +1441,9 @@
     "task_not_found": {
       "message": "Uppgiften {plan_id} kunde inte hittas på enheten. Uppdatera schemat och försök igen."
     },
+    "task_id_not_found": {
+      "message": "Uppgiften {task_id} kunde inte hittas för {entity_id}. Uppdatera uppgifterna och försök igen."
+    },
     "start_task_unsupported_on_spino": {
       "message": "Att starta ett schema på begäran stöds inte på Spino-poolroboten — enhetens firmware har inget 'kör nu'-kommando för sparade scheman."
     },
@@ -1403,8 +1459,89 @@
     "map_backup_device_not_found": {
       "message": "{device_name} finns inte med för kartsäkerhetskopior på det här Mammotion-kontot."
     },
-    "map_backup_mower_not_found": {
+    "mower_not_found": {
       "message": "{entity_id} är inte en Mammotion-gräsklippare."
+    },
+    "notification_unknown_code": {
+      "message": "Okänd felkod {code}"
+    },
+    "notification_title_warnings": {
+      "message": "{device_name}: varningar"
+    },
+    "notification_title_notifications": {
+      "message": "{device_name}: aviseringar"
+    },
+    "notification_title_self_check": {
+      "message": "{device_name}: {state}"
+    },
+    "self_check_emergency_stop": {
+      "message": "Nödstoppet är aktiverat. Frigör det på gräsklipparen innan du startar igen."
+    },
+    "self_check_stop_button": {
+      "message": "STOPP-knappen på gräsklipparen har tryckts in. Återställ den på gräsklipparen innan du startar igen."
+    },
+    "self_check_safety_key_missing": {
+      "message": "Säkerhetsnyckeln är inte isatt. Sätt i den för att börja klippa."
+    },
+    "self_check_lifted": {
+      "message": "Gräsklipparen har lyfts från marken. Ställ tillbaka den på gräsmattan."
+    },
+    "self_check_tilted": {
+      "message": "Gräsklipparen lutar. Flytta den till plan mark."
+    },
+    "self_check_tipped_over": {
+      "message": "Gräsklipparen har vält. Ställ upp den på hjulen igen."
+    },
+    "self_check_bumper_missing": {
+      "message": "Sidostötfångaren är inte monterad. Montera den innan du klipper."
+    },
+    "self_check_rain": {
+      "message": "Regn har upptäckts och ”Ingen klippning under regniga dagar” är på. Klippningen kan starta när regnet slutar, eller stäng av funktionen."
+    },
+    "self_check_low_battery": {
+      "message": "Batteriet är för svagt för att klippa. Låt gräsklipparen ladda."
+    },
+    "self_check_non_working_hours": {
+      "message": "Det är utanför gräsklipparens arbetstid."
+    },
+    "self_check_rtk_station_moved": {
+      "message": "RTK-referensstationen har flyttats. Kontrollera dess position i appen."
+    },
+    "self_check_outside_task_area": {
+      "message": "Gräsklipparen är utanför sitt uppgiftsområde. Flytta tillbaka den till ett kartlagt område."
+    },
+    "self_check_wheel_motor_error": {
+      "message": "En navmotor har rapporterat ett fel."
+    },
+    "self_check_blade_motor_overheated": {
+      "message": "Knivmotorn är för varm. Låt den svalna."
+    },
+    "self_check_dock_moved": {
+      "message": "Laddstationen har flyttats. Kontrollera dess position i appen."
+    },
+    "self_check_no_task_area": {
+      "message": "Inget uppgiftsområde hittades. Skapa en karta i appen."
+    },
+    "self_check_night_protection": {
+      "message": "Nattskydd är på, så gräsklipparen klipper inte på natten."
+    },
+    "self_check_rtk_not_ready": {
+      "message": "RTK-referensstationen är inte redo än."
+    },
+    "self_check_weak_satellite_signal": {
+      "message": "Gräsklipparens satellitsignal är för svag för att positionera den."
+    },
+    "self_check_positioning_failure": {
+      "message": "Positioneringssystemet har slutat fungera."
+    },
+    "self_check_inavi_unavailable": {
+      "message": "iNavi-tjänsten är inte tillgänglig."
+    },
+    "self_check_weak_rtk_signal": {
+      "message": "RTK-signalen är svag. Kontrollera var referensstationen står."
+    },
+    "self_check_other": {
+      "message": "Gräsklipparen rapporterade en okänd självtestkod {code}."
     }
   }
 }

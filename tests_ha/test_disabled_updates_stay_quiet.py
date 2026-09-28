@@ -64,6 +64,7 @@ def _coordinator(
     coordinator.manager.get_device_by_name.return_value = device
     coordinator.manager.mower.return_value = _handle()
     coordinator.manager.request_report_snapshot = AsyncMock()
+    coordinator.manager.start_plan_sync = AsyncMock()
     coordinator.async_send_command = AsyncMock()
     coordinator.async_send_and_wait = AsyncMock()
     coordinator.async_set_updated_data = MagicMock()

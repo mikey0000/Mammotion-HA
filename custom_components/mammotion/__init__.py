@@ -69,6 +69,7 @@ from .const import (
     DOMAIN,
     EXPIRED_CREDENTIAL_EXCEPTIONS,
     LOGGER,
+    NOTIFY_SELF_CHECK,
     NOTIFY_WARNINGS,
     POOL_CLEANER_SUPPORT,
 )
@@ -81,6 +82,7 @@ from .coordinator import (
     MammotionRTKCoordinator,
     MammotionSpinoCoordinator,
 )
+from .error_codes import async_preload_error_codes
 from .models import (
     MammotionDevices,
     MammotionMowerData,
@@ -396,6 +398,18 @@ async def async_migrate_entry(hass: HomeAssistant, entry: MammotionConfigEntry) 
             entry, options=options, version=1, minor_version=3
         )
 
+    if entry.version == 1 and entry.minor_version < 4:
+        # Self-check notifications are on by default; a list saved before the
+        # category existed cannot have turned it off, so add it.
+        options = dict(entry.options)
+        if (notify := options.get(CONF_NOTIFY)) is not None and (
+            NOTIFY_SELF_CHECK not in notify
+        ):
+            options[CONF_NOTIFY] = [*notify, NOTIFY_SELF_CHECK]
+        hass.config_entries.async_update_entry(
+            entry, options=options, version=1, minor_version=4
+        )
+
     return True
 
 
@@ -413,6 +427,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
 
     store = async_get_store(hass, entry)
     await store.async_load_device_data()
+    await async_preload_error_codes(hass)
 
     async def shutdown_mammotion(_: Event | None = None) -> None:
         await mammotion.stop()

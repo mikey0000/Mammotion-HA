@@ -64,6 +64,9 @@
           "mow_path_fetch_enabled": "Maaipad ophalen inschakelen (cloud)",
           "full_map_fetch_enabled": "Volledig kaart ophalen inschakelen (cloud) — wanneer uit worden alleen gebiednamen opgehaald",
           "notify": "Toon blijvende meldingen voor"
+        },
+        "data_description": {
+          "notify": "Zelftestmeldingen staan standaard aan, de andere uit. Elke melding activeert ook de meldingsgebeurtenis-entiteit van de maaier en een mammotion_event op de bus, die automatiseringen in plaats daarvan kunnen gebruiken."
         }
       }
     }
@@ -363,19 +366,60 @@
           "2": "Zwak",
           "3": "Geen"
         }
+      },
+      "self_check": {
+        "name": "Zelftest",
+        "state": {
+          "normal": "OK",
+          "emergency_stop": "Noodstop geactiveerd",
+          "stop_button": "STOP-knop ingedrukt",
+          "safety_key_missing": "Veiligheidssleutel niet ingestoken",
+          "lifted": "Opgetild",
+          "tilted": "Gekanteld",
+          "tipped_over": "Omgevallen",
+          "bumper_missing": "Zijbumper niet gemonteerd",
+          "rain": "Regen gedetecteerd",
+          "low_battery": "Batterij bijna leeg",
+          "non_working_hours": "Buiten werktijden",
+          "rtk_station_moved": "RTK-referentiestation verplaatst",
+          "outside_task_area": "Buiten het taakgebied",
+          "wheel_motor_error": "Fout in wielnaafmotor",
+          "blade_motor_overheated": "Maaimesmotor te heet",
+          "dock_moved": "Laadstation verplaatst",
+          "no_task_area": "Geen taakgebied",
+          "night_protection": "Nachtbescherming",
+          "rtk_not_ready": "RTK-referentiestation niet gereed",
+          "weak_satellite_signal": "Zwak satellietsignaal",
+          "positioning_failure": "Storing in positioneringssysteem",
+          "inavi_unavailable": "iNavi-dienst niet beschikbaar",
+          "weak_rtk_signal": "Zwak RTK-signaal",
+          "other": "Overig"
+        }
+      },
+      "running_task": {
+        "name": "Taak {name}",
+        "state": {
+          "mowing": "Maaien",
+          "paused": "Gepauzeerd",
+          "returning": "Keert terug",
+          "charging_pause": "Laadt, gaat daarna verder"
+        }
       }
     },
     "binary_sensor": {
       "spino_charging": {
         "name": "Opladen"
+      },
+      "rain_detected": {
+        "name": "Regen gedetecteerd"
       }
     },
     "button": {
       "start_map_sync": {
         "name": "Synchroniseer kaarten"
       },
-      "start_schedule_sync": {
-        "name": "Schema's synchroniseren"
+      "start_task_sync": {
+        "name": "Taken synchroniseren"
       },
       "resync_rtk_dock": {
         "name": "Synchroniseer RTK en laadstation"
@@ -736,7 +780,8 @@
     "notify": {
       "options": {
         "warnings": "Waarschuwingen en foutcodes",
-        "notifications": "Apparaatmeldingen en informatie"
+        "notifications": "Apparaatmeldingen en informatie",
+        "self_check": "Zelftest: waarom de maaier niet kan starten"
       }
     }
   },
@@ -955,22 +1000,12 @@
     },
     "get_map_data": {
       "name": "Kaartgegevens ophalen",
-      "description": "Geeft de ruwe kaartgegevens terug (gebieden, SVG-tegels, gebiednamen) voor gebruik met de SVG-kaartkaart.",
-      "fields": {
-        "entity_id": {
-          "name": "Entiteit",
-          "description": "Elke Mammotion-entiteit die bij het apparaat hoort."
-        }
-      }
+      "description": "Geeft de ruwe kaartgegevens terug (gebieden, SVG-tegels, gebiednamen) voor gebruik met de SVG-kaartkaart."
     },
     "svg_add": {
       "name": "SVG-tegel toevoegen",
       "description": "Stuurt een nieuwe SVG-tegel naar de apparaatkaart. Geeft de door het apparaat toegewezen hash terug.",
       "fields": {
-        "entity_id": {
-          "name": "Entiteit",
-          "description": "Elke Mammotion-entiteit die bij het apparaat hoort."
-        },
         "area_hash": {
           "name": "Gebiedshash",
           "description": "Hash van het bovenliggende maaigebied."
@@ -1013,10 +1048,6 @@
       "name": "SVG-tegel bijwerken",
       "description": "Vervangt een bestaande SVG-tegel op de apparaatkaart. Gebruik de device_hash die door svg_add is geretourneerd.",
       "fields": {
-        "entity_id": {
-          "name": "Entiteit",
-          "description": "Elke Mammotion-entiteit die bij het apparaat hoort."
-        },
         "device_hash": {
           "name": "Apparaathash",
           "description": "Hash toegewezen door het apparaat toen de tegel voor het eerst werd toegevoegd."
@@ -1063,10 +1094,6 @@
       "name": "SVG-tegel verwijderen",
       "description": "Verwijdert een SVG-tegel van de apparaatkaart via de door het apparaat toegewezen hash.",
       "fields": {
-        "entity_id": {
-          "name": "Entiteit",
-          "description": "Elke Mammotion-entiteit die bij het apparaat hoort."
-        },
         "device_hash": {
           "name": "Apparaathash",
           "description": "Hash toegewezen door het apparaat toen de tegel werd toegevoegd."
@@ -1283,6 +1310,16 @@
       "name": "Taken ophalen",
       "description": "Geeft alle schema's terug die de integratie voor het geselecteerde apparaat bijhoudt, inclusief of elk schema is ingeschakeld. Gebruik dit om te bevestigen dat een wijziging is doorgevoerd; 'Taken vernieuwen' haalt ze eerst opnieuw op van het apparaat."
     },
+    "get_task": {
+      "name": "Taak ophalen",
+      "description": "Geeft één schema van de geselecteerde maaier terug op basis van de taak-ID: de huidige instellingen onder de veldnamen die 'Taak bewerken' accepteert, en of het is ingeschakeld en loopt. Gebruik dit om een taak uit te lezen voordat je hem bewerkt.",
+      "fields": {
+        "task_id": {
+          "name": "Taak-ID",
+          "description": "ID van de taak, zoals weergegeven in het attribuut task_id van de taakknop of teruggegeven door 'Taken ophalen'."
+        }
+      }
+    },
     "start_task": {
       "name": "Taak starten",
       "description": "Voert een opgeslagen schema direct uit (ook bekend als 'schema starten'). Alleen maaier — de Spino zwembadrobot heeft geen equivalent commando."
@@ -1314,6 +1351,22 @@
     "get_map_backups": {
       "name": "Kaartback-ups ophalen",
       "description": "Geeft de kaartback-ups van het Mammotion-account waarmee deze integratie is aangemeld. Back-ups horen bij een account, dus back-ups die in de app onder een ander account zijn gemaakt, worden niet getoond."
+    },
+    "get_geojson": {
+      "name": "Kaart-GeoJSON ophalen",
+      "description": "Geeft de kaart van de maaier (gebieden, obstakels, paden, laadstation en RTK-station) terug als GeoJSON FeatureCollection voor de kaartkaart en laat de maaier de komende minuten zijn positie doorgeven."
+    },
+    "get_mow_path_geojson": {
+      "name": "Maaipad-GeoJSON ophalen",
+      "description": "Geeft het geplande maaipad van de huidige taak terug als GeoJSON FeatureCollection. Leeg totdat het pad is opgehaald."
+    },
+    "get_mow_progress_geojson": {
+      "name": "Maaivoortgang-GeoJSON ophalen",
+      "description": "Geeft het al gemaaide deel van het maaipad van de huidige taak terug als GeoJSON FeatureCollection; maaiers met een dynamische lijn geven in plaats daarvan die lijn terug. Loopt er een taak en is er nog niets te tonen, dan haalt het ook de gegevens van deze laag op, hooguit eens per minuut. Via Bluetooth houdt een dynamische lijn zichzelf bij."
+    },
+    "fetch_mow_path": {
+      "name": "Maaipad ophalen",
+      "description": "Haalt het maaipad op van de taak die de maaier uitvoert, tenzij er al een volledig pad in de cache staat, en berekent daaruit de maaivoortgang opnieuw. Maaiers met een dynamische lijn halen ook hun nieuwste lijn op. Via de cloud gebeurt dit alleen als 'Maaipad ophalen inschakelen (cloud)' in de opties is ingeschakeld; via Bluetooth altijd. Geeft terug of het ophalen is gestart."
     },
     "get_map_backup_progress": {
       "name": "Voortgang kaartback-up ophalen",
@@ -1388,6 +1441,9 @@
     "task_not_found": {
       "message": "Taak {plan_id} is niet gevonden op het apparaat. Vernieuw het schema en probeer opnieuw."
     },
+    "task_id_not_found": {
+      "message": "Taak {task_id} is niet gevonden voor {entity_id}. Vernieuw de taken en probeer opnieuw."
+    },
     "start_task_unsupported_on_spino": {
       "message": "Een schema op aanvraag starten wordt niet ondersteund op de Spino zwembadrobot — de firmware heeft geen 'nu uitvoeren' commando voor opgeslagen schema's."
     },
@@ -1403,8 +1459,89 @@
     "map_backup_device_not_found": {
       "message": "{device_name} staat in dit Mammotion-account niet vermeld voor kaartback-ups."
     },
-    "map_backup_mower_not_found": {
+    "mower_not_found": {
       "message": "{entity_id} is geen Mammotion-maaier."
+    },
+    "notification_unknown_code": {
+      "message": "Onbekende foutcode {code}"
+    },
+    "notification_title_warnings": {
+      "message": "{device_name}: waarschuwingen"
+    },
+    "notification_title_notifications": {
+      "message": "{device_name}: meldingen"
+    },
+    "notification_title_self_check": {
+      "message": "{device_name}: {state}"
+    },
+    "self_check_emergency_stop": {
+      "message": "De noodstop is actief. Ontgrendel hem op de maaier voordat je opnieuw start."
+    },
+    "self_check_stop_button": {
+      "message": "De STOP-knop op de maaier is ingedrukt. Reset hem op de maaier voordat je opnieuw start."
+    },
+    "self_check_safety_key_missing": {
+      "message": "De veiligheidssleutel is niet ingestoken. Steek hem in om te beginnen met maaien."
+    },
+    "self_check_lifted": {
+      "message": "De maaier is van de grond getild. Zet hem terug op het gazon."
+    },
+    "self_check_tilted": {
+      "message": "De maaier staat scheef. Zet hem op vlakke grond."
+    },
+    "self_check_tipped_over": {
+      "message": "De maaier is omgevallen. Zet hem weer rechtop."
+    },
+    "self_check_bumper_missing": {
+      "message": "De zijbumper is niet gemonteerd. Monteer hem voor het maaien."
+    },
+    "self_check_rain": {
+      "message": "Er is regen gedetecteerd en 'Niet maaien op regenachtige dagen' staat aan. Maaien kan starten zodra het droog is, of zet de functie uit."
+    },
+    "self_check_low_battery": {
+      "message": "De batterij is te leeg om te maaien. Laat de maaier opladen."
+    },
+    "self_check_non_working_hours": {
+      "message": "Het is buiten de werktijden van de maaier."
+    },
+    "self_check_rtk_station_moved": {
+      "message": "Het RTK-referentiestation is verplaatst. Controleer de positie in de app."
+    },
+    "self_check_outside_task_area": {
+      "message": "De maaier staat buiten zijn taakgebied. Zet hem terug in een gekarteerd gebied."
+    },
+    "self_check_wheel_motor_error": {
+      "message": "Een wielnaafmotor heeft een fout gemeld."
+    },
+    "self_check_blade_motor_overheated": {
+      "message": "De maaimesmotor is te heet. Laat hem afkoelen."
+    },
+    "self_check_dock_moved": {
+      "message": "Het laadstation is verplaatst. Controleer de positie in de app."
+    },
+    "self_check_no_task_area": {
+      "message": "Er is geen taakgebied gevonden. Maak een kaart in de app."
+    },
+    "self_check_night_protection": {
+      "message": "Nachtbescherming staat aan, dus de maaier maait 's nachts niet."
+    },
+    "self_check_rtk_not_ready": {
+      "message": "Het RTK-referentiestation is nog niet gereed."
+    },
+    "self_check_weak_satellite_signal": {
+      "message": "Het satellietsignaal van de maaier is te zwak om hem te lokaliseren."
+    },
+    "self_check_positioning_failure": {
+      "message": "Het positioneringssysteem is uitgevallen."
+    },
+    "self_check_inavi_unavailable": {
+      "message": "De iNavi-dienst is niet beschikbaar."
+    },
+    "self_check_weak_rtk_signal": {
+      "message": "Het RTK-signaal is zwak. Controleer waar het referentiestation staat."
+    },
+    "self_check_other": {
+      "message": "De maaier meldde een onbekende zelftestcode {code}."
     }
   }
 }

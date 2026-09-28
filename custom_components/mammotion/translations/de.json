@@ -64,6 +64,9 @@
           "mow_path_fetch_enabled": "Mähpfad-Abruf aktivieren (Cloud)",
           "full_map_fetch_enabled": "Vollständigen Kartenabruf aktivieren (Cloud) — wenn aus, werden nur Bereichsnamen abgerufen",
           "notify": "Dauerhafte Benachrichtigungen anzeigen für"
+        },
+        "data_description": {
+          "notify": "Selbsttest-Benachrichtigungen sind standardmäßig aktiviert, die anderen deaktiviert. Jede Benachrichtigung löst außerdem die Benachrichtigungs-Ereignisentität des Mähers und ein mammotion_event auf dem Bus aus, die Automatisierungen stattdessen nutzen können."
         }
       }
     }
@@ -363,19 +366,60 @@
           "2": "Schwach",
           "3": "Keine"
         }
+      },
+      "self_check": {
+        "name": "Selbsttest",
+        "state": {
+          "normal": "OK",
+          "emergency_stop": "Not-Aus aktiviert",
+          "stop_button": "STOP-Taste gedrückt",
+          "safety_key_missing": "Sicherheitsschlüssel nicht eingesteckt",
+          "lifted": "Angehoben",
+          "tilted": "Geneigt",
+          "tipped_over": "Umgekippt",
+          "bumper_missing": "Seitlicher Stoßfänger nicht montiert",
+          "rain": "Regen erkannt",
+          "low_battery": "Akku schwach",
+          "non_working_hours": "Außerhalb der Arbeitszeit",
+          "rtk_station_moved": "RTK-Referenzstation verschoben",
+          "outside_task_area": "Außerhalb des Aufgabenbereichs",
+          "wheel_motor_error": "Fehler am Radnabenmotor",
+          "blade_motor_overheated": "Messermotor zu heiß",
+          "dock_moved": "Ladestation verschoben",
+          "no_task_area": "Kein Aufgabenbereich",
+          "night_protection": "Nachtschutz",
+          "rtk_not_ready": "RTK-Referenzstation nicht bereit",
+          "weak_satellite_signal": "Schwaches Satellitensignal",
+          "positioning_failure": "Fehler im Positionierungssystem",
+          "inavi_unavailable": "iNavi-Dienst nicht verfügbar",
+          "weak_rtk_signal": "Schwaches RTK-Signal",
+          "other": "Sonstiges"
+        }
+      },
+      "running_task": {
+        "name": "Aufgabe {name}",
+        "state": {
+          "mowing": "Mäht",
+          "paused": "Pausiert",
+          "returning": "Kehrt zurück",
+          "charging_pause": "Lädt, setzt danach fort"
+        }
       }
     },
     "binary_sensor": {
       "spino_charging": {
         "name": "Lädt"
+      },
+      "rain_detected": {
+        "name": "Regen erkannt"
       }
     },
     "button": {
       "start_map_sync": {
         "name": "Synchronisiere Karte"
       },
-      "start_schedule_sync": {
-        "name": "Synchronisiere Zeitpläne"
+      "start_task_sync": {
+        "name": "Aufgaben synchronisieren"
       },
       "resync_rtk_dock": {
         "name": "Synchronisiere RTK und Ladestation"
@@ -736,7 +780,8 @@
     "notify": {
       "options": {
         "warnings": "Warnungen und Fehlercodes",
-        "notifications": "Gerätebenachrichtigungen und Informationen"
+        "notifications": "Gerätebenachrichtigungen und Informationen",
+        "self_check": "Selbsttest: warum der Mäher nicht starten kann"
       }
     }
   },
@@ -955,22 +1000,12 @@
     },
     "get_map_data": {
       "name": "Kartendaten abrufen",
-      "description": "Gibt die Karten-Rohdaten zur Verwendung mit der Mammotion-SVG-Karte zurück. (Bereiche, Bereichsnamen, SVG-Muster)",
-      "fields": {
-        "entity_id": {
-          "name": "Entität",
-          "description": "Eine beliebige Mammotion-Entität, die zum Gerät gehört."
-        }
-      }
+      "description": "Gibt die Karten-Rohdaten zur Verwendung mit der Mammotion-SVG-Karte zurück. (Bereiche, Bereichsnamen, SVG-Muster)"
     },
     "svg_add": {
       "name": "SVG-Kachel hinzufügen",
       "description": "Sendet eine neues SVG-Muster an die Karte des Gerätes. Gibt den geräteinternen Hash-Wert zurück.",
       "fields": {
-        "entity_id": {
-          "name": "Entität",
-          "description": "Eine beliebige Mammotion-Entität, die zum Gerät gehört."
-        },
         "area_hash": {
           "name": "Bereichs-Hash",
           "description": "Gibt den Hash-Wert des übergeordneten Mähbereichs an."
@@ -1013,10 +1048,6 @@
       "name": "SVG-Kachel aktualisieren",
       "description": "Ersetzt ein vorhandenes SVG-Muster auf der Karte des Gerätes. Verwende den von svg_add zurückgegebenen device_hash.",
       "fields": {
-        "entity_id": {
-          "name": "Entität",
-          "description": "Eine beliebige Mammotion-Entität, die zum Gerät gehört."
-        },
         "device_hash": {
           "name": "Geräte-Hash",
           "description": "Gibt den vom Gerät zugewiesener Hash-Wert an, als die Kachel erstmals hinzugefügt wurde."
@@ -1063,10 +1094,6 @@
       "name": "SVG-Kachel löschen",
       "description": "Entfernt eine SVG-Muster von der Karte des Gerätes anhand ihres geräteinternen Hash-Wertes.",
       "fields": {
-        "entity_id": {
-          "name": "Entität",
-          "description": "Eine beliebige Mammotion-Entität, die zum Gerät gehört."
-        },
         "device_hash": {
           "name": "Geräte-Hash",
           "description": "Gibt den vom Gerät zugewiesener Hash-Wert an, als die Kachel erstmals hinzugefügt wurde."
@@ -1283,6 +1310,16 @@
       "name": "Aufgaben abrufen",
       "description": "Gibt alle Zeitpläne zurück, die die Integration für das ausgewählte Gerät vorhält, einschließlich der Angabe, ob der jeweilige Zeitplan aktiviert ist. Damit lässt sich prüfen, ob eine Änderung angekommen ist; „Aufgaben aktualisieren“ lädt sie zuvor erneut vom Gerät."
     },
+    "get_task": {
+      "name": "Aufgabe abrufen",
+      "description": "Gibt einen Zeitplan des ausgewählten Mähers anhand seiner Aufgaben-ID zurück: die aktuellen Einstellungen unter den Feldnamen, die „Aufgabe bearbeiten“ akzeptiert, sowie ob er aktiviert ist und gerade läuft. Damit lässt sich eine Aufgabe vor dem Bearbeiten auslesen.",
+      "fields": {
+        "task_id": {
+          "name": "Aufgaben-ID",
+          "description": "ID der Aufgabe, wie sie im Attribut task_id der Aufgabenschaltfläche steht oder von „Aufgaben abrufen“ zurückgegeben wird."
+        }
+      }
+    },
     "start_task": {
       "name": "Aufgabe starten",
       "description": "Führt einen gespeicherten Zeitplan sofort aus (auch 'Zeitplan starten' genannt). Nur für Mähroboter — der Spino-Poolreiniger hat keinen entsprechenden Befehl, daher führt die Auswahl einer Spino-Aufgabe zu einer Fehlermeldung."
@@ -1314,6 +1351,22 @@
     "get_map_backups": {
       "name": "Kartensicherungen abrufen",
       "description": "Gibt die Kartensicherungen des Mammotion-Kontos zurück, mit dem diese Integration angemeldet ist. Sicherungen gehören zum Konto, daher erscheinen in der App unter einem anderen Konto erstellte Sicherungen nicht."
+    },
+    "get_geojson": {
+      "name": "Karten-GeoJSON abrufen",
+      "description": "Gibt die Karte des Mähers (Bereiche, Hindernisse, Wege, Ladestation und RTK-Station) als GeoJSON-FeatureCollection für die Kartenkarte zurück und lässt den Mäher für die nächsten Minuten seine Position melden."
+    },
+    "get_mow_path_geojson": {
+      "name": "Mähpfad-GeoJSON abrufen",
+      "description": "Gibt den geplanten Mähpfad des aktuellen Auftrags als GeoJSON-FeatureCollection zurück. Leer, bis der Mähpfad abgerufen wurde."
+    },
+    "get_mow_progress_geojson": {
+      "name": "Mähfortschritt-GeoJSON abrufen",
+      "description": "Gibt den bereits gemähten Teil des Mähpfads des aktuellen Auftrags als GeoJSON-FeatureCollection zurück; Mäher mit dynamischer Linie liefern stattdessen diese. Läuft ein Auftrag und kann noch nichts angezeigt werden, werden außerdem die Daten dieser Ebene abgerufen, höchstens einmal pro Minute. Über Bluetooth hält sich eine dynamische Linie selbst aktuell."
+    },
+    "fetch_mow_path": {
+      "name": "Mähpfad abrufen",
+      "description": "Ruft den Mähpfad des laufenden Auftrags ab, sofern noch kein vollständiger zwischengespeichert ist, und berechnet daraus den Mähfortschritt neu. Mäher mit dynamischer Linie rufen zusätzlich ihre aktuelle Linie ab. Über die Cloud geschieht das nur, wenn 'Mähpfad-Abruf aktivieren (Cloud)' in den Optionen aktiviert ist; über Bluetooth immer. Gibt zurück, ob ein Abruf gestartet wurde."
     },
     "get_map_backup_progress": {
       "name": "Fortschritt der Kartensicherung abrufen",
@@ -1388,6 +1441,9 @@
     "task_not_found": {
       "message": "Aufgabe {plan_id} wurde auf dem Gerät nicht gefunden. Aktualisiere den Zeitplan und versuche es erneut."
     },
+    "task_id_not_found": {
+      "message": "Aufgabe {task_id} wurde für {entity_id} nicht gefunden. Aktualisiere die Aufgaben und versuche es erneut."
+    },
     "start_task_unsupported_on_spino": {
       "message": "Das Starten eines Zeitplans auf Abruf wird vom Spino-Poolreiniger nicht unterstützt — die Geräte-Firmware hat keinen 'jetzt ausführen'-Befehl für gespeicherte Pläne."
     },
@@ -1403,8 +1459,89 @@
     "map_backup_device_not_found": {
       "message": "{device_name} ist in diesem Mammotion-Konto nicht für Kartensicherungen aufgeführt."
     },
-    "map_backup_mower_not_found": {
+    "mower_not_found": {
       "message": "{entity_id} ist kein Mammotion-Mäher."
+    },
+    "notification_unknown_code": {
+      "message": "Unbekannter Fehlercode {code}"
+    },
+    "notification_title_warnings": {
+      "message": "{device_name}: Warnungen"
+    },
+    "notification_title_notifications": {
+      "message": "{device_name}: Benachrichtigungen"
+    },
+    "notification_title_self_check": {
+      "message": "{device_name}: {state}"
+    },
+    "self_check_emergency_stop": {
+      "message": "Der Not-Aus ist aktiv. Löse ihn am Mäher, bevor du erneut startest."
+    },
+    "self_check_stop_button": {
+      "message": "Die STOP-Taste am Mäher wurde gedrückt. Setze sie am Mäher zurück, bevor du erneut startest."
+    },
+    "self_check_safety_key_missing": {
+      "message": "Der Sicherheitsschlüssel ist nicht eingesteckt. Stecke ihn ein, um mit dem Mähen zu beginnen."
+    },
+    "self_check_lifted": {
+      "message": "Der Mäher wurde vom Boden angehoben. Stelle ihn zurück auf den Rasen."
+    },
+    "self_check_tilted": {
+      "message": "Der Mäher ist geneigt. Stelle ihn auf ebenen Boden."
+    },
+    "self_check_tipped_over": {
+      "message": "Der Mäher ist umgekippt. Stelle ihn wieder auf."
+    },
+    "self_check_bumper_missing": {
+      "message": "Der seitliche Stoßfänger ist nicht montiert. Montiere ihn vor dem Mähen."
+    },
+    "self_check_rain": {
+      "message": "Es wurde Regen erkannt und „Bei Regen nicht mähen“ ist aktiviert. Gemäht werden kann, sobald der Regen aufhört, oder deaktiviere die Funktion."
+    },
+    "self_check_low_battery": {
+      "message": "Der Akku ist zu schwach zum Mähen. Lass den Mäher laden."
+    },
+    "self_check_non_working_hours": {
+      "message": "Es ist außerhalb der Arbeitszeit des Mähers."
+    },
+    "self_check_rtk_station_moved": {
+      "message": "Die RTK-Referenzstation wurde verschoben. Prüfe ihre Position in der App."
+    },
+    "self_check_outside_task_area": {
+      "message": "Der Mäher ist außerhalb seines Aufgabenbereichs. Bringe ihn zurück in einen kartierten Bereich."
+    },
+    "self_check_wheel_motor_error": {
+      "message": "Ein Radnabenmotor hat einen Fehler gemeldet."
+    },
+    "self_check_blade_motor_overheated": {
+      "message": "Der Messermotor ist zu heiß. Lass ihn abkühlen."
+    },
+    "self_check_dock_moved": {
+      "message": "Die Ladestation wurde verschoben. Prüfe ihre Position in der App."
+    },
+    "self_check_no_task_area": {
+      "message": "Es wurde kein Aufgabenbereich gefunden. Erstelle eine Karte in der App."
+    },
+    "self_check_night_protection": {
+      "message": "Der Nachtschutz ist aktiv, daher mäht der Mäher nachts nicht."
+    },
+    "self_check_rtk_not_ready": {
+      "message": "Die RTK-Referenzstation ist noch nicht bereit."
+    },
+    "self_check_weak_satellite_signal": {
+      "message": "Das Satellitensignal des Mähers ist zu schwach für die Positionsbestimmung."
+    },
+    "self_check_positioning_failure": {
+      "message": "Das Positionierungssystem ist ausgefallen."
+    },
+    "self_check_inavi_unavailable": {
+      "message": "Der iNavi-Dienst ist nicht verfügbar."
+    },
+    "self_check_weak_rtk_signal": {
+      "message": "Das RTK-Signal ist schwach. Prüfe den Standort der Referenzstation."
+    },
+    "self_check_other": {
+      "message": "Der Mäher hat den unbekannten Selbsttest-Code {code} gemeldet."
     }
   }
 }

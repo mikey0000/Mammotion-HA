@@ -64,6 +64,9 @@
           "mow_path_fetch_enabled": "Activați descărcarea traseului de tuns (cloud)",
           "full_map_fetch_enabled": "Activați descărcarea completă a hărții (cloud) — când este oprit, se descarcă doar numele zonelor",
           "notify": "Afișează notificări persistente pentru"
+        },
+        "data_description": {
+          "notify": "Notificările de autotest sunt activate implicit, celelalte sunt dezactivate. Fiecare notificare declanșează și entitatea de eveniment de notificare a mașinii și un eveniment mammotion_event pe magistrală, pe care automatizările le pot folosi în schimb."
         }
       }
     }
@@ -363,19 +366,60 @@
           "2": "Slab",
           "3": "Niciunul"
         }
+      },
+      "self_check": {
+        "name": "Autotest",
+        "state": {
+          "normal": "OK",
+          "emergency_stop": "Oprire de urgență activată",
+          "stop_button": "Butonul STOP apăsat",
+          "safety_key_missing": "Cheia de siguranță nu este introdusă",
+          "lifted": "Ridicat",
+          "tilted": "Înclinat",
+          "tipped_over": "Răsturnat",
+          "bumper_missing": "Bara de protecție laterală nu este montată",
+          "rain": "Ploaie detectată",
+          "low_battery": "Baterie descărcată",
+          "non_working_hours": "În afara programului de lucru",
+          "rtk_station_moved": "Stația de referință RTK a fost mutată",
+          "outside_task_area": "În afara zonei de lucru",
+          "wheel_motor_error": "Eroare motor butuc roată",
+          "blade_motor_overheated": "Motorul lamei este prea fierbinte",
+          "dock_moved": "Stația de încărcare a fost mutată",
+          "no_task_area": "Nicio zonă de lucru",
+          "night_protection": "Protecție pe timp de noapte",
+          "rtk_not_ready": "Stația de referință RTK nu este pregătită",
+          "weak_satellite_signal": "Semnal satelit slab",
+          "positioning_failure": "Defecțiune a sistemului de poziționare",
+          "inavi_unavailable": "Serviciul iNavi indisponibil",
+          "weak_rtk_signal": "Semnal RTK slab",
+          "other": "Altele"
+        }
+      },
+      "running_task": {
+        "name": "Sarcina {name}",
+        "state": {
+          "mowing": "Tunde",
+          "paused": "În pauză",
+          "returning": "Se întoarce",
+          "charging_pause": "Se încarcă, apoi continuă"
+        }
       }
     },
     "binary_sensor": {
       "spino_charging": {
         "name": "Se încarcă"
+      },
+      "rain_detected": {
+        "name": "Ploaie detectată"
       }
     },
     "button": {
       "start_map_sync": {
         "name": "Sincronizați harta"
       },
-      "start_schedule_sync": {
-        "name": "Sincronizați programele"
+      "start_task_sync": {
+        "name": "Sincronizați sarcinile"
       },
       "resync_rtk_dock": {
         "name": "Sincronizați RTK și docul"
@@ -736,7 +780,8 @@
     "notify": {
       "options": {
         "warnings": "Avertizări și coduri de eroare",
-        "notifications": "Notificări și informații despre dispozitiv"
+        "notifications": "Notificări și informații despre dispozitiv",
+        "self_check": "Autotest: de ce mașina de tuns nu poate porni"
       }
     }
   },
@@ -955,22 +1000,12 @@
     },
     "get_map_data": {
       "name": "Obțineți datele hărții",
-      "description": "Returnează datele brute ale hărții (zone, plăci SVG, nume de zone) pentru utilizare cu cardul de hartă SVG.",
-      "fields": {
-        "entity_id": {
-          "name": "Entitate",
-          "description": "Orice entitate Mammotion aparținând dispozitivului."
-        }
-      }
+      "description": "Returnează datele brute ale hărții (zone, plăci SVG, nume de zone) pentru utilizare cu cardul de hartă SVG."
     },
     "svg_add": {
       "name": "Adăugați placă SVG",
       "description": "Trimite o nouă placă SVG pe harta dispozitivului. Returnează hash-ul atribuit de dispozitiv.",
       "fields": {
-        "entity_id": {
-          "name": "Entitate",
-          "description": "Orice entitate Mammotion aparținând dispozitivului."
-        },
         "area_hash": {
           "name": "Hash zonă",
           "description": "Hash-ul zonei de cosit principale."
@@ -1013,10 +1048,6 @@
       "name": "Actualizați placă SVG",
       "description": "Înlocuiește o placă SVG existentă pe harta dispozitivului. Utilizați device_hash returnat de svg_add.",
       "fields": {
-        "entity_id": {
-          "name": "Entitate",
-          "description": "Orice entitate Mammotion aparținând dispozitivului."
-        },
         "device_hash": {
           "name": "Hash dispozitiv",
           "description": "Hash atribuit de dispozitiv când placa a fost adăugată prima dată."
@@ -1063,10 +1094,6 @@
       "name": "Ștergeți placă SVG",
       "description": "Elimină o placă SVG din harta dispozitivului prin hash-ul atribuit de dispozitiv.",
       "fields": {
-        "entity_id": {
-          "name": "Entitate",
-          "description": "Orice entitate Mammotion aparținând dispozitivului."
-        },
         "device_hash": {
           "name": "Hash dispozitiv",
           "description": "Hash atribuit de dispozitiv când placa a fost adăugată."
@@ -1283,6 +1310,16 @@
       "name": "Obține sarcinile",
       "description": "Returnează toate programările pe care integrarea le deține pentru dispozitivul vizat, inclusiv dacă fiecare este activată. Folosiți-o pentru a confirma că o modificare a fost aplicată; „Reîmprospătează sarcinile” le preia mai întâi din nou de pe dispozitiv."
     },
+    "get_task": {
+      "name": "Obține sarcina",
+      "description": "Returnează una dintre programările mașinii de tuns vizate după ID-ul sarcinii: setările curente cu numele de câmpuri acceptate de „Editează sarcina”, precum și dacă este activată și în desfășurare. Folosiți-o pentru a citi o sarcină înainte de a o edita.",
+      "fields": {
+        "task_id": {
+          "name": "ID sarcină",
+          "description": "ID-ul sarcinii, așa cum apare în atributul task_id al butonului sarcinii sau cum este returnat de „Obține sarcinile”."
+        }
+      }
+    },
     "start_task": {
       "name": "Pornește sarcina",
       "description": "Pornește imediat un program stocat (cunoscut și ca „pornește programul”). Doar pentru cositoare — robotul de piscină Spino nu are o comandă echivalentă."
@@ -1314,6 +1351,22 @@
     "get_map_backups": {
       "name": "Obține copiile de rezervă ale hărților",
       "description": "Returnează copiile de rezervă ale hărților din contul Mammotion cu care este conectată această integrare. Copiile aparțin contului, așa că cele create în aplicație cu alt cont nu sunt afișate."
+    },
+    "get_geojson": {
+      "name": "Obține GeoJSON-ul hărții",
+      "description": "Returnează harta mașinii de tuns (zone, obstacole, trasee, stația de încărcare și stația RTK) ca GeoJSON FeatureCollection pentru cardul hărții și face ca mașina să își raporteze poziția în următoarele minute."
+    },
+    "get_mow_path_geojson": {
+      "name": "Obține GeoJSON-ul traseului de tuns",
+      "description": "Returnează traseul de tuns planificat al sarcinii curente ca GeoJSON FeatureCollection. Gol până când traseul este descărcat."
+    },
+    "get_mow_progress_geojson": {
+      "name": "Obține GeoJSON-ul progresului",
+      "description": "Returnează partea deja tunsă a traseului sarcinii curente ca GeoJSON FeatureCollection; mașinile care transmit o linie dinamică returnează în schimb acea linie. Când o sarcină rulează și încă nu se poate afișa nimic, descarcă și datele acestui strat, cel mult o dată pe minut. Prin Bluetooth, o linie dinamică se actualizează singură."
+    },
+    "fetch_mow_path": {
+      "name": "Descarcă traseul de tuns",
+      "description": "Descarcă traseul de tuns al sarcinii pe care o execută mașina, dacă nu există deja unul complet în cache, apoi reconstruiește progresul tunsului. Mașinile cu linie dinamică își descarcă și linia cea mai recentă. Prin cloud se întâmplă doar cu 'Activați descărcarea traseului de tuns (cloud)' activat în opțiuni; prin Bluetooth întotdeauna. Returnează dacă descărcarea a început."
     },
     "get_map_backup_progress": {
       "name": "Obține progresul copiei de rezervă",
@@ -1388,6 +1441,9 @@
     "task_not_found": {
       "message": "Sarcina {plan_id} nu a fost găsită pe dispozitiv. Reîmprospătează programul și încearcă din nou."
     },
+    "task_id_not_found": {
+      "message": "Sarcina {task_id} nu a fost găsită pentru {entity_id}. Reîmprospătează sarcinile și încearcă din nou."
+    },
     "start_task_unsupported_on_spino": {
       "message": "Pornirea unui program la cerere nu este acceptată pe robotul de piscină Spino — firmware-ul nu oferă o comandă de execuție imediată pentru programele stocate."
     },
@@ -1403,8 +1459,89 @@
     "map_backup_device_not_found": {
       "message": "{device_name} nu este listat pentru copii de rezervă ale hărților în acest cont Mammotion."
     },
-    "map_backup_mower_not_found": {
+    "mower_not_found": {
       "message": "{entity_id} nu este o mașină de tuns Mammotion."
+    },
+    "notification_unknown_code": {
+      "message": "Cod de eroare necunoscut {code}"
+    },
+    "notification_title_warnings": {
+      "message": "{device_name}: avertismente"
+    },
+    "notification_title_notifications": {
+      "message": "{device_name}: notificări"
+    },
+    "notification_title_self_check": {
+      "message": "{device_name}: {state}"
+    },
+    "self_check_emergency_stop": {
+      "message": "Oprirea de urgență este activă. Eliberați-o pe mașină înainte de a porni din nou."
+    },
+    "self_check_stop_button": {
+      "message": "Butonul STOP al mașinii a fost apăsat. Resetați-l pe mașină înainte de a porni din nou."
+    },
+    "self_check_safety_key_missing": {
+      "message": "Cheia de siguranță nu este introdusă. Introduceți-o pentru a începe tunsul."
+    },
+    "self_check_lifted": {
+      "message": "Mașina a fost ridicată de pe sol. Puneți-o înapoi pe gazon."
+    },
+    "self_check_tilted": {
+      "message": "Mașina este înclinată. Mutați-o pe teren plan."
+    },
+    "self_check_tipped_over": {
+      "message": "Mașina s-a răsturnat. Readuceți-o pe roți."
+    },
+    "self_check_bumper_missing": {
+      "message": "Bara de protecție laterală nu este montată. Montați-o înainte de tuns."
+    },
+    "self_check_rain": {
+      "message": "S-a detectat ploaie și „Fără tuns în zilele ploioase” este activat. Tunsul poate începe după ce se oprește ploaia sau dezactivați funcția."
+    },
+    "self_check_low_battery": {
+      "message": "Bateria este prea descărcată pentru tuns. Lăsați mașina să se încarce."
+    },
+    "self_check_non_working_hours": {
+      "message": "Este în afara programului de lucru al mașinii."
+    },
+    "self_check_rtk_station_moved": {
+      "message": "Stația de referință RTK a fost mutată. Verificați-i poziția în aplicație."
+    },
+    "self_check_outside_task_area": {
+      "message": "Mașina este în afara zonei de lucru. Mutați-o înapoi într-o zonă cartografiată."
+    },
+    "self_check_wheel_motor_error": {
+      "message": "Un motor de butuc al roții a raportat o eroare."
+    },
+    "self_check_blade_motor_overheated": {
+      "message": "Motorul lamei este prea fierbinte. Lăsați-l să se răcească."
+    },
+    "self_check_dock_moved": {
+      "message": "Stația de încărcare a fost mutată. Verificați-i poziția în aplicație."
+    },
+    "self_check_no_task_area": {
+      "message": "Nu a fost găsită nicio zonă de lucru. Creați o hartă în aplicație."
+    },
+    "self_check_night_protection": {
+      "message": "Protecția pe timp de noapte este activată, deci mașina nu tunde noaptea."
+    },
+    "self_check_rtk_not_ready": {
+      "message": "Stația de referință RTK nu este încă pregătită."
+    },
+    "self_check_weak_satellite_signal": {
+      "message": "Semnalul satelit al mașinii este prea slab pentru a o poziționa."
+    },
+    "self_check_positioning_failure": {
+      "message": "Sistemul de poziționare s-a defectat."
+    },
+    "self_check_inavi_unavailable": {
+      "message": "Serviciul iNavi nu este disponibil."
+    },
+    "self_check_weak_rtk_signal": {
+      "message": "Semnalul RTK este slab. Verificați unde este amplasată stația de referință."
+    },
+    "self_check_other": {
+      "message": "Mașina a raportat codul de autotest necunoscut {code}."
     }
   }
 }
