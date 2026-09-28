@@ -80,7 +80,7 @@ CAMERAS: tuple[MammotionCameraEntityDescription, ...] = (
         key="webrtc_camera_rear",
         stream_fn=lambda coordinator: coordinator.get_stream_data(),
         target_uid=3,
-        exists_fn=DeviceType.is_yuka,
+        exists_fn=lambda device_name: DeviceType.value_of_str(device_name).is_yu_ka(),
     ),
 )
 

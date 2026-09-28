@@ -14,10 +14,18 @@ from custom_components.mammotion.coordinator import MammotionBaseUpdateCoordinat
 
 @pytest.mark.parametrize(
     ("device_name", "has_rear"),
-    [("Luba-VS00CLD", False), ("Luba-VP00CLD", False), ("Yuka-000CLD", True)],
+    [
+        ("Luba-VS00CLD", False),
+        ("Luba-VP00CLD", False),
+        ("Yuka-000CLD", True),
+        ("Yuka-MNTXVHBE", False),
+        ("Yuka-YM00CLD", False),
+    ],
 )
-def test_only_yuka_has_the_rear_camera(device_name: str, has_rear: bool) -> None:
-    """Left and right exist on every vision mower; rear is gated on Yuka."""
+def test_only_the_full_size_yuka_has_the_rear_camera(
+    device_name: str, has_rear: bool
+) -> None:
+    """Left and right exist on every vision mower; the Yuka Minis have no rear."""
     assert [description.exists_fn(device_name) for description in CAMERAS] == [
         True,
         True,
