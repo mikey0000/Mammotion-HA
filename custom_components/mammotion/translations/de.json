@@ -66,7 +66,7 @@
           "notify": "Dauerhafte Benachrichtigungen anzeigen für"
         },
         "data_description": {
-          "notify": "Selbsttest-Benachrichtigungen sind standardmäßig aktiviert, die anderen deaktiviert. Jede Benachrichtigung löst außerdem die Benachrichtigungs-Ereignisentität des Mähers und ein mammotion_event auf dem Bus aus, die Automatisierungen stattdessen nutzen können."
+          "notify": "Selbsttest-Benachrichtigungen sind standardmäßig aktiviert, die anderen deaktiviert. Jede Benachrichtigung löst außerdem die Benachrichtigungs-Event-Entität des Mähers sowie ein „mammotion_event“-Bus-Ereignis aus, auf das Automationen stattdessen zurückgreifen können."
         }
       }
     }
@@ -80,7 +80,7 @@
         "name": "Rechte Kamera"
       },
       "webrtc_camera_rear": {
-        "name": "Rückkamera"
+        "name": "Hintere Kamera"
       }
     },
     "sensor": {
@@ -118,10 +118,10 @@
         "name": "Schnitthöhe"
       },
       "area": {
-        "name": "Bereich"
+        "name": "Aufgabenfläche"
       },
       "mowing_speed": {
-        "name": "Mähgeschwindigkeit"
+        "name": "Aktuelle Mähgeschwindigkeit"
       },
       "progress": {
         "name": "Aufgabenfortschritt"
@@ -304,7 +304,7 @@
         "state": {
           "UNKNOWN": "Unbekannt",
           "OFF": "Aus",
-          "AUTO": "Alles",
+          "AUTO": "Boden/Wand",
           "FLOOR": "Boden",
           "WALL": "Wand",
           "ECO": "Eco",
@@ -377,18 +377,18 @@
           "lifted": "Angehoben",
           "tilted": "Geneigt",
           "tipped_over": "Umgekippt",
-          "bumper_missing": "Seitlicher Stoßfänger nicht montiert",
+          "bumper_missing": "Stoßfänger nicht montiert",
           "rain": "Regen erkannt",
           "low_battery": "Akku schwach",
           "non_working_hours": "Außerhalb der Arbeitszeit",
-          "rtk_station_moved": "RTK-Referenzstation verschoben",
+          "rtk_station_moved": "RTK-Station verschoben",
           "outside_task_area": "Außerhalb des Aufgabenbereichs",
           "wheel_motor_error": "Fehler am Radnabenmotor",
-          "blade_motor_overheated": "Messermotor zu heiß",
+          "blade_motor_overheated": "Mähwerksmotor zu heiß",
           "dock_moved": "Ladestation verschoben",
           "no_task_area": "Kein Aufgabenbereich",
           "night_protection": "Nachtschutz",
-          "rtk_not_ready": "RTK-Referenzstation nicht bereit",
+          "rtk_not_ready": "RTK-Station nicht bereit",
           "weak_satellite_signal": "Schwaches Satellitensignal",
           "positioning_failure": "Fehler im Positionierungssystem",
           "inavi_unavailable": "iNavi-Dienst nicht verfügbar",
@@ -401,8 +401,8 @@
         "state": {
           "mowing": "Mäht",
           "paused": "Pausiert",
-          "returning": "Kehrt zurück",
-          "charging_pause": "Lädt, setzt danach fort"
+          "returning": "Kehrt zur Ladestation zurück",
+          "charging_pause": "Lädt, Aufgabe wird danach fortgesetzt"
         }
       }
     },
@@ -419,7 +419,7 @@
         "name": "Synchronisiere Karte"
       },
       "start_task_sync": {
-        "name": "Aufgaben synchronisieren"
+        "name": "Synchronisiere Aufgaben"
       },
       "resync_rtk_dock": {
         "name": "Synchronisiere RTK und Ladestation"
@@ -502,7 +502,7 @@
         "name": "Zuerst die Eingrenzung"
       },
       "schedule_updates": {
-        "name": "Automatische Aktualisierungen"
+        "name": "Daten automatisch aktualisieren"
       },
       "bluetooth_enabled": {
         "name": "Bluetooth"
@@ -520,13 +520,13 @@
         "name": "Sprache"
       },
       "manual_grass_collection": {
-        "name": "Manuelles Grasaufsammeln"
+        "name": "Manuelles Grasschnitt-Sammeln"
       },
       "manual_grass_dump": {
-        "name": "Manuelles Grasentleeren"
+        "name": "Manuelles Grasschnitt-Entleeren"
       },
       "spino_buzzer": {
-        "name": "Summer"
+        "name": "Signalton"
       },
       "spino_turbo_clean": {
         "name": "Turbo-Reinigung"
@@ -535,7 +535,7 @@
         "name": "Plattformreinigung"
       },
       "spino_waterline_parking": {
-        "name": "Wasserlinienparken"
+        "name": "Wasserlinien-Parken"
       }
     },
     "select": {
@@ -612,7 +612,7 @@
         "state": {
           "off": "Aus",
           "stop_mowing": "Mähen stoppen",
-          "low_speed_mowing": "Langsamfahrt"
+          "low_speed_mowing": "Langsam fahren"
         }
       },
       "cutter_mode": {
@@ -635,7 +635,7 @@
         "state": {
           "UNKNOWN": "Unbekannt",
           "OFF": "Aus",
-          "AUTO": "Alles",
+          "AUTO": "Boden/Wand",
           "FLOOR": "Boden",
           "WALL": "Wand",
           "ECO": "Eco",
@@ -646,9 +646,9 @@
       "spino_wall_material": {
         "name": "Wandmaterial",
         "state": {
-          "GLASS": "Glas",
+          "GLASS": "Fiberglas",
           "CERAMICS": "Fliese",
-          "SAND_STONE": "Aggregat",
+          "SAND_STONE": "Kiesel/Stein/Beton",
           "VINYL": "Vinyl"
         }
       },
@@ -781,7 +781,7 @@
       "options": {
         "warnings": "Warnungen und Fehlercodes",
         "notifications": "Gerätebenachrichtigungen und Informationen",
-        "self_check": "Selbsttest: warum der Mäher nicht starten kann"
+        "self_check": "Selbsttest: Warum kann der Mäher nicht starten?"
       }
     }
   },
@@ -840,7 +840,7 @@
         },
         "channel_width": {
           "name": "Schnittbahnenabstand",
-          "description": "Gibt an, welcher Abstand zwischen den einzelnen Schnittbahnen eingehalten ist. (in cm)."
+          "description": "Gibt an, welcher Abstand zwischen den einzelnen Schnittbahnen eingestellt ist. (in cm)"
         },
         "rain_tactics": {
           "name": "Regenerkennung",
@@ -867,7 +867,7 @@
           "description": "Gibt an, wie viele Runden entlang der Eingrenzung des Mähbereichs durchgeführt werden."
         },
         "obstacle_laps": {
-          "name": "Rundenanzahl für No-Go-Zonen",
+          "name": "Umrundungsanzahl für No-Go-Zonen",
           "description": "Gibt an, wie viele Runden entlang der No-Go-Zonen durchgeführt werden."
         },
         "start_progress": {
@@ -885,44 +885,44 @@
       }
     },
     "modify_running_job": {
-      "name": "Laufenden Auftrag ändern",
-      "description": "Ändert Einstellungen des gerade laufenden Auftrags, ohne ihn neu zu starten. Nur auf Luba 2 und neuer während eines laufenden Auftrags verfügbar.",
+      "name": "Laufenden Aufgabe ändern",
+      "description": "Ändert Einstellungen der gerade laufenden Aufgabe des Mähroboters, ohne diese neu zu starten. Nur auf Luba 2 und neuer verfügbar während eine laufenden Aufgabe ausgeführt wird.",
       "fields": {
         "blade_height": {
           "name": "Schnitthöhe",
-          "description": "Schnitthöhe"
+          "description": "Gibt an, welche Schnitthöhe eingestellt ist."
         },
         "speed": {
           "name": "Arbeitsgeschwindigkeit",
-          "description": "Arbeitsgeschwindigkeit"
+          "description": "Gibt an, welche Arbeitsgeschwindigkeit eingestellt ist."
         },
         "ultra_wave": {
           "name": "Hinderniserkennung",
-          "description": "Hinderniserkennung"
+          "description": "Gibt an, welcher Modus der Hinderniserkennung beim Mähen verwendet wird."
         },
         "channel_width": {
-          "name": "Bahnabstand",
-          "description": "Bahnabstand"
+          "name": "Schnittbahnenabstand",
+          "description": "Gibt an, welcher Abstand zwischen den einzelnen Schnittbahnen eingestellt ist. (in cm)"
         },
         "channel_mode": {
-          "name": "Routenmodus",
-          "description": "Routenmodus"
+          "name": "Schnittbahnenmodus",
+          "description": "Gibt an, welcher Modus für die Schnittbahnennavigation verwendet wird. (Zick-Zack, Schachbrett, Adaptives Zick-Zack oder nur Eingrenzung)"
         },
         "obstacle_laps": {
-          "name": "Runden in Sperrzone",
-          "description": "Runden in Sperrzone"
+          "name": "Umrundungsanzahl für No-Go-Zonen",
+          "description": "Gibt an, wie viele Runden entlang der No-Go-Zonen durchgeführt werden."
         },
         "rain_tactics": {
           "name": "Regenstrategie",
-          "description": "Regenstrategie"
+          "description": "Stoppt das Mähen, wenn Regen erkannt wird."
         },
         "auto_change_direction": {
           "name": "Richtung automatisch wechseln",
-          "description": "Richtung automatisch wechseln"
+          "description": "Ändert automatisch die Richtung für den nächsten Aufgabendurchgang."
         },
         "start_progress": {
-          "name": "Fortschritt",
-          "description": "Fortschritt"
+          "name": "Fortschritt beim Start",
+          "description": "Gibt an, welcher prozentuale Fortschritt beim Start einer Aufgabe angenommen wird."
         }
       }
     },
@@ -965,12 +965,12 @@
       }
     },
     "set_blade_height": {
-      "name": "Klingenhöhe festlegen",
-      "description": "Sendet eine Klingenhöhe direkt an den Schneidmotor des Mähers.",
+      "name": "Mähwerkshöhe festlegen",
+      "description": "Legt die Schnitthöhe des Mähwerk fest.",
       "fields": {
         "height": {
           "name": "Höhe",
-          "description": "Klingenhöhe in Millimetern."
+          "description": "Mähwerkshöhe in Millimeter."
         }
       }
     },
@@ -979,24 +979,24 @@
       "description": "Setzt den Betriebsstundenzähler für die Klingen zurück."
     },
     "start_dump_point_setup": {
-      "name": "Einrichtung der Entleerpunkte starten",
-      "description": "Versetzt den Mäher in den Einrichtungsmodus für Entleerpunkte, damit Punkte aufgezeichnet werden können."
+      "name": "Einrichtung der Entleerungsstellen starten",
+      "description": "Versetzt den Mähroboter in den Einrichtungsmodus für die Entleerungsstelle des Grasschnitts, damit selbige aufgezeichnet werden können."
     },
     "add_dump_point": {
-      "name": "Entleerpunkt hinzufügen",
-      "description": "Zeichnet an der aktuellen Position des Mähers einen Entleerpunkt auf."
+      "name": "Entleerungsstelle hinzufügen",
+      "description": "Speichert eine Entleerungsstelle an der aktuellen Position des Mähroboters."
     },
     "undo_dump_point": {
-      "name": "Letzten Entleerpunkt rückgängig machen",
-      "description": "Verwirft den zuletzt aufgezeichneten Entleerpunkt."
+      "name": "Letzte Entleerungsstelle rückgängig machen",
+      "description": "Löscht die zuletzt aufgezeichnete Entleerungsstelle."
     },
     "finish_dump_point_setup": {
-      "name": "Einrichtung der Entleerpunkte abschließen",
-      "description": "Speichert die aufgezeichneten Entleerpunkte und verlässt den Einrichtungsmodus."
+      "name": "Einrichtung der Entleerungsstellen abschließen",
+      "description": "Speichert die aufgezeichneten Entleerungsstellen und verlässt den Einrichtungsmodus."
     },
     "finish_outside_dump_point": {
-      "name": "Entleerpunkt außerhalb des Bereichs abschließen",
-      "description": "Schließt die Einrichtung eines Entleerpunkts ab, der außerhalb des Mähbereichs aufgezeichnet wurde."
+      "name": "Entleerungsstelle außerhalb des Bereichs abschließen",
+      "description": "Schließt die Einrichtung eines Entleerungspunktes ab, der außerhalb des Mähbereichs festgelegt wurde."
     },
     "get_map_data": {
       "name": "Kartendaten abrufen",
@@ -1304,19 +1304,19 @@
     },
     "refresh_tasks": {
       "name": "Aufgaben aktualisieren",
-      "description": "Lade alle Zeitpläne erneut vom Zielgerät. Verwende diese Funktion nach einem „delete-all“-Befehl oder zur Wiederherstellung nach einem versäumten Update."
+      "description": "Lädt alle Zeitpläne erneut vom Zielgerät. Verwende diese Funktion nach einem „delete-all“-Befehl oder zur Wiederherstellung nach einem versäumten Update."
     },
     "get_tasks": {
       "name": "Aufgaben abrufen",
-      "description": "Gibt alle Zeitpläne zurück, die die Integration für das ausgewählte Gerät vorhält, einschließlich der Angabe, ob der jeweilige Zeitplan aktiviert ist. Damit lässt sich prüfen, ob eine Änderung angekommen ist; „Aufgaben aktualisieren“ lädt sie zuvor erneut vom Gerät."
+      "description": "Gibt alle Zeitpläne zurück, die die Integration für das Zielgerät vorhält, einschließlich der Angabe, ob die einzelnen Zeitpläne aktiviert sind. Verwenden Sie diese Funktion, um zu überprüfen, ob eine Änderung übernommen wurde. Mit „Aufgaben aktualisieren“ werden diese zunächst erneut vom Gerät abgerufen."
     },
     "get_task": {
       "name": "Aufgabe abrufen",
-      "description": "Gibt einen Zeitplan des ausgewählten Mähers anhand seiner Aufgaben-ID zurück: die aktuellen Einstellungen unter den Feldnamen, die „Aufgabe bearbeiten“ akzeptiert, sowie ob er aktiviert ist und gerade läuft. Damit lässt sich eine Aufgabe vor dem Bearbeiten auslesen.",
+      "description": "Gibt einen der Zeitpläne des ausgewählten Mähroboters anhand seiner Aufgaben-ID zurück: die aktuellen Einstellungen unter den Feldnamen, die unter „Aufgabe bearbeiten“ akzeptiert werden, sowie die Angabe, ob die Aufgabe aktiviert ist und gerade ausgeführt wird. Verwenden Sie diese Funktion, um eine Aufgabe vor der Bearbeitung einzusehen.",
       "fields": {
         "task_id": {
           "name": "Aufgaben-ID",
-          "description": "ID der Aufgabe, wie sie im Attribut task_id der Aufgabenschaltfläche steht oder von „Aufgaben abrufen“ zurückgegeben wird."
+          "description": "ID der Aufgabe, wie sie im Attribut „task_id“ der Aufgabenschaltfläche angegeben ist oder von „Aufgaben abrufen“ zurückgegeben wird."
         }
       }
     },
@@ -1326,7 +1326,7 @@
     },
     "backup_map": {
       "name": "Karte sichern",
-      "description": "Lädt die Karte des Mähers in dein Mammotion-Cloudkonto hoch. Gibt die Sicherungs-ID zurück. Gib eine vorhandene Sicherungs-ID an, um diese Sicherung zu überschreiben, statt eine neue anzulegen.",
+      "description": "Lädt die Karte des Mähroboters in dein Mammotion-Cloud-Konto hoch. Gibt die Sicherungs-ID zurück. Geben Sie eine vorhandene Sicherungs-ID an, um diese Sicherung zu überschreiben, statt eine neue anzulegen.",
       "fields": {
         "name": {
           "name": "Name",
@@ -1340,33 +1340,33 @@
     },
     "restore_map": {
       "name": "Karte wiederherstellen",
-      "description": "Ersetzt die aktuelle Karte des Mähers durch eine Sicherung aus dem Mammotion-Konto, mit dem diese Integration angemeldet ist. Der Mäher startet nach der Wiederherstellung neu.",
+      "description": "Ersetzen Sie die aktuelle Karte des Mähroboters durch eine Sicherungskopie aus dem Mammotion-Konto, mit dem diese Integration angemeldet ist. Der Mähroboter startet neu, sobald die Wiederherstellung abgeschlossen ist.",
       "fields": {
         "backup_id": {
           "name": "Sicherungs-ID",
-          "description": "Wiederherzustellende Sicherung, wie von 'Kartensicherungen abrufen' zurückgegeben."
+          "description": "Vorhandene Sicherung, die wiederhergestellt werden soll. Wie von 'Kartensicherungen abrufen' zurückgegeben."
         }
       }
     },
     "get_map_backups": {
       "name": "Kartensicherungen abrufen",
-      "description": "Gibt die Kartensicherungen des Mammotion-Kontos zurück, mit dem diese Integration angemeldet ist. Sicherungen gehören zum Konto, daher erscheinen in der App unter einem anderen Konto erstellte Sicherungen nicht."
+      "description": "Gibt die Kartensicherungen des Mammotion-Kontos zurück, mit dem diese Integration angemeldet ist. Sicherungen werden pro Konto erstellt, daher werden solche, die in der App unter einem anderen Konto erstellt wurden, nicht aufgeführt."
     },
     "get_geojson": {
       "name": "Karten-GeoJSON abrufen",
-      "description": "Gibt die Karte des Mähers (Bereiche, Hindernisse, Wege, Ladestation und RTK-Station) als GeoJSON-FeatureCollection für die Kartenkarte zurück und lässt den Mäher für die nächsten Minuten seine Position melden."
+      "description": "Gibt die Karte des Mähroboters (Bereiche, Hindernisse, Wege, Ladestation und RTK-Station) als GeoJSON-FeatureCollection für die Map-Karte zurück und sorgen dafür, dass der Mäher seine Position in den nächsten Minuten weiterhin meldet."
     },
     "get_mow_path_geojson": {
       "name": "Mähpfad-GeoJSON abrufen",
-      "description": "Gibt den geplanten Mähpfad des aktuellen Auftrags als GeoJSON-FeatureCollection zurück. Leer, bis der Mähpfad abgerufen wurde."
+      "description": "Gibt den geplanten Mähpfad der aktuellen Aufgabe als GeoJSON-FeatureCollection zurück. Leer, bis der Mähpfad abgerufen wurde."
     },
     "get_mow_progress_geojson": {
       "name": "Mähfortschritt-GeoJSON abrufen",
-      "description": "Gibt den bereits gemähten Teil des Mähpfads des aktuellen Auftrags als GeoJSON-FeatureCollection zurück; Mäher mit dynamischer Linie liefern stattdessen diese. Läuft ein Auftrag und kann noch nichts angezeigt werden, werden außerdem die Daten dieser Ebene abgerufen, höchstens einmal pro Minute. Über Bluetooth hält sich eine dynamische Linie selbst aktuell."
+      "description": "Gibt den bereits abgearbeiteten Teil des Mähpfads der aktuellen Aufgabe als GeoJSON-FeatureCollection zurück. Mähroboter, die eine dynamische Linie streamen, geben stattdessen diese Linie zurück. Während ein Auftrag läuft und noch nichts angezeigt werden kann, ruft das Gerät zudem höchstens einmal pro Minute die Daten ab, auf denen diese Ebene basiert. Über Bluetooth hält sich eine dynamische Linie selbst auf dem neuesten Stand."
     },
     "fetch_mow_path": {
       "name": "Mähpfad abrufen",
-      "description": "Ruft den Mähpfad des laufenden Auftrags ab, sofern noch kein vollständiger zwischengespeichert ist, und berechnet daraus den Mähfortschritt neu. Mäher mit dynamischer Linie rufen zusätzlich ihre aktuelle Linie ab. Über die Cloud geschieht das nur, wenn 'Mähpfad-Abruf aktivieren (Cloud)' in den Optionen aktiviert ist; über Bluetooth immer. Gibt zurück, ob ein Abruf gestartet wurde."
+      "description": "Ruft den Mähpfad der gerade laufenden Aufgabe des Mähroboters ab, sofern nicht bereits ein vollständiger Pfad im Cache vorhanden ist; in diesem Fall wird der Mähfortschritt daraus neu berechnet. Mähroboter, die eine dynamische Linie streamen, erhalten zudem ihre aktuellste Linie. Über die Cloud erfolgt dies nur, wenn in den Optionen die Option „Mähpfadabruf aktivieren (Cloud)“ aktiviert ist; über Bluetooth erfolgt dies immer. Gibt zurück, ob ein Abruf gestartet wurde."
     },
     "get_map_backup_progress": {
       "name": "Fortschritt der Kartensicherung abrufen",
@@ -1448,7 +1448,7 @@
       "message": "Das Starten eines Zeitplans auf Abruf wird vom Spino-Poolreiniger nicht unterstützt — die Geräte-Firmware hat keinen 'jetzt ausführen'-Befehl für gespeicherte Pläne."
     },
     "grass_collection_unsupported": {
-      "message": "Dieser Mäher unterstützt keine Grasaufnahme."
+      "message": "Dieser Mäher unterstützt kein Grassammeln."
     },
     "map_backup_cloud_unavailable": {
       "message": "Kartensicherungen erfordern eine funktionierende Anmeldung bei der Mammotion-Cloud."
@@ -1460,7 +1460,7 @@
       "message": "{device_name} ist in diesem Mammotion-Konto nicht für Kartensicherungen aufgeführt."
     },
     "mower_not_found": {
-      "message": "{entity_id} ist kein Mammotion-Mäher."
+      "message": "{entity_id} ist kein Mammotion-Mähroboter."
     },
     "notification_unknown_code": {
       "message": "Unbekannter Fehlercode {code}"
@@ -1475,46 +1475,46 @@
       "message": "{device_name}: {state}"
     },
     "self_check_emergency_stop": {
-      "message": "Der Not-Aus ist aktiv. Löse ihn am Mäher, bevor du erneut startest."
+      "message": "Der Not-Aus ist aktiv. Deaktiviere ihn am Mähroboter, bevor du erneut startest."
     },
     "self_check_stop_button": {
-      "message": "Die STOP-Taste am Mäher wurde gedrückt. Setze sie am Mäher zurück, bevor du erneut startest."
+      "message": "Die STOP-Taste am Mähroboter wurde gedrückt. Setze ihn am Mähroboter zurück, bevor du erneut startest."
     },
     "self_check_safety_key_missing": {
       "message": "Der Sicherheitsschlüssel ist nicht eingesteckt. Stecke ihn ein, um mit dem Mähen zu beginnen."
     },
     "self_check_lifted": {
-      "message": "Der Mäher wurde vom Boden angehoben. Stelle ihn zurück auf den Rasen."
+      "message": "Der Mähroboter wurde vom Boden angehoben. Stelle ihn zurück auf den Rasen."
     },
     "self_check_tilted": {
-      "message": "Der Mäher ist geneigt. Stelle ihn auf ebenen Boden."
+      "message": "Der Mähroboter ist geneigt. Stelle ihn auf ebenen Boden."
     },
     "self_check_tipped_over": {
-      "message": "Der Mäher ist umgekippt. Stelle ihn wieder auf."
+      "message": "Der Mähroboter ist umgekippt. Stelle ihn wieder auf."
     },
     "self_check_bumper_missing": {
-      "message": "Der seitliche Stoßfänger ist nicht montiert. Montiere ihn vor dem Mähen."
+      "message": "Der Stoßfänger ist nicht montiert. Montiere ihn vor dem Mähen."
     },
     "self_check_rain": {
-      "message": "Es wurde Regen erkannt und „Bei Regen nicht mähen“ ist aktiviert. Gemäht werden kann, sobald der Regen aufhört, oder deaktiviere die Funktion."
+      "message": "Es wurde Regen erkannt und „Bei Regen nicht mähen“ ist aktiviert. Gemäht werden kann, sobald der Regen aufhört oder die Funktion deaktiviert wird."
     },
     "self_check_low_battery": {
-      "message": "Der Akku ist zu schwach zum Mähen. Lass den Mäher laden."
+      "message": "Der Akku ist zu schwach zum Mähen. Lade den Mähroboter auf."
     },
     "self_check_non_working_hours": {
-      "message": "Es ist außerhalb der Arbeitszeit des Mähers."
+      "message": "Es ist außerhalb der Arbeitszeit des Mähroboters."
     },
     "self_check_rtk_station_moved": {
-      "message": "Die RTK-Referenzstation wurde verschoben. Prüfe ihre Position in der App."
+      "message": "Die RTK-Station wurde verschoben. Prüfe ihre Position in der App."
     },
     "self_check_outside_task_area": {
-      "message": "Der Mäher ist außerhalb seines Aufgabenbereichs. Bringe ihn zurück in einen kartierten Bereich."
+      "message": "Der Mähroboter ist außerhalb seines Aufgabenbereichs. Bringe ihn zurück in einen kartierten Bereich."
     },
     "self_check_wheel_motor_error": {
       "message": "Ein Radnabenmotor hat einen Fehler gemeldet."
     },
     "self_check_blade_motor_overheated": {
-      "message": "Der Messermotor ist zu heiß. Lass ihn abkühlen."
+      "message": "Der Mähwerksmotor ist zu heiß. Lass ihn abkühlen."
     },
     "self_check_dock_moved": {
       "message": "Die Ladestation wurde verschoben. Prüfe ihre Position in der App."
@@ -1526,7 +1526,7 @@
       "message": "Der Nachtschutz ist aktiv, daher mäht der Mäher nachts nicht."
     },
     "self_check_rtk_not_ready": {
-      "message": "Die RTK-Referenzstation ist noch nicht bereit."
+      "message": "Die RTK-Station ist noch nicht bereit."
     },
     "self_check_weak_satellite_signal": {
       "message": "Das Satellitensignal des Mähers ist zu schwach für die Positionsbestimmung."
