@@ -125,8 +125,8 @@ if TYPE_CHECKING:
 class WebRTCSessionControl(Protocol):
     """Teardown surface the WebRTC camera entity exposes to its coordinator."""
 
-    async def async_teardown_stream(self) -> None:
-        """Leave the Agora channel and stop the mower's encoder."""
+    async def async_teardown_stream(self, *, stop_device: bool = True) -> None:
+        """Leave this camera's Agora session and optionally stop the encoder."""
 
 
 MAINTENANCE_INTERVAL = timedelta(minutes=60)
@@ -211,7 +211,10 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         self._agora_response = None
         # Set by the WebRTC camera entity so the start/stop_video services and
         # config-entry unload can drive the same teardown the frontend uses.
-        self._webrtc_session_control: WebRTCSessionControl | None = None
+        self._webrtc_session_controls: dict[str, WebRTCSessionControl] = {}
+        self._all_cameras_streaming = False
+        self._cameras_in_use: set[str] = set()
+        self._camera_session_lock = asyncio.Lock()
         self.service_info: BluetoothServiceInfoBleak | None = None
         assert config_entry.unique_id
         self.account = config_entry.data.get(CONF_ACCOUNTNAME, "")
@@ -370,8 +373,26 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
 
         try:
             stream_data = await self.manager.get_stream_subscription(
-                self.device_name, self.device.iot_id
+                self.device_name,
+                self.device.iot_id,
+                all_cameras=self.streams_all_cameras,
             )
+            if self.streams_all_cameras:
+                self._all_cameras_streaming = (
+                    stream_data is not None and stream_data.data is not None
+                )
+                if not self._all_cameras_streaming and (
+                    stream_data is None
+                    or stream_data.code not in (DEVICE_NOT_RESPONDING_CODE, 401)
+                ):
+                    LOGGER.warning(
+                        "All-camera stream token was not accepted (code %s); "
+                        "falling back to the left camera",
+                        stream_data.code if stream_data else "no_response",
+                    )
+                    stream_data = await self.manager.get_stream_subscription(
+                        self.device_name, self.device.iot_id
+                    )
             self.set_stream_data(stream_data)
             self._stream_data_fetched_at = time.monotonic()
 
@@ -452,6 +473,16 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         return self._stream_data
 
     @property
+    def streams_all_cameras(self) -> bool:
+        """Whether token requests ask for every camera, not just the left one."""
+        return not DeviceType.is_luba1(self.device_name)
+
+    @property
+    def all_cameras_streaming(self) -> bool:
+        """Whether the latest token enabled the right (and a Yuka's rear) feed."""
+        return self._all_cameras_streaming
+
+    @property
     def is_on_4g(self) -> bool:
         """Return True when the device's active network interface is 4G/cellular."""
         device = self.manager.get_device_by_name(self.device_name)
@@ -462,15 +493,41 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
 
     @callback
     def register_webrtc_session_control(
-        self, control: WebRTCSessionControl | None
+        self,
+        control: WebRTCSessionControl | None,
+        camera_key: str = "default",
     ) -> None:
-        """Attach (or detach) the camera entity that owns this device's stream."""
-        self._webrtc_session_control = control
+        """Attach or detach one camera entity that owns this device's stream."""
+        if control is None:
+            self._webrtc_session_controls.pop(camera_key, None)
+        else:
+            self._webrtc_session_controls[camera_key] = control
+
+    async def async_register_camera_session(self, camera_key: str) -> None:
+        """Mark one of this mower's camera entities as having a viewer."""
+        async with self._camera_session_lock:
+            self._cameras_in_use.add(camera_key)
+
+    async def async_release_camera_session(self, camera_key: str) -> None:
+        """Stop the mower stream once no camera entity has a viewer left."""
+        async with self._camera_session_lock:
+            if camera_key not in self._cameras_in_use:
+                return
+            self._cameras_in_use.discard(camera_key)
+            if not self._cameras_in_use:
+                await self.leave_webrtc_channel()
+
+    @property
+    def has_active_camera_sessions(self) -> bool:
+        """Whether any of this mower's camera entities still has a viewer."""
+        return bool(self._cameras_in_use)
 
     async def join_webrtc_channel(self) -> None:
         """Start stream command."""
         await self.manager.get_stream_subscription(
-            self.device.device_name, self.device.iot_id
+            self.device.device_name,
+            self.device.iot_id,
+            all_cameras=self.streams_all_cameras,
         )
 
     async def leave_webrtc_channel(self) -> None:
@@ -478,11 +535,18 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
 
         Runs the same teardown as the frontend closing its session: leave the
         Agora channel, then stop the mower's encoder.  Without a camera entity
-        attached only the device-side half is possible.
+        attached only the device-side half is possible.  Every viewer is
+        forgotten, so the next offer mints a fresh token instead of reusing
+        the one for the stream just stopped.
         """
-        if self._webrtc_session_control is not None:
-            await self._webrtc_session_control.async_teardown_stream()
-            return
+        self._cameras_in_use.clear()
+        if self._webrtc_session_controls:
+            await asyncio.gather(
+                *(
+                    control.async_teardown_stream(stop_device=False)
+                    for control in self._webrtc_session_controls.values()
+                )
+            )
         await self.manager.stop_stream(self.device.device_name)
 
     async def set_scheduled_updates(self, enabled: bool) -> bool:

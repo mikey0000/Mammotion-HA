@@ -123,6 +123,8 @@ class AgoraWebSocketHandler:
         hass: HomeAssistant,
         recover_stream: Callable[[], Awaitable[None]] | None = None,
         keepalive: Callable[[], Awaitable[bool]] | None = None,
+        target_uid: int | None = None,
+        session_ended: Callable[[], Awaitable[None]] | None = None,
     ) -> None:
         """Initialize the Agora WebSocket handler.
 
@@ -136,10 +138,15 @@ class AgoraWebSocketHandler:
         loop running, or ``False`` when no keep-alive is needed (e.g. the device
         is on WiFi, which streams continuously without poking) — in which case the
         loop stops quietly and the stream is left running.
+
+        ``session_ended`` is an optional async callback invoked when the gateway
+        quits this session, e.g. because another camera joined as the same uid.
         """
         self.hass = hass
         self._recover_stream = recover_stream
         self._keepalive = keepalive
+        self._target_uid = target_uid
+        self._session_ended = session_ended
         self._websocket: ClientConnection | None = None
         self._connection_state = "DISCONNECTED"
         self._message_handlers: dict[str, Callable[..., Any]] = {}
@@ -194,6 +201,7 @@ class AgoraWebSocketHandler:
             "on_user_online": self._handle_user_online,
             "on_user_offline": self._handle_user_offline,
             "on_add_video_stream": self._handle_add_video_stream,
+            "on_notification": self._handle_notification,
         }
 
     async def connect_and_join(
@@ -694,6 +702,23 @@ class AgoraWebSocketHandler:
         error = message.get("error", "Unknown error")
         _LOGGER.error("Agora WebSocket error: %s", error)
 
+    async def _handle_notification(self, response: dict[str, Any]) -> None:
+        """End this session when the gateway quits it instead of leaving it frozen."""
+        message = response.get("_message", {})
+        if message.get("action") != "quit":
+            return
+        # Every stream token shares one viewer uid, so a sibling camera's join
+        # is a repeat join (2003) of this one.
+        _LOGGER.warning(
+            "Agora quit the session watching uid %s (code %s, %s)",
+            self._target_uid,
+            message.get("code"),
+            message.get("detail"),
+        )
+        if self._session_ended is not None:
+            # Scheduled: ending the session cancels the message loop running this.
+            self.hass.async_create_task(self._session_ended())
+
     async def _handle_rtp_capability_change(self, response: dict[str, Any]) -> None:
         """Handle RTP capability change notification."""
         message = response.get("_message", {})
@@ -718,6 +743,8 @@ class AgoraWebSocketHandler:
         """
         message = response.get("_message", {})
         uid = message.get("uid")
+        if self._target_uid is not None and str(uid) != str(self._target_uid):
+            return
         if uid:
             self._online_users.add(uid)
             _LOGGER.debug("User %s came online", uid)
@@ -744,6 +771,8 @@ class AgoraWebSocketHandler:
         """
         message = response.get("_message", {})
         uid = message.get("uid")
+        if self._target_uid is not None and str(uid) != str(self._target_uid):
+            return
         ssrc_id = message.get("ssrcId")
         rtx_ssrc_id = message.get("rtxSsrcId")
         cname = message.get("cname")
@@ -804,6 +833,8 @@ class AgoraWebSocketHandler:
         """
         message = response.get("_message", {})
         uid = message.get("uid")
+        if self._target_uid is not None and str(uid) != str(self._target_uid):
+            return
         reason = message.get("reason", "unknown")
         if uid:
             _LOGGER.debug("User %s went offline (reason: %s)", uid, reason)

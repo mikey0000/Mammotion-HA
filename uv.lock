@@ -1502,7 +1502,7 @@ wheels = [
 
 [[package]]
 name = "mammotion-ha"
-version = "0.6.10"
+version = "0.6.11"
 source = { virtual = "." }
 dependencies = [
     { name = "autotyping" },
@@ -1529,7 +1529,7 @@ dev = [
 requires-dist = [
     { name = "autotyping", specifier = ">=24.3.0" },
     { name = "homeassistant", specifier = ">=2026.1.0" },
-    { name = "pymammotion", specifier = "==0.9.7" },
+    { name = "pymammotion", specifier = "==0.9.9" },
     { name = "sdp-transform", specifier = ">=1.1.0" },
     { name = "websockets", specifier = ">=15.0.1" },
 ]
@@ -2158,7 +2158,7 @@ wheels = [
 
 [[package]]
 name = "pymammotion"
-version = "0.9.7"
+version = "0.9.9"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -2183,9 +2183,9 @@ dependencies = [
     { name = "webrtc-models" },
     { name = "websockets" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/04/e7/6a8d7f7562c736a2ebdc9d3b8f3861b8ee4f83a73b043896791e09e2758f/pymammotion-0.9.7.tar.gz", hash = "sha256:b168fe8f1c64ac8bcf8ad0e3ee3be954923e5f6b5b4b0de962813fd5a50d7f0c", size = 701392, upload-time = "2026-09-27T22:50:17.658Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/28/87/c112369aec72f06e6d48a8933add39db563430403dde07f759d109a1677b/pymammotion-0.9.9.tar.gz", hash = "sha256:682477950e6987b704d4e329f7037c66d1afc219e24fa8bf3ad96ed6a3bc59d1", size = 701465, upload-time = "2026-09-28T03:46:38.745Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/4f/c5/b1b71b3f22072e144f7bb33d5c8899f212de756ad998cb0b75d516d16a00/pymammotion-0.9.7-py3-none-any.whl", hash = "sha256:aafd2c1be1cd1519160c6996c85902786eeac1c69b1cf10166a2d875fc76bea7", size = 780284, upload-time = "2026-09-27T22:50:15.582Z" },
+    { url = "https://files.pythonhosted.org/packages/ff/c8/abcba3f5e88ca63dbdca1db6307d0eec4e6e77ac4010bdec1c85f18eaacb/pymammotion-0.9.9-py3-none-any.whl", hash = "sha256:0821a265ec60265f7c079852568728c7ee9ad3d0abc8b2bd8c8aeb29685ded72", size = 780354, upload-time = "2026-09-28T03:46:37.124Z" },
 ]
 
 [[package]]
