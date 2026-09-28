@@ -701,7 +701,7 @@
       }
     },
     "device_tracker": {
-      "name": "Device Tracking"
+      "name": "Device tracking"
     },
     "event": {
       "notification": {
