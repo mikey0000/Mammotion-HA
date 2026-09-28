@@ -76,14 +76,13 @@ async def test_closing_the_last_session_tears_the_stream_down(
 ) -> None:
     """The frontend dropping its only session tears the stream down."""
     camera._sessions.add("session-1")
-    camera._active_session_id = "session-1"
 
     _core_teardown(camera, "session-1")
     await hass.async_block_till_done()
 
     camera._agora_handler.disconnect.assert_awaited_once()
     camera.coordinator.async_release_camera_session.assert_awaited_once_with(
-        "webrtc_camera", "session-1"
+        "webrtc_camera"
     )
     camera.coordinator.manager.stop_stream.assert_not_awaited()
 
@@ -93,7 +92,6 @@ async def test_teardown_waits_for_the_last_viewer(
 ) -> None:
     """A second viewer still watching keeps the stream up."""
     camera._sessions.update({"session-1", "session-2"})
-    camera._active_session_id = "session-2"
 
     _core_teardown(camera, "session-1")
     await hass.async_block_till_done()
@@ -103,7 +101,7 @@ async def test_teardown_waits_for_the_last_viewer(
     await hass.async_block_till_done()
     camera._agora_handler.disconnect.assert_awaited_once()
     camera.coordinator.async_release_camera_session.assert_awaited_once_with(
-        "webrtc_camera", "session-2"
+        "webrtc_camera"
     )
 
 
@@ -167,8 +165,6 @@ async def test_removal_tears_down_and_detaches(
     camera: MammotionWebRTCCamera,
 ) -> None:
     """Unload/reload must not leave a stream running with no entity behind it."""
-    camera._sessions.add("session-1")
-
     await camera.async_will_remove_from_hass()
 
     camera.coordinator.register_webrtc_session_control.assert_called_once_with(
@@ -196,15 +192,13 @@ async def test_removal_with_a_viewer_releases_it_through_the_coordinator(
 ) -> None:
     """The coordinator decides whether this was the last feed to stop."""
     camera._sessions.add("session-1")
-    camera._active_session_id = "session-1"
 
     await camera.async_will_remove_from_hass()
 
     camera.coordinator.async_release_camera_session.assert_awaited_once_with(
-        "webrtc_camera", "session-1"
+        "webrtc_camera"
     )
     camera.coordinator.manager.stop_stream.assert_not_awaited()
-    assert camera._active_session_id is None
 
 
 async def test_a_close_after_stop_video_is_not_released_twice(
@@ -212,14 +206,28 @@ async def test_a_close_after_stop_video_is_not_released_twice(
 ) -> None:
     """``stop_video`` ends the viewer, so the frontend's later close is a no-op."""
     camera._sessions.add("session-1")
-    camera._active_session_id = "session-1"
 
     await camera.async_teardown_stream(stop_device=False)
     _core_teardown(camera, "session-1")
     await hass.async_block_till_done()
 
-    assert camera._active_session_id is None
     camera.coordinator.async_release_camera_session.assert_not_awaited()
+
+
+async def test_the_older_viewer_closing_last_still_tears_down(
+    hass: HomeAssistant, camera: MammotionWebRTCCamera
+) -> None:
+    """Close order must not matter: the newer viewer leaving first used to leak the stream."""
+    camera._sessions.update({"session-1", "session-2"})
+
+    _core_teardown(camera, "session-2")
+    _core_teardown(camera, "session-1")
+    await hass.async_block_till_done()
+
+    camera._agora_handler.disconnect.assert_awaited_once()
+    camera.coordinator.async_release_camera_session.assert_awaited_once_with(
+        "webrtc_camera"
+    )
 
 
 async def test_reload_does_not_leave_ice_servers_registered(

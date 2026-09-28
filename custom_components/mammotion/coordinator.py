@@ -26,7 +26,6 @@ from homeassistant.components.bluetooth import (
 from homeassistant.const import CONF_PASSWORD
 from homeassistant.core import CALLBACK_TYPE, HassJob, HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
-from homeassistant.helpers import aiohttp_client
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.debounce import Debouncer
@@ -43,7 +42,6 @@ from pymammotion.aliyun.exceptions import (
 )
 from pymammotion.aliyun.model.dev_by_account_response import Device
 from pymammotion.client import MammotionClient
-from pymammotion.const import MAMMOTION_API_DOMAIN
 from pymammotion.data.error_codes import get_error_info, table_language
 from pymammotion.data.model import GenerateRouteInformation
 from pymammotion.data.model.device import (
@@ -72,7 +70,6 @@ from pymammotion.http.model.map_backup import (
     BackupProgressType,
 )
 from pymammotion.http.model.product_params import ProductParam, ProductParamData
-from pymammotion.http.model.response_factory import response_factory
 from pymammotion.mammotion.commands.mammotion_command import MammotionCommand
 from pymammotion.messaging.command_queue import Priority
 from pymammotion.proto import MulSex
@@ -215,8 +212,8 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         # Set by the WebRTC camera entity so the start/stop_video services and
         # config-entry unload can drive the same teardown the frontend uses.
         self._webrtc_session_controls: dict[str, WebRTCSessionControl] = {}
-        self._dual_camera_stream_available = False
-        self._active_camera_sessions: dict[str, str] = {}
+        self._all_cameras_streaming = False
+        self._cameras_in_use: set[str] = set()
         self._camera_session_lock = asyncio.Lock()
         self.service_info: BluetoothServiceInfoBleak | None = None
         assert config_entry.unique_id
@@ -373,41 +370,29 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             return cached_data.data, self._agora_response
 
         stream_data = None
-        request_dual = not DeviceType.is_luba1(self.device_name)
-        self._dual_camera_stream_available = False
 
         try:
-            # Keep PyMammotion's normal path responsible for starting the video
-            # encoder, including its firmware-aware start/stop behavior.
             stream_data = await self.manager.get_stream_subscription(
-                self.device_name, self.device.iot_id
+                self.device_name,
+                self.device.iot_id,
+                all_cameras=self.streams_all_cameras,
             )
-            if request_dual:
-                try:
-                    dual_stream_data = await self._request_dual_camera_stream()
-                except Exception as err:  # noqa: BLE001 — dual mode is optional
+            if self.streams_all_cameras:
+                self._all_cameras_streaming = (
+                    stream_data is not None and stream_data.data is not None
+                )
+                if not self._all_cameras_streaming and (
+                    stream_data is None
+                    or stream_data.code not in (DEVICE_NOT_RESPONDING_CODE, 401)
+                ):
                     LOGGER.warning(
-                        "Dual-camera token request failed (%s); using single camera",
-                        type(err).__name__,
+                        "All-camera stream token was not accepted (code %s); "
+                        "falling back to the left camera",
+                        stream_data.code if stream_data else "no_response",
                     )
-                else:
-                    if (
-                        dual_stream_data is not None
-                        and dual_stream_data.data is not None
-                    ):
-                        stream_data = dual_stream_data
-                        self._dual_camera_stream_available = True
-                    elif dual_stream_data is None or dual_stream_data.code not in (
-                        DEVICE_NOT_RESPONDING_CODE,
-                        401,
-                    ):
-                        LOGGER.warning(
-                            "Dual-camera token request was not accepted (code %s); "
-                            "using single camera",
-                            dual_stream_data.code
-                            if dual_stream_data
-                            else "no_response",
-                        )
+                    stream_data = await self.manager.get_stream_subscription(
+                        self.device_name, self.device.iot_id
+                    )
             self.set_stream_data(stream_data)
             self._stream_data_fetched_at = time.monotonic()
 
@@ -477,40 +462,6 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             self._agora_response,
         )
 
-    async def _request_dual_camera_stream(self) -> Response[StreamSubscriptionResponse]:
-        """Request every vision feed from the app's stream-token endpoint."""
-        http = self.manager.mammotion_http
-        if http is None:
-            return Response(code=503, msg="Cloud session unavailable")
-        await http.ensure_token_valid(caller="dual_camera_stream")
-        login_info = http.login_info
-        if login_info is None:
-            return Response(code=401, msg="Not logged in")
-        # The mower publishes cameraStates slot n as Agora uid n + 1: both
-        # front cameras on every vision mower, the rear one only on Yuka.
-        camera_states = [1, 1, int(DeviceType.is_yuka(self.device_name))]
-        session = aiohttp_client.async_get_clientsession(self.hass)
-        async with asyncio.timeout(30):
-            async with session.post(
-                f"{MAMMOTION_API_DOMAIN}/device-server/v1/stream/token",
-                json={
-                    "deviceId": self.device.iot_id,
-                    "mode": 0,
-                    "cameraStates": [{"cameraState": state} for state in camera_states],
-                },
-                headers={
-                    **http._headers,  # noqa: SLF001 - match PyMammotion request headers
-                    "Authorization": f"Bearer {login_info.access_token}",
-                    "Content-Type": "application/json",
-                },
-            ) as response:
-                if response.status != 200:
-                    return Response(code=response.status, msg="HTTP error")
-                body = await response.json(content_type=None)
-        if not isinstance(body, dict):
-            return Response(code=502, msg="Invalid response")
-        return response_factory(Response[StreamSubscriptionResponse], body)
-
     def set_stream_data(
         self, stream_data: Response[StreamSubscriptionResponse]
     ) -> None:
@@ -522,9 +473,14 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         return self._stream_data
 
     @property
-    def dual_camera_stream_available(self) -> bool:
-        """Whether the latest token request enabled every vision feed."""
-        return self._dual_camera_stream_available
+    def streams_all_cameras(self) -> bool:
+        """Whether token requests ask for every camera, not just the left one."""
+        return not DeviceType.is_luba1(self.device_name)
+
+    @property
+    def all_cameras_streaming(self) -> bool:
+        """Whether the latest token enabled the right (and a Yuka's rear) feed."""
+        return self._all_cameras_streaming
 
     @property
     def is_on_4g(self) -> bool:
@@ -547,33 +503,31 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         else:
             self._webrtc_session_controls[camera_key] = control
 
-    async def async_register_camera_session(
-        self, camera_key: str, session_id: str
-    ) -> None:
-        """Track an active viewer for one of this mower's camera entities."""
+    async def async_register_camera_session(self, camera_key: str) -> None:
+        """Mark one of this mower's camera entities as having a viewer."""
         async with self._camera_session_lock:
-            self._active_camera_sessions[camera_key] = session_id
+            self._cameras_in_use.add(camera_key)
 
-    async def async_release_camera_session(
-        self, camera_key: str, session_id: str
-    ) -> None:
-        """Stop the mower stream only after the last camera viewer has closed."""
+    async def async_release_camera_session(self, camera_key: str) -> None:
+        """Stop the mower stream once no camera entity has a viewer left."""
         async with self._camera_session_lock:
-            if self._active_camera_sessions.get(camera_key) != session_id:
+            if camera_key not in self._cameras_in_use:
                 return
-            del self._active_camera_sessions[camera_key]
-            if not self._active_camera_sessions:
+            self._cameras_in_use.discard(camera_key)
+            if not self._cameras_in_use:
                 await self.leave_webrtc_channel()
 
     @property
     def has_active_camera_sessions(self) -> bool:
         """Whether any of this mower's camera entities still has a viewer."""
-        return bool(self._active_camera_sessions)
+        return bool(self._cameras_in_use)
 
     async def join_webrtc_channel(self) -> None:
         """Start stream command."""
         await self.manager.get_stream_subscription(
-            self.device.device_name, self.device.iot_id
+            self.device.device_name,
+            self.device.iot_id,
+            all_cameras=self.streams_all_cameras,
         )
 
     async def leave_webrtc_channel(self) -> None:
@@ -585,7 +539,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         forgotten, so the next offer mints a fresh token instead of reusing
         the one for the stream just stopped.
         """
-        self._active_camera_sessions.clear()
+        self._cameras_in_use.clear()
         if self._webrtc_session_controls:
             await asyncio.gather(
                 *(
