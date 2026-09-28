@@ -230,64 +230,78 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
             return
 
         async with self._join_lock:
-            (
-                stream_data,
-                agora_response,
-            ) = await self.coordinator.async_check_stream_expiry(
-                # Agora quits a session when a second join reuses its token
-                # (code 2003), so every viewer needs a fresh one.
-                force=True
+            # Tracked before the token request starts the mower's stream, so a
+            # close mid-negotiation or a failed offer still stops it.
+            self._sessions.add(session_id)
+            await self.coordinator.async_register_camera_session(
+                self.entity_description.key
             )
-            # Reset candidates list for new session
-            await self.coordinator.async_send_command(
-                "send_todev_ble_sync", sync_type=3
-            )
-            self._agora_handler.candidates = []
-            _LOGGER.info("Handling WebRTC offer for session %s", session_id)
-            # _LOGGER.info("Raw OFFER SDP %s", offer_sdp)
-
+            answered = False
             try:
-                # Get stream data (appid, channelName, token, uid)
-                if not stream_data:
-                    _LOGGER.error("No stream data available for WebRTC offer")
-                    send_message(
-                        WebRTCError(
-                            "500",
-                            "No stream data available for WebRTC offer",
-                        )
-                    )
-                    return
-
-                if (
-                    self.entity_description.target_uid != 1
-                    and not self.coordinator.all_cameras_streaming
-                ):
-                    send_message(WebRTCError("503", "Vision stream unavailable"))
-                    return
-
-                agora_data = stream_data
-
-                # Start WebSocket connection and WebRTC negotiation
-                answer_sdp = await self._perform_webrtc_negotiation(
-                    offer_sdp, agora_data, session_id, agora_response
+                answered = await self._async_answer_offer(
+                    offer_sdp, session_id, send_message
                 )
+            finally:
+                if not answered:
+                    self.close_webrtc_session(session_id)
+                elif not self._sessions:
+                    # The viewer closed while negotiation was still running.
+                    await self.async_close_webrtc_session()
 
-                if answer_sdp:
-                    await self.coordinator.async_register_camera_session(
-                        self.entity_description.key
+    async def _async_answer_offer(
+        self, offer_sdp: str, session_id: str, send_message: WebRTCSendMessage
+    ) -> bool:
+        """Negotiate with Agora and send the answer; return whether one was sent."""
+        (
+            stream_data,
+            agora_response,
+        ) = await self.coordinator.async_check_stream_expiry(
+            # Agora quits a session when a second join reuses its token
+            # (code 2003), so every viewer needs a fresh one.
+            force=True
+        )
+        # Reset candidates list for new session
+        await self.coordinator.async_send_command("send_todev_ble_sync", sync_type=3)
+        self._agora_handler.candidates = []
+        _LOGGER.info("Handling WebRTC offer for session %s", session_id)
+
+        try:
+            # Get stream data (appid, channelName, token, uid)
+            if not stream_data:
+                _LOGGER.error("No stream data available for WebRTC offer")
+                send_message(
+                    WebRTCError(
+                        "500",
+                        "No stream data available for WebRTC offer",
                     )
-                    self._sessions.add(session_id)
-                    send_message(WebRTCAnswer(answer_sdp))
-                    _LOGGER.info("WebRTC negotiation completed successfully")
-                else:
-                    send_message(WebRTCError("500", "WebRTC negotiation failed"))
+                )
+                return False
 
-            except (
-                websockets.exceptions.WebSocketException,
-                json.JSONDecodeError,
-            ) as ex:
-                _LOGGER.error("Error handling WebRTC offer: %s", ex)
-                send_message(WebRTCError("500", f"Error handling WebRTC offer: {ex}"))
+            if (
+                self.entity_description.target_uid != 1
+                and not self.coordinator.all_cameras_streaming
+            ):
+                send_message(WebRTCError("503", "Vision stream unavailable"))
+                return False
+
+            # Start WebSocket connection and WebRTC negotiation
+            answer_sdp = await self._perform_webrtc_negotiation(
+                offer_sdp, stream_data, session_id, agora_response
+            )
+        except (
+            websockets.exceptions.WebSocketException,
+            json.JSONDecodeError,
+        ) as ex:
+            _LOGGER.error("Error handling WebRTC offer: %s", ex)
+            send_message(WebRTCError("500", f"Error handling WebRTC offer: {ex}"))
+            return False
+
+        if not answer_sdp:
+            send_message(WebRTCError("500", "WebRTC negotiation failed"))
+            return False
+        send_message(WebRTCAnswer(answer_sdp))
+        _LOGGER.info("WebRTC negotiation completed successfully")
+        return True
 
     async def async_on_webrtc_candidate(
         self, session_id: str, candidate: RTCIceCandidateInit

@@ -50,6 +50,7 @@ async def camera(hass: HomeAssistant) -> MammotionWebRTCCamera:
     coordinator.device.device_name = _DEVICE
     coordinator.manager.stop_stream = AsyncMock()
     coordinator.async_release_camera_session = AsyncMock()
+    coordinator.async_register_camera_session = AsyncMock()
     coordinator.has_active_camera_sessions = False
     coordinator.ice_servers = [_ICE_SERVER]
     entity = MammotionWebRTCCamera(coordinator, CAMERAS[0], hass)
@@ -318,3 +319,47 @@ async def test_second_camera_offer_mints_its_own_token(
     await camera.async_handle_async_webrtc_offer("offer-sdp", "session-2", MagicMock())
 
     camera.coordinator.async_check_stream_expiry.assert_awaited_once_with(force=True)
+
+
+async def test_a_failed_offer_stops_the_stream_it_started(
+    hass: HomeAssistant, camera: MammotionWebRTCCamera
+) -> None:
+    """The token request starts the mower, so an unanswered offer must release it."""
+    camera.coordinator.async_check_stream_expiry = AsyncMock(
+        return_value=(MagicMock(), None)
+    )
+    camera.coordinator.async_send_command = AsyncMock()
+    camera.coordinator.all_cameras_streaming = False
+    right = MammotionWebRTCCamera(camera.coordinator, CAMERAS[1], hass)
+    right.hass = hass
+    right._agora_handler.disconnect = AsyncMock()
+
+    await right.async_handle_async_webrtc_offer("offer-sdp", "session-1", MagicMock())
+    await hass.async_block_till_done()
+
+    assert right._sessions == set()
+    camera.coordinator.async_release_camera_session.assert_awaited_once_with(
+        "webrtc_camera_right"
+    )
+
+
+async def test_a_close_during_negotiation_is_not_lost(
+    hass: HomeAssistant, camera: MammotionWebRTCCamera
+) -> None:
+    """Navigating away before the answer arrives must still stop the stream."""
+    camera.coordinator.async_check_stream_expiry = AsyncMock(
+        return_value=(MagicMock(), None)
+    )
+    camera.coordinator.async_send_command = AsyncMock()
+
+    async def negotiate(*_args: object) -> str:
+        _core_teardown(camera, "session-1")
+        return "answer-sdp"
+
+    camera._perform_webrtc_negotiation = negotiate  # type: ignore[method-assign]
+
+    await camera.async_handle_async_webrtc_offer("offer-sdp", "session-1", MagicMock())
+    await hass.async_block_till_done()
+
+    assert camera._sessions == set()
+    camera.coordinator.async_release_camera_session.assert_awaited_with("webrtc_camera")
