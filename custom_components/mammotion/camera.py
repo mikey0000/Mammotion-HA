@@ -160,11 +160,12 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
             recover_stream=self._recover_stream,
             keepalive=self._fpv_keepalive,
             target_uid=entity_description.target_uid,
+            session_ended=self._async_session_ended,
         )
         self.entity_description = entity_description
         self._attr_translation_key = entity_description.key
         self._stream_data: StreamSubscriptionResponse | None = None
-        self._sessions: set[str] = set()
+        self._sessions: dict[str, WebRTCSendMessage] = {}
         self._teardown_lock = asyncio.Lock()
         self._attr_model = coordinator.device.device_name
         self.access_tokens = [secrets.token_hex(16)]
@@ -232,7 +233,7 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         async with self._join_lock:
             # Tracked before the token request starts the mower's stream, so a
             # close mid-negotiation or a failed offer still stops it.
-            self._sessions.add(session_id)
+            self._sessions[session_id] = send_message
             await self.coordinator.async_register_camera_session(
                 self.entity_description.key
             )
@@ -256,8 +257,9 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
             stream_data,
             agora_response,
         ) = await self.coordinator.async_check_stream_expiry(
-            # Agora quits a session when a second join reuses its token
-            # (code 2003), so every viewer needs a fresh one.
+            # A fresh token per join, as the app does.  It does not stop Agora
+            # quitting an established session on the same viewer uid (2003);
+            # only joins racing within about a second coexist.
             force=True
         )
         # Reset candidates list for new session
@@ -327,7 +329,7 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         """
         if session_id not in self._sessions:
             return
-        self._sessions.discard(session_id)
+        del self._sessions[session_id]
         if not self._sessions:
             self.hass.async_create_task(self.async_close_webrtc_session())
 
@@ -335,6 +337,18 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         """Leave this feed's channel; stop the mower only when its last feed closes."""
         await self._agora_handler.disconnect()
         await self.coordinator.async_release_camera_session(self.entity_description.key)
+
+    async def _async_session_ended(self) -> None:
+        """Tell this feed's viewers Agora ended it, then release the feed."""
+        viewers = list(self._sessions.values())
+        if not viewers:
+            return
+        self._sessions.clear()
+        for send_message in viewers:
+            send_message(
+                WebRTCError("503", "Another camera on this mower took over the stream")
+            )
+        await self.async_close_webrtc_session()
 
     async def async_teardown_stream(self, *, stop_device: bool = True) -> None:
         """Leave the Agora channel, then stop the mower publishing.
