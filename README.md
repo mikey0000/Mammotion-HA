@@ -13,7 +13,7 @@ This integration allows you to control and monitor Mammotion products, e.g robot
 - [x] Bluetooth (BLE) support
 - [x] Wi-Fi support (Including SIM 3G/4G)
 - [x] Camera stream
-- [ ] Scheduling
+- [x] Scheduling
 - [ ] Mapping and zone management
 - [x] Maps
 - [x] Firmware updates
