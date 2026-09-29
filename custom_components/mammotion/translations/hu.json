@@ -499,6 +499,12 @@
       "smart_charge": {
         "name": "Intelligens töltés"
       },
+      "smart_recharge_level": {
+        "name": "Intelligens töltésre visszatérési szint"
+      },
+      "smart_resume_level": {
+        "name": "Intelligens folytatási szint"
+      },
       "side_led": {
         "name": "Oldalsó LED be/ki"
       },
@@ -672,6 +678,12 @@
       },
       "charge_limit": {
         "name": "Töltési korlát"
+      },
+      "recharge_level": {
+        "name": "Töltésre visszatérés szintje"
+      },
+      "resume_level": {
+        "name": "Nyírás folytatásának szintje"
       },
       "ride_boundary_distance": {
         "name": "Határkövetési távolság"
@@ -1601,6 +1613,9 @@
     },
     "self_check_other": {
       "message": "A fűnyíró ismeretlen önellenőrzési kódot jelzett: {code}."
+    },
+    "battery_settings_unread": {
+      "message": "Az akkumulátor beállításait még nem sikerült kiolvasni a fűnyíróból. A módosítás most visszaállítaná a csúcsidőn kívüli töltési időszakot, ezért semmi sem lett elküldve. Próbálja újra, amikor a fűnyíró csatlakozik."
     }
   }
 }

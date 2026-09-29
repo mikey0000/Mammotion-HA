@@ -36,7 +36,8 @@ from homeassistant.helpers.debounce import Debouncer
 from homeassistant.helpers.event import async_call_later, async_track_time_interval
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from homeassistant.util import dt as dt_util
-from mashumaro.exceptions import InvalidFieldValue
+from mashumaro.exceptions import InvalidFieldValue, MissingField
+from mashumaro.mixins.dict import DataClassDictMixin
 from pymammotion.aliyun.exceptions import (
     CloudSetupError,
     DeviceOfflineException,
@@ -59,6 +60,7 @@ from pymammotion.data.model.device_config import (
     OperationSettings,
     build_route_information,
 )
+from pymammotion.data.model.device_info import ChargeSettings
 from pymammotion.data.model.enums import CollectorState, DumpState
 from pymammotion.data.model.hash_list import Plan, SvgMessage
 from pymammotion.data.model.pool_state import PoolPlan, SpinoToggle
@@ -156,6 +158,10 @@ SPINO_INTERVAL = timedelta(weeks=1)
 #: reads like a library fault rather than the timeout it is.  See issue #859.
 SETUP_COMMAND_BUDGET = timedelta(seconds=60)
 
+#: Minimum spacing of the saves a state push triggers: serialising the device on
+#: every push is wasted work, and the store only writes every SAVE_DELAY anyway.
+STATE_PUSH_SAVE_INTERVAL = timedelta(seconds=60)
+
 #: The app's satellite-map alignment offset lives only on the phone; this is what
 #: it sends when none was set.
 MAP_BACKUP_CORRECTION_VALUE = '{"OffsetX":0.0,"OffsetY":0.0}'
@@ -175,8 +181,118 @@ MAP_SYNC_STATUSES = ("synced", "syncing", "out_of_sync")
 DEVICE_NOT_RESPONDING_CODE = 50504
 
 
+def _undecodable_field(exc: InvalidFieldValue) -> tuple[str, BaseException]:
+    """Return the dotted path of the field that failed and the innermost error."""
+    path = [exc.field_name]
+    innermost: BaseException = exc
+    while (cause := innermost.__cause__ or innermost.__context__) is not None:
+        if isinstance(cause, InvalidFieldValue):
+            path.append(cause.field_name)
+        innermost = cause
+    return ".".join(path), innermost
+
+
+def restore_device_state[StateT: DataClassDictMixin](
+    state_type: type[StateT], stored: object, device_name: str
+) -> StateT:
+    """Decode a stored device, dropping only the top-level sections that fail.
+
+    One stale sub-model must not take firmware, map and plans down with it.
+    """
+    if stored is None:
+        return state_type()
+    if isinstance(stored, Mapping):
+        data = dict(stored)
+        # Each failure drops one key, so this ends once every key has gone.
+        for _ in range(len(data) + 1):
+            try:
+                return state_type.from_dict(data)
+            except InvalidFieldValue as exc:
+                if exc.field_name not in data:
+                    break
+                path, reason = _undecodable_field(exc)
+                LOGGER.warning(
+                    "Dropping stored %s of %s: %s does not decode (%s)",
+                    exc.field_name,
+                    device_name,
+                    path,
+                    reason,
+                )
+                del data[exc.field_name]
+            except (MissingField, ValueError) as exc:
+                LOGGER.warning(
+                    "Stored state of %s does not decode: %s", device_name, exc
+                )
+                break
+    LOGGER.warning(
+        "Discarding the stored state of %s: nothing in it decodes", device_name
+    )
+    return state_type()
+
+
+def firmware_gated_reads(device_name: str, firmware: str) -> list[str]:
+    """Return the report coordinator's setting reads whose gate the device now passes."""
+    reads = []
+    if DeviceType.is_luba_pro(device_name) and DeviceType.supports_wildlife_safety(
+        device_name, firmware
+    ):
+        reads.append("async_read_wildlife_safety")
+    if DeviceType.supports_charge_limit(device_name, firmware):
+        reads.extend(("async_read_battery_info", "async_read_charge_levels"))
+    return reads
+
+
+async def _async_run_setup_reads(
+    coordinator: MammotionReportUpdateCoordinator,
+    commands: list[tuple[str, dict[str, Any]]],
+) -> None:
+    """Send *commands* in order, skipping failures, under ``SETUP_COMMAND_BUDGET``.
+
+    A name that is not a coordinator method is sent through ``async_send_command``.
+    The budget keeps an unresponsive mower from holding up the config entry.
+    """
+    pending = [name for name, _ in commands]
+    try:
+        async with asyncio.timeout(SETUP_COMMAND_BUDGET.total_seconds()):
+            for command_name, kwargs in commands:
+                try:
+                    command_method = getattr(coordinator, command_name, None)
+                    if command_method is None:
+                        command_method = coordinator.async_send_command
+                        await command_method(command_name, **kwargs)
+                    else:
+                        await command_method(**kwargs)
+                except (
+                    DeviceOfflineException,
+                    NoTransportAvailableError,
+                    CommandTimeoutError,
+                    ConcurrentRequestError,
+                    BLEUnavailableError,
+                ) as exc:
+                    LOGGER.debug(
+                        "Command %s failed with exception: %s", command_name, exc
+                    )
+                # Not in a `finally`: when the budget expires mid-command this line
+                # is skipped, so the command that actually stalled stays in the list.
+                pending.remove(command_name)
+    except TimeoutError:
+        # Ours, not HA's: setup continues, the unread settings show their defaults
+        # until a later refresh picks them up.
+        LOGGER.warning(
+            "Setup reads for %s exceeded %ss; continuing without: %s",
+            coordinator.device_name,
+            SETUP_COMMAND_BUDGET.total_seconds(),
+            ", ".join(pending),
+        )
+
+
 class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # type: ignore[misc]
     """Mammotion DataUpdateCoordinator."""
+
+    #: Whether this coordinator owns its device's entry in the store; its siblings
+    #: see the same pushes and would save the same device again.
+    persists_device_state: bool = False
+    _pushed_state_saved_at: float | None = None
 
     def __init__(  # noqa: PLR0917
         self,
@@ -1335,22 +1451,55 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         Switching it off keeps the limit the device last reported, which is 100
         while smart charging is active — the same value the app sends.
         """
-        current = self.data.mower_state.charge_settings
-        await self._async_set_battery_info(smart_charge, current.charge_limit or 100)
+        await self._async_set_battery_info(smart_charge)
 
     async def _async_set_battery_info(
-        self, smart_charge: bool, charge_limit: int
+        self, smart_charge: bool, charge_limit: int | None = None
     ) -> None:
-        """Send bms_ctrl_info_msg, resending the off-peak window it would otherwise reset."""
-        current = self.data.mower_state.charge_settings
+        """Send bms_ctrl_info_msg, resending the off-peak window it would otherwise reset.
+
+        *charge_limit* defaults to the reported one.  Unread settings are read
+        first, and the write is refused if they stay unread: sending defaults
+        would reset the device's window to 00:00-00:00.
+        """
+        current = self._reported_charge_settings()
+        if not current.reported:
+            await self.async_read_battery_info()
+            current = self._reported_charge_settings()
+        if not current.reported:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key="battery_settings_unread"
+            )
         await self.async_send_and_wait(
             "set_battery_info",
             "bms_ctrl_info_msg",
             smart_charge=smart_charge,
-            charge_limit=charge_limit,
+            charge_limit=current.charge_limit if charge_limit is None else charge_limit,
             peak_valley_charge=current.peak_valley_charge,
             valley_charge_start_time=current.valley_charge_start_time,
             valley_charge_end_time=current.valley_charge_end_time,
+        )
+
+    def _reported_charge_settings(self) -> ChargeSettings:
+        """Return the library's charge settings; ``data`` trails a reply by the push debounce."""
+        device = self.manager.get_device_by_name(self.device_name) or self.data
+        return cast(MowingDevice, device).mower_state.charge_settings
+
+    async def async_read_charge_levels(self) -> None:
+        """Read the return-to-charge and resume-mowing battery levels."""
+        await self.async_send_and_wait("read_recharge_level", "nav_sys_param_cmd")
+        await self.async_send_and_wait("read_resume_level", "nav_sys_param_cmd")
+
+    async def async_set_recharge_level(self, level: int) -> None:
+        """Set the level the mower returns to charge at, or ``SMART_CHARGE_LEVEL``."""
+        await self.async_send_and_wait(
+            "set_recharge_level", "nav_sys_param_cmd", level=level
+        )
+
+    async def async_set_resume_level(self, level: int) -> None:
+        """Set the level the mower resumes mowing at, or ``SMART_CHARGE_LEVEL``."""
+        await self.async_send_and_wait(
+            "set_resume_level", "nav_sys_param_cmd", level=level
         )
 
     async def async_set_sidelight(self, on_off: int) -> None:
@@ -2185,26 +2334,12 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             self.device_name
         )
 
-        handle = self.manager.mower(self.device_name)
-
-        if restored_data is None:
-            empty = MowingDevice()
-            self.data = empty
-            if handle is not None:
-                handle.restore_device(empty)
-            return
-
-        try:
-            if restored_data is not None:
-                mower_state = MowingDevice().from_dict(restored_data)
-                if handle is not None:
-                    handle.restore_device(mower_state)
-                    self.data = mower_state
-        except InvalidFieldValue:
-            empty = MowingDevice()
-            self.data = empty
-            if handle is not None:
-                handle.restore_device(empty)
+        mower_state = restore_device_state(
+            MowingDevice, restored_data, self.device_name
+        )
+        self.data = mower_state  # type: ignore[assignment]  # DataT is unbound on the base
+        if (handle := self.manager.mower(self.device_name)) is not None:
+            handle.restore_device(mower_state)
 
     @callback
     def async_save_data(self, data: MowingDevice | PoolCleanerDevice) -> None:
@@ -2372,6 +2507,10 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
 
     async def async_shutdown(self) -> None:
         """Flush queued state, cancel RAII subscriptions and shut down the coordinator."""
+        if self.persists_device_state:
+            # A throttled push may have left the latest state unsaved.
+            if device := self.manager.get_device_by_name(self.device_name) or self.data:
+                self.async_save_data(cast(MowingDevice | PoolCleanerDevice, device))
         await self.async_flush_saved_data()
         for sub in self._subscriptions:
             sub.cancel()
@@ -2387,7 +2526,29 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             getattr(snapshot.raw, "online", None),
         )
         self.async_set_updated_data(snapshot.raw)
+        self._async_save_pushed_state(
+            cast(MowingDevice | PoolCleanerDevice, snapshot.raw)
+        )
         await self._async_device_reported_in()
+
+    @callback
+    def _async_save_pushed_state(
+        self, device: MowingDevice | PoolCleanerDevice
+    ) -> None:
+        """Persist pushed state, at most once per ``STATE_PUSH_SAVE_INTERVAL``.
+
+        Pushes reschedule the poll, so while they keep arriving the poll's save
+        never runs.  ``async_shutdown`` saves whatever the throttle skipped.
+        """
+        if not self.persists_device_state:
+            return
+        now = time.monotonic()
+        if (
+            last := self._pushed_state_saved_at
+        ) is not None and now - last < STATE_PUSH_SAVE_INTERVAL.total_seconds():
+            return
+        self._pushed_state_saved_at = now
+        self.async_save_data(device)
 
     async def _async_device_reported_in(self) -> None:
         """React to fresh contact from the device."""
@@ -2464,6 +2625,10 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
 class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevice]):
     """Mammotion report update coordinator."""
 
+    persists_device_state = True
+    #: Firmware-gated reads already sent, so a gate that passes late reads once.
+    _gated_reads_issued: frozenset[str] = frozenset()
+
     def __init__(
         self,
         hass: HomeAssistant,
@@ -2531,6 +2696,7 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
         await super()._on_state_changed(snapshot)
         self._async_request_missing_job_id()
         self._async_sync_tasks_for_unknown_job()
+        self._async_read_newly_supported_settings()
 
     @callback
     def _async_request_missing_job_id(self) -> None:
@@ -2895,7 +3061,7 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
             )
         return changed
 
-    async def _async_startup_reads(self) -> None:  # noqa: C901
+    async def _async_startup_reads(self) -> None:
         """Read back the settings the entities show, under one time budget."""
         # Common commands for all device types
         commands = [
@@ -2921,50 +3087,49 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
         )
         if DeviceType.is_luba_pro(self.device_name):
             commands.append(("async_fetch_audio_config", {}))
-            if DeviceType.supports_wildlife_safety(self.device_name, firmware or ""):
-                commands.append(("async_read_wildlife_safety", {}))
-        if DeviceType.supports_charge_limit(self.device_name, firmware or ""):
-            commands.append(("async_read_battery_info", {}))
+        gated = [
+            read
+            for read in firmware_gated_reads(self.device_name, firmware or "")
+            if read not in self._gated_reads_issued
+        ]
+        self._gated_reads_issued |= frozenset(gated)
+        commands.extend((read, {}) for read in gated if (read, {}) not in commands)
 
         commands.append(("async_sync_tasks_if_unfetched", {}))
         # Final command for all devices
         commands.append(("async_request_report_snapshot", {}))
 
-        # Execute all commands with unified exception handling, under one budget so an
-        # unresponsive mower cannot hold up the config entry (see SETUP_COMMAND_BUDGET).
-        pending = [name for name, _ in commands]
-        try:
-            async with asyncio.timeout(SETUP_COMMAND_BUDGET.total_seconds()):
-                for command_name, kwargs in commands:
-                    try:
-                        command_method = getattr(self, command_name, None)
-                        if command_method is None:
-                            command_method = self.async_send_command
-                            await command_method(command_name, **kwargs)
-                        else:
-                            await command_method(**kwargs)
-                    except (
-                        DeviceOfflineException,
-                        NoTransportAvailableError,
-                        CommandTimeoutError,
-                        ConcurrentRequestError,
-                        BLEUnavailableError,
-                    ) as exc:
-                        LOGGER.debug(
-                            "Command %s failed with exception: %s", command_name, exc
-                        )
-                    # Not in a `finally`: when the budget expires mid-command this line
-                    # is skipped, so the command that actually stalled stays in the list.
-                    pending.remove(command_name)
-        except TimeoutError:
-            # Ours, not HA's: setup continues, the unread settings show their defaults
-            # until a later refresh picks them up.
-            LOGGER.warning(
-                "Setup reads for %s exceeded %ss; continuing without: %s",
-                self.device_name,
-                SETUP_COMMAND_BUDGET.total_seconds(),
-                ", ".join(pending),
+        await _async_run_setup_reads(self, commands)
+
+    @callback
+    def _async_read_newly_supported_settings(self) -> None:
+        """Send the firmware-gated reads the startup reads skipped, once their gate passes.
+
+        Firmware is often unknown at setup (fresh install, cleared store): the
+        entities are then added later by ``async_add_when_firmware_supports``, and
+        without this they show defaults all session.
+        """
+        if (
+            not self._startup_reads_done
+            or (data := self.data) is None
+            or not data.enabled
+        ):
+            return
+        reads = [
+            read
+            for read in firmware_gated_reads(
+                self.device_name, data.device_firmwares.device_version
             )
+            if read not in self._gated_reads_issued
+        ]
+        if not reads or (entry := self.config_entry) is None:
+            return
+        self._gated_reads_issued |= frozenset(reads)
+        entry.async_create_background_task(
+            self.hass,
+            _async_run_setup_reads(self, [(read, {}) for read in reads]),
+            f"{self.device_name} firmware-gated reads",
+        )
 
     async def _on_sys_status_changed_refresh(self, sys_status: int) -> None:
         """Trigger a one-shot count=1 poll on sys_status transitions when not streaming."""
@@ -3670,26 +3835,12 @@ class MammotionRTKCoordinator(MammotionBaseUpdateCoordinator[RTKBaseStationDevic
             self.device_name
         )
 
-        handle = self.manager.rtk_device(self.device_name)
-
-        if restored_data is None:
-            empty = RTKBaseStationDevice()
-            self.data = empty
-            if handle is not None:
-                handle.restore_device(empty)
-            return
-
-        try:
-            if restored_data is not None:
-                rtk_state = RTKBaseStationDevice().from_dict(restored_data)
-                if handle is not None:
-                    handle.restore_device(rtk_state)
-                    self.data = rtk_state
-        except InvalidFieldValue:
-            empty = RTKBaseStationDevice()
-            self.data = empty
-            if handle is not None:
-                handle.restore_device(empty)
+        rtk_state = restore_device_state(
+            RTKBaseStationDevice, restored_data, self.device_name
+        )
+        self.data = rtk_state
+        if (handle := self.manager.rtk_device(self.device_name)) is not None:
+            handle.restore_device(rtk_state)
 
     async def _async_update_data(self) -> RTKBaseStationDevice:
         """Return current RTK state from the device handle's state machine.
@@ -3786,6 +3937,8 @@ class MammotionRTKCoordinator(MammotionBaseUpdateCoordinator[RTKBaseStationDevic
 class MammotionSpinoCoordinator(MammotionBaseUpdateCoordinator[PoolCleanerDevice]):
     """Mammotion DataUpdateCoordinator for Spino pool cleaner devices."""
 
+    persists_device_state = True
+
     def __init__(
         self,
         hass: HomeAssistant,
@@ -3877,25 +4030,12 @@ class MammotionSpinoCoordinator(MammotionBaseUpdateCoordinator[PoolCleanerDevice
             self.device_name
         )
 
-        handle = self.manager.pool_cleaner_device(self.device_name)
-
-        if restored_data is None:
-            empty = PoolCleanerDevice()
-            self.data = empty
-            if handle is not None:
-                handle.restore_device(empty)
-            return
-
-        try:
-            spino_state = PoolCleanerDevice().from_dict(restored_data)
-            if handle is not None:
-                handle.restore_device(spino_state)
-                self.data = spino_state
-        except InvalidFieldValue:
-            empty = PoolCleanerDevice()
-            self.data = empty
-            if handle is not None:
-                handle.restore_device(empty)
+        spino_state = restore_device_state(
+            PoolCleanerDevice, restored_data, self.device_name
+        )
+        self.data = spino_state
+        if (handle := self.manager.pool_cleaner_device(self.device_name)) is not None:
+            handle.restore_device(spino_state)
 
     def get_error_code(self) -> int:
         """Return the absolute error code of the most recent fault, or 0."""

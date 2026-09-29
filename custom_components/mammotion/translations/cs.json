@@ -499,6 +499,12 @@
       "smart_charge": {
         "name": "Chytré nabíjení"
       },
+      "smart_recharge_level": {
+        "name": "Chytrá úroveň návratu k nabíjení"
+      },
+      "smart_resume_level": {
+        "name": "Chytrá úroveň pokračování"
+      },
       "side_led": {
         "name": "Boční světla"
       },
@@ -672,6 +678,12 @@
       },
       "charge_limit": {
         "name": "Limit nabíjení"
+      },
+      "recharge_level": {
+        "name": "Návrat k nabíjení při"
+      },
+      "resume_level": {
+        "name": "Pokračovat v sekání při"
       },
       "ride_boundary_distance": {
         "name": "Vzdálenost jízdy po hranici"
@@ -1601,6 +1613,9 @@
     },
     "self_check_other": {
       "message": "Sekačka nahlásila neznámý kód autotestu {code}."
+    },
+    "battery_settings_unread": {
+      "message": "Nastavení baterie se ze sekačky zatím nepodařilo načíst. Změna by nyní vynulovala okno nabíjení mimo špičku, proto nebylo nic odesláno. Zkuste to znovu, až bude sekačka připojena."
     }
   }
 }

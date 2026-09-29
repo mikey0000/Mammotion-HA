@@ -499,6 +499,12 @@
       "smart_charge": {
         "name": "Inteligentne ładowanie"
       },
+      "smart_recharge_level": {
+        "name": "Inteligentny poziom powrotu do ładowania"
+      },
+      "smart_resume_level": {
+        "name": "Inteligentny poziom wznowienia"
+      },
       "side_led": {
         "name": "Boczna dioda LED wł/wył"
       },
@@ -672,6 +678,12 @@
       },
       "charge_limit": {
         "name": "Limit ładowania"
+      },
+      "recharge_level": {
+        "name": "Powrót do ładowania przy"
+      },
+      "resume_level": {
+        "name": "Wznowienie koszenia przy"
       },
       "ride_boundary_distance": {
         "name": "Odległość przejazdu wzdłuż granicy"
@@ -1601,6 +1613,9 @@
     },
     "self_check_other": {
       "message": "Kosiarka zgłosiła nieznany kod autotestu {code}."
+    },
+    "battery_settings_unread": {
+      "message": "Ustawienia baterii nie zostały jeszcze odczytane z kosiarki. Zmiana teraz zresetowałaby okno ładowania poza szczytem, więc nic nie wysłano. Spróbuj ponownie, gdy kosiarka będzie połączona."
     }
   }
 }

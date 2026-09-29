@@ -2,6 +2,7 @@
 
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
+from functools import partial
 from typing import Any, cast
 
 from homeassistant.components.number import (
@@ -22,6 +23,11 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pymammotion.data.model.device import PoolCleanerDevice
+from pymammotion.data.model.device_info import (
+    RECHARGE_LEVEL_RANGE,
+    RESUME_LEVEL_RANGE,
+    SMART_CHARGE_LEVEL,
+)
 from pymammotion.data.model.device_limits import DeviceLimits
 from pymammotion.utility.device_config import DeviceConfig
 from pymammotion.utility.device_type import DeviceType
@@ -31,7 +37,7 @@ from .coordinator import MammotionBaseUpdateCoordinator, MammotionSpinoCoordinat
 from .entity import (
     MammotionBaseEntity,
     MammotionBaseSpinoEntity,
-    device_firmware_version,
+    async_add_when_firmware_supports,
 )
 
 
@@ -44,6 +50,10 @@ class MammotionConfigNumberEntityDescription(NumberEntityDescription):  # type: 
         Callable[[MammotionBaseUpdateCoordinator[Any], float], Awaitable[None]] | None
     ) = None
     get_fn: Callable[[MammotionBaseUpdateCoordinator[Any]], float | None] | None = None
+    # The device's own value, adopted through set_fn while get_fn has none.
+    device_fn: Callable[[MammotionBaseUpdateCoordinator[Any]], float | None] | None = (
+        None
+    )
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -127,6 +137,46 @@ CHARGE_LIMIT_NUMBER_ENTITY = MammotionConfigNumberEntityDescription(
     ),
 )
 
+
+def _charge_level(level: int, levels: range) -> int | None:
+    """Return a recharge/resume level as the app shows it: smart as the slider's top."""
+    if level == 0:
+        return None
+    return levels[-1] if level == SMART_CHARGE_LEVEL else level
+
+
+# The app's Battery page sliders (step 1); moving one sets a custom level.
+CHARGE_LEVEL_NUMBER_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
+    MammotionConfigNumberEntityDescription(
+        key="recharge_level",
+        native_min_value=RECHARGE_LEVEL_RANGE[0],
+        native_max_value=RECHARGE_LEVEL_RANGE[-1],
+        native_step=1,
+        mode=NumberMode.SLIDER,
+        native_unit_of_measurement=PERCENTAGE,
+        set_async_fn=lambda coordinator, value: coordinator.async_set_recharge_level(
+            int(value)
+        ),
+        get_fn=lambda coordinator: _charge_level(
+            coordinator.data.mower_state.recharge_level, RECHARGE_LEVEL_RANGE
+        ),
+    ),
+    MammotionConfigNumberEntityDescription(
+        key="resume_level",
+        native_min_value=RESUME_LEVEL_RANGE[0],
+        native_max_value=RESUME_LEVEL_RANGE[-1],
+        native_step=1,
+        mode=NumberMode.SLIDER,
+        native_unit_of_measurement=PERCENTAGE,
+        set_async_fn=lambda coordinator, value: coordinator.async_set_resume_level(
+            int(value)
+        ),
+        get_fn=lambda coordinator: _charge_level(
+            coordinator.data.mower_state.resume_level, RESUME_LEVEL_RANGE
+        ),
+    ),
+)
+
 # Gated on DeviceType.supports_ride_boundary_distance; the APK names no unit or hard limit.
 RIDE_BOUNDARY_DISTANCE_NUMBER_ENTITY = MammotionConfigNumberEntityDescription(
     key="ride_boundary_distance",
@@ -207,7 +257,11 @@ LUBA_WORKING_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
         set_async_fn=lambda coordinator, value: (
             coordinator.async_change_blade_height_if_working()
         ),
-        get_fn=lambda coordinator: coordinator.operation_settings.blade_height,
+        # 0 is OperationSettings' unset default, never a real height.
+        get_fn=lambda coordinator: coordinator.operation_settings.blade_height or None,
+        device_fn=lambda coordinator: (
+            coordinator.data.report_data.work.knife_height or None
+        ),
     ),
 )
 
@@ -272,15 +326,16 @@ async def async_setup_entry(
                 for entity_description in AUDIO_NUMBER_ENTITIES
             )
 
-        if DeviceType.supports_charge_limit(
-            mower.device.device_name,
-            device_firmware_version(mower.reporting_coordinator.data),
-        ):
-            entities.append(
-                MammotionConfigNumberEntity(
-                    mower.reporting_coordinator, CHARGE_LIMIT_NUMBER_ENTITY
-                )
-            )
+        async_add_when_firmware_supports(
+            entry,
+            mower.reporting_coordinator,
+            supported=partial(
+                DeviceType.supports_charge_limit, mower.device.device_name
+            ),
+            descriptions=(CHARGE_LIMIT_NUMBER_ENTITY, *CHARGE_LEVEL_NUMBER_ENTITIES),
+            build=partial(MammotionConfigNumberEntity, mower.reporting_coordinator),
+            async_add_entities=async_add_entities,
+        )
 
         if DeviceType.supports_ride_boundary_distance(mower.device.device_name):
             entities.append(
@@ -353,18 +408,31 @@ class MammotionConfigNumberEntity(MammotionBaseEntity, RestoreNumber):  # type: 
         if self.entity_description.key == "toward_included_angle":
             self._attr_native_value = 90
         if self.entity_description.get_fn is not None:
-            self._attr_native_value = self.entity_description.get_fn(self.coordinator)
+            self._attr_native_value = self._current_value()
         elif (
             self.entity_description.set_fn is not None
             and self._attr_native_value is not None
         ):
             self.entity_description.set_fn(self.coordinator, self._attr_native_value)
 
+    def _current_value(self) -> float | None:
+        """Return get_fn's value, first adopting device_fn's while it has none."""
+        description = self.entity_description
+        value = description.get_fn(self.coordinator) if description.get_fn else None
+        if (
+            value is None
+            and description.device_fn is not None
+            and description.set_fn is not None
+            and (value := description.device_fn(self.coordinator)) is not None
+        ):
+            description.set_fn(self.coordinator, value)
+        return value
+
     @callback
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
         if self.entity_description.get_fn is not None:
-            self._attr_native_value = self.entity_description.get_fn(self.coordinator)
+            self._attr_native_value = self._current_value()
         super()._handle_coordinator_update()
 
     async def async_set_native_value(self, value: float) -> None:
@@ -388,6 +456,8 @@ class MammotionConfigNumberEntity(MammotionBaseEntity, RestoreNumber):  # type: 
                 self.entity_description.set_fn(
                     self.coordinator, cast(float, self._attr_native_value)
                 )
+        if self.entity_description.device_fn is not None:
+            self._attr_native_value = self._current_value()
 
 
 class MammotionWorkingNumberEntity(MammotionConfigNumberEntity):
@@ -413,7 +483,7 @@ class MammotionWorkingNumberEntity(MammotionConfigNumberEntity):
             self._attr_native_max_value = entity_description.native_max_value
 
         if self.entity_description.get_fn is not None:
-            self._attr_native_value = self.entity_description.get_fn(self.coordinator)
+            self._attr_native_value = self._current_value()
 
         native_val = self._attr_native_value
         native_min = self._attr_native_min_value

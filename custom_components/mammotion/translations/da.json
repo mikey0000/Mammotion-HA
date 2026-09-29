@@ -499,6 +499,12 @@
       "smart_charge": {
         "name": "Smart opladning"
       },
+      "smart_recharge_level": {
+        "name": "Smart niveau for returnering til opladning"
+      },
+      "smart_resume_level": {
+        "name": "Smart niveau for genoptagelse"
+      },
       "side_led": {
         "name": "Side LED til/fra"
       },
@@ -672,6 +678,12 @@
       },
       "charge_limit": {
         "name": "Opladningsgrænse"
+      },
+      "recharge_level": {
+        "name": "Returnér til opladning ved"
+      },
+      "resume_level": {
+        "name": "Genoptag klipning ved"
       },
       "ride_boundary_distance": {
         "name": "Kørselsafstand ved grænsen"
@@ -1601,6 +1613,9 @@
     },
     "self_check_other": {
       "message": "Plæneklipperen meldte en ukendt selvtestkode {code}."
+    },
+    "battery_settings_unread": {
+      "message": "Batteriindstillingerne er endnu ikke læst fra plæneklipperen. En ændring nu ville nulstille opladningsvinduet uden for spidsbelastning, så intet blev sendt. Prøv igen, når plæneklipperen er forbundet."
     }
   }
 }

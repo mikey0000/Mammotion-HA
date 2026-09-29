@@ -18,6 +18,11 @@ from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.restore_state import RestoreEntity
 from pymammotion.data.model.device import PoolCleanerDevice
+from pymammotion.data.model.device_info import (
+    RECHARGE_LEVEL_RANGE,
+    RESUME_LEVEL_RANGE,
+    SMART_CHARGE_LEVEL,
+)
 from pymammotion.data.model.enums import CollectorState, DumpState
 from pymammotion.data.model.pool_state import SpinoToggle
 from pymammotion.utility.device_type import DeviceType
@@ -32,7 +37,7 @@ from .coordinator import (
 from .entity import (
     MammotionBaseEntity,
     MammotionBaseSpinoEntity,
-    device_firmware_version,
+    async_add_when_firmware_supports,
     supports_grass_collection,
 )
 
@@ -116,7 +121,9 @@ class MammotionSwitchEntityDescription(SwitchEntityDescription):
 class MammotionAsyncSwitchEntityDescription(MammotionSwitchEntityDescription):
     """Describes Mammotion switch entity."""
 
-    is_on_func: Callable[[MammotionBaseUpdateCoordinator[Any]], bool] | None = None
+    is_on_func: Callable[[MammotionBaseUpdateCoordinator[Any]], bool | None] | None = (
+        None
+    )
     set_fn: Callable[[MammotionBaseUpdateCoordinator[Any], bool], Awaitable[None]]
     available_fn: Callable[[MammotionBaseUpdateCoordinator[Any]], bool] | None = None
     #: For switches that restore a transport: gating them on one would strand them.
@@ -270,14 +277,43 @@ SWITCH_ENTITIES: tuple[MammotionAsyncSwitchEntityDescription, ...] = (
     ),
 )
 
+
+def _smart_level(level: int) -> bool | None:
+    """Return whether a recharge/resume level is smart; None while unread (0)."""
+    return None if level == 0 else level == SMART_CHARGE_LEVEL
+
+
 # Gated per device on DeviceType.supports_charge_limit (pool robots and old firmware excluded).
 CHARGE_SWITCH_ENTITIES: tuple[MammotionAsyncSwitchEntityDescription, ...] = (
     MammotionAsyncSwitchEntityDescription(
         key="smart_charge",
         is_on_func=lambda coordinator: (
-            coordinator.data.mower_state.charge_settings.smart_charge
+            settings.smart_charge
+            if (settings := coordinator.data.mower_state.charge_settings).reported
+            else None
         ),
         set_fn=lambda coordinator, value: coordinator.async_set_smart_charge(value),
+        entity_category=EntityCategory.CONFIG,
+    ),
+    # Leaving smart, the app writes the top of the level's slider.
+    MammotionAsyncSwitchEntityDescription(
+        key="smart_recharge_level",
+        is_on_func=lambda coordinator: _smart_level(
+            coordinator.data.mower_state.recharge_level
+        ),
+        set_fn=lambda coordinator, value: coordinator.async_set_recharge_level(
+            SMART_CHARGE_LEVEL if value else RECHARGE_LEVEL_RANGE[-1]
+        ),
+        entity_category=EntityCategory.CONFIG,
+    ),
+    MammotionAsyncSwitchEntityDescription(
+        key="smart_resume_level",
+        is_on_func=lambda coordinator: _smart_level(
+            coordinator.data.mower_state.resume_level
+        ),
+        set_fn=lambda coordinator, value: coordinator.async_set_resume_level(
+            SMART_CHARGE_LEVEL if value else RESUME_LEVEL_RANGE[-1]
+        ),
         entity_category=EntityCategory.CONFIG,
     ),
 )
@@ -412,24 +448,27 @@ async def async_setup_entry(
                 MammotionSwitchEntity(coordinator, d) for d in AUDIO_SWITCH_ENTITIES
             )
 
-        if DeviceType.supports_charge_limit(
-            device_name, device_firmware_version(coordinator.data)
-        ):
-            entities.extend(
-                MammotionSwitchEntity(coordinator, d) for d in CHARGE_SWITCH_ENTITIES
-            )
+        async_add_when_firmware_supports(
+            entry,
+            coordinator,
+            supported=partial(DeviceType.supports_charge_limit, device_name),
+            descriptions=CHARGE_SWITCH_ENTITIES,
+            build=partial(MammotionSwitchEntity, coordinator),
+            async_add_entities=async_add_entities,
+        )
 
         entities.extend(
             MammotionConfigSwitchEntity(coordinator, d) for d in CONFIG_SWITCH_ENTITIES
         )
 
-        if DeviceType.supports_auto_change_direction(
-            device_name, device_firmware_version(coordinator.data)
-        ):
-            entities.extend(
-                MammotionConfigSwitchEntity(coordinator, d)
-                for d in AUTO_CHANGE_DIRECTION_CONFIG_SWITCH_ENTITIES
-            )
+        async_add_when_firmware_supports(
+            entry,
+            coordinator,
+            supported=partial(DeviceType.supports_auto_change_direction, device_name),
+            descriptions=AUTO_CHANGE_DIRECTION_CONFIG_SWITCH_ENTITIES,
+            build=partial(MammotionConfigSwitchEntity, coordinator),
+            async_add_entities=async_add_entities,
+        )
         entities.extend(
             MammotionUpdateSwitchEntity(coordinator, d) for d in UPDATE_SWITCH_ENTITIES
         )
@@ -482,6 +521,7 @@ class MammotionSwitchEntity(MammotionBaseEntity, SwitchEntity, RestoreEntity):
 
     entity_description: MammotionAsyncSwitchEntityDescription
     _attr_has_entity_name = True
+    _sets_in_flight = 0
 
     def __init__(
         self,
@@ -511,30 +551,31 @@ class MammotionSwitchEntity(MammotionBaseEntity, SwitchEntity, RestoreEntity):
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn the entity on."""
-        self._attr_is_on = True
-        self.async_write_ha_state()
-        try:
-            await self.entity_description.set_fn(self.coordinator, True)
-        except Exception:
-            self._attr_is_on = False
-            self.async_write_ha_state()
-            raise
+        await self._async_set(True)
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn the entity off."""
-        self._attr_is_on = False
+        await self._async_set(False)
+
+    async def _async_set(self, value: bool) -> None:
+        """Show *value* at once, reverting it if the device refuses."""
+        self._attr_is_on = value
         self.async_write_ha_state()
+        self._sets_in_flight += 1
         try:
-            await self.entity_description.set_fn(self.coordinator, False)
+            await self.entity_description.set_fn(self.coordinator, value)
         except Exception:
-            self._attr_is_on = True
+            self._attr_is_on = not value
             self.async_write_ha_state()
             raise
+        finally:
+            self._sets_in_flight -= 1
 
     @callback
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
-        if callable(self.entity_description.is_on_func):
+        # Until the device answers a press, a push still carries the old value.
+        if callable(self.entity_description.is_on_func) and not self._sets_in_flight:
             self._attr_is_on = self.entity_description.is_on_func(self.coordinator)
         super()._handle_coordinator_update()
 
@@ -582,7 +623,7 @@ class MammotionUpdateSwitchEntity(MammotionBaseEntity, SwitchEntity, RestoreEnti
         return self.coordinator.data is not None
 
     @property
-    def is_on(self) -> bool:
+    def is_on(self) -> bool | None:
         """Return if settings is on or off."""
         if self.entity_description.is_on_func is not None:
             return self.entity_description.is_on_func(self.coordinator)
@@ -780,7 +821,7 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
 
 
 @callback
-def async_add_area_entities(
+def async_add_area_entities(  # noqa: C901
     coordinator: MammotionReportUpdateCoordinator,
     added_areas: set[int],
     area_entities_by_name: dict[str, MammotionConfigAreaSwitchEntity],

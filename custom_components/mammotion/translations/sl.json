@@ -499,6 +499,12 @@
       "smart_charge": {
         "name": "Pametno polnjenje"
       },
+      "smart_recharge_level": {
+        "name": "Pametna raven vrnitve na polnjenje"
+      },
+      "smart_resume_level": {
+        "name": "Pametna raven nadaljevanja"
+      },
       "side_led": {
         "name": "Stranska LED osvetlitev"
       },
@@ -672,6 +678,12 @@
       },
       "charge_limit": {
         "name": "Omejitev polnjenja"
+      },
+      "recharge_level": {
+        "name": "Vrnitev na polnjenje pri"
+      },
+      "resume_level": {
+        "name": "Nadaljevanje košnje pri"
       },
       "ride_boundary_distance": {
         "name": "Razdalja vožnje ob meji"
@@ -1601,6 +1613,9 @@
     },
     "self_check_other": {
       "message": "Kosilnica je javila neznano kodo samopreverjanja {code}."
+    },
+    "battery_settings_unread": {
+      "message": "Nastavitve baterije še niso bile prebrane iz robota. Sprememba bi zdaj ponastavila okno polnjenja izven konice, zato ni bilo nič poslano. Poskusite znova, ko bo robot povezan."
     }
   }
 }

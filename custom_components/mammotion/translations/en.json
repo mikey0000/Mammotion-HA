@@ -499,6 +499,12 @@
       "smart_charge": {
         "name": "Smart charging"
       },
+      "smart_recharge_level": {
+        "name": "Smart return-to-charge level"
+      },
+      "smart_resume_level": {
+        "name": "Smart resume level"
+      },
       "side_led": {
         "name": "Side LED on/off"
       },
@@ -672,6 +678,12 @@
       },
       "charge_limit": {
         "name": "Charge limit"
+      },
+      "recharge_level": {
+        "name": "Return to charge at"
+      },
+      "resume_level": {
+        "name": "Resume mowing at"
       },
       "ride_boundary_distance": {
         "name": "Boundary ride distance"
@@ -1601,6 +1613,9 @@
     },
     "self_check_other": {
       "message": "The mower reported self-check code {code}, which is not recognised."
+    },
+    "battery_settings_unread": {
+      "message": "The battery settings have not been read from the mower yet. Changing them now would reset its off-peak charging window, so nothing was sent. Try again once the mower is connected."
     }
   }
 }

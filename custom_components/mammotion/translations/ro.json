@@ -499,6 +499,12 @@
       "smart_charge": {
         "name": "Încărcare inteligentă"
       },
+      "smart_recharge_level": {
+        "name": "Nivel inteligent de revenire la încărcare"
+      },
+      "smart_resume_level": {
+        "name": "Nivel inteligent de reluare"
+      },
       "side_led": {
         "name": "LED lateral Pornit/Oprit"
       },
@@ -672,6 +678,12 @@
       },
       "charge_limit": {
         "name": "Limită de încărcare"
+      },
+      "recharge_level": {
+        "name": "Revenire la încărcare la"
+      },
+      "resume_level": {
+        "name": "Reluare tuns la"
       },
       "ride_boundary_distance": {
         "name": "Distanța de parcurgere a marginii"
@@ -1601,6 +1613,9 @@
     },
     "self_check_other": {
       "message": "Mașina a raportat codul de autotest necunoscut {code}."
+    },
+    "battery_settings_unread": {
+      "message": "Setările bateriei nu au fost încă citite de pe mașina de tuns. Modificarea lor acum ar reseta intervalul de încărcare în afara orelor de vârf, așa că nu s-a trimis nimic. Încercați din nou după ce mașina de tuns este conectată."
     }
   }
 }

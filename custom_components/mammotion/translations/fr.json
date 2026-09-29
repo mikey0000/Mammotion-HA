@@ -499,6 +499,12 @@
       "smart_charge": {
         "name": "Charge intelligente"
       },
+      "smart_recharge_level": {
+        "name": "Niveau de retour à la charge intelligent"
+      },
+      "smart_resume_level": {
+        "name": "Niveau de reprise intelligent"
+      },
       "side_led": {
         "name": "LED latérales"
       },
@@ -672,6 +678,12 @@
       },
       "charge_limit": {
         "name": "Limite de charge"
+      },
+      "recharge_level": {
+        "name": "Retour à la charge à"
+      },
+      "resume_level": {
+        "name": "Reprise de la tonte à"
       },
       "ride_boundary_distance": {
         "name": "Distance de parcours de la bordure"
@@ -1601,6 +1613,9 @@
     },
     "self_check_other": {
       "message": "La tondeuse a signalé le code d'autotest inconnu {code}."
+    },
+    "battery_settings_unread": {
+      "message": "Les réglages de la batterie n'ont pas encore été lus depuis la tondeuse. Les modifier maintenant réinitialiserait la plage de charge en heures creuses ; rien n'a donc été envoyé. Réessayez une fois la tondeuse connectée."
     }
   }
 }

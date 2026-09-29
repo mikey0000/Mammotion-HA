@@ -1,9 +1,11 @@
 """Base class for entities."""
 
 from abc import ABC
+from collections.abc import Callable, Iterable
 from typing import Any
 
 from homeassistant.components.camera import Camera, CameraEntityFeature
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import callback
 from homeassistant.helpers.device_registry import (
     CONNECTION_BLUETOOTH,
@@ -14,6 +16,8 @@ from homeassistant.helpers.device_registry import (
 from homeassistant.helpers.device_registry import (
     async_get as async_get_device_registry,
 )
+from homeassistant.helpers.entity import Entity, EntityDescription
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from pymammotion.data.model.device import PoolCleanerDevice, RTKBaseStationDevice
 from pymammotion.utility.device_type import DeviceType
@@ -35,6 +39,58 @@ def device_firmware_version(device_state: object | None) -> str:
     """
     device_firmwares = getattr(device_state, "device_firmwares", None)
     return device_firmwares.device_version if device_firmwares is not None else ""
+
+
+@callback
+def async_add_when_supported[DescriptionT: EntityDescription](
+    entry: ConfigEntry[Any],
+    coordinator: MammotionBaseUpdateCoordinator[Any],
+    *,
+    supported: Callable[[], bool],
+    descriptions: Iterable[DescriptionT],
+    build: Callable[[DescriptionT], Entity],
+    async_add_entities: AddEntitiesCallback,
+) -> None:
+    """Add the entities for *descriptions* once *supported* returns True.
+
+    What the gate reads (firmware, the server's function list) often arrives after
+    the platform sets up, so it is checked again on every coordinator update; each
+    description is added at most once.
+    """
+    pending = {description.key: description for description in descriptions}
+
+    @callback
+    def _async_check() -> None:
+        if not pending or not supported():
+            return
+        ready = list(pending.values())
+        pending.clear()
+        async_add_entities([build(description) for description in ready])
+
+    _async_check()
+    if pending:
+        entry.async_on_unload(coordinator.async_add_listener(_async_check))
+
+
+@callback
+def async_add_when_firmware_supports[DescriptionT: EntityDescription](
+    entry: ConfigEntry[Any],
+    coordinator: MammotionBaseUpdateCoordinator[Any],
+    *,
+    supported: Callable[[str], bool],
+    descriptions: Iterable[DescriptionT],
+    build: Callable[[DescriptionT], Entity],
+    async_add_entities: AddEntitiesCallback,
+) -> None:
+    """Add the entities for *descriptions* once the firmware version passes *supported*."""
+    async_add_when_supported(
+        entry,
+        coordinator,
+        supported=lambda: supported(device_firmware_version(coordinator.data)),
+        descriptions=descriptions,
+        build=build,
+        async_add_entities=async_add_entities,
+    )
 
 
 def device_serial_number(device_name: str, device_type: DeviceType) -> str:

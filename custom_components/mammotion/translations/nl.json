@@ -499,6 +499,12 @@
       "smart_charge": {
         "name": "Slim opladen"
       },
+      "smart_recharge_level": {
+        "name": "Slim niveau voor terugkeer naar laadstation"
+      },
+      "smart_resume_level": {
+        "name": "Slim hervattingsniveau"
+      },
       "side_led": {
         "name": "Zijkant LED's aan/uit"
       },
@@ -672,6 +678,12 @@
       },
       "charge_limit": {
         "name": "Laadlimiet"
+      },
+      "recharge_level": {
+        "name": "Terug naar laadstation bij"
+      },
+      "resume_level": {
+        "name": "Maaien hervatten bij"
       },
       "ride_boundary_distance": {
         "name": "Afstand randrit"
@@ -1601,6 +1613,9 @@
     },
     "self_check_other": {
       "message": "De maaier meldde een onbekende zelftestcode {code}."
+    },
+    "battery_settings_unread": {
+      "message": "De batterij-instellingen zijn nog niet van de maaier gelezen. Ze nu wijzigen zou het daluren-laadvenster resetten, dus er is niets verzonden. Probeer het opnieuw zodra de maaier verbonden is."
     }
   }
 }

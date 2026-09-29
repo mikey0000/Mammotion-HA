@@ -499,6 +499,12 @@
       "smart_charge": {
         "name": "Ricarica intelligente"
       },
+      "smart_recharge_level": {
+        "name": "Livello di ritorno in ricarica intelligente"
+      },
+      "smart_resume_level": {
+        "name": "Livello di ripresa intelligente"
+      },
       "side_led": {
         "name": "LED laterale On/Off"
       },
@@ -672,6 +678,12 @@
       },
       "charge_limit": {
         "name": "Limite di ricarica"
+      },
+      "recharge_level": {
+        "name": "Torna in ricarica al"
+      },
+      "resume_level": {
+        "name": "Riprendi il taglio al"
       },
       "ride_boundary_distance": {
         "name": "Distanza di percorrenza del bordo"
@@ -1601,6 +1613,9 @@
     },
     "self_check_other": {
       "message": "Il tosaerba ha segnalato il codice di autodiagnosi sconosciuto {code}."
+    },
+    "battery_settings_unread": {
+      "message": "Le impostazioni della batteria non sono ancora state lette dal robot. Modificarle ora azzererebbe la fascia di ricarica fuori picco, quindi non è stato inviato nulla. Riprova quando il robot è connesso."
     }
   }
 }

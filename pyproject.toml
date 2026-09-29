@@ -38,6 +38,7 @@ pythonpath = ["."]
 # pytest-homeassistant-custom-component ships autouse async fixtures, which
 # need asyncio auto mode the way Home Assistant core runs its own suite.
 asyncio_mode = "auto"
+markers = ["regression: pins a defect; the test was seen failing before the fix"]
 
 [tool.mypy]
 python_version = "3.14"

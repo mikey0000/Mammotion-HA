@@ -499,6 +499,12 @@
       "smart_charge": {
         "name": "Intelligentes Laden"
       },
+      "smart_recharge_level": {
+        "name": "Intelligenter Akkustand für die Rückkehr zum Laden"
+      },
+      "smart_resume_level": {
+        "name": "Intelligenter Akkustand zum Fortsetzen"
+      },
       "side_led": {
         "name": "LED-Seitenlicht"
       },
@@ -672,6 +678,12 @@
       },
       "charge_limit": {
         "name": "Ladelimit"
+      },
+      "recharge_level": {
+        "name": "Zum Laden zurückkehren bei"
+      },
+      "resume_level": {
+        "name": "Mähen fortsetzen bei"
       },
       "ride_boundary_distance": {
         "name": "Abstand der Randfahrt"
@@ -1601,6 +1613,9 @@
     },
     "self_check_other": {
       "message": "Der Mäher hat den unbekannten Selbsttest-Code {code} gemeldet."
+    },
+    "battery_settings_unread": {
+      "message": "Die Akkueinstellungen wurden noch nicht vom Mäher gelesen. Eine Änderung würde jetzt das Nebenzeit-Ladefenster zurücksetzen, daher wurde nichts gesendet. Bitte erneut versuchen, sobald der Mäher verbunden ist."
     }
   }
 }

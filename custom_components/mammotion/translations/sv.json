@@ -499,6 +499,12 @@
       "smart_charge": {
         "name": "Smart laddning"
       },
+      "smart_recharge_level": {
+        "name": "Smart nivå för återvändande till laddning"
+      },
+      "smart_resume_level": {
+        "name": "Smart återupptagningsnivå"
+      },
       "side_led": {
         "name": "Sido-LED på/av"
       },
@@ -672,6 +678,12 @@
       },
       "charge_limit": {
         "name": "Laddningsgräns"
+      },
+      "recharge_level": {
+        "name": "Återvänd för laddning vid"
+      },
+      "resume_level": {
+        "name": "Återuppta klippning vid"
       },
       "ride_boundary_distance": {
         "name": "Köravstånd längs gränsen"
@@ -1601,6 +1613,9 @@
     },
     "self_check_other": {
       "message": "Gräsklipparen rapporterade en okänd självtestkod {code}."
+    },
+    "battery_settings_unread": {
+      "message": "Batteriinställningarna har ännu inte lästs från gräsklipparen. En ändring nu skulle återställa laddningsfönstret för lågpristid, så inget skickades. Försök igen när gräsklipparen är ansluten."
     }
   }
 }

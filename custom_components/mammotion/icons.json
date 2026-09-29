@@ -193,6 +193,12 @@
       "charge_limit": {
         "default": "mdi:battery-charging-80"
       },
+      "recharge_level": {
+        "default": "mdi:battery-arrow-down"
+      },
+      "resume_level": {
+        "default": "mdi:battery-arrow-up"
+      },
       "ride_boundary_distance": {
         "default": "mdi:border-outside"
       }
@@ -225,6 +231,12 @@
       },
       "smart_charge": {
         "default": "mdi:battery-sync"
+      },
+      "smart_recharge_level": {
+        "default": "mdi:battery-sync-outline"
+      },
+      "smart_resume_level": {
+        "default": "mdi:battery-sync-outline"
       },
       "side_led": {
         "default": "mdi:led-off",
