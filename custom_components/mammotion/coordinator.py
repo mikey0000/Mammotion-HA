@@ -89,6 +89,7 @@ from pymammotion.state.device_state import (
 )
 from pymammotion.transport.base import (
     BLEUnavailableError,
+    CommandRejectedError,
     CommandTimeoutError,
     ConcurrentRequestError,
     LoginFailedError,
@@ -719,15 +720,25 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         self._startup_reads_done = True
         await self._async_startup_reads()
 
-    def is_online(self) -> bool:
-        """Return True if the device currently has an active transport connection."""
+    def is_online(self, *, user_initiated: bool = False) -> bool:
+        """Return True if the device currently has an active transport connection.
+
+        *user_initiated* waives the cloud's advisory offline flag, as the library
+        does for a direct-priority send; a terminally failed transport still counts.
+        """
         device = self.manager.get_device_by_name(self.device_name)
         if device is None:
             return False
         handle = self.manager.mower(self.device_name)
         if handle is None:
             return bool(device.online)
-        return handle.has_usable_transport
+        if not user_initiated:
+            return handle.has_usable_transport
+        try:
+            handle.active_transport(user_initiated=True)
+        except NoTransportAvailableError:
+            return False
+        return True
 
     @property
     def mqtt_transport_connected(self) -> bool:
@@ -908,34 +919,48 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         """Send a command and wait for response with standard exception handling.
 
         Handles credential expiry, gateway/transport timeouts, and device-offline
-        conditions uniformly.  Re-raises DeviceOfflineException after marking the
-        device offline so callers can bail out of their update loops.
+        conditions uniformly.  An offline rejection marks the device offline.
 
         Pass ``priority=Priority.USER`` for a command a person is waiting on: it
         spends past the library's self-imposed send quota, and a missing transport
-        is surfaced instead of logged, since silence is the one outcome the user
-        cannot act on.  See ``async_send_command`` for when that is appropriate.
+        or offline rejection is surfaced instead of logged, since silence is the one
+        outcome the user cannot act on.  See ``async_send_command`` for when that is
+        appropriate.
         """
-        device = self.manager.get_device_by_name(self.device_name)
-        if device is None or not self.is_online():
-            return
-
-        try:
-            await self.manager.send_command_and_wait(
+        await self._async_device_call(
+            lambda: self.manager.send_command_and_wait(
                 self.device_name,
                 command,
                 expected_field,
                 prefer_ble=self._bluetooth_enabled,
                 priority=priority,
                 **kwargs,
-            )
+            ),
+            priority,
+        )
+
+    async def _async_device_call[ResultT](
+        self, call: Callable[[], Awaitable[ResultT]], priority: Priority
+    ) -> ResultT | None:
+        """Run a library call that talks to the device, with ``async_send_and_wait``'s handling.
+
+        Returns ``None`` when the device is offline or the call failed in a way that
+        is only logged.
+        """
+        device = self.manager.get_device_by_name(self.device_name)
+        if device is None or not self.is_online(user_initiated=priority.is_direct):
+            return None
+
+        try:
+            return await call()
         except EXPIRED_CREDENTIAL_EXCEPTIONS as exc:
             self.update_failures += 1
             await self.async_refresh_login(exc)
-        except DeviceOfflineException:
+        except DeviceOfflineException as exc:
             device = self.manager.get_device_by_name(self.device_name)
             if device is not None:
                 self.device_offline(device)
+            self._raise_if_user_waiting(priority, exc)
         except (TooManyRequestsException, TransportRateLimitedError) as exc:
             # One message for both: TooManyRequestsException is the cloud's 429,
             # TransportRateLimitedError is the ban or quota it left behind.  A USER
@@ -944,8 +969,8 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             raise HomeAssistantError(
                 translation_domain=DOMAIN, translation_key="api_limit_exceeded"
             ) from exc
-        except NoTransportAvailableError as exc:
-            LOGGER.debug("No Transport: %s", exc)
+        except (NoTransportAvailableError, CommandRejectedError) as exc:
+            LOGGER.debug("Command not carried out: %s", exc)
             self._raise_if_user_waiting(priority, exc)
         except (
             GatewayTimeoutException,
@@ -965,6 +990,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
                 "BLE connection cancelled (no available slot) for %s — skipping",
                 self.device_name,
             )
+        return None
 
     @staticmethod
     def device_offline(device: MowingDevice | RTKBaseStationDevice) -> None:
@@ -1030,7 +1056,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         nothing from jumping it.
         """
         device = self.manager.get_device_by_name(self.device_name)
-        if device is None or not self.is_online():
+        if device is None or not self.is_online(user_initiated=priority.is_direct):
             return False
 
         try:
@@ -1051,8 +1077,9 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             LOGGER.error("Gateway timeout exception: %s", ex.iot_id)
             self.update_failures = 0
             return False
-        except DeviceOfflineException:
+        except DeviceOfflineException as exc:
             self.device_offline(device)
+            self._raise_if_user_waiting(priority, exc)
         except (TooManyRequestsException, TransportRateLimitedError) as exc:
             # One message for both: TooManyRequestsException is the cloud's 429,
             # TransportRateLimitedError is the ban or quota it left behind.  A USER
@@ -1943,6 +1970,36 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
     async def async_ensure_fresh_state(self) -> None:
         """Fire a one-shot snapshot if device state is older than 2 minutes."""
         await self.manager.ensure_fresh_state(self.device_name, max_age_s=120.0)
+
+    async def async_refresh_status(self) -> None:
+        """Request a status report now, for a press of the refresh-status button.
+
+        Unlike ``async_ensure_fresh_state`` this is user-initiated: the library sends
+        it on this task, past the cloud's offline flag, and a failure is surfaced.
+        """
+        try:
+            await self.manager.refresh_status(self.device_name)
+        except EXPIRED_CREDENTIAL_EXCEPTIONS as exc:
+            self.update_failures += 1
+            await self.async_refresh_login(exc)
+        except GatewayTimeoutException as ex:
+            LOGGER.error("Gateway timeout exception: %s", ex.iot_id)
+        except DeviceOfflineException as exc:
+            if device := self.manager.get_device_by_name(self.device_name):
+                self.device_offline(device)
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key="command_failed"
+            ) from exc
+        except NoTransportAvailableError as exc:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key="command_failed"
+            ) from exc
+        except (TooManyRequestsException, TransportRateLimitedError) as exc:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key="api_limit_exceeded"
+            ) from exc
+        else:
+            self.update_failures = 0
 
     async def send_svg_command(self, svg_message: SvgMessage) -> int | None:
         """Send an SVG tile to the device using the multi-frame saga protocol.
@@ -4111,7 +4168,9 @@ class MammotionSpinoCoordinator(MammotionBaseUpdateCoordinator[PoolCleanerDevice
 
     async def async_request_status(self) -> None:
         """One-shot Spino status poll, backing the refresh-status button."""
-        await self.async_send_command("get_report_cfg_spino", count=1)
+        await self.async_send_command(
+            "get_report_cfg_spino", priority=Priority.USER, count=1
+        )
 
     async def async_set_work_mode(self, work_mode: int) -> None:
         """Set the Spino cleaning work mode."""

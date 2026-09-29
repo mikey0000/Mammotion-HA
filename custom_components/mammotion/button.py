@@ -165,7 +165,7 @@ BUTTON_SENSORS: tuple[MammotionButtonSensorEntityDescription, ...] = (
     ),
     MammotionButtonSensorEntityDescription(
         key="refresh_status",
-        press_fn=lambda coordinator: coordinator.async_ensure_fresh_state(),
+        press_fn=lambda coordinator: coordinator.async_refresh_status(),
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     MammotionButtonSensorEntityDescription(

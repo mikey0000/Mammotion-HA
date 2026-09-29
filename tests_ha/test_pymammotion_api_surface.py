@@ -19,11 +19,13 @@ users get: until a release carrying these APIs is cut and the pin bumped, a
 HACS install would raise ``ImportError`` / ``AttributeError`` on startup.
 """
 
+import inspect
 import json
 from importlib.metadata import distribution
 from pathlib import Path
 
 import pytest
+from pymammotion.client import MammotionClient
 
 #: Last release that predates the APIs below.  The pin must move past it.
 _RELEASE_WITHOUT_THESE_APIS = "0.9.6"
@@ -137,6 +139,17 @@ def test_work_ends_with_the_job_and_fetches_record_their_job() -> None:
     """running_plan and the unknown-job task sync read these from the data."""
     assert "plans_fetched_job_id: int = 0" in _source("data/model/hash_list.py")
     assert "self.work = CurrentTaskSettings()" in _source("data/model/device.py")
+
+
+def test_the_client_offers_a_user_initiated_status_refresh() -> None:
+    """The refresh-status button calls this; 0.9.9 does not have it."""
+    refresh_status = getattr(MammotionClient, "refresh_status", None)
+    assert inspect.iscoroutinefunction(refresh_status)
+    assert list(inspect.signature(refresh_status).parameters) == [
+        "self",
+        "device_name",
+        "account_id",
+    ]
 
 
 def test_the_shipped_pin_has_moved_past_the_release_without_these_apis() -> None:
