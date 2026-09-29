@@ -100,7 +100,13 @@
         "name": "BLE RSSI"
       },
       "camera_brightness": {
-        "name": "Jas kamery"
+        "name": "Jas kamery",
+        "state": {
+          "dark": "Tmavý",
+          "good": "Dobrý",
+          "intense": "Intenzivní",
+          "unknown": "Neznámý"
+        }
       },
       "wifi_rssi": {
         "name": "WiFi RSSI"
@@ -171,6 +177,27 @@
           "SIGNAL_BAD": "Špatný",
           "SIGNAL_UNKNOWN": "Neznámý"
         }
+      },
+      "lidar_positioning_status": {
+        "name": "Stav polohování LiDAR",
+        "state": {
+          "good": "Dobrý",
+          "none": "Žádný"
+        }
+      },
+      "fused_localization_status": {
+        "name": "Stav fúzní lokalizace",
+        "state": {
+          "unknown": "Neznámý",
+          "no_pose": "Bez polohy",
+          "rtk_fixed": "RTK fixní",
+          "rtk_extended_vision": "RTK rozšířené",
+          "vision_extended": "Vizuální rozšíření",
+          "vision_extended_failed": "Vizuální rozšíření selhalo"
+        }
+      },
+      "vision_survival": {
+        "name": "Výdrž vizuální navigace"
       },
       "activity_mode": {
         "name": "Režim činnosti",

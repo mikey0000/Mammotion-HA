@@ -100,7 +100,13 @@
         "name": "BLE RSSI"
       },
       "camera_brightness": {
-        "name": "Kamera fényereje"
+        "name": "Kamera fényereje",
+        "state": {
+          "dark": "Sötét",
+          "good": "Jó",
+          "intense": "Erős",
+          "unknown": "Ismeretlen"
+        }
       },
       "wifi_rssi": {
         "name": "Wi-Fi RSSI"
@@ -171,6 +177,27 @@
           "SIGNAL_BAD": "Rossz",
           "SIGNAL_UNKNOWN": "Ismeretlen"
         }
+      },
+      "lidar_positioning_status": {
+        "name": "LiDAR pozicionálás állapota",
+        "state": {
+          "good": "Jó",
+          "none": "Nincs"
+        }
+      },
+      "fused_localization_status": {
+        "name": "Fúziós helymeghatározás állapota",
+        "state": {
+          "unknown": "Ismeretlen",
+          "no_pose": "Nincs pozíció",
+          "rtk_fixed": "RTK rögzített",
+          "rtk_extended_vision": "RTK kiterjesztett",
+          "vision_extended": "Vizuálisan kiterjesztett",
+          "vision_extended_failed": "Vizuális kiterjesztés sikertelen"
+        }
+      },
+      "vision_survival": {
+        "name": "Vizuális kitartás"
       },
       "activity_mode": {
         "name": "Működési mód",

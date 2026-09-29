@@ -100,7 +100,13 @@
         "name": "BLE RSSI"
       },
       "camera_brightness": {
-        "name": "Kamera lysstyrke"
+        "name": "Kamera lysstyrke",
+        "state": {
+          "dark": "Mørk",
+          "good": "God",
+          "intense": "Intens",
+          "unknown": "Ukendt"
+        }
       },
       "wifi_rssi": {
         "name": "WiFi RSSI"
@@ -171,6 +177,27 @@
           "SIGNAL_BAD": "Dårlig",
           "SIGNAL_UNKNOWN": "Ukendt"
         }
+      },
+      "lidar_positioning_status": {
+        "name": "LiDAR-positioneringsstatus",
+        "state": {
+          "good": "God",
+          "none": "Ingen"
+        }
+      },
+      "fused_localization_status": {
+        "name": "Status for fusioneret lokalisering",
+        "state": {
+          "unknown": "Ukendt",
+          "no_pose": "Ingen position",
+          "rtk_fixed": "RTK fikseret",
+          "rtk_extended_vision": "RTK udvidet",
+          "vision_extended": "Visuelt udvidet",
+          "vision_extended_failed": "Visuel udvidelse mislykkedes"
+        }
+      },
+      "vision_survival": {
+        "name": "Visuel udholdenhed"
       },
       "activity_mode": {
         "name": "Aktivitetstilstand",

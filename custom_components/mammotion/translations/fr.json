@@ -100,7 +100,13 @@
         "name": "Qualité du signal Bluetooth"
       },
       "camera_brightness": {
-        "name": "Luminosité de la caméra"
+        "name": "Luminosité de la caméra",
+        "state": {
+          "dark": "Sombre",
+          "good": "Bonne",
+          "intense": "Forte",
+          "unknown": "Inconnue"
+        }
       },
       "wifi_rssi": {
         "name": "Qualité du signal Wi-Fi"
@@ -171,6 +177,27 @@
           "SIGNAL_BAD": "Mauvais",
           "SIGNAL_UNKNOWN": "Inconnu"
         }
+      },
+      "lidar_positioning_status": {
+        "name": "État du positionnement LiDAR",
+        "state": {
+          "good": "Bon",
+          "none": "Aucun"
+        }
+      },
+      "fused_localization_status": {
+        "name": "État de la localisation fusionnée",
+        "state": {
+          "unknown": "Inconnu",
+          "no_pose": "Aucune position",
+          "rtk_fixed": "RTK fixe",
+          "rtk_extended_vision": "RTK étendu",
+          "vision_extended": "Extension visuelle",
+          "vision_extended_failed": "Échec de l'extension visuelle"
+        }
+      },
+      "vision_survival": {
+        "name": "Autonomie visuelle"
       },
       "activity_mode": {
         "name": "Mode activité",

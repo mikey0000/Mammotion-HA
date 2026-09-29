@@ -100,7 +100,13 @@
         "name": "BLE RSSI"
       },
       "camera_brightness": {
-        "name": "Camerahelderheid"
+        "name": "Camerahelderheid",
+        "state": {
+          "dark": "Donker",
+          "good": "Goed",
+          "intense": "Fel",
+          "unknown": "Onbekend"
+        }
       },
       "wifi_rssi": {
         "name": "WiFi RSSI"
@@ -171,6 +177,27 @@
           "SIGNAL_BAD": "Slecht",
           "SIGNAL_UNKNOWN": "Onbekend"
         }
+      },
+      "lidar_positioning_status": {
+        "name": "Status LiDAR-positionering",
+        "state": {
+          "good": "Goed",
+          "none": "Geen"
+        }
+      },
+      "fused_localization_status": {
+        "name": "Status gefuseerde lokalisatie",
+        "state": {
+          "unknown": "Onbekend",
+          "no_pose": "Geen positie",
+          "rtk_fixed": "RTK vast",
+          "rtk_extended_vision": "RTK uitgebreid",
+          "vision_extended": "Visueel uitgebreid",
+          "vision_extended_failed": "Visuele uitbreiding mislukt"
+        }
+      },
+      "vision_survival": {
+        "name": "Visueel uithoudingsvermogen"
       },
       "activity_mode": {
         "name": "Activiteitsmodus",

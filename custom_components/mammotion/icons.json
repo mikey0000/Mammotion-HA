@@ -71,6 +71,15 @@
       "camera_brightness": {
         "default": "mdi:brightness-5"
       },
+      "lidar_positioning_status": {
+        "default": "mdi:radar"
+      },
+      "fused_localization_status": {
+        "default": "mdi:crosshairs-gps"
+      },
+      "vision_survival": {
+        "default": "mdi:eye-outline"
+      },
       "work_area": {
         "default": "mdi:identifier"
       },

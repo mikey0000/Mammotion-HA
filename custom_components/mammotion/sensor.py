@@ -33,9 +33,13 @@ from pymammotion.data.model.device import (
     PoolCleanerDevice,
     RTKBaseStationDevice,
 )
-from pymammotion.data.model.enums import RTKStatus, TaskAreaStatus
+from pymammotion.data.model.enums import (
+    FuseLocalizationStatus,
+    RTKStatus,
+    TaskAreaStatus,
+)
 from pymammotion.data.model.pool_state import SpinoSysStatus, SpinoWorkMode
-from pymammotion.utility.constant import VioState, WorkMode
+from pymammotion.utility.constant import VioBrightness, VioState, WorkMode
 from pymammotion.utility.constant.device_constant import (
     AppConnectType,
     PosType,
@@ -161,11 +165,13 @@ LUBA_SENSOR_ONLY_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
     ),
 )
 
-LUBA_2_YUKA_ONLY_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
+#: Only where the app shows "Visual Positioning"; elsewhere the vision block is uninitialised.
+VISION_POSITIONING_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
     MammotionSensorEntityDescription(
         key="camera_brightness",
         state_class=None,
         device_class=SensorDeviceClass.ENUM,
+        options=[brightness.name.lower() for brightness in VioBrightness],
         value_fn=lambda mower_data: camera_brightness(
             mower_data.report_data.vision_info.brightness
         ),
@@ -176,11 +182,50 @@ LUBA_2_YUKA_ONLY_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
         state_class=None,
         device_class=SensorDeviceClass.ENUM,
         native_unit_of_measurement=None,
+        options=[state.name for state in VioState],
         value_fn=lambda mower_data: (
             VioState(mower_data.report_data.vision_info.vio_state).name
         ),
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
+)
+
+LIDAR_POSITIONING_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
+    MammotionSensorEntityDescription(
+        key="lidar_positioning_status",
+        state_class=None,
+        device_class=SensorDeviceClass.ENUM,
+        options=["good", "none"],
+        value_fn=lambda mower_data: (
+            "good" if mower_data.report_data.dev.lidar_positioning_ok else "none"
+        ),
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+)
+
+FUSED_LOCALIZATION_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
+    MammotionSensorEntityDescription(
+        key="fused_localization_status",
+        state_class=None,
+        device_class=SensorDeviceClass.ENUM,
+        options=[status.name.lower() for status in FuseLocalizationStatus],
+        value_fn=lambda mower_data: (
+            mower_data.report_data.dev.fuse_localization_status.name.lower()
+        ),
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    MammotionSensorEntityDescription(
+        key="vision_survival",
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=PERCENTAGE,
+        value_fn=lambda mower_data: mower_data.report_data.dev.vision_survival,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+)
+
+LUBA_2_YUKA_ONLY_TYPES: tuple[MammotionSensorEntityDescription, ...] = (
     MammotionSensorEntityDescription(
         key="maintenance_distance",
         state_class=SensorStateClass.MEASUREMENT,
@@ -693,10 +738,22 @@ async def async_setup_entry(
                 for description in LUBA_SENSOR_ONLY_TYPES
             )
 
-        if DeviceType.is_luba_pro(mower.device.device_name):
+        name, product_key = mower.device.device_name, mower.device.product_key
+        if DeviceType.supports_vision_positioning(name, product_key):
             entities.extend(
                 MammotionSensorEntity(mower.reporting_coordinator, description)
-                for description in LUBA_2_YUKA_ONLY_TYPES
+                for description in VISION_POSITIONING_TYPES
+            )
+        if DeviceType.supports_lidar_positioning(name, product_key):
+            entities.extend(
+                MammotionSensorEntity(mower.reporting_coordinator, description)
+                for description in LIDAR_POSITIONING_TYPES
+            )
+
+        if DeviceType.is_luba_pro(name, product_key):
+            entities.extend(
+                MammotionSensorEntity(mower.reporting_coordinator, description)
+                for description in (*LUBA_2_YUKA_ONLY_TYPES, *FUSED_LOCALIZATION_TYPES)
             )
             entities.extend(
                 MammotionSensorEntity(mower.reporting_coordinator, description)

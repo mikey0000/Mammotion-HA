@@ -100,7 +100,13 @@
         "name": "BLE RSSI"
       },
       "camera_brightness": {
-        "name": "Osvetlitev kamere"
+        "name": "Osvetlitev kamere",
+        "state": {
+          "dark": "Temno",
+          "good": "Dobro",
+          "intense": "Intenzivno",
+          "unknown": "Neznano"
+        }
       },
       "wifi_rssi": {
         "name": "Wifi RSSI"
@@ -171,6 +177,27 @@
           "SIGNAL_BAD": "Slabo",
           "SIGNAL_UNKNOWN": "Neznano"
         }
+      },
+      "lidar_positioning_status": {
+        "name": "Stanje pozicioniranja LiDAR",
+        "state": {
+          "good": "Dobro",
+          "none": "Brez"
+        }
+      },
+      "fused_localization_status": {
+        "name": "Stanje združene lokalizacije",
+        "state": {
+          "unknown": "Neznano",
+          "no_pose": "Brez položaja",
+          "rtk_fixed": "RTK fiksno",
+          "rtk_extended_vision": "RTK razširjeno",
+          "vision_extended": "Vizualno razširjeno",
+          "vision_extended_failed": "Vizualna razširitev ni uspela"
+        }
+      },
+      "vision_survival": {
+        "name": "Vizualna vzdržljivost"
       },
       "activity_mode": {
         "name": "Vrsta dejavnosti",

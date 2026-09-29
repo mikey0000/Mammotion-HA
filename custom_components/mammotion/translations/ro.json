@@ -100,7 +100,13 @@
         "name": "BLE RSSI"
       },
       "camera_brightness": {
-        "name": "Luminozitatea camerei"
+        "name": "Luminozitatea camerei",
+        "state": {
+          "dark": "Întunecată",
+          "good": "Bună",
+          "intense": "Intensă",
+          "unknown": "Necunoscută"
+        }
       },
       "wifi_rssi": {
         "name": "Wi-Fi RSSI"
@@ -171,6 +177,27 @@
           "SIGNAL_BAD": "Slab",
           "SIGNAL_UNKNOWN": "Necunoscut"
         }
+      },
+      "lidar_positioning_status": {
+        "name": "Stare poziționare LiDAR",
+        "state": {
+          "good": "Bun",
+          "none": "Niciunul"
+        }
+      },
+      "fused_localization_status": {
+        "name": "Stare localizare fuzionată",
+        "state": {
+          "unknown": "Necunoscut",
+          "no_pose": "Nicio poziție",
+          "rtk_fixed": "RTK fix",
+          "rtk_extended_vision": "RTK extins",
+          "vision_extended": "Extindere vizuală",
+          "vision_extended_failed": "Extindere vizuală eșuată"
+        }
+      },
+      "vision_survival": {
+        "name": "Autonomie vizuală"
       },
       "activity_mode": {
         "name": "Tipul de activitate",

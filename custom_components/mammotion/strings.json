@@ -100,7 +100,13 @@
         "name": "BLE RSSI"
       },
       "camera_brightness": {
-        "name": "Camera Brightness"
+        "name": "Camera Brightness",
+        "state": {
+          "dark": "Dark",
+          "good": "Good",
+          "intense": "Intense",
+          "unknown": "Unknown"
+        }
       },
       "wifi_rssi": {
         "name": "WiFi RSSI"
@@ -171,6 +177,27 @@
           "SIGNAL_BAD": "Bad",
           "SIGNAL_UNKNOWN": "Unknown"
         }
+      },
+      "lidar_positioning_status": {
+        "name": "LiDAR positioning status",
+        "state": {
+          "good": "Good",
+          "none": "None"
+        }
+      },
+      "fused_localization_status": {
+        "name": "Fused localisation status",
+        "state": {
+          "unknown": "Unknown",
+          "no_pose": "No position",
+          "rtk_fixed": "RTK fixed",
+          "rtk_extended_vision": "RTK extended",
+          "vision_extended": "Vision extended",
+          "vision_extended_failed": "Vision extension failed"
+        }
+      },
+      "vision_survival": {
+        "name": "Vision survival"
       },
       "activity_mode": {
         "name": "Activity mode",

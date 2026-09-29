@@ -160,3 +160,21 @@ def test_the_shipped_pin_has_moved_past_the_release_without_these_apis() -> None
         f"manifest.json still pins {_RELEASE_WITHOUT_THESE_APIS}, which predates "
         "the APIs above — cut a release and bump the pin before shipping"
     )
+
+
+def test_the_positioning_gates_and_accessors_exist() -> None:
+    """sensor.py and entity.py gate and read the positioning sensors through these; 0.9.9 has none."""
+    device_type = _source("utility/device_type.py")
+    assert "def supports_vision_positioning(" in device_type
+    assert "def supports_lidar_positioning(" in device_type
+    report_info = _source("data/model/report_info.py")
+    for accessor in (
+        "fuse_localization_status",
+        "lidar_positioning_ok",
+        "vision_survival",
+    ):
+        assert f"def {accessor}(" in report_info
+    assert "class VioBrightness(" in _source("utility/constant/device_enums.py")
+    assert "class FuseLocalizationStatus(UnknownTolerantIntEnum)" in _source(
+        "data/model/enums.py"
+    )
