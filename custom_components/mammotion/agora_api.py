@@ -155,7 +155,7 @@ class AgoraResponse:
             detail = {**detail, **buffer.get("detail", {})}
             uid = buffer.get("uid", 0)
 
-            _log.info(
+            _log.debug(
                 "Parsing response flag=%d, uid=%d, edges_count=%d",
                 flag,
                 uid,
@@ -265,12 +265,12 @@ class AgoraResponse:
             turn_addresses if use_all_turn_servers else turn_addresses[:1]
         )
 
-        _log.info(
-            "Creating ICE servers: use_all=%s, mode=%s, addr_count=%d",
-            use_all_turn_servers,
-            new_turn_mode,
-            len(addresses_to_use),
-        )
+        # _log.debug(
+        #     "Creating ICE servers: use_all=%s, mode=%s, addr_count=%d",
+        #     use_all_turn_servers,
+        #     new_turn_mode,
+        #     len(addresses_to_use),
+        # )
 
         for addr in addresses_to_use:
             _log.debug(
@@ -323,17 +323,17 @@ class AgoraResponse:
                     )
                 )
 
-        _log.info(
-            "Created %d ICE server entries from %d addresses",
-            len(ice_servers),
-            len(addresses_to_use),
-        )
+        # _log.info(
+        #     "Created %d ICE server entries from %d addresses",
+        #     len(ice_servers),
+        #     len(addresses_to_use),
+        # )
 
         # SUMMARY: Log all created ICE servers for validation
         if ice_servers:
-            _log.info("ICE Server Summary:")
+            _log.debug("ICE Server Summary:")
             for i, server in enumerate(ice_servers):
-                _log.info(
+                _log.debug(
                     "  [%d] urls=%s, username=%s, cred_present=%s",
                     i,
                     server.urls,
@@ -537,7 +537,7 @@ class AgoraAPIClient:
         if self._own_session and self.session:
             await self.session.close()
 
-    async def choose_server(
+    async def choose_server(  # noqa: PLR0917
         self,
         app_id: str,
         token: str,
@@ -603,7 +603,7 @@ class AgoraAPIClient:
         # Parse response
         return AgoraResponse.from_api_response(response)
 
-    async def update_ticket(
+    async def update_ticket(  # noqa: PLR0917
         self,
         app_id: str,
         token: str,
@@ -690,10 +690,12 @@ class AgoraAPIClient:
         for obj in objects:
             if obj is not None:
                 # Merge object, filtering out None values (equivalent to undefined in JS)
-                result.update({key: value for key, value in obj.items() if value is not None})
+                result.update(
+                    {key: value for key, value in obj.items() if value is not None}
+                )
         return result
 
-    def _build_request_payload(
+    def _build_request_payload(  # noqa: PLR0917
         self,
         app_id: str,
         token: str,
