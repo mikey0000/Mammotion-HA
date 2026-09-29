@@ -198,7 +198,7 @@
         }
       },
       "vision_survival": {
-        "name": "Visueel uithoudingsvermogen"
+        "name": "3D-zicht"
       },
       "activity_mode": {
         "name": "Activiteitsmodus",
@@ -767,7 +767,7 @@
         "name": "Maaien hervatten bij"
       },
       "ride_boundary_distance": {
-        "name": "Afstand randrit"
+        "name": "Randdekking"
       },
       "start_progress": {
         "name": "Start voortgang"
@@ -966,11 +966,11 @@
         },
         "auto_change_direction": {
           "name": "Maairichting automatisch omkeren",
-          "description": "Keert de maairichting om tussen de rondes: 0 = uit, 1 = aan. Alleen gebruikt op modellen en firmware die dit ondersteunen. Weggelaten geldt de instelling van de schakelaar."
+          "description": "Keert de maairichting om tussen de rondes: 0 = uit, 1 = aan. Alleen gebruikt op modellen en firmware die dit ondersteunen. Indien weggelaten, geldt de instelling van de schakelaar."
         },
         "ride_boundary_distance": {
-          "name": "Afstand randrit",
-          "description": "Hoe ver de maaier langs de rand naar buiten rijdt, van 0 tot 1. Alleen gebruikt op modellen die dit ondersteunen en wanneer omtrekrondes aan staan."
+          "name": "Randdekking",
+          "description": "Hoe ver de maaier tijdens de randrondes naar buiten rijdt, van 0 (binnenrand) tot 1 (op de rand). Alleen gebruikt op modellen die dit ondersteunen en wanneer randrondes aan staan."
         },
         "areas": {
           "name": "Gebiedselectie",
@@ -1285,12 +1285,12 @@
           "description": "Alleen maaier: 0 = geen, 1 = één keer, 2 = twee keer."
         },
         "ride_boundary_distance": {
-          "name": "Afstand randrit",
-          "description": "Hoe ver de maaier langs de rand naar buiten rijdt, van 0 tot 1. Alleen gebruikt op modellen die dit ondersteunen en wanneer omtrekrondes aan staan."
+          "name": "Randdekking",
+          "description": "Hoe ver de maaier tijdens de randrondes naar buiten rijdt, van 0 (binnenrand) tot 1 (op de rand). Alleen gebruikt op modellen die dit ondersteunen en wanneer randrondes aan staan."
         },
         "auto_change_direction": {
           "name": "Maairichting automatisch omkeren",
-          "description": "Maairichting automatisch omkeren — keert de maairichting om tussen de rondes, zodat het gras minder plat komt te liggen: 0 = uit, 1 = aan. Alleen op modellen en firmware die dit ondersteunen. Weggelaten blijft de instelling van het schema behouden (uit voor een nieuw schema)."
+          "description": "Maairichting automatisch omkeren — keert de maairichting om tussen de rondes, zodat het gras minder plat komt te liggen: 0 = uit, 1 = aan. Alleen op modellen en firmware die dit ondersteunen. Indien weggelaten, blijft de instelling van het schema behouden (uit voor een nieuw schema)."
         },
         "route_angle": {
           "name": "Routehoek",
@@ -1383,12 +1383,12 @@
           "description": "Alleen maaier."
         },
         "ride_boundary_distance": {
-          "name": "Afstand randrit",
-          "description": "Hoe ver de maaier langs de rand naar buiten rijdt, van 0 tot 1. Alleen gebruikt op modellen die dit ondersteunen en wanneer omtrekrondes aan staan."
+          "name": "Randdekking",
+          "description": "Hoe ver de maaier tijdens de randrondes naar buiten rijdt, van 0 (binnenrand) tot 1 (op de rand). Alleen gebruikt op modellen die dit ondersteunen en wanneer randrondes aan staan."
         },
         "auto_change_direction": {
           "name": "Maairichting automatisch omkeren",
-          "description": "Maairichting automatisch omkeren — keert de maairichting om tussen de rondes, zodat het gras minder plat komt te liggen: 0 = uit, 1 = aan. Alleen op modellen en firmware die dit ondersteunen. Weggelaten blijft de instelling van het schema behouden (uit voor een nieuw schema)."
+          "description": "Maairichting automatisch omkeren — keert de maairichting om tussen de rondes, zodat het gras minder plat komt te liggen: 0 = uit, 1 = aan. Alleen op modellen en firmware die dit ondersteunen. Indien weggelaten, blijft de instelling van het schema behouden (uit voor een nieuw schema)."
         },
         "route_angle": {
           "name": "Routehoek",

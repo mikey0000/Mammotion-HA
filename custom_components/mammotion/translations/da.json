@@ -66,7 +66,7 @@
           "notify": "Vis vedvarende notifikationer for"
         },
         "data_description": {
-          "movement_use_wifi": "Sender den gamle bevægelseskommando via Wi-Fi i stedet for at bruge fjernkørsel via cloud. Uden denne indstilling virker skubbeknapperne og bevægelseshandlingerne via cloud fra firmware 1.30.31.19 på LUBA 2, LUBA 2X, YUKA, LUBA mini og YUKA mini, fra 2.3.31.69 på LUBA 3, LUBA mini 2 og YUKA mini 2 og på nyere modeller, som Mammotion-serveren melder understøttelse for, kun mens Fjernkørsel via cloud er slået til og bekræftet. Slå dette til for at bruge den gamle kommando med al firmware, fx for at sammenligne begge på en LUBA 3; en tilsluttet Bluetooth-forbindelse bruges stadig først.",
+          "movement_use_wifi": "Sender den gamle bevægelseskommando via Wi-Fi i stedet for at bruge fjernkørsel via skyen. Uden denne indstilling virker skubbeknapperne og bevægelseshandlingerne via skyen fra firmware 1.30.31.19 på LUBA 2, LUBA 2X, YUKA, LUBA mini og YUKA mini, fra 2.3.31.69 på LUBA 3, LUBA mini 2 og YUKA mini 2 og på nyere modeller, som Mammotion-serveren melder understøttelse for, kun mens Fjernkørsel via skyen er slået til og bekræftet. Slå dette til for at bruge den gamle kommando med al firmware, fx for at sammenligne begge på en LUBA 3; en tilsluttet Bluetooth-forbindelse bruges stadig først.",
           "notify": "Selvtestmeddelelser er slået til som standard; de andre er slået fra. Hver meddelelse udløser også plæneklipperens meddelelseshændelsesenhed og en mammotion_event-hændelse på bussen, som automatiseringer kan bruge i stedet."
         }
       }
@@ -101,7 +101,7 @@
         "name": "BLE RSSI"
       },
       "camera_brightness": {
-        "name": "Kamera lysstyrke",
+        "name": "Kameraets lysstyrke",
         "state": {
           "dark": "Mørk",
           "good": "God",
@@ -198,7 +198,7 @@
         }
       },
       "vision_survival": {
-        "name": "Visuel udholdenhed"
+        "name": "3D-vision"
       },
       "activity_mode": {
         "name": "Aktivitetstilstand",
@@ -598,7 +598,7 @@
         "name": "Vandlinjeparkering"
       },
       "remote_drive": {
-        "name": "Fjernkørsel via cloud"
+        "name": "Fjernkørsel via skyen"
       }
     },
     "select": {
@@ -767,7 +767,7 @@
         "name": "Genoptag klipning ved"
       },
       "ride_boundary_distance": {
-        "name": "Kørselsafstand ved grænsen"
+        "name": "Kantdækning"
       },
       "start_progress": {
         "name": "Start forløb på"
@@ -969,8 +969,8 @@
           "description": "Skifter klipperetning mellem kørsler: 0 = fra, 1 = til. Bruges kun på modeller og firmware, der understøtter det. Udelades feltet, gælder kontaktens indstilling."
         },
         "ride_boundary_distance": {
-          "name": "Kørselsafstand ved grænsen",
-          "description": "Hvor langt plæneklipperen kører udad langs kanten, fra 0 til 1. Bruges kun på modeller, der understøtter det, og når omkredsrunder er slået til."
+          "name": "Kantdækning",
+          "description": "Hvor langt ud plæneklipperen kører under kantklipningsomgangene, fra 0 (inderkant) til 1 (på kanten). Bruges kun på modeller, der understøtter det, og når kantklipningsomgange er slået til."
         },
         "areas": {
           "name": "Områdevalg",
@@ -1285,8 +1285,8 @@
           "description": "Kun plæneklipper: 0 = ingen, 1 = én gang, 2 = to gange."
         },
         "ride_boundary_distance": {
-          "name": "Kørselsafstand ved grænsen",
-          "description": "Hvor langt plæneklipperen kører udad langs kanten, fra 0 til 1. Bruges kun på modeller, der understøtter det, og når omkredsrunder er slået til."
+          "name": "Kantdækning",
+          "description": "Hvor langt ud plæneklipperen kører under kantklipningsomgangene, fra 0 (inderkant) til 1 (på kanten). Bruges kun på modeller, der understøtter det, og når kantklipningsomgange er slået til."
         },
         "auto_change_direction": {
           "name": "Automatisk vending af klipperetning",
@@ -1383,8 +1383,8 @@
           "description": "Kun plæneklipper."
         },
         "ride_boundary_distance": {
-          "name": "Kørselsafstand ved grænsen",
-          "description": "Hvor langt plæneklipperen kører udad langs kanten, fra 0 til 1. Bruges kun på modeller, der understøtter det, og når omkredsrunder er slået til."
+          "name": "Kantdækning",
+          "description": "Hvor langt ud plæneklipperen kører under kantklipningsomgangene, fra 0 (inderkant) til 1 (på kanten). Bruges kun på modeller, der understøtter det, og når kantklipningsomgange er slået til."
         },
         "auto_change_direction": {
           "name": "Automatisk vending af klipperetning",
@@ -1685,58 +1685,58 @@
       "message": "Plæneklipperen meldte en ukendt selvtestkode {code}."
     },
     "remote_drive_needs_cloud": {
-      "message": "Fjernkørsel via cloud kræver en fungerende cloudforbindelse til robotten. Brug i stedet skubbeknapperne via Bluetooth."
+      "message": "Fjernkørsel via skyen kræver en fungerende skyforbindelse til plæneklipperen. Brug i stedet skubbeknapperne via Bluetooth."
     },
     "remote_drive_already_running": {
-      "message": "Fjernkørsel via cloud kører allerede. Slå den fra, før du starter igen."
+      "message": "Fjernkørsel via skyen kører allerede. Slå den fra, før du starter igen."
     },
     "remote_drive_not_awaiting_confirmation": {
-      "message": "Der er ingen sikkerhedsmeddelelse at bekræfte. Slå først fjernkørsel via cloud til."
+      "message": "Der er ingen sikkerhedsmeddelelse at bekræfte. Slå først fjernkørsel via skyen til."
     },
     "remote_drive_no_reverse": {
-      "message": "Fjernkørsel via cloud kan ikke bakke med robotten. Drej den med venstre eller højre i stedet, eller brug Bluetooth."
+      "message": "Fjernkørsel via skyen kan ikke bakke med plæneklipperen. Drej den med venstre eller højre i stedet, eller brug Bluetooth."
     },
     "remote_drive_fence_paused": {
-      "message": "Robotten stoppede ved grænsen. Tryk på \"Bekræft grænseadvarsel\", før du kører videre."
+      "message": "Plæneklipperen stoppede ved grænsen. Tryk på \"Bekræft grænseadvarsel\", før du kører videre."
     },
     "remote_drive_safety_notice": {
-      "message": "Før du fjernstyrer robotten, skal du sikre dig, at der ikke er personer eller dyr i arbejdsområdet, og holde robotten inden for synsvidde hele tiden. Tryk på \"Bekræft fjernkørsel\" inden for 3 minutter for at starte. Sessionen slutter af sig selv kort efter, at du holder op med at give input."
+      "message": "Før du fjernstyrer plæneklipperen, skal du sikre dig, at der ikke er personer eller dyr i arbejdsområdet, og holde plæneklipperen inden for synsvidde hele tiden. Tryk på \"Bekræft fjernkørsel\" inden for 3 minutter for at starte. Sessionen slutter af sig selv kort efter, at du holder op med at give input."
     },
     "movement_unavailable": {
-      "message": "Robotten kan ikke flyttes lige nu. Kom inden for Bluetooth-rækkevidde, eller slå fjernkørsel via cloud til og tryk på \"Bekræft fjernkørsel\"."
+      "message": "Plæneklipperen kan ikke flyttes lige nu. Kom inden for Bluetooth-rækkevidde, eller slå fjernkørsel via skyen til og tryk på \"Bekræft fjernkørsel\"."
     },
     "notification_title_remote_drive": {
-      "message": "{device_name}: fjernkørsel via cloud"
+      "message": "{device_name}: fjernkørsel via skyen"
     },
     "remote_drive_token_unavailable": {
       "message": "Mammotion-serveren tillod ikke fjernkørsel (kode {detail}). Prøv igen senere."
     },
     "remote_drive_occupied_by_other": {
-      "message": "Robotten styres allerede af en anden konto ({detail})."
+      "message": "Plæneklipperen styres allerede af en anden konto ({detail})."
     },
     "remote_drive_network_poor": {
-      "message": "Fjernkørsel afsluttet: robottens netværksforbindelse er for dårlig."
+      "message": "Fjernkørsel afsluttet: plæneklipperens netværksforbindelse er for dårlig."
     },
     "remote_drive_token_expired": {
       "message": "Fjernkørsel afsluttet: tilladelsen til at køre er udløbet."
     },
     "remote_drive_out_of_fence": {
-      "message": "Fjernkørsel afsluttet: robotten er uden for det tilladte område."
+      "message": "Fjernkørsel afsluttet: plæneklipperen er uden for det tilladte område."
     },
     "remote_drive_ble_preempt": {
-      "message": "Fjernkørsel afsluttet: robotten styres nu via Bluetooth af {detail}."
+      "message": "Fjernkørsel afsluttet: plæneklipperen styres nu via Bluetooth af {detail}."
     },
     "remote_drive_no_loc_mileage_exhausted": {
-      "message": "Fjernkørsel afsluttet: robotten har kørt så langt, som den må uden positionsbestemmelse."
+      "message": "Fjernkørsel afsluttet: plæneklipperen har kørt så langt, som den må uden positionsbestemmelse."
     },
     "remote_drive_env_not_ready": {
-      "message": "Fjernkørsel afsluttet: robotten er ikke klar til at blive styret (kode {detail})."
+      "message": "Fjernkørsel afsluttet: plæneklipperen er ikke klar til at blive styret (kode {detail})."
     },
     "remote_drive_send_failed": {
       "message": "Fjernkørsel afsluttet: en kommando kunne ikke sendes ({detail})."
     },
     "remote_drive_approach_fence": {
-      "message": "Robotten stoppede tæt ved grænsen. Tryk på \"Bekræft grænseadvarsel\" for at køre videre."
+      "message": "Plæneklipperen stoppede tæt ved grænsen. Tryk på \"Bekræft grænseadvarsel\" for at køre videre."
     },
     "remote_drive_safety_notice_timeout": {
       "message": "Fjernkørsel afsluttet: sikkerhedsmeddelelsen blev ikke bekræftet inden for 3 minutter."

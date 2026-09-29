@@ -198,7 +198,7 @@
         }
       },
       "vision_survival": {
-        "name": "Autonomie visuelle"
+        "name": "Vision 3D"
       },
       "activity_mode": {
         "name": "Mode activité",
@@ -521,7 +521,7 @@
         "name": "Confirmer la conduite à distance"
       },
       "acknowledge_remote_drive_fence": {
-        "name": "Accuser l'alerte de limite"
+        "name": "Acquitter l'alerte de limite"
       }
     },
     "switch": {
@@ -767,7 +767,7 @@
         "name": "Reprise de la tonte à"
       },
       "ride_boundary_distance": {
-        "name": "Distance de parcours de la bordure"
+        "name": "Couverture des bordures"
       },
       "start_progress": {
         "name": "Départ de la progression"
@@ -969,8 +969,8 @@
           "description": "Inverse le sens de tonte d'un passage à l'autre : 0 = désactivé, 1 = activé. Utilisé uniquement sur les modèles et firmwares compatibles. S'il est omis, le réglage de l'interrupteur s'applique."
         },
         "ride_boundary_distance": {
-          "name": "Distance de parcours de la bordure",
-          "description": "Distance à laquelle la tondeuse roule vers l'extérieur le long de la bordure, de 0 à 1. Utilisé uniquement sur les modèles compatibles et lorsque les tours de périmètre sont activés."
+          "name": "Couverture des bordures",
+          "description": "Jusqu'où la tondeuse se décale vers l'extérieur pendant les tours de périmètre, de 0 (bord intérieur) à 1 (sur le bord). Utilisé uniquement sur les modèles compatibles et lorsque les tours de périmètre sont activés."
         },
         "areas": {
           "name": "Zones",
@@ -1285,12 +1285,12 @@
           "description": "Tondeuse uniquement : 0 = aucun, 1 = une fois, 2 = deux fois."
         },
         "ride_boundary_distance": {
-          "name": "Distance de parcours de la bordure",
-          "description": "Distance à laquelle la tondeuse roule vers l'extérieur le long de la bordure, de 0 à 1. Utilisé uniquement sur les modèles compatibles et lorsque les tours de périmètre sont activés."
+          "name": "Couverture des bordures",
+          "description": "Jusqu'où la tondeuse se décale vers l'extérieur pendant les tours de périmètre, de 0 (bord intérieur) à 1 (sur le bord). Utilisé uniquement sur les modèles compatibles et lorsque les tours de périmètre sont activés."
         },
         "auto_change_direction": {
           "name": "Inversion automatique du sens de tonte",
-          "description": "Inversion automatique du sens de tonte — inverse le sens de tonte d'un passage à l'autre pour limiter le couchage de l'herbe : 0 = désactivé, 1 = activé. Uniquement sur les modèles et firmwares compatibles. S'il est omis, le réglage de la planification est conservé (désactivé pour une nouvelle planification)."
+          "description": "Inversion automatique du sens de tonte — inverse le sens de tonte d'un passage à l'autre pour limiter le couchage de l'herbe : 0 = désactivé, 1 = activé. Uniquement sur les modèles et firmwares compatibles. S'il est omis, le réglage du programme est conservé (désactivé pour un nouveau programme)."
         },
         "route_angle": {
           "name": "Angle de trajectoire",
@@ -1383,12 +1383,12 @@
           "description": "Tondeuse uniquement."
         },
         "ride_boundary_distance": {
-          "name": "Distance de parcours de la bordure",
-          "description": "Distance à laquelle la tondeuse roule vers l'extérieur le long de la bordure, de 0 à 1. Utilisé uniquement sur les modèles compatibles et lorsque les tours de périmètre sont activés."
+          "name": "Couverture des bordures",
+          "description": "Jusqu'où la tondeuse se décale vers l'extérieur pendant les tours de périmètre, de 0 (bord intérieur) à 1 (sur le bord). Utilisé uniquement sur les modèles compatibles et lorsque les tours de périmètre sont activés."
         },
         "auto_change_direction": {
           "name": "Inversion automatique du sens de tonte",
-          "description": "Inversion automatique du sens de tonte — inverse le sens de tonte d'un passage à l'autre pour limiter le couchage de l'herbe : 0 = désactivé, 1 = activé. Uniquement sur les modèles et firmwares compatibles. S'il est omis, le réglage de la planification est conservé (désactivé pour une nouvelle planification)."
+          "description": "Inversion automatique du sens de tonte — inverse le sens de tonte d'un passage à l'autre pour limiter le couchage de l'herbe : 0 = désactivé, 1 = activé. Uniquement sur les modèles et firmwares compatibles. S'il est omis, le réglage du programme est conservé (désactivé pour un nouveau programme)."
         },
         "route_angle": {
           "name": "Angle de trajectoire",
@@ -1697,7 +1697,7 @@
       "message": "La conduite à distance par le cloud ne permet pas de reculer. Tournez à gauche ou à droite, ou utilisez le Bluetooth."
     },
     "remote_drive_fence_paused": {
-      "message": "La tondeuse s'est arrêtée près de la limite. Appuyez sur « Accuser l'alerte de limite » avant de continuer."
+      "message": "La tondeuse s'est arrêtée près de la limite. Appuyez sur « Acquitter l'alerte de limite » avant de continuer."
     },
     "remote_drive_safety_notice": {
       "message": "Avant de conduire la tondeuse à distance, assurez-vous qu'aucune personne ni aucun animal ne se trouve dans la zone de travail et gardez la tondeuse en vue en permanence. Appuyez sur « Confirmer la conduite à distance » dans les 3 minutes pour commencer. La session se termine d'elle-même peu après votre dernière commande."
@@ -1736,7 +1736,7 @@
       "message": "Conduite à distance terminée : une commande n'a pas pu être envoyée ({detail})."
     },
     "remote_drive_approach_fence": {
-      "message": "La tondeuse s'est arrêtée tout près de la limite. Appuyez sur « Accuser l'alerte de limite » pour continuer."
+      "message": "La tondeuse s'est arrêtée tout près de la limite. Appuyez sur « Acquitter l'alerte de limite » pour continuer."
     },
     "remote_drive_safety_notice_timeout": {
       "message": "Conduite à distance terminée : l'avertissement de sécurité n'a pas été confirmé dans les 3 minutes."

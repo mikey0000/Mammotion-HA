@@ -23,7 +23,7 @@
     "flow_title": "{name}",
     "step": {
       "bluetooth_confirm": {
-        "description": "Configurație{name}"
+        "description": "Configurare {name}"
       },
       "reconfigure": {
         "data": {
@@ -198,7 +198,7 @@
         }
       },
       "vision_survival": {
-        "name": "Autonomie vizuală"
+        "name": "Vedere 3D"
       },
       "activity_mode": {
         "name": "Tipul de activitate",
@@ -767,7 +767,7 @@
         "name": "Reluare tuns la"
       },
       "ride_boundary_distance": {
-        "name": "Distanța de parcurgere a marginii"
+        "name": "Acoperire margini"
       },
       "start_progress": {
         "name": "Progresul la start"
@@ -969,8 +969,8 @@
           "description": "Inversează direcția de tuns între rulări: 0 = oprit, 1 = pornit. Folosit doar pe modelele și firmware-ul care îl acceptă. Dacă este omis, se aplică setarea comutatorului."
         },
         "ride_boundary_distance": {
-          "name": "Distanța de parcurgere a marginii",
-          "description": "Cât de departe merge mașina de tuns spre exterior de-a lungul marginii, de la 0 la 1. Folosit doar pe modelele care îl acceptă și când turele de perimetru sunt activate."
+          "name": "Acoperire margini",
+          "description": "Cât de mult se deplasează spre exterior mașina de tuns în timpul turelor de perimetru, de la 0 (margine interioară) la 1 (pe margine). Folosit doar pe modelele care îl acceptă și când turele de perimetru sunt activate."
         },
         "areas": {
           "name": "Selecția zonei",
@@ -1285,8 +1285,8 @@
           "description": "Doar mașina de tuns: 0 = deloc, 1 = o dată, 2 = de două ori."
         },
         "ride_boundary_distance": {
-          "name": "Distanța de parcurgere a marginii",
-          "description": "Cât de departe merge mașina de tuns spre exterior de-a lungul marginii, de la 0 la 1. Folosit doar pe modelele care îl acceptă și când turele de perimetru sunt activate."
+          "name": "Acoperire margini",
+          "description": "Cât de mult se deplasează spre exterior mașina de tuns în timpul turelor de perimetru, de la 0 (margine interioară) la 1 (pe margine). Folosit doar pe modelele care îl acceptă și când turele de perimetru sunt activate."
         },
         "auto_change_direction": {
           "name": "Inversare automată a direcției de tuns",
@@ -1383,8 +1383,8 @@
           "description": "Doar mașina de tuns."
         },
         "ride_boundary_distance": {
-          "name": "Distanța de parcurgere a marginii",
-          "description": "Cât de departe merge mașina de tuns spre exterior de-a lungul marginii, de la 0 la 1. Folosit doar pe modelele care îl acceptă și când turele de perimetru sunt activate."
+          "name": "Acoperire margini",
+          "description": "Cât de mult se deplasează spre exterior mașina de tuns în timpul turelor de perimetru, de la 0 (margine interioară) la 1 (pe margine). Folosit doar pe modelele care îl acceptă și când turele de perimetru sunt activate."
         },
         "auto_change_direction": {
           "name": "Inversare automată a direcției de tuns",
@@ -1559,7 +1559,7 @@
       "message": "Nu s-a reușit trimiterea comenzii către mașina de tuns iarba."
     },
     "api_limit_exceeded": {
-      "message": "Limita de solicitări API a fost depăşită."
+      "message": "Limita de solicitări API a fost depășită."
     },
     "account_in_use": {
       "message": "Contul dvs. Mammotion este deja activ într-o altă sesiune. Deconectați-vă din aplicația Mammotion și încercați din nou."

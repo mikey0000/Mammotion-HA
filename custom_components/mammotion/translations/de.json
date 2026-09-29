@@ -4,8 +4,8 @@
       "already_configured": "Das Gerät ist bereits eingerichtet.",
       "already_in_progress": "Der Einrichtungsprozess läuft bereits.",
       "no_devices_found": "Es wurden keine Geräte gefunden.",
-      "no_devices_found_in_account": "Es wurden keine Geräte in ihrem Mammotion-Konto gefunden.",
-      "bluetooth_and_account_mismatch": "Es wurde kein Bluetooth-Gerät in ihrem Mammotion-Konto gefunden.",
+      "no_devices_found_in_account": "Es wurden keine Geräte in Ihrem Mammotion-Konto gefunden.",
+      "bluetooth_and_account_mismatch": "Es wurde kein Bluetooth-Gerät in Ihrem Mammotion-Konto gefunden.",
       "no_longer_present": "Das Gerät ist nicht länger verfügbar.",
       "not_supported": "Das Gerät wird nicht unterstützt.",
       "reconfigure_successful": "Die Neueinrichtung war erfolgreich.",
@@ -198,7 +198,7 @@
         }
       },
       "vision_survival": {
-        "name": "Visuelle Reichweite"
+        "name": "3D-Vision"
       },
       "activity_mode": {
         "name": "Status",
@@ -224,7 +224,7 @@
           "MODE_ERASER_DRAW": "Erstellt Muster",
           "MODE_EDIT_BOUNDARY": "Bearbeitet Begrenzung",
           "MODE_LOCATION_ERROR": "Fehler bei Standortbestimmung",
-          "MODE_BOUNDARY_JUMP": "Begrennzung überschritten",
+          "MODE_BOUNDARY_JUMP": "Begrenzung überschritten",
           "MODE_CHARGING_PAUSE": "Laden pausiert",
           "MODE_POWER_OFF": "Ausschalten"
         }
@@ -657,7 +657,7 @@
         }
       },
       "traversal_mode": {
-        "name": "Navigationmodus zur Ladestation",
+        "name": "Navigationsmodus zur Ladestation",
         "state": {
           "direct": "Direkt",
           "follow_perimeter": "Der Eingrenzung folgend"
@@ -1234,7 +1234,7 @@
     },
     "edit_task": {
       "name": "Aufgabe bearbeiten",
-      "description": "Sie können beliebige Teilmengen der Felder eines Zeitplans bearbeiten. Nicht angegebene Felder behalten ihren gespeicherten Wert bei (Round-Trip vom Gerät). Felder, die ausschließlich für Mäh- oder Pollroboter gelten, werden jeweils einzeln beschrieben.",
+      "description": "Sie können beliebige Teilmengen der Felder eines Zeitplans bearbeiten. Nicht angegebene Felder behalten ihren gespeicherten Wert bei (Round-Trip vom Gerät). Felder, die ausschließlich für Mäh- oder Poolroboter gelten, werden jeweils einzeln beschrieben.",
       "fields": {
         "name": {
           "name": "Name",
@@ -1694,7 +1694,7 @@
       "message": "Es gibt keinen Sicherheitshinweis zum Bestätigen. Zuerst die Cloud-Fernsteuerung einschalten."
     },
     "remote_drive_no_reverse": {
-      "message": "Mit der Cloud-Fernsteuerung kann der Mähroboterr nicht rückwärts fahren. Stattdessen mit links oder rechts drehen oder Bluetooth verwenden."
+      "message": "Mit der Cloud-Fernsteuerung kann der Mähroboter nicht rückwärts fahren. Stattdessen mit links oder rechts drehen oder Bluetooth verwenden."
     },
     "remote_drive_fence_paused": {
       "message": "Der Mähroboter hat nahe der Grenze angehalten. Vor dem Weiterfahren „Grenzwarnung bestätigen“ drücken."
@@ -1745,7 +1745,7 @@
       "message": "Fernsteuerung beendet: Das Kamerabild ist ausgefallen."
     },
     "battery_settings_unread": {
-      "message": "Die Akkueinstellungen wurden noch nicht vom Märoboter gelesen. Eine Änderung würde jetzt das Nebenzeit-Ladefenster zurücksetzen, daher wurde nichts gesendet. Bitte erneut versuchen, sobald der Mähroboter verbunden ist."
+      "message": "Die Akkueinstellungen wurden noch nicht vom Mähroboter gelesen. Eine Änderung würde jetzt das Nebenzeit-Ladefenster zurücksetzen, daher wurde nichts gesendet. Bitte erneut versuchen, sobald der Mähroboter verbunden ist."
     }
   }
 }

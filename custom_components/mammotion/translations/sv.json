@@ -5,7 +5,7 @@
       "already_in_progress": "Konfigurationsflödet pågår redan",
       "no_devices_found": "Inga enheter funna",
       "no_devices_found_in_account": "Inga enheter funna på ditt konto",
-      "bluetooth_and_account_mismatch": "Ingen Bluetooth-enheten funnen på ditt konto",
+      "bluetooth_and_account_mismatch": "Bluetooth-enheten hittades inte på ditt konto",
       "no_longer_present": "Enheten finns inte längre",
       "not_supported": "Enheten stöds inte",
       "reconfigure_successful": "Omkonfigurering lyckades",
@@ -23,7 +23,7 @@
     "flow_title": "{name}",
     "step": {
       "bluetooth_confirm": {
-        "description": "Konfiguration {name}"
+        "description": "Konfigurera {name}"
       },
       "reconfigure": {
         "data": {
@@ -101,7 +101,7 @@
         "name": "BLE RSSI"
       },
       "camera_brightness": {
-        "name": "Kamera ljusstyrka",
+        "name": "Kamerans ljusstyrka",
         "state": {
           "dark": "Mörk",
           "good": "Bra",
@@ -152,7 +152,7 @@
         "name": "RTK-position"
       },
       "position_type": {
-        "name": "Typ av enhet",
+        "name": "Positionstyp",
         "state": {
           "AREA_BORDER_ON": "Vid perimeter",
           "AREA_INSIDE": "Inuti område",
@@ -198,7 +198,7 @@
         }
       },
       "vision_survival": {
-        "name": "Visuell uthållighet"
+        "name": "3D-vision"
       },
       "activity_mode": {
         "name": "Aktivitetsläge",
@@ -592,7 +592,7 @@
         "name": "Turbo-rengöring"
       },
       "spino_platform_cleaning": {
-        "name": "Plattformrengöring"
+        "name": "Plattformsrengöring"
       },
       "spino_waterline_parking": {
         "name": "Parkering vid vattenlinjen"
@@ -603,11 +603,11 @@
     },
     "select": {
       "channel_mode": {
-        "name": "Val klipp mönster",
+        "name": "Klippmönster",
         "state": {
-          "single_grid": "Sicksack mönster",
-          "double_grid": "Schack mönster",
-          "segment_grid": "Adaptivt sicksack mönster",
+          "single_grid": "Sicksackmönster",
+          "double_grid": "Schackmönster",
+          "segment_grid": "Adaptivt sicksackmönster",
           "no_grid": "Enbart kantklippning"
         }
       },
@@ -666,7 +666,7 @@
       "turning_mode": {
         "name": "Vändningsläge",
         "state": {
-          "multipoint": "Flerpunkt sväng",
+          "multipoint": "Flerpunktssväng",
           "zero_turn": "Runt egen axel"
         }
       },
@@ -679,7 +679,7 @@
         }
       },
       "cutter_mode": {
-        "name": "Klipphastighet",
+        "name": "Knivhastighet",
         "state": {
           "normal": "Medel",
           "slow": "Långsam",
@@ -767,10 +767,10 @@
         "name": "Återuppta klippning vid"
       },
       "ride_boundary_distance": {
-        "name": "Köravstånd längs gränsen"
+        "name": "Kanttäckning"
       },
       "start_progress": {
-        "name": "Starta klippning"
+        "name": "Startförlopp"
       },
       "blade_height": {
         "name": "Bladens höjd"
@@ -779,10 +779,10 @@
         "name": "Arbetshastighet"
       },
       "cutting_angle": {
-        "name": "Klipp vinkel"
+        "name": "Klippvinkel"
       },
       "path_spacing": {
-        "name": "Avstånd till kant"
+        "name": "Banavstånd"
       },
       "dumping_interval": {
         "name": "Tömningsfrekvens"
@@ -842,7 +842,7 @@
       "options": {
         "0": "Sicksackklippning",
         "1": "Schackmönstrad klippning",
-        "2": "Adaptiv sicksack klippning",
+        "2": "Adaptiv sicksackklippning",
         "3": "Endast kantklippning"
       }
     },
@@ -961,16 +961,16 @@
           "description": "Antal varv runt förbjudna zoner."
         },
         "start_progress": {
-          "name": "Starta uppgift",
-          "description": "Start procent uppgift."
+          "name": "Startförlopp",
+          "description": "Startförlopp i procent."
         },
         "auto_change_direction": {
           "name": "Automatisk växling av klippriktning",
           "description": "Växlar klippriktning mellan körningar: 0 = av, 1 = på. Används bara på modeller och firmware som stöder det. Utelämnas fältet gäller brytarens inställning."
         },
         "ride_boundary_distance": {
-          "name": "Köravstånd längs gränsen",
-          "description": "Hur långt gräsklipparen kör utåt längs kanten, från 0 till 1. Används bara på modeller som stöder det och när omkretsvarv är aktiverade."
+          "name": "Kanttäckning",
+          "description": "Hur långt ut gräsklipparen kör under kantklippningsvarven, från 0 (innerkant) till 1 (på kanten). Används bara på modeller som stöder det och när kantklippningsvarv är på."
         },
         "areas": {
           "name": "Val av område",
@@ -1102,7 +1102,7 @@
       "fields": {
         "area_hash": {
           "name": "Områdeshash",
-          "description": "Hash för det överordnade klipområdet."
+          "description": "Hash för det överordnade klippområdet."
         },
         "svg_data": {
           "name": "SVG-data",
@@ -1148,7 +1148,7 @@
         },
         "area_hash": {
           "name": "Områdeshash",
-          "description": "Hash för det överordnade klipområdet."
+          "description": "Hash för det överordnade klippområdet."
         },
         "svg_data": {
           "name": "SVG-data",
@@ -1194,7 +1194,7 @@
         },
         "area_hash": {
           "name": "Områdeshash",
-          "description": "Hash för det överordnade klipområdet."
+          "description": "Hash för det överordnade klippområdet."
         }
       }
     },
@@ -1285,8 +1285,8 @@
           "description": "Endast klippare: 0 = inga, 1 = en gång, 2 = två gånger."
         },
         "ride_boundary_distance": {
-          "name": "Köravstånd längs gränsen",
-          "description": "Hur långt gräsklipparen kör utåt längs kanten, från 0 till 1. Används bara på modeller som stöder det och när omkretsvarv är aktiverade."
+          "name": "Kanttäckning",
+          "description": "Hur långt ut gräsklipparen kör under kantklippningsvarven, från 0 (innerkant) till 1 (på kanten). Används bara på modeller som stöder det och när kantklippningsvarv är på."
         },
         "auto_change_direction": {
           "name": "Automatisk växling av klippriktning",
@@ -1383,8 +1383,8 @@
           "description": "Endast klippare."
         },
         "ride_boundary_distance": {
-          "name": "Köravstånd längs gränsen",
-          "description": "Hur långt gräsklipparen kör utåt längs kanten, från 0 till 1. Används bara på modeller som stöder det och när omkretsvarv är aktiverade."
+          "name": "Kanttäckning",
+          "description": "Hur långt ut gräsklipparen kör under kantklippningsvarven, från 0 (innerkant) till 1 (på kanten). Används bara på modeller som stöder det och när kantklippningsvarv är på."
         },
         "auto_change_direction": {
           "name": "Automatisk växling av klippriktning",
@@ -1535,7 +1535,7 @@
   },
   "exceptions": {
     "device_not_ready": {
-      "message": "Enheten är inte färdig."
+      "message": "Enheten är inte redo."
     },
     "no_job_to_continue": {
       "message": "Det finns inget avbrutet uppdrag att fortsätta."
@@ -1553,7 +1553,7 @@
       "message": "Det gick inte att skicka gräsklipparen till laddstationen."
     },
     "dock_cancel_failed": {
-      "message": "Det gick inte att stoppa gräsklipparen återvänder till laddstationen."
+      "message": "Det gick inte att avbryta gräsklipparens återfärd till laddstationen."
     },
     "command_failed": {
       "message": "Det gick inte att skicka kommandot till gräsklipparen."
@@ -1685,7 +1685,7 @@
       "message": "Gräsklipparen rapporterade en okänd självtestkod {code}."
     },
     "remote_drive_needs_cloud": {
-      "message": "Fjärrkörning via moln kräver en fungerande molnanslutning till robotgräsklipparen. Använd knuffknapparna via Bluetooth i stället."
+      "message": "Fjärrkörning via moln kräver en fungerande molnanslutning till gräsklipparen. Använd knuffknapparna via Bluetooth i stället."
     },
     "remote_drive_already_running": {
       "message": "Fjärrkörning via moln är redan igång. Stäng av den innan du startar igen."
@@ -1694,16 +1694,16 @@
       "message": "Det finns inget säkerhetsmeddelande att bekräfta. Slå först på fjärrkörning via moln."
     },
     "remote_drive_no_reverse": {
-      "message": "Fjärrkörning via moln kan inte backa robotgräsklipparen. Sväng med vänster eller höger i stället, eller använd Bluetooth."
+      "message": "Fjärrkörning via moln kan inte backa gräsklipparen. Sväng med vänster eller höger i stället, eller använd Bluetooth."
     },
     "remote_drive_fence_paused": {
-      "message": "Robotgräsklipparen stannade vid gränsen. Tryck på \"Bekräfta gränsvarning\" innan du kör vidare."
+      "message": "Gräsklipparen stannade vid gränsen. Tryck på \"Bekräfta gränsvarning\" innan du kör vidare."
     },
     "remote_drive_safety_notice": {
-      "message": "Innan du fjärrkör robotgräsklipparen, se till att inga människor eller djur finns i arbetsområdet och ha den inom synhåll hela tiden. Tryck på \"Bekräfta fjärrkörning\" inom 3 minuter för att börja. Sessionen avslutas av sig själv strax efter att du slutat ge kommandon."
+      "message": "Innan du fjärrkör gräsklipparen, se till att inga människor eller djur finns i arbetsområdet och ha den inom synhåll hela tiden. Tryck på \"Bekräfta fjärrkörning\" inom 3 minuter för att börja. Sessionen avslutas av sig själv strax efter att du slutat ge kommandon."
     },
     "movement_unavailable": {
-      "message": "Robotgräsklipparen kan inte flyttas just nu. Kom inom Bluetooth-räckvidd, eller slå på fjärrkörning via moln och tryck på \"Bekräfta fjärrkörning\"."
+      "message": "Gräsklipparen kan inte flyttas just nu. Kom inom Bluetooth-räckvidd, eller slå på fjärrkörning via moln och tryck på \"Bekräfta fjärrkörning\"."
     },
     "notification_title_remote_drive": {
       "message": "{device_name}: fjärrkörning via moln"
@@ -1712,31 +1712,31 @@
       "message": "Mammotion-servern tillät inte fjärrkörning (kod {detail}). Försök igen senare."
     },
     "remote_drive_occupied_by_other": {
-      "message": "Robotgräsklipparen körs redan av ett annat konto ({detail})."
+      "message": "Gräsklipparen körs redan av ett annat konto ({detail})."
     },
     "remote_drive_network_poor": {
-      "message": "Fjärrkörningen avslutades: robotgräsklipparens nätverksanslutning är för dålig."
+      "message": "Fjärrkörningen avslutades: gräsklipparens nätverksanslutning är för dålig."
     },
     "remote_drive_token_expired": {
       "message": "Fjärrkörningen avslutades: behörigheten att köra har gått ut."
     },
     "remote_drive_out_of_fence": {
-      "message": "Fjärrkörningen avslutades: robotgräsklipparen är utanför det tillåtna området."
+      "message": "Fjärrkörningen avslutades: gräsklipparen är utanför det tillåtna området."
     },
     "remote_drive_ble_preempt": {
-      "message": "Fjärrkörningen avslutades: robotgräsklipparen styrs nu via Bluetooth av {detail}."
+      "message": "Fjärrkörningen avslutades: gräsklipparen styrs nu via Bluetooth av {detail}."
     },
     "remote_drive_no_loc_mileage_exhausted": {
-      "message": "Fjärrkörningen avslutades: robotgräsklipparen har kört så långt den får utan positionsbestämning."
+      "message": "Fjärrkörningen avslutades: gräsklipparen har kört så långt den får utan positionsbestämning."
     },
     "remote_drive_env_not_ready": {
-      "message": "Fjärrkörningen avslutades: robotgräsklipparen är inte redo att köras (kod {detail})."
+      "message": "Fjärrkörningen avslutades: gräsklipparen är inte redo att köras (kod {detail})."
     },
     "remote_drive_send_failed": {
       "message": "Fjärrkörningen avslutades: ett kommando kunde inte skickas ({detail})."
     },
     "remote_drive_approach_fence": {
-      "message": "Robotgräsklipparen stannade nära gränsen. Tryck på \"Bekräfta gränsvarning\" för att köra vidare."
+      "message": "Gräsklipparen stannade nära gränsen. Tryck på \"Bekräfta gränsvarning\" för att köra vidare."
     },
     "remote_drive_safety_notice_timeout": {
       "message": "Fjärrkörningen avslutades: säkerhetsmeddelandet bekräftades inte inom 3 minuter."

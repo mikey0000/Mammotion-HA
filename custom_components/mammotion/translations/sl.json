@@ -101,7 +101,7 @@
         "name": "BLE RSSI"
       },
       "camera_brightness": {
-        "name": "Osvetlitev kamere",
+        "name": "Svetlost kamere",
         "state": {
           "dark": "Temno",
           "good": "Dobro",
@@ -198,7 +198,7 @@
         }
       },
       "vision_survival": {
-        "name": "Vizualna vzdržljivost"
+        "name": "3D vid"
       },
       "activity_mode": {
         "name": "Vrsta dejavnosti",
@@ -521,7 +521,7 @@
         "name": "Potrdi daljinsko vožnjo"
       },
       "acknowledge_remote_drive_fence": {
-        "name": "Potrdi opozorilo meje"
+        "name": "Potrdi opozorilo o meji"
       }
     },
     "switch": {
@@ -767,7 +767,7 @@
         "name": "Nadaljevanje košnje pri"
       },
       "ride_boundary_distance": {
-        "name": "Razdalja vožnje ob meji"
+        "name": "Pokritost robov"
       },
       "start_progress": {
         "name": "Napredek"
@@ -969,8 +969,8 @@
           "description": "Med zagoni obrne smer košnje: 0 = izklopljeno, 1 = vklopljeno. Uporablja se samo pri modelih in vdelani programski opremi, ki to podpirajo. Če ga izpustite, velja nastavitev stikala."
         },
         "ride_boundary_distance": {
-          "name": "Razdalja vožnje ob meji",
-          "description": "Kako daleč kosilnica pelje navzven ob robu, od 0 do 1. Uporablja se samo pri modelih, ki to podpirajo, in ko so vklopljeni obodni krogi."
+          "name": "Pokritost robov",
+          "description": "Kako daleč se kosilnica med krogi po obodu zamakne navzven, od 0 (notranji rob) do 1 (na robu). Uporablja se samo pri modelih, ki to podpirajo, in ko so vklopljeni krogi po obodu."
         },
         "areas": {
           "name": "Območje naloge",
@@ -1285,8 +1285,8 @@
           "description": "Samo kosilnica: 0 = brez, 1 = enkrat, 2 = dvakrat."
         },
         "ride_boundary_distance": {
-          "name": "Razdalja vožnje ob meji",
-          "description": "Kako daleč kosilnica pelje navzven ob robu, od 0 do 1. Uporablja se samo pri modelih, ki to podpirajo, in ko so vklopljeni obodni krogi."
+          "name": "Pokritost robov",
+          "description": "Kako daleč se kosilnica med krogi po obodu zamakne navzven, od 0 (notranji rob) do 1 (na robu). Uporablja se samo pri modelih, ki to podpirajo, in ko so vklopljeni krogi po obodu."
         },
         "auto_change_direction": {
           "name": "Samodejno menjavanje smeri košnje",
@@ -1383,8 +1383,8 @@
           "description": "Samo kosilnica."
         },
         "ride_boundary_distance": {
-          "name": "Razdalja vožnje ob meji",
-          "description": "Kako daleč kosilnica pelje navzven ob robu, od 0 do 1. Uporablja se samo pri modelih, ki to podpirajo, in ko so vklopljeni obodni krogi."
+          "name": "Pokritost robov",
+          "description": "Kako daleč se kosilnica med krogi po obodu zamakne navzven, od 0 (notranji rob) do 1 (na robu). Uporablja se samo pri modelih, ki to podpirajo, in ko so vklopljeni krogi po obodu."
         },
         "auto_change_direction": {
           "name": "Samodejno menjavanje smeri košnje",
@@ -1580,7 +1580,7 @@
       "message": "Ta kosilnica ne podpira zbiranja trave."
     },
     "no_running_job": {
-      "message": "{device_name} trenutno ne izvaja opravila košnje, zato ni ničesar za spremeniti. Najprej zaženite opravilo."
+      "message": "{device_name} trenutno ne izvaja opravila košnje, zato ni česa spremeniti. Najprej zaženite opravilo."
     },
     "running_job_modify_unsupported": {
       "message": "{device_name} ne podpira spreminjanja opravila med izvajanjem. To omogočajo le Luba 2 in novejše."
@@ -1697,7 +1697,7 @@
       "message": "Z daljinsko vožnjo prek oblaka kosilnica ne more voziti vzvratno. Obrnite jo levo ali desno ali uporabite Bluetooth."
     },
     "remote_drive_fence_paused": {
-      "message": "Kosilnica se je ustavila ob meji. Preden nadaljujete, pritisnite »Potrdi opozorilo meje«."
+      "message": "Kosilnica se je ustavila ob meji. Preden nadaljujete, pritisnite »Potrdi opozorilo o meji«."
     },
     "remote_drive_safety_notice": {
       "message": "Preden kosilnico vozite daljinsko, se prepričajte, da v delovnem območju ni ljudi ali živali, in imejte kosilnico ves čas na očeh. Za začetek v 3 minutah pritisnite »Potrdi daljinsko vožnjo«. Seja se sama konča kmalu po zadnjem ukazu."
@@ -1736,7 +1736,7 @@
       "message": "Daljinska vožnja se je končala: ukaza ni bilo mogoče poslati ({detail})."
     },
     "remote_drive_approach_fence": {
-      "message": "Kosilnica se je ustavila tik ob meji. Za nadaljevanje vožnje pritisnite »Potrdi opozorilo meje«."
+      "message": "Kosilnica se je ustavila tik ob meji. Za nadaljevanje vožnje pritisnite »Potrdi opozorilo o meji«."
     },
     "remote_drive_safety_notice_timeout": {
       "message": "Daljinska vožnja se je končala: varnostno obvestilo ni bilo potrjeno v 3 minutah."
@@ -1745,7 +1745,7 @@
       "message": "Daljinska vožnja se je končala: slika kamere se je prekinila."
     },
     "battery_settings_unread": {
-      "message": "Nastavitve baterije še niso bile prebrane iz robota. Sprememba bi zdaj ponastavila okno polnjenja izven konice, zato ni bilo nič poslano. Poskusite znova, ko bo robot povezan."
+      "message": "Nastavitve baterije še niso bile prebrane iz kosilnice. Sprememba bi zdaj ponastavila okno polnjenja izven konice, zato ni bilo nič poslano. Poskusite znova, ko bo kosilnica povezana."
     }
   }
 }

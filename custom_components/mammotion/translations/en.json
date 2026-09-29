@@ -23,7 +23,7 @@
     "flow_title": "{name}",
     "step": {
       "bluetooth_confirm": {
-        "description": "Setup {name}"
+        "description": "Set up {name}"
       },
       "reconfigure": {
         "data": {
@@ -110,7 +110,7 @@
         }
       },
       "wifi_rssi": {
-        "name": "Wi-Fi RSSI"
+        "name": "WiFi RSSI"
       },
       "mnet_rssi": {
         "name": "Mobile RSSI"
@@ -198,7 +198,7 @@
         }
       },
       "vision_survival": {
-        "name": "Vision survival"
+        "name": "3D vision"
       },
       "activity_mode": {
         "name": "Activity mode",
@@ -303,7 +303,7 @@
         }
       },
       "rtk_app_connect_type": {
-        "name": "Connection type",
+        "name": "App Connection Type",
         "state": {
           "UNKNOWN": "Unknown",
           "CON_BLE": "BLE",
@@ -544,7 +544,7 @@
         "name": "Auto-reverse mowing direction"
       },
       "rain_detection": {
-        "name": "Rain detection (Mower) On/Off"
+        "name": "Rain detection (mower) On/Off"
       },
       "smart_charge": {
         "name": "Smart charging"
@@ -562,7 +562,7 @@
         "name": "Perimeter first"
       },
       "schedule_updates": {
-        "name": "Turn Updates On/Off"
+        "name": "Turn updates on/off"
       },
       "bluetooth_enabled": {
         "name": "Bluetooth"
@@ -603,16 +603,16 @@
     },
     "select": {
       "channel_mode": {
-        "name": "Cutting Path Mode",
+        "name": "Cutting path mode",
         "state": {
-          "single_grid": "Zigzag Path",
-          "double_grid": "Chessboard Path",
-          "segment_grid": "Adaptive Zigzag Path",
-          "no_grid": "Perimeter Only"
+          "single_grid": "Zigzag path",
+          "double_grid": "Chessboard path",
+          "segment_grid": "Adaptive zigzag path",
+          "no_grid": "Perimeter only"
         }
       },
       "mowing_laps": {
-        "name": "Perimeter Mowing Laps",
+        "name": "Perimeter mowing laps",
         "state": {
           "none": "None",
           "one": "One",
@@ -622,7 +622,7 @@
         }
       },
       "obstacle_laps": {
-        "name": "No-go Zone Mowing Laps",
+        "name": "No-go zone mowing laps",
         "state": {
           "none": "None",
           "one": "One",
@@ -651,9 +651,9 @@
       "cutting_angle_mode": {
         "name": "Cutting path angle mode",
         "state": {
-          "relative_angle": "Optimal angle",
-          "absolute_angle": "North angle",
-          "random_angle": "Random angle"
+          "relative_angle": "Optimal",
+          "absolute_angle": "North",
+          "random_angle": "Random"
         }
       },
       "traversal_mode": {
@@ -767,7 +767,7 @@
         "name": "Resume mowing at"
       },
       "ride_boundary_distance": {
-        "name": "Boundary ride distance"
+        "name": "Edge coverage"
       },
       "start_progress": {
         "name": "Start progress"
@@ -848,9 +848,9 @@
     },
     "toward_mode": {
       "options": {
-        "0": "Optimal angle",
-        "1": "North angle",
-        "2": "Random angle"
+        "0": "Optimal",
+        "1": "North",
+        "2": "Random"
       }
     },
     "mowing_laps": {
@@ -886,7 +886,7 @@
     },
     "start_mow": {
       "name": "Start mowing",
-      "description": "Start the mowing operation with custom settings.",
+      "description": "Starts the mowing operation with custom settings.",
       "fields": {
         "modify": {
           "name": "Modify existing job",
@@ -894,19 +894,19 @@
         },
         "is_mow": {
           "name": "Is mowing",
-          "description": "Whether mowing is active. (Yuka)."
+          "description": "Whether mowing is active. (Yuka)"
         },
         "is_dump": {
           "name": "Is dumping",
-          "description": "Whether grass dumping is active. (Yuka)."
+          "description": "Whether grass dumping is active. (Yuka)"
         },
         "is_edge": {
           "name": "Edge mowing",
-          "description": "Whether edge mode is active. (Yuka)."
+          "description": "Whether edge mode is active. (Yuka)"
         },
         "collect_grass_frequency": {
           "name": "Grass collection frequency",
-          "description": "Frequency to collect grass (in meters squared). (Yuka)."
+          "description": "Frequency to collect grass (in meters squared). (Yuka)"
         },
         "border_mode": {
           "name": "Mow order",
@@ -929,8 +929,8 @@
           "description": "Obstacle avoidance mode."
         },
         "channel_mode": {
-          "name": "Cutting Path Mode",
-          "description": "Cutting Path (zigzag, chessboard, adaptive zigzag, or perimeter only)."
+          "name": "Cutting path mode",
+          "description": "Cutting path (zigzag, chessboard, adaptive zigzag, or perimeter only)."
         },
         "channel_width": {
           "name": "Path width",
@@ -950,7 +950,7 @@
         },
         "toward_mode": {
           "name": "Cutting angle mode",
-          "description": "Anglular direction of mow."
+          "description": "Angular direction of mow."
         },
         "mowing_laps": {
           "name": "Perimeter mowing laps",
@@ -958,7 +958,7 @@
         },
         "obstacle_laps": {
           "name": "No-go zone mowing laps",
-          "description": "Number of laps around no-go zones."
+          "description": "Number of laps around No-go zones."
         },
         "start_progress": {
           "name": "Start progress",
@@ -969,8 +969,8 @@
           "description": "Flip the mowing direction between runs: 0 = off, 1 = on. Only used on models and firmware that support it. Leave it out to keep the switch's setting."
         },
         "ride_boundary_distance": {
-          "name": "Boundary ride distance",
-          "description": "How far the mower rides outward along the edge, from 0 to 1. Only used on models that support it and when perimeter laps are on."
+          "name": "Edge coverage",
+          "description": "How far out the mower drives during the perimeter laps, from 0 (inside edge) to 1 (on the edge). Only used on models that support it and when perimeter laps are on."
         },
         "areas": {
           "name": "Area selection",
@@ -1285,8 +1285,8 @@
           "description": "Mower-only: 0 = none, 1 = once, 2 = twice."
         },
         "ride_boundary_distance": {
-          "name": "Boundary ride distance",
-          "description": "How far the mower rides outward along the edge, from 0 to 1. Only used on models that support it and when perimeter laps are on."
+          "name": "Edge coverage",
+          "description": "How far out the mower drives during the perimeter laps, from 0 (inside edge) to 1 (on the edge). Only used on models that support it and when perimeter laps are on."
         },
         "auto_change_direction": {
           "name": "Auto-reverse mowing direction",
@@ -1383,8 +1383,8 @@
           "description": "Mower-only."
         },
         "ride_boundary_distance": {
-          "name": "Boundary ride distance",
-          "description": "How far the mower rides outward along the edge, from 0 to 1. Only used on models that support it and when perimeter laps are on."
+          "name": "Edge coverage",
+          "description": "How far out the mower drives during the perimeter laps, from 0 (inside edge) to 1 (on the edge). Only used on models that support it and when perimeter laps are on."
         },
         "auto_change_direction": {
           "name": "Auto-reverse mowing direction",

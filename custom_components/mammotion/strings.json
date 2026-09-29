@@ -198,7 +198,7 @@
         }
       },
       "vision_survival": {
-        "name": "Vision survival"
+        "name": "3D vision"
       },
       "activity_mode": {
         "name": "Activity mode",
@@ -767,7 +767,7 @@
         "name": "Resume mowing at"
       },
       "ride_boundary_distance": {
-        "name": "Boundary ride distance"
+        "name": "Edge coverage"
       },
       "start_progress": {
         "name": "Start progress"
@@ -969,8 +969,8 @@
           "description": "Flip the mowing direction between runs: 0 = off, 1 = on. Only used on models and firmware that support it. Leave it out to keep the switch's setting."
         },
         "ride_boundary_distance": {
-          "name": "Boundary ride distance",
-          "description": "How far the mower rides outward along the edge, from 0 to 1. Only used on models that support it and when perimeter laps are on."
+          "name": "Edge coverage",
+          "description": "How far out the mower drives during the perimeter laps, from 0 (inside edge) to 1 (on the edge). Only used on models that support it and when perimeter laps are on."
         },
         "areas": {
           "name": "Area selection",
@@ -1285,8 +1285,8 @@
           "description": "Mower-only: 0 = none, 1 = once, 2 = twice."
         },
         "ride_boundary_distance": {
-          "name": "Boundary ride distance",
-          "description": "How far the mower rides outward along the edge, from 0 to 1. Only used on models that support it and when perimeter laps are on."
+          "name": "Edge coverage",
+          "description": "How far out the mower drives during the perimeter laps, from 0 (inside edge) to 1 (on the edge). Only used on models that support it and when perimeter laps are on."
         },
         "auto_change_direction": {
           "name": "Auto-reverse mowing direction",
@@ -1383,8 +1383,8 @@
           "description": "Mower-only."
         },
         "ride_boundary_distance": {
-          "name": "Boundary ride distance",
-          "description": "How far the mower rides outward along the edge, from 0 to 1. Only used on models that support it and when perimeter laps are on."
+          "name": "Edge coverage",
+          "description": "How far out the mower drives during the perimeter laps, from 0 (inside edge) to 1 (on the edge). Only used on models that support it and when perimeter laps are on."
         },
         "auto_change_direction": {
           "name": "Auto-reverse mowing direction",

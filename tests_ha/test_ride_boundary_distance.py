@@ -253,7 +253,7 @@ def test_every_translation_names_the_number_and_drops_the_select() -> None:
         assert "edge_coverage" not in entity["select"], path
         names[path.name] = entity["number"][_KEY]["name"]
         assert names[path.name], path
-    assert names["strings.json"] == "Boundary ride distance"
+    assert names["strings.json"] == "Edge coverage"
     # Only strings.json and en.json may share the English wording.
     english = names["strings.json"]
     assert [f for f, n in names.items() if n == english] == ["strings.json", "en.json"]

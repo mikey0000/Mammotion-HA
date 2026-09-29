@@ -101,7 +101,7 @@
         "name": "BLE RSSI"
       },
       "camera_brightness": {
-        "name": "Luminosità della fotocamera",
+        "name": "Luminosità della telecamera",
         "state": {
           "dark": "Scura",
           "good": "Buona",
@@ -198,7 +198,7 @@
         }
       },
       "vision_survival": {
-        "name": "Autonomia visiva"
+        "name": "Visione 3D"
       },
       "activity_mode": {
         "name": "Modalità attività",
@@ -767,7 +767,7 @@
         "name": "Riprendi il taglio al"
       },
       "ride_boundary_distance": {
-        "name": "Distanza di percorrenza del bordo"
+        "name": "Copertura bordi"
       },
       "start_progress": {
         "name": "Avanzamento iniziale"
@@ -969,8 +969,8 @@
           "description": "Inverte la direzione di taglio tra un'esecuzione e l'altra: 0 = disattivato, 1 = attivato. Usato solo su modelli e firmware che lo supportano. Se omesso, vale l'impostazione dell'interruttore."
         },
         "ride_boundary_distance": {
-          "name": "Distanza di percorrenza del bordo",
-          "description": "Quanto il rasaerba procede verso l'esterno lungo il bordo, da 0 a 1. Usato solo sui modelli che lo supportano e quando i giri perimetrali sono attivi."
+          "name": "Copertura bordi",
+          "description": "Quanto il tosaerba si sposta verso l'esterno durante i giri perimetrali, da 0 (bordo interno) a 1 (sul bordo). Usato solo sui modelli che lo supportano e quando i giri perimetrali sono attivi."
         },
         "areas": {
           "name": "Selezione Area",
@@ -1250,11 +1250,11 @@
         },
         "start_time": {
           "name": "Ora di inizio",
-          "description": "HH:MM (solo tagliaerba)."
+          "description": "HH:MM (solo tosaerba)."
         },
         "end_time": {
           "name": "Ora di fine",
-          "description": "HH:MM (solo tagliaerba)."
+          "description": "HH:MM (solo tosaerba)."
         },
         "start_date": {
           "name": "Data di inizio",
@@ -1274,7 +1274,7 @@
         },
         "knife_height": {
           "name": "Altezza di taglio",
-          "description": "Altezza della lama in millimetri (solo tagliaerba)."
+          "description": "Altezza della lama in millimetri (solo tosaerba)."
         },
         "speed": {
           "name": "Velocità",
@@ -1282,11 +1282,11 @@
         },
         "edge_mode": {
           "name": "Modalità bordo",
-          "description": "Solo tagliaerba: 0 = nessuno, 1 = una volta, 2 = due volte."
+          "description": "Solo tosaerba: 0 = nessuno, 1 = una volta, 2 = due volte."
         },
         "ride_boundary_distance": {
-          "name": "Distanza di percorrenza del bordo",
-          "description": "Quanto il rasaerba procede verso l'esterno lungo il bordo, da 0 a 1. Usato solo sui modelli che lo supportano e quando i giri perimetrali sono attivi."
+          "name": "Copertura bordi",
+          "description": "Quanto il tosaerba si sposta verso l'esterno durante i giri perimetrali, da 0 (bordo interno) a 1 (sul bordo). Usato solo sui modelli che lo supportano e quando i giri perimetrali sono attivi."
         },
         "auto_change_direction": {
           "name": "Inversione automatica della direzione di taglio",
@@ -1294,23 +1294,23 @@
         },
         "route_angle": {
           "name": "Angolo del percorso",
-          "description": "Solo tagliaerba: angolo dello schema di taglio 0–179 gradi."
+          "description": "Solo tosaerba: angolo dello schema di taglio 0–179 gradi."
         },
         "toward_mode": {
           "name": "Modalità Angolo Di Taglio",
-          "description": "Solo rasaerba: come viene applicato l'angolo del percorso (0 = ottimale, 1 = nord, 2 = casuale)."
+          "description": "Solo tosaerba: come viene applicato l'angolo del percorso (0 = ottimale, 1 = nord, 2 = casuale)."
         },
         "toward_included_angle": {
           "name": "Angolo Di Attraversamento",
-          "description": "Solo rasaerba: secondo angolo di un percorso a scacchiera, in gradi."
+          "description": "Solo tosaerba: secondo angolo di un percorso a scacchiera, in gradi."
         },
         "route_spacing": {
           "name": "Spaziatura del percorso",
-          "description": "Solo tagliaerba: distanza tra le linee di taglio in cm."
+          "description": "Solo tosaerba: distanza tra le linee di taglio in cm."
         },
         "zone_hashs": {
           "name": "Hash delle zone",
-          "description": "Solo tagliaerba: elenco degli hash delle aree (fixed64) coperte da questa pianificazione."
+          "description": "Solo tosaerba: elenco degli hash delle aree (fixed64) coperte da questa pianificazione."
         },
         "work_mode": {
           "name": "Modalità di lavoro",
@@ -1348,11 +1348,11 @@
         },
         "start_time": {
           "name": "Ora di inizio",
-          "description": "HH:MM (tagliaerba)."
+          "description": "HH:MM (tosaerba)."
         },
         "end_time": {
           "name": "Ora di fine",
-          "description": "HH:MM (tagliaerba)."
+          "description": "HH:MM (tosaerba)."
         },
         "start_date": {
           "name": "Data di inizio",
@@ -1372,19 +1372,19 @@
         },
         "knife_height": {
           "name": "Altezza di taglio",
-          "description": "Altezza della lama in millimetri (solo tagliaerba)."
+          "description": "Altezza della lama in millimetri (solo tosaerba)."
         },
         "speed": {
           "name": "Velocità",
-          "description": "Velocità del tagliaerba o dello Spino."
+          "description": "Velocità del tosaerba o dello Spino."
         },
         "edge_mode": {
           "name": "Modalità bordo",
-          "description": "Solo tagliaerba."
+          "description": "Solo tosaerba."
         },
         "ride_boundary_distance": {
-          "name": "Distanza di percorrenza del bordo",
-          "description": "Quanto il rasaerba procede verso l'esterno lungo il bordo, da 0 a 1. Usato solo sui modelli che lo supportano e quando i giri perimetrali sono attivi."
+          "name": "Copertura bordi",
+          "description": "Quanto il tosaerba si sposta verso l'esterno durante i giri perimetrali, da 0 (bordo interno) a 1 (sul bordo). Usato solo sui modelli che lo supportano e quando i giri perimetrali sono attivi."
         },
         "auto_change_direction": {
           "name": "Inversione automatica della direzione di taglio",
@@ -1392,23 +1392,23 @@
         },
         "route_angle": {
           "name": "Angolo del percorso",
-          "description": "Solo tagliaerba."
+          "description": "Solo tosaerba."
         },
         "toward_mode": {
           "name": "Modalità Angolo Di Taglio",
-          "description": "Solo rasaerba: come viene applicato l'angolo del percorso (0 = ottimale, 1 = nord, 2 = casuale)."
+          "description": "Solo tosaerba: come viene applicato l'angolo del percorso (0 = ottimale, 1 = nord, 2 = casuale)."
         },
         "toward_included_angle": {
           "name": "Angolo Di Attraversamento",
-          "description": "Solo rasaerba: secondo angolo di un percorso a scacchiera, in gradi."
+          "description": "Solo tosaerba: secondo angolo di un percorso a scacchiera, in gradi."
         },
         "route_spacing": {
           "name": "Spaziatura del percorso",
-          "description": "Solo tagliaerba."
+          "description": "Solo tosaerba."
         },
         "zone_hashs": {
           "name": "Hash delle zone",
-          "description": "Solo tagliaerba: elenco degli hash delle aree coperte."
+          "description": "Solo tosaerba: elenco degli hash delle aree coperte."
         },
         "work_mode": {
           "name": "Modalità di lavoro",
@@ -1664,7 +1664,7 @@
       "message": "La protezione notturna è attiva, quindi il tosaerba non taglia di notte."
     },
     "self_check_rain_protection": {
-      "message": "La protezione dalla pioggia impedisce l’avvio del robot. Usa il sensore pioggia e i dati meteo online per valutare se le condizioni sono adatte al taglio e calcola quando riprenderlo. Attendi, oppure modifica o disattiva la protezione dalla pioggia nelle impostazioni del robot nell’app."
+      "message": "La protezione dalla pioggia impedisce l’avvio del tosaerba. Usa il sensore pioggia e i dati meteo online per valutare se le condizioni sono adatte al taglio e calcola quando riprenderlo. Attendi, oppure modifica o disattiva la protezione dalla pioggia nelle impostazioni del tosaerba nell’app."
     },
     "self_check_rtk_not_ready": {
       "message": "La stazione di riferimento RTK non è ancora pronta."
@@ -1745,7 +1745,7 @@
       "message": "Guida remota terminata: il video della telecamera si è interrotto."
     },
     "battery_settings_unread": {
-      "message": "Le impostazioni della batteria non sono ancora state lette dal robot. Modificarle ora azzererebbe la fascia di ricarica fuori picco, quindi non è stato inviato nulla. Riprova quando il robot è connesso."
+      "message": "Le impostazioni della batteria non sono ancora state lette dal tosaerba. Modificarle ora azzererebbe la fascia di ricarica fuori picco, quindi non è stato inviato nulla. Riprova quando il tosaerba è connesso."
     }
   }
 }

@@ -198,7 +198,7 @@
         }
       },
       "vision_survival": {
-        "name": "Zapas nawigacji wizyjnej"
+        "name": "Wizja 3D"
       },
       "activity_mode": {
         "name": "Stan pracy",
@@ -491,7 +491,7 @@
         "name": "Awaryjne ruszenie w prawo"
       },
       "emergency_nudge_back": {
-        "name": "Awaryjne ruszenie do tył"
+        "name": "Awaryjne ruszenie do tyłu"
       },
       "cancel_task": {
         "name": "Anuluj bieżące zadanie"
@@ -632,7 +632,7 @@
         }
       },
       "border_mode": {
-        "name": "Kolejność wykonania ścieżki",
+        "name": "Kolejność koszenia",
         "state": {
           "border_first": "Najpierw obwód",
           "grid_first": "Najpierw siatka"
@@ -767,7 +767,7 @@
         "name": "Wznowienie koszenia przy"
       },
       "ride_boundary_distance": {
-        "name": "Odległość przejazdu wzdłuż granicy"
+        "name": "Pokrycie krawędzi"
       },
       "start_progress": {
         "name": "Rozpocznij koszenie przy x% postępie"
@@ -969,8 +969,8 @@
           "description": "Odwraca kierunek koszenia między przejazdami: 0 = wyłączone, 1 = włączone. Używane tylko w modelach i oprogramowaniu, które to obsługują. Jeśli pominięte, obowiązuje ustawienie przełącznika."
         },
         "ride_boundary_distance": {
-          "name": "Odległość przejazdu wzdłuż granicy",
-          "description": "Jak daleko kosiarka wyjeżdża na zewnątrz wzdłuż krawędzi, od 0 do 1. Używane tylko w modelach, które to obsługują, i przy włączonych okrążeniach obwodu."
+          "name": "Pokrycie krawędzi",
+          "description": "Jak daleko kosiarka wysuwa się na zewnątrz podczas koszenia obwodu, od 0 (wewnątrz krawędzi) do 1 (na krawędzi). Używane tylko w modelach, które to obsługują, i przy włączonym koszeniu obwodu."
         },
         "areas": {
           "name": "Wybór obszaru",
@@ -1285,8 +1285,8 @@
           "description": "Tylko kosiarka: 0 = brak, 1 = raz, 2 = dwa razy."
         },
         "ride_boundary_distance": {
-          "name": "Odległość przejazdu wzdłuż granicy",
-          "description": "Jak daleko kosiarka wyjeżdża na zewnątrz wzdłuż krawędzi, od 0 do 1. Używane tylko w modelach, które to obsługują, i przy włączonych okrążeniach obwodu."
+          "name": "Pokrycie krawędzi",
+          "description": "Jak daleko kosiarka wysuwa się na zewnątrz podczas koszenia obwodu, od 0 (wewnątrz krawędzi) do 1 (na krawędzi). Używane tylko w modelach, które to obsługują, i przy włączonym koszeniu obwodu."
         },
         "auto_change_direction": {
           "name": "Automatyczna zmiana kierunku koszenia",
@@ -1383,8 +1383,8 @@
           "description": "Tylko kosiarka."
         },
         "ride_boundary_distance": {
-          "name": "Odległość przejazdu wzdłuż granicy",
-          "description": "Jak daleko kosiarka wyjeżdża na zewnątrz wzdłuż krawędzi, od 0 do 1. Używane tylko w modelach, które to obsługują, i przy włączonych okrążeniach obwodu."
+          "name": "Pokrycie krawędzi",
+          "description": "Jak daleko kosiarka wysuwa się na zewnątrz podczas koszenia obwodu, od 0 (wewnątrz krawędzi) do 1 (na krawędzi). Używane tylko w modelach, które to obsługują, i przy włączonym koszeniu obwodu."
         },
         "auto_change_direction": {
           "name": "Automatyczna zmiana kierunku koszenia",

@@ -198,7 +198,7 @@
         }
       },
       "vision_survival": {
-        "name": "Výdrž vizuální navigace"
+        "name": "3D vidění"
       },
       "activity_mode": {
         "name": "Režim činnosti",
@@ -622,7 +622,7 @@
         }
       },
       "obstacle_laps": {
-        "name": "Počet sečení obvodů no-go zón",
+        "name": "Počet okruhů kolem zakázaných zón",
         "state": {
           "none": "Žádný",
           "one": "Jednou",
@@ -767,7 +767,7 @@
         "name": "Pokračovat v sekání při"
       },
       "ride_boundary_distance": {
-        "name": "Vzdálenost jízdy po hranici"
+        "name": "Pokrytí okrajů"
       },
       "start_progress": {
         "name": "Pokrok při zahájení"
@@ -969,8 +969,8 @@
           "description": "Střídá směr sečení mezi běhy: 0 = vypnuto, 1 = zapnuto. Použije se jen u modelů a firmwaru, které to podporují. Pokud pole vynecháte, platí nastavení přepínače."
         },
         "ride_boundary_distance": {
-          "name": "Vzdálenost jízdy po hranici",
-          "description": "Jak daleko sekačka jede směrem ven podél okraje, od 0 do 1. Použije se jen u modelů, které to podporují, a při zapnutých obvodových kolech."
+          "name": "Pokrytí okrajů",
+          "description": "Jak daleko se sekačka při sečení obvodu posouvá ven, od 0 (vnitřní okraj) do 1 (na okraji). Použije se jen u modelů, které to podporují, a při zapnutém sečení obvodu."
         },
         "areas": {
           "name": "Výběr oblasti",
@@ -1285,8 +1285,8 @@
           "description": "Pouze sekačka: 0 = žádné, 1 = jednou, 2 = dvakrát."
         },
         "ride_boundary_distance": {
-          "name": "Vzdálenost jízdy po hranici",
-          "description": "Jak daleko sekačka jede směrem ven podél okraje, od 0 do 1. Použije se jen u modelů, které to podporují, a při zapnutých obvodových kolech."
+          "name": "Pokrytí okrajů",
+          "description": "Jak daleko se sekačka při sečení obvodu posouvá ven, od 0 (vnitřní okraj) do 1 (na okraji). Použije se jen u modelů, které to podporují, a při zapnutém sečení obvodu."
         },
         "auto_change_direction": {
           "name": "Automatické střídání směru sečení",
@@ -1383,8 +1383,8 @@
           "description": "Pouze sekačka."
         },
         "ride_boundary_distance": {
-          "name": "Vzdálenost jízdy po hranici",
-          "description": "Jak daleko sekačka jede směrem ven podél okraje, od 0 do 1. Použije se jen u modelů, které to podporují, a při zapnutých obvodových kolech."
+          "name": "Pokrytí okrajů",
+          "description": "Jak daleko se sekačka při sečení obvodu posouvá ven, od 0 (vnitřní okraj) do 1 (na okraji). Použije se jen u modelů, které to podporují, a při zapnutém sečení obvodu."
         },
         "auto_change_direction": {
           "name": "Automatické střídání směru sečení",
