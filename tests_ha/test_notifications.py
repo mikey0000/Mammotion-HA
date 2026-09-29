@@ -5,9 +5,11 @@ must hold with no entity involved at all.
 """
 
 import json
+from datetime import UTC, datetime
 from types import SimpleNamespace
 from typing import Any
 from unittest.mock import MagicMock
+from zoneinfo import ZoneInfo
 
 import pytest
 from homeassistant.components import persistent_notification
@@ -55,10 +57,26 @@ def _started(
     return notifier, notifier.coordinator.subscribe_notification.call_args.args[0]
 
 
+#: When the fault of :func:`_warning` happened, in UTC epoch seconds.
+_WARNING_EPOCH = 1775843537
+
+
+def _wall_clock_ms(epoch: int, time_zone: str = "US/Pacific") -> int:
+    """Return *epoch* as the mower sends ``ft``: its local wall clock counted as UTC.
+
+    The test ``hass`` runs in US/Pacific, as the mower's clock would.
+    """
+    local = datetime.fromtimestamp(epoch, ZoneInfo(time_zone))
+    return int(local.replace(tzinfo=UTC).timestamp()) * 1000
+
+
+_WARNING_FT = _wall_clock_ms(_WARNING_EPOCH)
+
+
 def _warning(code: int = -2801, **extra: Any) -> SimpleNamespace:
     return SimpleNamespace(
         identifier="device_warning_code_event",
-        value={"data": f'[{{"c":{code},"ct":1,"ft":1775843537000}}]', **extra},
+        value={"data": f'[{{"c":{code},"ct":1,"ft":{_WARNING_FT}}}]', **extra},
     )
 
 
@@ -87,7 +105,7 @@ async def test_listeners_receive_the_decoded_and_described_payload(
         (
             "device_warning_code_event",
             {
-                "data": [{"c": -2801, "ct": 1, "ft": 1775843537000}],
+                "data": [{"c": -2801, "ct": 1, "ft": _WARNING_FT}],
                 "codes": [
                     {
                         "code": 2801,
@@ -289,6 +307,20 @@ def test_an_unknown_code_is_listed_without_description() -> None:
     assert notification_message(attributes) == "Unknown error code 9999"
 
 
+def test_warning_frame_time_is_the_mowers_local_clock() -> None:
+    """``ft`` counts the mower's wall clock as if it were UTC; the zone makes it real UTC.
+
+    Measured on a Luba 3 in US/Pacific: every event ``ft`` read exactly 7 h (25 200 s)
+    before the same occurrence in the error list, whose times are true UTC.
+    """
+    attributes = notification_attributes(
+        {"data": f'[{{"c":-11131,"ct":1,"ft":{_wall_clock_ms(1790627362)}}}]'},
+        time_zone=ZoneInfo("US/Pacific"),
+    )
+
+    assert attributes["codes"][0]["time"] == "2026-09-28T20:29:22+00:00"
+
+
 def test_warning_frame_time_is_always_milliseconds() -> None:
     """``ft`` is milliseconds; a small value (unsynced clock) is not seconds."""
     attributes = notification_attributes({"data": '[{"c":-1,"ct":1,"ft":5400000}]'})
@@ -342,10 +374,6 @@ def _error_list(notifier: MowerNotifier, *entries: tuple[int, int]) -> None:
     errors.err_code_list_time = [epoch for _, epoch in entries]
 
 
-#: The ``ft`` of :func:`_warning`, in seconds.
-_WARNING_EPOCH = 1775843537
-
-
 async def test_a_repeated_warning_occurrence_is_raised_once(
     hass: HomeAssistant, notifications: Any
 ) -> None:
@@ -388,6 +416,39 @@ async def test_the_error_list_at_start_up_is_history(
     on_update()
     on_update()
     await handler(_warning())
+    await hass.async_block_till_done()
+
+    notifications.create.assert_not_called()
+
+
+async def test_a_restart_does_not_re_raise_the_error_list_from_a_warning_event(
+    hass: HomeAssistant, notifications: Any
+) -> None:
+    """After a restart the list is history; a warning event repeating it adds nothing.
+
+    The event's local-clock ``ft`` must be matched to the list's UTC time, or every
+    entry looks new and the whole history is raised again on each restart.
+    """
+    notifier, handler = _started(hass)
+    on_update = notifier.coordinator.async_add_listener.call_args.args[0]
+    notifier.coordinator.data.report_data.dev.self_check_status = 0
+    history = [(-11131, _WARNING_EPOCH - 600 * i) for i in range(10)]
+    _error_list(notifier, *history)
+    on_update()
+
+    await handler(
+        SimpleNamespace(
+            identifier="device_warning_code_event",
+            value={
+                "data": json.dumps(
+                    [
+                        {"c": code, "ct": 1, "ft": _wall_clock_ms(epoch)}
+                        for code, epoch in history
+                    ]
+                )
+            },
+        )
+    )
     await hass.async_block_till_done()
 
     notifications.create.assert_not_called()

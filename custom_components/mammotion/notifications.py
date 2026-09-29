@@ -16,13 +16,14 @@ import contextlib
 import json
 from collections import deque
 from collections.abc import Callable
-from datetime import UTC, datetime
+from datetime import UTC, datetime, tzinfo
 from typing import Any
 
 from homeassistant.components import persistent_notification
 from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.translation import async_get_translations
+from homeassistant.util import dt as dt_util
 from pymammotion.state.device_state import DeviceNotification
 
 from .const import (
@@ -87,6 +88,19 @@ def _timestamp(epoch: Any, *, millis: bool | None = None) -> str | None:
         return None
 
 
+def _wall_clock_timestamp(epoch_ms: Any, time_zone: tzinfo | None) -> str | None:
+    """Return the ISO UTC time of a warning frame's ``ft``.
+
+    ``ft`` is the mower's local wall clock counted as if it were UTC, so it is read in
+    *time_zone*; without one it is taken as UTC.
+    """
+    timestamp = _timestamp(epoch_ms, millis=True)
+    if timestamp is None or time_zone is None:
+        return timestamp
+    wall_clock = datetime.fromisoformat(timestamp).replace(tzinfo=time_zone)
+    return wall_clock.astimezone(UTC).isoformat()
+
+
 def _epoch(timestamp: str | None) -> int | None:
     """Return the epoch seconds of an ISO timestamp from :func:`_timestamp`."""
     if timestamp is None:
@@ -96,7 +110,7 @@ def _epoch(timestamp: str | None) -> int | None:
     return None
 
 
-def _decoded_codes(data: Any) -> list[dict[str, Any]]:
+def _decoded_codes(data: Any, time_zone: tzinfo | None = None) -> list[dict[str, Any]]:
     """Return the error codes carried by a notification payload.
 
     Warning-code events carry ``[{"c": -2801, "ct": 1, "ft": <ms>}]``; notification
@@ -112,7 +126,7 @@ def _decoded_codes(data: Any) -> list[dict[str, Any]]:
                         {
                             "code": abs(int(item["c"])),
                             "count": item.get("ct"),
-                            "time": _timestamp(item.get("ft"), millis=True),
+                            "time": _wall_clock_timestamp(item.get("ft"), time_zone),
                         }
                     )
     elif isinstance(data, dict) and "code" in data:
@@ -127,7 +141,9 @@ def _decoded_codes(data: Any) -> list[dict[str, Any]]:
 
 
 def notification_attributes(
-    value: dict[str, Any] | None, describe: DescribeCode | None = None
+    value: dict[str, Any] | None,
+    describe: DescribeCode | None = None,
+    time_zone: tzinfo | None = None,
 ) -> dict[str, Any]:
     """Return the event attributes: ``data`` decoded, plus ``codes`` when it carries any.
 
@@ -144,7 +160,7 @@ def notification_attributes(
     attributes: dict[str, Any] = {}
     if data is not None and len(json.dumps(data, default=str)) <= MAX_DATA_BYTES:
         attributes["data"] = data
-    if codes := _decoded_codes(data if data is not None else value):
+    if codes := _decoded_codes(data if data is not None else value, time_zone):
         if describe is not None:
             codes = [_described(entry, describe(entry["code"])) for entry in codes]
         attributes["codes"] = codes
@@ -236,7 +252,9 @@ class MowerNotifier:
             )
             return
         attributes = notification_attributes(
-            notification.value, self.coordinator.describe_error_code
+            notification.value,
+            self.coordinator.describe_error_code,
+            dt_util.get_time_zone(self.hass.config.time_zone),
         )
         for listener in list(self._listeners):
             listener(notification.identifier, attributes)
