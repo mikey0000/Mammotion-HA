@@ -226,7 +226,8 @@
           "WAITING": "En attente",
           "MOWING": "En cours de tonte",
           "COMPLETE": "Terminé",
-          "ABORTED": "Abandonné"
+          "ABORTED": "Abandonné",
+          "UNKNOWN": "Inconnu"
         }
       },
       "maintenance_distance": {
@@ -429,6 +430,9 @@
       },
       "start_dropmow": {
         "name": "Démarrer DropMow"
+      },
+      "continue_last_job": {
+        "name": "Reprendre la dernière tâche"
       },
       "emergency_nudge_forward": {
         "name": "Mouvement d'urgence en avant"
@@ -669,6 +673,9 @@
       "charge_limit": {
         "name": "Limite de charge"
       },
+      "ride_boundary_distance": {
+        "name": "Distance de parcours de la bordure"
+      },
       "start_progress": {
         "name": "Départ de la progression"
       },
@@ -874,6 +881,14 @@
           "name": "Démarrer à un pourcentage de progression",
           "description": "Démarrer à un pourcentage de progression."
         },
+        "auto_change_direction": {
+          "name": "Inversion automatique du sens de tonte",
+          "description": "Inverse le sens de tonte d'un passage à l'autre : 0 = désactivé, 1 = activé. Utilisé uniquement sur les modèles et firmwares compatibles. S'il est omis, le réglage de l'interrupteur s'applique."
+        },
+        "ride_boundary_distance": {
+          "name": "Distance de parcours de la bordure",
+          "description": "Distance à laquelle la tondeuse roule vers l'extérieur le long de la bordure, de 0 à 1. Utilisé uniquement sur les modèles compatibles et lorsque les tours de périmètre sont activés."
+        },
         "areas": {
           "name": "Zones",
           "description": "Liste des zones à tondre (représentées sous forme d'entiers)."
@@ -917,8 +932,8 @@
           "description": "Stratégie pluie"
         },
         "auto_change_direction": {
-          "name": "Changement de sens automatique",
-          "description": "Changement de sens automatique"
+          "name": "Inversion automatique du sens de tonte",
+          "description": "Inversion automatique du sens de tonte — inverse le sens de tonte d'un passage à l'autre pour limiter le couchage de l'herbe."
         },
         "start_progress": {
           "name": "Progression",
@@ -1190,9 +1205,25 @@
           "name": "Edge mode",
           "description": "Mower-only: 0 = none, 1 = once, 2 = twice."
         },
+        "ride_boundary_distance": {
+          "name": "Distance de parcours de la bordure",
+          "description": "Distance à laquelle la tondeuse roule vers l'extérieur le long de la bordure, de 0 à 1. Utilisé uniquement sur les modèles compatibles et lorsque les tours de périmètre sont activés."
+        },
+        "auto_change_direction": {
+          "name": "Inversion automatique du sens de tonte",
+          "description": "Inversion automatique du sens de tonte — inverse le sens de tonte d'un passage à l'autre pour limiter le couchage de l'herbe : 0 = désactivé, 1 = activé. Uniquement sur les modèles et firmwares compatibles. S'il est omis, le réglage de la planification est conservé (désactivé pour une nouvelle planification)."
+        },
         "route_angle": {
           "name": "Route angle",
           "description": "Mower-only: mowing pattern angle 0–179 degrees."
+        },
+        "toward_mode": {
+          "name": "Mode de direction",
+          "description": "Tondeuse uniquement : application de l'angle de parcours (0 = optimal, 1 = nord, 2 = aléatoire)."
+        },
+        "toward_included_angle": {
+          "name": "Angle par rapport à la grille",
+          "description": "Tondeuse uniquement : second angle d'un parcours en damier, en degrés."
         },
         "route_spacing": {
           "name": "Route spacing",
@@ -1272,9 +1303,25 @@
           "name": "Edge mode",
           "description": "Mower-only."
         },
+        "ride_boundary_distance": {
+          "name": "Distance de parcours de la bordure",
+          "description": "Distance à laquelle la tondeuse roule vers l'extérieur le long de la bordure, de 0 à 1. Utilisé uniquement sur les modèles compatibles et lorsque les tours de périmètre sont activés."
+        },
+        "auto_change_direction": {
+          "name": "Inversion automatique du sens de tonte",
+          "description": "Inversion automatique du sens de tonte — inverse le sens de tonte d'un passage à l'autre pour limiter le couchage de l'herbe : 0 = désactivé, 1 = activé. Uniquement sur les modèles et firmwares compatibles. S'il est omis, le réglage de la planification est conservé (désactivé pour une nouvelle planification)."
+        },
         "route_angle": {
           "name": "Route angle",
           "description": "Mower-only."
+        },
+        "toward_mode": {
+          "name": "Mode de direction",
+          "description": "Tondeuse uniquement : application de l'angle de parcours (0 = optimal, 1 = nord, 2 = aléatoire)."
+        },
+        "toward_included_angle": {
+          "name": "Angle par rapport à la grille",
+          "description": "Tondeuse uniquement : second angle d'un parcours en damier, en degrés."
         },
         "route_spacing": {
           "name": "Route spacing",
@@ -1411,6 +1458,9 @@
     "device_not_ready": {
       "message": "L'appareil n'est pas prêt."
     },
+    "no_job_to_continue": {
+      "message": "Aucune tâche interrompue à reprendre."
+    },
     "pause_failed": {
       "message": "Impossible de mettre la tondeuse en pause."
     },
@@ -1449,6 +1499,15 @@
     },
     "grass_collection_unsupported": {
       "message": "Cette tondeuse ne prend pas en charge le ramassage de l'herbe."
+    },
+    "no_running_job": {
+      "message": "{device_name} n'exécute aucune tâche de tonte, il n'y a donc rien à modifier. Lancez d'abord une tâche."
+    },
+    "running_job_modify_unsupported": {
+      "message": "{device_name} ne permet pas de modifier une tâche en cours. Seuls Luba 2 et les modèles plus récents le permettent."
+    },
+    "auto_change_direction_unsupported": {
+      "message": "L'inversion automatique du sens de tonte n'est pas prise en charge par {device_name} ou son firmware."
     },
     "map_backup_cloud_unavailable": {
       "message": "Les sauvegardes de carte nécessitent une connexion fonctionnelle au cloud Mammotion."

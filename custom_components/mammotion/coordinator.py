@@ -25,7 +25,11 @@ from homeassistant.components.bluetooth import (
 )
 from homeassistant.const import CONF_PASSWORD
 from homeassistant.core import CALLBACK_TYPE, HassJob, HomeAssistant, callback
-from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
+from homeassistant.exceptions import (
+    ConfigEntryAuthFailed,
+    HomeAssistantError,
+    ServiceValidationError,
+)
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.debounce import Debouncer
@@ -51,7 +55,10 @@ from pymammotion.data.model.device import (
     PoolCleanerDevice,
     RTKBaseStationDevice,
 )
-from pymammotion.data.model.device_config import OperationSettings, create_path_order
+from pymammotion.data.model.device_config import (
+    OperationSettings,
+    build_route_information,
+)
 from pymammotion.data.model.enums import CollectorState, DumpState
 from pymammotion.data.model.hash_list import Plan, SvgMessage
 from pymammotion.data.model.pool_state import PoolPlan, SpinoToggle
@@ -168,27 +175,10 @@ MAP_SYNC_STATUSES = ("synced", "syncing", "out_of_sync")
 DEVICE_NOT_RESPONDING_CODE = 50504
 
 
-#: The device echoes the reserved buffer back with every byte raised by ten —
-#: the same quirk that made enabling a schedule corrupt it (Mammotion-HA #891).
-#: Observed on a running job: b"\n\x0b\n\n\n\x12\x14(" decodes to
-#: 0/1/0/0/0/8/10, where the 8 and 10 are exactly the constants
-#: ``create_path_order`` writes, which is what confirms the offset.
-_RESERVED_ECHO_OFFSET = 10
-_RESERVED_ECHOED_BYTES = (0, 1, 2, 3, 4, 5, 6)
-
-
-def _reserved_without_echo(reserved: str) -> str:
-    """Undo the device's +10 echo so a re-issued route does not accumulate it."""
-    raw = bytearray(reserved.encode("latin-1").ljust(8, b"\x00"))
-    for index in _RESERVED_ECHOED_BYTES:
-        raw[index] = max(raw[index] - _RESERVED_ECHO_OFFSET, 0)
-    return raw.decode("latin-1")
-
-
 class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # type: ignore[misc]
     """Mammotion DataUpdateCoordinator."""
 
-    def __init__(
+    def __init__(  # noqa: PLR0917
         self,
         hass: HomeAssistant,
         config_entry: MammotionConfigEntry,
@@ -687,7 +677,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         if enabled:
             await handle.restart_keep_alive()
 
-    async def async_refresh_login(self, exc: Exception | None = None) -> None:
+    async def async_refresh_login(self, exc: Exception | None = None) -> None:  # noqa: C901
         """Refresh whichever credentials the failure actually implicates.
 
         LoginFailedError means an explicit login attempt was rejected, so the
@@ -906,7 +896,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
                 config_entry, data={**config_entry.data, **cache}
             )
 
-    async def async_send_command(
+    async def async_send_command(  # noqa: C901
         self, command: str, priority: Priority = Priority.NORMAL, **kwargs: Any
     ) -> bool | None:
         """Send command via MammotionClient command queue.
@@ -1547,6 +1537,23 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             "start_no_area_work", "todev_taskctrl_ack", priority=Priority.USER
         )
 
+    async def async_continue_last_job(self) -> None:
+        """Resume the mower's latest interrupted job (the app's "Continue last job").
+
+        The job and whether it may be resumed come only from the cloud's newest
+        work report, so it is fetched on press rather than polled.
+        """
+        record = await self.manager.get_latest_work_report(self.device_name)
+        if record is None or not record.can_resume:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key="no_job_to_continue"
+            )
+        await self.send_command_and_update(
+            "continue_last_job",
+            priority=Priority.USER,
+            work_id=int(record.work_id or 0),
+        )
+
     async def async_cancel_task(self) -> None:
         """Cancel task."""
         await self.send_command_and_update(
@@ -1839,47 +1846,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         self, operation_settings: OperationSettings
     ) -> GenerateRouteInformation:
         """Generate route information."""
-        device: MowingDevice = cast(MowingDevice, self.data)
-        if device.report_data.dev:
-            dev = device.report_data.dev
-            if dev.collector_status.collector_installation_status == 0:
-                operation_settings.is_dump = False
-
-        if DeviceType.is_yuka(self.device_name):
-            operation_settings.blade_height = -10
-
-        route_information = GenerateRouteInformation(
-            one_hashs=list(operation_settings.areas),
-            rain_tactics=operation_settings.rain_tactics,
-            speed=operation_settings.speed,
-            ultra_wave=operation_settings.ultra_wave,  # touch no touch etc
-            toward=operation_settings.toward,  # is just angle (route angle)
-            toward_included_angle=operation_settings.toward_included_angle  # demond_angle
-            if operation_settings.channel_mode == 1
-            else 0,  # crossing angle relative to grid
-            toward_mode=operation_settings.toward_mode,
-            blade_height=operation_settings.blade_height,
-            channel_mode=operation_settings.channel_mode,  # single, double, segment or none (route mode)
-            channel_width=operation_settings.channel_width,  # path space
-            job_mode=operation_settings.job_mode,  # taskMode grid or border first
-            edge_mode=operation_settings.mowing_laps,  # perimeter/mowing laps
-            path_order=create_path_order(operation_settings, self.device_name),
-            obstacle_laps=operation_settings.obstacle_laps,
-            auto_change_direction=operation_settings.auto_change_direction,
-        )
-
-        if DeviceType.is_luba1(self.device_name):
-            route_information.toward_mode = 0
-            route_information.toward_included_angle = 0
-        firmware = getattr(
-            getattr(self.data, "device_firmwares", None), "device_version", ""
-        )
-        if not DeviceType.supports_auto_change_direction(
-            self.device_name, firmware or ""
-        ):
-            # The app gates this row on a capability list and firmware; match it.
-            route_information.auto_change_direction = 0
-        return route_information
+        return build_route_information(self.device_name, self.data, operation_settings)
 
     async def async_plan_route(
         self,
@@ -1938,6 +1905,11 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             operation_settings.toward_mode = work.toward_mode
             operation_settings.toward_included_angle = work.toward_included_angle
             operation_settings.mowing_laps = work.edge_mode
+            operation_settings.ride_boundary_distance = work.ride_boundary_distance
+            if work.auto_change_direction is not None:
+                operation_settings.auto_change_direction = int(
+                    work.auto_change_direction
+                )
             operation_settings.job_mode = work.job_mode
             operation_settings.job_id = work.job_id
             operation_settings.job_version = work.job_ver
@@ -2096,6 +2068,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         settings.toward_mode = work.toward_mode
         settings.toward_included_angle = work.toward_included_angle
         settings.mowing_laps = work.edge_mode
+        settings.ride_boundary_distance = work.ride_boundary_distance
         settings.job_mode = work.job_mode
         settings.job_id = work.job_id
         settings.job_version = work.job_ver
@@ -2104,15 +2077,14 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         settings.ultra_wave = work.ultra_wave
         settings.channel_mode = work.channel_mode
         settings.blade_height = work.knife_height
-        settings.auto_change_direction = work.auto_change_direction
+        if (auto_change := work.auto_change_direction) is not None:
+            settings.auto_change_direction = int(auto_change)
         # create_path_order rebuilds the reserved buffer from these three, so
         # without seeding them a mid-job tweak ships the planning values —
         # notably start_progress, which would otherwise go out as whatever the
         # slider happens to hold rather than where the mower actually is.
         if work.reserved:
-            order = GenerateRouteInformation.decode_path_order(
-                _reserved_without_echo(work.reserved)
-            )
+            order = GenerateRouteInformation.decode_path_order(work.reserved)
             settings.border_mode = order.edge_mode
             settings.obstacle_laps = order.obstacle_laps
             settings.start_progress = order.start_progress
@@ -2150,19 +2122,30 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         """Re-issue the running job's route with a single route field changed.
 
         The value is read off ``operation_settings`` first, because an entity
-        has already written it there.
+        has already written it there. An idle change only stores the setting.
         """
+        if self._running_job_refusal() is not None:
+            return
         await self.async_modify_running_job(
             **{field: getattr(self._operation_settings, field)}
         )
 
-    async def async_modify_running_job(self, **changes: Any) -> bool:
+    def _running_job_refusal(self) -> str | None:
+        """Return why the running job cannot be changed, as a translation key."""
+        if not DeviceType.is_luba_pro(self.device_name):
+            return "running_job_modify_unsupported"
+        if not self._is_route_job_running():
+            return "no_running_job"
+        return None
+
+    async def async_modify_running_job(self, **changes: Any) -> None:
         """Change one or more route settings on the job already running.
 
         Mirrors the app's in-job editor (``WorkingOptionView``): it seeds from
         the active route and re-sends the whole parameter set with only the
         edited fields changed, so everything else about the running job
-        survives.  Returns False when there is nothing to change it on.
+        survives.  Raises ServiceValidationError when there is nothing to
+        change it on.
 
         Only fields ``async_modify_plan_route`` does not reseed can be changed
         this way; it forces the job's own identity and geometry (areas, toward,
@@ -2172,16 +2155,17 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         The original Luba 1's in-job editor only offers blade height, which it
         sends as a direct command instead, so nothing is re-issued there.
         """
-        if not self._is_route_job_running():
-            return False
-        if not DeviceType.is_luba_pro(self.device_name):
-            return False
+        if (refusal := self._running_job_refusal()) is not None:
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key=refusal,
+                translation_placeholders={"device_name": self.device_name},
+            )
         self._seed_operation_settings_from_running_job()
         for field, value in changes.items():
             if value is not None:
                 setattr(self._operation_settings, field, value)
         await self.async_modify_plan_route(self._operation_settings)
-        return True
 
     async def async_change_speed_if_working(self) -> None:
         """Apply a mid-job task-speed change, preserving the running job's route."""
@@ -2425,13 +2409,16 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         return None, None
 
     def get_area_entity_name(self, area_hash: int) -> str | None:
-        """Get string name of area hash."""
+        """Name an area hash: its area, ``path`` for a mow-path segment, else ``unknown``."""
         if area_hash == 0:
             return None
 
         _mower_data = cast(MowingDevice, self.data)
-        if area_hash not in _mower_data.map.area:
-            return "path"
+        # Over MQTT the map fetch can stop at the names, so a named hash is an area too.
+        if area_hash not in _mower_data.map.area and not any(
+            area.hash == area_hash for area in _mower_data.map.area_name
+        ):
+            return "path" if area_hash in _mower_data.map.path else "unknown"
 
         # Prefer the user's HA-level entity name over the device-assigned name.
         entity_reg = er.async_get(self.hass)
@@ -2441,7 +2428,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             return entry.name
 
         for area in _mower_data.map.computed_areas:
-            if area.hash == area_hash:
+            if area.hash == area_hash and area.name:
                 return area.name
 
         return f"area {area_hash}"
@@ -2600,6 +2587,20 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
             entry.async_create_background_task(
                 self.hass, self.async_sync_tasks(), f"{self.device_name} task sync"
             )
+
+    @property
+    def is_job_active(self) -> bool:
+        """Return True while a job is running, paused, or waiting to resume.
+
+        The APK's ``DeviceWorkState.isWorkingStatus``: a job status, or ready with a
+        breakpoint outstanding.  Idle, the mower still reports its last task's zones.
+        """
+        if (data := self.data) is None:
+            return False
+        sys_status = data.report_data.dev.sys_status
+        return sys_status in MOWING_ACTIVE_MODES or (
+            sys_status == WorkMode.MODE_READY and data.report_data.work.bp_info > 0
+        )
 
     @property
     def running_plan(self) -> Plan | None:
@@ -2894,7 +2895,7 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
             )
         return changed
 
-    async def _async_startup_reads(self) -> None:
+    async def _async_startup_reads(self) -> None:  # noqa: C901
         """Read back the settings the entities show, under one time budget."""
         # Common commands for all device types
         commands = [
@@ -3089,7 +3090,7 @@ class MammotionDeviceVersionUpdateCoordinator(
         """Get coordinator data."""
         return device
 
-    async def _async_update_data(self) -> MowingDevice:
+    async def _async_update_data(self) -> MowingDevice:  # noqa: C901
         """Get data from the device."""
         if data := await super()._async_update_data():
             return data
@@ -3289,7 +3290,7 @@ class MammotionDeviceVersionUpdateCoordinator(
         last = self._store.firmware_checked_at(self.device_name)
         return last is None or now - last >= DEVICE_VERSION_INTERVAL
 
-    async def _async_startup_reads(self) -> None:
+    async def _async_startup_reads(self) -> None:  # noqa: C901
         """Fill in whichever firmware and model fields are still unknown."""
         try:
             device = self.manager.get_device_by_name(self.device_name)

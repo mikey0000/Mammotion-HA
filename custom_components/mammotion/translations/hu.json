@@ -226,7 +226,8 @@
           "WAITING": "Várakozik",
           "MOWING": "Nyírás",
           "COMPLETE": "Kész",
-          "ABORTED": "Megszakítva"
+          "ABORTED": "Megszakítva",
+          "UNKNOWN": "Ismeretlen"
         }
       },
       "maintenance_distance": {
@@ -429,6 +430,9 @@
       },
       "start_dropmow": {
         "name": "DropMow indítása"
+      },
+      "continue_last_job": {
+        "name": "Utolsó feladat folytatása"
       },
       "emergency_nudge_forward": {
         "name": "Vészmozgatás előre"
@@ -669,6 +673,9 @@
       "charge_limit": {
         "name": "Töltési korlát"
       },
+      "ride_boundary_distance": {
+        "name": "Határkövetési távolság"
+      },
       "start_progress": {
         "name": "Kezdési százalék"
       },
@@ -874,6 +881,14 @@
           "name": "Kezdési százalék",
           "description": "Kezdő előrehaladási százalék."
         },
+        "auto_change_direction": {
+          "name": "Nyírási irány automatikus váltása",
+          "description": "Futásonként megfordítja a nyírási irányt: 0 = ki, 1 = be. Csak az ezt támogató modelleken és firmware-en használatos. Ha kihagyja, a kapcsoló beállítása érvényes."
+        },
+        "ride_boundary_distance": {
+          "name": "Határkövetési távolság",
+          "description": "Milyen messze halad kifelé a fűnyíró a szegély mentén, 0 és 1 között. Csak a támogatott modelleken és bekapcsolt kerületi körök esetén használatos."
+        },
         "areas": {
           "name": "Terület kiválasztása",
           "description": "A nyírandó területek listája (egész számokként)."
@@ -917,8 +932,8 @@
           "description": "Esőtaktika"
         },
         "auto_change_direction": {
-          "name": "Automatikus irányváltás",
-          "description": "Automatikus irányváltás"
+          "name": "Nyírási irány automatikus váltása",
+          "description": "Nyírási irány automatikus váltása — futásonként megfordítja a nyírási irányt, hogy a fű kevésbé lapuljon le."
         },
         "start_progress": {
           "name": "Előrehaladás",
@@ -1190,9 +1205,25 @@
           "name": "Edge mode",
           "description": "Mower-only: 0 = none, 1 = once, 2 = twice."
         },
+        "ride_boundary_distance": {
+          "name": "Határkövetési távolság",
+          "description": "Milyen messze halad kifelé a fűnyíró a szegély mentén, 0 és 1 között. Csak a támogatott modelleken és bekapcsolt kerületi körök esetén használatos."
+        },
+        "auto_change_direction": {
+          "name": "Nyírási irány automatikus váltása",
+          "description": "Nyírási irány automatikus váltása — futásonként megfordítja a nyírási irányt, hogy a fű kevésbé lapuljon le: 0 = ki, 1 = be. Csak az ezt támogató modelleken és firmware-en. Ha kihagyja, az ütemezés beállítása megmarad (új ütemezésnél ki)."
+        },
         "route_angle": {
           "name": "Route angle",
           "description": "Mower-only: mowing pattern angle 0–179 degrees."
+        },
+        "toward_mode": {
+          "name": "Nyírási szög mód",
+          "description": "Csak fűnyíró: hogyan alkalmazza az útvonal szögét (0 = optimális, 1 = észak, 2 = véletlenszerű)."
+        },
+        "toward_included_angle": {
+          "name": "Keresztezési szög",
+          "description": "Csak fűnyíró: a sakktábla-útvonal második szöge, fokban."
         },
         "route_spacing": {
           "name": "Route spacing",
@@ -1272,9 +1303,25 @@
           "name": "Edge mode",
           "description": "Mower-only."
         },
+        "ride_boundary_distance": {
+          "name": "Határkövetési távolság",
+          "description": "Milyen messze halad kifelé a fűnyíró a szegély mentén, 0 és 1 között. Csak a támogatott modelleken és bekapcsolt kerületi körök esetén használatos."
+        },
+        "auto_change_direction": {
+          "name": "Nyírási irány automatikus váltása",
+          "description": "Nyírási irány automatikus váltása — futásonként megfordítja a nyírási irányt, hogy a fű kevésbé lapuljon le: 0 = ki, 1 = be. Csak az ezt támogató modelleken és firmware-en. Ha kihagyja, az ütemezés beállítása megmarad (új ütemezésnél ki)."
+        },
         "route_angle": {
           "name": "Route angle",
           "description": "Mower-only."
+        },
+        "toward_mode": {
+          "name": "Nyírási szög mód",
+          "description": "Csak fűnyíró: hogyan alkalmazza az útvonal szögét (0 = optimális, 1 = észak, 2 = véletlenszerű)."
+        },
+        "toward_included_angle": {
+          "name": "Keresztezési szög",
+          "description": "Csak fűnyíró: a sakktábla-útvonal második szöge, fokban."
         },
         "route_spacing": {
           "name": "Route spacing",
@@ -1411,6 +1458,9 @@
     "device_not_ready": {
       "message": "Az eszköz nem áll készen."
     },
+    "no_job_to_continue": {
+      "message": "Nincs folytatható megszakított feladat."
+    },
     "pause_failed": {
       "message": "Nem sikerült szüneteltetni a fűnyírót."
     },
@@ -1449,6 +1499,15 @@
     },
     "grass_collection_unsupported": {
       "message": "Ez a fűnyíró nem támogatja a fűgyűjtést."
+    },
+    "no_running_job": {
+      "message": "{device_name} jelenleg nem végez nyírási feladatot, így nincs mit módosítani. Előbb indítson el egy feladatot."
+    },
+    "running_job_modify_unsupported": {
+      "message": "{device_name} nem támogatja a futó feladat módosítását. Erre csak a Luba 2 és az újabb készülékek képesek."
+    },
+    "auto_change_direction_unsupported": {
+      "message": "A(z) {device_name} vagy a firmware-e nem támogatja a nyírási irány automatikus váltását."
     },
     "map_backup_cloud_unavailable": {
       "message": "A térképmentésekhez működő Mammotion felhőbejelentkezés szükséges."

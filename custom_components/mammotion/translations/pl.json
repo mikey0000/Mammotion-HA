@@ -226,7 +226,8 @@
           "WAITING": "Oczekiwanie",
           "MOWING": "Koszenie",
           "COMPLETE": "Ukończono",
-          "ABORTED": "Przerwano"
+          "ABORTED": "Przerwano",
+          "UNKNOWN": "Nieznany"
         }
       },
       "maintenance_distance": {
@@ -429,6 +430,9 @@
       },
       "start_dropmow": {
         "name": "Uruchom DropMow"
+      },
+      "continue_last_job": {
+        "name": "Wznów ostatnie zadanie"
       },
       "emergency_nudge_forward": {
         "name": "Awaryjne ruszenie do przodu"
@@ -669,6 +673,9 @@
       "charge_limit": {
         "name": "Limit ładowania"
       },
+      "ride_boundary_distance": {
+        "name": "Odległość przejazdu wzdłuż granicy"
+      },
       "start_progress": {
         "name": "Rozpocznij koszenie przy x% postępie"
       },
@@ -874,6 +881,14 @@
           "name": "Rozpocznij postęp",
           "description": "Początkowy procent postępu."
         },
+        "auto_change_direction": {
+          "name": "Automatyczna zmiana kierunku koszenia",
+          "description": "Odwraca kierunek koszenia między przejazdami: 0 = wyłączone, 1 = włączone. Używane tylko w modelach i oprogramowaniu, które to obsługują. Jeśli pominięte, obowiązuje ustawienie przełącznika."
+        },
+        "ride_boundary_distance": {
+          "name": "Odległość przejazdu wzdłuż granicy",
+          "description": "Jak daleko kosiarka wyjeżdża na zewnątrz wzdłuż krawędzi, od 0 do 1. Używane tylko w modelach, które to obsługują, i przy włączonych okrążeniach obwodu."
+        },
         "areas": {
           "name": "Wybór obszaru",
           "description": "Wykaz obszarów do mow (reprezentowanych jako liczby całkowite)."
@@ -917,8 +932,8 @@
           "description": "Taktyka deszczowa"
         },
         "auto_change_direction": {
-          "name": "Automatyczna zmiana kierunku",
-          "description": "Automatyczna zmiana kierunku"
+          "name": "Automatyczna zmiana kierunku koszenia",
+          "description": "Automatyczna zmiana kierunku koszenia — odwraca kierunek koszenia między przejazdami, aby trawa mniej się kładła."
         },
         "start_progress": {
           "name": "Postęp",
@@ -1190,9 +1205,25 @@
           "name": "Edge mode",
           "description": "Mower-only: 0 = none, 1 = once, 2 = twice."
         },
+        "ride_boundary_distance": {
+          "name": "Odległość przejazdu wzdłuż granicy",
+          "description": "Jak daleko kosiarka wyjeżdża na zewnątrz wzdłuż krawędzi, od 0 do 1. Używane tylko w modelach, które to obsługują, i przy włączonych okrążeniach obwodu."
+        },
+        "auto_change_direction": {
+          "name": "Automatyczna zmiana kierunku koszenia",
+          "description": "Automatyczna zmiana kierunku koszenia — odwraca kierunek koszenia między przejazdami, aby trawa mniej się kładła: 0 = wyłączone, 1 = włączone. Tylko w modelach i oprogramowaniu, które to obsługują. Jeśli pominięte, ustawienie harmonogramu pozostaje bez zmian (wyłączone dla nowego harmonogramu)."
+        },
         "route_angle": {
           "name": "Route angle",
           "description": "Mower-only: mowing pattern angle 0–179 degrees."
+        },
+        "toward_mode": {
+          "name": "Tryb cięcia kąta",
+          "description": "Tylko kosiarka: sposób zastosowania kąta trasy (0 = optymalny, 1 = północ, 2 = losowy)."
+        },
+        "toward_included_angle": {
+          "name": "Kąt skrzyżowania",
+          "description": "Tylko kosiarka: drugi kąt trasy w szachownicę, w stopniach."
         },
         "route_spacing": {
           "name": "Route spacing",
@@ -1272,9 +1303,25 @@
           "name": "Edge mode",
           "description": "Mower-only."
         },
+        "ride_boundary_distance": {
+          "name": "Odległość przejazdu wzdłuż granicy",
+          "description": "Jak daleko kosiarka wyjeżdża na zewnątrz wzdłuż krawędzi, od 0 do 1. Używane tylko w modelach, które to obsługują, i przy włączonych okrążeniach obwodu."
+        },
+        "auto_change_direction": {
+          "name": "Automatyczna zmiana kierunku koszenia",
+          "description": "Automatyczna zmiana kierunku koszenia — odwraca kierunek koszenia między przejazdami, aby trawa mniej się kładła: 0 = wyłączone, 1 = włączone. Tylko w modelach i oprogramowaniu, które to obsługują. Jeśli pominięte, ustawienie harmonogramu pozostaje bez zmian (wyłączone dla nowego harmonogramu)."
+        },
         "route_angle": {
           "name": "Route angle",
           "description": "Mower-only."
+        },
+        "toward_mode": {
+          "name": "Tryb cięcia kąta",
+          "description": "Tylko kosiarka: sposób zastosowania kąta trasy (0 = optymalny, 1 = północ, 2 = losowy)."
+        },
+        "toward_included_angle": {
+          "name": "Kąt skrzyżowania",
+          "description": "Tylko kosiarka: drugi kąt trasy w szachownicę, w stopniach."
         },
         "route_spacing": {
           "name": "Route spacing",
@@ -1411,6 +1458,9 @@
     "device_not_ready": {
       "message": "Urządzenie obecnie nie jest gotowe."
     },
+    "no_job_to_continue": {
+      "message": "Brak przerwanego zadania do wznowienia."
+    },
     "pause_failed": {
       "message": "Wstrzymanie kosiarki nie powiodło się."
     },
@@ -1449,6 +1499,15 @@
     },
     "grass_collection_unsupported": {
       "message": "Ta kosiarka nie obsługuje zbierania trawy."
+    },
+    "no_running_job": {
+      "message": "{device_name} nie wykonuje obecnie zadania koszenia, więc nie ma czego zmieniać. Najpierw uruchom zadanie."
+    },
+    "running_job_modify_unsupported": {
+      "message": "{device_name} nie obsługuje zmiany trwającego zadania. Potrafią to tylko Luba 2 i nowsze."
+    },
+    "auto_change_direction_unsupported": {
+      "message": "Automatyczna zmiana kierunku koszenia nie jest obsługiwana przez {device_name} lub jego oprogramowanie."
     },
     "map_backup_cloud_unavailable": {
       "message": "Kopie map wymagają działającego logowania do chmury Mammotion."

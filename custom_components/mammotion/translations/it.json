@@ -226,7 +226,8 @@
           "WAITING": "In attesa",
           "MOWING": "In falciatura",
           "COMPLETE": "Completato",
-          "ABORTED": "Interrotto"
+          "ABORTED": "Interrotto",
+          "UNKNOWN": "Sconosciuto"
         }
       },
       "maintenance_distance": {
@@ -429,6 +430,9 @@
       },
       "start_dropmow": {
         "name": "Avvia DropMow"
+      },
+      "continue_last_job": {
+        "name": "Riprendi l'ultimo lavoro"
       },
       "emergency_nudge_forward": {
         "name": "Muovi avanti"
@@ -669,6 +673,9 @@
       "charge_limit": {
         "name": "Limite di ricarica"
       },
+      "ride_boundary_distance": {
+        "name": "Distanza di percorrenza del bordo"
+      },
       "start_progress": {
         "name": "Avanzamento iniziale"
       },
@@ -874,6 +881,14 @@
           "name": "Avvia Progresso",
           "description": "Inizio percentuale di progresso."
         },
+        "auto_change_direction": {
+          "name": "Inversione automatica della direzione di taglio",
+          "description": "Inverte la direzione di taglio tra un'esecuzione e l'altra: 0 = disattivato, 1 = attivato. Usato solo su modelli e firmware che lo supportano. Se omesso, vale l'impostazione dell'interruttore."
+        },
+        "ride_boundary_distance": {
+          "name": "Distanza di percorrenza del bordo",
+          "description": "Quanto il rasaerba procede verso l'esterno lungo il bordo, da 0 a 1. Usato solo sui modelli che lo supportano e quando i giri perimetrali sono attivi."
+        },
         "areas": {
           "name": "Selezione Area",
           "description": "Elenco di aree da tagliare(rappresentati come interi)."
@@ -917,8 +932,8 @@
           "description": "Strategia pioggia"
         },
         "auto_change_direction": {
-          "name": "Cambio direzione automatico",
-          "description": "Cambio direzione automatico"
+          "name": "Inversione automatica della direzione di taglio",
+          "description": "Inversione automatica della direzione di taglio — inverte la direzione di taglio tra un'esecuzione e l'altra per evitare che l'erba si schiacci."
         },
         "start_progress": {
           "name": "Avanzamento",
@@ -1190,9 +1205,25 @@
           "name": "Edge mode",
           "description": "Mower-only: 0 = none, 1 = once, 2 = twice."
         },
+        "ride_boundary_distance": {
+          "name": "Distanza di percorrenza del bordo",
+          "description": "Quanto il rasaerba procede verso l'esterno lungo il bordo, da 0 a 1. Usato solo sui modelli che lo supportano e quando i giri perimetrali sono attivi."
+        },
+        "auto_change_direction": {
+          "name": "Inversione automatica della direzione di taglio",
+          "description": "Inversione automatica della direzione di taglio — inverte la direzione di taglio tra un'esecuzione e l'altra per evitare che l'erba si schiacci: 0 = disattivato, 1 = attivato. Solo su modelli e firmware che lo supportano. Se omesso, resta l'impostazione della programmazione (disattivato per una nuova programmazione)."
+        },
         "route_angle": {
           "name": "Route angle",
           "description": "Mower-only: mowing pattern angle 0–179 degrees."
+        },
+        "toward_mode": {
+          "name": "Modalità Angolo Di Taglio",
+          "description": "Solo rasaerba: come viene applicato l'angolo del percorso (0 = ottimale, 1 = nord, 2 = casuale)."
+        },
+        "toward_included_angle": {
+          "name": "Angolo Di Attraversamento",
+          "description": "Solo rasaerba: secondo angolo di un percorso a scacchiera, in gradi."
         },
         "route_spacing": {
           "name": "Route spacing",
@@ -1272,9 +1303,25 @@
           "name": "Edge mode",
           "description": "Mower-only."
         },
+        "ride_boundary_distance": {
+          "name": "Distanza di percorrenza del bordo",
+          "description": "Quanto il rasaerba procede verso l'esterno lungo il bordo, da 0 a 1. Usato solo sui modelli che lo supportano e quando i giri perimetrali sono attivi."
+        },
+        "auto_change_direction": {
+          "name": "Inversione automatica della direzione di taglio",
+          "description": "Inversione automatica della direzione di taglio — inverte la direzione di taglio tra un'esecuzione e l'altra per evitare che l'erba si schiacci: 0 = disattivato, 1 = attivato. Solo su modelli e firmware che lo supportano. Se omesso, resta l'impostazione della programmazione (disattivato per una nuova programmazione)."
+        },
         "route_angle": {
           "name": "Route angle",
           "description": "Mower-only."
+        },
+        "toward_mode": {
+          "name": "Modalità Angolo Di Taglio",
+          "description": "Solo rasaerba: come viene applicato l'angolo del percorso (0 = ottimale, 1 = nord, 2 = casuale)."
+        },
+        "toward_included_angle": {
+          "name": "Angolo Di Attraversamento",
+          "description": "Solo rasaerba: secondo angolo di un percorso a scacchiera, in gradi."
         },
         "route_spacing": {
           "name": "Route spacing",
@@ -1411,6 +1458,9 @@
     "device_not_ready": {
       "message": "Il dispositivo non è pronto."
     },
+    "no_job_to_continue": {
+      "message": "Non c'è alcun lavoro interrotto da riprendere."
+    },
     "pause_failed": {
       "message": "Impossibile mettere in pausa il rasaerba."
     },
@@ -1449,6 +1499,15 @@
     },
     "grass_collection_unsupported": {
       "message": "Questo robot non supporta la raccolta dell'erba."
+    },
+    "no_running_job": {
+      "message": "{device_name} non sta eseguendo alcun lavoro di taglio, quindi non c'è nulla da modificare. Avvia prima un lavoro."
+    },
+    "running_job_modify_unsupported": {
+      "message": "{device_name} non supporta la modifica di un lavoro in corso. Solo Luba 2 e successivi lo consentono."
+    },
+    "auto_change_direction_unsupported": {
+      "message": "L'inversione automatica della direzione di taglio non è supportata da {device_name} o dal suo firmware."
     },
     "map_backup_cloud_unavailable": {
       "message": "I backup delle mappe richiedono un accesso funzionante al cloud Mammotion."

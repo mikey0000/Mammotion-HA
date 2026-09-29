@@ -19,7 +19,7 @@ from custom_components.mammotion.coordinator import MammotionBaseUpdateCoordinat
 
 _ROOT = Path(__file__).parent.parent / "custom_components" / "mammotion"
 
-# Mammotion's release notes list the toggle for these models only, from 2.3.28.1.
+# Any mower from firmware 2.3.28.1 except Luba 1, Luba 2 and the original Yuka.
 _GATE_CASES = [
     ("Luba-VA123456", "2.3.28.1", True),
     ("Luba-MB123456", "2.4.0.0", True),

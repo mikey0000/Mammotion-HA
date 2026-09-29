@@ -37,7 +37,7 @@ _RUNNING_JOB = {
     "ultra_wave": 2,
     "channel_mode": 1,
     "knife_height": 60,
-    "auto_change_direction": 1,
+    "auto_change_direction": True,
 }
 
 _METHODS = (
@@ -46,6 +46,7 @@ _METHODS = (
     "async_modify_plan_if_mowing",
     "async_change_blade_height_if_working",
     "_apply_route_field_if_working",
+    "_running_job_refusal",
     "async_modify_running_job",
     "async_change_progress_if_working",
     "async_change_speed_if_working",

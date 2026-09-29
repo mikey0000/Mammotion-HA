@@ -226,7 +226,8 @@
           "WAITING": "Čaka",
           "MOWING": "Košnja",
           "COMPLETE": "Dokončano",
-          "ABORTED": "Prekinjeno"
+          "ABORTED": "Prekinjeno",
+          "UNKNOWN": "Neznano"
         }
       },
       "maintenance_distance": {
@@ -429,6 +430,9 @@
       },
       "start_dropmow": {
         "name": "Zaženi DropMow"
+      },
+      "continue_last_job": {
+        "name": "Nadaljuj zadnje opravilo"
       },
       "emergency_nudge_forward": {
         "name": "Pomik naprej – za rešitev položaja"
@@ -669,6 +673,9 @@
       "charge_limit": {
         "name": "Omejitev polnjenja"
       },
+      "ride_boundary_distance": {
+        "name": "Razdalja vožnje ob meji"
+      },
       "start_progress": {
         "name": "Napredek"
       },
@@ -874,6 +881,14 @@
           "name": "Začetek napredka",
           "description": "Začetek napredka v odstotkih."
         },
+        "auto_change_direction": {
+          "name": "Samodejno menjavanje smeri košnje",
+          "description": "Med zagoni obrne smer košnje: 0 = izklopljeno, 1 = vklopljeno. Uporablja se samo pri modelih in vdelani programski opremi, ki to podpirajo. Če ga izpustite, velja nastavitev stikala."
+        },
+        "ride_boundary_distance": {
+          "name": "Razdalja vožnje ob meji",
+          "description": "Kako daleč kosilnica pelje navzven ob robu, od 0 do 1. Uporablja se samo pri modelih, ki to podpirajo, in ko so vklopljeni obodni krogi."
+        },
         "areas": {
           "name": "Območje naloge",
           "description": "Spisek območij."
@@ -917,8 +932,8 @@
           "description": "Taktika ob dežju"
         },
         "auto_change_direction": {
-          "name": "Samodejna sprememba smeri",
-          "description": "Samodejna sprememba smeri"
+          "name": "Samodejno menjavanje smeri košnje",
+          "description": "Samodejno menjavanje smeri košnje — med zagoni obrne smer košnje, da se trava manj poleže."
         },
         "start_progress": {
           "name": "Napredek",
@@ -1190,9 +1205,25 @@
           "name": "Edge mode",
           "description": "Mower-only: 0 = none, 1 = once, 2 = twice."
         },
+        "ride_boundary_distance": {
+          "name": "Razdalja vožnje ob meji",
+          "description": "Kako daleč kosilnica pelje navzven ob robu, od 0 do 1. Uporablja se samo pri modelih, ki to podpirajo, in ko so vklopljeni obodni krogi."
+        },
+        "auto_change_direction": {
+          "name": "Samodejno menjavanje smeri košnje",
+          "description": "Samodejno menjavanje smeri košnje — med zagoni obrne smer košnje, da se trava manj poleže: 0 = izklopljeno, 1 = vklopljeno. Samo pri modelih in vdelani programski opremi, ki to podpirajo. Če ga izpustite, ostane nastavitev urnika nespremenjena (pri novem urniku izklopljeno)."
+        },
         "route_angle": {
           "name": "Route angle",
           "description": "Mower-only: mowing pattern angle 0–179 degrees."
+        },
+        "toward_mode": {
+          "name": "Kot rezalne poti",
+          "description": "Samo kosilnica: kako se uporabi kot poti (0 = optimalno, 1 = sever, 2 = naključno)."
+        },
+        "toward_included_angle": {
+          "name": "Kot prehoda mreže",
+          "description": "Samo kosilnica: drugi kot šahovnične poti v stopinjah."
         },
         "route_spacing": {
           "name": "Route spacing",
@@ -1272,9 +1303,25 @@
           "name": "Edge mode",
           "description": "Mower-only."
         },
+        "ride_boundary_distance": {
+          "name": "Razdalja vožnje ob meji",
+          "description": "Kako daleč kosilnica pelje navzven ob robu, od 0 do 1. Uporablja se samo pri modelih, ki to podpirajo, in ko so vklopljeni obodni krogi."
+        },
+        "auto_change_direction": {
+          "name": "Samodejno menjavanje smeri košnje",
+          "description": "Samodejno menjavanje smeri košnje — med zagoni obrne smer košnje, da se trava manj poleže: 0 = izklopljeno, 1 = vklopljeno. Samo pri modelih in vdelani programski opremi, ki to podpirajo. Če ga izpustite, ostane nastavitev urnika nespremenjena (pri novem urniku izklopljeno)."
+        },
         "route_angle": {
           "name": "Route angle",
           "description": "Mower-only."
+        },
+        "toward_mode": {
+          "name": "Kot rezalne poti",
+          "description": "Samo kosilnica: kako se uporabi kot poti (0 = optimalno, 1 = sever, 2 = naključno)."
+        },
+        "toward_included_angle": {
+          "name": "Kot prehoda mreže",
+          "description": "Samo kosilnica: drugi kot šahovnične poti v stopinjah."
         },
         "route_spacing": {
           "name": "Route spacing",
@@ -1411,6 +1458,9 @@
     "device_not_ready": {
       "message": "Robot ni pripravljen."
     },
+    "no_job_to_continue": {
+      "message": "Ni prekinjenega opravila za nadaljevanje."
+    },
     "pause_failed": {
       "message": "Neuspešna zaustavitev košnje."
     },
@@ -1449,6 +1499,15 @@
     },
     "grass_collection_unsupported": {
       "message": "Ta kosilnica ne podpira zbiranja trave."
+    },
+    "no_running_job": {
+      "message": "{device_name} trenutno ne izvaja opravila košnje, zato ni ničesar za spremeniti. Najprej zaženite opravilo."
+    },
+    "running_job_modify_unsupported": {
+      "message": "{device_name} ne podpira spreminjanja opravila med izvajanjem. To omogočajo le Luba 2 in novejše."
+    },
+    "auto_change_direction_unsupported": {
+      "message": "{device_name} ali njegova vdelana programska oprema ne podpira samodejnega menjavanja smeri košnje."
     },
     "map_backup_cloud_unavailable": {
       "message": "Varnostne kopije zemljevidov zahtevajo delujočo prijavo v oblak Mammotion."

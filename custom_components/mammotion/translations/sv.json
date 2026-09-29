@@ -226,7 +226,8 @@
           "WAITING": "Väntar",
           "MOWING": "Klipper",
           "COMPLETE": "Slutfört",
-          "ABORTED": "Avbrutet"
+          "ABORTED": "Avbrutet",
+          "UNKNOWN": "Okänd"
         }
       },
       "maintenance_distance": {
@@ -429,6 +430,9 @@
       },
       "start_dropmow": {
         "name": "Starta DropMow"
+      },
+      "continue_last_job": {
+        "name": "Fortsätt senaste uppdrag"
       },
       "emergency_nudge_forward": {
         "name": "Ett steg framåt"
@@ -669,6 +673,9 @@
       "charge_limit": {
         "name": "Laddningsgräns"
       },
+      "ride_boundary_distance": {
+        "name": "Köravstånd längs gränsen"
+      },
       "start_progress": {
         "name": "Starta klippning"
       },
@@ -874,6 +881,14 @@
           "name": "Starta uppgift",
           "description": "Start procent uppgift."
         },
+        "auto_change_direction": {
+          "name": "Automatisk växling av klippriktning",
+          "description": "Växlar klippriktning mellan körningar: 0 = av, 1 = på. Används bara på modeller och firmware som stöder det. Utelämnas fältet gäller brytarens inställning."
+        },
+        "ride_boundary_distance": {
+          "name": "Köravstånd längs gränsen",
+          "description": "Hur långt gräsklipparen kör utåt längs kanten, från 0 till 1. Används bara på modeller som stöder det och när omkretsvarv är aktiverade."
+        },
         "areas": {
           "name": "Val av område",
           "description": "Lista över områden att klippa (representeras som heltal)."
@@ -917,8 +932,8 @@
           "description": "Regnstrategi"
         },
         "auto_change_direction": {
-          "name": "Automatiskt riktningsbyte",
-          "description": "Automatiskt riktningsbyte"
+          "name": "Automatisk växling av klippriktning",
+          "description": "Automatisk växling av klippriktning — växlar klippriktningen mellan körningar så att gräset trycks ned mindre."
         },
         "start_progress": {
           "name": "Förlopp",
@@ -1190,9 +1205,25 @@
           "name": "Edge mode",
           "description": "Mower-only: 0 = none, 1 = once, 2 = twice."
         },
+        "ride_boundary_distance": {
+          "name": "Köravstånd längs gränsen",
+          "description": "Hur långt gräsklipparen kör utåt längs kanten, från 0 till 1. Används bara på modeller som stöder det och när omkretsvarv är aktiverade."
+        },
+        "auto_change_direction": {
+          "name": "Automatisk växling av klippriktning",
+          "description": "Automatisk växling av klippriktning — växlar klippriktningen mellan körningar så att gräset trycks ned mindre: 0 = av, 1 = på. Bara på modeller och firmware som stöder det. Utelämnas fältet behålls schemats inställning (av för ett nytt schema)."
+        },
         "route_angle": {
           "name": "Route angle",
           "description": "Mower-only: mowing pattern angle 0–179 degrees."
+        },
+        "toward_mode": {
+          "name": "Klippvinkelläge",
+          "description": "Endast gräsklippare: hur ruttvinkeln tillämpas (0 = optimal, 1 = norr, 2 = slumpmässig)."
+        },
+        "toward_included_angle": {
+          "name": "Korsningsvinkel",
+          "description": "Endast gräsklippare: andra vinkeln i en schackbrädesrutt, i grader."
         },
         "route_spacing": {
           "name": "Route spacing",
@@ -1272,9 +1303,25 @@
           "name": "Edge mode",
           "description": "Mower-only."
         },
+        "ride_boundary_distance": {
+          "name": "Köravstånd längs gränsen",
+          "description": "Hur långt gräsklipparen kör utåt längs kanten, från 0 till 1. Används bara på modeller som stöder det och när omkretsvarv är aktiverade."
+        },
+        "auto_change_direction": {
+          "name": "Automatisk växling av klippriktning",
+          "description": "Automatisk växling av klippriktning — växlar klippriktningen mellan körningar så att gräset trycks ned mindre: 0 = av, 1 = på. Bara på modeller och firmware som stöder det. Utelämnas fältet behålls schemats inställning (av för ett nytt schema)."
+        },
         "route_angle": {
           "name": "Route angle",
           "description": "Mower-only."
+        },
+        "toward_mode": {
+          "name": "Klippvinkelläge",
+          "description": "Endast gräsklippare: hur ruttvinkeln tillämpas (0 = optimal, 1 = norr, 2 = slumpmässig)."
+        },
+        "toward_included_angle": {
+          "name": "Korsningsvinkel",
+          "description": "Endast gräsklippare: andra vinkeln i en schackbrädesrutt, i grader."
         },
         "route_spacing": {
           "name": "Route spacing",
@@ -1411,6 +1458,9 @@
     "device_not_ready": {
       "message": "Enheten är inte färdig."
     },
+    "no_job_to_continue": {
+      "message": "Det finns inget avbrutet uppdrag att fortsätta."
+    },
     "pause_failed": {
       "message": "Det gick inte att pausa gräsklipparen."
     },
@@ -1449,6 +1499,15 @@
     },
     "grass_collection_unsupported": {
       "message": "Den här klipparen har inte stöd för gräsuppsamling."
+    },
+    "no_running_job": {
+      "message": "{device_name} utför inget klippuppdrag, så det finns inget att ändra. Starta ett uppdrag först."
+    },
+    "running_job_modify_unsupported": {
+      "message": "{device_name} har inte stöd för att ändra ett pågående uppdrag. Endast Luba 2 och nyare kan det."
+    },
+    "auto_change_direction_unsupported": {
+      "message": "Automatisk växling av klippriktning stöds inte av {device_name} eller dess firmware."
     },
     "map_backup_cloud_unavailable": {
       "message": "Kartsäkerhetskopior kräver en fungerande inloggning i Mammotion-molnet."

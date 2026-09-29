@@ -226,7 +226,8 @@
           "WAITING": "Čeká se",
           "MOWING": "Sečení",
           "COMPLETE": "Dokončeno",
-          "ABORTED": "Přerušeno"
+          "ABORTED": "Přerušeno",
+          "UNKNOWN": "Neznámý"
         }
       },
       "maintenance_distance": {
@@ -429,6 +430,9 @@
       },
       "start_dropmow": {
         "name": "Spustit DropMow"
+      },
+      "continue_last_job": {
+        "name": "Pokračovat v poslední úloze"
       },
       "emergency_nudge_forward": {
         "name": "Nouzové postrčení vpřed"
@@ -669,6 +673,9 @@
       "charge_limit": {
         "name": "Limit nabíjení"
       },
+      "ride_boundary_distance": {
+        "name": "Vzdálenost jízdy po hranici"
+      },
       "start_progress": {
         "name": "Pokrok při zahájení"
       },
@@ -874,6 +881,14 @@
           "name": "Pokrok při zahájení",
           "description": "Procento při zahájení"
         },
+        "auto_change_direction": {
+          "name": "Automatické střídání směru sečení",
+          "description": "Střídá směr sečení mezi běhy: 0 = vypnuto, 1 = zapnuto. Použije se jen u modelů a firmwaru, které to podporují. Pokud pole vynecháte, platí nastavení přepínače."
+        },
+        "ride_boundary_distance": {
+          "name": "Vzdálenost jízdy po hranici",
+          "description": "Jak daleko sekačka jede směrem ven podél okraje, od 0 do 1. Použije se jen u modelů, které to podporují, a při zapnutých obvodových kolech."
+        },
         "areas": {
           "name": "Výběr oblasti",
           "description": "Seznam oblastí k sečení (reprezentovaný jako celá čísla)."
@@ -917,8 +932,8 @@
           "description": "Taktika za deště"
         },
         "auto_change_direction": {
-          "name": "Automatická změna směru",
-          "description": "Automatická změna směru"
+          "name": "Automatické střídání směru sečení",
+          "description": "Automatické střídání směru sečení — mezi běhy obrací směr sečení, aby se omezilo poléhání trávy."
         },
         "start_progress": {
           "name": "Průběh",
@@ -1190,9 +1205,25 @@
           "name": "Edge mode",
           "description": "Mower-only: 0 = none, 1 = once, 2 = twice."
         },
+        "ride_boundary_distance": {
+          "name": "Vzdálenost jízdy po hranici",
+          "description": "Jak daleko sekačka jede směrem ven podél okraje, od 0 do 1. Použije se jen u modelů, které to podporují, a při zapnutých obvodových kolech."
+        },
+        "auto_change_direction": {
+          "name": "Automatické střídání směru sečení",
+          "description": "Automatické střídání směru sečení — mezi běhy obrací směr sečení, aby se omezilo poléhání trávy: 0 = vypnuto, 1 = zapnuto. Jen u modelů a firmwaru, které to podporují. Pokud pole vynecháte, zůstane nastavení plánu beze změny (u nového plánu vypnuto)."
+        },
         "route_angle": {
           "name": "Route angle",
           "description": "Mower-only: mowing pattern angle 0–179 degrees."
+        },
+        "toward_mode": {
+          "name": "Režim sečení",
+          "description": "Pouze sekačka: jak se použije úhel trasy (0 = optimální, 1 = sever, 2 = náhodný)."
+        },
+        "toward_included_angle": {
+          "name": "Úhel křížení",
+          "description": "Pouze sekačka: druhý úhel šachovnicové trasy ve stupních."
         },
         "route_spacing": {
           "name": "Route spacing",
@@ -1272,9 +1303,25 @@
           "name": "Edge mode",
           "description": "Mower-only."
         },
+        "ride_boundary_distance": {
+          "name": "Vzdálenost jízdy po hranici",
+          "description": "Jak daleko sekačka jede směrem ven podél okraje, od 0 do 1. Použije se jen u modelů, které to podporují, a při zapnutých obvodových kolech."
+        },
+        "auto_change_direction": {
+          "name": "Automatické střídání směru sečení",
+          "description": "Automatické střídání směru sečení — mezi běhy obrací směr sečení, aby se omezilo poléhání trávy: 0 = vypnuto, 1 = zapnuto. Jen u modelů a firmwaru, které to podporují. Pokud pole vynecháte, zůstane nastavení plánu beze změny (u nového plánu vypnuto)."
+        },
         "route_angle": {
           "name": "Route angle",
           "description": "Mower-only."
+        },
+        "toward_mode": {
+          "name": "Režim sečení",
+          "description": "Pouze sekačka: jak se použije úhel trasy (0 = optimální, 1 = sever, 2 = náhodný)."
+        },
+        "toward_included_angle": {
+          "name": "Úhel křížení",
+          "description": "Pouze sekačka: druhý úhel šachovnicové trasy ve stupních."
         },
         "route_spacing": {
           "name": "Route spacing",
@@ -1411,6 +1458,9 @@
     "device_not_ready": {
       "message": "Sekačka není připravena."
     },
+    "no_job_to_continue": {
+      "message": "Není žádná přerušená úloha, ve které by bylo možné pokračovat."
+    },
     "pause_failed": {
       "message": "Sekačku se nepodařilo zastavit."
     },
@@ -1449,6 +1499,15 @@
     },
     "grass_collection_unsupported": {
       "message": "Tato sekačka nepodporuje sběr trávy."
+    },
+    "no_running_job": {
+      "message": "{device_name} právě neprovádí žádnou úlohu sekání, takže není co měnit. Nejprve spusťte úlohu."
+    },
+    "running_job_modify_unsupported": {
+      "message": "{device_name} nepodporuje změnu probíhající úlohy. Umí to pouze Luba 2 a novější."
+    },
+    "auto_change_direction_unsupported": {
+      "message": "Automatické střídání směru sečení není podporováno zařízením {device_name} nebo jeho firmwarem."
     },
     "map_backup_cloud_unavailable": {
       "message": "Zálohy map vyžadují funkční přihlášení ke cloudu Mammotion."

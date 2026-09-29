@@ -125,6 +125,33 @@ BUTTON_DROPMOW: tuple[MammotionButtonSensorEntityDescription, ...] = (
 )
 
 
+#: The app's home start flow refuses "continue last job" below this charge.
+_CONTINUE_MIN_BATTERY = 30
+
+
+def _can_continue_last_job(coordinator: MammotionBaseUpdateCoordinator[Any]) -> bool:
+    """Whether the mower meets the app's local preconditions: standby, mapped, charged."""
+    data = coordinator.data
+    if data is None:
+        return False
+    locations = data.report_data.locations
+    return (
+        data.report_data.dev.sys_status == WorkMode.MODE_READY
+        and bool(locations)
+        and locations[0].bol_hash > 1
+        and data.report_data.dev.battery_val >= _CONTINUE_MIN_BATTERY
+    )
+
+
+BUTTON_CONTINUE_LAST_JOB: tuple[MammotionButtonSensorEntityDescription, ...] = (
+    MammotionButtonSensorEntityDescription(
+        key="continue_last_job",
+        press_fn=lambda coordinator: coordinator.async_continue_last_job(),
+        available_fn=_can_continue_last_job,
+    ),
+)
+
+
 BUTTON_SENSORS: tuple[MammotionButtonSensorEntityDescription, ...] = (
     MammotionButtonSensorEntityDescription(
         key="start_map_sync",
@@ -240,6 +267,16 @@ async def async_setup_entry(
                     mower.reporting_coordinator, entity_description
                 )
                 for entity_description in BUTTON_DROPMOW
+            )
+
+        if DeviceType.supports_continue_last_job(
+            mower.device.device_name, product_key=mower.device.product_key
+        ):
+            async_add_entities(
+                MammotionButtonSensorEntity(
+                    mower.reporting_coordinator, entity_description
+                )
+                for entity_description in BUTTON_CONTINUE_LAST_JOB
             )
 
         if not DeviceType.is_luba1(mower.device.device_name):

@@ -279,6 +279,22 @@ start_mow:
           min: 0
           max: 100
           unit_of_measurement: "%"
+    auto_change_direction:
+      example: 1
+      required: false
+      selector:
+        number:
+          min: 0
+          max: 1
+          step: 1
+    ride_boundary_distance:
+      example: 0.2
+      required: false
+      selector:
+        number:
+          min: 0
+          max: 1
+          step: 0.1
     areas:
       required: false
       selector:
@@ -710,6 +726,23 @@ edit_task:
           min: 0
           max: 2
           mode: box
+    ride_boundary_distance:
+      required: false
+      example: 0.2
+      selector:
+        number:
+          min: 0
+          max: 1
+          step: 0.1
+          mode: box
+    auto_change_direction:
+      required: false
+      example: 1
+      selector:
+        number:
+          min: 0
+          max: 1
+          step: 1
     route_angle:
       required: false
       example: 0
@@ -717,6 +750,25 @@ edit_task:
         number:
           min: 0
           max: 179
+          mode: box
+    toward_mode:
+      required: false
+      example: "0"
+      selector:
+        select:
+          translation_key: "toward_mode"
+          options:
+            - "0"
+            - "1"
+            - "2"
+    toward_included_angle:
+      required: false
+      example: 90
+      selector:
+        number:
+          min: -180
+          max: 180
+          unit_of_measurement: degrees
           mode: box
     route_spacing:
       required: false
@@ -838,6 +890,23 @@ create_task:
           min: 0
           max: 2
           mode: box
+    ride_boundary_distance:
+      required: false
+      example: 0.2
+      selector:
+        number:
+          min: 0
+          max: 1
+          step: 0.1
+          mode: box
+    auto_change_direction:
+      required: false
+      example: 1
+      selector:
+        number:
+          min: 0
+          max: 1
+          step: 1
     route_angle:
       required: false
       example: 0
@@ -845,6 +914,25 @@ create_task:
         number:
           min: 0
           max: 179
+          mode: box
+    toward_mode:
+      required: false
+      example: "0"
+      selector:
+        select:
+          translation_key: "toward_mode"
+          options:
+            - "0"
+            - "1"
+            - "2"
+    toward_included_angle:
+      required: false
+      example: 90
+      selector:
+        number:
+          min: -180
+          max: 180
+          unit_of_measurement: degrees
           mode: box
     route_spacing:
       required: false

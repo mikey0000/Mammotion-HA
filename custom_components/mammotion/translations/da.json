@@ -226,7 +226,8 @@
           "WAITING": "Venter",
           "MOWING": "Klipper",
           "COMPLETE": "Fuldført",
-          "ABORTED": "Afbrudt"
+          "ABORTED": "Afbrudt",
+          "UNKNOWN": "Ukendt"
         }
       },
       "maintenance_distance": {
@@ -429,6 +430,9 @@
       },
       "start_dropmow": {
         "name": "Start DropMow"
+      },
+      "continue_last_job": {
+        "name": "Fortsæt sidste opgave"
       },
       "emergency_nudge_forward": {
         "name": "Nødskub fremad"
@@ -669,6 +673,9 @@
       "charge_limit": {
         "name": "Opladningsgrænse"
       },
+      "ride_boundary_distance": {
+        "name": "Kørselsafstand ved grænsen"
+      },
       "start_progress": {
         "name": "Start forløb på"
       },
@@ -874,6 +881,14 @@
           "name": "Start forløb på",
           "description": "Start forløb procent."
         },
+        "auto_change_direction": {
+          "name": "Automatisk vending af klipperetning",
+          "description": "Skifter klipperetning mellem kørsler: 0 = fra, 1 = til. Bruges kun på modeller og firmware, der understøtter det. Udelades feltet, gælder kontaktens indstilling."
+        },
+        "ride_boundary_distance": {
+          "name": "Kørselsafstand ved grænsen",
+          "description": "Hvor langt plæneklipperen kører udad langs kanten, fra 0 til 1. Bruges kun på modeller, der understøtter det, og når omkredsrunder er slået til."
+        },
         "areas": {
           "name": "Områdevalg",
           "description": "Liste over områder, der skal klippes (repræsenteret som heltal)."
@@ -917,8 +932,8 @@
           "description": "Regntaktik"
         },
         "auto_change_direction": {
-          "name": "Automatisk retningsskift",
-          "description": "Automatisk retningsskift"
+          "name": "Automatisk vending af klipperetning",
+          "description": "Automatisk vending af klipperetning — vender klipperetningen mellem kørsler, så græsset lægger sig mindre."
         },
         "start_progress": {
           "name": "Forløb",
@@ -1190,9 +1205,25 @@
           "name": "Edge mode",
           "description": "Mower-only: 0 = none, 1 = once, 2 = twice."
         },
+        "ride_boundary_distance": {
+          "name": "Kørselsafstand ved grænsen",
+          "description": "Hvor langt plæneklipperen kører udad langs kanten, fra 0 til 1. Bruges kun på modeller, der understøtter det, og når omkredsrunder er slået til."
+        },
+        "auto_change_direction": {
+          "name": "Automatisk vending af klipperetning",
+          "description": "Automatisk vending af klipperetning — vender klipperetningen mellem kørsler, så græsset lægger sig mindre: 0 = fra, 1 = til. Kun på modeller og firmware, der understøtter det. Udelades feltet, beholdes tidsplanens indstilling (fra for en ny tidsplan)."
+        },
         "route_angle": {
           "name": "Route angle",
           "description": "Mower-only: mowing pattern angle 0–179 degrees."
+        },
+        "toward_mode": {
+          "name": "Klippevinkeltilstand",
+          "description": "Kun plæneklipper: hvordan rutevinklen anvendes (0 = optimal, 1 = nord, 2 = tilfældig)."
+        },
+        "toward_included_angle": {
+          "name": "Krydsningsvinkel",
+          "description": "Kun plæneklipper: den anden vinkel i en skakbrætrute, i grader."
         },
         "route_spacing": {
           "name": "Route spacing",
@@ -1272,9 +1303,25 @@
           "name": "Edge mode",
           "description": "Mower-only."
         },
+        "ride_boundary_distance": {
+          "name": "Kørselsafstand ved grænsen",
+          "description": "Hvor langt plæneklipperen kører udad langs kanten, fra 0 til 1. Bruges kun på modeller, der understøtter det, og når omkredsrunder er slået til."
+        },
+        "auto_change_direction": {
+          "name": "Automatisk vending af klipperetning",
+          "description": "Automatisk vending af klipperetning — vender klipperetningen mellem kørsler, så græsset lægger sig mindre: 0 = fra, 1 = til. Kun på modeller og firmware, der understøtter det. Udelades feltet, beholdes tidsplanens indstilling (fra for en ny tidsplan)."
+        },
         "route_angle": {
           "name": "Route angle",
           "description": "Mower-only."
+        },
+        "toward_mode": {
+          "name": "Klippevinkeltilstand",
+          "description": "Kun plæneklipper: hvordan rutevinklen anvendes (0 = optimal, 1 = nord, 2 = tilfældig)."
+        },
+        "toward_included_angle": {
+          "name": "Krydsningsvinkel",
+          "description": "Kun plæneklipper: den anden vinkel i en skakbrætrute, i grader."
         },
         "route_spacing": {
           "name": "Route spacing",
@@ -1411,6 +1458,9 @@
     "device_not_ready": {
       "message": "Enheden er ikke klar."
     },
+    "no_job_to_continue": {
+      "message": "Der er ingen afbrudt opgave at fortsætte."
+    },
     "pause_failed": {
       "message": "Kunne ikke sætte plæneklipperen på pause."
     },
@@ -1449,6 +1499,15 @@
     },
     "grass_collection_unsupported": {
       "message": "Denne plæneklipper understøtter ikke græsopsamling."
+    },
+    "no_running_job": {
+      "message": "{device_name} udfører ikke en klippeopgave, så der er intet at ændre. Start en opgave først."
+    },
+    "running_job_modify_unsupported": {
+      "message": "{device_name} understøtter ikke ændring af en igangværende opgave. Kun Luba 2 og nyere kan det."
+    },
+    "auto_change_direction_unsupported": {
+      "message": "Automatisk vending af klipperetning understøttes ikke af {device_name} eller dens firmware."
     },
     "map_backup_cloud_unavailable": {
       "message": "Kortsikkerhedskopier kræver et fungerende login til Mammotion-skyen."

@@ -91,6 +91,11 @@ START_MOW_SCHEMA = {
     vol.Optional("start_progress", default=0): vol.All(
         vol.Coerce(int), vol.Range(min=0, max=100)
     ),
+    # No defaults: when omitted, the switch and number entities' values stand.
+    vol.Optional("auto_change_direction"): vol.All(vol.Coerce(int), vol.In([0, 1])),
+    vol.Optional("ride_boundary_distance"): vol.All(
+        vol.Coerce(float), vol.Range(min=0, max=1)
+    ),
     vol.Optional("areas", default=[]): vol.All(cv.ensure_list, [cv.entity_id]),
 }
 
@@ -316,7 +321,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
             return LawnMowerActivity.DOCKED
         return None
 
-    async def async_start_mowing(self, **kwargs: Any) -> None:
+    async def async_start_mowing(self, **kwargs: Any) -> None:  # noqa: C901
         """Start mowing."""
         trans_key = "pause_failed"
 
@@ -543,6 +548,10 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
                 ) from exc
             finally:
                 await self.coordinator.async_request_report_snapshot()
+
+    async def async_modify_running_job(self, **kwargs: Any) -> None:
+        """Change settings on the job already running, without re-planning it."""
+        await self.coordinator.async_modify_running_job(**kwargs)
 
     async def async_start_stop_blades(self, **kwargs: Any) -> None:
         """Start/Stop Blades."""

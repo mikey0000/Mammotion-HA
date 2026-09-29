@@ -226,7 +226,8 @@
           "WAITING": "Waiting",
           "MOWING": "Mowing",
           "COMPLETE": "Complete",
-          "ABORTED": "Aborted"
+          "ABORTED": "Aborted",
+          "UNKNOWN": "Unknown"
         }
       },
       "maintenance_distance": {
@@ -429,6 +430,9 @@
       },
       "start_dropmow": {
         "name": "Start DropMow"
+      },
+      "continue_last_job": {
+        "name": "Continue last job"
       },
       "emergency_nudge_forward": {
         "name": "Emergency nudge forward"
@@ -669,6 +673,9 @@
       "charge_limit": {
         "name": "Charge limit"
       },
+      "ride_boundary_distance": {
+        "name": "Boundary ride distance"
+      },
       "start_progress": {
         "name": "Start progress"
       },
@@ -874,6 +881,14 @@
           "name": "Start progress",
           "description": "Starting progress percentage."
         },
+        "auto_change_direction": {
+          "name": "Auto-reverse mowing direction",
+          "description": "Flip the mowing direction between runs: 0 = off, 1 = on. Only used on models and firmware that support it. Leave it out to keep the switch's setting."
+        },
+        "ride_boundary_distance": {
+          "name": "Boundary ride distance",
+          "description": "How far the mower rides outward along the edge, from 0 to 1. Only used on models that support it and when perimeter laps are on."
+        },
         "areas": {
           "name": "Area selection",
           "description": "List of areas to mow (represented as integers)."
@@ -917,8 +932,8 @@
           "description": "Rain tactics"
         },
         "auto_change_direction": {
-          "name": "Auto change direction",
-          "description": "Auto change direction"
+          "name": "Auto-reverse mowing direction",
+          "description": "Auto-reverse mowing direction — flips the mowing direction between runs to reduce matting."
         },
         "start_progress": {
           "name": "Progress",
@@ -1190,9 +1205,25 @@
           "name": "Edge mode",
           "description": "Mower-only: 0 = none, 1 = once, 2 = twice."
         },
+        "ride_boundary_distance": {
+          "name": "Boundary ride distance",
+          "description": "How far the mower rides outward along the edge, from 0 to 1. Only used on models that support it and when perimeter laps are on."
+        },
+        "auto_change_direction": {
+          "name": "Auto-reverse mowing direction",
+          "description": "Auto-reverse mowing direction — flips the mowing direction between runs to reduce matting: 0 = off, 1 = on. Only on models and firmware that support it. Leave it out to keep the schedule's setting (off for a new schedule)."
+        },
         "route_angle": {
           "name": "Route angle",
           "description": "Mower-only: mowing pattern angle 0–179 degrees."
+        },
+        "toward_mode": {
+          "name": "Cutting angle mode",
+          "description": "Mower-only: how the route angle is applied (0 = optimal, 1 = north, 2 = random)."
+        },
+        "toward_included_angle": {
+          "name": "Crossing angle",
+          "description": "Mower-only: second angle of a chessboard route, in degrees."
         },
         "route_spacing": {
           "name": "Route spacing",
@@ -1272,9 +1303,25 @@
           "name": "Edge mode",
           "description": "Mower-only."
         },
+        "ride_boundary_distance": {
+          "name": "Boundary ride distance",
+          "description": "How far the mower rides outward along the edge, from 0 to 1. Only used on models that support it and when perimeter laps are on."
+        },
+        "auto_change_direction": {
+          "name": "Auto-reverse mowing direction",
+          "description": "Auto-reverse mowing direction — flips the mowing direction between runs to reduce matting: 0 = off, 1 = on. Only on models and firmware that support it. Leave it out to keep the schedule's setting (off for a new schedule)."
+        },
         "route_angle": {
           "name": "Route angle",
           "description": "Mower-only."
+        },
+        "toward_mode": {
+          "name": "Cutting angle mode",
+          "description": "Mower-only: how the route angle is applied (0 = optimal, 1 = north, 2 = random)."
+        },
+        "toward_included_angle": {
+          "name": "Crossing angle",
+          "description": "Mower-only: second angle of a chessboard route, in degrees."
         },
         "route_spacing": {
           "name": "Route spacing",
@@ -1411,6 +1458,9 @@
     "device_not_ready": {
       "message": "Device is not ready."
     },
+    "no_job_to_continue": {
+      "message": "There is no interrupted job to continue."
+    },
     "pause_failed": {
       "message": "Failed to pause the mower."
     },
@@ -1449,6 +1499,15 @@
     },
     "grass_collection_unsupported": {
       "message": "This mower does not support grass collection."
+    },
+    "no_running_job": {
+      "message": "{device_name} is not running a mowing job, so there is nothing to change. Start a job first."
+    },
+    "running_job_modify_unsupported": {
+      "message": "{device_name} does not support changing a job while it is running. Only Luba 2 and newer can."
+    },
+    "auto_change_direction_unsupported": {
+      "message": "Auto-reverse mowing direction is not supported by {device_name} or its firmware."
     },
     "map_backup_cloud_unavailable": {
       "message": "Map backups need a working Mammotion cloud login."

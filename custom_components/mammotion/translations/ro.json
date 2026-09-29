@@ -226,7 +226,8 @@
           "WAITING": "În așteptare",
           "MOWING": "Cosire",
           "COMPLETE": "Finalizat",
-          "ABORTED": "Abandonat"
+          "ABORTED": "Abandonat",
+          "UNKNOWN": "Necunoscut"
         }
       },
       "maintenance_distance": {
@@ -429,6 +430,9 @@
       },
       "start_dropmow": {
         "name": "Pornește DropMow"
+      },
+      "continue_last_job": {
+        "name": "Continuă ultima sarcină"
       },
       "emergency_nudge_forward": {
         "name": "Un impuls de urgență înainte"
@@ -669,6 +673,9 @@
       "charge_limit": {
         "name": "Limită de încărcare"
       },
+      "ride_boundary_distance": {
+        "name": "Distanța de parcurgere a marginii"
+      },
       "start_progress": {
         "name": "Progresul la start"
       },
@@ -874,6 +881,14 @@
           "name": "Progres Start",
           "description": "Progres de inceput procent."
         },
+        "auto_change_direction": {
+          "name": "Inversare automată a direcției de tuns",
+          "description": "Inversează direcția de tuns între rulări: 0 = oprit, 1 = pornit. Folosit doar pe modelele și firmware-ul care îl acceptă. Dacă este omis, se aplică setarea comutatorului."
+        },
+        "ride_boundary_distance": {
+          "name": "Distanța de parcurgere a marginii",
+          "description": "Cât de departe merge mașina de tuns spre exterior de-a lungul marginii, de la 0 la 1. Folosit doar pe modelele care îl acceptă și când turele de perimetru sunt activate."
+        },
         "areas": {
           "name": "Selecția zonei",
           "description": "Lista zonelor care trebuie aruncate (reprezentate ca întregi)."
@@ -917,8 +932,8 @@
           "description": "Tactică ploaie"
         },
         "auto_change_direction": {
-          "name": "Schimbare automată a direcției",
-          "description": "Schimbare automată a direcției"
+          "name": "Inversare automată a direcției de tuns",
+          "description": "Inversare automată a direcției de tuns — inversează direcția de tuns între rulări pentru a reduce culcarea ierbii."
         },
         "start_progress": {
           "name": "Progres",
@@ -1190,9 +1205,25 @@
           "name": "Edge mode",
           "description": "Mower-only: 0 = none, 1 = once, 2 = twice."
         },
+        "ride_boundary_distance": {
+          "name": "Distanța de parcurgere a marginii",
+          "description": "Cât de departe merge mașina de tuns spre exterior de-a lungul marginii, de la 0 la 1. Folosit doar pe modelele care îl acceptă și când turele de perimetru sunt activate."
+        },
+        "auto_change_direction": {
+          "name": "Inversare automată a direcției de tuns",
+          "description": "Inversare automată a direcției de tuns — inversează direcția de tuns între rulări pentru a reduce culcarea ierbii: 0 = oprit, 1 = pornit. Doar pe modelele și firmware-ul care o acceptă. Dacă este omis, se păstrează setarea programului (oprit pentru un program nou)."
+        },
         "route_angle": {
           "name": "Route angle",
           "description": "Mower-only: mowing pattern angle 0–179 degrees."
+        },
+        "toward_mode": {
+          "name": "Mod unghi tăiat",
+          "description": "Doar mașina de tuns: cum se aplică unghiul traseului (0 = optim, 1 = nord, 2 = aleatoriu)."
+        },
+        "toward_included_angle": {
+          "name": "Unghiul de trecere",
+          "description": "Doar mașina de tuns: al doilea unghi al unui traseu în tablă de șah, în grade."
         },
         "route_spacing": {
           "name": "Route spacing",
@@ -1272,9 +1303,25 @@
           "name": "Edge mode",
           "description": "Mower-only."
         },
+        "ride_boundary_distance": {
+          "name": "Distanța de parcurgere a marginii",
+          "description": "Cât de departe merge mașina de tuns spre exterior de-a lungul marginii, de la 0 la 1. Folosit doar pe modelele care îl acceptă și când turele de perimetru sunt activate."
+        },
+        "auto_change_direction": {
+          "name": "Inversare automată a direcției de tuns",
+          "description": "Inversare automată a direcției de tuns — inversează direcția de tuns între rulări pentru a reduce culcarea ierbii: 0 = oprit, 1 = pornit. Doar pe modelele și firmware-ul care o acceptă. Dacă este omis, se păstrează setarea programului (oprit pentru un program nou)."
+        },
         "route_angle": {
           "name": "Route angle",
           "description": "Mower-only."
+        },
+        "toward_mode": {
+          "name": "Mod unghi tăiat",
+          "description": "Doar mașina de tuns: cum se aplică unghiul traseului (0 = optim, 1 = nord, 2 = aleatoriu)."
+        },
+        "toward_included_angle": {
+          "name": "Unghiul de trecere",
+          "description": "Doar mașina de tuns: al doilea unghi al unui traseu în tablă de șah, în grade."
         },
         "route_spacing": {
           "name": "Route spacing",
@@ -1411,6 +1458,9 @@
     "device_not_ready": {
       "message": "Dispozitivul nu este pregătit."
     },
+    "no_job_to_continue": {
+      "message": "Nu există nicio sarcină întreruptă de continuat."
+    },
     "pause_failed": {
       "message": "Nu s-a reușit punerea în pauză a mașinii de tuns iarba."
     },
@@ -1449,6 +1499,15 @@
     },
     "grass_collection_unsupported": {
       "message": "Această mașină de tuns nu acceptă colectarea ierbii."
+    },
+    "no_running_job": {
+      "message": "{device_name} nu execută nicio sarcină de tundere, deci nu este nimic de modificat. Porniți mai întâi o sarcină."
+    },
+    "running_job_modify_unsupported": {
+      "message": "{device_name} nu permite modificarea unei sarcini în curs. Doar Luba 2 și modelele mai noi permit acest lucru."
+    },
+    "auto_change_direction_unsupported": {
+      "message": "Inversarea automată a direcției de tuns nu este acceptată de {device_name} sau de firmware-ul său."
     },
     "map_backup_cloud_unavailable": {
       "message": "Copiile de rezervă ale hărților necesită o autentificare funcțională în cloudul Mammotion."

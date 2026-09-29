@@ -35,6 +35,9 @@
       },
       "start_dropmow": {
         "default": "mdi:mower-on"
+      },
+      "continue_last_job": {
+        "default": "mdi:play-circle-outline"
       }
     },
     "sensor": {
@@ -100,6 +103,17 @@
           "paused": "mdi:pause-circle-outline",
           "returning": "mdi:home-import-outline",
           "charging_pause": "mdi:battery-charging"
+        }
+      },
+      "task_area_status": {
+        "default": "mdi:texture-box",
+        "state": {
+          "UNKNOWN": "mdi:help-circle-outline",
+          "NOT_STARTED": "mdi:checkbox-blank-outline",
+          "WAITING": "mdi:timer-sand",
+          "MOWING": "mdi:robot-mower",
+          "COMPLETE": "mdi:check-circle-outline",
+          "ABORTED": "mdi:close-circle-outline"
         }
       }
     },
@@ -178,6 +192,9 @@
       },
       "charge_limit": {
         "default": "mdi:battery-charging-80"
+      },
+      "ride_boundary_distance": {
+        "default": "mdi:border-outside"
       }
     },
     "switch": {

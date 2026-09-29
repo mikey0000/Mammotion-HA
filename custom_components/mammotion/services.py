@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any, cast
 import voluptuous as vol
 from homeassistant.const import ATTR_ENTITY_ID
 from homeassistant.core import HomeAssistant, ServiceCall, SupportsResponse, callback
-from homeassistant.exceptions import HomeAssistantError
+from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.service import async_register_admin_service
@@ -16,11 +16,15 @@ from homeassistant.util import dt as dt_util
 from pymammotion.data.model.hash_list import CommDataCouple, Plan
 from pymammotion.data.model.pool_state import PoolPlan
 from pymammotion.http.model.map_backup import BACKUP_STATE_DONE, BackupMapItem
+from pymammotion.utility.device_type import DeviceType
 
 from .const import DOMAIN, LOGGER
 from .coordinator import MammotionReportUpdateCoordinator, MammotionSpinoCoordinator
+from .entity import device_firmware_version
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from . import MammotionConfigEntry
 from .geojson_utils import apply_geojson_offset
 from .models import MammotionMowerData
@@ -87,7 +91,18 @@ _MOWER_ONLY_FIELDS = {
     vol.Optional("knife_height"): vol.All(vol.Coerce(int), vol.Range(min=20, max=100)),
     vol.Optional("speed"): vol.Coerce(float),
     vol.Optional("edge_mode"): vol.All(vol.Coerce(int), vol.Range(min=0, max=2)),
+    vol.Optional("ride_boundary_distance"): vol.All(
+        vol.Coerce(float), vol.Range(min=0, max=1)
+    ),
+    # None is what get_task reports for a plan the device sent no setting for.
+    vol.Optional("auto_change_direction"): vol.Any(
+        None, vol.All(vol.Coerce(int), vol.In([0, 1]))
+    ),
     vol.Optional("route_angle"): vol.All(vol.Coerce(int), vol.Range(min=0, max=179)),
+    vol.Optional("toward_mode"): vol.All(vol.Coerce(int), vol.In([0, 1, 2])),
+    vol.Optional("toward_included_angle"): vol.All(
+        vol.Coerce(int), vol.Range(min=-180, max=180)
+    ),
     vol.Optional("route_spacing"): vol.All(vol.Coerce(int), vol.Range(min=0)),
     vol.Optional("zone_hashs"): vol.All(cv.ensure_list, [vol.Coerce(int)]),
 }
@@ -438,7 +453,11 @@ def _mower_task_info(
         "knife_height": plan.knife_height,
         "speed": plan.speed,
         "edge_mode": plan.edge_mode,
+        "ride_boundary_distance": plan.ride_boundary_distance,
+        "auto_change_direction": plan.auto_change_direction,
         "route_angle": plan.route_angle,
+        "toward_mode": plan.toward_mode,
+        "toward_included_angle": plan.toward_included_angle,
         "route_spacing": plan.route_spacing,
         "zone_hashs": list(plan.zone_hashs),
     }
@@ -502,13 +521,39 @@ def _build_mower_plan(data: dict[str, Any], base: Plan | None = None) -> Plan:
         "knife_height",
         "speed",
         "edge_mode",
+        "ride_boundary_distance",
         "route_angle",
+        "toward_mode",
+        "toward_included_angle",
         "route_spacing",
         "zone_hashs",
     ):
         if key in data:
             plan = dataclasses.replace(plan, **{key: data[key]})
+    if (auto_change := data.get("auto_change_direction")) is not None:
+        plan = dataclasses.replace(plan, auto_change_direction=bool(auto_change))
     return plan
+
+
+def _check_auto_change_direction(
+    coordinator: MammotionReportUpdateCoordinator, data: Mapping[str, Any]
+) -> None:
+    """Refuse to switch auto-reverse on where the mower does not offer it.
+
+    pymammotion sends a schedule's setting with no model gate.
+    """
+    if not data.get("auto_change_direction"):
+        return
+    if not DeviceType.supports_auto_change_direction(
+        coordinator.device_name,
+        device_firmware_version(coordinator.data),
+        coordinator.device.product_key,
+    ):
+        raise ServiceValidationError(
+            translation_domain=DOMAIN,
+            translation_key="auto_change_direction_unsupported",
+            translation_placeholders={"device_name": coordinator.device_name},
+        )
 
 
 def _build_spino_plan(data: dict[str, Any], base: PoolPlan | None = None) -> PoolPlan:
@@ -770,6 +815,7 @@ def async_setup_services(hass: HomeAssistant) -> None:  # noqa: C901
     async def handle_edit_task(call: ServiceCall) -> None:
         entity_id = call.data[ATTR_ENTITY_ID]
         if (mower := _resolve_mower_task(hass, entity_id)) is not None:
+            _check_auto_change_direction(mower[0], call.data)
             base = mower[0].data.map.plan[mower[1]]
             await mower[0].async_edit_mower_task(
                 _build_mower_plan(dict(call.data), base)
@@ -791,9 +837,9 @@ def async_setup_services(hass: HomeAssistant) -> None:  # noqa: C901
             return  # pragma: no cover — unreachable after raise above
         coord, kind = resolved
         if kind == "mower":
-            await cast(MammotionReportUpdateCoordinator, coord).async_create_mower_task(
-                _build_mower_plan(dict(call.data))
-            )
+            mower = cast(MammotionReportUpdateCoordinator, coord)
+            _check_auto_change_direction(mower, call.data)
+            await mower.async_create_mower_task(_build_mower_plan(dict(call.data)))
         else:
             await cast(MammotionSpinoCoordinator, coord).async_create_spino_task(
                 _build_spino_plan(dict(call.data))

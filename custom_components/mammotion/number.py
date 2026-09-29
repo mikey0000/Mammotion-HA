@@ -127,6 +127,19 @@ CHARGE_LIMIT_NUMBER_ENTITY = MammotionConfigNumberEntityDescription(
     ),
 )
 
+# Gated on DeviceType.supports_ride_boundary_distance; the APK names no unit or hard limit.
+RIDE_BOUNDARY_DISTANCE_NUMBER_ENTITY = MammotionConfigNumberEntityDescription(
+    key="ride_boundary_distance",
+    native_min_value=0,
+    native_max_value=1,
+    native_step=0.1,
+    mode=NumberMode.SLIDER,
+    # The frontend's step arithmetic can hand over 0.30000000000000004.
+    set_fn=lambda coordinator, value: setattr(
+        coordinator.operation_settings, "ride_boundary_distance", round(value, 1)
+    ),
+)
+
 NUMBER_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
     MammotionConfigNumberEntityDescription(
         key="start_progress",
@@ -269,17 +282,20 @@ async def async_setup_entry(
                 )
             )
 
-        entities.extend(
-            MammotionConfigNumberEntity(
-                mower.reporting_coordinator, entity_description
+        if DeviceType.supports_ride_boundary_distance(mower.device.device_name):
+            entities.append(
+                MammotionConfigNumberEntity(
+                    mower.reporting_coordinator, RIDE_BOUNDARY_DISTANCE_NUMBER_ENTITY
+                )
             )
+
+        entities.extend(
+            MammotionConfigNumberEntity(mower.reporting_coordinator, entity_description)
             for entity_description in MAP_OFFSET_ENTITIES
         )
 
         entities.extend(
-            MammotionConfigNumberEntity(
-                mower.reporting_coordinator, entity_description
-            )
+            MammotionConfigNumberEntity(mower.reporting_coordinator, entity_description)
             for entity_description in NUMBER_ENTITIES
         )
 

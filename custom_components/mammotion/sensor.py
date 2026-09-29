@@ -733,6 +733,7 @@ async def async_setup_entry(
 
         # Dynamic task-area sensors — one per zone in the active mow task.
         # Added/removed as work_tasks_event.ids changes.
+        async_remove_orphaned_task_area_entities(mower.reporting_coordinator)
         added_task_areas: set[int] = set()
         task_area_entities: dict[int, MammotionTaskAreaSensorEntity] = {}
         update_task_areas = partial(
@@ -976,6 +977,14 @@ class MammotionTaskAreaSensorEntity(MammotionBaseEntity, SensorEntity):
 
 
 _TASK_AREA_OPTIONS: list[str] = [s.name for s in TaskAreaStatus]
+_TASK_AREA_SUFFIX = "_task_area"
+
+
+def _active_task_area_ids(coordinator: MammotionReportUpdateCoordinator) -> set[int]:
+    """Return the zone hashes of the running job, none while no job is active."""
+    if coordinator.data is None or not coordinator.is_job_active:
+        return set()
+    return set(coordinator.data.events.work_tasks_event.ids)
 
 
 @callback
@@ -985,29 +994,28 @@ def async_add_task_area_entities(
     entities_by_hash: dict[int, MammotionTaskAreaSensorEntity],
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Sync task-area sensor entities with the current work_tasks_event.ids.
+    """Sync task-area sensor entities with the running job's zones.
 
     Called every time the coordinator updates.  New zone hashes get a new
-    sensor entity; hashes that have left the task have their entity removed
-    from the registry.
+    sensor entity, existing ones follow their area's name; hashes that have
+    left the task, or every hash once no job is active, have their entity
+    removed from the registry.
     """
     if coordinator.data is None:
         return
 
-    current_ids: set[int] = set(coordinator.data.events.work_tasks_event.ids)
-
-    new_hashes = current_ids - added_task_areas
+    current_ids = _active_task_area_ids(coordinator)
     sensor_entities: list[MammotionTaskAreaSensorEntity] = []
 
-    for area_hash in sorted(new_hashes):
+    for area_hash in sorted(current_ids):
         area_name = coordinator.get_area_entity_name(area_hash) or f"area {area_hash}"
-        if area_hash in entities_by_hash:
-            # Zone reappeared (e.g. task restarted) — refresh display name only.
-            entities_by_hash[area_hash].update_name(area_name)
-            added_task_areas.add(area_hash)
+        if (entity := entities_by_hash.get(area_hash)) is not None:
+            # Named "unknown" until the map that names it has loaded.
+            if entity.translation_placeholders.get("name") != area_name:
+                entity.update_name(area_name)
             continue
         description = MammotionSensorEntityDescription(
-            key=f"{area_hash}_task_area",
+            key=f"{area_hash}{_TASK_AREA_SUFFIX}",
             translation_key="task_area_status",
             translation_placeholders={"name": area_name},
             device_class=SensorDeviceClass.ENUM,
@@ -1107,6 +1115,28 @@ def _async_remove_orphaned_running_task_entities(
             registry.async_remove(entry.entity_id)
 
 
+@callback
+def async_remove_orphaned_task_area_entities(
+    coordinator: MammotionReportUpdateCoordinator,
+) -> None:
+    """Drop zone sensors a previous session left in the registry for no running zone."""
+    registry = er.async_get(coordinator.hass)
+    prefix = f"{coordinator.unique_name}_"
+    keep = {
+        f"{prefix}{area_hash}{_TASK_AREA_SUFFIX}"
+        for area_hash in _active_task_area_ids(coordinator)
+    }
+    for entry in list(registry.entities.values()):
+        if (
+            entry.platform == DOMAIN
+            and entry.domain == SENSOR_DOMAIN
+            and entry.unique_id.startswith(prefix)
+            and entry.unique_id.endswith(_TASK_AREA_SUFFIX)
+            and entry.unique_id not in keep
+        ):
+            registry.async_remove(entry.entity_id)
+
+
 def _async_remove_task_area_entities(
     coordinator: MammotionBaseUpdateCoordinator[Any],
     old_hashes: set[int],
@@ -1115,7 +1145,9 @@ def _async_remove_task_area_entities(
     registry = er.async_get(coordinator.hass)
     for area_hash in old_hashes:
         entity_id = registry.async_get_entity_id(
-            SENSOR_DOMAIN, DOMAIN, f"{coordinator.unique_name}_{area_hash}_task_area"
+            SENSOR_DOMAIN,
+            DOMAIN,
+            f"{coordinator.unique_name}_{area_hash}{_TASK_AREA_SUFFIX}",
         )
         if entity_id:
             registry.async_remove(entity_id)

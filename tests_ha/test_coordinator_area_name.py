@@ -69,9 +69,11 @@ class TestGetAreaEntityName:
         """Hash == 0 is the sentinel for "no zone"."""
         assert _coordinator(hass, [], []).get_area_entity_name(0) is None
 
-    async def test_hash_not_in_area_returns_path(self, hass: HomeAssistant) -> None:
-        """A hash with no area frame belongs to the mow path, not an area."""
-        assert _coordinator(hass, [], []).get_area_entity_name(999) == "path"
+    async def test_hash_matching_nothing_returns_unknown(
+        self, hass: HomeAssistant
+    ) -> None:
+        """Only a hash in the map's paths is the mow path; any other is unknown."""
+        assert _coordinator(hass, [], []).get_area_entity_name(999) == "unknown"
 
     async def test_real_name_returned_as_is(self, hass: HomeAssistant) -> None:
         """A device-assigned name is what the user set in the app."""
