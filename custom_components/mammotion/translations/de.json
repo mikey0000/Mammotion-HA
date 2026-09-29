@@ -18,7 +18,7 @@
     "error": {
       "login_failed": "Anmeldung fehlgeschlagen. Überprüfen Sie die E-Mail-Adresse und das Passwort Ihres Kontos und versuchen Sie es erneut.",
       "cannot_connect": "Es konnte keine Verbindung zur Mammotion-Cloud hergestellt werden. Überprüfen Sie Ihre Anmeldedaten sowie Netzwerkverbindung und versuchen Sie es erneut.",
-      "no_account_no_ble": "Keine Kontodaten eingegeben und kein Bluetooth-Gerät gefunden. Geben Sie Ihre Mammotion-Anmeldedaten ein oder richten Sie ein Bluetooth-Gerät ein."
+      "no_account_no_ble": "Es wurden keine Kontodaten eingegeben und kein Bluetooth-Gerät gefunden. Geben Sie Ihre Mammotion-Anmeldedaten ein oder richten Sie ein Bluetooth-Gerät ein."
     },
     "flow_title": "{name}",
     "step": {
@@ -63,11 +63,11 @@
           "movement_use_wifi": "Bewegungsbefehle über WLAN senden",
           "mow_path_fetch_enabled": "Mähpfad-Abruf aktivieren (Cloud)",
           "full_map_fetch_enabled": "Vollständigen Kartenabruf aktivieren (Cloud) — wenn aus, werden nur Bereichsnamen abgerufen",
-          "notify": "Dauerhafte Benachrichtigungen anzeigen für"
+          "notify": "Dauerhafte Benachrichtigungen anzeigen für:"
         },
         "data_description": {
-          "movement_use_wifi": "Sendet den bisherigen Bewegungsbefehl über WLAN, statt die Cloud-Fernsteuerung zu nutzen. Ohne diese Option funktionieren die Schubs-Tasten und Bewegungsaktionen über die Cloud ab Firmware 1.30.31.19 (LUBA 2, LUBA 2X, YUKA, LUBA mini, YUKA mini), ab 2.3.31.69 (LUBA 3, LUBA mini 2, YUKA mini 2) und bei neueren Modellen, für die der Mammotion-Server Fernsteuerung meldet, nur, während die Cloud-Fernsteuerung eingeschaltet und bestätigt ist. Aktivieren, um den bisherigen Befehl mit jeder Firmware zu nutzen, etwa um beides auf einem LUBA 3 zu vergleichen; eine bestehende Bluetooth-Verbindung wird weiterhin zuerst genutzt.",
-          "notify": "Selbsttest-Benachrichtigungen sind standardmäßig aktiviert, die anderen deaktiviert. Jede Benachrichtigung löst außerdem die Benachrichtigungs-Event-Entität des Mähers sowie ein „mammotion_event“-Bus-Ereignis aus, auf das Automationen stattdessen zurückgreifen können."
+          "movement_use_wifi": "Sendet den bisherigen Bewegungsbefehl über WLAN, anstatt die Cloud-Fernsteuerung zu verwenden. Ohne diese Funktion (ab Firmware 1.30.31.19 auf LUBA 2, LUBA 2X, YUKA, LUBA mini und YUKA mini / ab 2.3.31.69 auf LUBA 3, LUBA mini 2 und YUKA mini 2 sowie auf neueren Modellen, für die der Mammotion-Server die Unterstützung von „Remote Drive“ meldet) funktionieren die Schub-Tasten und Bewegungsaktionen über die Cloud nur, solange „Cloud Remote Drive“ aktiviert und bestätigt ist. Aktivieren Sie diese Option, um den Legacy-Befehl auf jeder Firmware zu verwenden, beispielsweise um beide auf einem LUBA 3 zu vergleichen. Eine verbundene Bluetooth-Verbindung wird weiterhin vorrangig genutzt.",
+          "notify": "Selbsttest-Benachrichtigungen sind standardmäßig aktiviert, die anderen deaktiviert. Jede Benachrichtigung löst außerdem die Benachrichtigungs-Event-Entität des Mähroboters sowie ein „mammotion_event“-Bus-Ereignis aus, auf das Automationen stattdessen zurückgreifen können."
         }
       }
     }
@@ -187,7 +187,7 @@
         }
       },
       "fused_localization_status": {
-        "name": "Status fusionierte Lokalisierung",
+        "name": "Status kombinierte Positionsbestimmung",
         "state": {
           "unknown": "Unbekannt",
           "no_pose": "Keine Position",
@@ -479,7 +479,7 @@
         "name": "DropMow starten"
       },
       "continue_last_job": {
-        "name": "Letzten Auftrag fortsetzen"
+        "name": "Letzte Aufgabe fortsetzen"
       },
       "emergency_nudge_forward": {
         "name": "Notfall-Schub vorwärts"
@@ -544,13 +544,13 @@
         "name": "Mährichtung automatisch umkehren"
       },
       "rain_detection": {
-        "name": "Regenerkennung (Mähroboter)"
+        "name": "Regenerkennung"
       },
       "smart_charge": {
         "name": "Intelligentes Laden"
       },
       "smart_recharge_level": {
-        "name": "Intelligenter Akkustand für die Rückkehr zum Laden"
+        "name": "Intelligenter Akkustand zum Laden"
       },
       "smart_resume_level": {
         "name": "Intelligenter Akkustand zum Fortsetzen"
@@ -767,7 +767,7 @@
         "name": "Mähen fortsetzen bei"
       },
       "ride_boundary_distance": {
-        "name": "Abstand der Randfahrt"
+        "name": "Abstand der Eingrenzungsfahrt"
       },
       "start_progress": {
         "name": "Fortschritt beim Start"
@@ -811,7 +811,7 @@
             "state": {
               "device_notification_event": "Benachrichtigung",
               "device_information_event": "Information",
-              "device_warning_code_event": "Warncodes",
+              "device_warning_code_event": "Warncode",
               "device_warning_event": "Warnung",
               "device_biz_req_event": "Geschäftsanfrage",
               "device_log_progress_event": "Fortschritt des Protokoll-Uploads",
@@ -875,7 +875,7 @@
       "options": {
         "warnings": "Warnungen und Fehlercodes",
         "notifications": "Gerätebenachrichtigungen und Informationen",
-        "self_check": "Selbsttest: Warum kann der Mäher nicht starten?"
+        "self_check": "Selbsttest: Warum kann der Mähroboter nicht starten?"
       }
     }
   },
@@ -969,8 +969,8 @@
           "description": "Kehrt die Mährichtung zwischen den Durchläufen um: 0 = aus, 1 = ein. Wird nur bei Modellen und Firmware verwendet, die es unterstützen. Ohne Angabe gilt die Einstellung des Schalters."
         },
         "ride_boundary_distance": {
-          "name": "Abstand der Randfahrt",
-          "description": "Wie weit der Mähroboter entlang des Rands nach außen fährt, von 0 bis 1. Wird nur bei unterstützten Modellen und bei aktivierten Randrunden verwendet."
+          "name": "Abstand der Eingrenzungsfahrt",
+          "description": "Gibt an, wie weit der Mähroboter entlang der Eingrenzung nach außen fährt. (von 0 bis 1) Wird nur bei unterstützten Modellen und bei aktivierten Eingrenzungsrunden verwendet."
         },
         "areas": {
           "name": "Bereiche",
@@ -1064,7 +1064,7 @@
       "fields": {
         "height": {
           "name": "Höhe",
-          "description": "Mähwerkshöhe in Millimeter."
+          "description": "Mähwerkshöhe in Millimeter"
         }
       }
     },
@@ -1246,7 +1246,7 @@
         },
         "weeks": {
           "name": "Wochentage",
-          "description": "Eine Liste der Wochentage (0 = Sonntag … 6 = Samstag), an denen der Zeitplan gilt."
+          "description": "Gibt eine Liste der Wochentage (0 = Sonntag … 6 = Samstag) aus, an denen der Zeitplan gilt."
         },
         "start_time": {
           "name": "Startzeitpunkt",
@@ -1285,12 +1285,12 @@
           "description": "Nur Mähroboter: 0 = keine, 1 = einmal, 2 = zweimal"
         },
         "ride_boundary_distance": {
-          "name": "Abstand der Randfahrt",
-          "description": "Wie weit der Mähroboter entlang des Rands nach außen fährt, von 0 bis 1. Wird nur bei unterstützten Modellen und bei aktivierten Randrunden verwendet."
+          "name": "Abstand der Eingrenzungsfahrt",
+          "description": "Gibt an, wie weit der Mähroboter entlang der Eingrenzung nach außen fährt. (von 0 bis 1) Wird nur bei unterstützten Modellen und bei aktivierten Eingrenzungsrunden verwendet."
         },
         "auto_change_direction": {
           "name": "Mährichtung automatisch umkehren",
-          "description": "Mährichtung automatisch umkehren — kehrt die Mährichtung zwischen den Durchläufen um, damit sich das Gras weniger niederlegt: 0 = aus, 1 = ein. Nur bei Modellen und Firmware, die es unterstützen. Ohne Angabe bleibt die Einstellung des Zeitplans erhalten (bei einem neuen Zeitplan aus)."
+          "description": "Mährichtung automatisch umkehren — kehrt die Mährichtung zwischen den Durchläufen um, damit sich das Gras weniger niederlegt: 0 = aus, 1 = ein. Nur bei Modellen und Firmware, die es unterstützen. Ohne Angabe bleibt die Einstellung des Zeitplans erhalten. (bei einem neuen Zeitplan aus)"
         },
         "route_angle": {
           "name": "Mähpfadwinkel",
@@ -1302,11 +1302,11 @@
         },
         "toward_included_angle": {
           "name": "Kreuzungswinkel",
-          "description": "Nur Mähroboter: zweiter Winkel einer Schachbrettroute, in Grad."
+          "description": "Nur Mähroboter: zweiter Winkel einer Schachbrettroute (in Grad)"
         },
         "route_spacing": {
           "name": "Mähpfadabstand",
-          "description": "Nur Mähroboter: Abstand zwischen den Schnittbahnen in cm"
+          "description": "Nur Mähroboter: Abstand zwischen den Schnittbahnen (in cm)"
         },
         "zone_hashs": {
           "name": "Bereichshashes",
@@ -1383,8 +1383,8 @@
           "description": "Nur Mähroboter"
         },
         "ride_boundary_distance": {
-          "name": "Abstand der Randfahrt",
-          "description": "Wie weit der Mähroboter entlang des Rands nach außen fährt, von 0 bis 1. Wird nur bei unterstützten Modellen und bei aktivierten Randrunden verwendet."
+          "name": "Abstand der Eingrenzungsfahrt",
+          "description": "Wie weit der Mähroboter entlang der Eingrenzung nach außen fährt. (von 0 bis 1) Wird nur bei unterstützten Modellen und bei aktivierten Eingrenzungsrunden verwendet."
         },
         "auto_change_direction": {
           "name": "Mährichtung automatisch umkehren",
@@ -1400,7 +1400,7 @@
         },
         "toward_included_angle": {
           "name": "Kreuzungswinkel",
-          "description": "Nur Mähroboter: zweiter Winkel einer Schachbrettroute, in Grad."
+          "description": "Nur Mähroboter: zweiter Winkel einer Schachbrettroute (in Grad)"
         },
         "route_spacing": {
           "name": "Mähpfadabstand",
@@ -1480,7 +1480,7 @@
     },
     "get_geojson": {
       "name": "Karten-GeoJSON abrufen",
-      "description": "Gibt die Karte des Mähroboters (Bereiche, Hindernisse, Wege, Ladestation und RTK-Station) als GeoJSON-FeatureCollection für die Map-Karte zurück und sorgen dafür, dass der Mäher seine Position in den nächsten Minuten weiterhin meldet."
+      "description": "Gibt die Karte des Mähroboters (Bereiche, Hindernisse, Wege, Ladestation und RTK-Station) als GeoJSON-FeatureCollection für die Map-Karte zurück und sorgen dafür, dass der Mähroboter seine Position in den nächsten Minuten weiterhin meldet."
     },
     "get_mow_path_geojson": {
       "name": "Mähpfad-GeoJSON abrufen",
@@ -1528,7 +1528,7 @@
       "fields": {
         "backup_id": {
           "name": "Sicherungs-ID",
-          "description": "Zu löschende Sicherung."
+          "description": "Zu löschende Sicherung"
         }
       }
     }
@@ -1538,7 +1538,7 @@
       "message": "Das Gerät ist aktuell nicht bereit."
     },
     "no_job_to_continue": {
-      "message": "Es gibt keinen unterbrochenen Auftrag zum Fortsetzen."
+      "message": "Es gibt keine unterbrochene Aufgabe zum Fortsetzen."
     },
     "pause_failed": {
       "message": "Pausieren des Mähroboters fehlgeschlagen."
@@ -1577,7 +1577,7 @@
       "message": "Das Starten eines Zeitplans auf Abruf wird vom Spino-Poolreiniger nicht unterstützt — die Geräte-Firmware hat keinen 'jetzt ausführen'-Befehl für gespeicherte Pläne."
     },
     "grass_collection_unsupported": {
-      "message": "Dieser Mäher unterstützt kein Grassammeln."
+      "message": "Dieser Mähroboter unterstützt kein Grassammeln."
     },
     "no_running_job": {
       "message": "{device_name} führt gerade keinen Mähauftrag aus, daher gibt es nichts zu ändern. Starte zuerst einen Auftrag."
@@ -1661,16 +1661,16 @@
       "message": "Es wurde kein Aufgabenbereich gefunden. Erstelle eine Karte in der App."
     },
     "self_check_night_protection": {
-      "message": "Der Nachtschutz ist aktiv, daher mäht der Mäher nachts nicht."
+      "message": "Der Nachtschutz ist aktiv, daher mäht der Mähroboter nachts nicht."
     },
     "self_check_rain_protection": {
-      "message": "Der Regenschutz verhindert den Start des Mähers. Er nutzt den Regensensor und Online-Wetterdaten, um zu beurteilen, ob sich die Bedingungen zum Mähen eignen, und berechnet, wann das Mähen fortgesetzt wird. Warte ab oder ändere bzw. deaktiviere den Regenschutz in den Mähereinstellungen der App."
+      "message": "Der Regenschutz verhindert den Start des Mähroboters. Er nutzt den Regensensor und Online-Wetterdaten, um zu beurteilen, ob sich die Bedingungen zum Mähen eignen, und berechnet, wann das Mähen fortgesetzt wird. Warte ab oder ändere bzw. deaktiviere den Regenschutz in den Mährobotereinstellungen der App."
     },
     "self_check_rtk_not_ready": {
       "message": "Die RTK-Station ist noch nicht bereit."
     },
     "self_check_weak_satellite_signal": {
-      "message": "Das Satellitensignal des Mähers ist zu schwach für die Positionsbestimmung."
+      "message": "Das Satellitensignal des Mähroboters ist zu schwach für die Positionsbestimmung."
     },
     "self_check_positioning_failure": {
       "message": "Das Positionierungssystem ist ausgefallen."
@@ -1682,10 +1682,10 @@
       "message": "Das RTK-Signal ist schwach. Prüfe den Standort der Referenzstation."
     },
     "self_check_other": {
-      "message": "Der Mäher hat den unbekannten Selbsttest-Code {code} gemeldet."
+      "message": "Der Mähroboter hat den unbekannten Selbsttest-Code {code} gemeldet."
     },
     "remote_drive_needs_cloud": {
-      "message": "Die Cloud-Fernsteuerung braucht eine funktionierende Cloud-Verbindung zum Mäher. Über Bluetooth stattdessen die Schubs-Tasten verwenden."
+      "message": "Die Cloud-Fernsteuerung braucht eine funktionierende Cloud-Verbindung zum Mähroboter. Über Bluetooth stattdessen die Schubs-Tasten verwenden."
     },
     "remote_drive_already_running": {
       "message": "Die Cloud-Fernsteuerung läuft bereits. Vor einem Neustart zuerst ausschalten."
@@ -1694,16 +1694,16 @@
       "message": "Es gibt keinen Sicherheitshinweis zum Bestätigen. Zuerst die Cloud-Fernsteuerung einschalten."
     },
     "remote_drive_no_reverse": {
-      "message": "Mit der Cloud-Fernsteuerung kann der Mäher nicht rückwärts fahren. Stattdessen mit links oder rechts drehen oder Bluetooth verwenden."
+      "message": "Mit der Cloud-Fernsteuerung kann der Mähroboterr nicht rückwärts fahren. Stattdessen mit links oder rechts drehen oder Bluetooth verwenden."
     },
     "remote_drive_fence_paused": {
-      "message": "Der Mäher hat nahe der Grenze angehalten. Vor dem Weiterfahren „Grenzwarnung bestätigen“ drücken."
+      "message": "Der Mähroboter hat nahe der Grenze angehalten. Vor dem Weiterfahren „Grenzwarnung bestätigen“ drücken."
     },
     "remote_drive_safety_notice": {
-      "message": "Vor dem Fernsteuern sicherstellen, dass sich keine Personen oder Tiere im Arbeitsbereich befinden, und den Mäher die ganze Zeit im Blick behalten. Innerhalb von 3 Minuten „Fernsteuerung bestätigen“ drücken, um zu starten. Die Sitzung endet von selbst kurz nach der letzten Eingabe."
+      "message": "Vor dem Fernsteuern sicherstellen, dass sich keine Personen oder Tiere im Arbeitsbereich befinden, und den Mähroboter die ganze Zeit im Blick behalten. Innerhalb von 3 Minuten „Fernsteuerung bestätigen“ drücken, um zu starten. Die Sitzung endet von selbst kurz nach der letzten Eingabe."
     },
     "movement_unavailable": {
-      "message": "Der Mäher kann gerade nicht bewegt werden. In Bluetooth-Reichweite bringen oder die Cloud-Fernsteuerung einschalten und „Fernsteuerung bestätigen“ drücken."
+      "message": "Der Mähroboter kann gerade nicht bewegt werden. In Bluetooth-Reichweite bringen oder die Cloud-Fernsteuerung einschalten und „Fernsteuerung bestätigen“ drücken."
     },
     "notification_title_remote_drive": {
       "message": "{device_name}: Cloud-Fernsteuerung"
@@ -1712,31 +1712,31 @@
       "message": "Der Mammotion-Server hat die Fernsteuerung nicht erlaubt (Code {detail}). Später erneut versuchen."
     },
     "remote_drive_occupied_by_other": {
-      "message": "Der Mäher wird bereits von einem anderen Konto gesteuert ({detail})."
+      "message": "Der Mähroboter wird bereits von einem anderen Konto gesteuert ({detail})."
     },
     "remote_drive_network_poor": {
-      "message": "Fernsteuerung beendet: Die Netzwerkverbindung des Mähers ist zu schlecht."
+      "message": "Fernsteuerung beendet: Die Netzwerkverbindung des Mähroboters ist zu schlecht."
     },
     "remote_drive_token_expired": {
       "message": "Fernsteuerung beendet: Die Fahrberechtigung ist abgelaufen."
     },
     "remote_drive_out_of_fence": {
-      "message": "Fernsteuerung beendet: Der Mäher befindet sich außerhalb des erlaubten Bereichs."
+      "message": "Fernsteuerung beendet: Der Mähroboter befindet sich außerhalb des erlaubten Bereichs."
     },
     "remote_drive_ble_preempt": {
-      "message": "Fernsteuerung beendet: Der Mäher wird jetzt von {detail} über Bluetooth gesteuert."
+      "message": "Fernsteuerung beendet: Der Mähroboter wird jetzt von {detail} über Bluetooth gesteuert."
     },
     "remote_drive_no_loc_mileage_exhausted": {
-      "message": "Fernsteuerung beendet: Der Mäher ist so weit gefahren, wie es ohne Positionsbestimmung erlaubt ist."
+      "message": "Fernsteuerung beendet: Der Mähroboter ist so weit gefahren wie es ohne Positionsbestimmung erlaubt ist."
     },
     "remote_drive_env_not_ready": {
-      "message": "Fernsteuerung beendet: Der Mäher ist nicht bereit, gesteuert zu werden (Code {detail})."
+      "message": "Fernsteuerung beendet: Der Mähroboter ist nicht bereit gesteuert zu werden (Code {detail})."
     },
     "remote_drive_send_failed": {
       "message": "Fernsteuerung beendet: Ein Befehl konnte nicht gesendet werden ({detail})."
     },
     "remote_drive_approach_fence": {
-      "message": "Der Mäher hat dicht an der Grenze angehalten. „Grenzwarnung bestätigen“ drücken, um weiterzufahren."
+      "message": "Der Mähroboter hat dicht an der Grenze angehalten. „Grenzwarnung bestätigen“ drücken, um weiterzufahren."
     },
     "remote_drive_safety_notice_timeout": {
       "message": "Fernsteuerung beendet: Der Sicherheitshinweis wurde nicht innerhalb von 3 Minuten bestätigt."
@@ -1745,7 +1745,7 @@
       "message": "Fernsteuerung beendet: Das Kamerabild ist ausgefallen."
     },
     "battery_settings_unread": {
-      "message": "Die Akkueinstellungen wurden noch nicht vom Mäher gelesen. Eine Änderung würde jetzt das Nebenzeit-Ladefenster zurücksetzen, daher wurde nichts gesendet. Bitte erneut versuchen, sobald der Mäher verbunden ist."
+      "message": "Die Akkueinstellungen wurden noch nicht vom Märoboter gelesen. Eine Änderung würde jetzt das Nebenzeit-Ladefenster zurücksetzen, daher wurde nichts gesendet. Bitte erneut versuchen, sobald der Mähroboter verbunden ist."
     }
   }
 }
