@@ -29,7 +29,7 @@ from pymammotion.client import MammotionClient
 from pymammotion.device.handle import DeviceHandle
 
 #: Last release that predates the APIs below.  The pin must move past it.
-_RELEASE_WITHOUT_THESE_APIS = "0.9.6"
+_RELEASE_WITHOUT_THESE_APIS = "0.9.9"
 
 _MANIFEST = (
     Path(__file__).parent.parent / "custom_components" / "mammotion" / "manifest.json"
