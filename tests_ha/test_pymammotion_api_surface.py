@@ -26,6 +26,7 @@ from pathlib import Path
 
 import pytest
 from pymammotion.client import MammotionClient
+from pymammotion.device.handle import DeviceHandle
 
 #: Last release that predates the APIs below.  The pin must move past it.
 _RELEASE_WITHOUT_THESE_APIS = "0.9.6"
@@ -150,6 +151,54 @@ def test_the_client_offers_a_user_initiated_status_refresh() -> None:
         "device_name",
         "account_id",
     ]
+
+
+def test_the_handle_decides_wifi_movement() -> None:
+    """``movement_path`` and the remote-drive entity gate call this; 0.9.9 does not have it."""
+    supports = getattr(DeviceHandle, "supports_wifi_movement", None)
+    assert callable(supports)
+    assert list(inspect.signature(supports).parameters) == ["self"]
+
+
+@pytest.mark.parametrize(
+    "name",
+    [
+        "RemoteDriveSession",
+        "RemoteDrivePhase",
+        "RemoteDriveEvent",
+        "RemoteDriveEventKind",
+        "RemoteDriveError",
+    ],
+)
+def test_the_remote_drive_session_types_exist(name: str) -> None:
+    """coordinator.py, sensor.py and notifications.py import these; 0.9.9 does not have them."""
+    source = _source("device/remote_drive.py")
+    assert f"class {name}(" in source or f"class {name}:" in source
+
+
+@pytest.mark.parametrize(
+    ("method", "parameters"),
+    [
+        ("start_remote_drive", ["self", "device_name", "account_id", "require_video"]),
+        ("confirm_remote_drive", ["self", "device_name", "account_id"]),
+        ("remote_drive", ["self", "device_name", "linear", "angular", "account_id"]),
+        ("stop_remote_drive", ["self", "device_name", "account_id"]),
+        ("subscribe_remote_drive", ["self", "device_name", "handler", "account_id"]),
+        ("acknowledge_remote_drive_fence", ["self", "device_name", "account_id"]),
+    ],
+)
+def test_the_client_runs_the_remote_drive_session(
+    method: str, parameters: list[str]
+) -> None:
+    """The coordinator drives the session through these; 0.9.9 does not have them."""
+    assert list(inspect.signature(getattr(MammotionClient, method)).parameters) == (
+        parameters
+    )
+
+
+def test_the_handle_exposes_its_remote_drive_session() -> None:
+    """The coordinator reads the phase off this without creating a session."""
+    assert isinstance(DeviceHandle.remote_drive, property)
 
 
 def test_the_shipped_pin_has_moved_past_the_release_without_these_apis() -> None:

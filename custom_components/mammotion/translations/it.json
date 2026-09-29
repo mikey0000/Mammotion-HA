@@ -66,6 +66,7 @@
           "notify": "Mostra notifiche persistenti per"
         },
         "data_description": {
+          "movement_use_wifi": "Invia il vecchio comando di movimento tramite Wi-Fi invece di usare la guida remota via cloud. Senza questa opzione, dal firmware 1.30.31.19 su LUBA 2, LUBA 2X, YUKA, LUBA mini e YUKA mini, dal 2.3.31.69 su LUBA 3, LUBA mini 2 e YUKA mini 2 e sui modelli più recenti per cui il server Mammotion segnala il supporto, i pulsanti di spostamento e le azioni di movimento funzionano via cloud solo mentre Guida remota via cloud è attiva e confermata. Attivala per usare il vecchio comando con qualsiasi firmware, ad esempio per confrontare i due su un LUBA 3; una connessione Bluetooth attiva viene comunque usata per prima.",
           "notify": "Le notifiche di autodiagnosi sono attive per impostazione predefinita, le altre no. Ogni notifica attiva anche l'entità evento di notifica del tosaerba e un evento mammotion_event sul bus, che le automazioni possono usare al loro posto."
         }
       }
@@ -433,6 +434,24 @@
           "returning": "Rientro",
           "charging_pause": "In carica, poi riprende"
         }
+      },
+      "remote_drive_state": {
+        "name": "Stato guida remota",
+        "state": {
+          "idle": "Inattiva",
+          "requesting_token": "Richiesta autorizzazione",
+          "safety_notice": "In attesa della conferma di sicurezza",
+          "active": "In guida",
+          "exiting": "In chiusura"
+        },
+        "state_attributes": {
+          "last_event": {
+            "name": "Ultimo evento"
+          },
+          "last_event_detail": {
+            "name": "Dettaglio ultimo evento"
+          }
+        }
       }
     },
     "binary_sensor": {
@@ -497,6 +516,12 @@
       },
       "spino_refresh_status": {
         "name": "Aggiorna stato"
+      },
+      "confirm_remote_drive": {
+        "name": "Conferma guida remota"
+      },
+      "acknowledge_remote_drive_fence": {
+        "name": "Conferma avviso di confine"
       }
     },
     "switch": {
@@ -571,6 +596,9 @@
       },
       "spino_waterline_parking": {
         "name": "Aggancio al bordo piscina"
+      },
+      "remote_drive": {
+        "name": "Guida remota via cloud"
       }
     },
     "select": {
@@ -1655,6 +1683,66 @@
     },
     "self_check_other": {
       "message": "Il tosaerba ha segnalato il codice di autodiagnosi sconosciuto {code}."
+    },
+    "remote_drive_needs_cloud": {
+      "message": "La guida remota via cloud richiede una connessione cloud funzionante con il tosaerba. Tramite Bluetooth usa invece i pulsanti di spostamento."
+    },
+    "remote_drive_already_running": {
+      "message": "La guida remota via cloud è già attiva. Disattivala prima di riavviarla."
+    },
+    "remote_drive_not_awaiting_confirmation": {
+      "message": "Non c'è alcun avviso di sicurezza da confermare. Attiva prima la guida remota via cloud."
+    },
+    "remote_drive_no_reverse": {
+      "message": "Con la guida remota via cloud il tosaerba non può andare in retromarcia. Giralo a sinistra o a destra, oppure usa il Bluetooth."
+    },
+    "remote_drive_fence_paused": {
+      "message": "Il tosaerba si è fermato vicino al confine. Premi \"Conferma avviso di confine\" prima di proseguire."
+    },
+    "remote_drive_safety_notice": {
+      "message": "Prima di guidare il tosaerba da remoto, assicurati che non ci siano persone o animali nell'area di lavoro e tieni il tosaerba sempre in vista. Premi \"Conferma guida remota\" entro 3 minuti per iniziare. La sessione termina da sola poco dopo l'ultimo comando."
+    },
+    "movement_unavailable": {
+      "message": "Al momento il tosaerba non può essere spostato. Portalo nel raggio del Bluetooth, oppure attiva la guida remota via cloud e premi \"Conferma guida remota\"."
+    },
+    "notification_title_remote_drive": {
+      "message": "{device_name}: guida remota via cloud"
+    },
+    "remote_drive_token_unavailable": {
+      "message": "Il server Mammotion non ha consentito la guida remota (codice {detail}). Riprova più tardi."
+    },
+    "remote_drive_occupied_by_other": {
+      "message": "Il tosaerba è già guidato da un altro account ({detail})."
+    },
+    "remote_drive_network_poor": {
+      "message": "Guida remota terminata: la connessione di rete del tosaerba è troppo scarsa."
+    },
+    "remote_drive_token_expired": {
+      "message": "Guida remota terminata: l'autorizzazione alla guida è scaduta."
+    },
+    "remote_drive_out_of_fence": {
+      "message": "Guida remota terminata: il tosaerba è fuori dall'area consentita."
+    },
+    "remote_drive_ble_preempt": {
+      "message": "Guida remota terminata: il tosaerba è ora controllato via Bluetooth da {detail}."
+    },
+    "remote_drive_no_loc_mileage_exhausted": {
+      "message": "Guida remota terminata: il tosaerba ha percorso la distanza massima consentita senza posizionamento."
+    },
+    "remote_drive_env_not_ready": {
+      "message": "Guida remota terminata: il tosaerba non è pronto per essere guidato (codice {detail})."
+    },
+    "remote_drive_send_failed": {
+      "message": "Guida remota terminata: non è stato possibile inviare un comando ({detail})."
+    },
+    "remote_drive_approach_fence": {
+      "message": "Il tosaerba si è fermato molto vicino al confine. Premi \"Conferma avviso di confine\" per continuare a guidare."
+    },
+    "remote_drive_safety_notice_timeout": {
+      "message": "Guida remota terminata: l'avviso di sicurezza non è stato confermato entro 3 minuti."
+    },
+    "remote_drive_video_unavailable": {
+      "message": "Guida remota terminata: il video della telecamera si è interrotto."
     },
     "battery_settings_unread": {
       "message": "Le impostazioni della batteria non sono ancora state lette dal robot. Modificarle ora azzererebbe la fascia di ricarica fuori picco, quindi non è stato inviato nulla. Riprova quando il robot è connesso."

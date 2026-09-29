@@ -66,6 +66,7 @@
           "notify": "Zobrazovat trvalá oznámení pro"
         },
         "data_description": {
+          "movement_use_wifi": "Posílá původní příkaz pohybu přes Wi-Fi místo dálkového řízení přes cloud. Bez této volby fungují tlačítka posunu a akce pohybu přes cloud od firmwaru 1.30.31.19 u modelů LUBA 2, LUBA 2X, YUKA, LUBA mini a YUKA mini, od 2.3.31.69 u modelů LUBA 3, LUBA mini 2 a YUKA mini 2 a u novějších modelů, pro které server Mammotion hlásí podporu, jen dokud je Dálkové řízení přes cloud zapnuté a potvrzené. Zapněte ji, chcete-li původní příkaz používat s libovolným firmwarem, například pro porovnání obou na LUBA 3; připojené Bluetooth má stále přednost.",
           "notify": "Oznámení autotestu jsou ve výchozím stavu zapnutá, ostatní vypnutá. Každé oznámení také spustí entitu událostí oznámení sekačky a událost mammotion_event na sběrnici, které mohou místo toho využít automatizace."
         }
       }
@@ -433,6 +434,24 @@
           "returning": "Návrat",
           "charging_pause": "Nabíjení, bude pokračovat"
         }
+      },
+      "remote_drive_state": {
+        "name": "Stav dálkového řízení",
+        "state": {
+          "idle": "Nečinné",
+          "requesting_token": "Žádost o oprávnění",
+          "safety_notice": "Čeká na bezpečnostní potvrzení",
+          "active": "Řízení",
+          "exiting": "Ukončování"
+        },
+        "state_attributes": {
+          "last_event": {
+            "name": "Poslední událost"
+          },
+          "last_event_detail": {
+            "name": "Podrobnosti poslední události"
+          }
+        }
       }
     },
     "binary_sensor": {
@@ -497,6 +516,12 @@
       },
       "spino_refresh_status": {
         "name": "Obnovit stav"
+      },
+      "confirm_remote_drive": {
+        "name": "Potvrdit dálkové řízení"
+      },
+      "acknowledge_remote_drive_fence": {
+        "name": "Potvrdit varování u hranice"
       }
     },
     "switch": {
@@ -571,6 +596,9 @@
       },
       "spino_waterline_parking": {
         "name": "Parkování u hladiny"
+      },
+      "remote_drive": {
+        "name": "Dálkové řízení přes cloud"
       }
     },
     "select": {
@@ -1655,6 +1683,66 @@
     },
     "self_check_other": {
       "message": "Sekačka nahlásila neznámý kód autotestu {code}."
+    },
+    "remote_drive_needs_cloud": {
+      "message": "Dálkové řízení přes cloud potřebuje funkční cloudové připojení k sekačce. Přes Bluetooth místo toho použijte tlačítka posunu."
+    },
+    "remote_drive_already_running": {
+      "message": "Dálkové řízení přes cloud už běží. Před novým spuštěním ho nejprve vypněte."
+    },
+    "remote_drive_not_awaiting_confirmation": {
+      "message": "Není žádné bezpečnostní upozornění k potvrzení. Nejprve zapněte dálkové řízení přes cloud."
+    },
+    "remote_drive_no_reverse": {
+      "message": "Dálkovým řízením přes cloud nelze sekačkou couvat. Otočte ji doleva nebo doprava, nebo použijte Bluetooth."
+    },
+    "remote_drive_fence_paused": {
+      "message": "Sekačka zastavila u hranice. Před další jízdou stiskněte „Potvrdit varování u hranice“."
+    },
+    "remote_drive_safety_notice": {
+      "message": "Před dálkovým řízením sekačky se ujistěte, že v pracovní oblasti nejsou žádné osoby ani zvířata, a mějte sekačku celou dobu na očích. Jízdu zahájíte stisknutím „Potvrdit dálkové řízení“ do 3 minut. Relace sama skončí krátce poté, co přestanete zadávat pokyny."
+    },
+    "movement_unavailable": {
+      "message": "Sekačkou teď nelze pohnout. Přibližte se na dosah Bluetooth, nebo zapněte dálkové řízení přes cloud a stiskněte „Potvrdit dálkové řízení“."
+    },
+    "notification_title_remote_drive": {
+      "message": "{device_name}: dálkové řízení přes cloud"
+    },
+    "remote_drive_token_unavailable": {
+      "message": "Server Mammotion dálkové řízení nepovolil (kód {detail}). Zkuste to později."
+    },
+    "remote_drive_occupied_by_other": {
+      "message": "Sekačku už řídí jiný účet ({detail})."
+    },
+    "remote_drive_network_poor": {
+      "message": "Dálkové řízení skončilo: síťové připojení sekačky je příliš slabé."
+    },
+    "remote_drive_token_expired": {
+      "message": "Dálkové řízení skončilo: oprávnění k jízdě vypršelo."
+    },
+    "remote_drive_out_of_fence": {
+      "message": "Dálkové řízení skončilo: sekačka je mimo povolenou oblast."
+    },
+    "remote_drive_ble_preempt": {
+      "message": "Dálkové řízení skončilo: sekačku nyní přes Bluetooth ovládá {detail}."
+    },
+    "remote_drive_no_loc_mileage_exhausted": {
+      "message": "Dálkové řízení skončilo: sekačka ujela nejdelší vzdálenost povolenou bez určení polohy."
+    },
+    "remote_drive_env_not_ready": {
+      "message": "Dálkové řízení skončilo: sekačka není připravena k řízení (kód {detail})."
+    },
+    "remote_drive_send_failed": {
+      "message": "Dálkové řízení skončilo: příkaz se nepodařilo odeslat ({detail})."
+    },
+    "remote_drive_approach_fence": {
+      "message": "Sekačka zastavila těsně u hranice. Pro pokračování v jízdě stiskněte „Potvrdit varování u hranice“."
+    },
+    "remote_drive_safety_notice_timeout": {
+      "message": "Dálkové řízení skončilo: bezpečnostní upozornění nebylo potvrzeno do 3 minut."
+    },
+    "remote_drive_video_unavailable": {
+      "message": "Dálkové řízení skončilo: obraz z kamery se přerušil."
     },
     "battery_settings_unread": {
       "message": "Nastavení baterie se ze sekačky zatím nepodařilo načíst. Změna by nyní vynulovala okno nabíjení mimo špičku, proto nebylo nic odesláno. Zkuste to znovu, až bude sekačka připojena."

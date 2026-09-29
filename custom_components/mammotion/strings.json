@@ -66,6 +66,7 @@
           "notify": "Show persistent notifications for"
         },
         "data_description": {
+          "movement_use_wifi": "Sends the legacy movement command over Wi-Fi instead of using Cloud remote drive. Without it, from firmware 1.30.31.19 on LUBA 2, LUBA 2X, YUKA, LUBA mini and YUKA mini, from 2.3.31.69 on LUBA 3, LUBA mini 2 and YUKA mini 2, and on newer models the Mammotion server reports remote-drive support for, the nudge buttons and move actions work over the cloud only while Cloud remote drive is on and confirmed. Turn this on to use the legacy command on any firmware, for example to compare both on a LUBA 3; a connected Bluetooth link is still used first.",
           "notify": "Self-check notifications are on by default; the others are off. Every notification also fires the mower's notification event entity and a mammotion_event bus event, which automations can use instead."
         }
       }
@@ -433,6 +434,24 @@
           "returning": "Returning",
           "charging_pause": "Charging, will resume"
         }
+      },
+      "remote_drive_state": {
+        "name": "Remote drive state",
+        "state": {
+          "idle": "Idle",
+          "requesting_token": "Requesting permission",
+          "safety_notice": "Awaiting safety confirmation",
+          "active": "Driving",
+          "exiting": "Ending"
+        },
+        "state_attributes": {
+          "last_event": {
+            "name": "Last event"
+          },
+          "last_event_detail": {
+            "name": "Last event detail"
+          }
+        }
       }
     },
     "binary_sensor": {
@@ -497,6 +516,12 @@
       },
       "spino_refresh_status": {
         "name": "Refresh status"
+      },
+      "confirm_remote_drive": {
+        "name": "Confirm remote drive"
+      },
+      "acknowledge_remote_drive_fence": {
+        "name": "Acknowledge boundary warning"
       }
     },
     "switch": {
@@ -571,6 +596,9 @@
       },
       "spino_waterline_parking": {
         "name": "Waterline parking"
+      },
+      "remote_drive": {
+        "name": "Cloud remote drive"
       }
     },
     "select": {
@@ -1655,6 +1683,66 @@
     },
     "self_check_other": {
       "message": "The mower reported self-check code {code}, which is not recognised."
+    },
+    "remote_drive_needs_cloud": {
+      "message": "Cloud remote drive needs a working cloud connection to the mower. Over Bluetooth, use the nudge buttons instead."
+    },
+    "remote_drive_already_running": {
+      "message": "Cloud remote drive is already running. Turn it off before starting it again."
+    },
+    "remote_drive_not_awaiting_confirmation": {
+      "message": "There is no remote drive safety notice to confirm. Turn on Cloud remote drive first."
+    },
+    "remote_drive_no_reverse": {
+      "message": "Cloud remote drive cannot reverse the mower. Turn it with left or right instead, or use Bluetooth."
+    },
+    "remote_drive_fence_paused": {
+      "message": "The mower stopped near the boundary. Press Acknowledge boundary warning before driving on."
+    },
+    "remote_drive_safety_notice": {
+      "message": "Before driving the mower remotely, make sure there are no people or animals in the work area, and keep the mower in sight the whole time. Press Confirm remote drive within 3 minutes to start. The session ends by itself shortly after you stop giving input."
+    },
+    "movement_unavailable": {
+      "message": "The mower cannot be moved right now. Bring it within Bluetooth range, or turn on Cloud remote drive and press Confirm remote drive."
+    },
+    "notification_title_remote_drive": {
+      "message": "{device_name}: Cloud remote drive"
+    },
+    "remote_drive_token_unavailable": {
+      "message": "The Mammotion server did not allow remote drive (code {detail}). Try again later."
+    },
+    "remote_drive_occupied_by_other": {
+      "message": "The mower is already being driven by another account ({detail})."
+    },
+    "remote_drive_network_poor": {
+      "message": "Remote drive ended: the mower's network connection is too poor."
+    },
+    "remote_drive_token_expired": {
+      "message": "Remote drive ended: the permission to drive expired."
+    },
+    "remote_drive_out_of_fence": {
+      "message": "Remote drive ended: the mower is outside the allowed area."
+    },
+    "remote_drive_ble_preempt": {
+      "message": "Remote drive ended: the mower is now controlled over Bluetooth by {detail}."
+    },
+    "remote_drive_no_loc_mileage_exhausted": {
+      "message": "Remote drive ended: the mower has driven as far as it may without a position fix."
+    },
+    "remote_drive_env_not_ready": {
+      "message": "Remote drive ended: the mower is not ready to be driven (code {detail})."
+    },
+    "remote_drive_send_failed": {
+      "message": "Remote drive ended: a command could not be sent ({detail})."
+    },
+    "remote_drive_approach_fence": {
+      "message": "The mower stopped close to the boundary. Press Acknowledge boundary warning to keep driving."
+    },
+    "remote_drive_safety_notice_timeout": {
+      "message": "Remote drive ended: the safety notice was not confirmed within 3 minutes."
+    },
+    "remote_drive_video_unavailable": {
+      "message": "Remote drive ended: the camera video stopped."
     },
     "battery_settings_unread": {
       "message": "The battery settings have not been read from the mower yet. Changing them now would reset its off-peak charging window, so nothing was sent. Try again once the mower is connected."

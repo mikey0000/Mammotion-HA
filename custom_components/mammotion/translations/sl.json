@@ -66,6 +66,7 @@
           "notify": "Prikaži trajna obvestila za"
         },
         "data_description": {
+          "movement_use_wifi": "Pošilja stari ukaz gibanja prek Wi-Fi namesto daljinske vožnje prek oblaka. Brez te možnosti gumbi za premik in dejanja gibanja od različice 1.30.31.19 pri LUBA 2, LUBA 2X, YUKA, LUBA mini in YUKA mini, od 2.3.31.69 pri LUBA 3, LUBA mini 2 in YUKA mini 2 ter pri novejših modelih, za katere strežnik Mammotion sporoči podporo, delujejo prek oblaka le, ko je Daljinska vožnja prek oblaka vklopljena in potrjena. Vklopite, da stari ukaz uporabljate s katero koli različico, na primer za primerjavo obeh na LUBA 3; povezan Bluetooth ima še vedno prednost.",
           "notify": "Obvestila samopreverjanja so privzeto vklopljena, ostala izklopljena. Vsako obvestilo sproži tudi entiteto dogodkov obvestil kosilnice in dogodek mammotion_event na vodilu, ki ju lahko namesto tega uporabijo avtomatizacije."
         }
       }
@@ -433,6 +434,24 @@
           "returning": "Vračanje",
           "charging_pause": "Polnjenje, nato nadaljuje"
         }
+      },
+      "remote_drive_state": {
+        "name": "Stanje daljinske vožnje",
+        "state": {
+          "idle": "Nedejavno",
+          "requesting_token": "Zahteva za dovoljenje",
+          "safety_notice": "Čaka na varnostno potrditev",
+          "active": "Vožnja",
+          "exiting": "Zaključevanje"
+        },
+        "state_attributes": {
+          "last_event": {
+            "name": "Zadnji dogodek"
+          },
+          "last_event_detail": {
+            "name": "Podrobnosti zadnjega dogodka"
+          }
+        }
       }
     },
     "binary_sensor": {
@@ -497,6 +516,12 @@
       },
       "spino_refresh_status": {
         "name": "Osveži stanje"
+      },
+      "confirm_remote_drive": {
+        "name": "Potrdi daljinsko vožnjo"
+      },
+      "acknowledge_remote_drive_fence": {
+        "name": "Potrdi opozorilo meje"
       }
     },
     "switch": {
@@ -571,6 +596,9 @@
       },
       "spino_waterline_parking": {
         "name": "Parkiranje na vodni črti"
+      },
+      "remote_drive": {
+        "name": "Daljinska vožnja prek oblaka"
       }
     },
     "select": {
@@ -1655,6 +1683,66 @@
     },
     "self_check_other": {
       "message": "Kosilnica je javila neznano kodo samopreverjanja {code}."
+    },
+    "remote_drive_needs_cloud": {
+      "message": "Daljinska vožnja prek oblaka potrebuje delujočo povezavo kosilnice z oblakom. Prek Bluetootha namesto tega uporabite gumbe za premik."
+    },
+    "remote_drive_already_running": {
+      "message": "Daljinska vožnja prek oblaka že teče. Pred ponovnim zagonom jo izklopite."
+    },
+    "remote_drive_not_awaiting_confirmation": {
+      "message": "Ni varnostnega obvestila za potrditev. Najprej vklopite daljinsko vožnjo prek oblaka."
+    },
+    "remote_drive_no_reverse": {
+      "message": "Z daljinsko vožnjo prek oblaka kosilnica ne more voziti vzvratno. Obrnite jo levo ali desno ali uporabite Bluetooth."
+    },
+    "remote_drive_fence_paused": {
+      "message": "Kosilnica se je ustavila ob meji. Preden nadaljujete, pritisnite »Potrdi opozorilo meje«."
+    },
+    "remote_drive_safety_notice": {
+      "message": "Preden kosilnico vozite daljinsko, se prepričajte, da v delovnem območju ni ljudi ali živali, in imejte kosilnico ves čas na očeh. Za začetek v 3 minutah pritisnite »Potrdi daljinsko vožnjo«. Seja se sama konča kmalu po zadnjem ukazu."
+    },
+    "movement_unavailable": {
+      "message": "Kosilnice trenutno ni mogoče premakniti. Pojdite v doseg Bluetootha ali vklopite daljinsko vožnjo prek oblaka in pritisnite »Potrdi daljinsko vožnjo«."
+    },
+    "notification_title_remote_drive": {
+      "message": "{device_name}: daljinska vožnja prek oblaka"
+    },
+    "remote_drive_token_unavailable": {
+      "message": "Strežnik Mammotion ni dovolil daljinske vožnje (koda {detail}). Poskusite znova pozneje."
+    },
+    "remote_drive_occupied_by_other": {
+      "message": "Kosilnico že vozi drug račun ({detail})."
+    },
+    "remote_drive_network_poor": {
+      "message": "Daljinska vožnja se je končala: omrežna povezava kosilnice je preslaba."
+    },
+    "remote_drive_token_expired": {
+      "message": "Daljinska vožnja se je končala: dovoljenje za vožnjo je poteklo."
+    },
+    "remote_drive_out_of_fence": {
+      "message": "Daljinska vožnja se je končala: kosilnica je zunaj dovoljenega območja."
+    },
+    "remote_drive_ble_preempt": {
+      "message": "Daljinska vožnja se je končala: kosilnico zdaj prek Bluetootha upravlja {detail}."
+    },
+    "remote_drive_no_loc_mileage_exhausted": {
+      "message": "Daljinska vožnja se je končala: kosilnica je prevozila največjo razdaljo, dovoljeno brez določitve položaja."
+    },
+    "remote_drive_env_not_ready": {
+      "message": "Daljinska vožnja se je končala: kosilnica ni pripravljena na vožnjo (koda {detail})."
+    },
+    "remote_drive_send_failed": {
+      "message": "Daljinska vožnja se je končala: ukaza ni bilo mogoče poslati ({detail})."
+    },
+    "remote_drive_approach_fence": {
+      "message": "Kosilnica se je ustavila tik ob meji. Za nadaljevanje vožnje pritisnite »Potrdi opozorilo meje«."
+    },
+    "remote_drive_safety_notice_timeout": {
+      "message": "Daljinska vožnja se je končala: varnostno obvestilo ni bilo potrjeno v 3 minutah."
+    },
+    "remote_drive_video_unavailable": {
+      "message": "Daljinska vožnja se je končala: slika kamere se je prekinila."
     },
     "battery_settings_unread": {
       "message": "Nastavitve baterije še niso bile prebrane iz robota. Sprememba bi zdaj ponastavila okno polnjenja izven konice, zato ni bilo nič poslano. Poskusite znova, ko bo robot povezan."

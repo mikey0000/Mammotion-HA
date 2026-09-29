@@ -66,6 +66,7 @@
           "notify": "Afișează notificări persistente pentru"
         },
         "data_description": {
+          "movement_use_wifi": "Trimite vechea comandă de mișcare prin Wi-Fi în loc să folosească conducerea de la distanță prin cloud. Fără această opțiune, începând cu firmware-ul 1.30.31.19 pe LUBA 2, LUBA 2X, YUKA, LUBA mini și YUKA mini, cu 2.3.31.69 pe LUBA 3, LUBA mini 2 și YUKA mini 2 și pe modelele mai noi pentru care serverul Mammotion raportează suport, butoanele de deplasare și acțiunile de mișcare funcționează prin cloud doar cât timp Conducere de la distanță prin cloud este pornită și confirmată. Activați pentru a folosi vechea comandă cu orice firmware, de exemplu pentru a le compara pe un LUBA 3; o conexiune Bluetooth activă are în continuare prioritate.",
           "notify": "Notificările de autotest sunt activate implicit, celelalte sunt dezactivate. Fiecare notificare declanșează și entitatea de eveniment de notificare a mașinii și un eveniment mammotion_event pe magistrală, pe care automatizările le pot folosi în schimb."
         }
       }
@@ -433,6 +434,24 @@
           "returning": "Se întoarce",
           "charging_pause": "Se încarcă, apoi continuă"
         }
+      },
+      "remote_drive_state": {
+        "name": "Stare conducere de la distanță",
+        "state": {
+          "idle": "Inactivă",
+          "requesting_token": "Se solicită permisiunea",
+          "safety_notice": "Se așteaptă confirmarea de siguranță",
+          "active": "În conducere",
+          "exiting": "Se încheie"
+        },
+        "state_attributes": {
+          "last_event": {
+            "name": "Ultimul eveniment"
+          },
+          "last_event_detail": {
+            "name": "Detaliile ultimului eveniment"
+          }
+        }
       }
     },
     "binary_sensor": {
@@ -497,6 +516,12 @@
       },
       "spino_refresh_status": {
         "name": "Reîmprospătează starea"
+      },
+      "confirm_remote_drive": {
+        "name": "Confirmă conducerea de la distanță"
+      },
+      "acknowledge_remote_drive_fence": {
+        "name": "Confirmă avertizarea de limită"
       }
     },
     "switch": {
@@ -571,6 +596,9 @@
       },
       "spino_waterline_parking": {
         "name": "Parcare la linia apei"
+      },
+      "remote_drive": {
+        "name": "Conducere de la distanță prin cloud"
       }
     },
     "select": {
@@ -1655,6 +1683,66 @@
     },
     "self_check_other": {
       "message": "Mașina a raportat codul de autotest necunoscut {code}."
+    },
+    "remote_drive_needs_cloud": {
+      "message": "Conducerea de la distanță prin cloud necesită o conexiune cloud funcțională cu mașina de tuns. Prin Bluetooth folosiți în schimb butoanele de deplasare."
+    },
+    "remote_drive_already_running": {
+      "message": "Conducerea de la distanță prin cloud rulează deja. Opriți-o înainte de a o porni din nou."
+    },
+    "remote_drive_not_awaiting_confirmation": {
+      "message": "Nu există niciun avertisment de siguranță de confirmat. Porniți mai întâi conducerea de la distanță prin cloud."
+    },
+    "remote_drive_no_reverse": {
+      "message": "Conducerea de la distanță prin cloud nu poate deplasa mașina de tuns înapoi. Virați la stânga sau la dreapta sau folosiți Bluetooth."
+    },
+    "remote_drive_fence_paused": {
+      "message": "Mașina de tuns s-a oprit lângă limită. Apăsați „Confirmă avertizarea de limită” înainte de a continua."
+    },
+    "remote_drive_safety_notice": {
+      "message": "Înainte de a conduce mașina de tuns de la distanță, asigurați-vă că nu există oameni sau animale în zona de lucru și păstrați mașina în raza vizuală tot timpul. Apăsați „Confirmă conducerea de la distanță” în 3 minute pentru a începe. Sesiunea se încheie singură la scurt timp după ultima comandă."
+    },
+    "movement_unavailable": {
+      "message": "Mașina de tuns nu poate fi deplasată acum. Apropiați-vă în raza Bluetooth sau porniți conducerea de la distanță prin cloud și apăsați „Confirmă conducerea de la distanță”."
+    },
+    "notification_title_remote_drive": {
+      "message": "{device_name}: conducere de la distanță prin cloud"
+    },
+    "remote_drive_token_unavailable": {
+      "message": "Serverul Mammotion nu a permis conducerea de la distanță (cod {detail}). Încercați din nou mai târziu."
+    },
+    "remote_drive_occupied_by_other": {
+      "message": "Mașina de tuns este deja condusă de alt cont ({detail})."
+    },
+    "remote_drive_network_poor": {
+      "message": "Conducerea de la distanță s-a încheiat: conexiunea de rețea a mașinii de tuns este prea slabă."
+    },
+    "remote_drive_token_expired": {
+      "message": "Conducerea de la distanță s-a încheiat: permisiunea de conducere a expirat."
+    },
+    "remote_drive_out_of_fence": {
+      "message": "Conducerea de la distanță s-a încheiat: mașina de tuns este în afara zonei permise."
+    },
+    "remote_drive_ble_preempt": {
+      "message": "Conducerea de la distanță s-a încheiat: mașina de tuns este acum controlată prin Bluetooth de {detail}."
+    },
+    "remote_drive_no_loc_mileage_exhausted": {
+      "message": "Conducerea de la distanță s-a încheiat: mașina de tuns a parcurs distanța maximă permisă fără poziționare."
+    },
+    "remote_drive_env_not_ready": {
+      "message": "Conducerea de la distanță s-a încheiat: mașina de tuns nu este pregătită pentru a fi condusă (cod {detail})."
+    },
+    "remote_drive_send_failed": {
+      "message": "Conducerea de la distanță s-a încheiat: o comandă nu a putut fi trimisă ({detail})."
+    },
+    "remote_drive_approach_fence": {
+      "message": "Mașina de tuns s-a oprit foarte aproape de limită. Apăsați „Confirmă avertizarea de limită” pentru a continua."
+    },
+    "remote_drive_safety_notice_timeout": {
+      "message": "Conducerea de la distanță s-a încheiat: avertismentul de siguranță nu a fost confirmat în 3 minute."
+    },
+    "remote_drive_video_unavailable": {
+      "message": "Conducerea de la distanță s-a încheiat: imaginea camerei s-a oprit."
     },
     "battery_settings_unread": {
       "message": "Setările bateriei nu au fost încă citite de pe mașina de tuns. Modificarea lor acum ar reseta intervalul de încărcare în afara orelor de vârf, așa că nu s-a trimis nimic. Încercați din nou după ce mașina de tuns este conectată."

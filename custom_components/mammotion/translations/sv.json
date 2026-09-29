@@ -66,6 +66,7 @@
           "notify": "Visa beständiga aviseringar för"
         },
         "data_description": {
+          "movement_use_wifi": "Skickar det gamla rörelsekommandot via Wi-Fi i stället för att använda fjärrkörning via moln. Utan detta fungerar knuffknapparna och rörelseåtgärderna via molnet från firmware 1.30.31.19 på LUBA 2, LUBA 2X, YUKA, LUBA mini och YUKA mini, från 2.3.31.69 på LUBA 3, LUBA mini 2 och YUKA mini 2 och på nyare modeller som Mammotion-servern rapporterar stöd för, bara medan Fjärrkörning via moln är på och bekräftad. Slå på för att använda det gamla kommandot med all firmware, till exempel för att jämföra båda på en LUBA 3; en ansluten Bluetooth-länk används fortfarande först.",
           "notify": "Självtestaviseringar är på som standard, de andra är av. Varje avisering utlöser också gräsklipparens aviseringshändelseentitet och en mammotion_event-händelse på bussen, som automatiseringar kan använda i stället."
         }
       }
@@ -433,6 +434,24 @@
           "returning": "Återvänder",
           "charging_pause": "Laddar, fortsätter sedan"
         }
+      },
+      "remote_drive_state": {
+        "name": "Status för fjärrkörning",
+        "state": {
+          "idle": "Inaktiv",
+          "requesting_token": "Begär behörighet",
+          "safety_notice": "Väntar på säkerhetsbekräftelse",
+          "active": "Kör",
+          "exiting": "Avslutas"
+        },
+        "state_attributes": {
+          "last_event": {
+            "name": "Senaste händelse"
+          },
+          "last_event_detail": {
+            "name": "Detaljer om senaste händelse"
+          }
+        }
       }
     },
     "binary_sensor": {
@@ -497,6 +516,12 @@
       },
       "spino_refresh_status": {
         "name": "Uppdatera status"
+      },
+      "confirm_remote_drive": {
+        "name": "Bekräfta fjärrkörning"
+      },
+      "acknowledge_remote_drive_fence": {
+        "name": "Bekräfta gränsvarning"
       }
     },
     "switch": {
@@ -571,6 +596,9 @@
       },
       "spino_waterline_parking": {
         "name": "Parkering vid vattenlinjen"
+      },
+      "remote_drive": {
+        "name": "Fjärrkörning via moln"
       }
     },
     "select": {
@@ -1655,6 +1683,66 @@
     },
     "self_check_other": {
       "message": "Gräsklipparen rapporterade en okänd självtestkod {code}."
+    },
+    "remote_drive_needs_cloud": {
+      "message": "Fjärrkörning via moln kräver en fungerande molnanslutning till robotgräsklipparen. Använd knuffknapparna via Bluetooth i stället."
+    },
+    "remote_drive_already_running": {
+      "message": "Fjärrkörning via moln är redan igång. Stäng av den innan du startar igen."
+    },
+    "remote_drive_not_awaiting_confirmation": {
+      "message": "Det finns inget säkerhetsmeddelande att bekräfta. Slå först på fjärrkörning via moln."
+    },
+    "remote_drive_no_reverse": {
+      "message": "Fjärrkörning via moln kan inte backa robotgräsklipparen. Sväng med vänster eller höger i stället, eller använd Bluetooth."
+    },
+    "remote_drive_fence_paused": {
+      "message": "Robotgräsklipparen stannade vid gränsen. Tryck på \"Bekräfta gränsvarning\" innan du kör vidare."
+    },
+    "remote_drive_safety_notice": {
+      "message": "Innan du fjärrkör robotgräsklipparen, se till att inga människor eller djur finns i arbetsområdet och ha den inom synhåll hela tiden. Tryck på \"Bekräfta fjärrkörning\" inom 3 minuter för att börja. Sessionen avslutas av sig själv strax efter att du slutat ge kommandon."
+    },
+    "movement_unavailable": {
+      "message": "Robotgräsklipparen kan inte flyttas just nu. Kom inom Bluetooth-räckvidd, eller slå på fjärrkörning via moln och tryck på \"Bekräfta fjärrkörning\"."
+    },
+    "notification_title_remote_drive": {
+      "message": "{device_name}: fjärrkörning via moln"
+    },
+    "remote_drive_token_unavailable": {
+      "message": "Mammotion-servern tillät inte fjärrkörning (kod {detail}). Försök igen senare."
+    },
+    "remote_drive_occupied_by_other": {
+      "message": "Robotgräsklipparen körs redan av ett annat konto ({detail})."
+    },
+    "remote_drive_network_poor": {
+      "message": "Fjärrkörningen avslutades: robotgräsklipparens nätverksanslutning är för dålig."
+    },
+    "remote_drive_token_expired": {
+      "message": "Fjärrkörningen avslutades: behörigheten att köra har gått ut."
+    },
+    "remote_drive_out_of_fence": {
+      "message": "Fjärrkörningen avslutades: robotgräsklipparen är utanför det tillåtna området."
+    },
+    "remote_drive_ble_preempt": {
+      "message": "Fjärrkörningen avslutades: robotgräsklipparen styrs nu via Bluetooth av {detail}."
+    },
+    "remote_drive_no_loc_mileage_exhausted": {
+      "message": "Fjärrkörningen avslutades: robotgräsklipparen har kört så långt den får utan positionsbestämning."
+    },
+    "remote_drive_env_not_ready": {
+      "message": "Fjärrkörningen avslutades: robotgräsklipparen är inte redo att köras (kod {detail})."
+    },
+    "remote_drive_send_failed": {
+      "message": "Fjärrkörningen avslutades: ett kommando kunde inte skickas ({detail})."
+    },
+    "remote_drive_approach_fence": {
+      "message": "Robotgräsklipparen stannade nära gränsen. Tryck på \"Bekräfta gränsvarning\" för att köra vidare."
+    },
+    "remote_drive_safety_notice_timeout": {
+      "message": "Fjärrkörningen avslutades: säkerhetsmeddelandet bekräftades inte inom 3 minuter."
+    },
+    "remote_drive_video_unavailable": {
+      "message": "Fjärrkörningen avslutades: kamerans video stannade."
     },
     "battery_settings_unread": {
       "message": "Batteriinställningarna har ännu inte lästs från gräsklipparen. En ändring nu skulle återställa laddningsfönstret för lågpristid, så inget skickades. Försök igen när gräsklipparen är ansluten."

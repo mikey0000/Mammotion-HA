@@ -66,6 +66,7 @@
           "notify": "Pokazuj trwałe powiadomienia dla"
         },
         "data_description": {
+          "movement_use_wifi": "Wysyła dotychczasowe polecenie ruchu przez Wi-Fi zamiast korzystać ze zdalnego sterowania przez chmurę. Bez tej opcji przyciski przesuwania i akcje ruchu działają przez chmurę od oprogramowania 1.30.31.19 w LUBA 2, LUBA 2X, YUKA, LUBA mini i YUKA mini, od 2.3.31.69 w LUBA 3, LUBA mini 2 i YUKA mini 2 oraz w nowszych modelach, dla których serwer Mammotion zgłasza obsługę, tylko gdy Zdalne sterowanie przez chmurę jest włączone i potwierdzone. Włącz, aby używać dotychczasowego polecenia z dowolnym oprogramowaniem, np. by porównać oba sposoby na LUBA 3; połączone Bluetooth nadal ma pierwszeństwo.",
           "notify": "Powiadomienia autotestu są domyślnie włączone, pozostałe wyłączone. Każde powiadomienie wyzwala też encję zdarzeń powiadomień kosiarki i zdarzenie mammotion_event na magistrali, których automatyzacje mogą użyć zamiast tego."
         }
       }
@@ -433,6 +434,24 @@
           "returning": "Powrót",
           "charging_pause": "Ładowanie, potem wznowi"
         }
+      },
+      "remote_drive_state": {
+        "name": "Stan zdalnego sterowania",
+        "state": {
+          "idle": "Bezczynne",
+          "requesting_token": "Żądanie uprawnienia",
+          "safety_notice": "Oczekiwanie na potwierdzenie bezpieczeństwa",
+          "active": "Jazda",
+          "exiting": "Kończenie"
+        },
+        "state_attributes": {
+          "last_event": {
+            "name": "Ostatnie zdarzenie"
+          },
+          "last_event_detail": {
+            "name": "Szczegóły ostatniego zdarzenia"
+          }
+        }
       }
     },
     "binary_sensor": {
@@ -497,6 +516,12 @@
       },
       "spino_refresh_status": {
         "name": "Odśwież stan"
+      },
+      "confirm_remote_drive": {
+        "name": "Potwierdź zdalne sterowanie"
+      },
+      "acknowledge_remote_drive_fence": {
+        "name": "Potwierdź ostrzeżenie o granicy"
       }
     },
     "switch": {
@@ -571,6 +596,9 @@
       },
       "spino_waterline_parking": {
         "name": "Parkowanie przy linii wodnej"
+      },
+      "remote_drive": {
+        "name": "Zdalne sterowanie przez chmurę"
       }
     },
     "select": {
@@ -1655,6 +1683,66 @@
     },
     "self_check_other": {
       "message": "Kosiarka zgłosiła nieznany kod autotestu {code}."
+    },
+    "remote_drive_needs_cloud": {
+      "message": "Zdalne sterowanie przez chmurę wymaga działającego połączenia kosiarki z chmurą. Przez Bluetooth użyj zamiast tego przycisków przesuwania."
+    },
+    "remote_drive_already_running": {
+      "message": "Zdalne sterowanie przez chmurę już działa. Wyłącz je przed ponownym uruchomieniem."
+    },
+    "remote_drive_not_awaiting_confirmation": {
+      "message": "Nie ma komunikatu bezpieczeństwa do potwierdzenia. Najpierw włącz zdalne sterowanie przez chmurę."
+    },
+    "remote_drive_no_reverse": {
+      "message": "Zdalne sterowanie przez chmurę nie pozwala na jazdę do tyłu. Skręć w lewo lub w prawo albo użyj Bluetooth."
+    },
+    "remote_drive_fence_paused": {
+      "message": "Kosiarka zatrzymała się przy granicy. Przed dalszą jazdą naciśnij „Potwierdź ostrzeżenie o granicy”."
+    },
+    "remote_drive_safety_notice": {
+      "message": "Przed zdalnym sterowaniem kosiarką upewnij się, że w obszarze roboczym nie ma ludzi ani zwierząt, i przez cały czas miej kosiarkę w zasięgu wzroku. Aby rozpocząć, naciśnij „Potwierdź zdalne sterowanie” w ciągu 3 minut. Sesja kończy się sama wkrótce po tym, jak przestaniesz wydawać polecenia."
+    },
+    "movement_unavailable": {
+      "message": "Kosiarki nie można teraz przesunąć. Podejdź w zasięg Bluetooth albo włącz zdalne sterowanie przez chmurę i naciśnij „Potwierdź zdalne sterowanie”."
+    },
+    "notification_title_remote_drive": {
+      "message": "{device_name}: zdalne sterowanie przez chmurę"
+    },
+    "remote_drive_token_unavailable": {
+      "message": "Serwer Mammotion nie zezwolił na zdalne sterowanie (kod {detail}). Spróbuj ponownie później."
+    },
+    "remote_drive_occupied_by_other": {
+      "message": "Kosiarką steruje już inne konto ({detail})."
+    },
+    "remote_drive_network_poor": {
+      "message": "Zdalne sterowanie zakończone: połączenie sieciowe kosiarki jest zbyt słabe."
+    },
+    "remote_drive_token_expired": {
+      "message": "Zdalne sterowanie zakończone: uprawnienie do jazdy wygasło."
+    },
+    "remote_drive_out_of_fence": {
+      "message": "Zdalne sterowanie zakończone: kosiarka jest poza dozwolonym obszarem."
+    },
+    "remote_drive_ble_preempt": {
+      "message": "Zdalne sterowanie zakończone: kosiarką steruje teraz przez Bluetooth {detail}."
+    },
+    "remote_drive_no_loc_mileage_exhausted": {
+      "message": "Zdalne sterowanie zakończone: kosiarka przejechała maksymalny dystans dozwolony bez ustalenia pozycji."
+    },
+    "remote_drive_env_not_ready": {
+      "message": "Zdalne sterowanie zakończone: kosiarka nie jest gotowa do sterowania (kod {detail})."
+    },
+    "remote_drive_send_failed": {
+      "message": "Zdalne sterowanie zakończone: nie udało się wysłać polecenia ({detail})."
+    },
+    "remote_drive_approach_fence": {
+      "message": "Kosiarka zatrzymała się tuż przy granicy. Naciśnij „Potwierdź ostrzeżenie o granicy”, aby jechać dalej."
+    },
+    "remote_drive_safety_notice_timeout": {
+      "message": "Zdalne sterowanie zakończone: komunikat bezpieczeństwa nie został potwierdzony w ciągu 3 minut."
+    },
+    "remote_drive_video_unavailable": {
+      "message": "Zdalne sterowanie zakończone: obraz z kamery został przerwany."
     },
     "battery_settings_unread": {
       "message": "Ustawienia baterii nie zostały jeszcze odczytane z kosiarki. Zmiana teraz zresetowałaby okno ładowania poza szczytem, więc nic nie wysłano. Spróbuj ponownie, gdy kosiarka będzie połączona."

@@ -38,6 +38,12 @@
       },
       "continue_last_job": {
         "default": "mdi:play-circle-outline"
+      },
+      "confirm_remote_drive": {
+        "default": "mdi:shield-check"
+      },
+      "acknowledge_remote_drive_fence": {
+        "default": "mdi:fence"
       }
     },
     "sensor": {
@@ -124,6 +130,16 @@
           "MOWING": "mdi:robot-mower",
           "COMPLETE": "mdi:check-circle-outline",
           "ABORTED": "mdi:close-circle-outline"
+        }
+      },
+      "remote_drive_state": {
+        "default": "mdi:remote",
+        "state": {
+          "idle": "mdi:remote-off",
+          "active": "mdi:controller",
+          "safety_notice": "mdi:shield-alert",
+          "requesting_token": "mdi:timer-sand",
+          "exiting": "mdi:stop-circle-outline"
         }
       }
     },
@@ -274,6 +290,12 @@
       },
       "manual_grass_dump": {
         "default": "mdi:dump-truck"
+      },
+      "remote_drive": {
+        "default": "mdi:controller",
+        "state": {
+          "off": "mdi:controller-off"
+        }
       }
     },
     "update": {

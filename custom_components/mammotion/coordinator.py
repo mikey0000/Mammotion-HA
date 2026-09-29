@@ -12,8 +12,9 @@ import time
 from abc import abstractmethod
 from collections.abc import Awaitable, Callable, Coroutine, Mapping
 from datetime import timedelta
+from enum import StrEnum
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, Protocol, cast
+from typing import TYPE_CHECKING, Any, Final, Protocol, cast
 
 from habluetooth import BluetoothScanningMode
 from habluetooth.models import BluetoothServiceInfoBleak
@@ -69,6 +70,12 @@ from pymammotion.data.model.report_info import Maintain, NetUsedType
 from pymammotion.data.mqtt.event import DeviceNotificationEventParams, ThingEventMessage
 from pymammotion.data.mqtt.properties import ThingPropertiesMessage
 from pymammotion.data.mqtt.status import StatusType, ThingStatusMessage
+from pymammotion.device.remote_drive import (
+    RemoteDriveError,
+    RemoteDriveEvent,
+    RemoteDriveEventKind,
+    RemoteDrivePhase,
+)
 from pymammotion.http.model.camera_stream import (
     StreamSubscriptionResponse,
 )
@@ -120,6 +127,7 @@ from .const import (
     CONF_ACCOUNTNAME,
     CONF_HAS_CLOUD_ACCOUNT,
     CONF_MAMMOTION_DATA,
+    CONF_MOVEMENT_USE_WIFI,
     DOMAIN,
     EXPIRED_CREDENTIAL_EXCEPTIONS,
     LOGGER,
@@ -182,6 +190,59 @@ MAP_SYNC_STATUSES = ("synced", "syncing", "out_of_sync")
 # device is unreachable ("Device not responding. Please check the network
 # connection").  Treated as a device-offline signal.
 DEVICE_NOT_RESPONDING_CODE = 50504
+
+#: How long a nudge holds its speed in a remote-drive session before letting go.
+REMOTE_DRIVE_NUDGE_S = 0.5
+
+#: Sign of (linear, angular) per movement command, as the legacy ``move_*`` commands
+#: send them.  No ``move_back``: the session drops negative linear speed.
+_REMOTE_DRIVE_DIRECTIONS: Final[dict[str, tuple[int, int]]] = {
+    "move_forward": (1, 0),
+    "move_left": (0, -1),
+    "move_right": (0, 1),
+}
+
+#: Phases in which a remote-drive session holds (or is getting) the drive token.
+REMOTE_DRIVE_LIVE_PHASES: Final = frozenset(
+    {
+        RemoteDrivePhase.REQUESTING_TOKEN,
+        RemoteDrivePhase.SAFETY_NOTICE,
+        RemoteDrivePhase.ACTIVE,
+    }
+)
+
+type RemoteDriveListener = Callable[[RemoteDriveEvent], Awaitable[None]]
+
+
+class MovementPath(StrEnum):
+    """Which way a manual movement reaches the mower; see ``movement_path``."""
+
+    BLE = "ble"
+    LEGACY_CLOUD = "legacy_cloud"
+    REMOTE_DRIVE = "remote_drive"
+    FENCE_PAUSED = "fence_paused"
+    NONE = "none"
+
+
+def remote_drive_detail(event: RemoteDriveEvent | None) -> str:
+    """Return the code, account or error a remote-drive message shows for *event*."""
+    if event is None:
+        return "-"
+    if event.detail:
+        return event.detail
+    return str(event.error) if event.error is not None else "-"
+
+
+def remote_drive_wire_speeds(command: str, speed: float) -> tuple[int, int] | None:
+    """Return the session's (linear, angular) ints for a ``move_*`` *speed*, or None for reverse.
+
+    The app's joystick scaling (15 % dead zone, x10 linear, x4.5 angular), which is
+    also what the legacy ``move_*`` commands send for the same speed.
+    """
+    if (signs := _REMOTE_DRIVE_DIRECTIONS.get(command)) is None:
+        return None
+    rocker = int(max(speed * 100 - 15, 0))
+    return signs[0] * rocker * 10, signs[1] * int(rocker * 4.5)
 
 
 def _undecodable_field(exc: InvalidFieldValue) -> tuple[str, BaseException]:
@@ -308,6 +369,7 @@ async def _async_run_setup_reads(
 class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # type: ignore[misc]
     """Mammotion DataUpdateCoordinator."""
 
+    remote_drive_nudge_s: float = REMOTE_DRIVE_NUDGE_S
     #: Whether this coordinator owns its device's entry in the store; its siblings
     #: see the same pushes and would save the same device again.
     persists_device_state: bool = False
@@ -366,6 +428,9 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             _user_account = 0
         self.commands = MammotionCommand(device.device_name, _user_account)
         self._subscriptions: list[Subscription] = []
+        self._remote_drive_subscription: Subscription | None = None
+        self._remote_drive_listeners: list[RemoteDriveListener] = []
+        self.remote_drive_last_event: RemoteDriveEvent | None = None
         self.map_offset_lat: float = 0.0
         self.map_offset_lon: float = 0.0
         self._store: MammotionConfigStore = async_get_store(hass, config_entry)
@@ -1891,49 +1956,204 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
 
         await self.manager.add_ble_to_device(self.device_name, ble_device)
 
-    async def async_move_forward(self, speed: float, use_wifi: bool = False) -> None:
-        """Move forward. Prefer BLE unless use_wifi=True (lower latency for manual control)."""
-        if not use_wifi:
-            await self._async_ensure_ble_client()
-        await self.async_send_command(
-            "move_forward",
-            priority=Priority.USER,
-            prefer_ble=not use_wifi,
-            linear=speed,
+    def movement_path(self, use_wifi: bool | None = None) -> MovementPath:
+        """Decide how a manual movement reaches the mower; every movement caller asks this.
+
+        An explicit *use_wifi* wins.  Otherwise the "movement over Wi-Fi" option sends
+        the legacy cloud command, then a usable BLE link, then an ACTIVE remote-drive
+        session on a mower that supports one.  Re-read on every call, so firmware or a
+        function list arriving after setup is picked up.
+        """
+        if use_wifi is not None:
+            return MovementPath.LEGACY_CLOUD if use_wifi else MovementPath.BLE
+        if self.config_entry is not None and self.config_entry.options.get(
+            CONF_MOVEMENT_USE_WIFI, False
+        ):
+            return MovementPath.LEGACY_CLOUD
+        if (handle := self.handle) is None:
+            return MovementPath.NONE
+        if (
+            ble := handle.get_transport(TransportType.BLE)
+        ) is not None and ble.is_usable:
+            return MovementPath.BLE
+        session = handle.remote_drive
+        if (
+            session is None
+            or session.phase is not RemoteDrivePhase.ACTIVE
+            or not handle.supports_wifi_movement()
+        ):
+            return MovementPath.NONE
+        if session.fence_paused:
+            return MovementPath.FENCE_PAUSED
+        return MovementPath.REMOTE_DRIVE
+
+    def can_move(self, command: str) -> bool:
+        """Whether *command* (``move_forward`` …) can reach the mower right now."""
+        match self.movement_path():
+            case MovementPath.BLE | MovementPath.LEGACY_CLOUD:
+                return True
+            case MovementPath.REMOTE_DRIVE:
+                return command in _REMOTE_DRIVE_DIRECTIONS
+        return False
+
+    async def _async_move(
+        self, command: str, use_wifi: bool | None, *, axis: str, speed: float
+    ) -> None:
+        """Send one movement down the path :meth:`movement_path` picks."""
+        match self.movement_path(use_wifi):
+            case MovementPath.BLE:
+                await self._async_ensure_ble_client()
+                await self.async_send_command(
+                    command, priority=Priority.USER, prefer_ble=True, **{axis: speed}
+                )
+            case MovementPath.LEGACY_CLOUD:
+                await self.async_send_command(
+                    command, priority=Priority.USER, prefer_ble=False, **{axis: speed}
+                )
+            case MovementPath.REMOTE_DRIVE:
+                if (wire := remote_drive_wire_speeds(command, speed)) is None:
+                    raise HomeAssistantError(
+                        translation_domain=DOMAIN,
+                        translation_key="remote_drive_no_reverse",
+                    )
+                await self.async_remote_drive_nudge(*wire)
+            case MovementPath.FENCE_PAUSED:
+                raise HomeAssistantError(
+                    translation_domain=DOMAIN,
+                    translation_key="remote_drive_fence_paused",
+                )
+            case MovementPath.NONE:
+                raise HomeAssistantError(
+                    translation_domain=DOMAIN, translation_key="movement_unavailable"
+                )
+
+    async def async_move_forward(
+        self, speed: float, use_wifi: bool | None = None
+    ) -> None:
+        """Move forward; an explicit ``use_wifi`` overrides :meth:`movement_path`."""
+        await self._async_move("move_forward", use_wifi, axis="linear", speed=speed)
+
+    async def async_move_left(self, speed: float, use_wifi: bool | None = None) -> None:
+        """Move left; ``use_wifi`` as for :meth:`async_move_forward`."""
+        await self._async_move("move_left", use_wifi, axis="angular", speed=speed)
+
+    async def async_move_right(
+        self, speed: float, use_wifi: bool | None = None
+    ) -> None:
+        """Move right; ``use_wifi`` as for :meth:`async_move_forward`."""
+        await self._async_move("move_right", use_wifi, axis="angular", speed=speed)
+
+    async def async_move_back(self, speed: float, use_wifi: bool | None = None) -> None:
+        """Move back; ``use_wifi`` as for :meth:`async_move_forward`."""
+        await self._async_move("move_back", use_wifi, axis="linear", speed=speed)
+
+    def supports_remote_drive(self) -> bool:
+        """Whether the mower accepts cloud remote drive; pymammotion's rule."""
+        return (handle := self.handle) is not None and handle.supports_wifi_movement()
+
+    @property
+    def remote_drive_phase(self) -> RemoteDrivePhase:
+        """The session's phase; IDLE before one was ever started."""
+        if (handle := self.handle) is None or (session := handle.remote_drive) is None:
+            return RemoteDrivePhase.IDLE
+        return session.phase
+
+    @property
+    def remote_drive_fence_paused(self) -> bool:
+        """True while the mower is stopped at the fence and waits for an acknowledgement."""
+        if (handle := self.handle) is None or (session := handle.remote_drive) is None:
+            return False
+        return session.fence_paused
+
+    @callback
+    def async_add_remote_drive_listener(
+        self, listener: RemoteDriveListener
+    ) -> CALLBACK_TYPE:
+        """Call *listener* with every remote-drive event; returns the remover."""
+        self._remote_drive_listeners.append(listener)
+        return lambda: self._remote_drive_listeners.remove(listener)
+
+    async def _async_on_remote_drive_event(self, event: RemoteDriveEvent) -> None:
+        self.remote_drive_last_event = event
+        for listener in list(self._remote_drive_listeners):
+            await listener(event)
+        self.async_update_listeners()
+
+    async def async_start_remote_drive(self) -> None:
+        """Request the drive token; the session then waits for the user to confirm."""
+        if self._remote_drive_subscription is None:
+            self._remote_drive_subscription = self.manager.subscribe_remote_drive(
+                self.device_name, self._guarded(self._async_on_remote_drive_event)
+            )
+        try:
+            started = await self.manager.start_remote_drive(self.device_name)
+        except NoTransportAvailableError as exc:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key="remote_drive_needs_cloud"
+            ) from exc
+        except RemoteDriveError as exc:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="remote_drive_already_running",
+            ) from exc
+        except EXPIRED_CREDENTIAL_EXCEPTIONS as exc:
+            self.update_failures += 1
+            await self.async_refresh_login(exc)
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key="command_failed"
+            ) from exc
+        except Exception as exc:
+            if not is_transient_network_error(exc):
+                raise
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key="command_failed"
+            ) from exc
+        finally:
+            self.async_update_listeners()
+        if started:
+            return
+        # The refusal's event was emitted during start and says why.
+        event = self.remote_drive_last_event
+        kind = RemoteDriveEventKind.TOKEN_UNAVAILABLE
+        if event is not None and event.kind is RemoteDriveEventKind.OCCUPIED_BY_OTHER:
+            kind = event.kind
+        raise HomeAssistantError(
+            translation_domain=DOMAIN,
+            translation_key=f"remote_drive_{kind.value}",
+            translation_placeholders={"detail": remote_drive_detail(event)},
         )
 
-    async def async_move_left(self, speed: float, use_wifi: bool = False) -> None:
-        """Move left. Prefer BLE unless use_wifi=True."""
-        if not use_wifi:
-            await self._async_ensure_ble_client()
-        await self.async_send_command(
-            "move_left",
-            priority=Priority.USER,
-            prefer_ble=not use_wifi,
-            angular=speed,
-        )
+    async def async_confirm_remote_drive(self) -> None:
+        """Confirm the safety notice: the area is clear and the mower stays in sight."""
+        try:
+            await self.manager.confirm_remote_drive(self.device_name)
+        except RemoteDriveError as exc:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="remote_drive_not_awaiting_confirmation",
+            ) from exc
+        finally:
+            self.async_update_listeners()
 
-    async def async_move_right(self, speed: float, use_wifi: bool = False) -> None:
-        """Move right. Prefer BLE unless use_wifi=True."""
-        if not use_wifi:
-            await self._async_ensure_ble_client()
-        await self.async_send_command(
-            "move_right",
-            priority=Priority.USER,
-            prefer_ble=not use_wifi,
-            angular=speed,
-        )
+    async def async_remote_drive_nudge(self, linear: int, angular: int) -> None:
+        """Drive at (*linear*, *angular*) wire units briefly, then let go."""
+        await self.manager.remote_drive(self.device_name, linear, angular)
+        try:
+            await asyncio.sleep(self.remote_drive_nudge_s)
+        finally:
+            await self.manager.remote_drive(self.device_name, 0, 0)
 
-    async def async_move_back(self, speed: float, use_wifi: bool = False) -> None:
-        """Move back. Prefer BLE unless use_wifi=True."""
-        if not use_wifi:
-            await self._async_ensure_ble_client()
-        await self.async_send_command(
-            "move_back",
-            priority=Priority.USER,
-            prefer_ble=not use_wifi,
-            linear=speed,
-        )
+    async def async_stop_remote_drive(self) -> None:
+        """Stop the mower and release the drive token; a no-op with no session."""
+        if (handle := self.handle) is None or handle.remote_drive is None:
+            return
+        await self.manager.stop_remote_drive(self.device_name)
+        self.async_update_listeners()
+
+    async def async_acknowledge_remote_drive_fence(self) -> None:
+        """Resume input after the mower stopped at the fence."""
+        self.manager.acknowledge_remote_drive_fence(self.device_name)
+        self.async_update_listeners()
 
     async def async_rtk_dock_location(self) -> None:
         """RTK and dock location."""
@@ -2617,6 +2837,11 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             if device := self.manager.get_device_by_name(self.device_name) or self.data:
                 self.async_save_data(cast(MowingDevice | PoolCleanerDevice, device))
         await self.async_flush_saved_data()
+        if self._remote_drive_subscription is not None:
+            # Only the coordinator that started a session subscribed to it.
+            await self.async_stop_remote_drive()
+            self._remote_drive_subscription.cancel()
+            self._remote_drive_subscription = None
         for sub in self._subscriptions:
             sub.cancel()
         self._subscriptions.clear()

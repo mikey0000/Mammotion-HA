@@ -17,6 +17,8 @@ from pymammotion.utility.constant import WorkMode
 
 DOMAIN: Final = "mammotion"
 EVENT_MAMMOTION: Final = f"{DOMAIN}_event"
+#: Every cloud remote-drive session event, for automations.
+EVENT_REMOTE_DRIVE: Final = f"{DOMAIN}_remote_drive"
 
 CONF_NOTIFY: Final = "notify"
 NOTIFY_WARNINGS: Final = "warnings"

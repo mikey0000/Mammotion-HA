@@ -66,6 +66,7 @@
           "notify": "Dauerhafte Benachrichtigungen anzeigen für"
         },
         "data_description": {
+          "movement_use_wifi": "Sendet den bisherigen Bewegungsbefehl über WLAN, statt die Cloud-Fernsteuerung zu nutzen. Ohne diese Option funktionieren die Schubs-Tasten und Bewegungsaktionen über die Cloud ab Firmware 1.30.31.19 (LUBA 2, LUBA 2X, YUKA, LUBA mini, YUKA mini), ab 2.3.31.69 (LUBA 3, LUBA mini 2, YUKA mini 2) und bei neueren Modellen, für die der Mammotion-Server Fernsteuerung meldet, nur, während die Cloud-Fernsteuerung eingeschaltet und bestätigt ist. Aktivieren, um den bisherigen Befehl mit jeder Firmware zu nutzen, etwa um beides auf einem LUBA 3 zu vergleichen; eine bestehende Bluetooth-Verbindung wird weiterhin zuerst genutzt.",
           "notify": "Selbsttest-Benachrichtigungen sind standardmäßig aktiviert, die anderen deaktiviert. Jede Benachrichtigung löst außerdem die Benachrichtigungs-Event-Entität des Mähers sowie ein „mammotion_event“-Bus-Ereignis aus, auf das Automationen stattdessen zurückgreifen können."
         }
       }
@@ -433,6 +434,24 @@
           "returning": "Kehrt zur Ladestation zurück",
           "charging_pause": "Lädt, Aufgabe wird danach fortgesetzt"
         }
+      },
+      "remote_drive_state": {
+        "name": "Fernsteuerungsstatus",
+        "state": {
+          "idle": "Inaktiv",
+          "requesting_token": "Berechtigung wird angefordert",
+          "safety_notice": "Wartet auf Sicherheitsbestätigung",
+          "active": "Fährt",
+          "exiting": "Wird beendet"
+        },
+        "state_attributes": {
+          "last_event": {
+            "name": "Letztes Ereignis"
+          },
+          "last_event_detail": {
+            "name": "Details zum letzten Ereignis"
+          }
+        }
       }
     },
     "binary_sensor": {
@@ -497,6 +516,12 @@
       },
       "spino_refresh_status": {
         "name": "Status aktualisieren"
+      },
+      "confirm_remote_drive": {
+        "name": "Fernsteuerung bestätigen"
+      },
+      "acknowledge_remote_drive_fence": {
+        "name": "Grenzwarnung bestätigen"
       }
     },
     "switch": {
@@ -571,6 +596,9 @@
       },
       "spino_waterline_parking": {
         "name": "Wasserlinien-Parken"
+      },
+      "remote_drive": {
+        "name": "Cloud-Fernsteuerung"
       }
     },
     "select": {
@@ -1655,6 +1683,66 @@
     },
     "self_check_other": {
       "message": "Der Mäher hat den unbekannten Selbsttest-Code {code} gemeldet."
+    },
+    "remote_drive_needs_cloud": {
+      "message": "Die Cloud-Fernsteuerung braucht eine funktionierende Cloud-Verbindung zum Mäher. Über Bluetooth stattdessen die Schubs-Tasten verwenden."
+    },
+    "remote_drive_already_running": {
+      "message": "Die Cloud-Fernsteuerung läuft bereits. Vor einem Neustart zuerst ausschalten."
+    },
+    "remote_drive_not_awaiting_confirmation": {
+      "message": "Es gibt keinen Sicherheitshinweis zum Bestätigen. Zuerst die Cloud-Fernsteuerung einschalten."
+    },
+    "remote_drive_no_reverse": {
+      "message": "Mit der Cloud-Fernsteuerung kann der Mäher nicht rückwärts fahren. Stattdessen mit links oder rechts drehen oder Bluetooth verwenden."
+    },
+    "remote_drive_fence_paused": {
+      "message": "Der Mäher hat nahe der Grenze angehalten. Vor dem Weiterfahren „Grenzwarnung bestätigen“ drücken."
+    },
+    "remote_drive_safety_notice": {
+      "message": "Vor dem Fernsteuern sicherstellen, dass sich keine Personen oder Tiere im Arbeitsbereich befinden, und den Mäher die ganze Zeit im Blick behalten. Innerhalb von 3 Minuten „Fernsteuerung bestätigen“ drücken, um zu starten. Die Sitzung endet von selbst kurz nach der letzten Eingabe."
+    },
+    "movement_unavailable": {
+      "message": "Der Mäher kann gerade nicht bewegt werden. In Bluetooth-Reichweite bringen oder die Cloud-Fernsteuerung einschalten und „Fernsteuerung bestätigen“ drücken."
+    },
+    "notification_title_remote_drive": {
+      "message": "{device_name}: Cloud-Fernsteuerung"
+    },
+    "remote_drive_token_unavailable": {
+      "message": "Der Mammotion-Server hat die Fernsteuerung nicht erlaubt (Code {detail}). Später erneut versuchen."
+    },
+    "remote_drive_occupied_by_other": {
+      "message": "Der Mäher wird bereits von einem anderen Konto gesteuert ({detail})."
+    },
+    "remote_drive_network_poor": {
+      "message": "Fernsteuerung beendet: Die Netzwerkverbindung des Mähers ist zu schlecht."
+    },
+    "remote_drive_token_expired": {
+      "message": "Fernsteuerung beendet: Die Fahrberechtigung ist abgelaufen."
+    },
+    "remote_drive_out_of_fence": {
+      "message": "Fernsteuerung beendet: Der Mäher befindet sich außerhalb des erlaubten Bereichs."
+    },
+    "remote_drive_ble_preempt": {
+      "message": "Fernsteuerung beendet: Der Mäher wird jetzt von {detail} über Bluetooth gesteuert."
+    },
+    "remote_drive_no_loc_mileage_exhausted": {
+      "message": "Fernsteuerung beendet: Der Mäher ist so weit gefahren, wie es ohne Positionsbestimmung erlaubt ist."
+    },
+    "remote_drive_env_not_ready": {
+      "message": "Fernsteuerung beendet: Der Mäher ist nicht bereit, gesteuert zu werden (Code {detail})."
+    },
+    "remote_drive_send_failed": {
+      "message": "Fernsteuerung beendet: Ein Befehl konnte nicht gesendet werden ({detail})."
+    },
+    "remote_drive_approach_fence": {
+      "message": "Der Mäher hat dicht an der Grenze angehalten. „Grenzwarnung bestätigen“ drücken, um weiterzufahren."
+    },
+    "remote_drive_safety_notice_timeout": {
+      "message": "Fernsteuerung beendet: Der Sicherheitshinweis wurde nicht innerhalb von 3 Minuten bestätigt."
+    },
+    "remote_drive_video_unavailable": {
+      "message": "Fernsteuerung beendet: Das Kamerabild ist ausgefallen."
     },
     "battery_settings_unread": {
       "message": "Die Akkueinstellungen wurden noch nicht vom Mäher gelesen. Eine Änderung würde jetzt das Nebenzeit-Ladefenster zurücksetzen, daher wurde nichts gesendet. Bitte erneut versuchen, sobald der Mäher verbunden ist."

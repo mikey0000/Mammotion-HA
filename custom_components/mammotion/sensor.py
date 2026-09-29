@@ -39,6 +39,7 @@ from pymammotion.data.model.enums import (
     TaskAreaStatus,
 )
 from pymammotion.data.model.pool_state import SpinoSysStatus, SpinoWorkMode
+from pymammotion.device.remote_drive import RemoteDrivePhase
 from pymammotion.utility.constant import VioBrightness, VioState, WorkMode
 from pymammotion.utility.constant.device_constant import (
     AppConnectType,
@@ -59,11 +60,13 @@ from .coordinator import (
     MammotionReportUpdateCoordinator,
     MammotionRTKCoordinator,
     MammotionSpinoCoordinator,
+    remote_drive_detail,
 )
 from .entity import (
     MammotionBaseEntity,
     MammotionBaseRTKEntity,
     MammotionBaseSpinoEntity,
+    async_add_when_supported,
 )
 
 
@@ -818,6 +821,17 @@ async def async_setup_entry(
             mower.reporting_coordinator.async_add_listener(update_running_task)
         )
 
+        async_add_when_supported(
+            entry,
+            mower.reporting_coordinator,
+            supported=mower.reporting_coordinator.supports_remote_drive,
+            descriptions=(REMOTE_DRIVE_SENSOR,),
+            build=partial(
+                MammotionRemoteDriveSensorEntity, mower.reporting_coordinator
+            ),
+            async_add_entities=async_add_entities,
+        )
+
     mammotion_rtks = entry.runtime_data.RTK
     for rtk in mammotion_rtks:
         entities.extend(
@@ -857,6 +871,45 @@ async def async_setup_entry(
         )
 
     async_add_entities(entities)
+
+
+#: The cloud remote-drive session's phase; the last event it emitted is an attribute.
+REMOTE_DRIVE_SENSOR = SensorEntityDescription(
+    key="remote_drive_state",
+    device_class=SensorDeviceClass.ENUM,
+    options=[phase.value for phase in RemoteDrivePhase],
+    entity_category=EntityCategory.DIAGNOSTIC,
+)
+
+
+class MammotionRemoteDriveSensorEntity(MammotionBaseEntity, SensorEntity):
+    """Shows where the mower's cloud remote-drive session is, and why it last changed."""
+
+    def __init__(
+        self,
+        coordinator: MammotionBaseUpdateCoordinator[Any],
+        entity_description: SensorEntityDescription,
+    ) -> None:
+        """Initialize the remote-drive state sensor."""
+        super().__init__(coordinator, entity_description.key)
+        self.entity_description = entity_description
+        self._attr_translation_key = entity_description.key
+
+    @property
+    def native_value(self) -> str:
+        """The session's phase."""
+        return self.coordinator.remote_drive_phase.value
+
+    @property
+    def extra_state_attributes(self) -> dict[str, str | None]:
+        """The last fault or exit the session reported, with its code or account."""
+        event = self.coordinator.remote_drive_last_event
+        if event is None:
+            return {"last_event": None, "last_event_detail": None}
+        return {
+            "last_event": event.kind.value,
+            "last_event_detail": remote_drive_detail(event),
+        }
 
 
 class MammotionSensorEntity(MammotionBaseEntity, SensorEntity):

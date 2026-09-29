@@ -66,6 +66,7 @@
           "notify": "Toon blijvende meldingen voor"
         },
         "data_description": {
+          "movement_use_wifi": "Verzendt de oude bewegingsopdracht via Wi-Fi in plaats van besturing op afstand via cloud te gebruiken. Zonder deze optie werken de duwknoppen en bewegingsacties via de cloud vanaf firmware 1.30.31.19 op LUBA 2, LUBA 2X, YUKA, LUBA mini en YUKA mini, vanaf 2.3.31.69 op LUBA 3, LUBA mini 2 en YUKA mini 2, en op nieuwere modellen waarvoor de Mammotion-server ondersteuning meldt, alleen terwijl Besturing op afstand via cloud aan staat en bevestigd is. Schakel dit in om de oude opdracht met elke firmware te gebruiken, bijvoorbeeld om beide op een LUBA 3 te vergelijken; een verbonden Bluetooth-verbinding gaat nog steeds voor.",
           "notify": "Zelftestmeldingen staan standaard aan, de andere uit. Elke melding activeert ook de meldingsgebeurtenis-entiteit van de maaier en een mammotion_event op de bus, die automatiseringen in plaats daarvan kunnen gebruiken."
         }
       }
@@ -433,6 +434,24 @@
           "returning": "Keert terug",
           "charging_pause": "Laadt, gaat daarna verder"
         }
+      },
+      "remote_drive_state": {
+        "name": "Status besturing op afstand",
+        "state": {
+          "idle": "Inactief",
+          "requesting_token": "Toestemming aanvragen",
+          "safety_notice": "Wacht op veiligheidsbevestiging",
+          "active": "Rijdt",
+          "exiting": "Wordt beëindigd"
+        },
+        "state_attributes": {
+          "last_event": {
+            "name": "Laatste gebeurtenis"
+          },
+          "last_event_detail": {
+            "name": "Details laatste gebeurtenis"
+          }
+        }
       }
     },
     "binary_sensor": {
@@ -497,6 +516,12 @@
       },
       "spino_refresh_status": {
         "name": "Status vernieuwen"
+      },
+      "confirm_remote_drive": {
+        "name": "Besturing op afstand bevestigen"
+      },
+      "acknowledge_remote_drive_fence": {
+        "name": "Grenswaarschuwing bevestigen"
       }
     },
     "switch": {
@@ -571,6 +596,9 @@
       },
       "spino_waterline_parking": {
         "name": "Parkeren bij waterlijn"
+      },
+      "remote_drive": {
+        "name": "Besturing op afstand via cloud"
       }
     },
     "select": {
@@ -1655,6 +1683,66 @@
     },
     "self_check_other": {
       "message": "De maaier meldde een onbekende zelftestcode {code}."
+    },
+    "remote_drive_needs_cloud": {
+      "message": "Besturing op afstand via cloud heeft een werkende cloudverbinding met de maaier nodig. Gebruik via Bluetooth de duwknoppen."
+    },
+    "remote_drive_already_running": {
+      "message": "Besturing op afstand via cloud is al actief. Schakel deze eerst uit voordat je opnieuw start."
+    },
+    "remote_drive_not_awaiting_confirmation": {
+      "message": "Er is geen veiligheidsmelding om te bevestigen. Schakel eerst besturing op afstand via cloud in."
+    },
+    "remote_drive_no_reverse": {
+      "message": "Met besturing op afstand via cloud kan de maaier niet achteruit rijden. Draai met links of rechts, of gebruik Bluetooth."
+    },
+    "remote_drive_fence_paused": {
+      "message": "De maaier is bij de grens gestopt. Druk op 'Grenswaarschuwing bevestigen' voordat je verder rijdt."
+    },
+    "remote_drive_safety_notice": {
+      "message": "Zorg er vóór het besturen op afstand voor dat er geen mensen of dieren in het werkgebied zijn en houd de maaier de hele tijd in het zicht. Druk binnen 3 minuten op 'Besturing op afstand bevestigen' om te beginnen. De sessie stopt vanzelf kort nadat je geen invoer meer geeft."
+    },
+    "movement_unavailable": {
+      "message": "De maaier kan nu niet worden bewogen. Breng hem binnen Bluetooth-bereik, of schakel besturing op afstand via cloud in en druk op 'Besturing op afstand bevestigen'."
+    },
+    "notification_title_remote_drive": {
+      "message": "{device_name}: besturing op afstand via cloud"
+    },
+    "remote_drive_token_unavailable": {
+      "message": "De Mammotion-server stond besturing op afstand niet toe (code {detail}). Probeer het later opnieuw."
+    },
+    "remote_drive_occupied_by_other": {
+      "message": "De maaier wordt al bestuurd door een ander account ({detail})."
+    },
+    "remote_drive_network_poor": {
+      "message": "Besturing op afstand beëindigd: de netwerkverbinding van de maaier is te zwak."
+    },
+    "remote_drive_token_expired": {
+      "message": "Besturing op afstand beëindigd: de toestemming om te rijden is verlopen."
+    },
+    "remote_drive_out_of_fence": {
+      "message": "Besturing op afstand beëindigd: de maaier bevindt zich buiten het toegestane gebied."
+    },
+    "remote_drive_ble_preempt": {
+      "message": "Besturing op afstand beëindigd: de maaier wordt nu via Bluetooth bestuurd door {detail}."
+    },
+    "remote_drive_no_loc_mileage_exhausted": {
+      "message": "Besturing op afstand beëindigd: de maaier heeft zo ver gereden als zonder positiebepaling is toegestaan."
+    },
+    "remote_drive_env_not_ready": {
+      "message": "Besturing op afstand beëindigd: de maaier is niet klaar om bestuurd te worden (code {detail})."
+    },
+    "remote_drive_send_failed": {
+      "message": "Besturing op afstand beëindigd: een opdracht kon niet worden verzonden ({detail})."
+    },
+    "remote_drive_approach_fence": {
+      "message": "De maaier is vlak bij de grens gestopt. Druk op 'Grenswaarschuwing bevestigen' om verder te rijden."
+    },
+    "remote_drive_safety_notice_timeout": {
+      "message": "Besturing op afstand beëindigd: de veiligheidsmelding is niet binnen 3 minuten bevestigd."
+    },
+    "remote_drive_video_unavailable": {
+      "message": "Besturing op afstand beëindigd: het camerabeeld is gestopt."
     },
     "battery_settings_unread": {
       "message": "De batterij-instellingen zijn nog niet van de maaier gelezen. Ze nu wijzigen zou het daluren-laadvenster resetten, dus er is niets verzonden. Probeer het opnieuw zodra de maaier verbonden is."

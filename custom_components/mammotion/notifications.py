@@ -24,6 +24,11 @@ from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.translation import async_get_translations
 from homeassistant.util import dt as dt_util
+from pymammotion.device.remote_drive import (
+    RemoteDriveEvent,
+    RemoteDriveEventKind,
+    RemoteDrivePhase,
+)
 from pymammotion.state.device_state import DeviceNotification
 
 from .const import (
@@ -31,6 +36,7 @@ from .const import (
     DEFAULT_NOTIFY,
     DOMAIN,
     EVENT_MAMMOTION,
+    EVENT_REMOTE_DRIVE,
     LOGGER,
     NOTIFY_CATEGORY_BY_EVENT,
     NOTIFY_SELF_CHECK,
@@ -39,7 +45,7 @@ from .const import (
     SELF_CHECK_OTHER,
     SELF_CHECK_STATES,
 )
-from .coordinator import MammotionReportUpdateCoordinator
+from .coordinator import MammotionReportUpdateCoordinator, remote_drive_detail
 
 NOTIFICATION_EVENT_TYPES: list[str] = [
     "device_notification_event",
@@ -64,6 +70,14 @@ MAX_SEEN_WARNINGS = 64
 #: Seconds apart an event and a list entry for the same code can be and still be
 #: one occurrence (the event's time is in ms, the list's in s).
 WARNING_TIME_TOLERANCE = 2
+
+#: Remote-drive events that raise no notification: letting go ends a session by
+#: design, and a latency warning leaves it running.
+QUIET_REMOTE_DRIVE_KINDS = frozenset(
+    {RemoteDriveEventKind.IDLE_TIMEOUT, RemoteDriveEventKind.LATENCY_HIGH}
+)
+NOTIFY_REMOTE_DRIVE = "remote_drive"
+NOTIFY_REMOTE_DRIVE_SAFETY = "remote_drive_safety"
 
 #: English defaults, used only if the translations cannot be loaded.
 _UNKNOWN_CODE = "Unknown error code {code}"
@@ -216,6 +230,7 @@ class MowerNotifier:
         self._latest_error_epoch: int | None = None
         #: The self-check state the notification currently shows, if one is up.
         self._self_check_shown: str | None = None
+        self._safety_notice_shown = False
 
     @callback
     def async_add_listener(self, listener: NotificationListener) -> CALLBACK_TYPE:
@@ -229,6 +244,9 @@ class MowerNotifier:
         unsubscribers = [
             self.coordinator.subscribe_notification(self._async_handle_notification),
             self.coordinator.async_add_listener(self._handle_coordinator_update),
+            self.coordinator.async_add_remote_drive_listener(
+                self._async_on_remote_drive_event
+            ),
         ]
 
         @callback
@@ -365,11 +383,82 @@ class MowerNotifier:
             notification_id=self._notification_id(category),
         )
 
+    async def _async_on_remote_drive_event(self, event: RemoteDriveEvent) -> None:
+        """Fire every session event on the bus; notify the user of the ones that need it.
+
+        Unlike the device's own events these answer something the user just did, so
+        they are not behind an opt-in category.
+        """
+        detail = remote_drive_detail(event)
+        self.hass.bus.async_fire(
+            EVENT_REMOTE_DRIVE,
+            {
+                "device_id": self._device_id(),
+                "device_name": self.coordinator.device_name,
+                "kind": event.kind.value,
+                "detail": detail,
+            },
+        )
+        if event.kind in QUIET_REMOTE_DRIVE_KINDS:
+            return
+        translations = await self._async_translations()
+        persistent_notification.async_create(
+            self.hass,
+            self._text(
+                translations,
+                f"remote_drive_{event.kind.value}",
+                event.kind.value,
+                detail=detail,
+            ),
+            title=self._remote_drive_title(translations),
+            notification_id=self._notification_id(NOTIFY_REMOTE_DRIVE),
+        )
+
+    def _remote_drive_title(self, translations: dict[str, str]) -> str:
+        return self._text(
+            translations,
+            "notification_title_remote_drive",
+            _TITLE,
+            device_name=self.coordinator.device_name,
+            category=NOTIFY_REMOTE_DRIVE,
+        )
+
+    @callback
+    def _update_safety_notice(self) -> None:
+        """Show the safety notice while a session waits for its confirmation."""
+        waiting = self.coordinator.remote_drive_phase is RemoteDrivePhase.SAFETY_NOTICE
+        if waiting is self._safety_notice_shown:
+            return
+        self._safety_notice_shown = waiting
+        if not waiting:
+            persistent_notification.async_dismiss(
+                self.hass, self._notification_id(NOTIFY_REMOTE_DRIVE_SAFETY)
+            )
+            return
+        self.hass.async_create_task(
+            self._async_show_safety_notice(),
+            f"{self.coordinator.device_name} remote drive safety notice",
+        )
+
+    async def _async_show_safety_notice(self) -> None:
+        translations = await self._async_translations()
+        if not self._safety_notice_shown:
+            return  # confirmed or ended while the translations loaded
+        persistent_notification.async_create(
+            self.hass,
+            self._text(
+                translations, "remote_drive_safety_notice", "remote_drive_safety_notice"
+            ),
+            title=self._remote_drive_title(translations),
+            notification_id=self._notification_id(NOTIFY_REMOTE_DRIVE_SAFETY),
+        )
+
     @callback
     def _handle_coordinator_update(self) -> None:
-        """Track the self-check code and new entries in the mower's error list."""
+        """Track the self-check code, the error list and the remote-drive safety notice."""
         self._update_self_check()
         self._update_warnings()
+        self._update_safety_notice()
 
     @callback
     def _update_warnings(self) -> None:

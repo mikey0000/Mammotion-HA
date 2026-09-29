@@ -452,7 +452,7 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
 
 
 # Global
-async def async_setup_platform_services(
+async def async_setup_platform_services(  # noqa: C901
     hass: HomeAssistant, entry: MammotionConfigEntry
 ) -> None:
     """Register custom services for streaming."""
@@ -513,7 +513,7 @@ async def async_setup_platform_services(
         # Check if speed parameter exists and validate it
         speed = 0.4  # Default speed
         raw_speed = call.data["speed"]
-        use_wifi = call.data["use_wifi"]
+        use_wifi = call.data.get("use_wifi")
         if raw_speed is not None:
             try:
                 speed_value = float(raw_speed)
@@ -544,7 +544,7 @@ async def async_setup_platform_services(
         # Check if speed parameter exists and validate it
         speed = 0.4  # Default speed
         raw_speed = call.data["speed"]
-        use_wifi = call.data["use_wifi"]
+        use_wifi = call.data.get("use_wifi")
         if raw_speed is not None:
             try:
                 speed_value = float(raw_speed)
@@ -575,7 +575,7 @@ async def async_setup_platform_services(
         # Check if speed parameter exists and validate it
         speed = 0.4  # Default speed
         raw_speed = call.data["speed"]
-        use_wifi = call.data["use_wifi"]
+        use_wifi = call.data.get("use_wifi")
         if raw_speed is not None:
             try:
                 speed_value = float(raw_speed)
@@ -606,7 +606,7 @@ async def async_setup_platform_services(
         # Check if speed parameter exists and validate it
         speed = 0.4  # Default speed
         raw_speed = call.data["speed"]
-        use_wifi = call.data["use_wifi"]
+        use_wifi = call.data.get("use_wifi")
         if raw_speed is not None:
             try:
                 speed_value = float(raw_speed)

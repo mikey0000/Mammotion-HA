@@ -30,6 +30,7 @@ from pymammotion.utility.device_type import DeviceType
 from . import MammotionConfigEntry
 from .const import DOMAIN
 from .coordinator import (
+    REMOTE_DRIVE_LIVE_PHASES,
     MammotionBaseUpdateCoordinator,
     MammotionReportUpdateCoordinator,
     MammotionSpinoCoordinator,
@@ -38,6 +39,7 @@ from .entity import (
     MammotionBaseEntity,
     MammotionBaseSpinoEntity,
     async_add_when_firmware_supports,
+    async_add_when_supported,
     supports_grass_collection,
 )
 
@@ -364,6 +366,9 @@ CLOUD_SWITCH_ENTITIES: tuple[MammotionAsyncSwitchEntityDescription, ...] = (
     ),
 )
 
+#: Starts the cloud remote-drive session; its state is the session's, never restored.
+REMOTE_DRIVE_SWITCH = SwitchEntityDescription(key="remote_drive")
+
 AUTO_CHANGE_DIRECTION_CONFIG_SWITCH_ENTITIES: tuple[
     MammotionConfigSwitchEntityDescription, ...
 ] = (
@@ -461,6 +466,14 @@ async def async_setup_entry(
         )
         entities.extend(
             MammotionSwitchEntity(coordinator, d) for d in BLUETOOTH_SWITCH_ENTITIES
+        )
+        async_add_when_supported(
+            entry,
+            coordinator,
+            supported=coordinator.supports_remote_drive,
+            descriptions=(REMOTE_DRIVE_SWITCH,),
+            build=partial(MammotionRemoteDriveSwitchEntity, coordinator),
+            async_add_entities=async_add_entities,
         )
         # A mower without a cloud identity (BLE-only) has no cloud to switch.
         if mower.device.iot_id:
@@ -578,6 +591,33 @@ class MammotionSwitchEntity(MammotionBaseEntity, SwitchEntity, RestoreEntity):
         if not (last_state := await self.async_get_last_state()):
             return
         self._attr_is_on = last_state.state == STATE_ON
+
+
+class MammotionRemoteDriveSwitchEntity(MammotionBaseEntity, SwitchEntity):
+    """Starts and stops the mower's cloud remote-drive session."""
+
+    def __init__(
+        self,
+        coordinator: MammotionBaseUpdateCoordinator[Any],
+        entity_description: SwitchEntityDescription,
+    ) -> None:
+        """Initialize the remote-drive switch."""
+        super().__init__(coordinator, entity_description.key)
+        self.entity_description = entity_description
+        self._attr_translation_key = entity_description.key
+
+    @property
+    def is_on(self) -> bool:
+        """On while the session holds, or is requesting, the drive token."""
+        return self.coordinator.remote_drive_phase in REMOTE_DRIVE_LIVE_PHASES
+
+    async def async_turn_on(self, **kwargs: Any) -> None:
+        """Request the token; the confirm button then accepts the safety notice."""
+        await self.coordinator.async_start_remote_drive()
+
+    async def async_turn_off(self, **kwargs: Any) -> None:
+        """Stop the mower and release the token."""
+        await self.coordinator.async_stop_remote_drive()
 
 
 class MammotionUpdateSwitchEntity(MammotionBaseEntity, SwitchEntity, RestoreEntity):

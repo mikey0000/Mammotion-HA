@@ -66,6 +66,7 @@
           "notify": "Állandó értesítések megjelenítése"
         },
         "data_description": {
+          "movement_use_wifi": "A régi mozgatási parancsot küldi Wi-Fi-n a felhős távvezérlés helyett. Enélkül a léptetőgombok és a mozgatási műveletek az 1.30.31.19-es firmware-től a LUBA 2, LUBA 2X, YUKA, LUBA mini és YUKA mini, a 2.3.31.69-es firmware-től a LUBA 3, LUBA mini 2 és YUKA mini 2, valamint azokon az újabb modelleken, amelyekhez a Mammotion szerver támogatást jelez, csak akkor működnek a felhőn keresztül, ha a Felhős távvezérlés be van kapcsolva és meg van erősítve. Kapcsolja be, hogy a régi parancsot bármely firmware-rel használja, például a kettő összehasonlításához egy LUBA 3-on; a csatlakoztatott Bluetooth-kapcsolat továbbra is elsőbbséget élvez.",
           "notify": "Az önellenőrzési értesítések alapértelmezés szerint be vannak kapcsolva, a többi ki. Minden értesítés a fűnyíró értesítési eseményentitását és egy mammotion_event buszeseményt is kivált, amelyeket az automatizálások helyette használhatnak."
         }
       }
@@ -433,6 +434,24 @@
           "returning": "Visszatérés",
           "charging_pause": "Töltés, utána folytatja"
         }
+      },
+      "remote_drive_state": {
+        "name": "Távvezérlés állapota",
+        "state": {
+          "idle": "Tétlen",
+          "requesting_token": "Engedély kérése",
+          "safety_notice": "Biztonsági megerősítésre vár",
+          "active": "Vezetés",
+          "exiting": "Befejezés"
+        },
+        "state_attributes": {
+          "last_event": {
+            "name": "Utolsó esemény"
+          },
+          "last_event_detail": {
+            "name": "Utolsó esemény részletei"
+          }
+        }
       }
     },
     "binary_sensor": {
@@ -497,6 +516,12 @@
       },
       "spino_refresh_status": {
         "name": "Állapot frissítése"
+      },
+      "confirm_remote_drive": {
+        "name": "Távvezérlés megerősítése"
+      },
+      "acknowledge_remote_drive_fence": {
+        "name": "Határfigyelmeztetés nyugtázása"
       }
     },
     "switch": {
@@ -571,6 +596,9 @@
       },
       "spino_waterline_parking": {
         "name": "Vízvonal-parkolás"
+      },
+      "remote_drive": {
+        "name": "Felhős távvezérlés"
       }
     },
     "select": {
@@ -1655,6 +1683,66 @@
     },
     "self_check_other": {
       "message": "A fűnyíró ismeretlen önellenőrzési kódot jelzett: {code}."
+    },
+    "remote_drive_needs_cloud": {
+      "message": "A felhős távvezérléshez működő felhőkapcsolat szükséges a fűnyíróval. Bluetooth-on inkább a léptetőgombokat használja."
+    },
+    "remote_drive_already_running": {
+      "message": "A felhős távvezérlés már fut. Újraindítás előtt kapcsolja ki."
+    },
+    "remote_drive_not_awaiting_confirmation": {
+      "message": "Nincs megerősítendő biztonsági figyelmeztetés. Először kapcsolja be a felhős távvezérlést."
+    },
+    "remote_drive_no_reverse": {
+      "message": "Felhős távvezérléssel a fűnyíró nem tolatható. Fordítsa balra vagy jobbra, vagy használjon Bluetooth-t."
+    },
+    "remote_drive_fence_paused": {
+      "message": "A fűnyíró megállt a határ közelében. A továbbhaladás előtt nyomja meg a „Határfigyelmeztetés nyugtázása” gombot."
+    },
+    "remote_drive_safety_notice": {
+      "message": "A fűnyíró távvezérlése előtt győződjön meg arról, hogy nincsenek emberek vagy állatok a munkaterületen, és végig tartsa szem előtt a fűnyírót. Az indításhoz 3 percen belül nyomja meg a „Távvezérlés megerősítése” gombot. A munkamenet magától véget ér nem sokkal az utolsó parancs után."
+    },
+    "movement_unavailable": {
+      "message": "A fűnyíró most nem mozgatható. Menjen Bluetooth-hatótávon belülre, vagy kapcsolja be a felhős távvezérlést, és nyomja meg a „Távvezérlés megerősítése” gombot."
+    },
+    "notification_title_remote_drive": {
+      "message": "{device_name}: felhős távvezérlés"
+    },
+    "remote_drive_token_unavailable": {
+      "message": "A Mammotion szerver nem engedélyezte a távvezérlést (kód: {detail}). Próbálja újra később."
+    },
+    "remote_drive_occupied_by_other": {
+      "message": "A fűnyírót már egy másik fiók vezérli ({detail})."
+    },
+    "remote_drive_network_poor": {
+      "message": "A távvezérlés véget ért: a fűnyíró hálózati kapcsolata túl gyenge."
+    },
+    "remote_drive_token_expired": {
+      "message": "A távvezérlés véget ért: a vezetési engedély lejárt."
+    },
+    "remote_drive_out_of_fence": {
+      "message": "A távvezérlés véget ért: a fűnyíró az engedélyezett területen kívül van."
+    },
+    "remote_drive_ble_preempt": {
+      "message": "A távvezérlés véget ért: a fűnyírót most Bluetooth-on {detail} vezérli."
+    },
+    "remote_drive_no_loc_mileage_exhausted": {
+      "message": "A távvezérlés véget ért: a fűnyíró megtette a helymeghatározás nélkül megengedett legnagyobb távolságot."
+    },
+    "remote_drive_env_not_ready": {
+      "message": "A távvezérlés véget ért: a fűnyíró nem áll készen a vezérlésre (kód: {detail})."
+    },
+    "remote_drive_send_failed": {
+      "message": "A távvezérlés véget ért: egy parancsot nem sikerült elküldeni ({detail})."
+    },
+    "remote_drive_approach_fence": {
+      "message": "A fűnyíró közvetlenül a határ mellett megállt. A továbbhaladáshoz nyomja meg a „Határfigyelmeztetés nyugtázása” gombot."
+    },
+    "remote_drive_safety_notice_timeout": {
+      "message": "A távvezérlés véget ért: a biztonsági figyelmeztetést nem erősítették meg 3 percen belül."
+    },
+    "remote_drive_video_unavailable": {
+      "message": "A távvezérlés véget ért: a kamera videója megszakadt."
     },
     "battery_settings_unread": {
       "message": "Az akkumulátor beállításait még nem sikerült kiolvasni a fűnyíróból. A módosítás most visszaállítaná a csúcsidőn kívüli töltési időszakot, ezért semmi sem lett elküldve. Próbálja újra, amikor a fűnyíró csatlakozik."

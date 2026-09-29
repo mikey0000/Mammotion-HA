@@ -66,6 +66,7 @@
           "notify": "Afficher des notifications persistantes pour"
         },
         "data_description": {
+          "movement_use_wifi": "Envoie l'ancienne commande de mouvement par Wi-Fi au lieu d'utiliser la conduite à distance par le cloud. Sans cette option, à partir du firmware 1.30.31.19 sur LUBA 2, LUBA 2X, YUKA, LUBA mini et YUKA mini, à partir du 2.3.31.69 sur LUBA 3, LUBA mini 2 et YUKA mini 2, et sur les modèles plus récents pour lesquels le serveur Mammotion indique la prise en charge, les boutons de déplacement et les actions de mouvement ne passent par le cloud que lorsque « Conduite à distance par le cloud » est activée et confirmée. Activez cette option pour utiliser l'ancienne commande avec n'importe quel firmware, par exemple pour comparer les deux sur un LUBA 3 ; une liaison Bluetooth connectée reste prioritaire.",
           "notify": "Les notifications d'autotest sont activées par défaut, les autres sont désactivées. Chaque notification déclenche aussi l'entité d'événement de notification de la tondeuse et un événement mammotion_event sur le bus, que les automatisations peuvent utiliser à la place."
         }
       }
@@ -433,6 +434,24 @@
           "returning": "Retour",
           "charging_pause": "En charge, reprendra ensuite"
         }
+      },
+      "remote_drive_state": {
+        "name": "État de la conduite à distance",
+        "state": {
+          "idle": "Inactive",
+          "requesting_token": "Demande d'autorisation",
+          "safety_notice": "En attente de la confirmation de sécurité",
+          "active": "En conduite",
+          "exiting": "Arrêt en cours"
+        },
+        "state_attributes": {
+          "last_event": {
+            "name": "Dernier événement"
+          },
+          "last_event_detail": {
+            "name": "Détail du dernier événement"
+          }
+        }
       }
     },
     "binary_sensor": {
@@ -497,6 +516,12 @@
       },
       "spino_refresh_status": {
         "name": "Actualiser le statut"
+      },
+      "confirm_remote_drive": {
+        "name": "Confirmer la conduite à distance"
+      },
+      "acknowledge_remote_drive_fence": {
+        "name": "Accuser l'alerte de limite"
       }
     },
     "switch": {
@@ -571,6 +596,9 @@
       },
       "spino_waterline_parking": {
         "name": "Stationnement à la ligne d'eau"
+      },
+      "remote_drive": {
+        "name": "Conduite à distance par le cloud"
       }
     },
     "select": {
@@ -1655,6 +1683,66 @@
     },
     "self_check_other": {
       "message": "La tondeuse a signalé le code d'autotest inconnu {code}."
+    },
+    "remote_drive_needs_cloud": {
+      "message": "La conduite à distance par le cloud nécessite une connexion cloud active avec la tondeuse. En Bluetooth, utilisez plutôt les boutons de déplacement."
+    },
+    "remote_drive_already_running": {
+      "message": "La conduite à distance par le cloud est déjà en cours. Désactivez-la avant de la relancer."
+    },
+    "remote_drive_not_awaiting_confirmation": {
+      "message": "Aucun avertissement de sécurité à confirmer. Activez d'abord la conduite à distance par le cloud."
+    },
+    "remote_drive_no_reverse": {
+      "message": "La conduite à distance par le cloud ne permet pas de reculer. Tournez à gauche ou à droite, ou utilisez le Bluetooth."
+    },
+    "remote_drive_fence_paused": {
+      "message": "La tondeuse s'est arrêtée près de la limite. Appuyez sur « Accuser l'alerte de limite » avant de continuer."
+    },
+    "remote_drive_safety_notice": {
+      "message": "Avant de conduire la tondeuse à distance, assurez-vous qu'aucune personne ni aucun animal ne se trouve dans la zone de travail et gardez la tondeuse en vue en permanence. Appuyez sur « Confirmer la conduite à distance » dans les 3 minutes pour commencer. La session se termine d'elle-même peu après votre dernière commande."
+    },
+    "movement_unavailable": {
+      "message": "La tondeuse ne peut pas être déplacée pour le moment. Rapprochez-vous à portée Bluetooth, ou activez la conduite à distance par le cloud et appuyez sur « Confirmer la conduite à distance »."
+    },
+    "notification_title_remote_drive": {
+      "message": "{device_name} : conduite à distance par le cloud"
+    },
+    "remote_drive_token_unavailable": {
+      "message": "Le serveur Mammotion n'a pas autorisé la conduite à distance (code {detail}). Réessayez plus tard."
+    },
+    "remote_drive_occupied_by_other": {
+      "message": "La tondeuse est déjà conduite par un autre compte ({detail})."
+    },
+    "remote_drive_network_poor": {
+      "message": "Conduite à distance terminée : la connexion réseau de la tondeuse est trop faible."
+    },
+    "remote_drive_token_expired": {
+      "message": "Conduite à distance terminée : l'autorisation de conduite a expiré."
+    },
+    "remote_drive_out_of_fence": {
+      "message": "Conduite à distance terminée : la tondeuse est hors de la zone autorisée."
+    },
+    "remote_drive_ble_preempt": {
+      "message": "Conduite à distance terminée : la tondeuse est désormais pilotée en Bluetooth par {detail}."
+    },
+    "remote_drive_no_loc_mileage_exhausted": {
+      "message": "Conduite à distance terminée : la tondeuse a parcouru la distance maximale autorisée sans positionnement."
+    },
+    "remote_drive_env_not_ready": {
+      "message": "Conduite à distance terminée : la tondeuse n'est pas prête à être conduite (code {detail})."
+    },
+    "remote_drive_send_failed": {
+      "message": "Conduite à distance terminée : une commande n'a pas pu être envoyée ({detail})."
+    },
+    "remote_drive_approach_fence": {
+      "message": "La tondeuse s'est arrêtée tout près de la limite. Appuyez sur « Accuser l'alerte de limite » pour continuer."
+    },
+    "remote_drive_safety_notice_timeout": {
+      "message": "Conduite à distance terminée : l'avertissement de sécurité n'a pas été confirmé dans les 3 minutes."
+    },
+    "remote_drive_video_unavailable": {
+      "message": "Conduite à distance terminée : la vidéo de la caméra s'est interrompue."
     },
     "battery_settings_unread": {
       "message": "Les réglages de la batterie n'ont pas encore été lus depuis la tondeuse. Les modifier maintenant réinitialiserait la plage de charge en heures creuses ; rien n'a donc été envoyé. Réessayez une fois la tondeuse connectée."

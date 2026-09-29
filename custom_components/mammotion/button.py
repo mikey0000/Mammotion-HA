@@ -14,12 +14,12 @@ from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pymammotion.data.model.hash_list import Plan
 from pymammotion.data.model.pool_state import PoolPlan
-from pymammotion.transport.base import TransportType
+from pymammotion.device.remote_drive import RemoteDrivePhase
 from pymammotion.utility.constant import WorkMode
 from pymammotion.utility.device_type import DeviceType
 
 from . import MammotionConfigEntry
-from .const import CONF_MOVEMENT_USE_WIFI, DOMAIN
+from .const import DOMAIN
 from .coordinator import (
     MammotionBaseUpdateCoordinator,
     MammotionReportUpdateCoordinator,
@@ -28,6 +28,7 @@ from .coordinator import (
 from .entity import (
     MammotionBaseEntity,
     MammotionBaseSpinoEntity,
+    async_add_when_supported,
     supports_no_area_work,
 )
 
@@ -89,15 +90,27 @@ SPINO_BUTTON_SENSORS: tuple[MammotionSpinoButtonEntityDescription, ...] = (
 )
 
 
-def _nudge_available(coordinator: MammotionBaseUpdateCoordinator[Any]) -> bool:
-    """Return True when movement via BLE or Wi-Fi is possible."""
-    if coordinator.config_entry.options.get(CONF_MOVEMENT_USE_WIFI, False):
-        return True
-    handle = coordinator.manager.mower(coordinator.device_name)
-    if handle is None:
-        return False
-    ble = handle.get_transport(TransportType.BLE)
-    return ble is not None and ble.is_usable
+def _nudge_available(
+    command: str,
+) -> Callable[[MammotionBaseUpdateCoordinator[Any]], bool]:
+    """Return an ``available_fn`` for the nudge that sends *command*."""
+    return lambda coordinator: coordinator.can_move(command)
+
+
+BUTTON_REMOTE_DRIVE: tuple[MammotionButtonSensorEntityDescription, ...] = (
+    MammotionButtonSensorEntityDescription(
+        key="confirm_remote_drive",
+        press_fn=lambda coordinator: coordinator.async_confirm_remote_drive(),
+        available_fn=lambda coordinator: (
+            coordinator.remote_drive_phase is RemoteDrivePhase.SAFETY_NOTICE
+        ),
+    ),
+    MammotionButtonSensorEntityDescription(
+        key="acknowledge_remote_drive_fence",
+        press_fn=lambda coordinator: coordinator.async_acknowledge_remote_drive_fence(),
+        available_fn=lambda coordinator: coordinator.remote_drive_fence_paused,
+    ),
+)
 
 
 #: The two states the app's DropMowHandler accepts a map-free mow in.
@@ -179,35 +192,23 @@ BUTTON_SENSORS: tuple[MammotionButtonSensorEntityDescription, ...] = (
     ),
     MammotionButtonSensorEntityDescription(
         key="emergency_nudge_forward",
-        press_fn=lambda coordinator: coordinator.async_move_forward(
-            0.4,
-            coordinator.config_entry.options.get(CONF_MOVEMENT_USE_WIFI, False),
-        ),
-        available_fn=_nudge_available,
+        press_fn=lambda coordinator: coordinator.async_move_forward(0.4),
+        available_fn=_nudge_available("move_forward"),
     ),
     MammotionButtonSensorEntityDescription(
         key="emergency_nudge_left",
-        press_fn=lambda coordinator: coordinator.async_move_left(
-            0.4,
-            coordinator.config_entry.options.get(CONF_MOVEMENT_USE_WIFI, False),
-        ),
-        available_fn=_nudge_available,
+        press_fn=lambda coordinator: coordinator.async_move_left(0.4),
+        available_fn=_nudge_available("move_left"),
     ),
     MammotionButtonSensorEntityDescription(
         key="emergency_nudge_right",
-        press_fn=lambda coordinator: coordinator.async_move_right(
-            0.4,
-            coordinator.config_entry.options.get(CONF_MOVEMENT_USE_WIFI, False),
-        ),
-        available_fn=_nudge_available,
+        press_fn=lambda coordinator: coordinator.async_move_right(0.4),
+        available_fn=_nudge_available("move_right"),
     ),
     MammotionButtonSensorEntityDescription(
         key="emergency_nudge_back",
-        press_fn=lambda coordinator: coordinator.async_move_back(
-            0.4,
-            coordinator.config_entry.options.get(CONF_MOVEMENT_USE_WIFI, False),
-        ),
-        available_fn=_nudge_available,
+        press_fn=lambda coordinator: coordinator.async_move_back(0.4),
+        available_fn=_nudge_available("move_back"),
     ),
     MammotionButtonSensorEntityDescription(
         key="cancel_task",
@@ -278,6 +279,15 @@ async def async_setup_entry(
                 )
                 for entity_description in BUTTON_CONTINUE_LAST_JOB
             )
+
+        async_add_when_supported(
+            entry,
+            coordinator,
+            supported=coordinator.supports_remote_drive,
+            descriptions=BUTTON_REMOTE_DRIVE,
+            build=partial(MammotionButtonSensorEntity, coordinator),
+            async_add_entities=async_add_entities,
+        )
 
         if not DeviceType.is_luba1(mower.device.device_name):
             async_add_entities(
