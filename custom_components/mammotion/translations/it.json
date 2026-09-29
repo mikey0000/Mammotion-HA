@@ -515,9 +515,6 @@
       "is_edge": {
         "name": "Taglio dei bordi"
       },
-      "rain_tactics": {
-        "name": "Rilevazione pioggia (durante la falciatura) On/Off"
-      },
       "auto_change_direction": {
         "name": "Inversione automatica della direzione di taglio"
       },
@@ -821,12 +818,6 @@
         "3": "Solo perimetro"
       }
     },
-    "rain_tactics": {
-      "options": {
-        "0": "Spento",
-        "1": "Acceso"
-      }
-    },
     "toward_mode": {
       "options": {
         "0": "Angolo relativo",
@@ -917,10 +908,6 @@
           "name": "Larghezza Tracciato",
           "description": "Larghezza del percorso di falciatura (in cm)."
         },
-        "rain_tactics": {
-          "name": "Rilevamento Pioggia",
-          "description": "Rilevamento pioggia."
-        },
         "blade_height": {
           "name": "Altezza Lama",
           "description": "Altezza della lama."
@@ -994,10 +981,6 @@
         "obstacle_laps": {
           "name": "Giri zona vietata",
           "description": "Giri zona vietata"
-        },
-        "rain_tactics": {
-          "name": "Strategia pioggia",
-          "description": "Strategia pioggia"
         },
         "auto_change_direction": {
           "name": "Inversione automatica della direzione di taglio",

@@ -515,9 +515,6 @@
       "is_edge": {
         "name": "Rand maaien"
       },
-      "rain_tactics": {
-        "name": "Regendetectie (tijdens maaien) aan/uit"
-      },
       "auto_change_direction": {
         "name": "Maairichting automatisch omkeren"
       },
@@ -821,12 +818,6 @@
         "3": "Alleen perimeter modus"
       }
     },
-    "rain_tactics": {
-      "options": {
-        "0": "Uit",
-        "1": "Aan"
-      }
-    },
     "toward_mode": {
       "options": {
         "0": "Relatieve hoek",
@@ -917,10 +908,6 @@
           "name": "Pad breedte",
           "description": "Breedte van de paden (in cm)."
         },
-        "rain_tactics": {
-          "name": "Regendetectie",
-          "description": "Regendetectie."
-        },
         "blade_height": {
           "name": "Meshoogte",
           "description": "Hoogte van de messen."
@@ -994,10 +981,6 @@
         "obstacle_laps": {
           "name": "Rondes verboden zone",
           "description": "Rondes verboden zone"
-        },
-        "rain_tactics": {
-          "name": "Regenstrategie",
-          "description": "Regenstrategie"
         },
         "auto_change_direction": {
           "name": "Maairichting automatisch omkeren",

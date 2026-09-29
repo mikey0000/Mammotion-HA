@@ -515,9 +515,6 @@
       "is_edge": {
         "name": "Kantklipning"
       },
-      "rain_tactics": {
-        "name": "Regn detektion (under arbejde) On/Off"
-      },
       "auto_change_direction": {
         "name": "Automatisk vending af klipperetning"
       },
@@ -821,12 +818,6 @@
         "3": "Kun kantklippning"
       }
     },
-    "rain_tactics": {
-      "options": {
-        "0": "Fra",
-        "1": "Til"
-      }
-    },
     "toward_mode": {
       "options": {
         "0": "Optimal",
@@ -917,10 +908,6 @@
           "name": "Banebredde",
           "description": "Bredde på klippebanen (i cm)."
         },
-        "rain_tactics": {
-          "name": "Regnregistrering",
-          "description": "Regnregistrering."
-        },
         "blade_height": {
           "name": "Klinge højde",
           "description": "Højde på Klinge."
@@ -994,10 +981,6 @@
         "obstacle_laps": {
           "name": "Omgange i forbudt zone",
           "description": "Omgange i forbudt zone"
-        },
-        "rain_tactics": {
-          "name": "Regntaktik",
-          "description": "Regntaktik"
         },
         "auto_change_direction": {
           "name": "Automatisk vending af klipperetning",

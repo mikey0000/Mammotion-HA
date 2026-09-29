@@ -515,9 +515,6 @@
       "is_edge": {
         "name": "Szegélynyírás"
       },
-      "rain_tactics": {
-        "name": "Esőérzékelés (nyírás közben) be/ki"
-      },
       "auto_change_direction": {
         "name": "Nyírási irány automatikus váltása"
       },
@@ -821,12 +818,6 @@
         "3": "Csak kerület"
       }
     },
-    "rain_tactics": {
-      "options": {
-        "0": "Ki",
-        "1": "Be"
-      }
-    },
     "toward_mode": {
       "options": {
         "0": "Optimális szög",
@@ -917,10 +908,6 @@
           "name": "Útvonalszélesség",
           "description": "A nyírási útvonal szélessége (cm-ben)."
         },
-        "rain_tactics": {
-          "name": "Esőérzékelés",
-          "description": "Esőérzékelés."
-        },
         "blade_height": {
           "name": "Késmagasság",
           "description": "A kés magassága."
@@ -994,10 +981,6 @@
         "obstacle_laps": {
           "name": "Tiltott zóna körök",
           "description": "Tiltott zóna körök"
-        },
-        "rain_tactics": {
-          "name": "Esőtaktika",
-          "description": "Esőtaktika"
         },
         "auto_change_direction": {
           "name": "Nyírási irány automatikus váltása",

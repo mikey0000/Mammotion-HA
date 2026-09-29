@@ -515,9 +515,6 @@
       "is_edge": {
         "name": "Cięcie krawędzi"
       },
-      "rain_tactics": {
-        "name": "Wykrywanie deszczu (podczas koszenia) wł/wył"
-      },
       "auto_change_direction": {
         "name": "Automatyczna zmiana kierunku koszenia"
       },
@@ -821,12 +818,6 @@
         "3": "Brak siatki"
       }
     },
-    "rain_tactics": {
-      "options": {
-        "0": "Wyłączone",
-        "1": "Włączone"
-      }
-    },
     "toward_mode": {
       "options": {
         "0": "Kąt względny",
@@ -917,10 +908,6 @@
           "name": "Szerokość ścieżki",
           "description": "Szerokość toru kotwiczenia (w cm)."
         },
-        "rain_tactics": {
-          "name": "Wykrywanie deszczu",
-          "description": "Wykrywanie deszczu."
-        },
         "blade_height": {
           "name": "Wysokość Ostrza",
           "description": "Wysokość ostrza."
@@ -994,10 +981,6 @@
         "obstacle_laps": {
           "name": "Okrążenia strefy zakazanej",
           "description": "Okrążenia strefy zakazanej"
-        },
-        "rain_tactics": {
-          "name": "Taktyka deszczowa",
-          "description": "Taktyka deszczowa"
         },
         "auto_change_direction": {
           "name": "Automatyczna zmiana kierunku koszenia",

@@ -13,9 +13,11 @@ from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from homeassistant.config_entries import ConfigEntryState
+from homeassistant.components.sensor import DOMAIN as SENSOR_DOMAIN
+from homeassistant.config_entries import ConfigEntries, ConfigEntryState
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers import entity_registry as er
 from pymammotion.data.model.device import MowingDevice, PoolCleanerDevice
 from pymammotion.transport.base import TransportError, TransportType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -564,3 +566,29 @@ async def test_the_notifier_runs_from_setup_not_from_the_event_entity(
     release.set()
     await hass.config_entries.async_unload(entry.entry_id)
     stop.assert_called_once_with()
+
+
+async def test_setup_drops_retired_entity_rows_before_the_platforms_load(
+    hass: HomeAssistant,
+) -> None:
+    """A Luba 3's old vision sensor row is gone by the time any platform could see it."""
+    luba_3 = "Luba-VA6ABCDE"
+    entry = _entry(hass, {luba_3: _MOWER_MAC})
+    registry = er.async_get(hass)
+    stale = registry.async_get_or_create(
+        SENSOR_DOMAIN, DOMAIN, f"{luba_3}_visual_positioning_status"
+    ).entity_id
+    present_at_forward: list[bool] = []
+
+    async def _forward(*_args: Any, **_kwargs: Any) -> None:
+        present_at_forward.append(registry.async_get(stale) is not None)
+
+    bring_up, release, _ = _blocked_bring_up()
+    with patch.object(
+        ConfigEntries, "async_forward_entry_setups", autospec=True, side_effect=_forward
+    ):
+        await _setup(hass, entry, _client(), bring_up)
+
+    assert present_at_forward == [False]
+    release.set()
+    await hass.config_entries.async_unload(entry.entry_id)

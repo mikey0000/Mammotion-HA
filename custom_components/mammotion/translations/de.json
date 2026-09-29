@@ -515,9 +515,6 @@
       "is_edge": {
         "name": "Kanten schneiden"
       },
-      "rain_tactics": {
-        "name": "Regenerkennung (beim Mähen)"
-      },
       "auto_change_direction": {
         "name": "Mährichtung automatisch umkehren"
       },
@@ -821,12 +818,6 @@
         "3": "Nur Eingrenzung"
       }
     },
-    "rain_tactics": {
-      "options": {
-        "0": "Aus",
-        "1": "Ein"
-      }
-    },
     "toward_mode": {
       "options": {
         "0": "Optimaler Winkel",
@@ -917,10 +908,6 @@
           "name": "Schnittbahnenabstand",
           "description": "Gibt an, welcher Abstand zwischen den einzelnen Schnittbahnen eingestellt ist. (in cm)"
         },
-        "rain_tactics": {
-          "name": "Regenerkennung",
-          "description": "Stoppt das Mähen, wenn Regen erkannt wird."
-        },
         "blade_height": {
           "name": "Schnitthöhe",
           "description": "Gibt an, welche Schnitthöhe eingestellt ist."
@@ -994,10 +981,6 @@
         "obstacle_laps": {
           "name": "Umrundungsanzahl für No-Go-Zonen",
           "description": "Gibt an, wie viele Runden entlang der No-Go-Zonen durchgeführt werden."
-        },
-        "rain_tactics": {
-          "name": "Regenstrategie",
-          "description": "Stoppt das Mähen, wenn Regen erkannt wird."
         },
         "auto_change_direction": {
           "name": "Mährichtung automatisch umkehren",

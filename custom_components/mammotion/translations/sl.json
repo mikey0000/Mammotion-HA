@@ -515,9 +515,6 @@
       "is_edge": {
         "name": "Način obračanja"
       },
-      "rain_tactics": {
-        "name": "Zaznavanje dežja (med košnjo) vkl/izkl"
-      },
       "auto_change_direction": {
         "name": "Samodejno menjavanje smeri košnje"
       },
@@ -821,12 +818,6 @@
         "3": "Samo obod"
       }
     },
-    "rain_tactics": {
-      "options": {
-        "0": "Izklop",
-        "1": "Vklop"
-      }
-    },
     "toward_mode": {
       "options": {
         "0": "Relativni kot",
@@ -917,10 +908,6 @@
           "name": "Razmik med potmi",
           "description": "Razmik med potmi (v cm)."
         },
-        "rain_tactics": {
-          "name": "Zaznavanje dežja",
-          "description": "Zaznavanje dežja."
-        },
         "blade_height": {
           "name": "Višina rezil",
           "description": "Višina rezil."
@@ -994,10 +981,6 @@
         "obstacle_laps": {
           "name": "Krogi prepovedanega območja",
           "description": "Krogi prepovedanega območja"
-        },
-        "rain_tactics": {
-          "name": "Taktika ob dežju",
-          "description": "Taktika ob dežju"
         },
         "auto_change_direction": {
           "name": "Samodejno menjavanje smeri košnje",

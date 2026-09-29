@@ -364,15 +364,6 @@ CLOUD_SWITCH_ENTITIES: tuple[MammotionAsyncSwitchEntityDescription, ...] = (
     ),
 )
 
-CONFIG_SWITCH_ENTITIES: tuple[MammotionConfigSwitchEntityDescription, ...] = (
-    MammotionConfigSwitchEntityDescription(
-        key="rain_tactics",
-        set_fn=lambda coordinator, value: setattr(
-            coordinator.operation_settings, "rain_tactics", int(value)
-        ),
-    ),
-)
-
 AUTO_CHANGE_DIRECTION_CONFIG_SWITCH_ENTITIES: tuple[
     MammotionConfigSwitchEntityDescription, ...
 ] = (
@@ -455,10 +446,6 @@ async def async_setup_entry(
             descriptions=CHARGE_SWITCH_ENTITIES,
             build=partial(MammotionSwitchEntity, coordinator),
             async_add_entities=async_add_entities,
-        )
-
-        entities.extend(
-            MammotionConfigSwitchEntity(coordinator, d) for d in CONFIG_SWITCH_ENTITIES
         )
 
         async_add_when_firmware_supports(

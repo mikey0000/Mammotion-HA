@@ -71,7 +71,6 @@ START_MOW_SCHEMA = {
     vol.Optional("channel_width", default=25): vol.All(
         vol.Coerce(int), vol.Range(min=5, max=35)
     ),
-    vol.Optional("rain_tactics", default=1): vol.All(vol.Coerce(int), vol.In([0, 1])),
     vol.Optional("blade_height", default=25): vol.All(
         vol.Coerce(int), vol.Range(min=15, max=100)
     ),
@@ -110,7 +109,6 @@ MODIFY_RUNNING_JOB_SCHEMA: dict[str | vol.Marker, Any] = {
     vol.Optional("channel_width"): vol.All(vol.Coerce(int), vol.Range(min=5, max=35)),
     vol.Optional("channel_mode"): vol.All(vol.Coerce(int), vol.In([0, 1, 2, 3])),
     vol.Optional("obstacle_laps"): vol.All(vol.Coerce(int), vol.In([0, 1, 2, 3, 4])),
-    vol.Optional("rain_tactics"): vol.All(vol.Coerce(int), vol.In([0, 1])),
     vol.Optional("auto_change_direction"): vol.All(vol.Coerce(int), vol.In([0, 1])),
     # The cloud schema caps progress at 99.
     vol.Optional("start_progress"): vol.All(vol.Coerce(int), vol.Range(min=0, max=99)),

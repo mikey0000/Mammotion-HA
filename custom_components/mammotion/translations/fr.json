@@ -515,9 +515,6 @@
       "is_edge": {
         "name": "Coupe des bordures"
       },
-      "rain_tactics": {
-        "name": "Détection de pluie (Durant la tonte) Activer/ Désactiver"
-      },
       "auto_change_direction": {
         "name": "Inversion automatique du sens de tonte"
       },
@@ -821,12 +818,6 @@
         "3": "Périmètre uniquement"
       }
     },
-    "rain_tactics": {
-      "options": {
-        "0": "Désactivé",
-        "1": "Activé"
-      }
-    },
     "toward_mode": {
       "options": {
         "0": "Angle relatif",
@@ -917,10 +908,6 @@
           "name": "Espacement des trajectoires",
           "description": "Espacement des trajectoires (en cm)."
         },
-        "rain_tactics": {
-          "name": "Détection de la pluie",
-          "description": "Détection de la pluie."
-        },
         "blade_height": {
           "name": "Hauteur de coupe",
           "description": "Hauteur de coupe."
@@ -994,10 +981,6 @@
         "obstacle_laps": {
           "name": "Tours en zone interdite",
           "description": "Tours en zone interdite"
-        },
-        "rain_tactics": {
-          "name": "Stratégie pluie",
-          "description": "Stratégie pluie"
         },
         "auto_change_direction": {
           "name": "Inversion automatique du sens de tonte",

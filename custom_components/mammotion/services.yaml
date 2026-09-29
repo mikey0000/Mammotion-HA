@@ -64,14 +64,6 @@ modify_running_job:
           min: 0
           max: 4
           step: 1
-    rain_tactics:
-      example: 1
-      required: false
-      selector:
-        number:
-          min: 0
-          max: 1
-          step: 1
     auto_change_direction:
       example: 1
       required: false
@@ -195,16 +187,6 @@ start_mow:
         number:
           min: 5
           max: 35
-    rain_tactics:
-      example: "1"
-      default: "1"
-      required: false
-      selector:
-        select:
-          translation_key: "rain_tactics"
-          options:
-            - "0"
-            - "1"
     blade_height:
       example: 0
       default: 25

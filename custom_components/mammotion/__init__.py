@@ -82,6 +82,7 @@ from .coordinator import (
     MammotionRTKCoordinator,
     MammotionSpinoCoordinator,
 )
+from .entity import async_remove_retired_entities
 from .error_codes import async_preload_error_codes
 from .models import (
     MammotionDevices,
@@ -124,7 +125,7 @@ def _clear_cached_credentials(hass: HomeAssistant, entry: MammotionConfigEntry) 
     )
 
 
-async def _async_attempt_login(
+async def _async_attempt_login(  # noqa: C901
     hass: HomeAssistant,
     entry: MammotionConfigEntry,
     mammotion: MammotionClient,
@@ -413,7 +414,7 @@ async def async_migrate_entry(hass: HomeAssistant, entry: MammotionConfigEntry) 
     return True
 
 
-async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) -> bool:
+async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) -> bool:  # noqa: C901
     """Set up Mammotion from a config entry.
 
     Blocks only on the store, BLE registration and the cloud login.  Coordinators
@@ -686,6 +687,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
     for mower in mammotion_mowers:
         entry.async_on_unload(mower.notifier.async_start())
 
+    async_remove_retired_entities(hass, mammotion_mowers)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     # Unload cancels it explicitly (Home Assistant cancels entry tasks only after

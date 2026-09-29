@@ -515,9 +515,6 @@
       "is_edge": {
         "name": "Taie marginile"
       },
-      "rain_tactics": {
-        "name": "Detectare ploaie (tuns) Pornit/Oprit"
-      },
       "auto_change_direction": {
         "name": "Inversare automată a direcției de tuns"
       },
@@ -821,12 +818,6 @@
         "3": "Fără grilă"
       }
     },
-    "rain_tactics": {
-      "options": {
-        "0": "Oprit",
-        "1": "Pornit"
-      }
-    },
     "toward_mode": {
       "options": {
         "0": "Unghi relativ",
@@ -917,10 +908,6 @@
           "name": "Lățimea căii",
           "description": "Lățimea căii de cosit (în cm)."
         },
-        "rain_tactics": {
-          "name": "Detectarea ploii",
-          "description": "Detectarea ploii."
-        },
         "blade_height": {
           "name": "Înălțime lamă",
           "description": "Înălţimea lamei."
@@ -994,10 +981,6 @@
         "obstacle_laps": {
           "name": "Ture zonă interzisă",
           "description": "Ture zonă interzisă"
-        },
-        "rain_tactics": {
-          "name": "Tactică ploaie",
-          "description": "Tactică ploaie"
         },
         "auto_change_direction": {
           "name": "Inversare automată a direcției de tuns",

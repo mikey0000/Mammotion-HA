@@ -5,8 +5,11 @@ from collections.abc import Callable, Iterable
 from typing import Any
 
 from homeassistant.components.camera import Camera, CameraEntityFeature
+from homeassistant.components.sensor import DOMAIN as SENSOR_DOMAIN
+from homeassistant.components.switch.const import DOMAIN as SWITCH_DOMAIN
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import callback
+from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.device_registry import (
     CONNECTION_BLUETOOTH,
     CONNECTION_NETWORK_MAC,
@@ -28,6 +31,7 @@ from .coordinator import (
     MammotionRTKCoordinator,
     MammotionSpinoCoordinator,
 )
+from .models import MammotionMowerData
 
 
 def device_firmware_version(device_state: object | None) -> str:
@@ -91,6 +95,35 @@ def async_add_when_firmware_supports[DescriptionT: EntityDescription](
         build=build,
         async_add_entities=async_add_entities,
     )
+
+
+#: Mower entities that were removed outright: (platform, key).
+_RETIRED_MOWER_ENTITIES = ((SWITCH_DOMAIN, "rain_tactics"),)
+#: Created only where the app shows "Visual Positioning"; earlier versions made them on every Luba 2+.
+_VISION_ONLY_SENSOR_KEYS = ("visual_positioning_status", "camera_brightness")
+
+
+@callback
+def async_remove_retired_entities(
+    hass: HomeAssistant, mowers: Iterable[MammotionMowerData]
+) -> None:
+    """Drop registry rows for mower entities this integration no longer creates.
+
+    Left alone they linger as unavailable forever.
+    """
+    registry = er.async_get(hass)
+    for mower in mowers:
+        retired = list(_RETIRED_MOWER_ENTITIES)
+        if not DeviceType.supports_vision_positioning(
+            mower.device.device_name, mower.device.product_key
+        ):
+            retired += [(SENSOR_DOMAIN, key) for key in _VISION_ONLY_SENSOR_KEYS]
+        unique_name = mower.reporting_coordinator.unique_name
+        for domain, key in retired:
+            if entity_id := registry.async_get_entity_id(
+                domain, DOMAIN, f"{unique_name}_{key}"
+            ):
+                registry.async_remove(entity_id)
 
 
 def device_serial_number(device_name: str, device_type: DeviceType) -> str:

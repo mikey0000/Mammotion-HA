@@ -515,9 +515,6 @@
       "is_edge": {
         "name": "Kantklippning"
       },
-      "rain_tactics": {
-        "name": "Regndetektering (under klippning) på/av"
-      },
       "auto_change_direction": {
         "name": "Automatisk växling av klippriktning"
       },
@@ -821,12 +818,6 @@
         "3": "Endast kantklippning"
       }
     },
-    "rain_tactics": {
-      "options": {
-        "0": "Av",
-        "1": "På"
-      }
-    },
     "toward_mode": {
       "options": {
         "0": "Optimal",
@@ -917,10 +908,6 @@
           "name": "Spårbredd",
           "description": "Bredd på klippspåret (i cm)."
         },
-        "rain_tactics": {
-          "name": "Regndetektering",
-          "description": "Regndetektering."
-        },
         "blade_height": {
           "name": "Bladens höjd",
           "description": "Höjd på bladet."
@@ -994,10 +981,6 @@
         "obstacle_laps": {
           "name": "Varv i förbjuden zon",
           "description": "Varv i förbjuden zon"
-        },
-        "rain_tactics": {
-          "name": "Regnstrategi",
-          "description": "Regnstrategi"
         },
         "auto_change_direction": {
           "name": "Automatisk växling av klippriktning",

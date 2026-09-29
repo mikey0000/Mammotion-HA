@@ -515,9 +515,6 @@
       "is_edge": {
         "name": "Edge cutting"
       },
-      "rain_tactics": {
-        "name": "Rain detection (during mow) On/Off"
-      },
       "auto_change_direction": {
         "name": "Auto-reverse mowing direction"
       },
@@ -821,12 +818,6 @@
         "3": "Perimeter only"
       }
     },
-    "rain_tactics": {
-      "options": {
-        "0": "Off",
-        "1": "On"
-      }
-    },
     "toward_mode": {
       "options": {
         "0": "Optimal angle",
@@ -917,10 +908,6 @@
           "name": "Path width",
           "description": "Width of the mowing path (in cm)."
         },
-        "rain_tactics": {
-          "name": "Rain detection",
-          "description": "Rain detection."
-        },
         "blade_height": {
           "name": "Blade height",
           "description": "Height of the blade."
@@ -994,10 +981,6 @@
         "obstacle_laps": {
           "name": "No-go zone laps",
           "description": "No-go zone laps"
-        },
-        "rain_tactics": {
-          "name": "Rain tactics",
-          "description": "Rain tactics"
         },
         "auto_change_direction": {
           "name": "Auto-reverse mowing direction",
