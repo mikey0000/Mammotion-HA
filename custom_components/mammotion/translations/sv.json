@@ -204,8 +204,8 @@
         "name": "Aktivitetsläge",
         "state": {
           "MODE_NOT_ACTIVE": "Inte aktiv",
-          "MODE_ONLINE": "Online",
-          "MODE_OFFLINE": "Offline",
+          "MODE_ONLINE": "Uppkopplad",
+          "MODE_OFFLINE": "Nedkopplad",
           "MODE_DISABLE": "Inaktiverad",
           "MODE_INITIALIZATION": "Initialiserar",
           "MODE_READY": "Redo",
@@ -568,7 +568,7 @@
         "name": "Bluetooth"
       },
       "cloud_enabled": {
-        "name": "Cloud"
+        "name": "Molnet"
       },
       "manual_light": {
         "name": "Manuellt ljus på/av"

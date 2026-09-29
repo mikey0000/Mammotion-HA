@@ -1030,7 +1030,7 @@
         },
         "blade_height": {
           "name": "Blad højde",
-          "description": "Højden på klippebordet."
+          "description": "Klingens højde over jord."
         }
       }
     },
@@ -1544,7 +1544,7 @@
       "message": "Kunne ikke sætte plæneklipperen på pause."
     },
     "resume_failed": {
-      "message": "Kunne ikke genoptage plæneklipperen."
+      "message": "Kunne ikke genoptage klipning."
     },
     "start_failed": {
       "message": "Kunne ikke starte plæneklipperen."
