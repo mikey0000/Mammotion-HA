@@ -298,7 +298,7 @@
           "RTK_OVER_DATALINK": "Antena přes DataLink",
           "RTK_OVER_INTERNET": "Antena přes internet",
           "INAVI_NET_RTK": "iNavi NetRTK",
-          "INAVI_RTK_BOX": "iNavi RTK Box",
+          "INAVI_RTK_BOX": "iNavi RTK hranice",
           "UNKNOWN": "Neznámé"
         }
       },
@@ -833,7 +833,7 @@
       "options": {
         "0": "Vypnuto",
         "1": "Základní",
-        "2": "Méně dotyků",
+        "2": "Méně dotyku",
         "10": "Standard",
         "11": "Citlivý"
       }
