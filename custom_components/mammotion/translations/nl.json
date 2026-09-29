@@ -9,7 +9,7 @@
       "no_longer_present": "Het apparaat is niet langer aanwezig",
       "not_supported": "Apparaat wordt niet ondersteund",
       "reconfigure_successful": "Opnieuw instellen gelukt",
-      "merged_into_existing_account": "This account already has an entry; the Bluetooth devices were merged into it and this entry was removed.",
+      "merged_into_existing_account": "Dit account heeft al een vermelding; de Bluetooth-apparaten zijn daarin samengevoegd en deze vermelding is verwijderd.",
       "api_limit_exceeded": "De API-limiet is overschreden. Probeer het later opnieuw.",
       "account_in_use": "Uw Mammotion-account is al actief in een andere sessie. Log uit de Mammotion-app en probeer het opnieuw.",
       "reauth_successful": "Opnieuw verifiëren is gelukt",
@@ -136,10 +136,10 @@
         "name": "Tijd nog te gaan"
       },
       "l1_satellites": {
-        "name": "L1 signal quality"
+        "name": "L1-signaalkwaliteit"
       },
       "l2_satellites": {
-        "name": "L2 signal quality"
+        "name": "L2-signaalkwaliteit"
       },
       "positioning_mode": {
         "name": "RTK-positie"
@@ -336,19 +336,19 @@
         }
       },
       "co_view_l1": {
-        "name": "L1 satellites (co-viewing)"
+        "name": "L1-satellieten (gemeenschappelijk zichtbaar)"
       },
       "co_view_l2": {
-        "name": "L2 satellites (co-viewing)"
+        "name": "L2-satellieten (gemeenschappelijk zichtbaar)"
       },
       "pos_level": {
-        "name": "Position level"
+        "name": "Positieniveau"
       },
       "rtk_signal": {
-        "name": "RTK signal quality"
+        "name": "RTK-signaalkwaliteit"
       },
       "device_signal": {
-        "name": "Device signal quality",
+        "name": "Signaalkwaliteit apparaat",
         "state": {
           "0": "Goed",
           "1": "Goed",
@@ -357,10 +357,10 @@
         }
       },
       "age": {
-        "name": "RTK correction age"
+        "name": "Leeftijd RTK-correctie"
       },
       "base_link_status": {
-        "name": "Base link status",
+        "name": "Status basisverbinding",
         "state": {
           "0": "Goed",
           "1": "Zwak",
@@ -1125,7 +1125,7 @@
       "fields": {
         "name": {
           "name": "Nieuwe naam",
-          "description": "New display name for the task."
+          "description": "Nieuwe weergavenaam voor de taak."
         }
       }
     },
@@ -1135,7 +1135,7 @@
       "fields": {
         "enabled": {
           "name": "Ingeschakeld",
-          "description": "True to enable the schedule, false to disable it."
+          "description": "Aan om het schema in te schakelen, uit om het uit te schakelen."
         }
       }
     },
@@ -1149,7 +1149,7 @@
       "fields": {
         "name": {
           "name": "Nieuwe naam",
-          "description": "Override the auto-generated 'Copy-N' name."
+          "description": "Overschrijft de automatisch gegenereerde naam 'Copy-N'."
         }
       }
     },
@@ -1158,52 +1158,52 @@
       "description": "Wijzigt een deelverzameling velden van het schema.",
       "fields": {
         "name": {
-          "name": "Name",
-          "description": "Display name."
+          "name": "Naam",
+          "description": "Weergavenaam."
         },
         "enabled": {
-          "name": "Enabled",
-          "description": "Whether the schedule is active."
+          "name": "Ingeschakeld",
+          "description": "Of het schema actief is."
         },
         "weeks": {
-          "name": "Weekdays",
-          "description": "List of weekday integers (0 = Sunday … 6 = Saturday) the schedule runs on."
+          "name": "Weekdagen",
+          "description": "Lijst met weekdagnummers (0 = zondag … 6 = zaterdag) waarop het schema draait."
         },
         "start_time": {
-          "name": "Start time",
-          "description": "HH:MM (mower only)."
+          "name": "Starttijd",
+          "description": "HH:MM (alleen maaier)."
         },
         "end_time": {
-          "name": "End time",
-          "description": "HH:MM (mower only)."
+          "name": "Eindtijd",
+          "description": "HH:MM (alleen maaier)."
         },
         "start_date": {
-          "name": "Start date",
+          "name": "Startdatum",
           "description": "YYYY-MM-DD."
         },
         "end_date": {
-          "name": "End date",
+          "name": "Einddatum",
           "description": "YYYY-MM-DD."
         },
         "trigger_type": {
-          "name": "Trigger type",
-          "description": "0 = weekly, 1 = day interval, 2 = date, 3 = run once."
+          "name": "Triggertype",
+          "description": "0 = wekelijks, 1 = interval in dagen, 2 = datum, 3 = eenmalig."
         },
         "day": {
-          "name": "Day interval",
-          "description": "Interval in days when trigger_type is 1 (DAY)."
+          "name": "Interval in dagen",
+          "description": "Interval in dagen wanneer trigger_type 1 (DAY) is."
         },
         "knife_height": {
-          "name": "Cut height",
-          "description": "Mower-only blade height in millimetres."
+          "name": "Maaihoogte",
+          "description": "Meshoogte in millimeters (alleen maaier)."
         },
         "speed": {
-          "name": "Speed",
-          "description": "Mower: driving speed (float). Spino: fixed32 speed value (int)."
+          "name": "Snelheid",
+          "description": "Maaier: rijsnelheid (float). Spino: fixed32-snelheidswaarde (int)."
         },
         "edge_mode": {
-          "name": "Edge mode",
-          "description": "Mower-only: 0 = none, 1 = once, 2 = twice."
+          "name": "Randmodus",
+          "description": "Alleen maaier: 0 = geen, 1 = één keer, 2 = twee keer."
         },
         "ride_boundary_distance": {
           "name": "Afstand randrit",
@@ -1214,8 +1214,8 @@
           "description": "Maairichting automatisch omkeren — keert de maairichting om tussen de rondes, zodat het gras minder plat komt te liggen: 0 = uit, 1 = aan. Alleen op modellen en firmware die dit ondersteunen. Weggelaten blijft de instelling van het schema behouden (uit voor een nieuw schema)."
         },
         "route_angle": {
-          "name": "Route angle",
-          "description": "Mower-only: mowing pattern angle 0–179 degrees."
+          "name": "Routehoek",
+          "description": "Alleen maaier: hoek van het maaipatroon 0–179 graden."
         },
         "toward_mode": {
           "name": "Hoek modus knippen",
@@ -1226,28 +1226,28 @@
           "description": "Alleen maaier: tweede hoek van een schaakbordroute, in graden."
         },
         "route_spacing": {
-          "name": "Route spacing",
-          "description": "Mower-only: spacing between mow lines in cm."
+          "name": "Routeafstand",
+          "description": "Alleen maaier: afstand tussen maailijnen in cm."
         },
         "zone_hashs": {
-          "name": "Zone hashes",
-          "description": "Mower-only: list of area hashes (fixed64) covered by this schedule."
+          "name": "Zonehashes",
+          "description": "Alleen maaier: lijst met gebiedshashes (fixed64) die dit schema dekt."
         },
         "work_mode": {
-          "name": "Work mode",
-          "description": "Spino-only: 0 = recharge, 1 = AUTO, 2 = FLOOR, 3 = WALL, 4 = ECO, 5 = LINE, 6 = CUSTOM."
+          "name": "Werkmodus",
+          "description": "Alleen Spino: 0 = opladen, 1 = AUTO, 2 = FLOOR, 3 = WALL, 4 = ECO, 5 = LINE, 6 = CUSTOM."
         },
         "sub_mode": {
-          "name": "Sub-modes",
-          "description": "Spino-only: list of APP_WORK values for multi-stage cleaning."
+          "name": "Submodi",
+          "description": "Alleen Spino: lijst met APP_WORK-waarden voor reiniging in meerdere fasen."
         },
         "operating_power": {
-          "name": "Operating power",
-          "description": "Spino-only: suction power (fixed32 int)."
+          "name": "Werkvermogen",
+          "description": "Alleen Spino: zuigkracht (fixed32 int)."
         },
         "starttime": {
-          "name": "Start timestamp",
-          "description": "Spino-only: unix timestamp (seconds) for the start of the cleaning session."
+          "name": "Starttijdstempel",
+          "description": "Alleen Spino: unix-tijdstempel (seconden) van het begin van de reinigingssessie."
         }
       }
     },
@@ -1256,52 +1256,52 @@
       "description": "Maakt een nieuw schema aan op het apparaat.",
       "fields": {
         "name": {
-          "name": "Name",
-          "description": "Display name for the new schedule."
+          "name": "Naam",
+          "description": "Weergavenaam voor het nieuwe schema."
         },
         "enabled": {
-          "name": "Enabled",
-          "description": "Whether the schedule starts enabled."
+          "name": "Ingeschakeld",
+          "description": "Of het schema ingeschakeld start."
         },
         "weeks": {
-          "name": "Weekdays",
-          "description": "List of weekday integers (0 = Sunday … 6 = Saturday)."
+          "name": "Weekdagen",
+          "description": "Lijst met weekdagnummers (0 = zondag … 6 = zaterdag)."
         },
         "start_time": {
-          "name": "Start time",
-          "description": "HH:MM (mower)."
+          "name": "Starttijd",
+          "description": "HH:MM (maaier)."
         },
         "end_time": {
-          "name": "End time",
-          "description": "HH:MM (mower)."
+          "name": "Eindtijd",
+          "description": "HH:MM (maaier)."
         },
         "start_date": {
-          "name": "Start date",
+          "name": "Startdatum",
           "description": "YYYY-MM-DD."
         },
         "end_date": {
-          "name": "End date",
+          "name": "Einddatum",
           "description": "YYYY-MM-DD."
         },
         "trigger_type": {
-          "name": "Trigger type",
-          "description": "0 = weekly, 1 = day interval, 2 = date, 3 = run once."
+          "name": "Triggertype",
+          "description": "0 = wekelijks, 1 = interval in dagen, 2 = datum, 3 = eenmalig."
         },
         "day": {
-          "name": "Day interval",
-          "description": "Interval in days for trigger_type = 1."
+          "name": "Interval in dagen",
+          "description": "Interval in dagen voor trigger_type = 1."
         },
         "knife_height": {
-          "name": "Cut height",
-          "description": "Mower-only blade height in millimetres."
+          "name": "Maaihoogte",
+          "description": "Meshoogte in millimeters (alleen maaier)."
         },
         "speed": {
-          "name": "Speed",
-          "description": "Mower or Spino speed."
+          "name": "Snelheid",
+          "description": "Snelheid van maaier of Spino."
         },
         "edge_mode": {
-          "name": "Edge mode",
-          "description": "Mower-only."
+          "name": "Randmodus",
+          "description": "Alleen maaier."
         },
         "ride_boundary_distance": {
           "name": "Afstand randrit",
@@ -1312,8 +1312,8 @@
           "description": "Maairichting automatisch omkeren — keert de maairichting om tussen de rondes, zodat het gras minder plat komt te liggen: 0 = uit, 1 = aan. Alleen op modellen en firmware die dit ondersteunen. Weggelaten blijft de instelling van het schema behouden (uit voor een nieuw schema)."
         },
         "route_angle": {
-          "name": "Route angle",
-          "description": "Mower-only."
+          "name": "Routehoek",
+          "description": "Alleen maaier."
         },
         "toward_mode": {
           "name": "Hoek modus knippen",
@@ -1324,28 +1324,28 @@
           "description": "Alleen maaier: tweede hoek van een schaakbordroute, in graden."
         },
         "route_spacing": {
-          "name": "Route spacing",
-          "description": "Mower-only."
+          "name": "Routeafstand",
+          "description": "Alleen maaier."
         },
         "zone_hashs": {
-          "name": "Zone hashes",
-          "description": "Mower-only: list of area hashes covered."
+          "name": "Zonehashes",
+          "description": "Alleen maaier: lijst met gedekte gebiedshashes."
         },
         "work_mode": {
-          "name": "Work mode",
-          "description": "Spino-only cleaning mode."
+          "name": "Werkmodus",
+          "description": "Reinigingsmodus (alleen Spino)."
         },
         "sub_mode": {
-          "name": "Sub-modes",
-          "description": "Spino-only: list of APP_WORK values."
+          "name": "Submodi",
+          "description": "Alleen Spino: lijst met APP_WORK-waarden."
         },
         "operating_power": {
-          "name": "Operating power",
-          "description": "Spino-only."
+          "name": "Werkvermogen",
+          "description": "Alleen Spino."
         },
         "starttime": {
-          "name": "Start timestamp",
-          "description": "Spino-only: unix start time."
+          "name": "Starttijdstempel",
+          "description": "Alleen Spino: starttijd als unix-tijd."
         }
       }
     },

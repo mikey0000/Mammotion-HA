@@ -9,7 +9,7 @@
       "no_longer_present": "Urządzenie nie jest już dostępne",
       "not_supported": "Urządzenie nie jest obsługiwane",
       "reconfigure_successful": "Ponowna konfiguracja zakończona powodzeniem",
-      "merged_into_existing_account": "This account already has an entry; the Bluetooth devices were merged into it and this entry was removed.",
+      "merged_into_existing_account": "To konto ma już wpis; urządzenia Bluetooth zostały do niego scalone, a ten wpis został usunięty.",
       "api_limit_exceeded": "Przekroczono limit API. Spróbuj ponownie później.",
       "account_in_use": "Twoje konto Mammotion jest już aktywne w innej sesji. Wyloguj się z aplikacji Mammotion i spróbuj ponownie.",
       "reauth_successful": "Ponowne uwierzytelnienie powiodło się",
@@ -136,10 +136,10 @@
         "name": "Pozostały czas"
       },
       "l1_satellites": {
-        "name": "L1 signal quality"
+        "name": "Jakość sygnału L1"
       },
       "l2_satellites": {
-        "name": "L2 signal quality"
+        "name": "Jakość sygnału L2"
       },
       "positioning_mode": {
         "name": "Pozycjonowanie RTK"
@@ -336,19 +336,19 @@
         }
       },
       "co_view_l1": {
-        "name": "L1 satellites (co-viewing)"
+        "name": "Satelity L1 (wspólnie widoczne)"
       },
       "co_view_l2": {
-        "name": "L2 satellites (co-viewing)"
+        "name": "Satelity L2 (wspólnie widoczne)"
       },
       "pos_level": {
-        "name": "Position level"
+        "name": "Poziom pozycjonowania"
       },
       "rtk_signal": {
-        "name": "RTK signal quality"
+        "name": "Jakość sygnału RTK"
       },
       "device_signal": {
-        "name": "Device signal quality",
+        "name": "Jakość sygnału urządzenia",
         "state": {
           "0": "Dobry",
           "1": "Dobry",
@@ -357,10 +357,10 @@
         }
       },
       "age": {
-        "name": "RTK correction age"
+        "name": "Wiek poprawki RTK"
       },
       "base_link_status": {
-        "name": "Base link status",
+        "name": "Stan połączenia ze stacją bazową",
         "state": {
           "0": "Dobry",
           "1": "Słaby",
@@ -1125,7 +1125,7 @@
       "fields": {
         "name": {
           "name": "Nowa nazwa",
-          "description": "New display name for the task."
+          "description": "Nowa wyświetlana nazwa zadania."
         }
       }
     },
@@ -1135,7 +1135,7 @@
       "fields": {
         "enabled": {
           "name": "Włączone",
-          "description": "True to enable the schedule, false to disable it."
+          "description": "Włączone aktywuje plan, wyłączone go dezaktywuje."
         }
       }
     },
@@ -1149,7 +1149,7 @@
       "fields": {
         "name": {
           "name": "Nowa nazwa",
-          "description": "Override the auto-generated 'Copy-N' name."
+          "description": "Zastępuje automatycznie wygenerowaną nazwę 'Copy-N'."
         }
       }
     },
@@ -1158,52 +1158,52 @@
       "description": "Modyfikuje wybrane pola planu.",
       "fields": {
         "name": {
-          "name": "Name",
-          "description": "Display name."
+          "name": "Nazwa",
+          "description": "Wyświetlana nazwa."
         },
         "enabled": {
-          "name": "Enabled",
-          "description": "Whether the schedule is active."
+          "name": "Włączony",
+          "description": "Czy plan jest aktywny."
         },
         "weeks": {
-          "name": "Weekdays",
-          "description": "List of weekday integers (0 = Sunday … 6 = Saturday) the schedule runs on."
+          "name": "Dni tygodnia",
+          "description": "Lista numerów dni tygodnia (0 = niedziela … 6 = sobota), w które działa plan."
         },
         "start_time": {
-          "name": "Start time",
-          "description": "HH:MM (mower only)."
+          "name": "Godzina rozpoczęcia",
+          "description": "HH:MM (tylko kosiarka)."
         },
         "end_time": {
-          "name": "End time",
-          "description": "HH:MM (mower only)."
+          "name": "Godzina zakończenia",
+          "description": "HH:MM (tylko kosiarka)."
         },
         "start_date": {
-          "name": "Start date",
+          "name": "Data rozpoczęcia",
           "description": "YYYY-MM-DD."
         },
         "end_date": {
-          "name": "End date",
+          "name": "Data zakończenia",
           "description": "YYYY-MM-DD."
         },
         "trigger_type": {
-          "name": "Trigger type",
-          "description": "0 = weekly, 1 = day interval, 2 = date, 3 = run once."
+          "name": "Typ wyzwalacza",
+          "description": "0 = co tydzień, 1 = co ile dni, 2 = data, 3 = jednorazowo."
         },
         "day": {
-          "name": "Day interval",
-          "description": "Interval in days when trigger_type is 1 (DAY)."
+          "name": "Odstęp w dniach",
+          "description": "Odstęp w dniach, gdy trigger_type wynosi 1 (DAY)."
         },
         "knife_height": {
-          "name": "Cut height",
-          "description": "Mower-only blade height in millimetres."
+          "name": "Wysokość koszenia",
+          "description": "Wysokość ostrza w milimetrach (tylko kosiarka)."
         },
         "speed": {
-          "name": "Speed",
-          "description": "Mower: driving speed (float). Spino: fixed32 speed value (int)."
+          "name": "Prędkość",
+          "description": "Kosiarka: prędkość jazdy (float). Spino: wartość prędkości fixed32 (int)."
         },
         "edge_mode": {
-          "name": "Edge mode",
-          "description": "Mower-only: 0 = none, 1 = once, 2 = twice."
+          "name": "Tryb krawędzi",
+          "description": "Tylko kosiarka: 0 = brak, 1 = raz, 2 = dwa razy."
         },
         "ride_boundary_distance": {
           "name": "Odległość przejazdu wzdłuż granicy",
@@ -1214,8 +1214,8 @@
           "description": "Automatyczna zmiana kierunku koszenia — odwraca kierunek koszenia między przejazdami, aby trawa mniej się kładła: 0 = wyłączone, 1 = włączone. Tylko w modelach i oprogramowaniu, które to obsługują. Jeśli pominięte, ustawienie harmonogramu pozostaje bez zmian (wyłączone dla nowego harmonogramu)."
         },
         "route_angle": {
-          "name": "Route angle",
-          "description": "Mower-only: mowing pattern angle 0–179 degrees."
+          "name": "Kąt trasy",
+          "description": "Tylko kosiarka: kąt wzoru koszenia 0–179 stopni."
         },
         "toward_mode": {
           "name": "Tryb cięcia kąta",
@@ -1226,28 +1226,28 @@
           "description": "Tylko kosiarka: drugi kąt trasy w szachownicę, w stopniach."
         },
         "route_spacing": {
-          "name": "Route spacing",
-          "description": "Mower-only: spacing between mow lines in cm."
+          "name": "Odstęp tras",
+          "description": "Tylko kosiarka: odstęp między liniami koszenia w cm."
         },
         "zone_hashs": {
-          "name": "Zone hashes",
-          "description": "Mower-only: list of area hashes (fixed64) covered by this schedule."
+          "name": "Hashe stref",
+          "description": "Tylko kosiarka: lista hashy obszarów (fixed64) objętych tym planem."
         },
         "work_mode": {
-          "name": "Work mode",
-          "description": "Spino-only: 0 = recharge, 1 = AUTO, 2 = FLOOR, 3 = WALL, 4 = ECO, 5 = LINE, 6 = CUSTOM."
+          "name": "Tryb pracy",
+          "description": "Tylko Spino: 0 = ładowanie, 1 = AUTO, 2 = FLOOR, 3 = WALL, 4 = ECO, 5 = LINE, 6 = CUSTOM."
         },
         "sub_mode": {
-          "name": "Sub-modes",
-          "description": "Spino-only: list of APP_WORK values for multi-stage cleaning."
+          "name": "Tryby podrzędne",
+          "description": "Tylko Spino: lista wartości APP_WORK dla czyszczenia wieloetapowego."
         },
         "operating_power": {
-          "name": "Operating power",
-          "description": "Spino-only: suction power (fixed32 int)."
+          "name": "Moc robocza",
+          "description": "Tylko Spino: moc ssania (fixed32 int)."
         },
         "starttime": {
-          "name": "Start timestamp",
-          "description": "Spino-only: unix timestamp (seconds) for the start of the cleaning session."
+          "name": "Znacznik czasu rozpoczęcia",
+          "description": "Tylko Spino: znacznik czasu unix (sekundy) rozpoczęcia sesji czyszczenia."
         }
       }
     },
@@ -1256,52 +1256,52 @@
       "description": "Tworzy nowy plan na urządzeniu.",
       "fields": {
         "name": {
-          "name": "Name",
-          "description": "Display name for the new schedule."
+          "name": "Nazwa",
+          "description": "Wyświetlana nazwa nowego planu."
         },
         "enabled": {
-          "name": "Enabled",
-          "description": "Whether the schedule starts enabled."
+          "name": "Włączony",
+          "description": "Czy plan startuje jako włączony."
         },
         "weeks": {
-          "name": "Weekdays",
-          "description": "List of weekday integers (0 = Sunday … 6 = Saturday)."
+          "name": "Dni tygodnia",
+          "description": "Lista numerów dni tygodnia (0 = niedziela … 6 = sobota)."
         },
         "start_time": {
-          "name": "Start time",
-          "description": "HH:MM (mower)."
+          "name": "Godzina rozpoczęcia",
+          "description": "HH:MM (kosiarka)."
         },
         "end_time": {
-          "name": "End time",
-          "description": "HH:MM (mower)."
+          "name": "Godzina zakończenia",
+          "description": "HH:MM (kosiarka)."
         },
         "start_date": {
-          "name": "Start date",
+          "name": "Data rozpoczęcia",
           "description": "YYYY-MM-DD."
         },
         "end_date": {
-          "name": "End date",
+          "name": "Data zakończenia",
           "description": "YYYY-MM-DD."
         },
         "trigger_type": {
-          "name": "Trigger type",
-          "description": "0 = weekly, 1 = day interval, 2 = date, 3 = run once."
+          "name": "Typ wyzwalacza",
+          "description": "0 = co tydzień, 1 = co ile dni, 2 = data, 3 = jednorazowo."
         },
         "day": {
-          "name": "Day interval",
-          "description": "Interval in days for trigger_type = 1."
+          "name": "Odstęp w dniach",
+          "description": "Odstęp w dniach dla trigger_type = 1."
         },
         "knife_height": {
-          "name": "Cut height",
-          "description": "Mower-only blade height in millimetres."
+          "name": "Wysokość koszenia",
+          "description": "Wysokość ostrza w milimetrach (tylko kosiarka)."
         },
         "speed": {
-          "name": "Speed",
-          "description": "Mower or Spino speed."
+          "name": "Prędkość",
+          "description": "Prędkość kosiarki lub Spino."
         },
         "edge_mode": {
-          "name": "Edge mode",
-          "description": "Mower-only."
+          "name": "Tryb krawędzi",
+          "description": "Tylko kosiarka."
         },
         "ride_boundary_distance": {
           "name": "Odległość przejazdu wzdłuż granicy",
@@ -1312,8 +1312,8 @@
           "description": "Automatyczna zmiana kierunku koszenia — odwraca kierunek koszenia między przejazdami, aby trawa mniej się kładła: 0 = wyłączone, 1 = włączone. Tylko w modelach i oprogramowaniu, które to obsługują. Jeśli pominięte, ustawienie harmonogramu pozostaje bez zmian (wyłączone dla nowego harmonogramu)."
         },
         "route_angle": {
-          "name": "Route angle",
-          "description": "Mower-only."
+          "name": "Kąt trasy",
+          "description": "Tylko kosiarka."
         },
         "toward_mode": {
           "name": "Tryb cięcia kąta",
@@ -1324,28 +1324,28 @@
           "description": "Tylko kosiarka: drugi kąt trasy w szachownicę, w stopniach."
         },
         "route_spacing": {
-          "name": "Route spacing",
-          "description": "Mower-only."
+          "name": "Odstęp tras",
+          "description": "Tylko kosiarka."
         },
         "zone_hashs": {
-          "name": "Zone hashes",
-          "description": "Mower-only: list of area hashes covered."
+          "name": "Hashe stref",
+          "description": "Tylko kosiarka: lista objętych hashy obszarów."
         },
         "work_mode": {
-          "name": "Work mode",
-          "description": "Spino-only cleaning mode."
+          "name": "Tryb pracy",
+          "description": "Tryb czyszczenia (tylko Spino)."
         },
         "sub_mode": {
-          "name": "Sub-modes",
-          "description": "Spino-only: list of APP_WORK values."
+          "name": "Tryby podrzędne",
+          "description": "Tylko Spino: lista wartości APP_WORK."
         },
         "operating_power": {
-          "name": "Operating power",
-          "description": "Spino-only."
+          "name": "Moc robocza",
+          "description": "Tylko Spino."
         },
         "starttime": {
-          "name": "Start timestamp",
-          "description": "Spino-only: unix start time."
+          "name": "Znacznik czasu rozpoczęcia",
+          "description": "Tylko Spino: czas rozpoczęcia w formacie unix."
         }
       }
     },

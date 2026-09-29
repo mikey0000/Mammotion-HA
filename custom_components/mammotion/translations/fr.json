@@ -9,7 +9,7 @@
       "no_longer_present": "L'appareil n'est plus présent",
       "not_supported": "Appareil non pris en charge",
       "reconfigure_successful": "Reconfiguration réussie",
-      "merged_into_existing_account": "This account already has an entry; the Bluetooth devices were merged into it and this entry was removed.",
+      "merged_into_existing_account": "Ce compte possède déjà une entrée ; les appareils Bluetooth y ont été fusionnés et cette entrée a été supprimée.",
       "api_limit_exceeded": "La limite de débit de l'API a été dépassée. Veuillez réessayer plus tard.",
       "account_in_use": "Votre compte Mammotion est déjà actif dans une autre session. Déconnectez-vous de l'application Mammotion et réessayez.",
       "reauth_successful": "La ré-authentification a réussi",
@@ -112,7 +112,7 @@
         "name": "Connexion"
       },
       "gps_stars": {
-        "name": "Satellites (Robot)"
+        "name": "Satellites (robot)"
       },
       "blade_height": {
         "name": "Hauteur des lames"
@@ -136,10 +136,10 @@
         "name": "Temps restant"
       },
       "l1_satellites": {
-        "name": "L1 signal quality"
+        "name": "Qualité du signal L1"
       },
       "l2_satellites": {
-        "name": "L2 signal quality"
+        "name": "Qualité du signal L2"
       },
       "positioning_mode": {
         "name": "Position RTK"
@@ -336,19 +336,19 @@
         }
       },
       "co_view_l1": {
-        "name": "L1 satellites (co-viewing)"
+        "name": "Satellites L1 (visibilité commune)"
       },
       "co_view_l2": {
-        "name": "L2 satellites (co-viewing)"
+        "name": "Satellites L2 (visibilité commune)"
       },
       "pos_level": {
-        "name": "Position level"
+        "name": "Niveau de positionnement"
       },
       "rtk_signal": {
-        "name": "RTK signal quality"
+        "name": "Qualité du signal RTK"
       },
       "device_signal": {
-        "name": "Device signal quality",
+        "name": "Qualité du signal de l'appareil",
         "state": {
           "0": "Bon",
           "1": "Bon",
@@ -357,10 +357,10 @@
         }
       },
       "age": {
-        "name": "RTK correction age"
+        "name": "Âge de la correction RTK"
       },
       "base_link_status": {
-        "name": "Base link status",
+        "name": "État de la liaison avec la base",
         "state": {
           "0": "Bon",
           "1": "Faible",
@@ -1125,7 +1125,7 @@
       "fields": {
         "name": {
           "name": "Nouveau nom",
-          "description": "New display name for the task."
+          "description": "Nouveau nom d'affichage de la tâche."
         }
       }
     },
@@ -1135,7 +1135,7 @@
       "fields": {
         "enabled": {
           "name": "Activé",
-          "description": "True to enable the schedule, false to disable it."
+          "description": "Activé pour activer le programme, désactivé pour le désactiver."
         }
       }
     },
@@ -1149,7 +1149,7 @@
       "fields": {
         "name": {
           "name": "Nouveau nom",
-          "description": "Override the auto-generated 'Copy-N' name."
+          "description": "Remplace le nom 'Copy-N' généré automatiquement."
         }
       }
     },
@@ -1158,52 +1158,52 @@
       "description": "Modifie un sous-ensemble de champs du programme.",
       "fields": {
         "name": {
-          "name": "Name",
-          "description": "Display name."
+          "name": "Nom",
+          "description": "Nom d'affichage."
         },
         "enabled": {
-          "name": "Enabled",
-          "description": "Whether the schedule is active."
+          "name": "Activé",
+          "description": "Indique si le programme est actif."
         },
         "weeks": {
-          "name": "Weekdays",
-          "description": "List of weekday integers (0 = Sunday … 6 = Saturday) the schedule runs on."
+          "name": "Jours de la semaine",
+          "description": "Liste des jours de la semaine en entiers (0 = dimanche … 6 = samedi) où le programme s'exécute."
         },
         "start_time": {
-          "name": "Start time",
-          "description": "HH:MM (mower only)."
+          "name": "Heure de début",
+          "description": "HH:MM (tondeuse uniquement)."
         },
         "end_time": {
-          "name": "End time",
-          "description": "HH:MM (mower only)."
+          "name": "Heure de fin",
+          "description": "HH:MM (tondeuse uniquement)."
         },
         "start_date": {
-          "name": "Start date",
+          "name": "Date de début",
           "description": "YYYY-MM-DD."
         },
         "end_date": {
-          "name": "End date",
+          "name": "Date de fin",
           "description": "YYYY-MM-DD."
         },
         "trigger_type": {
-          "name": "Trigger type",
-          "description": "0 = weekly, 1 = day interval, 2 = date, 3 = run once."
+          "name": "Type de déclenchement",
+          "description": "0 = hebdomadaire, 1 = intervalle en jours, 2 = date, 3 = une seule fois."
         },
         "day": {
-          "name": "Day interval",
-          "description": "Interval in days when trigger_type is 1 (DAY)."
+          "name": "Intervalle en jours",
+          "description": "Intervalle en jours lorsque trigger_type vaut 1 (DAY)."
         },
         "knife_height": {
-          "name": "Cut height",
-          "description": "Mower-only blade height in millimetres."
+          "name": "Hauteur de coupe",
+          "description": "Hauteur de coupe en millimètres (tondeuse uniquement)."
         },
         "speed": {
-          "name": "Speed",
-          "description": "Mower: driving speed (float). Spino: fixed32 speed value (int)."
+          "name": "Vitesse",
+          "description": "Tondeuse : vitesse de déplacement (float). Spino : valeur de vitesse fixed32 (int)."
         },
         "edge_mode": {
-          "name": "Edge mode",
-          "description": "Mower-only: 0 = none, 1 = once, 2 = twice."
+          "name": "Mode bordure",
+          "description": "Tondeuse uniquement : 0 = aucun, 1 = une fois, 2 = deux fois."
         },
         "ride_boundary_distance": {
           "name": "Distance de parcours de la bordure",
@@ -1214,8 +1214,8 @@
           "description": "Inversion automatique du sens de tonte — inverse le sens de tonte d'un passage à l'autre pour limiter le couchage de l'herbe : 0 = désactivé, 1 = activé. Uniquement sur les modèles et firmwares compatibles. S'il est omis, le réglage de la planification est conservé (désactivé pour une nouvelle planification)."
         },
         "route_angle": {
-          "name": "Route angle",
-          "description": "Mower-only: mowing pattern angle 0–179 degrees."
+          "name": "Angle de trajectoire",
+          "description": "Tondeuse uniquement : angle du motif de tonte de 0 à 179 degrés."
         },
         "toward_mode": {
           "name": "Mode de direction",
@@ -1226,28 +1226,28 @@
           "description": "Tondeuse uniquement : second angle d'un parcours en damier, en degrés."
         },
         "route_spacing": {
-          "name": "Route spacing",
-          "description": "Mower-only: spacing between mow lines in cm."
+          "name": "Espacement des trajectoires",
+          "description": "Tondeuse uniquement : espacement entre les lignes de tonte en cm."
         },
         "zone_hashs": {
-          "name": "Zone hashes",
-          "description": "Mower-only: list of area hashes (fixed64) covered by this schedule."
+          "name": "Hachages de zones",
+          "description": "Tondeuse uniquement : liste des hachages de zones (fixed64) couvertes par ce programme."
         },
         "work_mode": {
-          "name": "Work mode",
-          "description": "Spino-only: 0 = recharge, 1 = AUTO, 2 = FLOOR, 3 = WALL, 4 = ECO, 5 = LINE, 6 = CUSTOM."
+          "name": "Mode de travail",
+          "description": "Spino uniquement : 0 = recharge, 1 = AUTO, 2 = FLOOR, 3 = WALL, 4 = ECO, 5 = LINE, 6 = CUSTOM."
         },
         "sub_mode": {
-          "name": "Sub-modes",
-          "description": "Spino-only: list of APP_WORK values for multi-stage cleaning."
+          "name": "Sous-modes",
+          "description": "Spino uniquement : liste de valeurs APP_WORK pour un nettoyage en plusieurs étapes."
         },
         "operating_power": {
-          "name": "Operating power",
-          "description": "Spino-only: suction power (fixed32 int)."
+          "name": "Puissance de fonctionnement",
+          "description": "Spino uniquement : puissance d'aspiration (fixed32 int)."
         },
         "starttime": {
-          "name": "Start timestamp",
-          "description": "Spino-only: unix timestamp (seconds) for the start of the cleaning session."
+          "name": "Horodatage de début",
+          "description": "Spino uniquement : horodatage unix (secondes) du début de la session de nettoyage."
         }
       }
     },
@@ -1256,52 +1256,52 @@
       "description": "Crée un nouveau programme sur l'appareil.",
       "fields": {
         "name": {
-          "name": "Name",
-          "description": "Display name for the new schedule."
+          "name": "Nom",
+          "description": "Nom d'affichage du nouveau programme."
         },
         "enabled": {
-          "name": "Enabled",
-          "description": "Whether the schedule starts enabled."
+          "name": "Activé",
+          "description": "Indique si le programme démarre activé."
         },
         "weeks": {
-          "name": "Weekdays",
-          "description": "List of weekday integers (0 = Sunday … 6 = Saturday)."
+          "name": "Jours de la semaine",
+          "description": "Liste des jours de la semaine en entiers (0 = dimanche … 6 = samedi)."
         },
         "start_time": {
-          "name": "Start time",
-          "description": "HH:MM (mower)."
+          "name": "Heure de début",
+          "description": "HH:MM (tondeuse)."
         },
         "end_time": {
-          "name": "End time",
-          "description": "HH:MM (mower)."
+          "name": "Heure de fin",
+          "description": "HH:MM (tondeuse)."
         },
         "start_date": {
-          "name": "Start date",
+          "name": "Date de début",
           "description": "YYYY-MM-DD."
         },
         "end_date": {
-          "name": "End date",
+          "name": "Date de fin",
           "description": "YYYY-MM-DD."
         },
         "trigger_type": {
-          "name": "Trigger type",
-          "description": "0 = weekly, 1 = day interval, 2 = date, 3 = run once."
+          "name": "Type de déclenchement",
+          "description": "0 = hebdomadaire, 1 = intervalle en jours, 2 = date, 3 = une seule fois."
         },
         "day": {
-          "name": "Day interval",
-          "description": "Interval in days for trigger_type = 1."
+          "name": "Intervalle en jours",
+          "description": "Intervalle en jours pour trigger_type = 1."
         },
         "knife_height": {
-          "name": "Cut height",
-          "description": "Mower-only blade height in millimetres."
+          "name": "Hauteur de coupe",
+          "description": "Hauteur de coupe en millimètres (tondeuse uniquement)."
         },
         "speed": {
-          "name": "Speed",
-          "description": "Mower or Spino speed."
+          "name": "Vitesse",
+          "description": "Vitesse de la tondeuse ou du Spino."
         },
         "edge_mode": {
-          "name": "Edge mode",
-          "description": "Mower-only."
+          "name": "Mode bordure",
+          "description": "Tondeuse uniquement."
         },
         "ride_boundary_distance": {
           "name": "Distance de parcours de la bordure",
@@ -1312,8 +1312,8 @@
           "description": "Inversion automatique du sens de tonte — inverse le sens de tonte d'un passage à l'autre pour limiter le couchage de l'herbe : 0 = désactivé, 1 = activé. Uniquement sur les modèles et firmwares compatibles. S'il est omis, le réglage de la planification est conservé (désactivé pour une nouvelle planification)."
         },
         "route_angle": {
-          "name": "Route angle",
-          "description": "Mower-only."
+          "name": "Angle de trajectoire",
+          "description": "Tondeuse uniquement."
         },
         "toward_mode": {
           "name": "Mode de direction",
@@ -1324,28 +1324,28 @@
           "description": "Tondeuse uniquement : second angle d'un parcours en damier, en degrés."
         },
         "route_spacing": {
-          "name": "Route spacing",
-          "description": "Mower-only."
+          "name": "Espacement des trajectoires",
+          "description": "Tondeuse uniquement."
         },
         "zone_hashs": {
-          "name": "Zone hashes",
-          "description": "Mower-only: list of area hashes covered."
+          "name": "Hachages de zones",
+          "description": "Tondeuse uniquement : liste des hachages de zones couvertes."
         },
         "work_mode": {
-          "name": "Work mode",
-          "description": "Spino-only cleaning mode."
+          "name": "Mode de travail",
+          "description": "Mode de nettoyage (Spino uniquement)."
         },
         "sub_mode": {
-          "name": "Sub-modes",
-          "description": "Spino-only: list of APP_WORK values."
+          "name": "Sous-modes",
+          "description": "Spino uniquement : liste de valeurs APP_WORK."
         },
         "operating_power": {
-          "name": "Operating power",
-          "description": "Spino-only."
+          "name": "Puissance de fonctionnement",
+          "description": "Spino uniquement."
         },
         "starttime": {
-          "name": "Start timestamp",
-          "description": "Spino-only: unix start time."
+          "name": "Horodatage de début",
+          "description": "Spino uniquement : heure de début au format unix."
         }
       }
     },

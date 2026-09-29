@@ -9,7 +9,7 @@
       "no_longer_present": "Az eszköz már nem érhető el",
       "not_supported": "Az eszköz nem támogatott",
       "reconfigure_successful": "Újrakonfigurálás sikeres",
-      "merged_into_existing_account": "This account already has an entry; the Bluetooth devices were merged into it and this entry was removed.",
+      "merged_into_existing_account": "Ehhez a fiókhoz már tartozik bejegyzés; a Bluetooth-eszközök beolvadtak abba, és ez a bejegyzés törölve lett.",
       "api_limit_exceeded": "Az API sebességkorlátját elérte. Próbáld újra később.",
       "account_in_use": "A Mammotion fiókod már aktív egy másik munkamenetben. Jelentkezz ki a Mammotion alkalmazásból, és próbáld újra.",
       "reauth_successful": "Az újrahitelesítés sikerült",
@@ -136,10 +136,10 @@
         "name": "Hátralévő idő"
       },
       "l1_satellites": {
-        "name": "L1 signal quality"
+        "name": "L1 jelminőség"
       },
       "l2_satellites": {
-        "name": "L2 signal quality"
+        "name": "L2 jelminőség"
       },
       "positioning_mode": {
         "name": "RTK pozíció"
@@ -336,19 +336,19 @@
         }
       },
       "co_view_l1": {
-        "name": "L1 satellites (co-viewing)"
+        "name": "L1 műholdak (közösen látható)"
       },
       "co_view_l2": {
-        "name": "L2 satellites (co-viewing)"
+        "name": "L2 műholdak (közösen látható)"
       },
       "pos_level": {
-        "name": "Position level"
+        "name": "Pozíciószint"
       },
       "rtk_signal": {
-        "name": "RTK signal quality"
+        "name": "RTK jelminőség"
       },
       "device_signal": {
-        "name": "Device signal quality",
+        "name": "Eszköz jelminősége",
         "state": {
           "0": "Jó",
           "1": "Jó",
@@ -357,10 +357,10 @@
         }
       },
       "age": {
-        "name": "RTK correction age"
+        "name": "RTK-korrekció kora"
       },
       "base_link_status": {
-        "name": "Base link status",
+        "name": "Bázisállomás-kapcsolat állapota",
         "state": {
           "0": "Jó",
           "1": "Gyenge",
@@ -1125,7 +1125,7 @@
       "fields": {
         "name": {
           "name": "Új név",
-          "description": "New display name for the task."
+          "description": "A feladat új megjelenített neve."
         }
       }
     },
@@ -1135,7 +1135,7 @@
       "fields": {
         "enabled": {
           "name": "Engedélyezve",
-          "description": "True to enable the schedule, false to disable it."
+          "description": "Bekapcsolva engedélyezi az ütemezést, kikapcsolva letiltja."
         }
       }
     },
@@ -1149,7 +1149,7 @@
       "fields": {
         "name": {
           "name": "Új név",
-          "description": "Override the auto-generated 'Copy-N' name."
+          "description": "Felülírja az automatikusan generált 'Copy-N' nevet."
         }
       }
     },
@@ -1158,52 +1158,52 @@
       "description": "Az ütemezés mezőinek egy részhalmazát módosítja.",
       "fields": {
         "name": {
-          "name": "Name",
-          "description": "Display name."
+          "name": "Név",
+          "description": "Megjelenített név."
         },
         "enabled": {
-          "name": "Enabled",
-          "description": "Whether the schedule is active."
+          "name": "Engedélyezve",
+          "description": "Aktív-e az ütemezés."
         },
         "weeks": {
-          "name": "Weekdays",
-          "description": "List of weekday integers (0 = Sunday … 6 = Saturday) the schedule runs on."
+          "name": "Hét napjai",
+          "description": "A hét napjainak számai (0 = vasárnap … 6 = szombat), amelyeken az ütemezés fut."
         },
         "start_time": {
-          "name": "Start time",
-          "description": "HH:MM (mower only)."
+          "name": "Kezdés időpontja",
+          "description": "HH:MM (csak fűnyíró)."
         },
         "end_time": {
-          "name": "End time",
-          "description": "HH:MM (mower only)."
+          "name": "Befejezés időpontja",
+          "description": "HH:MM (csak fűnyíró)."
         },
         "start_date": {
-          "name": "Start date",
+          "name": "Kezdés dátuma",
           "description": "YYYY-MM-DD."
         },
         "end_date": {
-          "name": "End date",
+          "name": "Befejezés dátuma",
           "description": "YYYY-MM-DD."
         },
         "trigger_type": {
-          "name": "Trigger type",
-          "description": "0 = weekly, 1 = day interval, 2 = date, 3 = run once."
+          "name": "Indítás típusa",
+          "description": "0 = hetente, 1 = napos időköz, 2 = dátum, 3 = egyszeri futtatás."
         },
         "day": {
-          "name": "Day interval",
-          "description": "Interval in days when trigger_type is 1 (DAY)."
+          "name": "Napos időköz",
+          "description": "Időköz napokban, ha a trigger_type értéke 1 (DAY)."
         },
         "knife_height": {
-          "name": "Cut height",
-          "description": "Mower-only blade height in millimetres."
+          "name": "Vágási magasság",
+          "description": "Késmagasság milliméterben (csak fűnyíró)."
         },
         "speed": {
-          "name": "Speed",
-          "description": "Mower: driving speed (float). Spino: fixed32 speed value (int)."
+          "name": "Sebesség",
+          "description": "Fűnyíró: haladási sebesség (float). Spino: fixed32 sebességérték (int)."
         },
         "edge_mode": {
-          "name": "Edge mode",
-          "description": "Mower-only: 0 = none, 1 = once, 2 = twice."
+          "name": "Szegélymód",
+          "description": "Csak fűnyíró: 0 = nincs, 1 = egyszer, 2 = kétszer."
         },
         "ride_boundary_distance": {
           "name": "Határkövetési távolság",
@@ -1214,8 +1214,8 @@
           "description": "Nyírási irány automatikus váltása — futásonként megfordítja a nyírási irányt, hogy a fű kevésbé lapuljon le: 0 = ki, 1 = be. Csak az ezt támogató modelleken és firmware-en. Ha kihagyja, az ütemezés beállítása megmarad (új ütemezésnél ki)."
         },
         "route_angle": {
-          "name": "Route angle",
-          "description": "Mower-only: mowing pattern angle 0–179 degrees."
+          "name": "Útvonal szöge",
+          "description": "Csak fűnyíró: a nyírási minta szöge 0–179 fok."
         },
         "toward_mode": {
           "name": "Nyírási szög mód",
@@ -1226,28 +1226,28 @@
           "description": "Csak fűnyíró: a sakktábla-útvonal második szöge, fokban."
         },
         "route_spacing": {
-          "name": "Route spacing",
-          "description": "Mower-only: spacing between mow lines in cm."
+          "name": "Útvonalak távolsága",
+          "description": "Csak fűnyíró: a nyírási sávok közötti távolság cm-ben."
         },
         "zone_hashs": {
-          "name": "Zone hashes",
-          "description": "Mower-only: list of area hashes (fixed64) covered by this schedule."
+          "name": "Zóna-hash-ek",
+          "description": "Csak fűnyíró: az ütemezés által lefedett terület-hash-ek (fixed64) listája."
         },
         "work_mode": {
-          "name": "Work mode",
-          "description": "Spino-only: 0 = recharge, 1 = AUTO, 2 = FLOOR, 3 = WALL, 4 = ECO, 5 = LINE, 6 = CUSTOM."
+          "name": "Munkamód",
+          "description": "Csak Spino: 0 = töltés, 1 = AUTO, 2 = FLOOR, 3 = WALL, 4 = ECO, 5 = LINE, 6 = CUSTOM."
         },
         "sub_mode": {
-          "name": "Sub-modes",
-          "description": "Spino-only: list of APP_WORK values for multi-stage cleaning."
+          "name": "Almódok",
+          "description": "Csak Spino: APP_WORK értékek listája a többlépcsős tisztításhoz."
         },
         "operating_power": {
-          "name": "Operating power",
-          "description": "Spino-only: suction power (fixed32 int)."
+          "name": "Üzemi teljesítmény",
+          "description": "Csak Spino: szívóteljesítmény (fixed32 int)."
         },
         "starttime": {
-          "name": "Start timestamp",
-          "description": "Spino-only: unix timestamp (seconds) for the start of the cleaning session."
+          "name": "Kezdési időbélyeg",
+          "description": "Csak Spino: a tisztítás kezdetének unix időbélyege (másodperc)."
         }
       }
     },
@@ -1256,52 +1256,52 @@
       "description": "Új ütemezést hoz létre az eszközön.",
       "fields": {
         "name": {
-          "name": "Name",
-          "description": "Display name for the new schedule."
+          "name": "Név",
+          "description": "Az új ütemezés megjelenített neve."
         },
         "enabled": {
-          "name": "Enabled",
-          "description": "Whether the schedule starts enabled."
+          "name": "Engedélyezve",
+          "description": "Engedélyezve induljon-e az ütemezés."
         },
         "weeks": {
-          "name": "Weekdays",
-          "description": "List of weekday integers (0 = Sunday … 6 = Saturday)."
+          "name": "Hét napjai",
+          "description": "A hét napjainak számai (0 = vasárnap … 6 = szombat)."
         },
         "start_time": {
-          "name": "Start time",
-          "description": "HH:MM (mower)."
+          "name": "Kezdés időpontja",
+          "description": "HH:MM (fűnyíró)."
         },
         "end_time": {
-          "name": "End time",
-          "description": "HH:MM (mower)."
+          "name": "Befejezés időpontja",
+          "description": "HH:MM (fűnyíró)."
         },
         "start_date": {
-          "name": "Start date",
+          "name": "Kezdés dátuma",
           "description": "YYYY-MM-DD."
         },
         "end_date": {
-          "name": "End date",
+          "name": "Befejezés dátuma",
           "description": "YYYY-MM-DD."
         },
         "trigger_type": {
-          "name": "Trigger type",
-          "description": "0 = weekly, 1 = day interval, 2 = date, 3 = run once."
+          "name": "Indítás típusa",
+          "description": "0 = hetente, 1 = napos időköz, 2 = dátum, 3 = egyszeri futtatás."
         },
         "day": {
-          "name": "Day interval",
-          "description": "Interval in days for trigger_type = 1."
+          "name": "Napos időköz",
+          "description": "Időköz napokban, ha trigger_type = 1."
         },
         "knife_height": {
-          "name": "Cut height",
-          "description": "Mower-only blade height in millimetres."
+          "name": "Vágási magasság",
+          "description": "Késmagasság milliméterben (csak fűnyíró)."
         },
         "speed": {
-          "name": "Speed",
-          "description": "Mower or Spino speed."
+          "name": "Sebesség",
+          "description": "A fűnyíró vagy a Spino sebessége."
         },
         "edge_mode": {
-          "name": "Edge mode",
-          "description": "Mower-only."
+          "name": "Szegélymód",
+          "description": "Csak fűnyíró."
         },
         "ride_boundary_distance": {
           "name": "Határkövetési távolság",
@@ -1312,8 +1312,8 @@
           "description": "Nyírási irány automatikus váltása — futásonként megfordítja a nyírási irányt, hogy a fű kevésbé lapuljon le: 0 = ki, 1 = be. Csak az ezt támogató modelleken és firmware-en. Ha kihagyja, az ütemezés beállítása megmarad (új ütemezésnél ki)."
         },
         "route_angle": {
-          "name": "Route angle",
-          "description": "Mower-only."
+          "name": "Útvonal szöge",
+          "description": "Csak fűnyíró."
         },
         "toward_mode": {
           "name": "Nyírási szög mód",
@@ -1324,28 +1324,28 @@
           "description": "Csak fűnyíró: a sakktábla-útvonal második szöge, fokban."
         },
         "route_spacing": {
-          "name": "Route spacing",
-          "description": "Mower-only."
+          "name": "Útvonalak távolsága",
+          "description": "Csak fűnyíró."
         },
         "zone_hashs": {
-          "name": "Zone hashes",
-          "description": "Mower-only: list of area hashes covered."
+          "name": "Zóna-hash-ek",
+          "description": "Csak fűnyíró: a lefedett terület-hash-ek listája."
         },
         "work_mode": {
-          "name": "Work mode",
-          "description": "Spino-only cleaning mode."
+          "name": "Munkamód",
+          "description": "Tisztítási mód (csak Spino)."
         },
         "sub_mode": {
-          "name": "Sub-modes",
-          "description": "Spino-only: list of APP_WORK values."
+          "name": "Almódok",
+          "description": "Csak Spino: APP_WORK értékek listája."
         },
         "operating_power": {
-          "name": "Operating power",
-          "description": "Spino-only."
+          "name": "Üzemi teljesítmény",
+          "description": "Csak Spino."
         },
         "starttime": {
-          "name": "Start timestamp",
-          "description": "Spino-only: unix start time."
+          "name": "Kezdési időbélyeg",
+          "description": "Csak Spino: kezdési idő unix formátumban."
         }
       }
     },

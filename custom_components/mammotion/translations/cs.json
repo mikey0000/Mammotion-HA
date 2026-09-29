@@ -9,7 +9,7 @@
       "no_longer_present": "Zařízení již není k dispozici",
       "not_supported": "Zařízení není podporováno",
       "reconfigure_successful": "Rekonfigurace úspěšná",
-      "merged_into_existing_account": "This account already has an entry; the Bluetooth devices were merged into it and this entry was removed.",
+      "merged_into_existing_account": "Tento účet již má položku; zařízení Bluetooth do ní byla sloučena a tato položka byla odstraněna.",
       "api_limit_exceeded": "Byl překročen limit požadavků API. Zkuste to prosím znovu později.",
       "account_in_use": "Váš účet Mammotion je již aktivní v jiné relaci. Odhlaste se z aplikace Mammotion a zkuste to znovu.",
       "reauth_successful": "Opětovné ověření bylo úspěšné",
@@ -136,10 +136,10 @@
         "name": "Zbývající čas"
       },
       "l1_satellites": {
-        "name": "L1 signal quality"
+        "name": "Kvalita signálu L1"
       },
       "l2_satellites": {
-        "name": "L2 signal quality"
+        "name": "Kvalita signálu L2"
       },
       "positioning_mode": {
         "name": "Poloha RTK"
@@ -336,19 +336,19 @@
         }
       },
       "co_view_l1": {
-        "name": "L1 satellites (co-viewing)"
+        "name": "Satelity L1 (společně viditelné)"
       },
       "co_view_l2": {
-        "name": "L2 satellites (co-viewing)"
+        "name": "Satelity L2 (společně viditelné)"
       },
       "pos_level": {
-        "name": "Position level"
+        "name": "Úroveň polohy"
       },
       "rtk_signal": {
-        "name": "RTK signal quality"
+        "name": "Kvalita signálu RTK"
       },
       "device_signal": {
-        "name": "Device signal quality",
+        "name": "Kvalita signálu zařízení",
         "state": {
           "0": "Dobrý",
           "1": "Dobrý",
@@ -357,10 +357,10 @@
         }
       },
       "age": {
-        "name": "RTK correction age"
+        "name": "Stáří korekce RTK"
       },
       "base_link_status": {
-        "name": "Base link status",
+        "name": "Stav spojení se základnou",
         "state": {
           "0": "Dobrý",
           "1": "Slabý",
@@ -1026,7 +1026,7 @@
           "description": "Hash nadřazené sekací oblasti."
         },
         "svg_data": {
-          "name": "SVG data",
+          "name": "Data SVG",
           "description": "Surové SVG značkování pro zobrazení na mapě."
         },
         "svg_file_name": {
@@ -1072,7 +1072,7 @@
           "description": "Hash nadřazené sekací oblasti."
         },
         "svg_data": {
-          "name": "SVG data",
+          "name": "Data SVG",
           "description": "Aktualizované SVG značkování."
         },
         "svg_file_name": {
@@ -1125,7 +1125,7 @@
       "fields": {
         "name": {
           "name": "Nový název",
-          "description": "New display name for the task."
+          "description": "Nový zobrazovaný název úlohy."
         }
       }
     },
@@ -1135,7 +1135,7 @@
       "fields": {
         "enabled": {
           "name": "Povoleno",
-          "description": "True to enable the schedule, false to disable it."
+          "description": "Zapnuto plán povolí, vypnuto jej zakáže."
         }
       }
     },
@@ -1149,7 +1149,7 @@
       "fields": {
         "name": {
           "name": "Nový název",
-          "description": "Override the auto-generated 'Copy-N' name."
+          "description": "Přepíše automaticky vytvořený název 'Copy-N'."
         }
       }
     },
@@ -1158,52 +1158,52 @@
       "description": "Upraví podmnožinu polí plánu.",
       "fields": {
         "name": {
-          "name": "Name",
-          "description": "Display name."
+          "name": "Název",
+          "description": "Zobrazovaný název."
         },
         "enabled": {
-          "name": "Enabled",
-          "description": "Whether the schedule is active."
+          "name": "Povoleno",
+          "description": "Zda je plán aktivní."
         },
         "weeks": {
-          "name": "Weekdays",
-          "description": "List of weekday integers (0 = Sunday … 6 = Saturday) the schedule runs on."
+          "name": "Dny v týdnu",
+          "description": "Seznam čísel dnů v týdnu (0 = neděle … 6 = sobota), kdy plán běží."
         },
         "start_time": {
-          "name": "Start time",
-          "description": "HH:MM (mower only)."
+          "name": "Čas zahájení",
+          "description": "HH:MM (pouze sekačka)."
         },
         "end_time": {
-          "name": "End time",
-          "description": "HH:MM (mower only)."
+          "name": "Čas ukončení",
+          "description": "HH:MM (pouze sekačka)."
         },
         "start_date": {
-          "name": "Start date",
+          "name": "Datum zahájení",
           "description": "YYYY-MM-DD."
         },
         "end_date": {
-          "name": "End date",
+          "name": "Datum ukončení",
           "description": "YYYY-MM-DD."
         },
         "trigger_type": {
-          "name": "Trigger type",
-          "description": "0 = weekly, 1 = day interval, 2 = date, 3 = run once."
+          "name": "Typ spouštění",
+          "description": "0 = týdně, 1 = interval ve dnech, 2 = datum, 3 = jednorázově."
         },
         "day": {
-          "name": "Day interval",
-          "description": "Interval in days when trigger_type is 1 (DAY)."
+          "name": "Interval ve dnech",
+          "description": "Interval ve dnech, když je trigger_type 1 (DAY)."
         },
         "knife_height": {
-          "name": "Cut height",
-          "description": "Mower-only blade height in millimetres."
+          "name": "Výška sečení",
+          "description": "Výška nožů v milimetrech (pouze sekačka)."
         },
         "speed": {
-          "name": "Speed",
-          "description": "Mower: driving speed (float). Spino: fixed32 speed value (int)."
+          "name": "Rychlost",
+          "description": "Sekačka: rychlost jízdy (float). Spino: hodnota rychlosti fixed32 (int)."
         },
         "edge_mode": {
-          "name": "Edge mode",
-          "description": "Mower-only: 0 = none, 1 = once, 2 = twice."
+          "name": "Režim okrajů",
+          "description": "Pouze sekačka: 0 = žádné, 1 = jednou, 2 = dvakrát."
         },
         "ride_boundary_distance": {
           "name": "Vzdálenost jízdy po hranici",
@@ -1214,8 +1214,8 @@
           "description": "Automatické střídání směru sečení — mezi běhy obrací směr sečení, aby se omezilo poléhání trávy: 0 = vypnuto, 1 = zapnuto. Jen u modelů a firmwaru, které to podporují. Pokud pole vynecháte, zůstane nastavení plánu beze změny (u nového plánu vypnuto)."
         },
         "route_angle": {
-          "name": "Route angle",
-          "description": "Mower-only: mowing pattern angle 0–179 degrees."
+          "name": "Úhel trasy",
+          "description": "Pouze sekačka: úhel vzoru sečení 0–179 stupňů."
         },
         "toward_mode": {
           "name": "Režim sečení",
@@ -1226,28 +1226,28 @@
           "description": "Pouze sekačka: druhý úhel šachovnicové trasy ve stupních."
         },
         "route_spacing": {
-          "name": "Route spacing",
-          "description": "Mower-only: spacing between mow lines in cm."
+          "name": "Rozestup tras",
+          "description": "Pouze sekačka: rozestup mezi drahami sečení v cm."
         },
         "zone_hashs": {
-          "name": "Zone hashes",
-          "description": "Mower-only: list of area hashes (fixed64) covered by this schedule."
+          "name": "Hashe zón",
+          "description": "Pouze sekačka: seznam hashů oblastí (fixed64), které plán pokrývá."
         },
         "work_mode": {
-          "name": "Work mode",
-          "description": "Spino-only: 0 = recharge, 1 = AUTO, 2 = FLOOR, 3 = WALL, 4 = ECO, 5 = LINE, 6 = CUSTOM."
+          "name": "Pracovní režim",
+          "description": "Pouze Spino: 0 = nabíjení, 1 = AUTO, 2 = FLOOR, 3 = WALL, 4 = ECO, 5 = LINE, 6 = CUSTOM."
         },
         "sub_mode": {
-          "name": "Sub-modes",
-          "description": "Spino-only: list of APP_WORK values for multi-stage cleaning."
+          "name": "Dílčí režimy",
+          "description": "Pouze Spino: seznam hodnot APP_WORK pro vícefázové čištění."
         },
         "operating_power": {
-          "name": "Operating power",
-          "description": "Spino-only: suction power (fixed32 int)."
+          "name": "Provozní výkon",
+          "description": "Pouze Spino: sací výkon (fixed32 int)."
         },
         "starttime": {
-          "name": "Start timestamp",
-          "description": "Spino-only: unix timestamp (seconds) for the start of the cleaning session."
+          "name": "Časové razítko zahájení",
+          "description": "Pouze Spino: unixové časové razítko (sekundy) začátku čištění."
         }
       }
     },
@@ -1256,52 +1256,52 @@
       "description": "Vytvoří nový plán na zařízení.",
       "fields": {
         "name": {
-          "name": "Name",
-          "description": "Display name for the new schedule."
+          "name": "Název",
+          "description": "Zobrazovaný název nového plánu."
         },
         "enabled": {
-          "name": "Enabled",
-          "description": "Whether the schedule starts enabled."
+          "name": "Povoleno",
+          "description": "Zda bude plán po vytvoření povolen."
         },
         "weeks": {
-          "name": "Weekdays",
-          "description": "List of weekday integers (0 = Sunday … 6 = Saturday)."
+          "name": "Dny v týdnu",
+          "description": "Seznam čísel dnů v týdnu (0 = neděle … 6 = sobota)."
         },
         "start_time": {
-          "name": "Start time",
-          "description": "HH:MM (mower)."
+          "name": "Čas zahájení",
+          "description": "HH:MM (sekačka)."
         },
         "end_time": {
-          "name": "End time",
-          "description": "HH:MM (mower)."
+          "name": "Čas ukončení",
+          "description": "HH:MM (sekačka)."
         },
         "start_date": {
-          "name": "Start date",
+          "name": "Datum zahájení",
           "description": "YYYY-MM-DD."
         },
         "end_date": {
-          "name": "End date",
+          "name": "Datum ukončení",
           "description": "YYYY-MM-DD."
         },
         "trigger_type": {
-          "name": "Trigger type",
-          "description": "0 = weekly, 1 = day interval, 2 = date, 3 = run once."
+          "name": "Typ spouštění",
+          "description": "0 = týdně, 1 = interval ve dnech, 2 = datum, 3 = jednorázově."
         },
         "day": {
-          "name": "Day interval",
-          "description": "Interval in days for trigger_type = 1."
+          "name": "Interval ve dnech",
+          "description": "Interval ve dnech pro trigger_type = 1."
         },
         "knife_height": {
-          "name": "Cut height",
-          "description": "Mower-only blade height in millimetres."
+          "name": "Výška sečení",
+          "description": "Výška nožů v milimetrech (pouze sekačka)."
         },
         "speed": {
-          "name": "Speed",
-          "description": "Mower or Spino speed."
+          "name": "Rychlost",
+          "description": "Rychlost sekačky nebo Spino."
         },
         "edge_mode": {
-          "name": "Edge mode",
-          "description": "Mower-only."
+          "name": "Režim okrajů",
+          "description": "Pouze sekačka."
         },
         "ride_boundary_distance": {
           "name": "Vzdálenost jízdy po hranici",
@@ -1312,8 +1312,8 @@
           "description": "Automatické střídání směru sečení — mezi běhy obrací směr sečení, aby se omezilo poléhání trávy: 0 = vypnuto, 1 = zapnuto. Jen u modelů a firmwaru, které to podporují. Pokud pole vynecháte, zůstane nastavení plánu beze změny (u nového plánu vypnuto)."
         },
         "route_angle": {
-          "name": "Route angle",
-          "description": "Mower-only."
+          "name": "Úhel trasy",
+          "description": "Pouze sekačka."
         },
         "toward_mode": {
           "name": "Režim sečení",
@@ -1324,28 +1324,28 @@
           "description": "Pouze sekačka: druhý úhel šachovnicové trasy ve stupních."
         },
         "route_spacing": {
-          "name": "Route spacing",
-          "description": "Mower-only."
+          "name": "Rozestup tras",
+          "description": "Pouze sekačka."
         },
         "zone_hashs": {
-          "name": "Zone hashes",
-          "description": "Mower-only: list of area hashes covered."
+          "name": "Hashe zón",
+          "description": "Pouze sekačka: seznam pokrytých hashů oblastí."
         },
         "work_mode": {
-          "name": "Work mode",
-          "description": "Spino-only cleaning mode."
+          "name": "Pracovní režim",
+          "description": "Režim čištění (pouze Spino)."
         },
         "sub_mode": {
-          "name": "Sub-modes",
-          "description": "Spino-only: list of APP_WORK values."
+          "name": "Dílčí režimy",
+          "description": "Pouze Spino: seznam hodnot APP_WORK."
         },
         "operating_power": {
-          "name": "Operating power",
-          "description": "Spino-only."
+          "name": "Provozní výkon",
+          "description": "Pouze Spino."
         },
         "starttime": {
-          "name": "Start timestamp",
-          "description": "Spino-only: unix start time."
+          "name": "Časové razítko zahájení",
+          "description": "Pouze Spino: čas zahájení v unixovém formátu."
         }
       }
     },

@@ -9,7 +9,7 @@
       "no_longer_present": "Naprava ni več prisotna",
       "not_supported": "Naprava ni podprta",
       "reconfigure_successful": "Ponastavitev uspešna",
-      "merged_into_existing_account": "This account already has an entry; the Bluetooth devices were merged into it and this entry was removed.",
+      "merged_into_existing_account": "Ta račun že ima vnos; naprave Bluetooth so bile združene vanj, ta vnos pa je bil odstranjen.",
       "api_limit_exceeded": "Prekoračena je bila omejitev API-ja. Poskusite znova pozneje.",
       "account_in_use": "Vaš račun Mammotion je že aktiven v drugi seji. Odjavite se iz aplikacije Mammotion in poskusite znova.",
       "reauth_successful": "Ponovna overitev je uspela",
@@ -136,10 +136,10 @@
         "name": "Preostali čas"
       },
       "l1_satellites": {
-        "name": "L1 signal quality"
+        "name": "Kakovost signala L1"
       },
       "l2_satellites": {
-        "name": "L2 signal quality"
+        "name": "Kakovost signala L2"
       },
       "positioning_mode": {
         "name": "Položaj RTK postaje"
@@ -336,19 +336,19 @@
         }
       },
       "co_view_l1": {
-        "name": "L1 satellites (co-viewing)"
+        "name": "Sateliti L1 (skupno vidni)"
       },
       "co_view_l2": {
-        "name": "L2 satellites (co-viewing)"
+        "name": "Sateliti L2 (skupno vidni)"
       },
       "pos_level": {
-        "name": "Position level"
+        "name": "Raven položaja"
       },
       "rtk_signal": {
-        "name": "RTK signal quality"
+        "name": "Kakovost signala RTK"
       },
       "device_signal": {
-        "name": "Device signal quality",
+        "name": "Kakovost signala naprave",
         "state": {
           "0": "Dobro",
           "1": "Dobro",
@@ -357,10 +357,10 @@
         }
       },
       "age": {
-        "name": "RTK correction age"
+        "name": "Starost popravka RTK"
       },
       "base_link_status": {
-        "name": "Base link status",
+        "name": "Stanje povezave z bazo",
         "state": {
           "0": "Dobro",
           "1": "Šibko",
@@ -1125,7 +1125,7 @@
       "fields": {
         "name": {
           "name": "Novo ime",
-          "description": "New display name for the task."
+          "description": "Novo prikazno ime opravila."
         }
       }
     },
@@ -1135,7 +1135,7 @@
       "fields": {
         "enabled": {
           "name": "Omogočeno",
-          "description": "True to enable the schedule, false to disable it."
+          "description": "Vklopljeno omogoči urnik, izklopljeno ga onemogoči."
         }
       }
     },
@@ -1149,7 +1149,7 @@
       "fields": {
         "name": {
           "name": "Novo ime",
-          "description": "Override the auto-generated 'Copy-N' name."
+          "description": "Nadomesti samodejno ustvarjeno ime 'Copy-N'."
         }
       }
     },
@@ -1158,52 +1158,52 @@
       "description": "Spremeni izbrana polja urnika.",
       "fields": {
         "name": {
-          "name": "Name",
-          "description": "Display name."
+          "name": "Ime",
+          "description": "Prikazno ime."
         },
         "enabled": {
-          "name": "Enabled",
-          "description": "Whether the schedule is active."
+          "name": "Omogočeno",
+          "description": "Ali je urnik aktiven."
         },
         "weeks": {
-          "name": "Weekdays",
-          "description": "List of weekday integers (0 = Sunday … 6 = Saturday) the schedule runs on."
+          "name": "Dnevi v tednu",
+          "description": "Seznam številk dni v tednu (0 = nedelja … 6 = sobota), ob katerih se urnik izvaja."
         },
         "start_time": {
-          "name": "Start time",
-          "description": "HH:MM (mower only)."
+          "name": "Začetni čas",
+          "description": "HH:MM (samo kosilnica)."
         },
         "end_time": {
-          "name": "End time",
-          "description": "HH:MM (mower only)."
+          "name": "Končni čas",
+          "description": "HH:MM (samo kosilnica)."
         },
         "start_date": {
-          "name": "Start date",
+          "name": "Začetni datum",
           "description": "YYYY-MM-DD."
         },
         "end_date": {
-          "name": "End date",
+          "name": "Končni datum",
           "description": "YYYY-MM-DD."
         },
         "trigger_type": {
-          "name": "Trigger type",
-          "description": "0 = weekly, 1 = day interval, 2 = date, 3 = run once."
+          "name": "Vrsta sprožilca",
+          "description": "0 = tedensko, 1 = interval v dneh, 2 = datum, 3 = enkratno."
         },
         "day": {
-          "name": "Day interval",
-          "description": "Interval in days when trigger_type is 1 (DAY)."
+          "name": "Interval v dneh",
+          "description": "Interval v dneh, ko je trigger_type 1 (DAY)."
         },
         "knife_height": {
-          "name": "Cut height",
-          "description": "Mower-only blade height in millimetres."
+          "name": "Višina košnje",
+          "description": "Višina rezil v milimetrih (samo kosilnica)."
         },
         "speed": {
-          "name": "Speed",
-          "description": "Mower: driving speed (float). Spino: fixed32 speed value (int)."
+          "name": "Hitrost",
+          "description": "Kosilnica: hitrost vožnje (float). Spino: vrednost hitrosti fixed32 (int)."
         },
         "edge_mode": {
-          "name": "Edge mode",
-          "description": "Mower-only: 0 = none, 1 = once, 2 = twice."
+          "name": "Način robov",
+          "description": "Samo kosilnica: 0 = brez, 1 = enkrat, 2 = dvakrat."
         },
         "ride_boundary_distance": {
           "name": "Razdalja vožnje ob meji",
@@ -1214,8 +1214,8 @@
           "description": "Samodejno menjavanje smeri košnje — med zagoni obrne smer košnje, da se trava manj poleže: 0 = izklopljeno, 1 = vklopljeno. Samo pri modelih in vdelani programski opremi, ki to podpirajo. Če ga izpustite, ostane nastavitev urnika nespremenjena (pri novem urniku izklopljeno)."
         },
         "route_angle": {
-          "name": "Route angle",
-          "description": "Mower-only: mowing pattern angle 0–179 degrees."
+          "name": "Kot poti",
+          "description": "Samo kosilnica: kot vzorca košnje 0–179 stopinj."
         },
         "toward_mode": {
           "name": "Kot rezalne poti",
@@ -1226,28 +1226,28 @@
           "description": "Samo kosilnica: drugi kot šahovnične poti v stopinjah."
         },
         "route_spacing": {
-          "name": "Route spacing",
-          "description": "Mower-only: spacing between mow lines in cm."
+          "name": "Razmik poti",
+          "description": "Samo kosilnica: razmik med linijami košnje v cm."
         },
         "zone_hashs": {
-          "name": "Zone hashes",
-          "description": "Mower-only: list of area hashes (fixed64) covered by this schedule."
+          "name": "Zgoščene vrednosti con",
+          "description": "Samo kosilnica: seznam zgoščenih vrednosti območij (fixed64), ki jih pokriva ta urnik."
         },
         "work_mode": {
-          "name": "Work mode",
-          "description": "Spino-only: 0 = recharge, 1 = AUTO, 2 = FLOOR, 3 = WALL, 4 = ECO, 5 = LINE, 6 = CUSTOM."
+          "name": "Način delovanja",
+          "description": "Samo Spino: 0 = polnjenje, 1 = AUTO, 2 = FLOOR, 3 = WALL, 4 = ECO, 5 = LINE, 6 = CUSTOM."
         },
         "sub_mode": {
-          "name": "Sub-modes",
-          "description": "Spino-only: list of APP_WORK values for multi-stage cleaning."
+          "name": "Podnačini",
+          "description": "Samo Spino: seznam vrednosti APP_WORK za večstopenjsko čiščenje."
         },
         "operating_power": {
-          "name": "Operating power",
-          "description": "Spino-only: suction power (fixed32 int)."
+          "name": "Delovna moč",
+          "description": "Samo Spino: sesalna moč (fixed32 int)."
         },
         "starttime": {
-          "name": "Start timestamp",
-          "description": "Spino-only: unix timestamp (seconds) for the start of the cleaning session."
+          "name": "Začetni časovni žig",
+          "description": "Samo Spino: časovni žig unix (sekunde) začetka čiščenja."
         }
       }
     },
@@ -1256,52 +1256,52 @@
       "description": "Ustvari nov urnik na napravi.",
       "fields": {
         "name": {
-          "name": "Name",
-          "description": "Display name for the new schedule."
+          "name": "Ime",
+          "description": "Prikazno ime novega urnika."
         },
         "enabled": {
-          "name": "Enabled",
-          "description": "Whether the schedule starts enabled."
+          "name": "Omogočeno",
+          "description": "Ali se urnik začne omogočen."
         },
         "weeks": {
-          "name": "Weekdays",
-          "description": "List of weekday integers (0 = Sunday … 6 = Saturday)."
+          "name": "Dnevi v tednu",
+          "description": "Seznam številk dni v tednu (0 = nedelja … 6 = sobota)."
         },
         "start_time": {
-          "name": "Start time",
-          "description": "HH:MM (mower)."
+          "name": "Začetni čas",
+          "description": "HH:MM (kosilnica)."
         },
         "end_time": {
-          "name": "End time",
-          "description": "HH:MM (mower)."
+          "name": "Končni čas",
+          "description": "HH:MM (kosilnica)."
         },
         "start_date": {
-          "name": "Start date",
+          "name": "Začetni datum",
           "description": "YYYY-MM-DD."
         },
         "end_date": {
-          "name": "End date",
+          "name": "Končni datum",
           "description": "YYYY-MM-DD."
         },
         "trigger_type": {
-          "name": "Trigger type",
-          "description": "0 = weekly, 1 = day interval, 2 = date, 3 = run once."
+          "name": "Vrsta sprožilca",
+          "description": "0 = tedensko, 1 = interval v dneh, 2 = datum, 3 = enkratno."
         },
         "day": {
-          "name": "Day interval",
-          "description": "Interval in days for trigger_type = 1."
+          "name": "Interval v dneh",
+          "description": "Interval v dneh za trigger_type = 1."
         },
         "knife_height": {
-          "name": "Cut height",
-          "description": "Mower-only blade height in millimetres."
+          "name": "Višina košnje",
+          "description": "Višina rezil v milimetrih (samo kosilnica)."
         },
         "speed": {
-          "name": "Speed",
-          "description": "Mower or Spino speed."
+          "name": "Hitrost",
+          "description": "Hitrost kosilnice ali naprave Spino."
         },
         "edge_mode": {
-          "name": "Edge mode",
-          "description": "Mower-only."
+          "name": "Način robov",
+          "description": "Samo kosilnica."
         },
         "ride_boundary_distance": {
           "name": "Razdalja vožnje ob meji",
@@ -1312,8 +1312,8 @@
           "description": "Samodejno menjavanje smeri košnje — med zagoni obrne smer košnje, da se trava manj poleže: 0 = izklopljeno, 1 = vklopljeno. Samo pri modelih in vdelani programski opremi, ki to podpirajo. Če ga izpustite, ostane nastavitev urnika nespremenjena (pri novem urniku izklopljeno)."
         },
         "route_angle": {
-          "name": "Route angle",
-          "description": "Mower-only."
+          "name": "Kot poti",
+          "description": "Samo kosilnica."
         },
         "toward_mode": {
           "name": "Kot rezalne poti",
@@ -1324,28 +1324,28 @@
           "description": "Samo kosilnica: drugi kot šahovnične poti v stopinjah."
         },
         "route_spacing": {
-          "name": "Route spacing",
-          "description": "Mower-only."
+          "name": "Razmik poti",
+          "description": "Samo kosilnica."
         },
         "zone_hashs": {
-          "name": "Zone hashes",
-          "description": "Mower-only: list of area hashes covered."
+          "name": "Zgoščene vrednosti con",
+          "description": "Samo kosilnica: seznam zgoščenih vrednosti pokritih območij."
         },
         "work_mode": {
-          "name": "Work mode",
-          "description": "Spino-only cleaning mode."
+          "name": "Način delovanja",
+          "description": "Način čiščenja (samo Spino)."
         },
         "sub_mode": {
-          "name": "Sub-modes",
-          "description": "Spino-only: list of APP_WORK values."
+          "name": "Podnačini",
+          "description": "Samo Spino: seznam vrednosti APP_WORK."
         },
         "operating_power": {
-          "name": "Operating power",
-          "description": "Spino-only."
+          "name": "Delovna moč",
+          "description": "Samo Spino."
         },
         "starttime": {
-          "name": "Start timestamp",
-          "description": "Spino-only: unix start time."
+          "name": "Začetni časovni žig",
+          "description": "Samo Spino: čas začetka v zapisu unix."
         }
       }
     },

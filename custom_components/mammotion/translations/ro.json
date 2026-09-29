@@ -9,7 +9,7 @@
       "no_longer_present": "Echipamentul nu mai este prezent",
       "not_supported": "Dispozitivul nu este suportat",
       "reconfigure_successful": "Reconfigurare reușită",
-      "merged_into_existing_account": "This account already has an entry; the Bluetooth devices were merged into it and this entry was removed.",
+      "merged_into_existing_account": "Acest cont are deja o intrare; dispozitivele Bluetooth au fost îmbinate în ea, iar această intrare a fost eliminată.",
       "api_limit_exceeded": "Limita de solicitări API a fost depășită. Vă rugăm să încercați din nou mai târziu.",
       "account_in_use": "Contul dvs. Mammotion este deja activ într-o altă sesiune. Deconectați-vă din aplicația Mammotion și încercați din nou.",
       "reauth_successful": "Reautentificarea a reușit",
@@ -136,10 +136,10 @@
         "name": "Timpul rămas"
       },
       "l1_satellites": {
-        "name": "L1 signal quality"
+        "name": "Calitatea semnalului L1"
       },
       "l2_satellites": {
-        "name": "L2 signal quality"
+        "name": "Calitatea semnalului L2"
       },
       "positioning_mode": {
         "name": "Poziția RTK"
@@ -336,19 +336,19 @@
         }
       },
       "co_view_l1": {
-        "name": "L1 satellites (co-viewing)"
+        "name": "Sateliți L1 (vizibili în comun)"
       },
       "co_view_l2": {
-        "name": "L2 satellites (co-viewing)"
+        "name": "Sateliți L2 (vizibili în comun)"
       },
       "pos_level": {
-        "name": "Position level"
+        "name": "Nivel de poziționare"
       },
       "rtk_signal": {
-        "name": "RTK signal quality"
+        "name": "Calitatea semnalului RTK"
       },
       "device_signal": {
-        "name": "Device signal quality",
+        "name": "Calitatea semnalului dispozitivului",
         "state": {
           "0": "Bun",
           "1": "Bun",
@@ -357,10 +357,10 @@
         }
       },
       "age": {
-        "name": "RTK correction age"
+        "name": "Vechimea corecției RTK"
       },
       "base_link_status": {
-        "name": "Base link status",
+        "name": "Starea legăturii cu baza",
         "state": {
           "0": "Bun",
           "1": "Slab",
@@ -530,7 +530,7 @@
         "name": "Golire manuală a ierbii"
       },
       "spino_buzzer": {
-        "name": "Buzzer"
+        "name": "Avertizor sonor"
       },
       "spino_turbo_clean": {
         "name": "Curățare turbo"
@@ -1125,7 +1125,7 @@
       "fields": {
         "name": {
           "name": "Nume nou",
-          "description": "New display name for the task."
+          "description": "Noul nume afișat al sarcinii."
         }
       }
     },
@@ -1135,7 +1135,7 @@
       "fields": {
         "enabled": {
           "name": "Activat",
-          "description": "True to enable the schedule, false to disable it."
+          "description": "Pornit activează programul, oprit îl dezactivează."
         }
       }
     },
@@ -1149,7 +1149,7 @@
       "fields": {
         "name": {
           "name": "Nume nou",
-          "description": "Override the auto-generated 'Copy-N' name."
+          "description": "Înlocuiește numele 'Copy-N' generat automat."
         }
       }
     },
@@ -1158,52 +1158,52 @@
       "description": "Modifică un subset al câmpurilor programului.",
       "fields": {
         "name": {
-          "name": "Name",
-          "description": "Display name."
+          "name": "Nume",
+          "description": "Nume afișat."
         },
         "enabled": {
-          "name": "Enabled",
-          "description": "Whether the schedule is active."
+          "name": "Activat",
+          "description": "Dacă programul este activ."
         },
         "weeks": {
-          "name": "Weekdays",
-          "description": "List of weekday integers (0 = Sunday … 6 = Saturday) the schedule runs on."
+          "name": "Zilele săptămânii",
+          "description": "Lista numerelor zilelor săptămânii (0 = duminică … 6 = sâmbătă) în care rulează programul."
         },
         "start_time": {
-          "name": "Start time",
-          "description": "HH:MM (mower only)."
+          "name": "Ora de început",
+          "description": "HH:MM (doar mașina de tuns)."
         },
         "end_time": {
-          "name": "End time",
-          "description": "HH:MM (mower only)."
+          "name": "Ora de sfârșit",
+          "description": "HH:MM (doar mașina de tuns)."
         },
         "start_date": {
-          "name": "Start date",
+          "name": "Data de început",
           "description": "YYYY-MM-DD."
         },
         "end_date": {
-          "name": "End date",
+          "name": "Data de sfârșit",
           "description": "YYYY-MM-DD."
         },
         "trigger_type": {
-          "name": "Trigger type",
-          "description": "0 = weekly, 1 = day interval, 2 = date, 3 = run once."
+          "name": "Tip de declanșare",
+          "description": "0 = săptămânal, 1 = interval în zile, 2 = dată, 3 = o singură dată."
         },
         "day": {
-          "name": "Day interval",
-          "description": "Interval in days when trigger_type is 1 (DAY)."
+          "name": "Interval în zile",
+          "description": "Interval în zile când trigger_type este 1 (DAY)."
         },
         "knife_height": {
-          "name": "Cut height",
-          "description": "Mower-only blade height in millimetres."
+          "name": "Înălțimea de tăiere",
+          "description": "Înălțimea lamei în milimetri (doar mașina de tuns)."
         },
         "speed": {
-          "name": "Speed",
-          "description": "Mower: driving speed (float). Spino: fixed32 speed value (int)."
+          "name": "Viteză",
+          "description": "Mașina de tuns: viteza de deplasare (float). Spino: valoare de viteză fixed32 (int)."
         },
         "edge_mode": {
-          "name": "Edge mode",
-          "description": "Mower-only: 0 = none, 1 = once, 2 = twice."
+          "name": "Mod margine",
+          "description": "Doar mașina de tuns: 0 = deloc, 1 = o dată, 2 = de două ori."
         },
         "ride_boundary_distance": {
           "name": "Distanța de parcurgere a marginii",
@@ -1214,8 +1214,8 @@
           "description": "Inversare automată a direcției de tuns — inversează direcția de tuns între rulări pentru a reduce culcarea ierbii: 0 = oprit, 1 = pornit. Doar pe modelele și firmware-ul care o acceptă. Dacă este omis, se păstrează setarea programului (oprit pentru un program nou)."
         },
         "route_angle": {
-          "name": "Route angle",
-          "description": "Mower-only: mowing pattern angle 0–179 degrees."
+          "name": "Unghiul traseului",
+          "description": "Doar mașina de tuns: unghiul modelului de tundere 0–179 grade."
         },
         "toward_mode": {
           "name": "Mod unghi tăiat",
@@ -1226,28 +1226,28 @@
           "description": "Doar mașina de tuns: al doilea unghi al unui traseu în tablă de șah, în grade."
         },
         "route_spacing": {
-          "name": "Route spacing",
-          "description": "Mower-only: spacing between mow lines in cm."
+          "name": "Distanța dintre trasee",
+          "description": "Doar mașina de tuns: distanța dintre liniile de tundere în cm."
         },
         "zone_hashs": {
-          "name": "Zone hashes",
-          "description": "Mower-only: list of area hashes (fixed64) covered by this schedule."
+          "name": "Hash-uri de zone",
+          "description": "Doar mașina de tuns: lista hash-urilor zonelor (fixed64) acoperite de acest program."
         },
         "work_mode": {
-          "name": "Work mode",
-          "description": "Spino-only: 0 = recharge, 1 = AUTO, 2 = FLOOR, 3 = WALL, 4 = ECO, 5 = LINE, 6 = CUSTOM."
+          "name": "Mod de lucru",
+          "description": "Doar Spino: 0 = reîncărcare, 1 = AUTO, 2 = FLOOR, 3 = WALL, 4 = ECO, 5 = LINE, 6 = CUSTOM."
         },
         "sub_mode": {
-          "name": "Sub-modes",
-          "description": "Spino-only: list of APP_WORK values for multi-stage cleaning."
+          "name": "Submoduri",
+          "description": "Doar Spino: lista valorilor APP_WORK pentru curățarea în mai multe etape."
         },
         "operating_power": {
-          "name": "Operating power",
-          "description": "Spino-only: suction power (fixed32 int)."
+          "name": "Putere de funcționare",
+          "description": "Doar Spino: putere de aspirare (fixed32 int)."
         },
         "starttime": {
-          "name": "Start timestamp",
-          "description": "Spino-only: unix timestamp (seconds) for the start of the cleaning session."
+          "name": "Marcaj de timp de început",
+          "description": "Doar Spino: marcaj de timp unix (secunde) pentru începutul sesiunii de curățare."
         }
       }
     },
@@ -1256,52 +1256,52 @@
       "description": "Creează un program nou pe dispozitiv.",
       "fields": {
         "name": {
-          "name": "Name",
-          "description": "Display name for the new schedule."
+          "name": "Nume",
+          "description": "Numele afișat al noului program."
         },
         "enabled": {
-          "name": "Enabled",
-          "description": "Whether the schedule starts enabled."
+          "name": "Activat",
+          "description": "Dacă programul pornește activat."
         },
         "weeks": {
-          "name": "Weekdays",
-          "description": "List of weekday integers (0 = Sunday … 6 = Saturday)."
+          "name": "Zilele săptămânii",
+          "description": "Lista numerelor zilelor săptămânii (0 = duminică … 6 = sâmbătă)."
         },
         "start_time": {
-          "name": "Start time",
-          "description": "HH:MM (mower)."
+          "name": "Ora de început",
+          "description": "HH:MM (mașina de tuns)."
         },
         "end_time": {
-          "name": "End time",
-          "description": "HH:MM (mower)."
+          "name": "Ora de sfârșit",
+          "description": "HH:MM (mașina de tuns)."
         },
         "start_date": {
-          "name": "Start date",
+          "name": "Data de început",
           "description": "YYYY-MM-DD."
         },
         "end_date": {
-          "name": "End date",
+          "name": "Data de sfârșit",
           "description": "YYYY-MM-DD."
         },
         "trigger_type": {
-          "name": "Trigger type",
-          "description": "0 = weekly, 1 = day interval, 2 = date, 3 = run once."
+          "name": "Tip de declanșare",
+          "description": "0 = săptămânal, 1 = interval în zile, 2 = dată, 3 = o singură dată."
         },
         "day": {
-          "name": "Day interval",
-          "description": "Interval in days for trigger_type = 1."
+          "name": "Interval în zile",
+          "description": "Interval în zile pentru trigger_type = 1."
         },
         "knife_height": {
-          "name": "Cut height",
-          "description": "Mower-only blade height in millimetres."
+          "name": "Înălțimea de tăiere",
+          "description": "Înălțimea lamei în milimetri (doar mașina de tuns)."
         },
         "speed": {
-          "name": "Speed",
-          "description": "Mower or Spino speed."
+          "name": "Viteză",
+          "description": "Viteza mașinii de tuns sau a Spino."
         },
         "edge_mode": {
-          "name": "Edge mode",
-          "description": "Mower-only."
+          "name": "Mod margine",
+          "description": "Doar mașina de tuns."
         },
         "ride_boundary_distance": {
           "name": "Distanța de parcurgere a marginii",
@@ -1312,8 +1312,8 @@
           "description": "Inversare automată a direcției de tuns — inversează direcția de tuns între rulări pentru a reduce culcarea ierbii: 0 = oprit, 1 = pornit. Doar pe modelele și firmware-ul care o acceptă. Dacă este omis, se păstrează setarea programului (oprit pentru un program nou)."
         },
         "route_angle": {
-          "name": "Route angle",
-          "description": "Mower-only."
+          "name": "Unghiul traseului",
+          "description": "Doar mașina de tuns."
         },
         "toward_mode": {
           "name": "Mod unghi tăiat",
@@ -1324,28 +1324,28 @@
           "description": "Doar mașina de tuns: al doilea unghi al unui traseu în tablă de șah, în grade."
         },
         "route_spacing": {
-          "name": "Route spacing",
-          "description": "Mower-only."
+          "name": "Distanța dintre trasee",
+          "description": "Doar mașina de tuns."
         },
         "zone_hashs": {
-          "name": "Zone hashes",
-          "description": "Mower-only: list of area hashes covered."
+          "name": "Hash-uri de zone",
+          "description": "Doar mașina de tuns: lista hash-urilor zonelor acoperite."
         },
         "work_mode": {
-          "name": "Work mode",
-          "description": "Spino-only cleaning mode."
+          "name": "Mod de lucru",
+          "description": "Mod de curățare (doar Spino)."
         },
         "sub_mode": {
-          "name": "Sub-modes",
-          "description": "Spino-only: list of APP_WORK values."
+          "name": "Submoduri",
+          "description": "Doar Spino: lista valorilor APP_WORK."
         },
         "operating_power": {
-          "name": "Operating power",
-          "description": "Spino-only."
+          "name": "Putere de funcționare",
+          "description": "Doar Spino."
         },
         "starttime": {
-          "name": "Start timestamp",
-          "description": "Spino-only: unix start time."
+          "name": "Marcaj de timp de început",
+          "description": "Doar Spino: ora de început în format unix."
         }
       }
     },
