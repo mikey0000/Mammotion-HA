@@ -281,10 +281,10 @@
         "name": "LoRa version"
       },
       "rtk_latitude": {
-        "name": "RTK latitude"
+        "name": "Latitude"
       },
       "rtk_longitude": {
-        "name": "RTK longitude"
+        "name": "Longitude"
       },
       "rtk_wifi_rssi": {
         "name": "Wi-Fi RSSI"
