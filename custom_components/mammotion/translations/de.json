@@ -389,6 +389,7 @@
           "dock_moved": "Ladestation verschoben",
           "no_task_area": "Kein Aufgabenbereich",
           "night_protection": "Nachtschutz",
+          "rain_protection": "Regenschutz aktiv",
           "rtk_not_ready": "RTK-Station nicht bereit",
           "weak_satellite_signal": "Schwaches Satellitensignal",
           "positioning_failure": "Fehler im Positionierungssystem",
@@ -669,6 +670,34 @@
           "RIGHT_ANGLE_COMPLEX": "Rechtwinklig (komplex)",
           "CURVE_SIMPLE": "Gewölbt (einfach)",
           "CURVE_COMPLEX": "Gewölbt (komplex)"
+        }
+      },
+      "rain_protection_mode": {
+        "name": "Regenschutz",
+        "state": {
+          "off": "Aus",
+          "smart": "Intelligenter Modus",
+          "sensor": "Sensormodus"
+        }
+      },
+      "rain_protection_delay": {
+        "name": "Verzögerungszeit des Regenschutzes",
+        "state": {
+          "0": "Keine Verzögerung",
+          "1": "1 Std.",
+          "2": "2 Std.",
+          "3": "3 Std.",
+          "4": "4 Std.",
+          "5": "5 Std.",
+          "6": "6 Std.",
+          "7": "7 Std.",
+          "8": "8 Std.",
+          "9": "9 Std.",
+          "10": "10 Std.",
+          "11": "11 Std.",
+          "12": "12 Std.",
+          "24": "24 Std.",
+          "48": "48 Std."
         }
       }
     },
@@ -1595,6 +1624,9 @@
     },
     "self_check_night_protection": {
       "message": "Der Nachtschutz ist aktiv, daher mäht der Mäher nachts nicht."
+    },
+    "self_check_rain_protection": {
+      "message": "Der Regenschutz verhindert den Start des Mähers. Er nutzt den Regensensor und Online-Wetterdaten, um zu beurteilen, ob sich die Bedingungen zum Mähen eignen, und berechnet, wann das Mähen fortgesetzt wird. Warte ab oder ändere bzw. deaktiviere den Regenschutz in den Mähereinstellungen der App."
     },
     "self_check_rtk_not_ready": {
       "message": "Die RTK-Station ist noch nicht bereit."

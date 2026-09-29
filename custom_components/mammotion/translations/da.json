@@ -389,6 +389,7 @@
           "dock_moved": "Ladestation flyttet",
           "no_task_area": "Intet opgaveområde",
           "night_protection": "Natbeskyttelse",
+          "rain_protection": "Regnbeskyttelse aktiv",
           "rtk_not_ready": "RTK-referencestation ikke klar",
           "weak_satellite_signal": "Svagt satellitsignal",
           "positioning_failure": "Fejl i positioneringssystem",
@@ -669,6 +670,34 @@
           "RIGHT_ANGLE_COMPLEX": "Retvinklet (kompleks)",
           "CURVE_SIMPLE": "Buet (enkel)",
           "CURVE_COMPLEX": "Buet (kompleks)"
+        }
+      },
+      "rain_protection_mode": {
+        "name": "Regnbeskyttelse",
+        "state": {
+          "off": "Fra",
+          "smart": "Intelligent tilstand",
+          "sensor": "Sensortilstand"
+        }
+      },
+      "rain_protection_delay": {
+        "name": "Forsinkelsestid for regnbeskyttelse",
+        "state": {
+          "0": "Ingen forsinkelse",
+          "1": "1 time",
+          "2": "2 timer",
+          "3": "3 timer",
+          "4": "4 timer",
+          "5": "5 timer",
+          "6": "6 timer",
+          "7": "7 timer",
+          "8": "8 timer",
+          "9": "9 timer",
+          "10": "10 timer",
+          "11": "11 timer",
+          "12": "12 timer",
+          "24": "24 timer",
+          "48": "48 timer"
         }
       }
     },
@@ -1595,6 +1624,9 @@
     },
     "self_check_night_protection": {
       "message": "Natbeskyttelse er slået til, så plæneklipperen klipper ikke om natten."
+    },
+    "self_check_rain_protection": {
+      "message": "Regnbeskyttelse forhindrer plæneklipperen i at starte. Den bruger regnsensoren og online vejrdata til at vurdere, om forholdene er egnede til klipning, og beregner, hvornår klipningen kan genoptages. Vent, eller ændr eller slå regnbeskyttelse fra i plæneklipperens indstillinger i appen."
     },
     "self_check_rtk_not_ready": {
       "message": "RTK-referencestationen er ikke klar endnu."

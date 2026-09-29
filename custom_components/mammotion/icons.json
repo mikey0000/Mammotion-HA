@@ -91,6 +91,7 @@
         "state": {
           "normal": "mdi:check-circle-outline",
           "rain": "mdi:weather-rainy",
+          "rain_protection": "mdi:weather-pouring",
           "low_battery": "mdi:battery-alert",
           "night_protection": "mdi:weather-night",
           "non_working_hours": "mdi:clock-alert-outline"
@@ -166,6 +167,17 @@
           "direct": "mdi:selection-ellipse-arrow-inside",
           "follow_perimeter": "mdi:select-arrow-down"
         }
+      },
+      "rain_protection_mode": {
+        "default": "mdi:umbrella",
+        "state": {
+          "off": "mdi:umbrella-closed",
+          "smart": "mdi:weather-partly-rainy",
+          "sensor": "mdi:umbrella-outline"
+        }
+      },
+      "rain_protection_delay": {
+        "default": "mdi:timer-sand"
       }
     },
     "number": {

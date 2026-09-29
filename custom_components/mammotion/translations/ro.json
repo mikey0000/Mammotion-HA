@@ -389,6 +389,7 @@
           "dock_moved": "Stația de încărcare a fost mutată",
           "no_task_area": "Nicio zonă de lucru",
           "night_protection": "Protecție pe timp de noapte",
+          "rain_protection": "Protecția împotriva ploii este activă",
           "rtk_not_ready": "Stația de referință RTK nu este pregătită",
           "weak_satellite_signal": "Semnal satelit slab",
           "positioning_failure": "Defecțiune a sistemului de poziționare",
@@ -669,6 +670,34 @@
           "RIGHT_ANGLE_COMPLEX": "Unghi drept (complex)",
           "CURVE_SIMPLE": "Curbat (simplu)",
           "CURVE_COMPLEX": "Curbat (complex)"
+        }
+      },
+      "rain_protection_mode": {
+        "name": "Protecție împotriva ploii",
+        "state": {
+          "off": "Oprită",
+          "smart": "Mod inteligent",
+          "sensor": "Mod senzor"
+        }
+      },
+      "rain_protection_delay": {
+        "name": "Întârzierea protecției împotriva ploii",
+        "state": {
+          "0": "Fără întârziere",
+          "1": "1 oră",
+          "2": "2 ore",
+          "3": "3 ore",
+          "4": "4 ore",
+          "5": "5 ore",
+          "6": "6 ore",
+          "7": "7 ore",
+          "8": "8 ore",
+          "9": "9 ore",
+          "10": "10 ore",
+          "11": "11 ore",
+          "12": "12 ore",
+          "24": "24 de ore",
+          "48": "48 de ore"
         }
       }
     },
@@ -1595,6 +1624,9 @@
     },
     "self_check_night_protection": {
       "message": "Protecția pe timp de noapte este activată, deci mașina nu tunde noaptea."
+    },
+    "self_check_rain_protection": {
+      "message": "Protecția împotriva ploii împiedică pornirea mașinii de tuns. Folosește senzorul de ploaie și datele meteo online pentru a stabili dacă condițiile sunt potrivite pentru tuns și calculează când să reia tunsul. Așteptați sau modificați ori dezactivați protecția împotriva ploii din setările mașinii de tuns din aplicație."
     },
     "self_check_rtk_not_ready": {
       "message": "Stația de referință RTK nu este încă pregătită."

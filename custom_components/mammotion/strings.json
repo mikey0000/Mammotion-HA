@@ -389,6 +389,7 @@
           "dock_moved": "Charging station moved",
           "no_task_area": "No task area",
           "night_protection": "Night protection",
+          "rain_protection": "Rain protection active",
           "rtk_not_ready": "RTK reference station not ready",
           "weak_satellite_signal": "Weak satellite signal",
           "positioning_failure": "Positioning system failure",
@@ -669,6 +670,34 @@
           "RIGHT_ANGLE_COMPLEX": "Right angle (complex)",
           "CURVE_SIMPLE": "Curved (simple)",
           "CURVE_COMPLEX": "Curved (complex)"
+        }
+      },
+      "rain_protection_mode": {
+        "name": "Rain protection",
+        "state": {
+          "off": "Off",
+          "smart": "Smart Mode",
+          "sensor": "Sensor Mode"
+        }
+      },
+      "rain_protection_delay": {
+        "name": "Rain protection delay",
+        "state": {
+          "0": "No delay",
+          "1": "1 h",
+          "2": "2 h",
+          "3": "3 h",
+          "4": "4 h",
+          "5": "5 h",
+          "6": "6 h",
+          "7": "7 h",
+          "8": "8 h",
+          "9": "9 h",
+          "10": "10 h",
+          "11": "11 h",
+          "12": "12 h",
+          "24": "24 h",
+          "48": "48 h"
         }
       }
     },
@@ -1595,6 +1624,9 @@
     },
     "self_check_night_protection": {
       "message": "Night protection is on, so the mower will not mow at night."
+    },
+    "self_check_rain_protection": {
+      "message": "Rain protection is stopping the mower from starting. It uses the rain sensor and online weather data to judge whether conditions suit mowing and works out when to resume. Wait for it, or change or turn off rain protection in the mower's settings in the app."
     },
     "self_check_rtk_not_ready": {
       "message": "The RTK reference station is not ready yet."

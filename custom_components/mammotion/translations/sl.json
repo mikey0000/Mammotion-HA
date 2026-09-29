@@ -389,6 +389,7 @@
           "dock_moved": "Polnilna postaja premaknjena",
           "no_task_area": "Ni območja opravila",
           "night_protection": "Nočna zaščita",
+          "rain_protection": "Zaščita pred dežjem je aktivna",
           "rtk_not_ready": "Referenčna postaja RTK ni pripravljena",
           "weak_satellite_signal": "Šibek satelitski signal",
           "positioning_failure": "Okvara sistema za določanje položaja",
@@ -669,6 +670,34 @@
           "RIGHT_ANGLE_COMPLEX": "Pravokotno (zapleteno)",
           "CURVE_SIMPLE": "Zaobljeno (enostavno)",
           "CURVE_COMPLEX": "Zaobljeno (zapleteno)"
+        }
+      },
+      "rain_protection_mode": {
+        "name": "Zaščita pred dežjem",
+        "state": {
+          "off": "Izklopljeno",
+          "smart": "Pametni način",
+          "sensor": "Način s senzorjem"
+        }
+      },
+      "rain_protection_delay": {
+        "name": "Čas zakasnitve zaščite pred dežjem",
+        "state": {
+          "0": "Brez zakasnitve",
+          "1": "1 ura",
+          "2": "2 uri",
+          "3": "3 ure",
+          "4": "4 ure",
+          "5": "5 ur",
+          "6": "6 ur",
+          "7": "7 ur",
+          "8": "8 ur",
+          "9": "9 ur",
+          "10": "10 ur",
+          "11": "11 ur",
+          "12": "12 ur",
+          "24": "24 ur",
+          "48": "48 ur"
         }
       }
     },
@@ -1595,6 +1624,9 @@
     },
     "self_check_night_protection": {
       "message": "Nočna zaščita je vklopljena, zato kosilnica ponoči ne kosi."
+    },
+    "self_check_rain_protection": {
+      "message": "Zaščita pred dežjem preprečuje zagon kosilnice. S senzorjem za dež in spletnimi vremenskimi podatki presodi, ali so razmere primerne za košnjo, in izračuna, kdaj naj se košnja nadaljuje. Počakajte ali pa zaščito pred dežjem spremenite oziroma izklopite v nastavitvah kosilnice v aplikaciji."
     },
     "self_check_rtk_not_ready": {
       "message": "Referenčna postaja RTK še ni pripravljena."

@@ -31,7 +31,9 @@ _PRODUCT_MODEL = "ReferenceStation"
 
 
 def _entity(
-    device: RTKBaseStationDevice | None = None, product_model: str = _PRODUCT_MODEL
+    device: RTKBaseStationDevice | None = None,
+    product_model: str = _PRODUCT_MODEL,
+    product_name: str = "",
 ) -> MammotionBaseRTKEntity:
     """Build the entity with a stand-in coordinator; the property itself is real."""
     coordinator = MagicMock()
@@ -39,6 +41,7 @@ def _entity(
     coordinator.device_name = _NAME
     coordinator.unique_name = _NAME
     coordinator.device.product_model = product_model
+    coordinator.device.product_name = product_name
     coordinator.device.product_key = _PRODUCT_KEY
     entity = MammotionBaseRTKEntity.__new__(MammotionBaseRTKEntity)
     entity.coordinator = coordinator
@@ -63,6 +66,18 @@ def test_a_station_with_no_product_model_shows_no_model_at_all() -> None:
     info = _entity(product_model="").device_info
 
     assert info.get("model") is None
+
+
+def test_a_station_with_no_product_model_shows_its_product_name() -> None:
+    """The RBS03 record has ``productModel: null`` but ``productName: "RBS03"``; the card showed neither."""
+    assert (
+        _entity(product_model="", product_name="RBS03").device_info["model"] == "RBS03"
+    )
+
+
+def test_the_product_model_wins_over_the_product_name() -> None:
+    """A station reporting both shows its product model."""
+    assert _entity(product_name="RBS03").device_info["model"] == _PRODUCT_MODEL
 
 
 def test_a_name_on_the_state_model_is_still_preferred_over_nothing() -> None:

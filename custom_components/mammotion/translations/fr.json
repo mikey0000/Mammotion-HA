@@ -389,6 +389,7 @@
           "dock_moved": "Station de charge déplacée",
           "no_task_area": "Aucune zone de tâche",
           "night_protection": "Protection nocturne",
+          "rain_protection": "Protection contre la pluie activée",
           "rtk_not_ready": "Station de référence RTK non prête",
           "weak_satellite_signal": "Signal satellite faible",
           "positioning_failure": "Défaillance du système de positionnement",
@@ -669,6 +670,34 @@
           "RIGHT_ANGLE_COMPLEX": "Angle droit (complexe)",
           "CURVE_SIMPLE": "Incurvé (simple)",
           "CURVE_COMPLEX": "Incurvé (complexe)"
+        }
+      },
+      "rain_protection_mode": {
+        "name": "Protection contre la pluie",
+        "state": {
+          "off": "Désactivé",
+          "smart": "Mode intelligent",
+          "sensor": "Mode capteur"
+        }
+      },
+      "rain_protection_delay": {
+        "name": "Temporisation de la protection contre la pluie",
+        "state": {
+          "0": "Aucun délai",
+          "1": "1 heure",
+          "2": "2 heures",
+          "3": "3 heures",
+          "4": "4 heures",
+          "5": "5 heures",
+          "6": "6 heures",
+          "7": "7 heures",
+          "8": "8 heures",
+          "9": "9 heures",
+          "10": "10 heures",
+          "11": "11 heures",
+          "12": "12 heures",
+          "24": "24 heures",
+          "48": "48 heures"
         }
       }
     },
@@ -1595,6 +1624,9 @@
     },
     "self_check_night_protection": {
       "message": "La protection nocturne est activée, la tondeuse ne tond donc pas la nuit."
+    },
+    "self_check_rain_protection": {
+      "message": "La protection contre la pluie empêche la tondeuse de démarrer. Elle utilise le capteur de pluie et les données météo en ligne pour juger si les conditions sont propices à la tonte, et calcule quand la reprendre. Patientez, ou modifiez ou désactivez la protection contre la pluie dans les réglages de la tondeuse dans l’application."
     },
     "self_check_rtk_not_ready": {
       "message": "La station de référence RTK n'est pas encore prête."

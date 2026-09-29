@@ -389,6 +389,7 @@
           "dock_moved": "Laadstation verplaatst",
           "no_task_area": "Geen taakgebied",
           "night_protection": "Nachtbescherming",
+          "rain_protection": "Regenbescherming actief",
           "rtk_not_ready": "RTK-referentiestation niet gereed",
           "weak_satellite_signal": "Zwak satellietsignaal",
           "positioning_failure": "Storing in positioneringssysteem",
@@ -669,6 +670,34 @@
           "RIGHT_ANGLE_COMPLEX": "Rechte hoek (complex)",
           "CURVE_SIMPLE": "Gebogen (eenvoudig)",
           "CURVE_COMPLEX": "Gebogen (complex)"
+        }
+      },
+      "rain_protection_mode": {
+        "name": "Regenbescherming",
+        "state": {
+          "off": "Uit",
+          "smart": "Slimme modus",
+          "sensor": "Sensormodus"
+        }
+      },
+      "rain_protection_delay": {
+        "name": "Vertragingstijd regenbescherming",
+        "state": {
+          "0": "Geen vertraging",
+          "1": "1 uur",
+          "2": "2 uur",
+          "3": "3 uur",
+          "4": "4 uur",
+          "5": "5 uur",
+          "6": "6 uur",
+          "7": "7 uur",
+          "8": "8 uur",
+          "9": "9 uur",
+          "10": "10 uur",
+          "11": "11 uur",
+          "12": "12 uur",
+          "24": "24 uur",
+          "48": "48 uur"
         }
       }
     },
@@ -1595,6 +1624,9 @@
     },
     "self_check_night_protection": {
       "message": "Nachtbescherming staat aan, dus de maaier maait 's nachts niet."
+    },
+    "self_check_rain_protection": {
+      "message": "Regenbescherming verhindert dat de maaier start. Deze gebruikt de regensensor en online weergegevens om te bepalen of de omstandigheden geschikt zijn om te maaien, en berekent wanneer het maaien wordt hervat. Wacht af, of wijzig of zet regenbescherming uit in de maaierinstellingen in de app."
     },
     "self_check_rtk_not_ready": {
       "message": "Het RTK-referentiestation is nog niet gereed."

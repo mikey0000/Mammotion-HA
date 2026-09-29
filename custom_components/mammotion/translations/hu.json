@@ -389,6 +389,7 @@
           "dock_moved": "Töltőállomás elmozdult",
           "no_task_area": "Nincs feladatterület",
           "night_protection": "Éjszakai védelem",
+          "rain_protection": "Esővédelem aktív",
           "rtk_not_ready": "RTK referenciaállomás nem kész",
           "weak_satellite_signal": "Gyenge műholdjel",
           "positioning_failure": "Helymeghatározó rendszer hibája",
@@ -669,6 +670,34 @@
           "RIGHT_ANGLE_COMPLEX": "Derékszögű (összetett)",
           "CURVE_SIMPLE": "Íves (egyszerű)",
           "CURVE_COMPLEX": "Íves (összetett)"
+        }
+      },
+      "rain_protection_mode": {
+        "name": "Esővédelem",
+        "state": {
+          "off": "Ki",
+          "smart": "Intelligens mód",
+          "sensor": "Szenzor mód"
+        }
+      },
+      "rain_protection_delay": {
+        "name": "Esővédelem késleltetési ideje",
+        "state": {
+          "0": "Nincs késleltetés",
+          "1": "1 óra",
+          "2": "2 óra",
+          "3": "3 óra",
+          "4": "4 óra",
+          "5": "5 óra",
+          "6": "6 óra",
+          "7": "7 óra",
+          "8": "8 óra",
+          "9": "9 óra",
+          "10": "10 óra",
+          "11": "11 óra",
+          "12": "12 óra",
+          "24": "24 óra",
+          "48": "48 óra"
         }
       }
     },
@@ -1595,6 +1624,9 @@
     },
     "self_check_night_protection": {
       "message": "Az éjszakai védelem be van kapcsolva, ezért a fűnyíró éjjel nem nyír."
+    },
+    "self_check_rain_protection": {
+      "message": "Az esővédelem megakadályozza a fűnyíró indulását. Az esőérzékelő és az online időjárási adatok alapján megítéli, hogy a körülmények megfelelőek-e a fűnyíráshoz, és kiszámítja, mikor folytatható a nyírás. Várjon, vagy módosítsa, illetve kapcsolja ki az esővédelmet a fűnyíró beállításaiban az alkalmazásban."
     },
     "self_check_rtk_not_ready": {
       "message": "Az RTK referenciaállomás még nem kész."

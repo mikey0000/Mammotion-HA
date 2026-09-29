@@ -57,6 +57,7 @@ SELF_CHECK_STATES: Final[dict[int, str]] = {
     29: "dock_moved",
     30: "no_task_area",
     31: "night_protection",
+    34: "rain_protection",
     40: "rtk_not_ready",
     41: "weak_satellite_signal",
     42: "positioning_failure",

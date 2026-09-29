@@ -60,9 +60,10 @@ from pymammotion.data.model.device_config import (
     OperationSettings,
     build_route_information,
 )
-from pymammotion.data.model.device_info import ChargeSettings
+from pymammotion.data.model.device_info import ChargeSettings, RainProtectionSettings
 from pymammotion.data.model.enums import CollectorState, DumpState
 from pymammotion.data.model.hash_list import Plan, SvgMessage
+from pymammotion.data.model.mowing_modes import RainProtectionMode
 from pymammotion.data.model.pool_state import PoolPlan, SpinoToggle
 from pymammotion.data.model.report_info import Maintain, NetUsedType
 from pymammotion.data.mqtt.event import DeviceNotificationEventParams, ThingEventMessage
@@ -79,6 +80,7 @@ from pymammotion.http.model.map_backup import (
     BackupProgressType,
 )
 from pymammotion.http.model.product_params import ProductParam, ProductParamData
+from pymammotion.http.model.rain_protection import WeatherServerSync
 from pymammotion.mammotion.commands.mammotion_command import MammotionCommand
 from pymammotion.messaging.command_queue import Priority
 from pymammotion.proto import MulSex
@@ -231,8 +233,16 @@ def restore_device_state[StateT: DataClassDictMixin](
     return state_type()
 
 
-def firmware_gated_reads(device_name: str, firmware: str) -> list[str]:
-    """Return the report coordinator's setting reads whose gate the device now passes."""
+def firmware_gated_reads(
+    device_name: str,
+    firmware: str,
+    rain_protection: RainProtectionSettings | None = None,
+) -> list[str]:
+    """Return the report coordinator's setting reads whose gate the device now passes.
+
+    Rain protection is gated at runtime rather than on firmware: its read is due once
+    the device proved support (self-check 34) without the values having been read.
+    """
     reads = []
     if DeviceType.is_luba_pro(device_name) and DeviceType.supports_wildlife_safety(
         device_name, firmware
@@ -240,6 +250,14 @@ def firmware_gated_reads(device_name: str, firmware: str) -> list[str]:
         reads.append("async_read_wildlife_safety")
     if DeviceType.supports_charge_limit(device_name, firmware):
         reads.extend(("async_read_battery_info", "async_read_charge_levels"))
+    if (
+        rain_protection is not None
+        and DeviceType.supports_rain_protection_modes(
+            device_name, probed=rain_protection.supported
+        )
+        and not rain_protection.reported
+    ):
+        reads.append("async_read_rain_protection")
     return reads
 
 
@@ -1463,6 +1481,36 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             context=1,
             rw=0,
         )
+
+    async def async_read_rain_protection(self) -> None:
+        """Read the rain-protection mode and delay; an answer is also what proves support."""
+        await self._async_device_call(
+            lambda: self.manager.read_rain_protection(self.device_name),
+            Priority.NORMAL,
+        )
+
+    async def async_set_rain_protection_mode(self, mode: RainProtectionMode) -> None:
+        """Set the rain-protection mode; Sensor mode resends the delay last used."""
+        await self._async_set_rain_protection(mode)
+
+    async def async_set_rain_protection_delay(self, delay_hours: int) -> None:
+        """Set the Sensor-mode delay, which the app only offers in Sensor mode."""
+        await self._async_set_rain_protection(RainProtectionMode.sensor, delay_hours)
+
+    async def _async_set_rain_protection(
+        self, mode: RainProtectionMode, delay_hours: int | None = None
+    ) -> None:
+        sync = await self._async_device_call(
+            lambda: self.manager.set_rain_protection(
+                self.device_name, mode, delay_hours
+            ),
+            Priority.USER,
+        )
+        if sync is WeatherServerSync.FAILED:
+            LOGGER.warning(
+                "%s: rain protection was set on the mower but the weather server was not updated",
+                self.device_name,
+            )
 
     async def async_read_battery_info(self) -> None:
         """Read the battery charge limit and off-peak charging settings."""
@@ -3128,6 +3176,9 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
             ("async_read_turning_mode", {}),
             ("async_read_traversal_mode", {}),
         ]
+        # The probe is what proves support, so every X5 mower is asked.
+        if DeviceType.is_x5_series(self.device_name):
+            commands.append(("async_read_rain_protection", {}))
 
         # Add device-specific commands.  Two separate capabilities, gated the way the
         # app gates them: the lights on isSupportFillLight (night light excluded on
@@ -3146,7 +3197,11 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
             commands.append(("async_fetch_audio_config", {}))
         gated = [
             read
-            for read in firmware_gated_reads(self.device_name, firmware or "")
+            for read in firmware_gated_reads(
+                self.device_name,
+                firmware or "",
+                self.data.mower_state.rain_protection,
+            )
             if read not in self._gated_reads_issued
         ]
         self._gated_reads_issued |= frozenset(gated)
@@ -3175,7 +3230,9 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
         reads = [
             read
             for read in firmware_gated_reads(
-                self.device_name, data.device_firmwares.device_version
+                self.device_name,
+                data.device_firmwares.device_version,
+                data.mower_state.rain_protection,
             )
             if read not in self._gated_reads_issued
         ]

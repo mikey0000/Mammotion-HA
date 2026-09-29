@@ -389,6 +389,7 @@
           "dock_moved": "Stacja ładująca przesunięta",
           "no_task_area": "Brak obszaru zadania",
           "night_protection": "Ochrona nocna",
+          "rain_protection": "Ochrona przed deszczem aktywna",
           "rtk_not_ready": "Stacja referencyjna RTK nie jest gotowa",
           "weak_satellite_signal": "Słaby sygnał satelitarny",
           "positioning_failure": "Awaria systemu pozycjonowania",
@@ -669,6 +670,34 @@
           "RIGHT_ANGLE_COMPLEX": "Prostokątne (złożone)",
           "CURVE_SIMPLE": "Zaokrąglone (proste)",
           "CURVE_COMPLEX": "Zaokrąglone (złożone)"
+        }
+      },
+      "rain_protection_mode": {
+        "name": "Ochrona przed deszczem",
+        "state": {
+          "off": "Wyłączona",
+          "smart": "Tryb inteligentny",
+          "sensor": "Tryb czujnika"
+        }
+      },
+      "rain_protection_delay": {
+        "name": "Czas opóźnienia ochrony przed deszczem",
+        "state": {
+          "0": "Bez opóźnienia",
+          "1": "1 godz.",
+          "2": "2 godz.",
+          "3": "3 godz.",
+          "4": "4 godz.",
+          "5": "5 godz.",
+          "6": "6 godz.",
+          "7": "7 godz.",
+          "8": "8 godz.",
+          "9": "9 godz.",
+          "10": "10 godz.",
+          "11": "11 godz.",
+          "12": "12 godz.",
+          "24": "24 godz.",
+          "48": "48 godz."
         }
       }
     },
@@ -1595,6 +1624,9 @@
     },
     "self_check_night_protection": {
       "message": "Ochrona nocna jest włączona, więc kosiarka nie kosi w nocy."
+    },
+    "self_check_rain_protection": {
+      "message": "Ochrona przed deszczem nie pozwala kosiarce wystartować. Na podstawie czujnika deszczu i internetowych danych pogodowych ocenia, czy warunki są odpowiednie do koszenia, i oblicza, kiedy je wznowić. Zaczekaj albo zmień lub wyłącz ochronę przed deszczem w ustawieniach kosiarki w aplikacji."
     },
     "self_check_rtk_not_ready": {
       "message": "Stacja referencyjna RTK nie jest jeszcze gotowa."

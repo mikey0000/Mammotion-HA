@@ -389,6 +389,7 @@
           "dock_moved": "Stazione di ricarica spostata",
           "no_task_area": "Nessuna area di lavoro",
           "night_protection": "Protezione notturna",
+          "rain_protection": "Protezione dalla pioggia attiva",
           "rtk_not_ready": "Stazione di riferimento RTK non pronta",
           "weak_satellite_signal": "Segnale satellitare debole",
           "positioning_failure": "Guasto del sistema di posizionamento",
@@ -669,6 +670,34 @@
           "RIGHT_ANGLE_COMPLEX": "Angolo retto (complesso)",
           "CURVE_SIMPLE": "Curvo (semplice)",
           "CURVE_COMPLEX": "Curvo (complesso)"
+        }
+      },
+      "rain_protection_mode": {
+        "name": "Protezione dalla pioggia",
+        "state": {
+          "off": "Disattivato",
+          "smart": "Modalità intelligente",
+          "sensor": "Modalità sensore"
+        }
+      },
+      "rain_protection_delay": {
+        "name": "Ritardo della protezione dalla pioggia",
+        "state": {
+          "0": "Nessun ritardo",
+          "1": "1 ora",
+          "2": "2 ore",
+          "3": "3 ore",
+          "4": "4 ore",
+          "5": "5 ore",
+          "6": "6 ore",
+          "7": "7 ore",
+          "8": "8 ore",
+          "9": "9 ore",
+          "10": "10 ore",
+          "11": "11 ore",
+          "12": "12 ore",
+          "24": "24 ore",
+          "48": "48 ore"
         }
       }
     },
@@ -1595,6 +1624,9 @@
     },
     "self_check_night_protection": {
       "message": "La protezione notturna è attiva, quindi il tosaerba non taglia di notte."
+    },
+    "self_check_rain_protection": {
+      "message": "La protezione dalla pioggia impedisce l’avvio del robot. Usa il sensore pioggia e i dati meteo online per valutare se le condizioni sono adatte al taglio e calcola quando riprenderlo. Attendi, oppure modifica o disattiva la protezione dalla pioggia nelle impostazioni del robot nell’app."
     },
     "self_check_rtk_not_ready": {
       "message": "La stazione di riferimento RTK non è ancora pronta."

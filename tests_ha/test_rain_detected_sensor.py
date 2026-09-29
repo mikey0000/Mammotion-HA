@@ -30,6 +30,14 @@ def test_rain_detected_follows_the_self_check_code(
     assert _RAIN.is_on_fn(device) is expected
 
 
+def test_rain_protection_is_not_rain_detected() -> None:
+    """Code 34 is the protection feature holding the start, not the sensor seeing rain."""
+    device = MowingDevice()
+    device.report_data.dev.self_check_status = 34
+
+    assert _RAIN.is_on_fn(device) is False
+
+
 @pytest.mark.parametrize(
     "path",
     [_ROOT / "strings.json", *sorted((_ROOT / "translations").glob("*.json"))],

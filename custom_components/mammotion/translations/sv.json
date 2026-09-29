@@ -389,6 +389,7 @@
           "dock_moved": "Laddstationen har flyttats",
           "no_task_area": "Inget uppgiftsområde",
           "night_protection": "Nattskydd",
+          "rain_protection": "Regnskydd aktivt",
           "rtk_not_ready": "RTK-referensstationen är inte redo",
           "weak_satellite_signal": "Svag satellitsignal",
           "positioning_failure": "Fel i positioneringssystemet",
@@ -669,6 +670,34 @@
           "RIGHT_ANGLE_COMPLEX": "Rätvinklig (komplex)",
           "CURVE_SIMPLE": "Böjd (enkel)",
           "CURVE_COMPLEX": "Böjd (komplex)"
+        }
+      },
+      "rain_protection_mode": {
+        "name": "Regnskydd",
+        "state": {
+          "off": "Av",
+          "smart": "Smart läge",
+          "sensor": "Sensorläge"
+        }
+      },
+      "rain_protection_delay": {
+        "name": "Fördröjningstid för regnskydd",
+        "state": {
+          "0": "Ingen fördröjning",
+          "1": "1 tim",
+          "2": "2 tim",
+          "3": "3 tim",
+          "4": "4 tim",
+          "5": "5 tim",
+          "6": "6 tim",
+          "7": "7 tim",
+          "8": "8 tim",
+          "9": "9 tim",
+          "10": "10 tim",
+          "11": "11 tim",
+          "12": "12 tim",
+          "24": "24 tim",
+          "48": "48 tim"
         }
       }
     },
@@ -1595,6 +1624,9 @@
     },
     "self_check_night_protection": {
       "message": "Nattskydd är på, så gräsklipparen klipper inte på natten."
+    },
+    "self_check_rain_protection": {
+      "message": "Regnskyddet hindrar klipparen från att starta. Det använder regnsensorn och väderdata online för att bedöma om förhållandena passar för klippning och beräknar när klippningen ska återupptas. Vänta, eller ändra eller stäng av regnskyddet i klipparens inställningar i appen."
     },
     "self_check_rtk_not_ready": {
       "message": "RTK-referensstationen är inte redo än."

@@ -36,6 +36,19 @@ def test_codes_map_to_their_state(code: int, state: str) -> None:
     assert _SELF_CHECK.value_fn(device) == state
 
 
+@pytest.mark.regression
+def test_rain_protection_has_its_own_state() -> None:
+    """Code 34 is the app's "Rain Protection active" card (``ERROR_CODE_24``).
+
+    It used to fall through to 'other', so a start blocked by smart rain
+    protection read as an unrecognised fault.
+    """
+    device = MowingDevice()
+    device.report_data.dev.self_check_status = 34
+
+    assert _SELF_CHECK.value_fn(device) == "rain_protection"
+
+
 def test_every_state_is_an_option() -> None:
     """HA rejects an enum value missing from ``options``."""
     assert _SELF_CHECK.options is not None
@@ -56,3 +69,27 @@ def test_every_locale_translates_every_state(path: Path) -> None:
     assert _SELF_CHECK.options is not None
     missing = [s for s in _SELF_CHECK.options if not entry["state"].get(s)]
     assert missing == []
+
+
+@pytest.mark.parametrize(
+    "path",
+    sorted(p for p in (_ROOT / "translations").glob("*.json") if p.name != "en.json"),
+    ids=lambda path: path.name,
+)
+def test_rain_protection_is_translated_not_copied(path: Path) -> None:
+    """Every locale words the rain-protection state and notification in its own language."""
+    english = json.loads((_ROOT / "strings.json").read_text(encoding="utf-8"))
+    locale = json.loads(path.read_text(encoding="utf-8"))
+
+    def texts(data: dict) -> tuple[str, str]:
+        return (
+            data["entity"]["sensor"]["self_check"]["state"]["rain_protection"],
+            data["exceptions"]["self_check_rain_protection"]["message"],
+        )
+
+    state, message = texts(locale)
+    en_state, en_message = texts(english)
+    assert state.strip()
+    assert message.strip()
+    assert state != en_state
+    assert message != en_message

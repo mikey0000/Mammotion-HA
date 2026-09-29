@@ -587,6 +587,22 @@ async def test_a_self_check_block_is_shown_until_it_clears(
     notifications.dismiss.assert_called_once_with(hass, "mammotion_Luba-1_self_check")
 
 
+async def test_rain_protection_is_shown_as_its_own_block(
+    hass: HomeAssistant, notifications: Any
+) -> None:
+    """Code 34 gets the rain-protection card, not the unrecognised-code text."""
+    notifier, on_update = _self_check_notifier(hass)
+    notifier.coordinator.data.report_data.dev.self_check_status = 34
+
+    on_update()
+    await hass.async_block_till_done()
+
+    args, kwargs = notifications.create.call_args
+    assert "rain protection" in args[1].lower()
+    assert "34" not in args[1]
+    assert kwargs["title"] == "Luba-1: Rain protection active"
+
+
 async def test_a_changed_self_check_block_replaces_the_notification(
     hass: HomeAssistant, notifications: Any
 ) -> None:

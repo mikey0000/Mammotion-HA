@@ -11,7 +11,9 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.restore_state import RestoreEntity
 from pymammotion.data.model.device import PoolCleanerDevice
+from pymammotion.data.model.device_info import RainProtectionSettings
 from pymammotion.data.model.mowing_modes import (
+    RAIN_PROTECTION_DELAY_HOURS,
     BorderPatrolMode,
     CuttingMode,
     CuttingSpeedMode,
@@ -19,6 +21,7 @@ from pymammotion.data.model.mowing_modes import (
     MowOrder,
     ObstacleLapsMode,
     PathAngleSetting,
+    RainProtectionMode,
     TraversalMode,
     TurningMode,
     WildlifeSafety,
@@ -32,7 +35,11 @@ from pymammotion.utility.device_type import DeviceType
 
 from . import MammotionConfigEntry, MammotionReportUpdateCoordinator
 from .coordinator import MammotionBaseUpdateCoordinator, MammotionSpinoCoordinator
-from .entity import MammotionBaseEntity, MammotionBaseSpinoEntity
+from .entity import (
+    MammotionBaseEntity,
+    MammotionBaseSpinoEntity,
+    async_add_when_supported,
+)
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -42,7 +49,9 @@ class MammotionConfigSelectEntityDescription(SelectEntityDescription):
     key: str
     options: list[str]
     set_fn: Callable[[MammotionBaseUpdateCoordinator[Any], str], None]
-    async_set_fn: Callable[[MammotionBaseUpdateCoordinator[Any]], Awaitable[None]] = None
+    async_set_fn: Callable[[MammotionBaseUpdateCoordinator[Any]], Awaitable[None]] = (
+        None
+    )
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -62,6 +71,61 @@ class MammotionSpinoSelectEntityDescription(SelectEntityDescription):
     options: list[str]
     current_fn: Callable[[PoolCleanerDevice], str]
     set_fn: Callable[[MammotionSpinoCoordinator, str], Awaitable[None]]
+
+
+@dataclass(frozen=True, kw_only=True)
+class MammotionRainProtectionSelectEntityDescription(SelectEntityDescription):
+    """Describes a rain-protection select, read from ``mower_state.rain_protection``."""
+
+    options: list[str]
+    current_fn: Callable[[RainProtectionSettings], str | None]
+    set_fn: Callable[[MammotionReportUpdateCoordinator, str], Awaitable[None]]
+    available_fn: Callable[[RainProtectionSettings], bool] = lambda _: True
+
+
+def _rain_protection_mode_option(settings: RainProtectionSettings) -> str | None:
+    """Return the reported mode's option, or None while unread or for a mode HA does not know."""
+    if settings.mode is None or settings.mode not in RainProtectionMode:
+        return None
+    return RainProtectionMode(settings.mode).name
+
+
+def _in_sensor_mode(settings: RainProtectionSettings) -> bool:
+    return settings.mode == RainProtectionMode.sensor
+
+
+# Gated per device on DeviceType.supports_rain_protection_modes (X5, and the device proved it).
+RAIN_PROTECTION_SELECT_ENTITIES: tuple[
+    MammotionRainProtectionSelectEntityDescription, ...
+] = (
+    MammotionRainProtectionSelectEntityDescription(
+        key="rain_protection_mode",
+        options=[mode.name for mode in RainProtectionMode],
+        current_fn=_rain_protection_mode_option,
+        set_fn=lambda coordinator, value: coordinator.async_set_rain_protection_mode(
+            RainProtectionMode[value]
+        ),
+    ),
+    MammotionRainProtectionSelectEntityDescription(
+        key="rain_protection_delay",
+        options=[str(hours) for hours in RAIN_PROTECTION_DELAY_HOURS],
+        # The app shows the delay only in Sensor mode; elsewhere it is not in force.
+        current_fn=lambda settings: (
+            str(settings.delay_hours) if _in_sensor_mode(settings) else None
+        ),
+        available_fn=_in_sensor_mode,
+        set_fn=lambda coordinator, value: coordinator.async_set_rain_protection_delay(
+            int(value)
+        ),
+    ),
+)
+
+
+def _rain_protection_supported(coordinator: MammotionReportUpdateCoordinator) -> bool:
+    return DeviceType.supports_rain_protection_modes(
+        coordinator.device_name,
+        probed=coordinator.data.mower_state.rain_protection.supported,
+    )
 
 
 SPINO_SELECT_ENTITIES: tuple[MammotionSpinoSelectEntityDescription, ...] = (
@@ -245,9 +309,7 @@ async def async_setup_entry(
         entities: list[SelectEntity] = []
 
         entities.extend(
-            MammotionConfigSelectEntity(
-                mower.reporting_coordinator, entity_description
-            )
+            MammotionConfigSelectEntity(mower.reporting_coordinator, entity_description)
             for entity_description in SELECT_ENTITIES
         )
 
@@ -321,6 +383,17 @@ async def async_setup_entry(
             )
 
         async_add_entities(entities)
+
+        async_add_when_supported(
+            entry,
+            mower.reporting_coordinator,
+            supported=partial(_rain_protection_supported, mower.reporting_coordinator),
+            descriptions=RAIN_PROTECTION_SELECT_ENTITIES,
+            build=partial(
+                MammotionRainProtectionSelectEntity, mower.reporting_coordinator
+            ),
+            async_add_entities=async_add_entities,
+        )
 
     for spino in entry.runtime_data.spino:
         # Which cleaning modes exist is a property of the model, so this one is
@@ -447,6 +520,46 @@ class MammotionAsyncConfigSelectEntity(
                 self.entity_description.get_fn(self.coordinator)
             ]
         self.async_write_ha_state()
+
+
+class MammotionRainProtectionSelectEntity(MammotionBaseEntity, SelectEntity):
+    """A rain-protection select; unknown until the device has been read."""
+
+    _attr_entity_category = EntityCategory.CONFIG
+
+    coordinator: MammotionReportUpdateCoordinator
+    entity_description: MammotionRainProtectionSelectEntityDescription
+
+    def __init__(
+        self,
+        coordinator: MammotionReportUpdateCoordinator,
+        entity_description: MammotionRainProtectionSelectEntityDescription,
+    ) -> None:
+        """Initialize the rain-protection select."""
+        super().__init__(coordinator, entity_description.key)
+        self.entity_description = entity_description
+        self._attr_translation_key = entity_description.key
+        self._attr_options = entity_description.options
+
+    @property
+    def _settings(self) -> RainProtectionSettings:
+        return self.coordinator.data.mower_state.rain_protection
+
+    @property
+    def available(self) -> bool:
+        """Return whether the setting is in force; the delay only is in Sensor mode."""
+        return super().available and self.entity_description.available_fn(
+            self._settings
+        )
+
+    @property
+    def current_option(self) -> str | None:
+        """Return the reported option, or None while unread."""
+        return self.entity_description.current_fn(self._settings)
+
+    async def async_select_option(self, option: str) -> None:
+        """Write the option; the state follows the library's applied values."""
+        await self.entity_description.set_fn(self.coordinator, option)
 
 
 class MammotionSpinoSelectEntity(MammotionBaseSpinoEntity, SelectEntity):

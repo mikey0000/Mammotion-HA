@@ -389,6 +389,7 @@
           "dock_moved": "Nabíjecí stanice přesunuta",
           "no_task_area": "Žádná oblast úlohy",
           "night_protection": "Noční ochrana",
+          "rain_protection": "Ochrana proti dešti aktivní",
           "rtk_not_ready": "RTK referenční stanice není připravena",
           "weak_satellite_signal": "Slabý satelitní signál",
           "positioning_failure": "Porucha polohovacího systému",
@@ -669,6 +670,34 @@
           "RIGHT_ANGLE_COMPLEX": "Pravoúhlé (složité)",
           "CURVE_SIMPLE": "Zaoblené (jednoduché)",
           "CURVE_COMPLEX": "Zaoblené (složité)"
+        }
+      },
+      "rain_protection_mode": {
+        "name": "Ochrana proti dešti",
+        "state": {
+          "off": "Vypnuto",
+          "smart": "Inteligentní režim",
+          "sensor": "Režim senzoru"
+        }
+      },
+      "rain_protection_delay": {
+        "name": "Doba zpoždění ochrany proti dešti",
+        "state": {
+          "0": "Bez zpoždění",
+          "1": "1 hod.",
+          "2": "2 hod.",
+          "3": "3 hod.",
+          "4": "4 hod.",
+          "5": "5 hod.",
+          "6": "6 hod.",
+          "7": "7 hod.",
+          "8": "8 hod.",
+          "9": "9 hod.",
+          "10": "10 hod.",
+          "11": "11 hod.",
+          "12": "12 hod.",
+          "24": "24 hod.",
+          "48": "48 hod."
         }
       }
     },
@@ -1595,6 +1624,9 @@
     },
     "self_check_night_protection": {
       "message": "Je zapnutá noční ochrana, sekačka v noci nesečí."
+    },
+    "self_check_rain_protection": {
+      "message": "Ochrana proti dešti brání spuštění sekačky. Pomocí dešťového senzoru a online údajů o počasí posuzuje, zda jsou podmínky vhodné pro sečení, a určí, kdy sečení obnovit. Počkejte, nebo ochranu proti dešti změňte či vypněte v nastavení sekačky v aplikaci."
     },
     "self_check_rtk_not_ready": {
       "message": "RTK referenční stanice ještě není připravena."
