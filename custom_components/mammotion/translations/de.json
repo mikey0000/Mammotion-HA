@@ -42,7 +42,7 @@
           "account_name": "Mammotion E-Mail oder Account Nummer",
           "password": "Mammotion Kennwort"
         },
-        "title": "Mit Wi-Fi verbinden",
+        "title": "Mit WLAN verbinden",
         "description": "Geben Sie Ihre Mammotion-ID oder E-Mail-Adresse und das dazugehörige Kennwort ein. Lassen Sie beide Felder leer, um nur Bluetooth ohne Konto zu verwenden."
       },
       "reauth_confirm": {
@@ -281,10 +281,10 @@
         "name": "LoRa-Version"
       },
       "rtk_latitude": {
-        "name": "RTK Breitengrad"
+        "name": "Breitengrad"
       },
       "rtk_longitude": {
-        "name": "RTK Längengrad"
+        "name": "Längengrad"
       },
       "rtk_wifi_rssi": {
         "name": "Signalqualität (RSSI) WLAN"
