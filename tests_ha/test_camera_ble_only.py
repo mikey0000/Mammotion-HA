@@ -100,7 +100,7 @@ async def test_only_cloud_mowers_get_cameras(
         "webrtc_camera",
         "webrtc_camera_right",
     ]
-    assert [entity._agora_handler._target_uid for entity in added] == [1, 2]
+    assert [entity.entity_description.target_uid for entity in added] == [1, 2]
     assert hass.services.has_service("mammotion", "start_video")
     assert hass.services.has_service("mammotion", "stop_video")
 
@@ -116,4 +116,4 @@ async def test_yuka_also_gets_the_rear_camera(
         "webrtc_camera_right",
         "webrtc_camera_rear",
     ]
-    assert [entity._agora_handler._target_uid for entity in added] == [1, 2, 3]
+    assert [entity.entity_description.target_uid for entity in added] == [1, 2, 3]

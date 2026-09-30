@@ -39,6 +39,13 @@ When making changes, follow existing patterns in similar files and follow Home A
 - The emergency nudge buttons are available only while the transport is usable (fresh advertisement, RSSI above `-90`, not in cooldown) or Wi-Fi movement is enabled. Flapping availability at the edge of proxy range is expected; a button's state changing back to its last-pressed timestamp when it becomes available again is not a press.
 - Symptom map from reports: "Characteristic 0000ff02 … was not found" right after connect is a stale cached GATT table (recovered in pymammotion ≥ 0.9.0b3); "in cooldown (120s remaining)" follows one real failure; RSSI 0 in the report frame plus unavailable nudge buttons means the link is down, not that the proxy stopped hearing the mower.
 
+## Camera streaming (Agora)
+
+- Agora signalling comes from the `pyagorartc` library (source and docs in the PyAgoraRTC repo; `docs/migration.md` §2 is the Mammotion mapping). Do not add SDP, gateway or access-point code here; fix it in the library.
+- `stream_session.py` holds the pure conversions (stream token → `ChannelCredentials`, AP answer → `RTCIceServer`, browser candidate → `IceCandidate`) and the AP call; `coordinator.async_check_stream_expiry` caches the token and AP answer.
+- `camera.py` builds one `AgoraSession` per offer (single use) and supplies the host callbacks: `_fpv_keepalive` (MQTT `refresh_fpv` on 4G, `False` on WiFi), `_on_peer_left` (BLE sync + re-subscribe), `_on_closed` (503 to viewers, release the feed). The `availableTime` deadline is set only on 4G.
+- Only candidates that arrive before the join reach Agora; the gateway has no trickle message.
+
 ## Translations
 
 - When adding or renaming any entity (sensor, switch, button, number, select, etc.) or an ENUM entity state, you MUST update the translations in **every** language file, not just English.

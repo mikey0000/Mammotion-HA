@@ -7,6 +7,7 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from pyagorartc import APError
 
 from custom_components.mammotion.camera import CAMERAS, MammotionWebRTCCamera
 from custom_components.mammotion.coordinator import MammotionBaseUpdateCoordinator
@@ -79,10 +80,10 @@ def _token_coordinator(*responses: MagicMock) -> MagicMock:
 
 
 def _no_agora() -> object:
-    agora = MagicMock()
-    agora.return_value.__aenter__ = AsyncMock(side_effect=OSError)
-    agora.return_value.__aexit__ = AsyncMock(return_value=None)
-    return patch("custom_components.mammotion.coordinator.AgoraAPIClient", agora)
+    return patch(
+        "custom_components.mammotion.coordinator.async_choose_server",
+        AsyncMock(side_effect=APError("no edge")),
+    )
 
 
 async def test_one_token_request_asks_for_every_camera() -> None:

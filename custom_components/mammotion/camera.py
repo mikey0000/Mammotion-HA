@@ -5,15 +5,14 @@ from __future__ import annotations
 import asyncio
 import collections
 import functools
-import json
 import logging
 import secrets
-from collections.abc import Callable
+import time
+from collections.abc import Callable, Coroutine
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-import websockets
 from homeassistant.components.camera import (
     CameraEntityDescription,
     WebRTCAnswer,
@@ -31,6 +30,14 @@ from homeassistant.core import (
     callback,
 )
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from pyagorartc import (
+    AgoraSession,
+    APResponse,
+    CloseReason,
+    IceCandidate,
+    PyAgoraRTCError,
+    SessionOptions,
+)
 from pymammotion.http.model.camera_stream import (
     StreamSubscriptionResponse,
 )
@@ -39,15 +46,20 @@ from pymammotion.utility.device_type import DeviceType
 from webrtc_models import RTCIceCandidateInit, RTCIceServer
 
 from . import MammotionConfigEntry
-from .agora_api import AgoraResponse
-from .agora_websocket import AgoraWebSocketHandler
+from .const import DOMAIN
 from .coordinator import MammotionBaseUpdateCoordinator
 from .entity import MammotionCameraBaseEntity
 from .models import MammotionMowerData
+from .stream_session import mammotion_credentials, to_ice_candidate, to_rtc_ice_servers
 
 _LOGGER = logging.getLogger(__name__)
 
 PLACEHOLDER = Path(__file__).parent / "placeholder.png"
+
+_CLOSE_MESSAGES = {
+    CloseReason.GATEWAY_QUIT: "Another camera on this mower took over the stream",
+    CloseReason.DEADLINE: "4G streaming budget exhausted",
+}
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -112,14 +124,7 @@ async def async_setup_entry(
     ) = await mowers[0].reporting_coordinator.async_check_stream_expiry()
 
     if agora_response is not None:
-        ice_servers = [
-            RTCIceServer(
-                urls=ice_server.urls,
-                username=ice_server.username,
-                credential=ice_server.credential,
-            )
-            for ice_server in agora_response.get_ice_servers(use_all_turn_servers=False)
-        ]
+        ice_servers = to_rtc_ice_servers(agora_response)
 
     for mower in mowers:
         _LOGGER.debug("Config camera for %s", mower.device.device_name)
@@ -155,13 +160,12 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         self._create_stream_lock: asyncio.Lock | None = None
         self._join_lock = asyncio.Lock()
         self.coordinator = coordinator
-        self._agora_handler = AgoraWebSocketHandler(
-            hass,
-            recover_stream=self._recover_stream,
-            keepalive=self._fpv_keepalive,
-            target_uid=entity_description.target_uid,
-            session_ended=self._async_session_ended,
-        )
+        # One per offer; a new offer closes the previous one.
+        self._session: AgoraSession | None = None
+        # The offer being negotiated and the candidates the browser sent for it;
+        # None once its join has started, since Agora has no trickle message.
+        self._pending_offer_id: str | None = None
+        self._early_candidates: list[IceCandidate] | None = []
         self.entity_description = entity_description
         self._attr_translation_key = entity_description.key
         self._stream_data: StreamSubscriptionResponse | None = None
@@ -216,10 +220,9 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
     async def async_handle_async_webrtc_offer(
         self, offer_sdp: str, session_id: str, send_message: WebRTCSendMessage
     ) -> None:
-        """Handle WebRTC offer by initiating WebSocket connection to Agora.
+        """Answer a WebRTC offer by joining this feed's Agora channel.
 
-        This replaces the JavaScript SDK functionality and performs the WebRTC
-        negotiation directly in Python.
+        This replaces the JavaScript SDK: pyagorartc performs the negotiation.
         """
 
         if self._join_lock.locked():
@@ -231,6 +234,8 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
             return
 
         async with self._join_lock:
+            self._pending_offer_id = session_id
+            self._early_candidates = []
             # Tracked before the token request starts the mower's stream, so a
             # close mid-negotiation or a failed offer still stops it.
             self._sessions[session_id] = send_message
@@ -243,6 +248,7 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
                     offer_sdp, session_id, send_message
                 )
             finally:
+                self._pending_offer_id = None
                 if not answered:
                     self.close_webrtc_session(session_id)
                 elif not self._sessions:
@@ -262,59 +268,105 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
             # only joins racing within about a second coexist.
             force=True
         )
-        # Reset candidates list for new session
         await self.coordinator.async_send_command("send_todev_ble_sync", sync_type=3)
-        self._agora_handler.candidates = []
         _LOGGER.info("Handling WebRTC offer for session %s", session_id)
 
-        try:
-            # Get stream data (appid, channelName, token, uid)
-            if not stream_data:
-                _LOGGER.error("No stream data available for WebRTC offer")
-                send_message(
-                    WebRTCError(
-                        "500",
-                        "No stream data available for WebRTC offer",
-                    )
-                )
-                return False
-
-            if (
-                self.entity_description.target_uid != 1
-                and not self.coordinator.all_cameras_streaming
-            ):
-                send_message(WebRTCError("503", "Vision stream unavailable"))
-                return False
-
-            # Start WebSocket connection and WebRTC negotiation
-            answer_sdp = await self._perform_webrtc_negotiation(
-                offer_sdp, stream_data, session_id, agora_response
+        if not stream_data:
+            _LOGGER.error("No stream data available for WebRTC offer")
+            send_message(
+                WebRTCError("500", "No stream data available for WebRTC offer")
             )
-        except (
-            websockets.exceptions.WebSocketException,
-            json.JSONDecodeError,
-        ) as ex:
-            _LOGGER.error("Error handling WebRTC offer: %s", ex)
-            send_message(WebRTCError("500", f"Error handling WebRTC offer: {ex}"))
             return False
 
-        if not answer_sdp:
-            send_message(WebRTCError("500", "WebRTC negotiation failed"))
+        if (
+            self.entity_description.target_uid != 1
+            and not self.coordinator.all_cameras_streaming
+        ):
+            send_message(WebRTCError("503", "Vision stream unavailable"))
             return False
+
+        if agora_response is None:
+            _LOGGER.error("No Agora edge available for WebRTC offer")
+            send_message(WebRTCError("500", "No Agora edge available for WebRTC offer"))
+            return False
+
+        await self._async_close_session()
+        try:
+            # Built in here: a malformed token (salt, uid) must reach the viewer as a 500.
+            session = self._new_session(stream_data, agora_response)
+            candidates, self._early_candidates = self._early_candidates, None
+            for candidate in candidates or ():
+                session.add_ice_candidate(candidate)
+            self._session = session
+            answer_sdp = await session.join(offer_sdp, session_id)
+        except (PyAgoraRTCError, ValueError, TypeError) as ex:
+            _LOGGER.warning(
+                "WebRTC negotiation failed for session %s: %s: %s",
+                session_id,
+                type(ex).__name__,
+                ex,
+            )
+            send_message(WebRTCError("500", f"WebRTC negotiation failed: {ex}"))
+            return False
+
         send_message(WebRTCAnswer(answer_sdp))
         _LOGGER.info("WebRTC negotiation completed successfully")
         return True
 
+    def _new_session(
+        self, data: StreamSubscriptionResponse, agora_response: APResponse
+    ) -> AgoraSession:
+        """Build the session for one offer on this feed's publisher uid."""
+        if data.openEncrypt:
+            _LOGGER.warning(
+                "Stream token for %s has openEncrypt=%s; pyagorartc cannot decrypt "
+                "the channel, so expect no picture",
+                self.coordinator.device.device_name,
+                data.openEncrypt,
+            )
+        deadline = None
+        # WiFi streams stay unbounded: the cloud's budget only meters cellular data.
+        if self.coordinator.is_on_4g and data.availableTime and data.availableTime > 0:
+            deadline = time.monotonic() + data.availableTime
+        return AgoraSession(
+            mammotion_credentials(data),
+            agora_response,
+            options=SessionOptions(
+                client_codec="vp8", target_uid=self.entity_description.target_uid
+            ),
+            on_peer_left=self._on_peer_left,
+            on_closed=self._on_closed,
+            keepalive=self._fpv_keepalive,
+            deadline=deadline,
+            clock=time.monotonic,
+            spawn=self._spawn_session_task,
+        )
+
+    def _spawn_session_task(
+        self, coro: Coroutine[object, object, None]
+    ) -> asyncio.Task[None]:
+        """Run a session task as a Home Assistant background task."""
+        return self.hass.async_create_background_task(
+            coro, f"{DOMAIN} agora {self.entity_id}"
+        )
+
     async def async_on_webrtc_candidate(
         self, session_id: str, candidate: RTCIceCandidateInit
     ) -> None:
-        """Collect WebRTC candidates for inclusion in join message."""
-        _LOGGER.info(
-            "Received WebRTC candidate for session %s: %s", session_id, candidate
-        )
-
-        # Collect candidates - they'll be included in the join message
-        self._agora_handler.candidates.append(candidate)
+        """Collect WebRTC candidates for inclusion in the join message."""
+        if session_id != self._pending_offer_id:
+            # Agora has no trickle message: only candidates known before the join count.
+            _LOGGER.debug(
+                "Dropping ICE candidate for session %s: not negotiating", session_id
+            )
+            return
+        if self._early_candidates is None:
+            _LOGGER.debug(
+                "Dropping ICE candidate for session %s: its join has started",
+                session_id,
+            )
+            return
+        self._early_candidates.append(to_ice_candidate(candidate))
 
     @callback
     def close_webrtc_session(self, session_id: str) -> None:
@@ -335,19 +387,30 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
 
     async def async_close_webrtc_session(self) -> None:
         """Leave this feed's channel; stop the mower only when its last feed closes."""
-        await self._agora_handler.disconnect()
+        await self._async_close_session()
         await self.coordinator.async_release_camera_session(self.entity_description.key)
 
-    async def _async_session_ended(self) -> None:
-        """Tell this feed's viewers Agora ended it, then release the feed."""
+    async def _async_close_session(self) -> None:
+        """Close this feed's Agora session; safe from inside its own callbacks."""
+        if (session := self._session) is not None:
+            self._session = None
+            await session.close()
+
+    async def _on_closed(self, reason: CloseReason) -> None:
+        """Tell this feed's viewers the session ended on its own, then release it."""
+        # A host close and a failed join are already on their own teardown path.
+        if reason in (CloseReason.CLOSED_BY_HOST, CloseReason.JOIN_FAILED):
+            return
+        # A replaced session ending mid-offer must not end the viewer now negotiating.
+        if self._pending_offer_id is not None:
+            return
         viewers = list(self._sessions.values())
         if not viewers:
             return
         self._sessions.clear()
+        message = _CLOSE_MESSAGES.get(reason, "Stream lost")
         for send_message in viewers:
-            send_message(
-                WebRTCError("503", "Another camera on this mower took over the stream")
-            )
+            send_message(WebRTCError("503", message))
         await self.async_close_webrtc_session()
 
     async def async_teardown_stream(self, *, stop_device: bool = True) -> None:
@@ -362,7 +425,7 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         async with self._teardown_lock:
             # A later frontend close for these viewers must not release again.
             self._sessions.clear()
-            await self._agora_handler.disconnect()
+            await self._async_close_session()
             if not stop_device:
                 return
             try:
@@ -375,8 +438,8 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
     async def _fpv_keepalive(self) -> bool:
         """Re-arm the mower's video encoder on 4G; return False on WiFi.
 
-        Invoked by AgoraWebSocketHandler every few seconds while a session is
-        live. Over cellular the encoder stops publishing unless poked with
+        Invoked by the Agora session every few seconds while it is joined.
+        Over cellular the encoder stops publishing unless poked with
         ``refresh_fpv``; on WiFi the stream is continuous, so return False to
         stop the keep-alive loop without sending anything.
         """
@@ -385,12 +448,16 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         await self.coordinator.async_send_command("refresh_fpv")
         return True
 
+    async def _on_peer_left(self, uid: int) -> None:
+        """Recover this feed after its publisher left the channel and stayed gone."""
+        _LOGGER.debug("Agora publisher uid %s left; recovering the stream", uid)
+        await self._recover_stream()
+
     async def _recover_stream(self) -> None:
         """Re-establish the stream after the mower drops out of the Agora channel.
 
-        Invoked by AgoraWebSocketHandler once the mower (peer) has been gone for
-        its debounce window: nudge the device with a BLE sync, then refresh the
-        stream subscription so it rejoins the channel.
+        Nudge the device with a BLE sync, then refresh the stream subscription so
+        it rejoins the channel.
         """
         await self.coordinator.async_send_command("send_todev_ble_sync", sync_type=3)
         await self.coordinator.manager.get_stream_subscription(
@@ -398,47 +465,6 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
             self.coordinator.device.iot_id,
             all_cameras=self.coordinator.streams_all_cameras,
         )
-
-    async def _perform_webrtc_negotiation(
-        self,
-        offer_sdp: str,
-        agora_data: StreamSubscriptionResponse,
-        session_id: str,
-        agora_response: AgoraResponse,
-    ) -> str | None:
-        """Perform WebRTC negotiation through Agora WebSocket.
-
-        Args:
-            self: The camera instance
-            offer_sdp: The WebRTC offer SDP from the browser
-            agora_data: Dict containing appid, channelName, token, uid
-            session_id: Session ID for this WebRTC connection
-            agora_response: AgoraResponse object containing ICE servers
-
-        Returns:
-            Answer SDP if successful, None otherwise
-
-        """
-        _LOGGER.debug("Starting WebRTC negotiation with Agora data: %s", agora_data)
-        # _LOGGER.debug("Starting WebRTC negotiation with offer_sdp data: %s", offer_sdp)
-
-        # Use the new AgoraWebSocketHandler for negotiation
-        try:
-            answer_sdp = await self._agora_handler.connect_and_join(
-                agora_data, offer_sdp, session_id, agora_response
-            )
-        except (OSError, ValueError, TypeError) as ex:
-            _LOGGER.error("WebRTC negotiation failed: %s", ex)
-            return None
-
-        if answer_sdp:
-            _LOGGER.info("Successfully negotiated WebRTC through Agora")
-            return answer_sdp
-
-        _LOGGER.error(
-            "Failed to get answer SDP from Agora negotiation, using handler fallback"
-        )
-        return None
 
     def get_ice_servers(self) -> list[RTCIceServer]:
         """Return the ICE servers from Agora API.
@@ -478,7 +504,10 @@ async def async_setup_platform_services(  # noqa: C901
                 mower.device.iot_id,
                 all_cameras=mower.reporting_coordinator.streams_all_cameras,
             )
-            _LOGGER.debug("Refresh stream data : %s", stream_data)
+            _LOGGER.debug(
+                "Refresh stream data: code %s",
+                stream_data.code if stream_data else None,
+            )
 
             mower.reporting_coordinator.set_stream_data(stream_data)
             mower.reporting_coordinator.async_update_listeners()

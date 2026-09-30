@@ -39,6 +39,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from homeassistant.util import dt as dt_util
 from mashumaro.exceptions import InvalidFieldValue, MissingField
 from mashumaro.mixins.dict import DataClassDictMixin
+from pyagorartc import APResponse, PyAgoraRTCError
 from pymammotion.aliyun.exceptions import (
     CloudSetupError,
     DeviceOfflineException,
@@ -116,7 +117,6 @@ from pymammotion.utility.device_type import DeviceType
 from pymammotion.utility.plan_id import make_copy_name, new_mower_plan_id
 from webrtc_models import RTCIceServer
 
-from .agora_api import SERVICE_IDS, AgoraAPIClient, AgoraResponse
 from .config import (
     TRANSPORT_BLUETOOTH,
     TRANSPORT_CLOUD,
@@ -134,6 +134,7 @@ from .const import (
     NO_REQUEST_MODES,
 )
 from .error_codes import async_refresh_error_codes
+from .stream_session import async_choose_server, to_rtc_ice_servers
 
 if TYPE_CHECKING:
     from pymammotion.device.handle import DeviceHandle
@@ -395,7 +396,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         # Public because the camera platform populates it from Agora and the
         # camera entity reads it back; the refresh below keeps it current.
         self.ice_servers: list[RTCIceServer] = []
-        self._agora_response = None
+        self._agora_response: APResponse | None = None
         # Set by the WebRTC camera entity so the start/stop_video services and
         # config-entry unload can drive the same teardown the frontend uses.
         self._webrtc_session_controls: dict[str, WebRTCSessionControl] = {}
@@ -544,7 +545,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
 
     async def async_check_stream_expiry(
         self, force: bool = False
-    ) -> tuple[StreamSubscriptionResponse | None, AgoraResponse | None]:
+    ) -> tuple[StreamSubscriptionResponse | None, APResponse | None]:
         """Return cached Agora stream data, refreshing only when the token is absent or stale."""
         now = time.monotonic()
         token_age = now - self._stream_data_fetched_at
@@ -602,47 +603,25 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
                 return None, self._agora_response
 
             if stream_data is not None and stream_data.data is not None:
-                LOGGER.debug("Received stream data: %s", stream_data)
-
-                # Get ICE servers from Agora API
+                LOGGER.debug(
+                    "Received stream data for channel %s (code %s)",
+                    stream_data.data.channelName,
+                    stream_data.code,
+                )
                 try:
-                    subscription = stream_data.data.to_dict()
-                    async with AgoraAPIClient() as agora_client:
-                        agora_response = await agora_client.choose_server(
-                            app_id=subscription["appid"],
-                            token=subscription["token"],
-                            channel_name=subscription["channelName"],
-                            user_id=int(subscription["uid"]),
-                            service_flags=[
-                                SERVICE_IDS["CHOOSE_SERVER"],  # Gateway addresses
-                                SERVICE_IDS["CLOUD_PROXY_FALLBACK"],  # TURN servers
-                            ],
-                        )
-
-                        # Get ICE servers and convert to RTCIceServer format - use only first TURN server to match SDK (3 entries)
-                        ice_servers_agora = agora_response.get_ice_servers(
-                            use_all_turn_servers=False
-                        )
-                        LOGGER.info("Ice Servers from Agora API:%s", ice_servers_agora)
-                        ice_servers = [
-                            RTCIceServer(
-                                urls=ice_server.urls,
-                                username=ice_server.username,
-                                credential=ice_server.credential,
-                            )
-                            for ice_server in ice_servers_agora
-                        ]
-
-                        # Store ICE servers in coordinator
-                        self.ice_servers = ice_servers
-                        self._agora_response = agora_response
-                        LOGGER.info(
-                            "Retrieved %d ICE servers from Agora API",
-                            len(ice_servers),
-                        )
-                except Exception:
-                    LOGGER.exception("Failed to get ICE servers from Agora API")
+                    agora_response = await async_choose_server(
+                        self.hass, stream_data.data
+                    )
+                # ValueError/TypeError: a token mammotion_credentials cannot convert.
+                except PyAgoraRTCError, ValueError, TypeError:
+                    LOGGER.exception("Agora edge discovery failed")
                     self.ice_servers = []
+                else:
+                    self.ice_servers = to_rtc_ice_servers(agora_response)
+                    self._agora_response = agora_response
+                    LOGGER.info(
+                        "Retrieved %d ICE servers from Agora", len(self.ice_servers)
+                    )
 
             LOGGER.debug("Stream token refreshed successfully")
         except Exception:
