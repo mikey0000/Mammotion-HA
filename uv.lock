@@ -1507,9 +1507,8 @@ source = { virtual = "." }
 dependencies = [
     { name = "autotyping" },
     { name = "homeassistant" },
+    { name = "pyagorartc" },
     { name = "pymammotion" },
-    { name = "sdp-transform" },
-    { name = "websockets" },
 ]
 
 [package.dev-dependencies]
@@ -1529,9 +1528,8 @@ dev = [
 requires-dist = [
     { name = "autotyping", specifier = ">=24.3.0" },
     { name = "homeassistant", specifier = ">=2026.1.0" },
+    { name = "pyagorartc", specifier = "==0.2.0" },
     { name = "pymammotion", specifier = "==0.10.1" },
-    { name = "sdp-transform", specifier = ">=1.1.0" },
-    { name = "websockets", specifier = ">=15.0.1" },
 ]
 
 [package.metadata.requires-dev]
@@ -1982,6 +1980,20 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/01/4f/32a51f53d645044740d0513a6a029d782b35bdc51a55ea171ce85034f5b7/psutil-home-assistant-0.0.1.tar.gz", hash = "sha256:ebe4f3a98d76d93a3140da2823e9ef59ca50a59761fdc453b30b4407c4c1bdb8", size = 6045, upload-time = "2022-08-25T14:28:39.926Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/cb/48/8a0acb683d1fee78b966b15e78143b673154abb921061515254fb573aacd/psutil_home_assistant-0.0.1-py3-none-any.whl", hash = "sha256:35a782e93e23db845fc4a57b05df9c52c2d5c24f5b233bd63b01bae4efae3c41", size = 6300, upload-time = "2022-08-25T14:28:38.083Z" },
+]
+
+[[package]]
+name = "pyagorartc"
+version = "0.2.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "aiohttp" },
+    { name = "sdp-transform" },
+    { name = "websockets" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/88/22/645c3393f58aa4745e53c7fc4ec70379f382bf8899a238958624a122b4dd/pyagorartc-0.2.0.tar.gz", hash = "sha256:8bb6a4c15ad56c879eb5594c365add4844691d33c9d79a61cecb7976c7df01e6", size = 310257, upload-time = "2026-09-30T21:53:09.933Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/4d/fe/ee1ff4774e112969a58b1a20a313e225d14cbda3fba4b6ab705d4e4ecd72/pyagorartc-0.2.0-py3-none-any.whl", hash = "sha256:334df85659d8d37467a6d888521476639b6fc0c9179bf3661540a87378736978", size = 65009, upload-time = "2026-09-30T21:53:08.373Z" },
 ]
 
 [[package]]
