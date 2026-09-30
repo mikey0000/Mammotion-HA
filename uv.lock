@@ -1528,7 +1528,7 @@ dev = [
 requires-dist = [
     { name = "autotyping", specifier = ">=24.3.0" },
     { name = "homeassistant", specifier = ">=2026.1.0" },
-    { name = "pyagorartc", specifier = "==0.2.0" },
+    { name = "pyagorartc", specifier = "==0.2.1" },
     { name = "pymammotion", specifier = "==0.10.1" },
 ]
 
@@ -1984,16 +1984,16 @@ wheels = [
 
 [[package]]
 name = "pyagorartc"
-version = "0.2.0"
+version = "0.2.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
     { name = "sdp-transform" },
     { name = "websockets" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/88/22/645c3393f58aa4745e53c7fc4ec70379f382bf8899a238958624a122b4dd/pyagorartc-0.2.0.tar.gz", hash = "sha256:8bb6a4c15ad56c879eb5594c365add4844691d33c9d79a61cecb7976c7df01e6", size = 310257, upload-time = "2026-09-30T21:53:09.933Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/da/c0/5cc5b0f9d1ea16c064aa3cfc0ceba27f7c256b99d5337ab2650cf23d817a/pyagorartc-0.2.1.tar.gz", hash = "sha256:99bafc31e6e3ae389c46d94b5440cda03c3cc4c6dc215b743d4282ce23ecfe85", size = 319684, upload-time = "2026-09-30T22:35:21.049Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/4d/fe/ee1ff4774e112969a58b1a20a313e225d14cbda3fba4b6ab705d4e4ecd72/pyagorartc-0.2.0-py3-none-any.whl", hash = "sha256:334df85659d8d37467a6d888521476639b6fc0c9179bf3661540a87378736978", size = 65009, upload-time = "2026-09-30T21:53:08.373Z" },
+    { url = "https://files.pythonhosted.org/packages/34/36/242a3335f21619a281d097eae3d4464304620ea2ce123211ed4d7800cf29/pyagorartc-0.2.1-py3-none-any.whl", hash = "sha256:26210a8d24c0c45d146d50435f4c36a5bb71dbabff4b62219018c7a4ffc7675f", size = 65176, upload-time = "2026-09-30T22:35:19.809Z" },
 ]
 
 [[package]]
