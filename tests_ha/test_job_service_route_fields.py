@@ -262,7 +262,7 @@ async def test_cancel_job_on_a_working_mower_ends_the_job() -> None:
         responses={"pause_execute_task": WorkMode.MODE_PAUSE},
     )
 
-    await entity.async_cancel()
+    await entity.async_stop()
 
     assert entity.coordinator.sent == ["pause_execute_task", "cancel_job"]
 
@@ -331,7 +331,7 @@ async def test_cancel_acts_on_the_fresh_report_not_the_stale_mode() -> None:
     entity = make_mower_entity(OperationSettings(), mode=WorkMode.MODE_WORKING)
     _docks_on_fresh_report(entity)
 
-    await entity.async_cancel()
+    await entity.async_stop()
 
     assert entity.coordinator.sent == []
 
