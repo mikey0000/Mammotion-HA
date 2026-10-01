@@ -164,6 +164,13 @@ def supports_grass_collection(device_name: str) -> bool:
     return device_type.is_yu_ka() or device_type.is_yu_ka_pro()
 
 
+def invalidate_cached_name(entity: Entity) -> None:
+    """Re-derive *entity*'s name after changing the description or placeholders it is built from."""
+    # Home Assistant caches these and clears each only on a write to its own ``_attr_``.
+    entity.__dict__.pop("name", None)
+    entity.__dict__.pop("translation_placeholders", None)
+
+
 class MammotionBaseEntity(CoordinatorEntity[MammotionBaseUpdateCoordinator[Any]]):  # type: ignore[misc]
     """Representation of a Mammotion Lawn Mower."""
 

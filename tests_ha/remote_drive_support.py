@@ -198,6 +198,7 @@ async def make_remote_drive_rig(
     tokens: list[Response[FpvControl] | Exception] | None = None,
     firmware: str = SUPPORTING_FIRMWARE,
     cloud_usable: bool = True,
+    account_in_use: bool = False,
     hass: HomeAssistant | None = None,
     options: dict[str, Any] | None = None,
 ) -> RemoteDriveRig:
@@ -209,7 +210,11 @@ async def make_remote_drive_rig(
     device = MowingDevice()
     device.device_firmwares.device_version = firmware
     handle = make_cloud_handle(
-        LUBA3, device, reported_offline=False, cloud_usable=cloud_usable
+        LUBA3,
+        device,
+        reported_offline=False,
+        cloud_usable=cloud_usable,
+        account_in_use=account_in_use,
     )
     # The cloud-connected edge starts the MQTT poll loop, which this rig has no use for.
     await handle.stop_polling()

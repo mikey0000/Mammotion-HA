@@ -29,6 +29,7 @@ from .entity import (
     MammotionBaseEntity,
     MammotionBaseSpinoEntity,
     async_add_when_supported,
+    invalidate_cached_name,
     supports_no_area_work,
 )
 
@@ -614,6 +615,7 @@ class MammotionSpinoTaskButtonEntity(MammotionBaseSpinoEntity, ButtonEntity):
             name=new_name,
             translation_placeholders={"name": new_name},
         )
+        invalidate_cached_name(self)
         if self.hass is not None:
             self.async_write_ha_state()
 

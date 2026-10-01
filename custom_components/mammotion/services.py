@@ -13,7 +13,7 @@ from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.service import async_register_admin_service
 from homeassistant.util import dt as dt_util
-from pymammotion.data.model.hash_list import CommDataCouple, Plan
+from pymammotion.data.model.hash_list import CommDataCouple, Plan, SvgFrameList
 from pymammotion.data.model.pool_state import PoolPlan
 from pymammotion.http.model.map_backup import BACKUP_STATE_DONE, BackupMapItem
 from pymammotion.utility.device_type import DeviceType
@@ -72,9 +72,9 @@ SERVICE_CANCEL_MAP_BACKUP = "cancel_map_backup"
 SERVICE_DELETE_MAP_BACKUP = "delete_map_backup"
 
 # Optional schedule fields shared by both device kinds.  The HA service
-# layer normalises them into the per-kind Plan / PoolPlan dataclass.
+# layer normalises them into the per-kind Plan / PoolPlan dataclass.  No
+# defaults: an edit must leave whatever the caller omits as stored.
 _SCHEDULE_FIELDS = {
-    vol.Optional("enabled", default=True): cv.boolean,
     vol.Optional("weeks"): vol.All(
         cv.ensure_list, [vol.All(vol.Coerce(int), vol.Range(min=0, max=6))]
     ),
@@ -143,6 +143,7 @@ CREATE_TASK_SCHEMA = vol.Schema(
     {
         vol.Required(ATTR_ENTITY_ID): _single_entity_id,
         vol.Required("name"): cv.string,
+        vol.Optional("enabled", default=True): cv.boolean,
         **_SCHEDULE_FIELDS,
         **_MOWER_ONLY_FIELDS,
         **_SPINO_ONLY_FIELDS,
@@ -154,6 +155,7 @@ EDIT_TASK_SCHEMA = vol.Schema(
     {
         vol.Required(ATTR_ENTITY_ID): _single_entity_id,
         vol.Optional("name"): cv.string,
+        vol.Optional("enabled"): cv.boolean,
         **_SCHEDULE_FIELDS,
         **_MOWER_ONLY_FIELDS,
         **_SPINO_ONLY_FIELDS,
@@ -214,21 +216,28 @@ MAP_BACKUP_JOB_SCHEMA = MAP_BACKUP_ID_SCHEMA.extend(
     {vol.Optional("restore", default=False): cv.boolean}
 )
 
-_SVG_COMMON_FIELDS = {
-    vol.Optional("svg_file_name", default="pattern.svg"): str,
-    vol.Optional("scale", default=1.0): vol.Coerce(float),
-    vol.Optional("rotate", default=0.0): vol.Coerce(float),
-    vol.Optional("base_width_m", default=2.5): vol.Coerce(float),
-    vol.Optional("base_height_m", default=2.5): vol.Coerce(float),
-    vol.Optional("x_move"): vol.Coerce(float),
-    vol.Optional("y_move"): vol.Coerce(float),
-}
+#: svg_update fields an omitted value takes from the stored tile.
+_SVG_TILE_FIELDS = (
+    "svg_file_name",
+    "scale",
+    "rotate",
+    "base_width_m",
+    "base_height_m",
+    "x_move",
+    "y_move",
+)
 
 SVG_ADD_SCHEMA = MOWER_TARGET_SCHEMA.extend(
     {
         vol.Required("area_hash"): vol.Coerce(int),
         vol.Required("svg_data"): str,
-        **_SVG_COMMON_FIELDS,
+        vol.Optional("svg_file_name", default="pattern.svg"): str,
+        vol.Optional("scale", default=1.0): vol.Coerce(float),
+        vol.Optional("rotate", default=0.0): vol.Coerce(float),
+        vol.Optional("base_width_m", default=2.5): vol.Coerce(float),
+        vol.Optional("base_height_m", default=2.5): vol.Coerce(float),
+        vol.Optional("x_move"): vol.Coerce(float),
+        vol.Optional("y_move"): vol.Coerce(float),
     },
 )
 
@@ -237,7 +246,13 @@ SVG_UPDATE_SCHEMA = MOWER_TARGET_SCHEMA.extend(
         vol.Required("device_hash"): vol.Coerce(int),
         vol.Required("area_hash"): vol.Coerce(int),
         vol.Required("svg_data"): str,
-        **_SVG_COMMON_FIELDS,
+        vol.Optional("svg_file_name"): str,
+        vol.Optional("scale"): vol.Coerce(float),
+        vol.Optional("rotate"): vol.Coerce(float),
+        vol.Optional("base_width_m"): vol.Coerce(float),
+        vol.Optional("base_height_m"): vol.Coerce(float),
+        vol.Optional("x_move"): vol.Coerce(float),
+        vol.Optional("y_move"): vol.Coerce(float),
     },
 )
 
@@ -270,6 +285,17 @@ def _stringify_large_ints(obj: Any) -> Any:
     ):
         return str(obj)
     return obj
+
+
+def _stored_svg_fields(tile: SvgFrameList | None) -> dict[str, Any]:
+    """Return the transform a stored SVG tile holds, keyed by svg_update's field names."""
+    if tile is None or not tile.data:
+        return {}
+    stored = tile.data[0].svg_message
+    fields = {key: getattr(stored, key) for key in _SVG_TILE_FIELDS}
+    if not stored.svg_file_name:
+        del fields["svg_file_name"]
+    return fields
 
 
 def _get_mower_by_entity_id(
@@ -704,21 +730,23 @@ def async_setup_services(hass: HomeAssistant) -> None:  # noqa: C901
                 frame_list.data, key=lambda f: getattr(f, "current_frame", 0)
             ):
                 boundary.extend(getattr(frame, "data_couple", []))
+        fields = _stored_svg_fields(device_data.map.svg.get(call.data["device_hash"]))
+        fields.update(
+            {key: call.data[key] for key in _SVG_TILE_FIELDS if key in call.data}
+        )
+        x_move = fields.pop("x_move", None)
+        y_move = fields.pop("y_move", None)
         msg = build_svg_update(
             device_hash=call.data["device_hash"],
             area_hash=area_hash,
             boundary=boundary,
             svg_file_data=call.data["svg_data"],
-            svg_file_name=call.data["svg_file_name"],
-            scale=call.data["scale"],
-            rotate=call.data["rotate"],
-            base_width_m=call.data["base_width_m"],
-            base_height_m=call.data["base_height_m"],
+            **fields,
         )
-        if "x_move" in call.data:
-            msg.svg_message.x_move = call.data["x_move"]
-        if "y_move" in call.data:
-            msg.svg_message.y_move = call.data["y_move"]
+        if x_move is not None:
+            msg.svg_message.x_move = x_move
+        if y_move is not None:
+            msg.svg_message.y_move = y_move
         result = await coordinator.send_svg_command(msg)
         return {"device_hash": str(result)}
 

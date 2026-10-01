@@ -11,14 +11,14 @@
       "reconfigure_successful": "Omkonfiguration lykkedes",
       "merged_into_existing_account": "Denne konto har allerede en post; Bluetooth-enhederne blev flettet ind i den, og denne post blev fjernet.",
       "api_limit_exceeded": "API-anmodningsgrænsen er overskredet. Prøv igen senere.",
-      "account_in_use": "Din Mammotion-konto er allerede aktiv i en anden session. Log ud af Mammotion-appen og prøv igen.",
       "reauth_successful": "Godkendelsen blev fornyet",
       "wrong_account": "Disse legitimationsoplysninger tilhører en anden Mammotion-konto. Godkend igen med den konto, denne post blev oprettet med."
     },
     "error": {
       "login_failed": "Login mislykkedes. Kontrollér din kontos e-mail og adgangskode, og prøv igen.",
       "cannot_connect": "Kan ikke oprette forbindelse til Mammotion-skyen. Kontroller dine legitimationsoplysninger og netværk, og prøv igen.",
-      "no_account_no_ble": "Der er ikke angivet kontooplysninger, og der blev ikke fundet nogen Bluetooth-enhed. Angiv dine Mammotion-kontooplysninger, eller konfigurer en Bluetooth-enhed."
+      "no_account_no_ble": "Der er ikke angivet kontooplysninger, og der blev ikke fundet nogen Bluetooth-enhed. Angiv dine Mammotion-kontooplysninger, eller konfigurer en Bluetooth-enhed.",
+      "credentials_required": "Angiv både din Mammotion-konto og dens adgangskode."
     },
     "flow_title": "{name}",
     "step": {
@@ -28,7 +28,8 @@
       "reconfigure": {
         "data": {
           "account_name": "Mammotion e-mail eller kontonummer",
-          "password": "Mammotion adgangskode"
+          "password": "Mammotion adgangskode",
+          "remove_account": "Fjern kontoen og brug kun Bluetooth"
         }
       },
       "user": {
@@ -1564,11 +1565,11 @@
     "command_unconfirmed": {
       "message": "Plæneklipperen bekræftede ikke kommandoen. Den kan stadig være udført."
     },
+    "account_in_use": {
+      "message": "Din Mammotion-konto er aktiv i en anden session (Mammotion-appen). Log ud af appen, eller vent, og prøv igen."
+    },
     "api_limit_exceeded": {
       "message": "API-anmodningsgrænsen er overskredet."
-    },
-    "account_in_use": {
-      "message": "Din Mammotion-konto er allerede aktiv i en anden session. Log ud af Mammotion-appen og prøv igen."
     },
     "cloud_setup_failed": {
       "message": "Kan ikke oprette forbindelse til Mammotion-skyen. Kontroller dit netværk, og prøv at genindlæse integrationen."
@@ -1693,6 +1694,9 @@
     "remote_drive_needs_cloud": {
       "message": "Fjernkørsel via skyen kræver en fungerende skyforbindelse til plæneklipperen. Brug i stedet skubbeknapperne via Bluetooth."
     },
+    "remote_drive_start_failed": {
+      "message": "Fjernkørsel kunne ikke startes: plæneklipperen kunne ikke nås via skyen."
+    },
     "remote_drive_already_running": {
       "message": "Fjernkørsel via skyen kører allerede. Slå den fra, før du starter igen."
     },
@@ -1752,6 +1756,20 @@
     },
     "battery_settings_unread": {
       "message": "Batteriindstillingerne er endnu ikke læst fra plæneklipperen. En ændring nu ville nulstille opladningsvinduet uden for spidsbelastning, så intet blev sendt. Prøv igen, når plæneklipperen er forbundet."
+    }
+  },
+  "issues": {
+    "account_in_use": {
+      "title": "Mammotion-kontoen bruges af en anden session",
+      "description": "Din Mammotion-konto {account} er allerede aktiv i en anden session, så cloudforbindelsen er sat på pause. Log ud af Mammotion-appen; integrationen genopretter automatisk forbindelsen inden for få minutter."
+    },
+    "cloud_login_retrying": {
+      "title": "Mammotion-cloud utilgængelig",
+      "description": "Home Assistant kunne ikke logge ind på Mammotion-cloud for {account} ({error}). Enheder forbundet via Bluetooth fungerer fortsat. Login forsøges igen hvert 15. minut, op til 5 gange, med den gemte session."
+    },
+    "cloud_login_failed": {
+      "title": "Mammotion-cloud ikke forbundet",
+      "description": "Home Assistant kunne ikke logge ind på Mammotion-cloud for {account} ({error}) og har stoppet med at prøve igen. Enheder forbundet via Bluetooth fungerer fortsat. Genindlæs Mammotion-integrationen, når Mammotion-tjenesten er tilgængelig igen."
     }
   }
 }

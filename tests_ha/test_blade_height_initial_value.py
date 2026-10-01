@@ -40,6 +40,9 @@ def _mower(name: str = _LUBA, knife_height: int = 0) -> MagicMock:
     coordinator.device_name = name
     coordinator.unique_name = name
     coordinator.operation_settings = OperationSettings()
+    coordinator._operation_settings = coordinator.operation_settings
+    # The shipped resolution order, read off the real data and settings above.
+    type(coordinator).blade_height = MammotionBaseUpdateCoordinator.blade_height
     coordinator.async_change_blade_height_if_working = AsyncMock()
     return mower
 

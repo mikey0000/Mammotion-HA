@@ -1,0 +1,36 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  pytest:
+    name: pytest (tests_ha) with coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Install Python and dependencies
+        run: uv sync --frozen
+
+      # The floor is the measured total minus one point; raise it as coverage grows, never lower it.
+      - name: Run tests with coverage
+        run: >-
+          uv run --no-sync python -m pytest tests_ha -q -p no:cacheprovider
+          --cov --cov-report=term-missing --cov-report=xml
+          --cov-fail-under=77
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-xml
+          path: coverage.xml
+          if-no-files-found: ignore

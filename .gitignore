@@ -13,3 +13,8 @@ data/
 
 # Throwaway Home Assistant instance created by scripts/develop.
 config/
+
+# Claude Code hook state and coverage output
+.claude/state/
+.coverage
+coverage.xml

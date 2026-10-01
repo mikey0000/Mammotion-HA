@@ -305,6 +305,7 @@ async def test_async_bring_up_marks_failure_and_skips_refresh_when_setup_raises(
     """Mirrors DataUpdateCoordinator's own setup guard rather than raising."""
     coordinator = _error_coordinator(hass)
     coordinator._bring_up_done = False  # noqa: SLF001
+    coordinator._subscriptions = []  # noqa: SLF001
     coordinator._async_setup = AsyncMock(side_effect=RuntimeError("no handle"))  # noqa: SLF001
     coordinator.async_refresh = AsyncMock()
 

@@ -67,6 +67,7 @@ from .entity import (
     MammotionBaseRTKEntity,
     MammotionBaseSpinoEntity,
     async_add_when_supported,
+    invalidate_cached_name,
 )
 
 
@@ -1076,12 +1077,9 @@ class MammotionTaskAreaSensorEntity(MammotionBaseEntity, SensorEntity):
         return self.entity_description.value_fn(self.coordinator.data)
 
     def update_name(self, new_name: str) -> None:
-        """Refresh the display name when the area is renamed on the device.
-
-        Overrides _attr_translation_placeholders so HA picks up the new name
-        on the next state write without recreating the entity.
-        """
+        """Refresh the display name when the area is renamed on the device."""
         self._attr_translation_placeholders = {"name": new_name}
+        invalidate_cached_name(self)
         if self.hass is not None:
             self.async_write_ha_state()
 

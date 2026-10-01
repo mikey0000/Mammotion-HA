@@ -11,6 +11,7 @@ import dataclasses
 import json
 from collections.abc import Callable
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -21,10 +22,12 @@ from homeassistant.core import State
 from homeassistant.exceptions import HomeAssistantError
 from pymammotion.data.model.device import MowingDevice
 from pymammotion.data.model.device_config import OperationSettings
+from pymammotion.messaging.command_queue import Priority
 from pymammotion.utility.constant.device_constant import WorkMode
 
 from custom_components.mammotion import lawn_mower as lawn_mower_platform
 from custom_components.mammotion.const import DOMAIN
+from custom_components.mammotion.coordinator import MammotionReportUpdateCoordinator
 from custom_components.mammotion.lawn_mower import (
     MODIFY_RUNNING_JOB_SCHEMA,
     START_MOW_SCHEMA,
@@ -35,6 +38,80 @@ _ROOT = Path(__file__).parent.parent / "custom_components" / "mammotion"
 _NEW_START_FIELDS = ("auto_change_direction", "ride_boundary_distance")
 
 
+class _ScriptedMower:
+    """The mower behind the fake coordinator: its state, its replies, what it was sent.
+
+    A command named in *responses* moves the mower to that mode one loop turn
+    after it is sent, the way a pushed report does; that report clears the
+    breakpoint after cancel_job.  ``wait_for`` models the coordinator's
+    ``async_wait_for``: the predicate is checked now and on every report, and
+    running out of time raises the HomeAssistantError named by ``failure_key``.
+    A command named in *failures* (``plan_route`` for the route planner) raises the
+    coordinator's HomeAssistantError with that translation key once sent.
+    """
+
+    def __init__(
+        self,
+        device: MowingDevice,
+        responses: dict[str, WorkMode],
+        failures: dict[str, str],
+    ) -> None:
+        self.device = device
+        self.responses = responses
+        self.failures = failures
+        self.sent: list[str] = []
+        self._waiters: list[
+            tuple[Callable[[MowingDevice], bool], asyncio.Future[None]]
+        ] = []
+
+    def _push(self, new_mode: WorkMode, job_ended: bool) -> None:
+        self.device.report_data.dev.sys_status = new_mode
+        if job_ended:
+            self.device.report_data.work.bp_info = 0
+        for predicate, reached in self._waiters:
+            if not reached.done() and predicate(self.device):
+                reached.set_result(None)
+
+    async def wait_for(
+        self,
+        predicate: Callable[[MowingDevice], bool],
+        *,
+        timeout: float,
+        failure_key: str = "command_failed",
+    ) -> MowingDevice:
+        if predicate(self.device):
+            return self.device
+        waiter = (predicate, asyncio.get_running_loop().create_future())
+        self._waiters.append(waiter)
+        try:
+            async with asyncio.timeout(timeout):
+                await waiter[1]
+        except TimeoutError as exc:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key=failure_key
+            ) from exc
+        finally:
+            self._waiters.remove(waiter)
+        return self.device
+
+    def _fail_if_configured(self, command: str) -> None:
+        if (key := self.failures.get(command)) is not None:
+            raise HomeAssistantError(translation_domain=DOMAIN, translation_key=key)
+
+    async def send(self, command: str, *_: Any, **__: Any) -> None:
+        self.sent.append(command)
+        self._fail_if_configured(command)
+        if (new_mode := self.responses.get(command)) is not None:
+            asyncio.get_running_loop().call_soon(
+                self._push, new_mode, command == "cancel_job"
+            )
+
+    async def plan_route(self, *_: Any, **__: Any) -> bool:
+        self.sent.append(f"plan_route in {self.device.report_data.dev.sys_status.name}")
+        self._fail_if_configured("plan_route")
+        return True
+
+
 def _entity(
     settings: OperationSettings,
     mode: WorkMode = WorkMode.MODE_READY,
@@ -42,71 +119,35 @@ def _entity(
     responses: dict[str, WorkMode] | None = None,
     failures: dict[str, str] | None = None,
 ) -> MammotionLawnMowerEntity:
-    """Build the real lawn mower entity over a mower in *mode*.
+    """Build the real lawn mower entity over a ``_ScriptedMower`` in *mode*.
 
-    A command named in *responses* moves the mower to that mode one loop turn
-    after it is sent, reaching the entity through its coordinator listeners the
-    way a pushed report does; that report clears the breakpoint after cancel_job.
-    A command named in *failures* (``plan_route`` for the route planner) raises the
-    coordinator's HomeAssistantError with that translation key once sent.
     Everything sent lands in ``coordinator.sent``.
     """
     device = MowingDevice()
     device.report_data.dev.sys_status = mode
     device.report_data.dev.charge_state = 1
     device.report_data.work.bp_info = bp_info
-    listeners: list[Callable[[], None]] = []
-    sent: list[str] = []
-    coordinator = MagicMock()
+    mower = _ScriptedMower(device, responses or {}, failures or {})
+    coordinator = MagicMock(spec=MammotionReportUpdateCoordinator)
     coordinator.unique_name = "Luba-VA123456"
     coordinator.device_name = "Luba-VA123456"
     coordinator.data = device
     coordinator.operation_settings = settings
-    coordinator.sent = sent
-
-    def push(new_mode: WorkMode, job_ended: bool) -> None:
-        device.report_data.dev.sys_status = new_mode
-        if job_ended:
-            device.report_data.work.bp_info = 0
-        for listener in listeners:
-            listener()
-
-    def add_listener(listener: Callable[[], None], *_: Any) -> Callable[[], None]:
-        listeners.append(listener)
-        return lambda: listeners.remove(listener)
-
-    def fail_if_configured(command: str) -> None:
-        if (key := (failures or {}).get(command)) is not None:
-            raise HomeAssistantError(translation_domain=DOMAIN, translation_key=key)
-
-    async def send(command: str, *_: Any, **__: Any) -> None:
-        sent.append(command)
-        fail_if_configured(command)
-        if (new_mode := (responses or {}).get(command)) is not None:
-            asyncio.get_running_loop().call_soon(
-                push, new_mode, command == "cancel_job"
-            )
-
-    async def plan_route(*_: Any, **__: Any) -> bool:
-        sent.append(f"plan_route in {device.report_data.dev.sys_status.name}")
-        fail_if_configured("plan_route")
-        return True
-
-    coordinator.async_add_listener = add_listener
+    coordinator.sent = mower.sent
+    coordinator.async_wait_for = AsyncMock(side_effect=mower.wait_for)
     coordinator.async_ensure_fresh_state = AsyncMock()
     coordinator.async_request_report_snapshot = AsyncMock()
-    coordinator.async_start_report_stream = AsyncMock()
-    coordinator.async_plan_route = AsyncMock(side_effect=plan_route)
+    coordinator.async_plan_route = AsyncMock(side_effect=mower.plan_route)
     coordinator.async_modify_plan_route = AsyncMock(return_value=True)
-    coordinator.async_send_command = AsyncMock(side_effect=send)
-    coordinator.async_send_and_wait = AsyncMock(side_effect=send)
+    coordinator.async_send_command = AsyncMock(side_effect=mower.send)
+    coordinator.async_send_and_wait = AsyncMock(side_effect=mower.send)
     coordinator.async_modify_running_job = AsyncMock(return_value=True)
     entity = MammotionLawnMowerEntity(coordinator)
-    entity.hass = MagicMock()
-    entity.hass.states.get = {
+    states = {
         "switch.area_front": State("switch.area_front", "on", {"hash": "111"}),
         "switch.area_back": State("switch.area_back", "on", {"hash": "222"}),
-    }.get
+    }
+    entity.hass = SimpleNamespace(states=SimpleNamespace(get=states.get))
     return entity
 
 
@@ -193,7 +234,7 @@ async def test_modify_running_job_forwards_the_fields_to_the_coordinator() -> No
     await entity.async_modify_running_job(**data)
 
     entity.coordinator.async_modify_running_job.assert_awaited_once_with(
-        auto_change_direction=1, speed=0.8
+        priority=Priority.USER, auto_change_direction=1, speed=0.8
     )
 
 
@@ -385,10 +426,42 @@ async def test_a_new_job_fails_if_the_mower_never_reports_ready(
     monkeypatch.setattr(lawn_mower_platform, "_MODE_WAIT_TIMEOUT", 0)
     entity = _entity(OperationSettings(), mode=WorkMode.MODE_PAUSE, bp_info=1)
 
-    with pytest.raises(HomeAssistantError):
+    with pytest.raises(HomeAssistantError) as raised:
         await _call_start_mow(entity, areas=["switch.area_back"])
 
+    assert raised.value.translation_key == "start_failed"
     assert entity.coordinator.sent == ["cancel_job"]
+
+
+def _docks_on_fresh_report(entity: MammotionLawnMowerEntity) -> None:
+    """Make the fresh-state read deliver a report: the stale WORKING was a docked mower."""
+
+    async def fresh(*, wait: bool = False) -> None:
+        assert wait, "a user action must wait for the report"
+        entity.coordinator.data.report_data.dev.sys_status = WorkMode.MODE_READY
+        entity.coordinator.data.report_data.work.bp_info = 0
+
+    entity.coordinator.async_ensure_fresh_state.side_effect = fresh
+
+
+async def test_start_mow_acts_on_the_fresh_report_not_the_stale_mode() -> None:
+    """The stale WORKING would pause and cancel a job the mower no longer runs."""
+    entity = _entity(OperationSettings(), mode=WorkMode.MODE_WORKING, bp_info=1)
+    _docks_on_fresh_report(entity)
+
+    await _call_start_mow(entity, areas=["switch.area_back"])
+
+    assert entity.coordinator.sent == ["plan_route in MODE_READY", "start_job"]
+
+
+async def test_cancel_acts_on_the_fresh_report_not_the_stale_mode() -> None:
+    """A mower already docked has no job to end, whatever the old report said."""
+    entity = _entity(OperationSettings(), mode=WorkMode.MODE_WORKING)
+    _docks_on_fresh_report(entity)
+
+    await entity.async_cancel()
+
+    assert entity.coordinator.sent == []
 
 
 async def test_modify_on_a_paused_mower_modifies_without_ending_the_job() -> None:

@@ -11,14 +11,14 @@
       "reconfigure_successful": "Reconfigurare reușită",
       "merged_into_existing_account": "Acest cont are deja o intrare; dispozitivele Bluetooth au fost îmbinate în ea, iar această intrare a fost eliminată.",
       "api_limit_exceeded": "Limita de solicitări API a fost depășită. Vă rugăm să încercați din nou mai târziu.",
-      "account_in_use": "Contul dvs. Mammotion este deja activ într-o altă sesiune. Deconectați-vă din aplicația Mammotion și încercați din nou.",
       "reauth_successful": "Reautentificarea a reușit",
       "wrong_account": "Aceste date de autentificare aparțin altui cont Mammotion. Reautentificați-vă cu contul cu care a fost configurată această intrare."
     },
     "error": {
       "login_failed": "Autentificare eșuată. Verificați adresa de e-mail și parola contului, apoi încercați din nou.",
       "cannot_connect": "Nu se poate conecta la cloud-ul Mammotion. Verificați datele de autentificare și rețeaua, apoi încercați din nou.",
-      "no_account_no_ble": "Nu au fost introduse datele contului și nu a fost găsit niciun dispozitiv Bluetooth. Introduceți datele de autentificare ale contului Mammotion sau configurați un dispozitiv Bluetooth."
+      "no_account_no_ble": "Nu au fost introduse datele contului și nu a fost găsit niciun dispozitiv Bluetooth. Introduceți datele de autentificare ale contului Mammotion sau configurați un dispozitiv Bluetooth.",
+      "credentials_required": "Introduceți atât contul Mammotion, cât și parola acestuia."
     },
     "flow_title": "{name}",
     "step": {
@@ -28,7 +28,8 @@
       "reconfigure": {
         "data": {
           "account_name": "Email sau număr de cont Mammotion",
-          "password": "Parola contului Mammotion"
+          "password": "Parola contului Mammotion",
+          "remove_account": "Elimină contul și folosește doar Bluetooth"
         }
       },
       "user": {
@@ -1564,11 +1565,11 @@
     "command_unconfirmed": {
       "message": "Mașina de tuns iarba nu a confirmat comanda. Este posibil să fi fost totuși executată."
     },
+    "account_in_use": {
+      "message": "Contul dvs. Mammotion este activ într-o altă sesiune (aplicația Mammotion). Deconectați-vă din aplicație sau așteptați și încercați din nou."
+    },
     "api_limit_exceeded": {
       "message": "Limita de solicitări API a fost depășită."
-    },
-    "account_in_use": {
-      "message": "Contul dvs. Mammotion este deja activ într-o altă sesiune. Deconectați-vă din aplicația Mammotion și încercați din nou."
     },
     "cloud_setup_failed": {
       "message": "Nu se poate conecta la cloud-ul Mammotion. Verificați rețeaua și încercați să reîncărcați integrarea."
@@ -1693,6 +1694,9 @@
     "remote_drive_needs_cloud": {
       "message": "Conducerea de la distanță prin cloud necesită o conexiune cloud funcțională cu mașina de tuns. Prin Bluetooth folosiți în schimb butoanele de deplasare."
     },
+    "remote_drive_start_failed": {
+      "message": "Conducerea de la distanță nu a putut fi pornită: mașina de tuns nu a putut fi contactată prin cloud."
+    },
     "remote_drive_already_running": {
       "message": "Conducerea de la distanță prin cloud rulează deja. Opriți-o înainte de a o porni din nou."
     },
@@ -1752,6 +1756,20 @@
     },
     "battery_settings_unread": {
       "message": "Setările bateriei nu au fost încă citite de pe mașina de tuns. Modificarea lor acum ar reseta intervalul de încărcare în afara orelor de vârf, așa că nu s-a trimis nimic. Încercați din nou după ce mașina de tuns este conectată."
+    }
+  },
+  "issues": {
+    "account_in_use": {
+      "title": "Contul Mammotion este folosit de o altă sesiune",
+      "description": "Contul dvs. Mammotion {account} este deja activ într-o altă sesiune, așa că conexiunea cloud este suspendată. Deconectați-vă din aplicația Mammotion; integrarea se va reconecta automat în câteva minute."
+    },
+    "cloud_login_retrying": {
+      "title": "Cloud Mammotion indisponibil",
+      "description": "Home Assistant nu s-a putut conecta la cloud-ul Mammotion pentru {account} ({error}). Dispozitivele conectate prin Bluetooth continuă să funcționeze. Conectarea este reîncercată la fiecare 15 minute, de cel mult 5 ori, folosind sesiunea salvată."
+    },
+    "cloud_login_failed": {
+      "title": "Cloud Mammotion neconectat",
+      "description": "Home Assistant nu s-a putut conecta la cloud-ul Mammotion pentru {account} ({error}) și a încetat să mai încerce. Dispozitivele conectate prin Bluetooth continuă să funcționeze. Reîncărcați integrarea Mammotion după ce serviciul Mammotion este din nou accesibil."
     }
   }
 }

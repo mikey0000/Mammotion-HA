@@ -13,6 +13,7 @@ from homeassistant.components.switch import DOMAIN as SWITCH_DOMAIN
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
 from homeassistant.const import STATE_ON
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -28,7 +29,7 @@ from pymammotion.data.model.pool_state import SpinoToggle
 from pymammotion.utility.device_type import DeviceType
 
 from . import MammotionConfigEntry
-from .const import DOMAIN
+from .const import DOMAIN, LOGGER
 from .coordinator import (
     REMOTE_DRIVE_LIVE_PHASES,
     MammotionBaseUpdateCoordinator,
@@ -40,6 +41,7 @@ from .entity import (
     MammotionBaseSpinoEntity,
     async_add_when_firmware_supports,
     async_add_when_supported,
+    invalidate_cached_name,
     supports_grass_collection,
 )
 
@@ -757,6 +759,7 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
             name=new_name,
             translation_placeholders={"name": new_name},
         )
+        invalidate_cached_name(self)
         # Don't overwrite _pushed_name when the user has set their own HA label —
         # resetting it to a device/auto name would cause a spurious set_area_name
         # push the next time async_registry_entry_updated fires.
@@ -823,10 +826,22 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
             if new_name := self.registry_entry.name:
                 if new_name == self._pushed_name:
                     return
-                self._pushed_name = new_name
-                self.hass.async_create_task(
-                    self.coordinator.async_set_area_name(self.area, new_name)
-                )
+                self.hass.async_create_task(self._async_push_name(new_name))
+
+    async def _async_push_name(self, new_name: str) -> None:
+        """Rename the area on the mower; a failed push is retried on the next rename."""
+        try:
+            await self.coordinator.async_set_area_name(self.area, new_name)
+        except HomeAssistantError as exc:
+            LOGGER.warning(
+                "%s: area %s was not renamed to %r on the mower: %s",
+                self.coordinator.device_name,
+                self.area,
+                new_name,
+                exc,
+            )
+            return
+        self._pushed_name = new_name
 
     async def async_update(self) -> None:
         """Update the entity state."""

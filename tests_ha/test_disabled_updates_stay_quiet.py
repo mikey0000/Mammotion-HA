@@ -21,6 +21,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from pymammotion.data.model.device import MowingDevice
 
+from custom_components.mammotion import _create_ble_only_device
 from custom_components.mammotion.coordinator import (
     MammotionBaseUpdateCoordinator,
     MammotionDeviceErrorUpdateCoordinator,
@@ -51,7 +52,7 @@ def _coordinator(
     # A populated table keeps the error coordinator off its cloud-lookup branch.
     device.errors.error_codes = {"1": "known"}
     coordinator.data = device
-    coordinator.device = device
+    coordinator.device = _create_ble_only_device(_DEVICE_NAME)
     coordinator.device_name = _DEVICE_NAME
     coordinator.update_failures = 0
     coordinator._startup_reads_done = False
@@ -69,7 +70,8 @@ def _coordinator(
     coordinator.async_send_and_wait = AsyncMock()
     coordinator.async_set_updated_data = MagicMock()
     coordinator.async_save_data = MagicMock()
-    coordinator.is_online = MagicMock(return_value=False)
+    # Reachable, so only the updates switch decides whether the reads go out.
+    coordinator.is_online = MagicMock(return_value=True)
     return coordinator
 
 

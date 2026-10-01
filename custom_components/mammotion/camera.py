@@ -29,6 +29,7 @@ from homeassistant.core import (
     SupportsResponse,
     callback,
 )
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pyagorartc import (
     AgoraSession,
@@ -42,6 +43,7 @@ from pymammotion.http.model.camera_stream import (
     StreamSubscriptionResponse,
 )
 from pymammotion.http.model.http import Response
+from pymammotion.messaging.command_queue import Priority
 from pymammotion.utility.device_type import DeviceType
 from webrtc_models import RTCIceCandidateInit, RTCIceServer
 
@@ -282,7 +284,7 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
             # does not avoid 2003 either.
             force=True
         )
-        await self.coordinator.async_send_command("send_todev_ble_sync", sync_type=3)
+        await self._async_nudge_stream()
         _LOGGER.info("Handling WebRTC offer for session %s", session_id)
 
         if not stream_data:
@@ -460,12 +462,28 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         Invoked by the Agora session every few seconds while it is joined.
         Over cellular the encoder stops publishing unless poked with
         ``refresh_fpv``; on WiFi the stream is continuous, so return False to
-        stop the keep-alive loop without sending anything.
+        stop the keep-alive loop without sending anything.  A ``refresh_fpv`` that
+        did not land also returns False: the session stops calling (pyagorartc D15)
+        and the stream ends when the encoder does.
         """
         if not self.coordinator.is_on_4g:
             return False
-        await self.coordinator.async_send_command("refresh_fpv")
-        return True
+        try:
+            return await self.coordinator.async_send_command(
+                "refresh_fpv", priority=Priority.USER
+            )
+        except HomeAssistantError as exc:
+            _LOGGER.debug("FPV keep-alive not delivered, stopping it: %s", exc)
+            return False
+
+    async def _async_nudge_stream(self) -> None:
+        """Send the BLE sync that prompts the mower to publish; a failed nudge is only logged."""
+        try:
+            await self.coordinator.async_send_command(
+                "send_todev_ble_sync", priority=Priority.USER, sync_type=3
+            )
+        except HomeAssistantError as exc:
+            _LOGGER.debug("Stream nudge not delivered: %s", exc)
 
     async def _on_peer_left(self, uid: int) -> None:
         """Recover this feed after its publisher left the channel and stayed gone."""
@@ -478,7 +496,7 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         Nudge the device with a BLE sync, then refresh the stream subscription so
         it rejoins the channel.
         """
-        await self.coordinator.async_send_command("send_todev_ble_sync", sync_type=3)
+        await self._async_nudge_stream()
         await self.coordinator.manager.get_stream_subscription(
             self.coordinator.device.device_name,
             self.coordinator.device.iot_id,

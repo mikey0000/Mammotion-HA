@@ -16,7 +16,8 @@ import pytest
 from homeassistant.core import HomeAssistant
 from homeassistant.util import dt as dt_util
 from pymammotion.client import MammotionClient
-from pymammotion.data.model.device import MowingDevice
+from pymammotion.data.model.device import MowingDevice, PoolCleanerDevice
+from pymammotion.data.model.pool_state import SpinoErrorEntry
 from pymammotion.device.handle import DeviceHandle
 from pymammotion.state.device_state import DeviceNotification
 from pymammotion.transport.base import TransportRateLimitedError
@@ -31,6 +32,7 @@ from custom_components.mammotion.config import async_get_store
 from custom_components.mammotion.const import CONF_BLE_DEVICES, DOMAIN
 from custom_components.mammotion.coordinator import (
     MammotionDeviceErrorUpdateCoordinator,
+    MammotionSpinoCoordinator,
 )
 from custom_components.mammotion.sensor import SENSOR_ERROR_TYPES
 
@@ -163,6 +165,36 @@ def test_the_error_time_is_the_entrys_utc_time() -> None:
 def test_an_unfetched_error_log_has_no_time() -> None:
     """Before the first read the lists are empty."""
     assert _error_time_coordinator([]).get_error_time(1) is None
+
+
+def _spino_error_time_coordinator(timestamp: int | None) -> MammotionSpinoCoordinator:
+    """Return a bare Spino coordinator; ``get_error_time`` reads only ``self.data``."""
+    coordinator = MammotionSpinoCoordinator.__new__(MammotionSpinoCoordinator)
+    coordinator.data = PoolCleanerDevice()
+    if timestamp is not None:
+        coordinator.data.pool_state.error_log = [
+            SpinoErrorEntry(code=-1001, timestamp=timestamp)
+        ]
+    return coordinator
+
+
+@pytest.mark.regression
+@pytest.mark.parametrize("timestamp", [_UPTIME_STAMP, 0], ids=["uptime", "zero"])
+def test_a_spino_error_without_a_real_time_has_none(timestamp: int) -> None:
+    """The Spino path had no lower bound and showed the same 1970 dates."""
+    assert _spino_error_time_coordinator(timestamp).get_error_time() is None
+
+
+def test_a_spino_error_time_is_utc() -> None:
+    """A real epoch is reported as is."""
+    assert _spino_error_time_coordinator(_REAL_EPOCH).get_error_time() == (
+        datetime.datetime(2025, 9, 8, 17, 4, 11, tzinfo=datetime.UTC)
+    )
+
+
+def test_an_empty_spino_error_log_has_no_time() -> None:
+    """No entry, no time."""
+    assert _spino_error_time_coordinator(None).get_error_time() is None
 
 
 @pytest.mark.regression
