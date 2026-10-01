@@ -1,7 +1,7 @@
 {
   "config": {
     "abort": {
-      "already_configured": "Het apparaat is al ingesteld",
+      "already_configured": "Apparaat is al geconfigureerd",
       "already_in_progress": "Een configuratieproces is al gestart",
       "no_devices_found": "Kon geen apparaten vinden",
       "no_devices_found_in_account": "Er zijn geen apparaten aan uw account verbonden",
@@ -300,7 +300,7 @@
         "state": {
           "RTK_OVER_DATALINK": "Antenne via DataLink",
           "RTK_OVER_INTERNET": "Antenne via internet",
-          "INAVI_NET_RTK": "iNavi NetRTK",
+          "INAVI_NET_RTK": "internet navigatie",
           "INAVI_RTK_BOX": "iNavi RTK-box",
           "UNKNOWN": "Onbekend"
         }
@@ -309,8 +309,8 @@
         "name": "Verbindingstype",
         "state": {
           "UNKNOWN": "Onbekend",
-          "CON_BLE": "BLE",
-          "CON_WIFI": "Wi-Fi"
+          "CON_BLE": "Bluetooth laag energie",
+          "CON_WIFI": "Draadloos netwerk"
         }
       },
       "spino_battery": {

@@ -5,7 +5,7 @@
       "already_in_progress": "Konfiguracija poteka",
       "no_devices_found": "Ne morem najti naprav",
       "no_devices_found_in_account": "V vašem računu ni naprav",
-      "bluetooth_and_account_mismatch": "V vašem računu ni bluetooth naprav",
+      "bluetooth_and_account_mismatch": "V vašem računu ni Bluetooth naprav",
       "no_longer_present": "Naprava ni več prisotna",
       "not_supported": "Naprava ni podprta",
       "reconfigure_successful": "Ponastavitev uspešna",
@@ -42,7 +42,7 @@
           "account_name": "E-poštni naslov Mammotion ali številka računa",
           "password": "Geslo Mammotion računa"
         },
-        "title": "Poveži Wi-fi",
+        "title": "Poveži Wi-Fi",
         "description": "Vnesite e-poštni naslov Mammotion računa ali številko računa in geslo. Pustite obe polji prazni, če želite uporabljati samo Bluetooth brez računa."
       },
       "reauth_confirm": {
@@ -140,7 +140,7 @@
         "name": "Skupni čas"
       },
       "elapsed_time": {
-        "name": "Pretečni čas"
+        "name": "Pretečeni čas"
       },
       "left_time": {
         "name": "Preostali čas"
@@ -207,8 +207,8 @@
         "name": "Vrsta dejavnosti",
         "state": {
           "MODE_NOT_ACTIVE": "Neaktivno",
-          "MODE_ONLINE": "Online",
-          "MODE_OFFLINE": "Offline",
+          "MODE_ONLINE": "Povezano",
+          "MODE_OFFLINE": "Ni povezave",
           "MODE_DISABLE": "Onemogočeno",
           "MODE_INITIALIZATION": "Inicializacija",
           "MODE_READY": "Pripravljeno",
