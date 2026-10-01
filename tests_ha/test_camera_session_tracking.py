@@ -14,24 +14,19 @@ from custom_components.mammotion.coordinator import MammotionBaseUpdateCoordinat
 
 
 @pytest.mark.parametrize(
-    ("device_name", "has_rear"),
+    ("device_name", "exists"),
     [
-        ("Luba-VS00CLD", False),
-        ("Luba-VP00CLD", False),
-        ("Yuka-000CLD", True),
-        ("Yuka-MNTXVHBE", False),
-        ("Yuka-YM00CLD", False),
+        ("Luba-VS00CLD", [True, True, False, False]),
+        ("Luba-VP00CLD", [True, True, False, False]),
+        ("Luba-VAME9R5S", [False, False, False, True]),
+        ("Yuka-000CLD", [True, True, True, False]),
+        ("Yuka-MNTXVHBE", [True, True, False, False]),
+        ("Yuka-YM00CLD", [True, True, False, False]),
     ],
 )
-def test_only_the_full_size_yuka_has_the_rear_camera(
-    device_name: str, has_rear: bool
-) -> None:
-    """Left and right exist on every vision mower; the Yuka Minis have no rear."""
-    assert [description.exists_fn(device_name) for description in CAMERAS] == [
-        True,
-        True,
-        has_rear,
-    ]
+def test_which_feeds_each_mower_has(device_name: str, exists: list[bool]) -> None:
+    """Left/right/rear/vision; the Yuka Minis have no rear, the Luba 3 only the vision feed."""
+    assert [description.exists_fn(device_name) for description in CAMERAS] == exists
 
 
 async def test_stop_video_forgets_every_viewer() -> None:
@@ -66,7 +61,12 @@ def test_camera_names_come_from_the_translation_key() -> None:
         )
         names.append(camera._name_internal(None, translations))
 
-    assert names == ["webrtc_camera", "webrtc_camera_right", "webrtc_camera_rear"]
+    assert names == [
+        "webrtc_camera",
+        "webrtc_camera_right",
+        "webrtc_camera_rear",
+        "webrtc_camera_vision",
+    ]
 
 
 def _token_coordinator(*responses: MagicMock) -> MagicMock:

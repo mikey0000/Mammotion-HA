@@ -77,6 +77,9 @@
       "webrtc_camera": {
         "name": "Bal kamera"
       },
+      "webrtc_camera_vision": {
+        "name": "Látókamera"
+      },
       "webrtc_camera_right": {
         "name": "Jobb kamera"
       },

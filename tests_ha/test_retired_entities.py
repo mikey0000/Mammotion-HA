@@ -5,6 +5,7 @@ registry here is Home Assistant's real one, seeded as an earlier version left it
 """
 
 from battery_support import make_mower
+from homeassistant.components.camera import DOMAIN as CAMERA_DOMAIN
 from homeassistant.components.sensor import DOMAIN as SENSOR_DOMAIN
 from homeassistant.components.switch import DOMAIN as SWITCH_DOMAIN
 from homeassistant.core import HomeAssistant
@@ -72,3 +73,30 @@ async def test_the_retired_rain_tactics_switch_is_removed(hass: HomeAssistant) -
     async_remove_retired_entities(hass, [make_mower(LUBA_2)])
 
     assert _present(hass, [stale, live]) == [live]
+
+
+async def test_the_luba_3_s_left_and_right_cameras_are_removed(
+    hass: HomeAssistant,
+) -> None:
+    """It publishes one feed, now the vision camera; earlier versions made left/right."""
+    stale = [
+        _seed(hass, CAMERA_DOMAIN, f"{LUBA_3}_webrtc_camera"),
+        _seed(hass, CAMERA_DOMAIN, f"{LUBA_3}_webrtc_camera_right"),
+    ]
+    live = _seed(hass, CAMERA_DOMAIN, f"{LUBA_3}_webrtc_camera_vision")
+
+    async_remove_retired_entities(hass, [make_mower(LUBA_3)])
+
+    assert _present(hass, [*stale, live]) == [live]
+
+
+async def test_a_luba_2_keeps_its_left_and_right_cameras(hass: HomeAssistant) -> None:
+    """Only the Luba 3 lost its left/right cameras."""
+    kept = [
+        _seed(hass, CAMERA_DOMAIN, f"{LUBA_2}_webrtc_camera"),
+        _seed(hass, CAMERA_DOMAIN, f"{LUBA_2}_webrtc_camera_right"),
+    ]
+
+    async_remove_retired_entities(hass, [make_mower(LUBA_2)])
+
+    assert _present(hass, kept) == kept
