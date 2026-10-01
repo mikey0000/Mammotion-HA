@@ -8,14 +8,12 @@ from aiohttp import ClientError
 from bleak.exc import BleakError
 from bleak_retry_connector import BleakNotFoundError
 from pymammotion.aliyun.exceptions import (
-    CheckSessionException,
     DeviceUnboundException,
     FailedRequestException,
 )
 from pymammotion.http.model.http import UnauthorizedExceptionError
 from pymammotion.transport import AuthError
-from pymammotion.transport.base import LoginFailedError, TransportError
-from pymammotion.utility.constant import WorkMode
+from pymammotion.transport.base import TransportError
 
 DOMAIN: Final = "mammotion"
 EVENT_MAMMOTION: Final = f"{DOMAIN}_event"
@@ -98,12 +96,8 @@ COMMAND_EXCEPTIONS = (
     FailedRequestException,
 )
 
-EXPIRED_CREDENTIAL_EXCEPTIONS = (
-    CheckSessionException,
-    AuthError,
-    UnauthorizedExceptionError,
-    LoginFailedError,
-)
+# AuthError already covers LoginFailedError, ReLoginRequiredError and SessionExpiredError.
+EXPIRED_CREDENTIAL_EXCEPTIONS = (AuthError, UnauthorizedExceptionError)
 
 CONF_HAS_CLOUD_ACCOUNT: Final = "has_cloud_account"
 CONF_STAY_CONNECTED_BLUETOOTH: Final = "stay_connected_bluetooth"
@@ -142,16 +136,7 @@ CREDENTIAL_CACHE_KEYS: Final = (
     CONF_DEVICE_DATA,
     CONF_MAMMOTION_DATA,
     CONF_MAMMOTION_MQTT,
+    CONF_MAMMOTION_DEVICE_LIST,
+    CONF_MAMMOTION_DEVICE_RECORDS,
     CONF_MAMMOTION_JWT_INFO,
-)
-
-NO_REQUEST_MODES = (
-    WorkMode.MODE_JOB_DRAW,
-    WorkMode.MODE_OBSTACLE_DRAW,
-    WorkMode.MODE_CHANNEL_DRAW,
-    WorkMode.MODE_ERASER_DRAW,
-    WorkMode.MODE_UPDATING,
-    WorkMode.MODE_EDIT_BOUNDARY,
-    WorkMode.MODE_LOCK,
-    WorkMode.MODE_MANUAL_MOWING,
 )

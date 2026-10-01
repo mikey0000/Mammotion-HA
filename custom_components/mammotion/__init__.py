@@ -4,11 +4,13 @@ from __future__ import annotations
 
 import asyncio
 import time
+import weakref
 from collections.abc import Coroutine
 from contextlib import suppress
+from datetime import datetime, timedelta
+from enum import Enum, auto
 from typing import Any, cast
 
-from aiohttp import ClientConnectorError
 from homeassistant.components import bluetooth
 from homeassistant.components.bluetooth import (
     BluetoothCallbackMatcher,
@@ -18,27 +20,26 @@ from homeassistant.components.bluetooth import (
 )
 from homeassistant.config_entries import ConfigEntry, ConfigEntryState
 from homeassistant.const import CONF_PASSWORD, EVENT_HOMEASSISTANT_STOP, Platform
-from homeassistant.core import Event, HomeAssistant, callback
-from homeassistant.exceptions import (
-    ConfigEntryAuthFailed,
-    ConfigEntryError,
-    ConfigEntryNotReady,
-)
+from homeassistant.core import CALLBACK_TYPE, Event, HomeAssistant, callback
+from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers import aiohttp_client
 from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.device_registry import DeviceEntry
 from homeassistant.helpers.device_registry import (
     async_get as async_get_device_registry,
 )
+from homeassistant.helpers.event import async_call_later
 from homeassistant.loader import async_get_integration
 from pymammotion.aliyun.exceptions import CloudSetupError, TooManyRequestsException
 from pymammotion.aliyun.model.dev_by_account_response import Device
 from pymammotion.client import MammotionClient
 from pymammotion.data.model.device import MowingDevice, PoolCleanerDevice
+from pymammotion.http.model.http import UnauthorizedExceptionError
 from pymammotion.transport.base import (
+    AuthError,
     LoginFailedError,
-    ReLoginRequiredError,
     TransportError,
+    TransportRateLimitedError,
     TransportType,
     is_transient_network_error,
 )
@@ -53,6 +54,7 @@ from .config import (
 )
 from .const import (
     BLE_SUPPORT,
+    CONF_ACCOUNT_ID,
     CONF_ACCOUNTNAME,
     CONF_AEP_DATA,
     CONF_BLE_DEVICES,
@@ -68,7 +70,6 @@ from .const import (
     CREDENTIAL_CACHE_KEYS,
     DEVICE_SUPPORT,
     DOMAIN,
-    EXPIRED_CREDENTIAL_EXCEPTIONS,
     LOGGER,
     NOTIFY_SELF_CHECK,
     NOTIFY_WARNINGS,
@@ -126,107 +127,256 @@ def _clear_cached_credentials(hass: HomeAssistant, entry: MammotionConfigEntry) 
     )
 
 
-def _unexpected_login_failure(err: Exception, *, ble_fallback: bool) -> bool:
-    """Return False to continue BLE-only, else raise the ConfigEntry exception for *err*."""
-    transient = is_transient_network_error(err)
-    if not transient:
-        LOGGER.error("Unexpected error during Mammotion login", exc_info=err)
-    if ble_fallback:
-        LOGGER.warning("Mammotion login failed; continuing in BLE-only mode: %s", err)
-        return False
-    if transient:
-        raise ConfigEntryNotReady(err) from err
-    raise ConfigEntryError(err) from err
+CLOUD_LOGIN_RETRY_INTERVAL = timedelta(minutes=15)
+CLOUD_LOGIN_MAX_RETRIES = 5
 
 
-async def _async_attempt_login(  # noqa: C901
-    hass: HomeAssistant,
-    entry: MammotionConfigEntry,
-    mammotion: MammotionClient,
-    account: str,
-    password: str,
-    *,
-    ble_fallback: bool,
-) -> bool:
-    """Attempt cloud login with credential-cache support.
+class _LoginFailure(Enum):
+    """How a failed cloud login is answered."""
 
-    Returns True on success. Returns False when login fails and ``ble_fallback``
-    is True (BLE devices are available as a fallback). Raises the appropriate
-    ConfigEntry exception when login fails with no BLE fallback available.
+    REJECTED = auto()
+    """The account's login is dead: reauthenticate, never retry."""
+    TRANSIENT = auto()
+    """The server was unreachable or one transport failed: retry from the cache."""
+    FAILED = auto()
+    """Anything else: show it and leave it to a reload."""
+
+
+def _classify_login_failure(
+    err: Exception, mammotion: MammotionClient
+) -> _LoginFailure:
+    """Classify *err*; only ``reauth_required`` makes an auth error terminal.
+
+    A transport-scoped give-up raises the same ``ReLoginRequiredError`` while the
+    login stays valid, so the exception type alone cannot decide it.
     """
-    session = aiohttp_client.async_get_clientsession(hass)
-    cached = _load_cached_credentials(entry)
-    try:
-        if cached:
-            await mammotion.restore_credentials(
-                account, password, cached, session, check_for_new_devices=True
-            )
-        else:
-            await mammotion.login_and_initiate_cloud(account, password, session)
-    except ClientConnectorError as err:
-        raise ConfigEntryNotReady(err) from err
-    except LoginFailedError as err:
-        # restore_credentials only raises this after the cached login was rejected
-        # AND its fallback password login failed — the cache is dead either way.
-        _clear_cached_credentials(hass, entry)
-        if ble_fallback:
-            LOGGER.warning(
-                "Mammotion login failed; continuing in BLE-only mode: %s", err
-            )
+    if isinstance(err, LoginFailedError) or mammotion.reauth_required is not None:
+        return _LoginFailure.REJECTED
+    if isinstance(err, UnretryableException):
+        # Tea keeps the cause in inner_exception, not __cause__.
+        inner = err.inner_exception
+        if isinstance(inner, Exception) and is_transient_network_error(inner):
+            return _LoginFailure.TRANSIENT
+        return _LoginFailure.FAILED
+    if isinstance(
+        err,
+        (
+            AuthError,
+            UnauthorizedExceptionError,
+            CloudSetupError,
+            TooManyRequestsException,
+            TransportRateLimitedError,
+        ),
+    ) or is_transient_network_error(err):
+        return _LoginFailure.TRANSIENT
+    return _LoginFailure.FAILED
+
+
+class _CloudLogin:
+    """The entry's cloud login: one attempt at setup, then bounded cached-session retries.
+
+    Setup never raises ``ConfigEntryNotReady`` for a login: Home Assistant would
+    retry it every 5…600 s with no end, and without a cache every retry is a
+    password grant.  A retry only ever calls ``restore_credentials`` with the
+    cache; a success reloads the entry, since only setup builds the cloud devices.
+    """
+
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        entry: MammotionConfigEntry,
+        mammotion: MammotionClient,
+        account: str,
+        password: str,
+    ) -> None:
+        """Bind the login to its entry and client."""
+        self._hass = hass
+        self._entry = entry
+        self._mammotion = mammotion
+        self._account = account
+        self._password = password
+        self._failed_retries = 0
+        self._cancel_retry: CALLBACK_TYPE | None = None
+        self._restored_cache: dict[str, Any] = {}
+
+    @property
+    def _issue_id(self) -> str:
+        return f"cloud_login_{self._entry.entry_id}"
+
+    def _load_cache(self) -> dict[str, Any]:
+        cached = _load_cached_credentials(self._entry)
+        self._restored_cache = {
+            k: cached[k] for k in CREDENTIAL_CACHE_KEYS if k in cached
+        }
+        return cached
+
+    @callback
+    def _async_clear_own_cache(self) -> bool:
+        """Clear the cache only while every blob in it is one this client restored or wrote.
+
+        Returns False, clearing nothing, when a flow has saved a fresh login since:
+        this client is then stale and its rejection must not wipe that.
+        """
+        written = _WRITTEN_CACHES.get(self._mammotion, {})
+        if not all(
+            value is self._restored_cache.get(key) or value is written.get(key)
+            for key in CREDENTIAL_CACHE_KEYS
+            if (value := self._entry.data.get(key)) is not None
+        ):
             return False
-        raise ConfigEntryAuthFailed(err) from err
-    except EXPIRED_CREDENTIAL_EXCEPTIONS as exc:
-        LOGGER.debug(exc)
-        if cached:
-            LOGGER.warning(
-                "Cached credentials are stale (%s) — clearing them before retrying",
-                exc,
-            )
-            _clear_cached_credentials(hass, entry)
-        try:
-            await mammotion.login_and_initiate_cloud(
-                account, password, aiohttp_client.async_get_clientsession(hass)
-            )
-        except (LoginFailedError, ReLoginRequiredError) as retry_err:
-            if ble_fallback:
-                LOGGER.warning(
-                    "Login failed after cache clear; continuing in BLE-only mode: %s",
-                    retry_err,
-                )
-                return False
-            raise ConfigEntryAuthFailed(retry_err) from retry_err
-        except Exception as retry_err:  # noqa: BLE001
-            return _unexpected_login_failure(retry_err, ble_fallback=ble_fallback)
-        else:
-            return True
-    except TooManyRequestsException as err:
-        if ble_fallback:
-            LOGGER.warning("Mammotion API rate limited; continuing in BLE-only mode")
-            return False
-        raise ConfigEntryError(
-            translation_domain=DOMAIN, translation_key="api_limit_exceeded"
-        ) from err
-    except CloudSetupError as err:
-        # Raised only when the Aliyun platform is the account's sole transport.
-        if ble_fallback:
-            LOGGER.warning(
-                "Mammotion cloud setup failed; continuing in BLE-only mode: %s", err
-            )
-            return False
-        raise ConfigEntryNotReady(
-            translation_domain=DOMAIN, translation_key="cloud_setup_failed"
-        ) from err
-    except UnretryableException as err:
-        if ble_fallback:
-            LOGGER.warning(
-                "Unretryable login error; continuing in BLE-only mode: %s", err
-            )
-            return False
-        raise ConfigEntryError(err) from err
-    except Exception as err:  # noqa: BLE001
-        return _unexpected_login_failure(err, ble_fallback=ble_fallback)
-    else:
+        _clear_cached_credentials(self._hass, self._entry)
         return True
+
+    async def async_setup_login(self, *, ble_fallback: bool) -> bool:
+        """Log in once; return True when the cloud is up.
+
+        Raises ConfigEntryAuthFailed only for a dead login with no BLE mower to
+        keep the entry useful.
+        """
+        session = aiohttp_client.async_get_clientsession(self._hass)
+        cached = self._load_cache()
+        try:
+            if cached:
+                await self._mammotion.restore_credentials(
+                    self._account,
+                    self._password,
+                    cached,
+                    session,
+                    check_for_new_devices=True,
+                )
+            else:
+                await self._mammotion.login_and_initiate_cloud(
+                    self._account, self._password, session
+                )
+        except Exception as err:  # noqa: BLE001 — every failure is classified below
+            outcome = _classify_login_failure(err, self._mammotion)
+            if outcome is _LoginFailure.REJECTED and not ble_fallback:
+                self._async_clear_own_cache()
+                raise ConfigEntryAuthFailed(err) from err
+            self._async_failed(err, outcome, can_retry=bool(cached))
+            return False
+        return True
+
+    @callback
+    def async_rejected(self) -> None:
+        """Stop retrying, drop the dead cache and ask the user to reauthenticate."""
+        self._async_cancel_timer()
+        ir.async_delete_issue(self._hass, DOMAIN, self._issue_id)
+        if not self._async_clear_own_cache():
+            LOGGER.debug(
+                "Mammotion %s: stale session rejected after a flow saved a fresh "
+                "login; no reauth needed",
+                self._account,
+            )
+            return
+        self._entry.async_start_reauth(self._hass)
+
+    @callback
+    def async_cancel(self) -> None:
+        """Cancel a pending retry and clear the repair (on unload)."""
+        self._async_cancel_timer()
+        ir.async_delete_issue(self._hass, DOMAIN, self._issue_id)
+
+    @callback
+    def _async_cancel_timer(self) -> None:
+        if self._cancel_retry is not None:
+            self._cancel_retry()
+            self._cancel_retry = None
+
+    @callback
+    def _async_failed(
+        self, err: Exception, outcome: _LoginFailure, *, can_retry: bool
+    ) -> None:
+        if outcome is _LoginFailure.REJECTED:
+            LOGGER.warning(
+                "Mammotion login for %s was rejected; continuing in BLE-only mode "
+                "until re-authenticated: %s",
+                self._account,
+                err,
+            )
+            self.async_rejected()
+            return
+        retrying = (
+            outcome is _LoginFailure.TRANSIENT
+            and can_retry
+            and self._failed_retries < CLOUD_LOGIN_MAX_RETRIES
+        )
+        if outcome is _LoginFailure.FAILED:
+            LOGGER.error(
+                "Mammotion cloud login for %s failed", self._account, exc_info=err
+            )
+        else:
+            LOGGER.warning(
+                "Mammotion cloud is unavailable for %s (%s); %s",
+                self._account,
+                err,
+                f"retrying in {CLOUD_LOGIN_RETRY_INTERVAL}"
+                if retrying
+                else "not retrying until the integration is reloaded",
+            )
+        key, severity = (
+            ("cloud_login_retrying", ir.IssueSeverity.WARNING)
+            if retrying
+            else ("cloud_login_failed", ir.IssueSeverity.ERROR)
+        )
+        ir.async_create_issue(
+            self._hass,
+            DOMAIN,
+            self._issue_id,
+            is_fixable=False,
+            severity=severity,
+            translation_key=key,
+            translation_placeholders={
+                "account": self._account,
+                "error": str(err) or type(err).__name__,
+            },
+        )
+        if retrying:
+            self._cancel_retry = async_call_later(
+                self._hass, CLOUD_LOGIN_RETRY_INTERVAL, self._async_retry_due
+            )
+
+    @callback
+    def _async_retry_due(self, _now: datetime) -> None:
+        self._cancel_retry = None
+        # An entry task, so unloading cancels a restore still in flight.
+        self._entry.async_create_background_task(
+            self._hass,
+            self._async_retry(),
+            name=f"{DOMAIN}_cloud_login_retry_{self._entry.entry_id}",
+        )
+
+    async def _async_retry(self) -> None:
+        if not (cached := self._load_cache()):
+            # Only a password grant could follow, and retries never make one.
+            LOGGER.debug("Mammotion cloud retry skipped: no cached session left")
+            return
+        try:
+            await self._mammotion.restore_credentials(
+                self._account,
+                self._password,
+                cached,
+                aiohttp_client.async_get_clientsession(self._hass),
+                check_for_new_devices=True,
+            )
+        except Exception as err:  # noqa: BLE001 — every failure is classified below
+            self._failed_retries += 1
+            self._async_failed(
+                err, _classify_login_failure(err, self._mammotion), can_retry=True
+            )
+            return
+        LOGGER.info(
+            "Mammotion cloud is reachable again for %s; reloading to bring it up",
+            self._account,
+        )
+        store_cloud_credentials(self._hass, self._entry, self._mammotion)
+        ir.async_delete_issue(self._hass, DOMAIN, self._issue_id)
+        self._hass.config_entries.async_schedule_reload(self._entry.entry_id)
+
+
+async def _async_attempt_login(login: _CloudLogin, *, ble_fallback: bool) -> bool:
+    """Attempt the setup's one cloud login; True when the cloud is up."""
+    return await login.async_setup_login(ble_fallback=ble_fallback)
 
 
 async def _register_ble_devices(
@@ -525,6 +675,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
     mammotion_rtk: list[MammotionRTKData] = []
     mammotion_spino: list[MammotionSpinoData] = []
 
+    cloud_login = _CloudLogin(hass, entry, mammotion, account or "", password or "")
+    entry.async_on_unload(cloud_login.async_cancel)
+
     if has_cloud_account:
 
         async def _on_unrecoverable_auth_error(
@@ -533,38 +686,28 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
             """Trigger HA re-authentication when the account's login itself is dead.
 
             pymammotion fires this only when the HTTP refresh token has been
-            rejected, i.e. nothing about the account can be renewed without the
-            user.  A single cloud transport failing while the login is still valid
-            does NOT reach here — that only marks its own mowers unavailable.
-
-            Raising ConfigEntryAuthFailed here would do nothing: pymammotion
-            invokes this callback inside contextlib.suppress(Exception), so the
-            exception is discarded and no reauth flow ever starts.  Schedule the
-            flow explicitly instead.  async_start_reauth is a no-op when a reauth
-            or reconfigure flow is already in progress, so repeated failures from
-            several devices collapse into one prompt.
-
-            The client is deliberately left running: pymammotion has already
-            quiesced the account's cloud side (transports detached and
-            disconnected, refresh scheduler stopped, HTTP failing fast), and BLE
-            needs no cloud credentials — so every mower that has a BLE transport
-            is switched to prefer it and nudged to connect, and keeps working while
-            the user re-authenticates.
+            rejected; a single transport failing on a valid login does not reach
+            here.  It runs inside the library's quiesce under suppress(Exception),
+            so raising ConfigEntryAuthFailed would be discarded: start the flow
+            explicitly, first, and leave the BLE connects to background tasks.
+            The client keeps running so mowers with BLE carry on meanwhile.
             """
             LOGGER.error(
                 "Mammotion account %s: %s auth recovery exhausted — re-authentication required",
                 account_id,
                 transport_type.value,
             )
-            # Drop the rejected credential cache now, so a restart before the user
-            # completes reauth does not re-spend the dead tokens on setup.
-            _clear_cached_credentials(hass, entry)
+            cloud_login.async_rejected()
             for handle in mammotion.device_registry.all_devices:
                 if handle.has_transport(TransportType.BLE):
                     handle.set_prefer_ble(value=True)
-                    with suppress(TransportError):
-                        await mammotion.connect_ble(handle.device_name)
-            entry.async_start_reauth(hass)
+                    entry.async_create_background_task(
+                        hass,
+                        _async_connect_ble_after_cloud_loss(
+                            mammotion, handle.device_name
+                        ),
+                        name=f"{DOMAIN}_ble_after_cloud_loss_{handle.device_name}",
+                    )
 
         mammotion.on_unrecoverable_auth_error = _on_unrecoverable_auth_error
         _track_account_in_use(hass, entry, mammotion)
@@ -597,12 +740,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
     cloud_available = False
     if has_cloud_account and account and password and use_wifi:
         cloud_available = await _async_attempt_login(
-            hass,
-            entry,
-            mammotion,
-            account,
-            password,
-            ble_fallback=bool(ble_mowers),
+            cloud_login, ble_fallback=bool(ble_mowers)
         )
 
     mower_devices: list[Device] = []
@@ -780,6 +918,16 @@ async def _async_bring_up_devices(
     )
 
 
+async def _async_connect_ble_after_cloud_loss(
+    mammotion: MammotionClient, device_name: str
+) -> None:
+    """Nudge one mower onto BLE; a failure is logged, the next advertisement retries."""
+    try:
+        await mammotion.connect_ble(device_name)
+    except Exception as exc:  # noqa: BLE001 — one mower must not take the others down
+        LOGGER.debug("%s: BLE connect after cloud loss failed: %s", device_name, exc)
+
+
 async def _async_guarded(name: str, coro: Coroutine[Any, Any, None]) -> None:
     """Run one device's bring-up; a failure is logged and never reaches its siblings.
 
@@ -812,7 +960,8 @@ async def _async_bring_up_mower(
 
     Coordinators run sequentially within a mower because they share one command
     queue and the cloud send quota.  ``async_bring_up`` never raises: an
-    unreachable mower keeps its restored data and retries on the normal schedule.
+    unreachable mower keeps its restored data, and the start-up reads retry on each
+    refresh until they complete.
     """
     device_name = mower.name
     handle = mammotion.mower(device_name)
@@ -909,24 +1058,46 @@ def _create_ble_only_device(device_name: str) -> Device:
     )
 
 
+#: The cache each client last wrote, to tell its own writes from a flow's.
+_WRITTEN_CACHES: weakref.WeakKeyDictionary[MammotionClient, dict[str, Any]] = (
+    weakref.WeakKeyDictionary()
+)
+
+
 def store_cloud_credentials(
     hass: HomeAssistant,
     config_entry: MammotionConfigEntry,
     client: MammotionClient,
 ) -> None:
-    """Persist cloud credentials from the client into the config entry.
+    """Persist *client*'s credential cache into the entry, if the entry is still its own.
 
-    A rejected session is never persisted: ``to_cache()`` returns an empty dict
-    once the account needs re-authentication, so this quietly skips (notably on
-    unload, which persists credentials as a courtesy).
+    Skipped when the session is rejected (``to_cache()`` is empty), when the entry
+    has no cloud account or names another account, and once a reauth or
+    reconfigure flow has replaced what this client last wrote: the client then
+    holds another account's session, or one the flow's login replaced server-side.
     """
-    cache = client.to_cache()
-    if not cache:
+    data = config_entry.data
+    if not data.get(
+        CONF_HAS_CLOUD_ACCOUNT,
+        bool(data.get(CONF_ACCOUNTNAME) and data.get(CONF_PASSWORD)),
+    ):
         return
-    hass.config_entries.async_update_entry(
-        config_entry,
-        data={**config_entry.data, **cache},
-    )
+    if (expected := data.get(CONF_ACCOUNT_ID)) is not None and (
+        (http := client.mammotion_http) is not None
+        and http.login_info is not None
+        and http.login_info.userInformation.userAccount != str(expected)
+    ):
+        return
+    # A cleared key is refilled; one holding someone else's value is not ours.
+    if (written := _WRITTEN_CACHES.get(client)) is not None and any(
+        data.get(key) is not None and data.get(key) is not value
+        for key, value in written.items()
+    ):
+        return
+    if not (cache := client.to_cache()):
+        return
+    hass.config_entries.async_update_entry(config_entry, data={**data, **cache})
+    _WRITTEN_CACHES[client] = dict(cache)
 
 
 def _load_cached_credentials(entry: MammotionConfigEntry) -> dict[str, Any]:
@@ -958,9 +1129,9 @@ async def async_unload_entry(hass: HomeAssistant, entry: MammotionConfigEntry) -
         with suppress(asyncio.CancelledError):
             await task
 
+    # No credential write-back: every refresh already persisted its rotation through
+    # on_credentials_updated, and a flow that reloads saved a newer cache first.
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
-        if entry.runtime_data.mowers:
-            store_cloud_credentials(hass, entry, entry.runtime_data.mowers[0].api)
         for mower in entry.runtime_data.mowers:
             try:
                 if handle := mower.api.mower(mower.name):
