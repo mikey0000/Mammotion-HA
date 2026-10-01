@@ -6,7 +6,6 @@ import asyncio
 import contextlib
 import dataclasses
 import datetime
-import json
 import secrets
 import time
 from abc import abstractmethod
@@ -68,7 +67,7 @@ from pymammotion.data.model.hash_list import Plan, SvgMessage
 from pymammotion.data.model.mowing_modes import RainProtectionMode
 from pymammotion.data.model.pool_state import PoolPlan, SpinoToggle
 from pymammotion.data.model.report_info import Maintain, NetUsedType
-from pymammotion.data.mqtt.event import DeviceNotificationEventParams, ThingEventMessage
+from pymammotion.data.mqtt.event import ThingEventMessage
 from pymammotion.data.mqtt.properties import ThingPropertiesMessage
 from pymammotion.data.mqtt.status import StatusType, ThingStatusMessage
 from pymammotion.device.remote_drive import (
@@ -132,6 +131,8 @@ from .const import (
     EXPIRED_CREDENTIAL_EXCEPTIONS,
     LOGGER,
     NO_REQUEST_MODES,
+    NOTIFY_CATEGORY_BY_EVENT,
+    NOTIFY_WARNINGS,
 )
 from .error_codes import async_refresh_error_codes
 from .stream_session import async_choose_server, to_rtc_ice_servers
@@ -3986,6 +3987,24 @@ class MammotionMapUpdateCoordinator(MammotionBaseUpdateCoordinator[MowerInfo]):
             )
 
 
+#: Below this an error-log time is not a date: the firmware first stamps an entry
+#: with its uptime, and pads an empty log with zeros.
+MIN_ERROR_LOG_EPOCH: Final = 1_000_000_000
+#: Seconds an error-log read waits, so the firmware has replaced the entry's uptime
+#: stamp with real time and a fault's burst of events costs one read.
+ERROR_LOG_READ_DELAY: Final = 10
+#: Modes a fault is commonly logged on the way into.
+ERROR_LOG_READ_MODES: Final = frozenset(
+    {
+        WorkMode.MODE_READY,
+        WorkMode.MODE_WORKING,
+        WorkMode.MODE_RETURNING,
+        WorkMode.MODE_LOCK,
+        WorkMode.MODE_PAUSE,
+    }
+)
+
+
 class MammotionDeviceErrorUpdateCoordinator(
     MammotionBaseUpdateCoordinator[MowingDevice]
 ):
@@ -4011,28 +4030,38 @@ class MammotionDeviceErrorUpdateCoordinator(
         mowing_device = self.manager.get_device_by_name(self.device_name)
         if self.data is None:
             self.data = mowing_device
+        self._error_log_debouncer: Debouncer[Coroutine[Any, Any, None]] = Debouncer(
+            hass,
+            LOGGER,
+            cooldown=ERROR_LOG_READ_DELAY,
+            immediate=False,
+            function=self._async_read_error_log,
+            background=True,
+        )
 
     def get_coordinator_data(self, device: MowingDevice) -> MowingDevice:
         """Get coordinator data."""
         return device
 
-    async def _async_update_event_message(self, event: ThingEventMessage) -> None:
-        if (
-            hasattr(event.params, "identifier")
-            and event.params.identifier == "device_warning_code_event"
-        ):
-            event_params: DeviceNotificationEventParams = cast(
-                DeviceNotificationEventParams, event.params
+    async def _async_on_notification(self, notification: DeviceNotification) -> None:
+        """Re-read the error log when the mower posts a warning."""
+        if NOTIFY_CATEGORY_BY_EVENT.get(notification.identifier) == NOTIFY_WARNINGS:
+            self._error_log_debouncer.async_schedule_call()
+
+    async def _async_read_error_log(self) -> None:
+        """Read both error-log registers; a failed read waits for the next trigger."""
+        device = self.manager.get_device_by_name(self.device_name)
+        if device is None or not device.enabled:
+            return
+        try:
+            await self.async_send_and_wait(
+                "read_write_device", "bidire_comm_cmd", rw_id=5, rw=1, context=2
             )
-            # '[{"c":-2801,"ct":1,"ft":1731493734000},{"c":-1008,"ct":1,"ft":1731493734000}]'
-            try:
-                warning_event = json.loads(event_params.value.data)
-                LOGGER.debug("warning event %s", warning_event)
-                await self._async_update_data()
-                if device := self.manager.get_device_by_name(self.device_name):
-                    self.async_set_updated_data(device)
-            except json.JSONDecodeError:
-                """Failed to parse warning event."""
+            await self.async_send_and_wait(
+                "read_write_device", "bidire_comm_cmd", rw_id=5, rw=1, context=3
+            )
+        except HomeAssistantError as exc:
+            LOGGER.debug("%s: error log not read: %s", self.device_name, exc)
 
     def get_error_code(self, number: int) -> int:
         """Get error code from an error code list."""
@@ -4042,13 +4071,11 @@ class MammotionDeviceErrorUpdateCoordinator(
             return 0
 
     def get_error_time(self, number: int) -> datetime.datetime | None:
-        """Get error time from an error code list."""
-        try:
-            return datetime.datetime.fromtimestamp(
-                next(iter(self.data.errors.err_code_list_time)), datetime.UTC
-            )
-        except StopIteration:
+        """Return when the newest error-log entry was logged, or None until it has a real time."""
+        epoch = next(iter(self.data.errors.err_code_list_time), 0)
+        if epoch < MIN_ERROR_LOG_EPOCH:
             return None
+        return datetime.datetime.fromtimestamp(epoch, datetime.UTC)
 
     def get_error_message(self, number: int) -> str:
         """Return error message."""
@@ -4073,19 +4100,9 @@ class MammotionDeviceErrorUpdateCoordinator(
         return device
 
     async def _on_sys_status_changed(self, sys_status: WorkMode) -> None:
-        """Handle sys status changed."""
-        if sys_status in (
-            WorkMode.MODE_WORKING,
-            WorkMode.MODE_RETURNING,
-            WorkMode.MODE_LOCK,
-            WorkMode.MODE_PAUSE,
-        ):
-            await self.async_send_and_wait(
-                "read_write_device", "bidire_comm_cmd", rw_id=5, rw=1, context=2
-            )
-            await self.async_send_and_wait(
-                "read_write_device", "bidire_comm_cmd", rw_id=5, rw=1, context=3
-            )
+        """Re-read the error log on entering a mode a fault is commonly logged with."""
+        if sys_status in ERROR_LOG_READ_MODES:
+            self._error_log_debouncer.async_schedule_call()
 
     async def _async_setup(self) -> None:
         """Set up the device-version coordinator."""
@@ -4098,26 +4115,26 @@ class MammotionDeviceErrorUpdateCoordinator(
                 lambda s: s.raw.report_data.dev.sys_status,
                 self._on_sys_status_changed,
             )
+            self._subscriptions.append(
+                handle.subscribe_notification(
+                    self._guarded(self._async_on_notification)
+                )
+            )
 
         await self._async_ensure_startup_reads()
 
     async def _async_startup_reads(self) -> None:
         """Read the two error registers and, if needed, the code table."""
-        device = self.manager.get_device_by_name(self.device_name)
-        if device is None:
+        if self.manager.get_device_by_name(self.device_name) is None:
             return
-        try:
-            await self.async_send_and_wait(
-                "read_write_device", "bidire_comm_cmd", rw_id=5, rw=1, context=2
-            )
-            await self.async_send_and_wait(
-                "read_write_device", "bidire_comm_cmd", rw_id=5, rw=1, context=3
-            )
-            await self._async_refresh_error_codes()
+        await self._async_read_error_log()
+        await self._async_refresh_error_codes()
+        self.async_set_updated_data(self.data)
 
-            self.async_set_updated_data(self.data)
-        except DeviceOfflineException:
-            pass
+    async def async_shutdown(self) -> None:
+        """Drop a pending error-log read along with the rest."""
+        self._error_log_debouncer.async_shutdown()
+        await super().async_shutdown()
 
 
 class MammotionRTKCoordinator(MammotionBaseUpdateCoordinator[RTKBaseStationDevice]):

@@ -45,7 +45,11 @@ from .const import (
     SELF_CHECK_OTHER,
     SELF_CHECK_STATES,
 )
-from .coordinator import MammotionReportUpdateCoordinator, remote_drive_detail
+from .coordinator import (
+    MIN_ERROR_LOG_EPOCH,
+    MammotionReportUpdateCoordinator,
+    remote_drive_detail,
+)
 
 NOTIFICATION_EVENT_TYPES: list[str] = [
     "device_notification_event",
@@ -472,12 +476,13 @@ class MowerNotifier:
         # ten slots, zero-padded — all zeros on a mower that has never had a fault.
         if errors is None or not errors.err_code_list:
             return
+        # An entry still on its uptime stamp is picked up once it carries real time.
         pairs = [
             (abs(int(code)), int(epoch))
             for code, epoch in zip(
                 errors.err_code_list, errors.err_code_list_time, strict=False
             )
-            if code
+            if code and epoch >= MIN_ERROR_LOG_EPOCH
         ]
         latest = max((epoch for _, epoch in pairs), default=0)
         if self._latest_error_epoch is None:
