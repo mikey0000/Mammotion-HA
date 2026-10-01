@@ -1561,6 +1561,9 @@
     "command_failed": {
       "message": "Det gick inte att skicka kommandot till gräsklipparen."
     },
+    "command_unconfirmed": {
+      "message": "Gräsklipparen bekräftade inte kommandot. Det kan ändå ha utförts."
+    },
     "api_limit_exceeded": {
       "message": "API-anropsgränsen har överskridits."
     },

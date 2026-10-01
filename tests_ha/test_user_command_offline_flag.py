@@ -97,9 +97,10 @@ async def test_a_user_command_is_not_sent_over_a_terminally_failed_transport() -
     """Only the offline flag is waived: an unusable transport still refuses everyone."""
     coordinator = _coordinator(_handle(reported_offline=True, cloud_usable=False))
 
-    sent = await coordinator.async_send_command("move_forward", priority=Priority.USER)
+    with pytest.raises(HomeAssistantError) as raised:
+        await coordinator.async_send_command("move_forward", priority=Priority.USER)
 
-    assert sent is False
+    assert raised.value.translation_key == "command_failed"
     coordinator.manager.send_command_with_args.assert_not_awaited()
 
 

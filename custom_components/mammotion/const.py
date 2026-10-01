@@ -4,15 +4,17 @@ import logging
 from datetime import timedelta
 from typing import Final
 
+from aiohttp import ClientError
 from bleak.exc import BleakError
 from bleak_retry_connector import BleakNotFoundError
-from pymammotion.aliyun.exceptions import CheckSessionException
+from pymammotion.aliyun.exceptions import (
+    CheckSessionException,
+    DeviceUnboundException,
+    FailedRequestException,
+)
 from pymammotion.http.model.http import UnauthorizedExceptionError
 from pymammotion.transport import AuthError
-from pymammotion.transport.base import (
-    LoginFailedError,
-    NoTransportAvailableError,
-)
+from pymammotion.transport.base import LoginFailedError, TransportError
 from pymammotion.utility.constant import WorkMode
 
 DOMAIN: Final = "mammotion"
@@ -84,11 +86,16 @@ DEFAULT_RETRY_COUNT = 3
 CONF_RETRY_COUNT = "retry_count"
 LOGGER: Final = logging.getLogger(__package__)
 
+#: What a command send can fail with besides the cases the coordinator names;
+#: ``TransportError`` covers ``NoTransportAvailableError`` and the rest.
 COMMAND_EXCEPTIONS = (
     BleakNotFoundError,
     BleakError,
-    NoTransportAvailableError,
+    TransportError,
     TimeoutError,
+    ClientError,
+    DeviceUnboundException,
+    FailedRequestException,
 )
 
 EXPIRED_CREDENTIAL_EXCEPTIONS = (

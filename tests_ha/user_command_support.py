@@ -6,6 +6,7 @@ a real ``DeviceHandle`` whose only transport is cloud MQTT, so the offline gate 
 coordinator consults is pymammotion's own.
 """
 
+import time
 from types import SimpleNamespace
 from unittest.mock import create_autospec
 
@@ -14,6 +15,9 @@ from pymammotion.data.model.device import Device
 from pymammotion.device.handle import DeviceHandle
 from pymammotion.transport.base import TransportAvailability, TransportType
 from pymammotion.transport.cloud import CloudTransport
+
+#: Handles whose poll loop may be running; ``conftest`` stops them after each test.
+LIVE_HANDLES: list[DeviceHandle] = []
 
 
 def make_cloud_handle(
@@ -28,7 +32,10 @@ def make_cloud_handle(
     mqtt.transport_type = TransportType.CLOUD_ALIYUN
     mqtt.is_usable = cloud_usable
     mqtt.is_connected = True
+    # Fresh traffic, so a poll loop the handle starts sleeps instead of polling.
+    mqtt.last_received_monotonic = time.monotonic()
     handle = DeviceHandle("dev-1", device_name, device, mqtt_transport=mqtt)
+    LIVE_HANDLES.append(handle)
     handle.update_availability(
         TransportType.CLOUD_ALIYUN,
         TransportAvailability.CONNECTED,

@@ -6,7 +6,6 @@ import asyncio
 import contextlib
 import dataclasses
 import datetime
-import json
 import secrets
 import time
 from abc import abstractmethod
@@ -68,7 +67,7 @@ from pymammotion.data.model.hash_list import Plan, SvgMessage
 from pymammotion.data.model.mowing_modes import RainProtectionMode
 from pymammotion.data.model.pool_state import PoolPlan, SpinoToggle
 from pymammotion.data.model.report_info import Maintain, NetUsedType
-from pymammotion.data.mqtt.event import DeviceNotificationEventParams, ThingEventMessage
+from pymammotion.data.mqtt.event import ThingEventMessage
 from pymammotion.data.mqtt.properties import ThingPropertiesMessage
 from pymammotion.data.mqtt.status import StatusType, ThingStatusMessage
 from pymammotion.device.remote_drive import (
@@ -124,6 +123,7 @@ from .config import (
     async_get_store,
 )
 from .const import (
+    COMMAND_EXCEPTIONS,
     CONF_ACCOUNTNAME,
     CONF_HAS_CLOUD_ACCOUNT,
     CONF_MAMMOTION_DATA,
@@ -132,6 +132,8 @@ from .const import (
     EXPIRED_CREDENTIAL_EXCEPTIONS,
     LOGGER,
     NO_REQUEST_MODES,
+    NOTIFY_CATEGORY_BY_EVENT,
+    NOTIFY_WARNINGS,
 )
 from .error_codes import async_refresh_error_codes
 from .stream_session import async_choose_server, to_rtc_ice_servers
@@ -960,7 +962,11 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             ) from err
 
     @staticmethod
-    def _raise_if_user_waiting(priority: Priority, exc: Exception) -> None:
+    def _raise_if_user_waiting(
+        priority: Priority,
+        exc: BaseException | None,
+        translation_key: str = "command_failed",
+    ) -> None:
         """Surface a dropped command when a person is waiting on it.
 
         Background refreshes stay quiet — they retry on the next poll — but a user
@@ -968,8 +974,15 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         """
         if priority.is_direct:
             raise HomeAssistantError(
-                translation_domain=DOMAIN, translation_key="command_failed"
+                translation_domain=DOMAIN, translation_key=translation_key
             ) from exc
+
+    def _can_send(self, priority: Priority) -> bool:
+        """Return whether a send can go out now; a direct priority raises instead of False."""
+        if self.is_online(user_initiated=priority.is_direct):
+            return True
+        self._raise_if_user_waiting(priority, None)
+        return False
 
     async def async_send_and_wait(
         self,
@@ -1001,16 +1014,16 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             priority,
         )
 
-    async def _async_device_call[ResultT](
+    async def _async_device_call[ResultT](  # noqa: C901
         self, call: Callable[[], Awaitable[ResultT]], priority: Priority
     ) -> ResultT | None:
         """Run a library call that talks to the device, with ``async_send_and_wait``'s handling.
 
         Returns ``None`` when the device is offline or the call failed in a way that
-        is only logged.
+        is only logged.  For a direct priority every such failure raises a
+        ``HomeAssistantError`` instead.
         """
-        device = self.manager.get_device_by_name(self.device_name)
-        if device is None or not self.is_online(user_initiated=priority.is_direct):
+        if not self._can_send(priority):
             return None
 
         try:
@@ -1018,6 +1031,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         except EXPIRED_CREDENTIAL_EXCEPTIONS as exc:
             self.update_failures += 1
             await self.async_refresh_login(exc)
+            self._raise_if_user_waiting(priority, exc)
         except DeviceOfflineException as exc:
             device = self.manager.get_device_by_name(self.device_name)
             if device is not None:
@@ -1034,13 +1048,12 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         except (NoTransportAvailableError, CommandRejectedError) as exc:
             LOGGER.debug("Command not carried out: %s", exc)
             self._raise_if_user_waiting(priority, exc)
-        except (
-            GatewayTimeoutException,
-            CommandTimeoutError,
-            ConcurrentRequestError,
-        ):
-            pass
-        except asyncio.CancelledError:
+        except CommandTimeoutError as exc:
+            # The command may have landed; only its reply is missing.
+            self._raise_if_user_waiting(priority, exc, "command_unconfirmed")
+        except (GatewayTimeoutException, ConcurrentRequestError) as exc:
+            self._raise_if_user_waiting(priority, exc)
+        except asyncio.CancelledError as exc:
             # bleak_retry_connector raises CancelledError when no BLE slot is
             # available (it cancels its own internal sleep).  Re-raise only when
             # the enclosing task is genuinely being cancelled; otherwise treat it
@@ -1052,6 +1065,10 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
                 "BLE connection cancelled (no available slot) for %s — skipping",
                 self.device_name,
             )
+            self._raise_if_user_waiting(priority, exc)
+        except COMMAND_EXCEPTIONS as exc:
+            self._raise_if_user_waiting(priority, exc)
+            raise
         return None
 
     @staticmethod
@@ -1118,7 +1135,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         nothing from jumping it.
         """
         device = self.manager.get_device_by_name(self.device_name)
-        if device is None or not self.is_online(user_initiated=priority.is_direct):
+        if not self._can_send(priority) or device is None:
             return False
 
         try:
@@ -1130,14 +1147,17 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
                 priority=priority,
                 **kwargs,
             )
-        except FailedRequestException:
+        except FailedRequestException as exc:
             self.update_failures += 1
+            self._raise_if_user_waiting(priority, exc)
         except EXPIRED_CREDENTIAL_EXCEPTIONS as exc:
             self.update_failures += 1
             await self.async_refresh_login(exc)
+            self._raise_if_user_waiting(priority, exc)
         except GatewayTimeoutException as ex:
             LOGGER.error("Gateway timeout exception: %s", ex.iot_id)
             self.update_failures = 0
+            self._raise_if_user_waiting(priority, ex)
             return False
         except DeviceOfflineException as exc:
             self.device_offline(device)
@@ -1156,11 +1176,9 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
                 self.device_name,
                 command,
             )
-            raise HomeAssistantError(
-                translation_domain=DOMAIN, translation_key="command_failed"
-            ) from exc
+            self._raise_if_user_waiting(priority, exc)
             return False
-        except asyncio.CancelledError:
+        except asyncio.CancelledError as exc:
             task = asyncio.current_task()
             if task is not None and task.cancelling() > 0:
                 raise
@@ -1168,7 +1186,11 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
                 "BLE connection cancelled (no available slot) for %s — skipping",
                 self.device_name,
             )
+            self._raise_if_user_waiting(priority, exc)
             return False
+        except COMMAND_EXCEPTIONS as exc:
+            self._raise_if_user_waiting(priority, exc)
+            raise
         else:
             self.update_failures = 0
             return True
@@ -3986,6 +4008,24 @@ class MammotionMapUpdateCoordinator(MammotionBaseUpdateCoordinator[MowerInfo]):
             )
 
 
+#: Below this an error-log time is not a date: the firmware first stamps an entry
+#: with its uptime, and pads an empty log with zeros.
+MIN_ERROR_LOG_EPOCH: Final = 1_000_000_000
+#: Seconds an error-log read waits, so the firmware has replaced the entry's uptime
+#: stamp with real time and a fault's burst of events costs one read.
+ERROR_LOG_READ_DELAY: Final = 10
+#: Modes a fault is commonly logged on the way into.
+ERROR_LOG_READ_MODES: Final = frozenset(
+    {
+        WorkMode.MODE_READY,
+        WorkMode.MODE_WORKING,
+        WorkMode.MODE_RETURNING,
+        WorkMode.MODE_LOCK,
+        WorkMode.MODE_PAUSE,
+    }
+)
+
+
 class MammotionDeviceErrorUpdateCoordinator(
     MammotionBaseUpdateCoordinator[MowingDevice]
 ):
@@ -4011,28 +4051,38 @@ class MammotionDeviceErrorUpdateCoordinator(
         mowing_device = self.manager.get_device_by_name(self.device_name)
         if self.data is None:
             self.data = mowing_device
+        self._error_log_debouncer: Debouncer[Coroutine[Any, Any, None]] = Debouncer(
+            hass,
+            LOGGER,
+            cooldown=ERROR_LOG_READ_DELAY,
+            immediate=False,
+            function=self._async_read_error_log,
+            background=True,
+        )
 
     def get_coordinator_data(self, device: MowingDevice) -> MowingDevice:
         """Get coordinator data."""
         return device
 
-    async def _async_update_event_message(self, event: ThingEventMessage) -> None:
-        if (
-            hasattr(event.params, "identifier")
-            and event.params.identifier == "device_warning_code_event"
-        ):
-            event_params: DeviceNotificationEventParams = cast(
-                DeviceNotificationEventParams, event.params
+    async def _async_on_notification(self, notification: DeviceNotification) -> None:
+        """Re-read the error log when the mower posts a warning."""
+        if NOTIFY_CATEGORY_BY_EVENT.get(notification.identifier) == NOTIFY_WARNINGS:
+            self._error_log_debouncer.async_schedule_call()
+
+    async def _async_read_error_log(self) -> None:
+        """Read both error-log registers; a failed read waits for the next trigger."""
+        device = self.manager.get_device_by_name(self.device_name)
+        if device is None or not device.enabled:
+            return
+        try:
+            await self.async_send_and_wait(
+                "read_write_device", "bidire_comm_cmd", rw_id=5, rw=1, context=2
             )
-            # '[{"c":-2801,"ct":1,"ft":1731493734000},{"c":-1008,"ct":1,"ft":1731493734000}]'
-            try:
-                warning_event = json.loads(event_params.value.data)
-                LOGGER.debug("warning event %s", warning_event)
-                await self._async_update_data()
-                if device := self.manager.get_device_by_name(self.device_name):
-                    self.async_set_updated_data(device)
-            except json.JSONDecodeError:
-                """Failed to parse warning event."""
+            await self.async_send_and_wait(
+                "read_write_device", "bidire_comm_cmd", rw_id=5, rw=1, context=3
+            )
+        except HomeAssistantError as exc:
+            LOGGER.debug("%s: error log not read: %s", self.device_name, exc)
 
     def get_error_code(self, number: int) -> int:
         """Get error code from an error code list."""
@@ -4042,13 +4092,11 @@ class MammotionDeviceErrorUpdateCoordinator(
             return 0
 
     def get_error_time(self, number: int) -> datetime.datetime | None:
-        """Get error time from an error code list."""
-        try:
-            return datetime.datetime.fromtimestamp(
-                next(iter(self.data.errors.err_code_list_time)), datetime.UTC
-            )
-        except StopIteration:
+        """Return when the newest error-log entry was logged, or None until it has a real time."""
+        epoch = next(iter(self.data.errors.err_code_list_time), 0)
+        if epoch < MIN_ERROR_LOG_EPOCH:
             return None
+        return datetime.datetime.fromtimestamp(epoch, datetime.UTC)
 
     def get_error_message(self, number: int) -> str:
         """Return error message."""
@@ -4073,19 +4121,9 @@ class MammotionDeviceErrorUpdateCoordinator(
         return device
 
     async def _on_sys_status_changed(self, sys_status: WorkMode) -> None:
-        """Handle sys status changed."""
-        if sys_status in (
-            WorkMode.MODE_WORKING,
-            WorkMode.MODE_RETURNING,
-            WorkMode.MODE_LOCK,
-            WorkMode.MODE_PAUSE,
-        ):
-            await self.async_send_and_wait(
-                "read_write_device", "bidire_comm_cmd", rw_id=5, rw=1, context=2
-            )
-            await self.async_send_and_wait(
-                "read_write_device", "bidire_comm_cmd", rw_id=5, rw=1, context=3
-            )
+        """Re-read the error log on entering a mode a fault is commonly logged with."""
+        if sys_status in ERROR_LOG_READ_MODES:
+            self._error_log_debouncer.async_schedule_call()
 
     async def _async_setup(self) -> None:
         """Set up the device-version coordinator."""
@@ -4098,26 +4136,26 @@ class MammotionDeviceErrorUpdateCoordinator(
                 lambda s: s.raw.report_data.dev.sys_status,
                 self._on_sys_status_changed,
             )
+            self._subscriptions.append(
+                handle.subscribe_notification(
+                    self._guarded(self._async_on_notification)
+                )
+            )
 
         await self._async_ensure_startup_reads()
 
     async def _async_startup_reads(self) -> None:
         """Read the two error registers and, if needed, the code table."""
-        device = self.manager.get_device_by_name(self.device_name)
-        if device is None:
+        if self.manager.get_device_by_name(self.device_name) is None:
             return
-        try:
-            await self.async_send_and_wait(
-                "read_write_device", "bidire_comm_cmd", rw_id=5, rw=1, context=2
-            )
-            await self.async_send_and_wait(
-                "read_write_device", "bidire_comm_cmd", rw_id=5, rw=1, context=3
-            )
-            await self._async_refresh_error_codes()
+        await self._async_read_error_log()
+        await self._async_refresh_error_codes()
+        self.async_set_updated_data(self.data)
 
-            self.async_set_updated_data(self.data)
-        except DeviceOfflineException:
-            pass
+    async def async_shutdown(self) -> None:
+        """Drop a pending error-log read along with the rest."""
+        self._error_log_debouncer.async_shutdown()
+        await super().async_shutdown()
 
 
 class MammotionRTKCoordinator(MammotionBaseUpdateCoordinator[RTKBaseStationDevice]):

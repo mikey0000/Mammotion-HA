@@ -1561,6 +1561,9 @@
     "command_failed": {
       "message": "Impossible d'envoyer la commande au robot."
     },
+    "command_unconfirmed": {
+      "message": "Le robot n'a pas confirmé la commande. Elle a peut-être quand même été exécutée."
+    },
     "api_limit_exceeded": {
       "message": "La limite de débit de l'API a été dépassée."
     },

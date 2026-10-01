@@ -1561,6 +1561,9 @@
     "command_failed": {
       "message": "Nie udało się wysłać polecenia do kosiarki."
     },
+    "command_unconfirmed": {
+      "message": "Kosiarka nie potwierdziła polecenia. Mogło ono jednak zostać wykonane."
+    },
     "api_limit_exceeded": {
       "message": "Przekroczono limit API."
     },

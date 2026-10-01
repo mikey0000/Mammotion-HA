@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import asyncio
+from collections.abc import Awaitable, Callable
 from copy import copy
 from datetime import time
 from typing import Any, cast
@@ -13,7 +15,7 @@ from homeassistant.components.lawn_mower import (
     LawnMowerEntity,
     LawnMowerEntityFeature,
 )
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry as dr
@@ -47,56 +49,41 @@ SERVICE_UNDO_DUMP_POINT = "undo_dump_point"
 SERVICE_FINISH_DUMP_POINT_SETUP = "finish_dump_point_setup"
 SERVICE_FINISH_OUTSIDE_DUMP_POINT = "finish_outside_dump_point"
 
-START_MOW_SCHEMA = {
+START_MOW_SCHEMA: dict[str | vol.Marker, Any] = {
     vol.Optional("modify", default=False): cv.boolean,
     vol.Optional("plan_only", default=False): cv.boolean,
-    vol.Optional("is_mow", default=True): cv.boolean,
-    vol.Optional("is_dump", default=True): cv.boolean,
-    vol.Optional("is_edge", default=False): cv.boolean,
-    vol.Optional("collect_grass_frequency", default=10): vol.All(
+    # No defaults: a route field left out keeps the config entity's value.
+    vol.Optional("is_mow"): cv.boolean,
+    vol.Optional("is_dump"): cv.boolean,
+    vol.Optional("is_edge"): cv.boolean,
+    vol.Optional("collect_grass_frequency"): vol.All(
         vol.Coerce(int), vol.Range(min=5, max=100)
     ),
-    vol.Optional("border_mode", default=1): vol.All(vol.Coerce(int), vol.In([0, 1])),
-    vol.Optional("job_version", default=0): vol.Coerce(int),
-    vol.Optional("job_id", default=0): vol.Coerce(int),
-    vol.Optional("speed", default=0.3): vol.All(
-        vol.Coerce(float), vol.Range(min=0.2, max=1.2)
-    ),
-    vol.Optional("ultra_wave", default=2): vol.All(
-        vol.Coerce(int), vol.In([0, 1, 2, 10, 11])
-    ),
-    vol.Optional("channel_mode", default=0): vol.All(
-        vol.Coerce(int), vol.In([0, 1, 2, 3])
-    ),
-    vol.Optional("channel_width", default=25): vol.All(
-        vol.Coerce(int), vol.Range(min=5, max=35)
-    ),
-    vol.Optional("blade_height", default=25): vol.All(
-        vol.Coerce(int), vol.Range(min=15, max=100)
-    ),
-    vol.Optional("toward", default=0): vol.All(
+    vol.Optional("border_mode"): vol.All(vol.Coerce(int), vol.In([0, 1])),
+    vol.Optional("job_version"): vol.Coerce(int),
+    vol.Optional("job_id"): vol.Coerce(int),
+    vol.Optional("speed"): vol.All(vol.Coerce(float), vol.Range(min=0.2, max=1.2)),
+    vol.Optional("ultra_wave"): vol.All(vol.Coerce(int), vol.In([0, 1, 2, 10, 11])),
+    vol.Optional("channel_mode"): vol.All(vol.Coerce(int), vol.In([0, 1, 2, 3])),
+    vol.Optional("channel_width"): vol.All(vol.Coerce(int), vol.Range(min=5, max=35)),
+    vol.Optional("blade_height"): vol.All(vol.Coerce(int), vol.Range(min=15, max=100)),
+    vol.Optional("toward"): vol.All(vol.Coerce(int), vol.Range(min=-180, max=180)),
+    vol.Optional("toward_included_angle"): vol.All(
         vol.Coerce(int), vol.Range(min=-180, max=180)
     ),
-    vol.Optional("toward_included_angle", default=0): vol.All(
-        vol.Coerce(int), vol.Range(min=-180, max=180)
-    ),
-    vol.Optional("toward_mode", default=0): vol.All(vol.Coerce(int), vol.In([0, 1, 2])),
-    vol.Optional("mowing_laps", default=1): vol.All(
-        vol.Coerce(int), vol.In([0, 1, 2, 3, 4])
-    ),
-    vol.Optional("obstacle_laps", default=1): vol.All(
-        vol.Coerce(int), vol.In([0, 1, 2, 3, 4])
-    ),
-    vol.Optional("start_progress", default=0): vol.All(
-        vol.Coerce(int), vol.Range(min=0, max=100)
-    ),
-    # No defaults: when omitted, the switch and number entities' values stand.
+    vol.Optional("toward_mode"): vol.All(vol.Coerce(int), vol.In([0, 1, 2])),
+    vol.Optional("mowing_laps"): vol.All(vol.Coerce(int), vol.In([0, 1, 2, 3, 4])),
+    vol.Optional("obstacle_laps"): vol.All(vol.Coerce(int), vol.In([0, 1, 2, 3, 4])),
+    vol.Optional("start_progress"): vol.All(vol.Coerce(int), vol.Range(min=0, max=100)),
     vol.Optional("auto_change_direction"): vol.All(vol.Coerce(int), vol.In([0, 1])),
     vol.Optional("ride_boundary_distance"): vol.All(
         vol.Coerce(float), vol.Range(min=0, max=1)
     ),
-    vol.Optional("areas", default=[]): vol.All(cv.ensure_list, [cv.entity_id]),
+    vol.Optional("areas"): vol.All(cv.ensure_list, [cv.entity_id]),
 }
+
+#: How long to wait for the mower to report the mode a job transition leads to.
+_MODE_WAIT_TIMEOUT = 60
 
 #: Everything the app's in-job editor can change on a job already running.
 #: Deliberately excludes the job's identity and geometry — areas, route angle,
@@ -320,40 +307,31 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
         return None
 
     async def async_start_mowing(self, **kwargs: Any) -> None:  # noqa: C901
-        """Start mowing."""
+        """Start a job, or resume the paused one when no new route is asked for."""
         trans_key = "pause_failed"
 
         await self.coordinator.async_ensure_fresh_state()
 
-        if kwargs:
-            entity_ids = kwargs.pop("areas", [])
-            attributes = [
-                # TODO this should not need to be cast.
-                int(entity_hash)
-                for entity_id in entity_ids
-                if (entity_hash := get_entity_attribute(self.hass, entity_id, "hash"))
-                is not None
-            ]
-            modify_plan = kwargs.pop("modify", False)
-            plan_only = kwargs.pop("plan_only", False)
+        modify_plan = kwargs.pop("modify", False)
+        plan_only = kwargs.pop("plan_only", False)
+        areas = [
+            # TODO this should not need to be cast.
+            int(entity_hash)
+            for entity_id in kwargs.pop("areas", [])
+            if (entity_hash := get_entity_attribute(self.hass, entity_id, "hash"))
+            is not None
+        ]
+        new_job = bool(kwargs or areas or plan_only)
 
-            # Merge onto coordinator's restored settings so UI-configured values
-            # (speed, blade_height, etc.) are preserved when not explicitly provided.
-            operational_settings = copy(self.coordinator.operation_settings)
-            operational_settings.areas = list(dict.fromkeys(attributes))
-            for key, value in kwargs.items():
-                setattr(operational_settings, key, value)
-            if DeviceType.is_yuka(self.coordinator.device_name):
-                operational_settings.blade_height = -10
-            LOGGER.debug(kwargs)
-            LOGGER.debug(operational_settings)
-        else:
-            operational_settings = self.coordinator.operation_settings
-            modify_plan = False
-            plan_only = False
+        # A copy: the route builder writes into the settings it is given.
+        operational_settings = copy(self.coordinator.operation_settings)
+        if areas:
+            operational_settings.areas = list(dict.fromkeys(areas))
+        for key, value in kwargs.items():
+            setattr(operational_settings, key, value)
+        LOGGER.debug(kwargs)
+        LOGGER.debug(operational_settings)
 
-        # check if job in progress
-        #
         mode = self.rpt_dev_status.sys_status
         breakpoint_info = self.report_data.work.bp_info
         if mode is None:
@@ -375,44 +353,76 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
                     )
                     return
 
-                if kwargs:
-                    await self.async_cancel()
-
-                if mode == WorkMode.MODE_RETURNING:
+                if new_job and mode in (
+                    WorkMode.MODE_PAUSE,
+                    WorkMode.MODE_WORKING,
+                    WorkMode.MODE_RETURNING,
+                ):
+                    await self._async_end_job(mode)
+                    trans_key = "start_failed"
+                    mode = await self._async_wait_for_mode(WorkMode.MODE_READY)
+                    # The breakpoint still reported belongs to the job just ended.
+                    breakpoint_info = 0
+                elif (
+                    new_job
+                    and mode in (WorkMode.MODE_READY, WorkMode.MODE_INITIALIZATION)
+                    and breakpoint_info != 0
+                ):
+                    # The app refuses to plan a job while a breakpoint stands.
+                    await self._async_end_job(WorkMode.MODE_PAUSE)
+                    trans_key = "start_failed"
+                    mode = await self._async_wait_until(
+                        lambda: (
+                            WorkMode(status)
+                            if self.report_data.work.bp_info == 0
+                            and (status := self.rpt_dev_status.sys_status)
+                            in (WorkMode.MODE_READY, WorkMode.MODE_INITIALIZATION)
+                            else None
+                        )
+                    )
+                    breakpoint_info = 0
+                elif mode == WorkMode.MODE_RETURNING:
                     trans_key = "dock_cancel_failed"
                     await self.coordinator.async_send_and_wait(
                         "cancel_return_to_dock",
                         "todev_taskctrl_ack",
                         priority=Priority.USER,
                     )
-                    await self.coordinator.async_request_report_snapshot()
-                    mode = self.rpt_dev_status.sys_status
+                    mode = await self._async_wait_for_mode(
+                        WorkMode.MODE_PAUSE, WorkMode.MODE_READY
+                    )
                 if mode == WorkMode.MODE_PAUSE:
                     trans_key = "resume_failed"
                     if breakpoint_info != 0:
                         await self.coordinator.async_send_command(
                             "resume_execute_task", priority=Priority.USER
                         )
-                        await self.coordinator.async_send_and_wait(
-                            "query_generate_route_information",
-                            "bidire_reqconver_path",
-                            priority=Priority.USER,
+                        await self._async_planning_step(
+                            self.coordinator.async_send_and_wait(
+                                "query_generate_route_information",
+                                "bidire_reqconver_path",
+                                priority=Priority.USER,
+                            )
                         )
                 if mode in (WorkMode.MODE_READY, WorkMode.MODE_INITIALIZATION):
                     trans_key = "start_failed"
                     if breakpoint_info != 0:
-                        await self.coordinator.async_send_and_wait(
-                            "query_generate_route_information",
-                            "bidire_reqconver_path",
-                            priority=Priority.USER,
+                        await self._async_planning_step(
+                            self.coordinator.async_send_and_wait(
+                                "query_generate_route_information",
+                                "bidire_reqconver_path",
+                                priority=Priority.USER,
+                            )
                         )
                         if not plan_only:
                             await self.coordinator.async_send_command(
                                 "start_job", priority=Priority.USER
                             )
                         return
-                    if await self.coordinator.async_plan_route(
-                        operational_settings, priority=Priority.USER
+                    if await self._async_planning_step(
+                        self.coordinator.async_plan_route(
+                            operational_settings, priority=Priority.USER
+                        )
                     ):
                         if not plan_only:
                             await self.coordinator.async_send_and_wait(
@@ -505,8 +515,6 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
 
     async def async_cancel(self) -> None:
         """Cancel Job."""
-        trans_key = "pause_failed"
-
         await self.coordinator.async_ensure_fresh_state()
         mode = self.rpt_dev_status.sys_status
         if mode is None:
@@ -520,32 +528,87 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
             WorkMode.MODE_RETURNING,
         ):
             try:
-                if mode != WorkMode.MODE_PAUSE:
-                    if mode == WorkMode.MODE_WORKING:
-                        trans_key = "pause_failed"
-                        await self.coordinator.async_send_command(
-                            "pause_execute_task", priority=Priority.USER
-                        )
-                    if mode == WorkMode.MODE_RETURNING:
-                        trans_key = "dock_failed"
-                        await self.coordinator.async_send_command(
-                            "cancel_return_to_dock", priority=Priority.USER
-                        )
-                    await self.coordinator.async_request_report_snapshot()
-                    mode = self.rpt_dev_status.sys_status
-
-                if mode == WorkMode.MODE_PAUSE:
-                    trans_key = "pause_failed"
-                    await self.coordinator.async_send_command(
-                        "cancel_job", priority=Priority.USER
-                    )
-
-            except COMMAND_EXCEPTIONS as exc:
-                raise HomeAssistantError(
-                    translation_domain=DOMAIN, translation_key=trans_key
-                ) from exc
+                await self._async_end_job(mode)
             finally:
                 await self.coordinator.async_request_report_snapshot()
+
+    @staticmethod
+    async def _async_planning_step(step: Awaitable[object]) -> object:
+        """Await a route planning step, carrying on if only its reply went missing.
+
+        The planning replies often go unmatched (#848) although the mower took the
+        command, so start_job still has to follow; every other failure propagates.
+        """
+        try:
+            return await step
+        except HomeAssistantError as exc:
+            if exc.translation_key != "command_unconfirmed":
+                raise
+            LOGGER.debug("Route planning reply unconfirmed, continuing: %s", exc)
+            return True
+
+    async def _async_end_job(self, mode: int) -> None:
+        """Stop the mower moving, then send cancel_job once it reports PAUSE."""
+        trans_key = "pause_failed"
+        try:
+            if mode == WorkMode.MODE_WORKING:
+                await self.coordinator.async_send_command(
+                    "pause_execute_task", priority=Priority.USER
+                )
+                mode = await self._async_wait_for_mode(WorkMode.MODE_PAUSE)
+            elif mode == WorkMode.MODE_RETURNING:
+                trans_key = "dock_failed"
+                await self.coordinator.async_send_command(
+                    "cancel_return_to_dock", priority=Priority.USER
+                )
+                mode = await self._async_wait_for_mode(
+                    WorkMode.MODE_PAUSE, WorkMode.MODE_READY
+                )
+
+            if mode == WorkMode.MODE_PAUSE:
+                trans_key = "pause_failed"
+                await self.coordinator.async_send_command(
+                    "cancel_job", priority=Priority.USER
+                )
+        except COMMAND_EXCEPTIONS as exc:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key=trans_key
+            ) from exc
+
+    async def _async_wait_for_mode(self, *modes: WorkMode) -> WorkMode:
+        """Return the first of *modes* the mower reports."""
+        return await self._async_wait_until(
+            lambda: (
+                WorkMode(mode)
+                if (mode := self.rpt_dev_status.sys_status) in modes
+                else None
+            )
+        )
+
+    async def _async_wait_until[T](self, read: Callable[[], T | None]) -> T:
+        """Return the first value *read* gives that is not None, re-read on each report.
+
+        A one-shot snapshot is skipped shortly after the last report, so a report
+        stream is opened for the wait. Raises TimeoutError after ``_MODE_WAIT_TIMEOUT``.
+        """
+        reached: asyncio.Future[T] = asyncio.get_running_loop().create_future()
+
+        @callback
+        def _check() -> None:
+            if not reached.done() and (value := read()) is not None:
+                reached.set_result(value)
+
+        remove_listener = self.coordinator.async_add_listener(_check)
+        try:
+            _check()
+            if not reached.done():
+                await self.coordinator.async_start_report_stream(
+                    _MODE_WAIT_TIMEOUT * 1000
+                )
+            async with asyncio.timeout(_MODE_WAIT_TIMEOUT):
+                return await reached
+        finally:
+            remove_listener()
 
     async def async_modify_running_job(self, **kwargs: Any) -> None:
         """Change settings on the job already running, without re-planning it."""

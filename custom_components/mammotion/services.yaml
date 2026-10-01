@@ -96,25 +96,21 @@ start_mow:
         boolean:
     is_mow:
       example: true
-      default: true
       required: false
       selector:
         boolean:
     is_dump:
       example: true
-      default: true
       required: false
       selector:
         boolean:
     is_edge:
       example: false
-      default: false
       required: false
       selector:
         boolean:
     collect_grass_frequency:
       example: 10
-      default: 10
       required: false
       selector:
         number:
@@ -123,7 +119,6 @@ start_mow:
           unit_of_measurement: "m²"
     border_mode:
       example: "0"
-      default: "0"
       required: false
       selector:
         select:
@@ -133,19 +128,16 @@ start_mow:
             - "1"
     job_version:
       example: 0
-      default: 0
       required: false
       selector:
         number:
     job_id:
       example: 0
-      default: 0
       required: false
       selector:
         number:
     speed:
       example: 0.3
-      default: 0.3
       required: false
       selector:
         number:
@@ -156,7 +148,6 @@ start_mow:
           unit_of_measurement: "m/s"
     ultra_wave:
       example: "2"
-      default: "2"
       selector:
         select:
           translation_key: "ultra_wave"
@@ -169,7 +160,6 @@ start_mow:
       required: false
     channel_mode:
       example: "0"
-      default: "0"
       required: false
       selector:
         select:
@@ -181,7 +171,6 @@ start_mow:
             - "3"
     channel_width:
       example: 25
-      default: 25
       required: false
       selector:
         number:
@@ -189,7 +178,6 @@ start_mow:
           max: 35
     blade_height:
       example: 0
-      default: 25
       required: false
       selector:
         number:
@@ -199,7 +187,6 @@ start_mow:
           unit_of_measurement: "mm"
     toward:
       example: 0
-      default: 0
       required: false
       selector:
         number:
@@ -208,7 +195,6 @@ start_mow:
           unit_of_measurement: degrees
     toward_included_angle:
       example: 0
-      default: 0
       required: false
       selector:
         number:
@@ -217,7 +203,6 @@ start_mow:
           unit_of_measurement: degrees
     toward_mode:
       example: "0"
-      default: "0"
       selector:
         select:
           translation_key: "toward_mode"
@@ -228,7 +213,6 @@ start_mow:
       required: false
     mowing_laps:
       example: "1"
-      default: "1"
       selector:
         select:
           translation_key: "mowing_laps"
@@ -241,7 +225,6 @@ start_mow:
       required: false
     obstacle_laps:
       example: "1"
-      default: "1"
       selector:
         select:
           translation_key: "obstacle_laps"
@@ -254,7 +237,6 @@ start_mow:
       required: false
     start_progress:
       example: 0
-      default: 0
       required: false
       selector:
         number:

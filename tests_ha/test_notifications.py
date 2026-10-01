@@ -518,6 +518,33 @@ async def test_the_first_fault_on_a_clean_history_is_raised(
     notifications.create.assert_called_once()
 
 
+@pytest.mark.regression
+async def test_an_entry_is_raised_once_it_carries_real_time(
+    hass: HomeAssistant, notifications: Any
+) -> None:
+    """The firmware stamps a fresh entry with its uptime and rewrites it seconds later.
+
+    On a clean history the uptime stamp was newer than the zero padding, so the
+    fault was raised dated 1970, then raised again when the real time arrived.
+    """
+    notifier, _handler = _started(hass)
+    on_update = notifier.coordinator.async_add_listener.call_args.args[0]
+    notifier.coordinator.data.report_data.dev.self_check_status = 0
+    _error_list(notifier, *[(0, 0)] * 10)
+    on_update()
+
+    _error_list(notifier, (-2801, 378429), *[(0, 0)] * 9)
+    on_update()
+    await hass.async_block_till_done()
+    notifications.create.assert_not_called()
+
+    _error_list(notifier, (-2801, _WARNING_EPOCH), *[(0, 0)] * 9)
+    on_update()
+    await hass.async_block_till_done()
+
+    notifications.create.assert_called_once()
+
+
 async def test_an_unfetched_error_list_is_not_taken_as_history(
     hass: HomeAssistant, notifications: Any
 ) -> None:

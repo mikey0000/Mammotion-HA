@@ -1561,6 +1561,9 @@
     "command_failed": {
       "message": "Nem sikerült parancsot küldeni a fűnyírónak."
     },
+    "command_unconfirmed": {
+      "message": "A fűnyíró nem igazolta vissza a parancsot. Lehet, hogy ennek ellenére végrehajtotta."
+    },
     "api_limit_exceeded": {
       "message": "Az API sebességkorlátját elérte."
     },

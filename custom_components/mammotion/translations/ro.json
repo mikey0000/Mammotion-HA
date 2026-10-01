@@ -1561,6 +1561,9 @@
     "command_failed": {
       "message": "Nu s-a reușit trimiterea comenzii către mașina de tuns iarba."
     },
+    "command_unconfirmed": {
+      "message": "Mașina de tuns iarba nu a confirmat comanda. Este posibil să fi fost totuși executată."
+    },
     "api_limit_exceeded": {
       "message": "Limita de solicitări API a fost depășită."
     },

@@ -1561,6 +1561,9 @@
     "command_failed": {
       "message": "Nepodařilo se odeslat příkaz sekačce."
     },
+    "command_unconfirmed": {
+      "message": "Sekačka příkaz nepotvrdila. Mohl být přesto proveden."
+    },
     "api_limit_exceeded": {
       "message": "Byl překročen limit požadavků API."
     },

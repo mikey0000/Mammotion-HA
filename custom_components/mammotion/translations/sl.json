@@ -1561,6 +1561,9 @@
     "command_failed": {
       "message": "Ukaza ni bilo možno poslati."
     },
+    "command_unconfirmed": {
+      "message": "Kosilnica ukaza ni potrdila. Morda je bil kljub temu izveden."
+    },
     "api_limit_exceeded": {
       "message": "Prekočena je bila omejitev API-ja."
     },

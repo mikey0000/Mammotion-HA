@@ -1561,6 +1561,9 @@
     "command_failed": {
       "message": "Impossibile inviare il comando al rasaerba."
     },
+    "command_unconfirmed": {
+      "message": "Il rasaerba non ha confermato il comando. Potrebbe essere stato comunque eseguito."
+    },
     "api_limit_exceeded": {
       "message": "Il limite di frequenza dell'API è stato superato."
     },
