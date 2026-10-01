@@ -1,7 +1,7 @@
 {
   "config": {
     "abort": {
-      "already_configured": "Das Gerät ist bereits konfiguriert",
+      "already_configured": "Das Gerät ist bereits eingerichtet.",
       "already_in_progress": "Der Einrichtungsprozess läuft bereits.",
       "no_devices_found": "Es wurden keine Geräte gefunden.",
       "no_devices_found_in_account": "Es wurden keine Geräte in Ihrem Mammotion-Konto gefunden.",
@@ -27,8 +27,8 @@
       },
       "reconfigure": {
         "data": {
-          "account_name": "Mammotion E-Mail oder Account Nummer",
-          "password": "Mammotion Kennwort"
+          "account_name": "Mammotion-ID oder E-Mail-Adresse",
+          "password": "Mammotion-Kennwort"
         }
       },
       "user": {
@@ -39,8 +39,8 @@
       },
       "wifi": {
         "data": {
-          "account_name": "Mammotion E-Mail oder Account Nummer",
-          "password": "Mammotion Kennwort"
+          "account_name": "Mammotion-ID oder E-Mail-Adresse",
+          "password": "Mammotion-Kennwort"
         },
         "title": "Mit WLAN verbinden",
         "description": "Geben Sie Ihre Mammotion-ID oder E-Mail-Adresse und das dazugehörige Kennwort ein. Lassen Sie beide Felder leer, um nur Bluetooth ohne Konto zu verwenden."
@@ -98,7 +98,7 @@
         "name": "Letzter Fehlercode"
       },
       "battery_percent": {
-        "name": "Batterie"
+        "name": "Akku"
       },
       "ble_rssi": {
         "name": "Signalqualität (RSSI) Bluetooth"
@@ -128,10 +128,10 @@
         "name": "Schnitthöhe"
       },
       "area": {
-        "name": "Bereich"
+        "name": "Aufgabenfläche"
       },
       "mowing_speed": {
-        "name": "Mähgeschwindigkeit"
+        "name": "Aktuelle Mähgeschwindigkeit"
       },
       "progress": {
         "name": "Aufgabenfortschritt"
@@ -233,7 +233,7 @@
         }
       },
       "work_area": {
-        "name": "Aktueller Standort"
+        "name": "Aktuelle Position"
       },
       "map_sync_status": {
         "name": "Kartensynchronisierungsstatus",
@@ -254,8 +254,8 @@
         "name": "Bereichsstatus {name}",
         "state": {
           "NOT_STARTED": "Nicht gestartet",
-          "WAITING": "Wartend",
-          "MOWING": "Mäht",
+          "WAITING": "Warten",
+          "MOWING": "Mähen",
           "COMPLETE": "Abgeschlossen",
           "ABORTED": "Abgebrochen",
           "UNKNOWN": "Unbekannt"
@@ -268,7 +268,7 @@
         "name": "Gesamtbetriebszeit"
       },
       "maintenance_bat_cycles": {
-        "name": "Batteriezyklen",
+        "name": "Akkuzyklen",
         "unit_of_measurement": "Zyklen"
       },
       "blade_used_time": {
@@ -284,10 +284,10 @@
         "name": "LoRa-Version"
       },
       "rtk_latitude": {
-        "name": "Breitengrad"
+        "name": "RTK Breitengrad"
       },
       "rtk_longitude": {
-        "name": "Längengrad"
+        "name": "RTK Längengrad"
       },
       "rtk_wifi_rssi": {
         "name": "Signalqualität (RSSI) WLAN"
@@ -467,7 +467,7 @@
     },
     "button": {
       "start_map_sync": {
-        "name": "Synchronisiere Karten"
+        "name": "Synchronisiere Karte"
       },
       "start_task_sync": {
         "name": "Synchronisiere Aufgaben"
@@ -541,7 +541,7 @@
         "name": "Grasschnitt sammeln"
       },
       "is_edge": {
-        "name": "Kantenschnitt"
+        "name": "Kanten schneiden"
       },
       "auto_change_direction": {
         "name": "Mährichtung automatisch umkehren"
@@ -648,7 +648,7 @@
           "slow_touch": "Basis",
           "less_touch": "Weniger Berührung",
           "standard": "Standard",
-          "sensitive": "Sensitiv"
+          "sensitive": "Empfindlich"
         }
       },
       "cutting_angle_mode": {
@@ -838,7 +838,7 @@
         "1": "Basis",
         "2": "Weniger Berührung",
         "10": "Standard",
-        "11": "Sensitiv"
+        "11": "Empfindlich"
       }
     },
     "channel_mode": {
@@ -904,7 +904,7 @@
           "description": "Gibt an, ob der Modus für das Grasschnittsammeln aktiv ist. (Yuka)"
         },
         "is_edge": {
-          "name": "Kantenschnitt",
+          "name": "Kanten schneiden",
           "description": "Gibt an, ob der Modus für das Kantenschneiden aktiv ist. (Yuka)"
         },
         "collect_grass_frequency": {
@@ -1688,7 +1688,7 @@
       "message": "Der Mähroboter hat den unbekannten Selbsttest-Code {code} gemeldet."
     },
     "remote_drive_needs_cloud": {
-      "message": "Die Cloud-Fernsteuerung braucht eine funktionierende Cloud-Verbindung zum Mähroboter. Über Bluetooth stattdessen die Schubs-Tasten verwenden."
+      "message": "Die Cloud-Fernsteuerung braucht eine funktionierende Cloud-Verbindung zum Mähroboter. Über Bluetooth stattdessen die Schub-Tasten verwenden."
     },
     "remote_drive_already_running": {
       "message": "Die Cloud-Fernsteuerung läuft bereits. Vor einem Neustart zuerst ausschalten."
