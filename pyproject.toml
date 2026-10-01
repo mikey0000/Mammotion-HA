@@ -39,6 +39,19 @@ pythonpath = ["."]
 asyncio_mode = "auto"
 markers = ["regression: pins a defect; the test was seen failing before the fix"]
 
+[tool.coverage.run]
+source = ["custom_components/mammotion"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+exclude_also = [
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+]
+
 [tool.mypy]
 python_version = "3.14"
 ignore_missing_imports = true

@@ -6,7 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - Install dependencies: `uv sync`
 - Run in environment: `uv run`
-- Run tests: `uv run pytest`
+- Run tests: `uv run --no-sync python -m pytest tests_ha -q`
+- Coverage: add `--cov --cov-report=term-missing` (config in `pyproject.toml`; CI enforces a floor)
 - Type checking: `uv run mypy custom_components/`
 - Format code: `uv run ruff format`
 - Lint code: `uv run ruff check`
@@ -27,6 +28,23 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Type annotations required (autotyping hook)
 
 When making changes, follow existing patterns in similar files and follow Home Assistant best practices.
+
+### Python syntax notes
+
+- Python 3.14 is the minimum. Do not flag 3.14-only syntax or suggest workarounds for older versions.
+- `except TypeA, TypeB:` without parentheses is valid (PEP 758). Never flag it.
+- Annotations are evaluated lazily (PEP 649): unquoted forward references are fine.
+
+## Agent toolkit
+
+Ported from Home Assistant core's `.claude/` (Apache-2.0) and adapted:
+
+- `ha-integration-knowledge` skill — the primary reference for any integration change; its "In this repository" list names the defect families that keep recurring here (schema defaults over held values, state read before an await, silent action failures, catch-alls returning values, shadowed `except` clauses, unvalidated firmware fields, copied library tables, incomplete redaction).
+- `ha-review` (local diff) and `ha-pr-reviewer` + `ha-pr-comment-audit` (GitHub PRs, console only) for reviews.
+- `ha-quality-scale-verify` for a rule; the rule-by-rule status is `docs/quality_scale.md`.
+- `test-reviewer` agent for tests (see Testing below).
+
+Integrations with Gold or Platinum on the quality scale in Home Assistant core are good places to look for examples.
 
 ## Home Assistant Integration Rules
 
@@ -53,6 +71,21 @@ When making changes, follow existing patterns in similar files and follow Home A
 - Translate the entity `name` and every ENUM `state` value into each language's own language — do not copy the English text into the other locales as a placeholder.
 - Also add an icon entry in `custom_components/mammotion/icons.json` for the new entity where appropriate.
 - After editing, confirm every JSON file still parses and that the new key (with all its `state` values) is present in each file before considering the change complete.
+- `translations/en.json` is an exact copy of `strings.json` (there is no `script.translations` here), and tests load `en.json`, not `strings.json`. Copy `strings.json` over `translations/en.json` after editing it, before running tests.
+
+## Testing (rules for Claude)
+
+`docs/testing.md` is the testing constitution for `tests_ha/`. Read it before writing or editing a test; the rules below are the ones most often broken.
+
+- Drive the real setup and unload (`MockConfigEntry` + `hass.config_entries.async_setup` / `async_unload`) and assert on entity states, registries, `entry.state` and raised errors. Do not patch `async_setup_entry` except through the one config-flow `mock_setup_entry` pattern.
+- Spec every mock (`create_autospec(MammotionClient, instance=True)`); never a bare `MagicMock()`, never mock the unit under test.
+- No real sleeps: `freezer.tick` + `async_fire_time_changed(hass)` + `await hass.async_block_till_done()` for timers; bound every wait.
+- Type every test parameter, prefer `@pytest.mark.usefixtures` for unused fixtures, no branching in a test, `pytest.param(..., id=...)` for near-duplicates, syrupy snapshots for large stable output.
+- A user action's failure path is tested: it raises a translated `HomeAssistantError`.
+- A regression test is seen red before the fix, marked `@pytest.mark.regression`, named for the behaviour, with a docstring recording the defect.
+- Name test modules for the source module (`test_<module>[_<concern>].py`); shared builders go in a `*_support.py`.
+- **Every touched `tests_ha/` file is reviewed by the `test-reviewer` agent** before the work is reported complete. A `PostToolUse` hook queues the files and the `Stop` hook refuses the first stop while the queue is non-empty (`.claude/settings.json`, `.claude/hooks/test_review_gate.py`). The author fixes; the reviewer does not rewrite.
+- CI enforces a coverage floor (`.github/workflows/tests.yml`); raise it when coverage rises, never lower it.
 
 ## Good practices
 
