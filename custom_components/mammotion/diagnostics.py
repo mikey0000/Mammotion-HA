@@ -7,6 +7,7 @@ from typing import Any
 
 from homeassistant.components.diagnostics import async_redact_data
 from homeassistant.core import HomeAssistant
+from homeassistant.util.json import json_loads
 
 from . import (
     MammotionConfigEntry,
@@ -30,9 +31,29 @@ TO_REDACT: list[str] = [
     "ip",
     "ip_address",
     "mask",
+    "mnet_ip",
+    "ssid",
     "wifi_mac",
+    "wifi_sta_mac",
     "wifi_ssid",
 ]
+
+
+def _parse_json_strings(value: Any) -> Any:
+    """Unpack strings holding a JSON object or list, so the redactor sees their keys.
+
+    ``mqtt_properties`` carries ``networkInfo`` and kin as JSON strings.
+    """
+    if isinstance(value, dict):
+        return {key: _parse_json_strings(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_parse_json_strings(item) for item in value]
+    if isinstance(value, str) and value.lstrip().startswith(("{", "[")):
+        try:
+            return _parse_json_strings(json_loads(value))
+        except ValueError:
+            return value
+    return value
 
 
 async def async_get_config_entry_diagnostics(
@@ -58,4 +79,4 @@ async def async_get_config_entry_diagnostics(
 
     # data['entry'] = entry.as_dict()
 
-    return async_redact_data(data, TO_REDACT)
+    return async_redact_data(_parse_json_strings(data), TO_REDACT)

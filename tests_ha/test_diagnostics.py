@@ -6,9 +6,11 @@ one kind of device with its own coordinator and its own state model was the one
 missing from the dump people attach to bug reports.
 """
 
+import json
 from dataclasses import dataclass
 from unittest.mock import MagicMock
 
+import pytest
 from homeassistant.components.diagnostics import REDACTED
 from homeassistant.core import HomeAssistant
 from pymammotion.data.model.device import (
@@ -16,6 +18,7 @@ from pymammotion.data.model.device import (
     PoolCleanerDevice,
     RTKBaseStationDevice,
 )
+from pymammotion.data.mqtt.properties import ThingPropertiesMessage
 
 from custom_components.mammotion.diagnostics import (
     async_get_config_entry_diagnostics,
@@ -152,3 +155,109 @@ async def test_what_makes_a_dump_readable_survives(hass: HomeAssistant) -> None:
     assert result[_RTK]["lat"] == -0.674905
     assert result[_RTK]["lon"] == 3.059871
     assert result[_RTK]["device"]["iot_id"] == f"iot-{_RTK}"
+
+
+# The identifying part of ``networkInfo`` from pymammotion's Yuka fixture, plus the
+# 4G fields a cellular unit adds.
+_NETWORK_INFO = {
+    "ssid": "TestNet",
+    "ip": "192.168.1.100",
+    "wifi_sta_mac": "02:00:00:12:34:56",
+    "wifi_rssi": -62,
+    "bt_mac": "02:00:00:12:34:57",
+    "imei": "863819075685874",
+    "imsi": "232010867745532",
+    "iccid": "89430103525300305328",
+    "mnet_ip": "10.64.12.7",
+    "used_net": 1,
+}
+
+
+def _properties(items: dict) -> ThingPropertiesMessage:
+    """Build a ``thing.properties`` envelope as pymammotion stores it on the device."""
+    params = dict.fromkeys(
+        ("_tenant_id", "group_id", "batch_id", "_trace_id", "request_id", "_category_key", "namespace", "tenant_id"),
+        "",
+    )
+    params |= {
+        "device_type": "LawnMower",
+        "category_key": "LawnMower",
+        "check_failed_data": {},
+        "group_id_list": [],
+        "gmt_create": 0,
+        "generate_time": 0,
+        "product_key": "a1biqVGvxrE",
+        "device_name": _MOWER,
+        "iot_id": f"iot-{_MOWER}",
+        "jmsx_delivery_count": 1,
+        "check_level": 0,
+        "qos": 1,
+        "thing_type": "DEVICE",
+        "tenant_instance_id": "",
+        "items": items,
+    }
+    return ThingPropertiesMessage.from_dict(
+        {"method": "thing.properties", "id": "1", "version": "1.0", "params": params}
+    )
+
+
+def _entry_with_properties(items: dict) -> MagicMock:
+    mower = MowingDevice(name=_MOWER)
+    mower.mqtt_properties = _properties(items)
+    entry = _entry()
+    entry.runtime_data.mowers = [_record(_MOWER, mower, reporting=True)]
+    return entry
+
+
+@pytest.mark.regression
+async def test_network_info_inside_the_properties_envelope_is_redacted(hass: HomeAssistant) -> None:
+    """``networkInfo.value`` is a JSON string, so the redactor never saw the keys in it (#921).
+
+    The raw ``thing.properties`` envelope went into the dump as-is, carrying the
+    household's SSID, IP and MACs (and a 4G unit's SIM identifiers) in plain text.
+    """
+    entry = _entry_with_properties({"networkInfo": {"time": 1, "value": json.dumps(_NETWORK_INFO)}})
+
+    result = await async_get_config_entry_diagnostics(hass, entry)
+
+    network = result[_MOWER]["mqtt_properties"]["params"]["items"]["networkInfo"]["value"]
+    for key in ("ssid", "ip", "wifi_sta_mac", "bt_mac", "imei", "imsi", "iccid", "mnet_ip"):
+        assert network[key] == REDACTED, key
+        assert str(_NETWORK_INFO[key]) not in str(result), key
+    # What the blob is read for (signal, which link is in use) survives.
+    assert (network["wifi_rssi"], network["used_net"]) == (-62, 1)
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        pytest.param("18561", id="a-version-number"),
+        pytest.param("{not json", id="looks-like-an-object"),
+        pytest.param("", id="empty"),
+    ],
+)
+async def test_a_string_that_is_not_a_json_structure_is_left_as_is(hass: HomeAssistant, value: str) -> None:
+    """Only a JSON object or list is unpacked; a scalar string stays the string it was."""
+    entry = _entry_with_properties({"rtkVersion": {"time": 1, "value": value}})
+
+    result = await async_get_config_entry_diagnostics(hass, entry)
+
+    assert result[_MOWER]["mqtt_properties"]["params"]["items"]["rtkVersion"]["value"] == value
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        pytest.param(json.dumps([json.dumps(_NETWORK_INFO)]), id="json-strings-in-a-json-list"),
+        pytest.param(json.dumps({"info": json.dumps(_NETWORK_INFO)}), id="json-inside-json"),
+    ],
+)
+async def test_identifiers_in_any_json_structure_string_are_redacted(hass: HomeAssistant, value: str) -> None:
+    """A list, or a JSON string nested in one, must not carry an identifier past the redactor."""
+    entry = _entry_with_properties({"deviceOtherInfo": {"time": 1, "value": value}})
+
+    result = await async_get_config_entry_diagnostics(hass, entry)
+
+    for key in ("ssid", "ip", "wifi_sta_mac", "bt_mac", "imei", "imsi", "iccid", "mnet_ip"):
+        assert str(_NETWORK_INFO[key]) not in str(result), key
+    assert REDACTED in str(result[_MOWER]["mqtt_properties"]["params"]["items"]["deviceOtherInfo"])

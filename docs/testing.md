@@ -387,7 +387,9 @@ extension of it).
 
 Walk the pymammotion models reachable from `diagnostics.py`'s output
 (`MowingDevice`, `Device`, the RTK and Spino data classes; dataclass fields
-and mashumaro fields recursively) and collect every field name matching
+and mashumaro fields recursively), plus every model in
+`pymammotion.data.mqtt.mammotion_properties`, which reaches the dump only as
+JSON strings inside `mqtt_properties` (#921), and collect every field name matching
 `imei|imsi|iccid|mac|ssid|(^|_)ip($|_)|ip_address|token|key|secret|password|serial|sn$|gateway|mask`.
 Each must be in `diagnostics.TO_REDACT` or in an allow-list with the reason
 (`iot_id`, `identity_id`, `nick_name`, `lat`/`lon` per the comment in

@@ -20,6 +20,7 @@ from pymammotion.data.model.device import (
     PoolCleanerDevice,
     RTKBaseStationDevice,
 )
+from pymammotion.data.mqtt import mammotion_properties
 from pymammotion.utility import constant as library_constants
 from pymammotion.utility.constant import WorkMode
 
@@ -132,9 +133,17 @@ def _model_classes(cls: type, seen: set[type]) -> None:
         pending.extend(typing.get_args(hint))
 
 
+#: Models that reach the dump only as JSON strings (``mqtt_properties``' ``networkInfo``
+#: and kin), so no field type leads to them (#921).
+_JSON_STRING_MODELS = tuple(
+    value for value in vars(mammotion_properties).values() if dataclasses.is_dataclass(value)
+)
+
+
 def _identifier_fields() -> set[str]:
+    assert mammotion_properties.NetworkInfo in _JSON_STRING_MODELS
     classes: set[type] = set()
-    for root in (MowingDevice, RTKBaseStationDevice, PoolCleanerDevice, Device):
+    for root in (MowingDevice, RTKBaseStationDevice, PoolCleanerDevice, Device, *_JSON_STRING_MODELS):
         _model_classes(root, classes)
     return {
         field.name
