@@ -32,4 +32,16 @@ logger:
 YAML
 fi
 
+# Any uv sync replaces these with the pinned wheels; relink the sibling checkouts
+# when they exist (LOCAL_LIBS=0 to run against the pinned versions instead).
+if [ "${LOCAL_LIBS:-1}" != "0" ]; then
+  SITE="$(uv run --no-sync python -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])')"
+  for lib in pymammotion:../Luba-API pyagorartc:../PyAgoraRTC; do
+    name="${lib%%:*}"; src="$(cd "${lib#*:}" 2>/dev/null && pwd)/$name"
+    if [ -d "$src" ] && [ "$(readlink "$SITE/$name")" != "$src" ]; then
+      rm -rf "$SITE/$name" && ln -s "$src" "$SITE/$name" && echo "linked $name -> $src"
+    fi
+  done
+fi
+
 exec uv run --no-sync hass --config "$CONFIG" --debug "$@"
