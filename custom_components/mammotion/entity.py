@@ -4,6 +4,7 @@ from abc import ABC
 from collections.abc import Callable, Iterable
 from typing import Any
 
+from homeassistant.components.camera import DOMAIN as CAMERA_DOMAIN
 from homeassistant.components.camera import Camera, CameraEntityFeature
 from homeassistant.components.sensor import DOMAIN as SENSOR_DOMAIN
 from homeassistant.components.switch.const import DOMAIN as SWITCH_DOMAIN
@@ -101,6 +102,8 @@ def async_add_when_firmware_supports[DescriptionT: EntityDescription](
 _RETIRED_MOWER_ENTITIES = ((SWITCH_DOMAIN, "rain_tactics"),)
 #: Created only where the app shows "Visual Positioning"; earlier versions made them on every Luba 2+.
 _VISION_ONLY_SENSOR_KEYS = ("visual_positioning_status", "camera_brightness")
+#: The Luba 3 publishes one feed; earlier versions gave it left/right cameras.
+_LUBA_VA_RETIRED_CAMERA_KEYS = ("webrtc_camera", "webrtc_camera_right")
 
 
 @callback
@@ -118,6 +121,8 @@ def async_remove_retired_entities(
             mower.device.device_name, mower.device.product_key
         ):
             retired += [(SENSOR_DOMAIN, key) for key in _VISION_ONLY_SENSOR_KEYS]
+        if DeviceType.value_of_str(mower.device.device_name).is_luba_va():
+            retired += [(CAMERA_DOMAIN, key) for key in _LUBA_VA_RETIRED_CAMERA_KEYS]
         unique_name = mower.reporting_coordinator.unique_name
         for domain, key in retired:
             if entity_id := registry.async_get_entity_id(

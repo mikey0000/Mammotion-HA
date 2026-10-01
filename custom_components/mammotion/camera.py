@@ -59,6 +59,7 @@ PLACEHOLDER = Path(__file__).parent / "placeholder.png"
 _CLOSE_MESSAGES = {
     CloseReason.GATEWAY_QUIT: "Another camera on this mower took over the stream",
     CloseReason.DEADLINE: "4G streaming budget exhausted",
+    CloseReason.PING_TIMEOUT: "Agora stopped answering",
 }
 
 
@@ -76,23 +77,36 @@ class MammotionCameraEntityDescription(CameraEntityDescription):
     exists_fn: Callable[[str], bool] = lambda _device_name: True
 
 
-# One description per cameraStates slot, in slot order.
+def _is_luba_va(device_name: str) -> bool:
+    return DeviceType.value_of_str(device_name).is_luba_va()
+
+
+# Left, right and rear in cameraStates slot order. The Luba 3 publishes only slot 0
+# (though its token lists three), as its single vision camera instead of left/right.
 CAMERAS: tuple[MammotionCameraEntityDescription, ...] = (
     MammotionCameraEntityDescription(
         key="webrtc_camera",
         stream_fn=lambda coordinator: coordinator.get_stream_data(),
         target_uid=1,
+        exists_fn=lambda device_name: not _is_luba_va(device_name),
     ),
     MammotionCameraEntityDescription(
         key="webrtc_camera_right",
         stream_fn=lambda coordinator: coordinator.get_stream_data(),
         target_uid=2,
+        exists_fn=lambda device_name: not _is_luba_va(device_name),
     ),
     MammotionCameraEntityDescription(
         key="webrtc_camera_rear",
         stream_fn=lambda coordinator: coordinator.get_stream_data(),
         target_uid=3,
         exists_fn=lambda device_name: DeviceType.value_of_str(device_name).is_yu_ka(),
+    ),
+    MammotionCameraEntityDescription(
+        key="webrtc_camera_vision",
+        stream_fn=lambda coordinator: coordinator.get_stream_data(),
+        target_uid=1,
+        exists_fn=_is_luba_va,
     ),
 )
 
@@ -263,9 +277,9 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
             stream_data,
             agora_response,
         ) = await self.coordinator.async_check_stream_expiry(
-            # A fresh token per join, as the app does.  It does not stop Agora
-            # quitting an established session on the same viewer uid (2003);
-            # only joins racing within about a second coexist.
+            # A fresh token per join: the stream/token request is what makes the mower
+            # publish (with a cached token nothing is announced); reusing one token
+            # does not avoid 2003 either.
             force=True
         )
         await self.coordinator.async_send_command("send_todev_ble_sync", sync_type=3)
@@ -331,8 +345,13 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         return AgoraSession(
             mammotion_credentials(data),
             agora_response,
+            # One gateway edge per camera slot: the gateway evicts an older viewer
+            # with the same uid only on its own edge (pyagorartc D33), and every
+            # camera of a mower shares the token's one viewer uid.
             options=SessionOptions(
-                client_codec="vp8", target_uid=self.entity_description.target_uid
+                client_codec="vp8",
+                target_uid=self.entity_description.target_uid,
+                gateway_edge_offset=self.entity_description.target_uid - 1,
             ),
             on_peer_left=self._on_peer_left,
             on_closed=self._on_closed,

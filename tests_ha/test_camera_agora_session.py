@@ -105,17 +105,40 @@ async def _offer(
 
 
 @pytest.mark.parametrize("slot", [0, 1, 2])
-async def test_each_feed_joins_for_its_own_publisher_uid(
+async def test_each_feed_joins_for_its_own_publisher_uid_on_its_own_edge(
     hass: HomeAssistant,
     coordinator: MagicMock,
     sessions: list[FakeAgoraSession],
     slot: int,
 ) -> None:
-    """Slot N of cameraStates is published as Agora uid N + 1."""
+    """Slot N of cameraStates is published as Agora uid N + 1, joined on gateway edge N.
+
+    The cameras share one viewer uid, and the gateway only evicts a same-uid
+    viewer on the edge it joined, so each slot takes the next edge.
+    """
     await _offer(_camera(hass, coordinator, slot))
 
     assert sessions[0].kwargs["options"] == SessionOptions(
-        client_codec="vp8", target_uid=slot + 1
+        client_codec="vp8", target_uid=slot + 1, gateway_edge_offset=slot
+    )
+
+
+async def test_the_vision_camera_joins_uid_1_without_all_feeds_streaming(
+    hass: HomeAssistant,
+    coordinator: MagicMock,
+    sessions: list[FakeAgoraSession],
+) -> None:
+    """The Luba 3's single feed is uid 1, so the other-feeds 503 gate must not refuse it."""
+    coordinator.all_cameras_streaming = False
+    vision = next(d for d in CAMERAS if d.key == "webrtc_camera_vision")
+    camera = MammotionWebRTCCamera(coordinator, vision, hass)
+    camera.hass = hass
+    camera.entity_id = "camera.webrtc_camera_vision"
+
+    await _offer(camera)
+
+    assert sessions[0].kwargs["options"] == SessionOptions(
+        client_codec="vp8", target_uid=1
     )
 
 
@@ -417,6 +440,7 @@ async def test_a_replaced_session_ending_itself_does_not_end_the_next_viewer(
     [
         (CloseReason.GATEWAY_QUIT, "Another camera on this mower took over the stream"),
         (CloseReason.DEADLINE, "4G streaming budget exhausted"),
+        (CloseReason.PING_TIMEOUT, "Agora stopped answering"),
         (CloseReason.SOCKET_CLOSED, "Stream lost"),
         (CloseReason.P2P_LOST, "Stream lost"),
     ],

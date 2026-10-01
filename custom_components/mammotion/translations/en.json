@@ -77,6 +77,9 @@
       "webrtc_camera": {
         "name": "Left vision camera"
       },
+      "webrtc_camera_vision": {
+        "name": "Vision camera"
+      },
       "webrtc_camera_right": {
         "name": "Right vision camera"
       },

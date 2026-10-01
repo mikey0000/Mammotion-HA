@@ -25,6 +25,7 @@ _LUBA2_BLE = "Luba-VS00BLE"
 _LUBA2_CLOUD = "Luba-VS00CLD"
 _LUBA1_CLOUD = "Luba-AAAAAA"
 _YUKA_CLOUD = "Yuka-000CLD"
+_LUBA3_CLOUD = "Luba-VAME9R5S"
 
 
 def _mower(name: str, iot_id: str) -> MagicMock:
@@ -117,3 +118,17 @@ async def test_yuka_also_gets_the_rear_camera(
         "webrtc_camera_rear",
     ]
     assert [entity.entity_description.target_uid for entity in added] == [1, 2, 3]
+
+
+async def test_luba3_gets_only_the_vision_camera(
+    hass: HomeAssistant, added: list[MammotionWebRTCCamera], add_entities: MagicMock
+) -> None:
+    """Its token lists three cameras, but the Luba 3 publishes only uid 1."""
+    await async_setup_entry(
+        hass, _entry(_mower(_LUBA3_CLOUD, "iot-789")), add_entities
+    )
+
+    assert [entity.entity_description.key for entity in added] == [
+        "webrtc_camera_vision"
+    ]
+    assert [entity.entity_description.target_uid for entity in added] == [1]
