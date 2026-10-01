@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from copy import copy
 from datetime import time
 from typing import Any, cast
@@ -397,26 +397,32 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
                         await self.coordinator.async_send_command(
                             "resume_execute_task", priority=Priority.USER
                         )
-                        await self.coordinator.async_send_and_wait(
-                            "query_generate_route_information",
-                            "bidire_reqconver_path",
-                            priority=Priority.USER,
+                        await self._async_planning_step(
+                            self.coordinator.async_send_and_wait(
+                                "query_generate_route_information",
+                                "bidire_reqconver_path",
+                                priority=Priority.USER,
+                            )
                         )
                 if mode in (WorkMode.MODE_READY, WorkMode.MODE_INITIALIZATION):
                     trans_key = "start_failed"
                     if breakpoint_info != 0:
-                        await self.coordinator.async_send_and_wait(
-                            "query_generate_route_information",
-                            "bidire_reqconver_path",
-                            priority=Priority.USER,
+                        await self._async_planning_step(
+                            self.coordinator.async_send_and_wait(
+                                "query_generate_route_information",
+                                "bidire_reqconver_path",
+                                priority=Priority.USER,
+                            )
                         )
                         if not plan_only:
                             await self.coordinator.async_send_command(
                                 "start_job", priority=Priority.USER
                             )
                         return
-                    if await self.coordinator.async_plan_route(
-                        operational_settings, priority=Priority.USER
+                    if await self._async_planning_step(
+                        self.coordinator.async_plan_route(
+                            operational_settings, priority=Priority.USER
+                        )
                     ):
                         if not plan_only:
                             await self.coordinator.async_send_and_wait(
@@ -525,6 +531,21 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
                 await self._async_end_job(mode)
             finally:
                 await self.coordinator.async_request_report_snapshot()
+
+    @staticmethod
+    async def _async_planning_step(step: Awaitable[object]) -> object:
+        """Await a route planning step, carrying on if only its reply went missing.
+
+        The planning replies often go unmatched (#848) although the mower took the
+        command, so start_job still has to follow; every other failure propagates.
+        """
+        try:
+            return await step
+        except HomeAssistantError as exc:
+            if exc.translation_key != "command_unconfirmed":
+                raise
+            LOGGER.debug("Route planning reply unconfirmed, continuing: %s", exc)
+            return True
 
     async def _async_end_job(self, mode: int) -> None:
         """Stop the mower moving, then send cancel_job once it reports PAUSE."""

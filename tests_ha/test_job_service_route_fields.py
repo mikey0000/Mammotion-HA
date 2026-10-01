@@ -24,6 +24,7 @@ from pymammotion.data.model.device_config import OperationSettings
 from pymammotion.utility.constant.device_constant import WorkMode
 
 from custom_components.mammotion import lawn_mower as lawn_mower_platform
+from custom_components.mammotion.const import DOMAIN
 from custom_components.mammotion.lawn_mower import (
     MODIFY_RUNNING_JOB_SCHEMA,
     START_MOW_SCHEMA,
@@ -39,12 +40,15 @@ def _entity(
     mode: WorkMode = WorkMode.MODE_READY,
     bp_info: int = 0,
     responses: dict[str, WorkMode] | None = None,
+    failures: dict[str, str] | None = None,
 ) -> MammotionLawnMowerEntity:
     """Build the real lawn mower entity over a mower in *mode*.
 
     A command named in *responses* moves the mower to that mode one loop turn
     after it is sent, reaching the entity through its coordinator listeners the
     way a pushed report does; that report clears the breakpoint after cancel_job.
+    A command named in *failures* (``plan_route`` for the route planner) raises the
+    coordinator's HomeAssistantError with that translation key once sent.
     Everything sent lands in ``coordinator.sent``.
     """
     device = MowingDevice()
@@ -71,8 +75,13 @@ def _entity(
         listeners.append(listener)
         return lambda: listeners.remove(listener)
 
+    def fail_if_configured(command: str) -> None:
+        if (key := (failures or {}).get(command)) is not None:
+            raise HomeAssistantError(translation_domain=DOMAIN, translation_key=key)
+
     async def send(command: str, *_: Any, **__: Any) -> None:
         sent.append(command)
+        fail_if_configured(command)
         if (new_mode := (responses or {}).get(command)) is not None:
             asyncio.get_running_loop().call_soon(
                 push, new_mode, command == "cancel_job"
@@ -80,6 +89,7 @@ def _entity(
 
     async def plan_route(*_: Any, **__: Any) -> bool:
         sent.append(f"plan_route in {device.report_data.dev.sys_status.name}")
+        fail_if_configured("plan_route")
         return True
 
     coordinator.async_add_listener = add_listener
@@ -426,3 +436,48 @@ async def test_start_without_route_fields_resumes_a_docked_breakpoint() -> None:
         "query_generate_route_information",
         "start_job",
     ]
+
+
+async def test_an_unconfirmed_route_plan_still_starts_the_job() -> None:
+    """The plan's reply often goes unmatched (#848); the mower still accepts start_job."""
+    entity = _entity(
+        OperationSettings(), failures={"plan_route": "command_unconfirmed"}
+    )
+
+    await _call_start_mow(entity, areas=["switch.area_back"])
+
+    assert entity.coordinator.sent == ["plan_route in MODE_READY", "start_job"]
+
+
+async def test_an_unconfirmed_route_query_still_resumes_the_breakpoint() -> None:
+    """Same for the route query before resuming a docked breakpoint."""
+    entity = _entity(
+        OperationSettings(),
+        bp_info=1,
+        failures={"query_generate_route_information": "command_unconfirmed"},
+    )
+
+    await _call_start_mow(entity)
+
+    assert entity.coordinator.sent == [
+        "query_generate_route_information",
+        "start_job",
+    ]
+
+
+@pytest.mark.parametrize(
+    ("command", "key"),
+    [("plan_route", "command_failed"), ("start_job", "command_unconfirmed")],
+    ids=["planning fails outright", "start_job unconfirmed"],
+)
+async def test_start_mow_still_fails_on_any_other_error(command: str, key: str) -> None:
+    """Only an unconfirmed planning reply is stepped over."""
+    entity = _entity(OperationSettings(), failures={command: key})
+
+    with pytest.raises(HomeAssistantError) as raised:
+        await _call_start_mow(entity, areas=["switch.area_back"])
+
+    assert raised.value.translation_key == key
+    assert entity.coordinator.sent[-1] == (
+        "start_job" if command == "start_job" else "plan_route in MODE_READY"
+    )
