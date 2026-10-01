@@ -90,7 +90,6 @@ start_mow:
   fields:
     modify:
       example: true
-      default: false
       required: false
       selector:
         boolean:
@@ -268,7 +267,6 @@ start_mow:
           domain: switch
     plan_only:
       required: false
-      default: false
       selector:
         boolean:
 start_stop_blades:
@@ -284,8 +282,7 @@ start_stop_blades:
       selector:
         boolean:
     blade_height:
-      example: 0
-      default: 25
+      example: 40
       required: false
       selector:
         number:
@@ -491,12 +488,10 @@ svg_update:
           multiline: true
     svg_file_name:
       required: false
-      default: "pattern.svg"
       selector:
         text:
     scale:
       required: false
-      default: 1.0
       selector:
         number:
           min: 0.1
@@ -505,7 +500,6 @@ svg_update:
           mode: box
     rotate:
       required: false
-      default: 0.0
       selector:
         number:
           min: -3.14159
@@ -515,7 +509,6 @@ svg_update:
           unit_of_measurement: "rad"
     base_width_m:
       required: false
-      default: 2.5
       selector:
         number:
           min: 0.1
@@ -525,7 +518,6 @@ svg_update:
           unit_of_measurement: "m"
     base_height_m:
       required: false
-      default: 2.5
       selector:
         number:
           min: 0.1

@@ -31,6 +31,7 @@ from pymammotion.data.model.pool_state import (
     SpinoWorkMode,
     WallMaterial,
 )
+from pymammotion.messaging.command_queue import Priority
 from pymammotion.utility.device_type import DeviceType
 
 from . import MammotionConfigEntry, MammotionReportUpdateCoordinator
@@ -351,8 +352,8 @@ async def async_setup_entry(
             # The list is bound here, not closed over: the description outlives
             # this loop iteration and a closure would read the last mower's list.
             set_fn=partial(_set_bypass_mode, bypass_options),
-            async_set_fn=lambda coordinator: (
-                coordinator.async_change_bypass_if_working()
+            async_set_fn=lambda coordinator: coordinator.async_change_bypass_if_working(
+                priority=Priority.USER
             ),
         )
         entities.append(

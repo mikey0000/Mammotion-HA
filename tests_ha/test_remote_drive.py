@@ -15,6 +15,7 @@ from unittest.mock import create_autospec
 import pytest
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
+from pymammotion.aliyun.exceptions import DeviceOfflineException, FailedRequestException
 from pymammotion.data.model.device import MowingDevice
 from pymammotion.device.handle import DeviceHandle
 from pymammotion.device.remote_drive import (
@@ -23,6 +24,7 @@ from pymammotion.device.remote_drive import (
     RemoteDriveSession,
 )
 from pymammotion.http.model.http import UnauthorizedExceptionError
+from pymammotion.transport.base import TransportRateLimitedError
 from remote_drive_support import (
     LUBA3,
     OLD_FIRMWARE,
@@ -144,6 +146,16 @@ async def test_starting_without_a_usable_cloud_transport_needs_the_cloud() -> No
     assert rig.coordinator.remote_drive_phase is RemoteDrivePhase.IDLE
 
 
+async def test_starting_while_the_app_holds_the_account_says_so() -> None:
+    """The library's gate refuses the start while another session holds the lock."""
+    rig = await make_remote_drive_rig(account_in_use=True)
+
+    error = await _raised(rig.coordinator.async_start_remote_drive())
+
+    assert error.translation_key == "account_in_use"
+    assert rig.coordinator.remote_drive_phase is RemoteDrivePhase.IDLE
+
+
 async def test_starting_a_running_session_again_is_refused() -> None:
     """A second start while one is live is refused, and the live one carries on."""
     rig = await make_remote_drive_rig()
@@ -166,7 +178,7 @@ async def test_a_rejected_login_takes_the_login_refresh_path() -> None:
 
     error = await _raised(rig.coordinator.async_start_remote_drive())
 
-    assert error.translation_key == "command_failed"
+    assert error.translation_key == "remote_drive_start_failed"
     rig.coordinator.manager.refresh_login.assert_awaited_once_with("user@example.com")
     assert rig.coordinator.update_failures == 1
     assert rig.coordinator.remote_drive_phase is RemoteDrivePhase.IDLE
@@ -178,7 +190,39 @@ async def test_a_network_failure_on_the_token_request_is_reported() -> None:
 
     error = await _raised(rig.coordinator.async_start_remote_drive())
 
-    assert error.translation_key == "command_failed"
+    assert error.translation_key == "remote_drive_start_failed"
+    assert rig.coordinator.remote_drive_phase is RemoteDrivePhase.IDLE
+
+
+@pytest.mark.regression
+@pytest.mark.parametrize(
+    ("exc", "key"),
+    [
+        pytest.param(
+            TransportRateLimitedError("banned for 12 h"),
+            "api_limit_exceeded",
+            id="rate_limited",
+        ),
+        pytest.param(
+            FailedRequestException("iot-1"), "remote_drive_start_failed", id="failed"
+        ),
+        pytest.param(
+            DeviceOfflineException(6205, "iot-1"),
+            "remote_drive_start_failed",
+            id="offline",
+        ),
+    ],
+)
+async def test_a_cloud_refusal_of_the_start_is_translated(
+    exc: Exception, key: str
+) -> None:
+    """These escaped the press as raw library exceptions, which scripts cannot handle."""
+    rig = await make_remote_drive_rig(tokens=[exc])
+
+    error = await _raised(rig.coordinator.async_start_remote_drive())
+
+    assert error.translation_key == key
+    assert error.__cause__ is exc
     assert rig.coordinator.remote_drive_phase is RemoteDrivePhase.IDLE
 
 

@@ -7,7 +7,6 @@ keep their old behaviour, since nobody is waiting on them.
 """
 
 import asyncio
-from types import SimpleNamespace
 from typing import Any
 
 import aiohttp
@@ -19,10 +18,9 @@ from pymammotion.aliyun.exceptions import (
     GatewayTimeoutException,
     TooManyRequestsException,
 )
-from pymammotion.data.model.device import MowingDevice
-from pymammotion.device.handle import DeviceHandle
 from pymammotion.messaging.command_queue import Priority
 from pymammotion.transport.base import (
+    AccountInUseError,
     AuthError,
     BLEUnavailableError,
     CommandRejectedError,
@@ -30,9 +28,8 @@ from pymammotion.transport.base import (
     ConcurrentRequestError,
     TransportRateLimitedError,
 )
-from user_command_support import make_cloud_handle, make_coordinator
+from user_command_support import make_cloud_report_coordinator
 
-from custom_components.mammotion.const import CONF_HAS_CLOUD_ACCOUNT
 from custom_components.mammotion.coordinator import MammotionReportUpdateCoordinator
 
 _DEVICE_NAME = "Luba-VAME9R5S"
@@ -45,23 +42,9 @@ _DIRECT = (
 def _coordinator(
     *, cloud_usable: bool = True, reported_offline: bool = False
 ) -> MammotionReportUpdateCoordinator:
-    handle: DeviceHandle = make_cloud_handle(
-        _DEVICE_NAME,
-        MowingDevice(),
-        reported_offline=reported_offline,
-        cloud_usable=cloud_usable,
+    return make_cloud_report_coordinator(
+        _DEVICE_NAME, cloud_usable=cloud_usable, reported_offline=reported_offline
     )
-    coordinator = make_coordinator(
-        MammotionReportUpdateCoordinator,
-        MowingDevice(),
-        device_name=_DEVICE_NAME,
-        handle=handle,
-    )
-    # No cloud account, so a credential failure skips the real login refresh.
-    coordinator.config_entry = SimpleNamespace(
-        options={}, data={CONF_HAS_CLOUD_ACCOUNT: False}
-    )
-    return coordinator
 
 
 async def _send_command(
@@ -275,25 +258,56 @@ async def test_a_background_send_the_cloud_did_not_deliver_stays_quiet(
 async def test_a_background_send_and_wait_without_delivery_stays_quiet(
     exc: Exception,
 ) -> None:
-    """The poll retries on its own, so these still end quietly in None."""
+    """The poll retries on its own, so these still end quietly, reporting no reply."""
     coordinator = _coordinator()
     _fail_with(coordinator, exc)
 
-    assert await _send_and_wait(coordinator, Priority.NORMAL) is None
+    assert await _send_and_wait(coordinator, Priority.NORMAL) is False
     coordinator.manager.send_command_and_wait.assert_awaited_once()
 
 
+@pytest.mark.regression
+@pytest.mark.parametrize(
+    "priority", [Priority.NORMAL, Priority.BACKGROUND], ids=["normal", "background"]
+)
+@pytest.mark.parametrize(
+    "make_exc",
+    [
+        _server_disconnected,
+        lambda: DeviceUnboundException("device is unbind", "iot-1"),
+        lambda: FailedRequestException("iot-1"),
+        lambda: CommandRejectedError("RES_FAILURE"),
+        lambda: BLEUnavailableError("no proxy reached the mower"),
+        TimeoutError,
+        lambda: TransportRateLimitedError("banned for 12 h"),
+        lambda: TooManyRequestsException("HTTP 429", "iot-1"),
+    ],
+    ids=[
+        "server_disconnected",
+        "device_unbound",
+        "failed_request",
+        "command_rejected",
+        "ble_unavailable",
+        "timeout",
+        "ban",
+        "http_429",
+    ],
+)
 @_SENDERS
-async def test_a_background_cloud_error_still_propagates_unchanged(send: Any) -> None:
-    """Only direct priorities are translated; background callers keep their handling."""
+async def test_a_background_send_never_raises(
+    send: Any, make_exc: Any, priority: Priority
+) -> None:
+    """The helpers disagreed: one swallowed what the other re-raised raw.
+
+    ``async_send_command`` swallowed ``FailedRequestException`` while
+    ``_async_device_call`` re-raised it; both re-raised the rest raw, and a rate
+    limit raised ``api_limit_exceeded`` on any priority, so a poll could fail
+    the caller that nobody was waiting on.
+    """
     coordinator = _coordinator()
-    exc = _server_disconnected()
-    _fail_with(coordinator, exc)
+    _fail_with(coordinator, make_exc())
 
-    with pytest.raises(aiohttp.ServerDisconnectedError) as raised:
-        await send(coordinator, Priority.NORMAL)
-
-    assert raised.value is exc
+    assert await send(coordinator, priority) is False
 
 
 def _credentials_rejected() -> AuthError:
@@ -339,3 +353,42 @@ async def test_a_background_command_lost_to_credentials_or_ble_slots_stays_quiet
     _fail_with(coordinator, make_exc())
 
     assert not await send(coordinator, Priority.NORMAL)
+
+
+@pytest.mark.parametrize("priority", _DIRECT)
+@_SENDERS
+async def test_a_direct_command_refused_by_the_account_lock_says_so(
+    send: Any, priority: Priority
+) -> None:
+    """The library's gate refuses it while the Mammotion app holds the account."""
+    coordinator = make_cloud_report_coordinator(_DEVICE_NAME, account_in_use=True)
+
+    with pytest.raises(HomeAssistantError) as raised:
+        await send(coordinator, priority)
+
+    assert raised.value.translation_key == "account_in_use"
+
+
+@pytest.mark.parametrize("priority", _DIRECT)
+@_SENDERS
+async def test_a_direct_send_the_account_lock_refused_says_so(
+    send: Any, priority: Priority
+) -> None:
+    """The lock can be taken between the gate and the send; the send says so too."""
+    coordinator = _coordinator()
+    _fail_with(coordinator, AccountInUseError("in use by another session"))
+
+    with pytest.raises(HomeAssistantError) as raised:
+        await send(coordinator, priority)
+
+    assert raised.value.translation_key == "account_in_use"
+
+
+@_SENDERS
+async def test_a_background_command_held_by_the_account_lock_stays_quiet(
+    send: Any,
+) -> None:
+    """Nobody waits on a poll, so the lock only drops it."""
+    coordinator = make_cloud_report_coordinator(_DEVICE_NAME, account_in_use=True)
+
+    assert await send(coordinator, Priority.NORMAL) is False

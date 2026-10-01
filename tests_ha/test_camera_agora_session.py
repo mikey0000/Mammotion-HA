@@ -24,6 +24,7 @@ from agora_session_support import (
 )
 from homeassistant.components.camera import WebRTCAnswer, WebRTCError
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 from pyagorartc import (
     CloseReason,
     GatewayConnectError,
@@ -35,6 +36,7 @@ from pyagorartc import (
 )
 from pymammotion.http.model.camera_stream import StreamSubscriptionResponse
 from pymammotion.http.model.http import Response
+from pymammotion.messaging.command_queue import Priority
 from webrtc_models import RTCIceCandidateInit
 
 from custom_components.mammotion.camera import (
@@ -42,6 +44,7 @@ from custom_components.mammotion.camera import (
     MammotionWebRTCCamera,
     async_setup_platform_services,
 )
+from custom_components.mammotion.const import DOMAIN
 from custom_components.mammotion.coordinator import MammotionBaseUpdateCoordinator
 
 _DEVICE = "Yuka-000CLD"
@@ -208,9 +211,39 @@ async def test_keepalive_rearms_the_encoder_on_4g(
 ) -> None:
     """Over cellular the encoder stops publishing unless it is poked."""
     coordinator.is_on_4g = True
+    coordinator.async_send_command.return_value = True
 
     assert await camera._fpv_keepalive() is True
-    coordinator.async_send_command.assert_awaited_once_with("refresh_fpv")
+    coordinator.async_send_command.assert_awaited_once_with(
+        "refresh_fpv", priority=Priority.USER
+    )
+
+
+@pytest.mark.regression
+async def test_a_keepalive_that_did_not_land_says_so(
+    camera: MammotionWebRTCCamera, coordinator: MagicMock
+) -> None:
+    """The keep-alive returned True whether or not ``refresh_fpv`` went out.
+
+    Sent at NORMAL it could also wait behind a map sync while the encoder stopped.
+    False is the library's signal to stop calling (pyagorartc D15).
+    """
+    coordinator.is_on_4g = True
+    coordinator.async_send_command.side_effect = HomeAssistantError(
+        translation_domain=DOMAIN, translation_key="command_failed"
+    )
+
+    assert await camera._fpv_keepalive() is False
+
+
+async def test_a_keepalive_the_coordinator_did_not_send_says_so(
+    camera: MammotionWebRTCCamera, coordinator: MagicMock
+) -> None:
+    """A send that returns False is as undelivered as one that raises."""
+    coordinator.is_on_4g = True
+    coordinator.async_send_command.return_value = False
+
+    assert await camera._fpv_keepalive() is False
 
 
 async def test_session_callbacks_are_the_cameras_own(
@@ -237,9 +270,22 @@ async def test_a_departed_publisher_is_nudged_back_then_resubscribed(
     await camera._on_peer_left(1)
 
     assert order.mock_calls == [
-        call.sync("send_todev_ble_sync", sync_type=3),
+        call.sync("send_todev_ble_sync", priority=Priority.USER, sync_type=3),
         call.subscribe(_DEVICE, "iot-123", all_cameras=True),
     ]
+
+
+async def test_a_failed_nudge_still_resubscribes(
+    camera: MammotionWebRTCCamera, coordinator: MagicMock
+) -> None:
+    """The BLE sync is only a nudge; the subscription is what brings the mower back."""
+    coordinator.async_send_command.side_effect = HomeAssistantError(
+        translation_domain=DOMAIN, translation_key="command_failed"
+    )
+
+    await camera._on_peer_left(1)
+
+    coordinator.manager.get_stream_subscription.assert_awaited_once()
 
 
 async def test_session_tasks_run_as_home_assistant_background_tasks(

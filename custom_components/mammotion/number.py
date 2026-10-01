@@ -29,6 +29,7 @@ from pymammotion.data.model.device_info import (
     SMART_CHARGE_LEVEL,
 )
 from pymammotion.data.model.device_limits import DeviceLimits
+from pymammotion.messaging.command_queue import Priority
 from pymammotion.utility.device_config import DeviceConfig
 from pymammotion.utility.device_type import DeviceType
 
@@ -203,7 +204,7 @@ NUMBER_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
             coordinator.operation_settings, "start_progress", int(value)
         ),
         set_async_fn=lambda coordinator, value: (
-            coordinator.async_change_progress_if_working()
+            coordinator.async_change_progress_if_working(priority=Priority.USER)
         ),
     ),
     MammotionConfigNumberEntityDescription(
@@ -255,13 +256,11 @@ LUBA_WORKING_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
             coordinator.operation_settings, "blade_height", int(value)
         ),
         set_async_fn=lambda coordinator, value: (
-            coordinator.async_change_blade_height_if_working()
+            coordinator.async_change_blade_height_if_working(priority=Priority.USER)
         ),
         # 0 is OperationSettings' unset default, never a real height.
         get_fn=lambda coordinator: coordinator.operation_settings.blade_height or None,
-        device_fn=lambda coordinator: (
-            coordinator.data.report_data.work.knife_height or None
-        ),
+        device_fn=lambda coordinator: coordinator.blade_height,
     ),
 )
 
@@ -275,7 +274,7 @@ NUMBER_WORKING_ENTITIES: tuple[MammotionConfigNumberEntityDescription, ...] = (
         native_min_value=0.2,
         native_max_value=0.6,
         set_async_fn=lambda coordinator, value: (
-            coordinator.async_change_speed_if_working()
+            coordinator.async_change_speed_if_working(priority=Priority.USER)
         ),
         set_fn=lambda coordinator, value: setattr(
             coordinator.operation_settings, "speed", value
@@ -436,12 +435,17 @@ class MammotionConfigNumberEntity(MammotionBaseEntity, RestoreNumber):  # type: 
         super()._handle_coordinator_update()
 
     async def async_set_native_value(self, value: float) -> None:
-        """Set native value for number."""
+        """Set native value for number; a device-backed value reverts if the write fails."""
         self._attr_native_value = value
         if self.entity_description.set_fn is not None:
             self.entity_description.set_fn(self.coordinator, value)
         if self.entity_description.set_async_fn is not None:
-            await self.entity_description.set_async_fn(self.coordinator, value)
+            try:
+                await self.entity_description.set_async_fn(self.coordinator, value)
+            except Exception:
+                if self.entity_description.get_fn is not None:
+                    self._attr_native_value = self._current_value()
+                raise
         self.async_write_ha_state()
 
     async def async_added_to_hass(self) -> None:

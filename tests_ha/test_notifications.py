@@ -14,6 +14,7 @@ from zoneinfo import ZoneInfo
 import pytest
 from homeassistant.components import persistent_notification
 from homeassistant.core import HomeAssistant
+from pymammotion.data.model.errors import DeviceErrors
 from pytest_homeassistant_custom_component.common import (
     MockConfigEntry,
     async_capture_events,
@@ -39,6 +40,8 @@ _DESCRIBED = {
 
 def _coordinator(notify: list[str] | None = None) -> MagicMock:
     coordinator = MagicMock()
+    # A real error list, so its parsed properties are the library's own.
+    coordinator.data.errors = DeviceErrors()
     coordinator.device_name = "Luba-1"
     coordinator.unique_name = "Luba-1"
     coordinator.config_entry.options = {} if notify is None else {CONF_NOTIFY: notify}
@@ -301,9 +304,7 @@ def test_an_unknown_code_is_listed_without_description() -> None:
         {"data": '[{"c":-9999,"ct":2,"ft":0}]'}, lambda code: None
     )
 
-    assert attributes["codes"] == [
-        {"code": 9999, "count": 2, "time": "1970-01-01T00:00:00+00:00"}
-    ]
+    assert attributes["codes"] == [{"code": 9999, "count": 2, "time": None}]
     assert notification_message(attributes) == "Unknown error code 9999"
 
 
@@ -322,10 +323,28 @@ def test_warning_frame_time_is_the_mowers_local_clock() -> None:
 
 
 def test_warning_frame_time_is_always_milliseconds() -> None:
-    """``ft`` is milliseconds; a small value (unsynced clock) is not seconds."""
-    attributes = notification_attributes({"data": '[{"c":-1,"ct":1,"ft":5400000}]'})
+    """``ft`` is milliseconds; a seconds-sized value (unsynced clock) is not 2026."""
+    attributes = notification_attributes({"data": '[{"c":-1,"ct":1,"ft":1790627362}]'})
 
-    assert attributes["codes"][0]["time"] == "1970-01-01T01:30:00+00:00"
+    assert attributes["codes"][0]["time"] is None
+
+
+@pytest.mark.regression
+@pytest.mark.parametrize(
+    "data",
+    [
+        '[{"c":-1,"ct":1,"ft":5400000}]',
+        '[{"c":-1,"ct":1,"ft":0}]',
+        '{"localTime":0,"code":"1203"}',
+        '{"localTime":378429,"code":"1203"}',
+    ],
+    ids=["ft-uptime", "ft-zero", "localtime-zero", "localtime-uptime"],
+)
+def test_a_time_before_the_clock_is_set_is_no_time(data: str) -> None:
+    """An uptime stamp or zero used to render as a January 1970 date."""
+    attributes = notification_attributes({"data": data})
+
+    assert attributes["codes"][0]["time"] is None
 
 
 @pytest.mark.parametrize(
@@ -585,7 +604,6 @@ def _self_check_notifier(
     hass: HomeAssistant, notify: list[str] | None = ["self_check"]
 ) -> tuple[MowerNotifier, Any]:
     notifier, _handler = _started(hass, notify)
-    notifier.coordinator.data.errors.active_codes = []
     return notifier, notifier.coordinator.async_add_listener.call_args.args[0]
 
 

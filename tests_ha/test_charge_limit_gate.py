@@ -128,7 +128,7 @@ async def test_setting_the_limit_resends_the_off_peak_window() -> None:
         "set_battery_info",
         "bms_ctrl_info_msg",
         prefer_ble=False,
-        priority=Priority.NORMAL,
+        priority=Priority.USER,
         smart_charge=False,
         charge_limit=90,
         peak_valley_charge=True,

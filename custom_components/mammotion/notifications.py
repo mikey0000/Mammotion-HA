@@ -30,6 +30,7 @@ from pymammotion.device.remote_drive import (
     RemoteDrivePhase,
 )
 from pymammotion.state.device_state import DeviceNotification
+from pymammotion.utility.device_time import device_epoch
 
 from .const import (
     CONF_NOTIFY,
@@ -45,11 +46,7 @@ from .const import (
     SELF_CHECK_OTHER,
     SELF_CHECK_STATES,
 )
-from .coordinator import (
-    MIN_ERROR_LOG_EPOCH,
-    MammotionReportUpdateCoordinator,
-    remote_drive_detail,
-)
+from .coordinator import MammotionReportUpdateCoordinator, remote_drive_detail
 
 NOTIFICATION_EVENT_TYPES: list[str] = [
     "device_notification_event",
@@ -88,22 +85,22 @@ _UNKNOWN_CODE = "Unknown error code {code}"
 _TITLE = "{device_name}: {category}"
 
 
+def _device_time(epoch: Any, *, millis: bool | None) -> datetime | None:
+    """Return :func:`device_epoch` of a payload field, None for a non-numeric type too."""
+    try:
+        return device_epoch(epoch, millis=millis)
+    except TypeError:
+        return None
+
+
 def _timestamp(epoch: Any, *, millis: bool | None = None) -> str | None:
-    """Return an ISO timestamp for a device epoch, or None.
+    """Return an ISO timestamp for a device epoch, or None when it is not a real time.
 
     ``millis`` says which unit the field uses; ``None`` guesses, since some firmware
-    sends ``localTime`` in seconds and some in milliseconds, and a value below 10^11
-    cannot be milliseconds after 1973.
+    sends ``localTime`` in seconds and some in milliseconds.
     """
-    try:
-        value = int(epoch)
-        if millis is None:
-            millis = value >= 100_000_000_000
-        if millis:
-            value //= 1000
-        return datetime.fromtimestamp(value, UTC).isoformat()
-    except TypeError, ValueError, OSError, OverflowError:
-        return None
+    moment = _device_time(epoch, millis=millis)
+    return None if moment is None else moment.isoformat()
 
 
 def _wall_clock_timestamp(epoch_ms: Any, time_zone: tzinfo | None) -> str | None:
@@ -112,11 +109,11 @@ def _wall_clock_timestamp(epoch_ms: Any, time_zone: tzinfo | None) -> str | None
     ``ft`` is the mower's local wall clock counted as if it were UTC, so it is read in
     *time_zone*; without one it is taken as UTC.
     """
-    timestamp = _timestamp(epoch_ms, millis=True)
-    if timestamp is None or time_zone is None:
-        return timestamp
-    wall_clock = datetime.fromisoformat(timestamp).replace(tzinfo=time_zone)
-    return wall_clock.astimezone(UTC).isoformat()
+    if (wall_clock := _device_time(epoch_ms, millis=True)) is None:
+        return None
+    if time_zone is not None:
+        wall_clock = wall_clock.replace(tzinfo=time_zone).astimezone(UTC)
+    return wall_clock.isoformat()
 
 
 def _epoch(timestamp: str | None) -> int | None:
@@ -478,11 +475,8 @@ class MowerNotifier:
             return
         # An entry still on its uptime stamp is picked up once it carries real time.
         pairs = [
-            (abs(int(code)), int(epoch))
-            for code, epoch in zip(
-                errors.err_code_list, errors.err_code_list_time, strict=False
-            )
-            if code and epoch >= MIN_ERROR_LOG_EPOCH
+            (abs(int(code)), int(logged_at.timestamp()))
+            for code, logged_at in errors.dated_codes
         ]
         latest = max((epoch for _, epoch in pairs), default=0)
         if self._latest_error_epoch is None:
