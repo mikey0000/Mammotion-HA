@@ -1561,6 +1561,9 @@
     "command_failed": {
       "message": "Kunne ikke sende kommando til plæneklipperen."
     },
+    "command_unconfirmed": {
+      "message": "Plæneklipperen bekræftede ikke kommandoen. Den kan stadig være udført."
+    },
     "api_limit_exceeded": {
       "message": "API-anmodningsgrænsen er overskredet."
     },

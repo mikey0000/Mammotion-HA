@@ -1561,6 +1561,9 @@
     "command_failed": {
       "message": "Verzenden van de opdracht naar de maaier is mislukt."
     },
+    "command_unconfirmed": {
+      "message": "De maaier heeft de opdracht niet bevestigd. Mogelijk is deze toch uitgevoerd."
+    },
     "api_limit_exceeded": {
       "message": "De API-limiet is overschreden."
     },

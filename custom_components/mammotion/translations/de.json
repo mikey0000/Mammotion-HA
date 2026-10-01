@@ -1561,6 +1561,9 @@
     "command_failed": {
       "message": "Senden eines Befehls zum Mähroboter fehlgeschlagen."
     },
+    "command_unconfirmed": {
+      "message": "Der Mähroboter hat den Befehl nicht bestätigt. Er wurde möglicherweise trotzdem ausgeführt."
+    },
     "api_limit_exceeded": {
       "message": "Das API-Anfragelimit wurde überschritten."
     },

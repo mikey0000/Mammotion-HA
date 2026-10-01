@@ -1561,6 +1561,9 @@
     "command_failed": {
       "message": "Failed to send command to the mower."
     },
+    "command_unconfirmed": {
+      "message": "The mower did not confirm the command. It may still have been carried out."
+    },
     "api_limit_exceeded": {
       "message": "API rate limit has been exceeded."
     },

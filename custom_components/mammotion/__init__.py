@@ -40,6 +40,7 @@ from pymammotion.transport.base import (
     ReLoginRequiredError,
     TransportError,
     TransportType,
+    is_transient_network_error,
 )
 from pymammotion.utility.device_type import DeviceType
 from Tea.exceptions import UnretryableException
@@ -125,6 +126,19 @@ def _clear_cached_credentials(hass: HomeAssistant, entry: MammotionConfigEntry) 
     )
 
 
+def _unexpected_login_failure(err: Exception, *, ble_fallback: bool) -> bool:
+    """Return False to continue BLE-only, else raise the ConfigEntry exception for *err*."""
+    transient = is_transient_network_error(err)
+    if not transient:
+        LOGGER.error("Unexpected error during Mammotion login", exc_info=err)
+    if ble_fallback:
+        LOGGER.warning("Mammotion login failed; continuing in BLE-only mode: %s", err)
+        return False
+    if transient:
+        raise ConfigEntryNotReady(err) from err
+    raise ConfigEntryError(err) from err
+
+
 async def _async_attempt_login(  # noqa: C901
     hass: HomeAssistant,
     entry: MammotionConfigEntry,
@@ -181,6 +195,8 @@ async def _async_attempt_login(  # noqa: C901
                 )
                 return False
             raise ConfigEntryAuthFailed(retry_err) from retry_err
+        except Exception as retry_err:  # noqa: BLE001
+            return _unexpected_login_failure(retry_err, ble_fallback=ble_fallback)
         else:
             return True
     except AccountInUseError as err:
@@ -217,9 +233,8 @@ async def _async_attempt_login(  # noqa: C901
             )
             return False
         raise ConfigEntryError(err) from err
-    except Exception:
-        LOGGER.exception("Unexpected error during Mammotion login")
-        return False
+    except Exception as err:  # noqa: BLE001
+        return _unexpected_login_failure(err, ble_fallback=ble_fallback)
     else:
         return True
 

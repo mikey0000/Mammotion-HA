@@ -10,10 +10,21 @@ imported without one.
 takes; the plugin loads by itself.
 """
 
+from collections.abc import AsyncIterator
+
 import pytest
+from user_command_support import LIVE_HANDLES
 
 
 @pytest.fixture(autouse=True)
 def auto_enable_custom_integrations(enable_custom_integrations: None) -> None:
     """Let Home Assistant load ``custom_components.mammotion``."""
     return
+
+
+@pytest.fixture(autouse=True)
+async def stop_cloud_handle_poll_loops() -> AsyncIterator[None]:
+    """Stop the poll loop a CONNECTED ``make_cloud_handle`` handle starts."""
+    yield
+    while LIVE_HANDLES:
+        await LIVE_HANDLES.pop().stop_polling()

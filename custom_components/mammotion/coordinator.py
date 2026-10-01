@@ -123,6 +123,7 @@ from .config import (
     async_get_store,
 )
 from .const import (
+    COMMAND_EXCEPTIONS,
     CONF_ACCOUNTNAME,
     CONF_HAS_CLOUD_ACCOUNT,
     CONF_MAMMOTION_DATA,
@@ -961,7 +962,11 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             ) from err
 
     @staticmethod
-    def _raise_if_user_waiting(priority: Priority, exc: Exception) -> None:
+    def _raise_if_user_waiting(
+        priority: Priority,
+        exc: BaseException | None,
+        translation_key: str = "command_failed",
+    ) -> None:
         """Surface a dropped command when a person is waiting on it.
 
         Background refreshes stay quiet — they retry on the next poll — but a user
@@ -969,8 +974,15 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         """
         if priority.is_direct:
             raise HomeAssistantError(
-                translation_domain=DOMAIN, translation_key="command_failed"
+                translation_domain=DOMAIN, translation_key=translation_key
             ) from exc
+
+    def _can_send(self, priority: Priority) -> bool:
+        """Return whether a send can go out now; a direct priority raises instead of False."""
+        if self.is_online(user_initiated=priority.is_direct):
+            return True
+        self._raise_if_user_waiting(priority, None)
+        return False
 
     async def async_send_and_wait(
         self,
@@ -1002,16 +1014,16 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             priority,
         )
 
-    async def _async_device_call[ResultT](
+    async def _async_device_call[ResultT](  # noqa: C901
         self, call: Callable[[], Awaitable[ResultT]], priority: Priority
     ) -> ResultT | None:
         """Run a library call that talks to the device, with ``async_send_and_wait``'s handling.
 
         Returns ``None`` when the device is offline or the call failed in a way that
-        is only logged.
+        is only logged.  For a direct priority every such failure raises a
+        ``HomeAssistantError`` instead.
         """
-        device = self.manager.get_device_by_name(self.device_name)
-        if device is None or not self.is_online(user_initiated=priority.is_direct):
+        if not self._can_send(priority):
             return None
 
         try:
@@ -1019,6 +1031,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         except EXPIRED_CREDENTIAL_EXCEPTIONS as exc:
             self.update_failures += 1
             await self.async_refresh_login(exc)
+            self._raise_if_user_waiting(priority, exc)
         except DeviceOfflineException as exc:
             device = self.manager.get_device_by_name(self.device_name)
             if device is not None:
@@ -1035,13 +1048,12 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         except (NoTransportAvailableError, CommandRejectedError) as exc:
             LOGGER.debug("Command not carried out: %s", exc)
             self._raise_if_user_waiting(priority, exc)
-        except (
-            GatewayTimeoutException,
-            CommandTimeoutError,
-            ConcurrentRequestError,
-        ):
-            pass
-        except asyncio.CancelledError:
+        except CommandTimeoutError as exc:
+            # The command may have landed; only its reply is missing.
+            self._raise_if_user_waiting(priority, exc, "command_unconfirmed")
+        except (GatewayTimeoutException, ConcurrentRequestError) as exc:
+            self._raise_if_user_waiting(priority, exc)
+        except asyncio.CancelledError as exc:
             # bleak_retry_connector raises CancelledError when no BLE slot is
             # available (it cancels its own internal sleep).  Re-raise only when
             # the enclosing task is genuinely being cancelled; otherwise treat it
@@ -1053,6 +1065,10 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
                 "BLE connection cancelled (no available slot) for %s — skipping",
                 self.device_name,
             )
+            self._raise_if_user_waiting(priority, exc)
+        except COMMAND_EXCEPTIONS as exc:
+            self._raise_if_user_waiting(priority, exc)
+            raise
         return None
 
     @staticmethod
@@ -1119,7 +1135,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         nothing from jumping it.
         """
         device = self.manager.get_device_by_name(self.device_name)
-        if device is None or not self.is_online(user_initiated=priority.is_direct):
+        if not self._can_send(priority) or device is None:
             return False
 
         try:
@@ -1131,14 +1147,17 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
                 priority=priority,
                 **kwargs,
             )
-        except FailedRequestException:
+        except FailedRequestException as exc:
             self.update_failures += 1
+            self._raise_if_user_waiting(priority, exc)
         except EXPIRED_CREDENTIAL_EXCEPTIONS as exc:
             self.update_failures += 1
             await self.async_refresh_login(exc)
+            self._raise_if_user_waiting(priority, exc)
         except GatewayTimeoutException as ex:
             LOGGER.error("Gateway timeout exception: %s", ex.iot_id)
             self.update_failures = 0
+            self._raise_if_user_waiting(priority, ex)
             return False
         except DeviceOfflineException as exc:
             self.device_offline(device)
@@ -1157,11 +1176,9 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
                 self.device_name,
                 command,
             )
-            raise HomeAssistantError(
-                translation_domain=DOMAIN, translation_key="command_failed"
-            ) from exc
+            self._raise_if_user_waiting(priority, exc)
             return False
-        except asyncio.CancelledError:
+        except asyncio.CancelledError as exc:
             task = asyncio.current_task()
             if task is not None and task.cancelling() > 0:
                 raise
@@ -1169,7 +1186,11 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
                 "BLE connection cancelled (no available slot) for %s — skipping",
                 self.device_name,
             )
+            self._raise_if_user_waiting(priority, exc)
             return False
+        except COMMAND_EXCEPTIONS as exc:
+            self._raise_if_user_waiting(priority, exc)
+            raise
         else:
             self.update_failures = 0
             return True
