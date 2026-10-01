@@ -6,18 +6,30 @@ the device's "no zone" placeholder — and a "Task area path" sensor appeared.
 """
 
 import json
+from collections.abc import AsyncIterator
+from functools import partial
 from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
+from area_rename_support import (
+    AREA_HASH,
+    DEVICE_AREA_NAME,
+    ECHOED_NAME,
+    AreaRenameRig,
+    make_area_rename_rig,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers.entity import Entity
 from pymammotion.data.model.device import MowingDevice
 from pymammotion.data.model.enums import TaskAreaStatus
 from pymammotion.data.model.hash_list import AreaHashNameList, FrameList
 from pymammotion.utility.constant import WorkMode
+from pytest_homeassistant_custom_component.common import MockEntityPlatform
 
+from custom_components.mammotion.const import DOMAIN
 from custom_components.mammotion.coordinator import MammotionReportUpdateCoordinator
 from custom_components.mammotion.sensor import (
     async_add_task_area_entities,
@@ -213,6 +225,54 @@ async def test_a_previous_sessions_zone_sensor_is_removed_at_setup(
     assert not _exists(f"{_DEVICE}_1_task_area")
     assert _exists(f"{_DEVICE}_{_ZONE}_task_area")
     assert _exists("Luba-OTHER_1_task_area")
+
+
+@pytest.fixture
+async def renamed_zone_rig(hass: HomeAssistant) -> AsyncIterator[AreaRenameRig]:
+    """Build a mower mowing the zone the user renamed; shut its coordinator down after."""
+    device = MowingDevice()
+    device.map.area = {AREA_HASH: FrameList()}
+    device.map.area_name = [AreaHashNameList(name=DEVICE_AREA_NAME, hash=AREA_HASH)]
+    device.report_data.dev.sys_status = WorkMode.MODE_WORKING.value
+    device.events.work_tasks_event.hash_area_map = {AREA_HASH: TaskAreaStatus.MOWING}
+    device.events.work_tasks_event.ids = [AREA_HASH]
+    rig = await make_area_rename_rig(hass, device)
+    yield rig
+    await rig.coordinator.async_shutdown()
+
+
+@pytest.mark.regression
+async def test_a_zone_sensor_follows_its_area_when_the_mower_renames_it(
+    hass: HomeAssistant,
+    entity_registry: er.EntityRegistry,
+    renamed_zone_rig: AreaRenameRig,
+) -> None:
+    """The sensor's placeholders followed the rename but its cached name did not.
+
+    ``update_name`` wrote ``_attr_translation_placeholders``, which clears only the
+    cached placeholders; Home Assistant kept rendering the cached ``Entity.name``,
+    so the registry's ``original_name`` stayed on the area's old name.
+    """
+    coordinator = renamed_zone_rig.coordinator
+    platform = MockEntityPlatform(hass, domain="sensor", platform_name=DOMAIN)
+    platform.config_entry = renamed_zone_rig.entry
+    await platform.platform_data.async_load_translations()
+    added: list[Entity] = []
+    sync = partial(async_add_task_area_entities, coordinator, set(), {}, added.extend)
+    sync()
+    await platform.async_add_entities(added)
+    coordinator.async_add_listener(sync)
+    (entity,) = added
+    assert entity_registry.async_get(entity.entity_id).original_name == (
+        f"Task area {DEVICE_AREA_NAME}"
+    ), "premise: the sensor starts on the area's old name"
+
+    await renamed_zone_rig.receive_echo()
+    await hass.async_block_till_done()
+
+    assert entity_registry.async_get(entity.entity_id).original_name == (
+        f"Task area {ECHOED_NAME}"
+    )
 
 
 @pytest.mark.parametrize(

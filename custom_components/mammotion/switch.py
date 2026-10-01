@@ -41,6 +41,7 @@ from .entity import (
     MammotionBaseSpinoEntity,
     async_add_when_firmware_supports,
     async_add_when_supported,
+    invalidate_cached_name,
     supports_grass_collection,
 )
 
@@ -758,6 +759,7 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
             name=new_name,
             translation_placeholders={"name": new_name},
         )
+        invalidate_cached_name(self)
         # Don't overwrite _pushed_name when the user has set their own HA label —
         # resetting it to a device/auto name would cause a spurious set_area_name
         # push the next time async_registry_entry_updated fires.

@@ -10,6 +10,7 @@ import logging
 from types import SimpleNamespace
 
 import pytest
+from area_rename_support import set_area_name_pushes
 from homeassistant.core import HomeAssistant
 from pymammotion.aliyun.exceptions import DeviceOfflineException
 from pymammotion.client import MammotionClient
@@ -55,8 +56,7 @@ async def _rename(
 
 
 def _pushed_names(entity: MammotionConfigAreaSwitchEntity) -> list[str]:
-    calls = entity.coordinator.manager.send_command_and_wait.await_args_list
-    return [call.kwargs["name"] for call in calls if call.args[1] == "set_area_name"]
+    return set_area_name_pushes(entity.coordinator.manager)
 
 
 @pytest.mark.regression
