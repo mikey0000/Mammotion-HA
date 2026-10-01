@@ -11,7 +11,6 @@
       "reconfigure_successful": "Rekonfigurace úspěšná",
       "merged_into_existing_account": "Tento účet již má položku; zařízení Bluetooth do ní byla sloučena a tato položka byla odstraněna.",
       "api_limit_exceeded": "Byl překročen limit požadavků API. Zkuste to prosím znovu později.",
-      "account_in_use": "Váš účet Mammotion je již aktivní v jiné relaci. Odhlaste se z aplikace Mammotion a zkuste to znovu.",
       "reauth_successful": "Opětovné ověření bylo úspěšné",
       "wrong_account": "Tyto přihlašovací údaje patří k jinému účtu Mammotion. Ověřte se znovu účtem, se kterým byla tato položka nastavena."
     },
@@ -1567,9 +1566,6 @@
     "api_limit_exceeded": {
       "message": "Byl překročen limit požadavků API."
     },
-    "account_in_use": {
-      "message": "Váš účet Mammotion je již aktivní v jiné relaci. Odhlaste se z aplikace Mammotion a zkuste to znovu."
-    },
     "cloud_setup_failed": {
       "message": "Nelze se připojit ke cloudu Mammotion. Zkontrolujte síť a zkuste integraci znovu načíst."
     },
@@ -1752,6 +1748,12 @@
     },
     "battery_settings_unread": {
       "message": "Nastavení baterie se ze sekačky zatím nepodařilo načíst. Změna by nyní vynulovala okno nabíjení mimo špičku, proto nebylo nic odesláno. Zkuste to znovu, až bude sekačka připojena."
+    }
+  },
+  "issues": {
+    "account_in_use": {
+      "title": "Účet Mammotion je používán jinou relací",
+      "description": "Váš účet Mammotion {account} je již aktivní v jiné relaci, proto je cloudové připojení pozastaveno. Odhlaste se z aplikace Mammotion; integrace se během několika minut automaticky znovu připojí."
     }
   }
 }

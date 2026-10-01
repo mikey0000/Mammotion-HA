@@ -11,7 +11,6 @@
       "reconfigure_successful": "Riconfigurazione avvenuta con successo",
       "merged_into_existing_account": "Questo account ha già una voce; i dispositivi Bluetooth vi sono stati uniti e questa voce è stata rimossa.",
       "api_limit_exceeded": "Il limite di frequenza dell'API è stato superato. Si prega di riprovare più tardi.",
-      "account_in_use": "Il tuo account Mammotion è già attivo in un'altra sessione. Disconnettiti dall'app Mammotion e riprova.",
       "reauth_successful": "Nuova autenticazione riuscita",
       "wrong_account": "Queste credenziali appartengono a un altro account Mammotion. Autenticati di nuovo con l'account con cui è stata configurata questa voce."
     },
@@ -1567,9 +1566,6 @@
     "api_limit_exceeded": {
       "message": "Il limite di frequenza dell'API è stato superato."
     },
-    "account_in_use": {
-      "message": "Il tuo account Mammotion è già attivo in un'altra sessione. Disconnettiti dall'app Mammotion e riprova."
-    },
     "cloud_setup_failed": {
       "message": "Impossibile connettersi al cloud Mammotion. Verifica la rete e prova a ricaricare l'integrazione."
     },
@@ -1752,6 +1748,12 @@
     },
     "battery_settings_unread": {
       "message": "Le impostazioni della batteria non sono ancora state lette dal tosaerba. Modificarle ora azzererebbe la fascia di ricarica fuori picco, quindi non è stato inviato nulla. Riprova quando il tosaerba è connesso."
+    }
+  },
+  "issues": {
+    "account_in_use": {
+      "title": "Account Mammotion in uso in un'altra sessione",
+      "description": "Il tuo account Mammotion {account} è già attivo in un'altra sessione, quindi la connessione cloud è sospesa. Disconnettiti dall'app Mammotion; l'integrazione si riconnetterà automaticamente entro pochi minuti."
     }
   }
 }

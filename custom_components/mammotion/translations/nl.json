@@ -11,7 +11,6 @@
       "reconfigure_successful": "Opnieuw instellen gelukt",
       "merged_into_existing_account": "Dit account heeft al een vermelding; de Bluetooth-apparaten zijn daarin samengevoegd en deze vermelding is verwijderd.",
       "api_limit_exceeded": "De API-limiet is overschreden. Probeer het later opnieuw.",
-      "account_in_use": "Uw Mammotion-account is al actief in een andere sessie. Log uit de Mammotion-app en probeer het opnieuw.",
       "reauth_successful": "Opnieuw verifiëren is gelukt",
       "wrong_account": "Deze inloggegevens horen bij een ander Mammotion-account. Verifieer opnieuw met het account waarmee dit item is ingesteld."
     },
@@ -1567,9 +1566,6 @@
     "api_limit_exceeded": {
       "message": "De API-limiet is overschreden."
     },
-    "account_in_use": {
-      "message": "Uw Mammotion-account is al actief in een andere sessie. Log uit de Mammotion-app en probeer het opnieuw."
-    },
     "cloud_setup_failed": {
       "message": "Kan geen verbinding maken met de Mammotion-cloud. Controleer uw netwerk en probeer de integratie opnieuw te laden."
     },
@@ -1752,6 +1748,12 @@
     },
     "battery_settings_unread": {
       "message": "De batterij-instellingen zijn nog niet van de maaier gelezen. Ze nu wijzigen zou het daluren-laadvenster resetten, dus er is niets verzonden. Probeer het opnieuw zodra de maaier verbonden is."
+    }
+  },
+  "issues": {
+    "account_in_use": {
+      "title": "Mammotion-account in gebruik door een andere sessie",
+      "description": "Uw Mammotion-account {account} is al actief in een andere sessie, dus de cloudverbinding is gepauzeerd. Log uit de Mammotion-app; de integratie maakt binnen enkele minuten automatisch opnieuw verbinding."
     }
   }
 }

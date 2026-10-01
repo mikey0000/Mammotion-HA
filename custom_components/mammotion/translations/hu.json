@@ -11,7 +11,6 @@
       "reconfigure_successful": "Újrakonfigurálás sikeres",
       "merged_into_existing_account": "Ehhez a fiókhoz már tartozik bejegyzés; a Bluetooth-eszközök beolvadtak abba, és ez a bejegyzés törölve lett.",
       "api_limit_exceeded": "Az API sebességkorlátját elérte. Próbáld újra később.",
-      "account_in_use": "A Mammotion fiókod már aktív egy másik munkamenetben. Jelentkezz ki a Mammotion alkalmazásból, és próbáld újra.",
       "reauth_successful": "Az újrahitelesítés sikerült",
       "wrong_account": "Ezek a hitelesítő adatok egy másik Mammotion-fiókhoz tartoznak. Hitelesítsen újra azzal a fiókkal, amellyel ezt a bejegyzést beállította."
     },
@@ -1567,9 +1566,6 @@
     "api_limit_exceeded": {
       "message": "Az API sebességkorlátját elérte."
     },
-    "account_in_use": {
-      "message": "A Mammotion fiókod már aktív egy másik munkamenetben. Jelentkezz ki a Mammotion alkalmazásból, és próbáld újra."
-    },
     "cloud_setup_failed": {
       "message": "Nem lehet csatlakozni a Mammotion felhőhöz. Ellenőrizd a hálózatot, és próbáld meg újratölteni az integrációt."
     },
@@ -1752,6 +1748,12 @@
     },
     "battery_settings_unread": {
       "message": "Az akkumulátor beállításait még nem sikerült kiolvasni a fűnyíróból. A módosítás most visszaállítaná a csúcsidőn kívüli töltési időszakot, ezért semmi sem lett elküldve. Próbálja újra, amikor a fűnyíró csatlakozik."
+    }
+  },
+  "issues": {
+    "account_in_use": {
+      "title": "A Mammotion fiókot egy másik munkamenet használja",
+      "description": "A(z) {account} Mammotion fiókod már aktív egy másik munkamenetben, ezért a felhőkapcsolat szünetel. Jelentkezz ki a Mammotion alkalmazásból; az integráció néhány percen belül automatikusan újracsatlakozik."
     }
   }
 }

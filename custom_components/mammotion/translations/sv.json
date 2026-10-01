@@ -11,7 +11,6 @@
       "reconfigure_successful": "Omkonfigurering lyckades",
       "merged_into_existing_account": "Det här kontot har redan en post; Bluetooth-enheterna slogs ihop med den och den här posten togs bort.",
       "api_limit_exceeded": "API-anropsgränsen har överskridits. Försök igen senare.",
-      "account_in_use": "Ditt Mammotion-konto är redan aktivt i en annan session. Logga ut från Mammotion-appen och försök igen.",
       "reauth_successful": "Omautentiseringen lyckades",
       "wrong_account": "De här uppgifterna tillhör ett annat Mammotion-konto. Autentisera på nytt med kontot som posten skapades med."
     },
@@ -1567,9 +1566,6 @@
     "api_limit_exceeded": {
       "message": "API-anropsgränsen har överskridits."
     },
-    "account_in_use": {
-      "message": "Ditt Mammotion-konto är redan aktivt i en annan session. Logga ut från Mammotion-appen och försök igen."
-    },
     "cloud_setup_failed": {
       "message": "Det går inte att ansluta till Mammotion-molnet. Kontrollera nätverket och försök att läsa in integrationen på nytt."
     },
@@ -1752,6 +1748,12 @@
     },
     "battery_settings_unread": {
       "message": "Batteriinställningarna har ännu inte lästs från gräsklipparen. En ändring nu skulle återställa laddningsfönstret för lågpristid, så inget skickades. Försök igen när gräsklipparen är ansluten."
+    }
+  },
+  "issues": {
+    "account_in_use": {
+      "title": "Mammotion-kontot används av en annan session",
+      "description": "Ditt Mammotion-konto {account} är redan aktivt i en annan session, så molnanslutningen är pausad. Logga ut från Mammotion-appen; integrationen återansluter automatiskt inom några minuter."
     }
   }
 }

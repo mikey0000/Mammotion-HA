@@ -11,7 +11,6 @@
       "reconfigure_successful": "Ponowna konfiguracja zakończona powodzeniem",
       "merged_into_existing_account": "To konto ma już wpis; urządzenia Bluetooth zostały do niego scalone, a ten wpis został usunięty.",
       "api_limit_exceeded": "Przekroczono limit API. Spróbuj ponownie później.",
-      "account_in_use": "Twoje konto Mammotion jest już aktywne w innej sesji. Wyloguj się z aplikacji Mammotion i spróbuj ponownie.",
       "reauth_successful": "Ponowne uwierzytelnienie powiodło się",
       "wrong_account": "Te dane logowania należą do innego konta Mammotion. Uwierzytelnij się ponownie kontem, którym skonfigurowano ten wpis."
     },
@@ -1567,9 +1566,6 @@
     "api_limit_exceeded": {
       "message": "Przekroczono limit API."
     },
-    "account_in_use": {
-      "message": "Twoje konto Mammotion jest już aktywne w innej sesji. Wyloguj się z aplikacji Mammotion i spróbuj ponownie."
-    },
     "cloud_setup_failed": {
       "message": "Nie można połączyć się z chmurą Mammotion. Sprawdź sieć i spróbuj ponownie załadować integrację."
     },
@@ -1752,6 +1748,12 @@
     },
     "battery_settings_unread": {
       "message": "Ustawienia baterii nie zostały jeszcze odczytane z kosiarki. Zmiana teraz zresetowałaby okno ładowania poza szczytem, więc nic nie wysłano. Spróbuj ponownie, gdy kosiarka będzie połączona."
+    }
+  },
+  "issues": {
+    "account_in_use": {
+      "title": "Konto Mammotion jest używane w innej sesji",
+      "description": "Twoje konto Mammotion {account} jest już aktywne w innej sesji, więc połączenie z chmurą jest wstrzymane. Wyloguj się z aplikacji Mammotion; integracja automatycznie połączy się ponownie w ciągu kilku minut."
     }
   }
 }

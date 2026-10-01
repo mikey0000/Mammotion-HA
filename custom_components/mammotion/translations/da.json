@@ -11,7 +11,6 @@
       "reconfigure_successful": "Omkonfiguration lykkedes",
       "merged_into_existing_account": "Denne konto har allerede en post; Bluetooth-enhederne blev flettet ind i den, og denne post blev fjernet.",
       "api_limit_exceeded": "API-anmodningsgrænsen er overskredet. Prøv igen senere.",
-      "account_in_use": "Din Mammotion-konto er allerede aktiv i en anden session. Log ud af Mammotion-appen og prøv igen.",
       "reauth_successful": "Godkendelsen blev fornyet",
       "wrong_account": "Disse legitimationsoplysninger tilhører en anden Mammotion-konto. Godkend igen med den konto, denne post blev oprettet med."
     },
@@ -1567,9 +1566,6 @@
     "api_limit_exceeded": {
       "message": "API-anmodningsgrænsen er overskredet."
     },
-    "account_in_use": {
-      "message": "Din Mammotion-konto er allerede aktiv i en anden session. Log ud af Mammotion-appen og prøv igen."
-    },
     "cloud_setup_failed": {
       "message": "Kan ikke oprette forbindelse til Mammotion-skyen. Kontroller dit netværk, og prøv at genindlæse integrationen."
     },
@@ -1752,6 +1748,12 @@
     },
     "battery_settings_unread": {
       "message": "Batteriindstillingerne er endnu ikke læst fra plæneklipperen. En ændring nu ville nulstille opladningsvinduet uden for spidsbelastning, så intet blev sendt. Prøv igen, når plæneklipperen er forbundet."
+    }
+  },
+  "issues": {
+    "account_in_use": {
+      "title": "Mammotion-kontoen bruges af en anden session",
+      "description": "Din Mammotion-konto {account} er allerede aktiv i en anden session, så cloudforbindelsen er sat på pause. Log ud af Mammotion-appen; integrationen genopretter automatisk forbindelsen inden for få minutter."
     }
   }
 }

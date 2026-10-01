@@ -18,13 +18,14 @@ from homeassistant.components.bluetooth import (
 )
 from homeassistant.config_entries import ConfigEntry, ConfigEntryState
 from homeassistant.const import CONF_PASSWORD, EVENT_HOMEASSISTANT_STOP, Platform
-from homeassistant.core import Event, HomeAssistant
+from homeassistant.core import Event, HomeAssistant, callback
 from homeassistant.exceptions import (
     ConfigEntryAuthFailed,
     ConfigEntryError,
     ConfigEntryNotReady,
 )
 from homeassistant.helpers import aiohttp_client
+from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.device_registry import DeviceEntry
 from homeassistant.helpers.device_registry import (
     async_get as async_get_device_registry,
@@ -35,7 +36,6 @@ from pymammotion.aliyun.model.dev_by_account_response import Device
 from pymammotion.client import MammotionClient
 from pymammotion.data.model.device import MowingDevice, PoolCleanerDevice
 from pymammotion.transport.base import (
-    AccountInUseError,
     LoginFailedError,
     ReLoginRequiredError,
     TransportError,
@@ -199,16 +199,6 @@ async def _async_attempt_login(  # noqa: C901
             return _unexpected_login_failure(retry_err, ble_fallback=ble_fallback)
         else:
             return True
-    except AccountInUseError as err:
-        if ble_fallback:
-            LOGGER.warning(
-                "Mammotion account in use elsewhere; continuing in BLE-only mode: %s",
-                err,
-            )
-            return False
-        raise ConfigEntryError(
-            translation_domain=DOMAIN, translation_key="account_in_use"
-        ) from err
     except TooManyRequestsException as err:
         if ble_fallback:
             LOGGER.warning("Mammotion API rate limited; continuing in BLE-only mode")
@@ -429,6 +419,43 @@ async def async_migrate_entry(hass: HomeAssistant, entry: MammotionConfigEntry) 
     return True
 
 
+def _track_account_in_use(
+    hass: HomeAssistant, entry: MammotionConfigEntry, mammotion: MammotionClient
+) -> None:
+    """Show a repair while the Mammotion app holds the account's cloud lock.
+
+    pymammotion retries the Aliyun transport on its own and the login stays valid,
+    so this is a hint for the user, not a reauth.
+    """
+    held: set[str] = set()
+
+    async def _on_account_in_use_changed(account_id: str, in_use: bool) -> None:
+        issue_id = f"account_in_use_{account_id}"
+        if in_use:
+            held.add(account_id)
+            ir.async_create_issue(
+                hass,
+                DOMAIN,
+                issue_id,
+                is_fixable=False,
+                severity=ir.IssueSeverity.WARNING,
+                translation_key="account_in_use",
+                translation_placeholders={"account": account_id},
+            )
+        else:
+            held.discard(account_id)
+            ir.async_delete_issue(hass, DOMAIN, issue_id)
+
+    @callback
+    def _clear_issues() -> None:
+        for account_id in held:
+            ir.async_delete_issue(hass, DOMAIN, f"account_in_use_{account_id}")
+        held.clear()
+
+    mammotion.on_account_in_use_changed = _on_account_in_use_changed
+    entry.async_on_unload(_clear_issues)
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) -> bool:  # noqa: C901
     """Set up Mammotion from a config entry.
 
@@ -540,6 +567,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
             entry.async_start_reauth(hass)
 
         mammotion.on_unrecoverable_auth_error = _on_unrecoverable_auth_error
+        _track_account_in_use(hass, entry, mammotion)
 
         async def _on_device_removed(device_name: str, iot_id: str) -> None:
             """Delete a device unbound from the account from the HA device registry.
