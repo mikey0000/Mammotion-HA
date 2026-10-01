@@ -17,7 +17,8 @@
     "error": {
       "login_failed": "Échec de la connexion. Vérifiez l'adresse e-mail et le mot de passe de votre compte, puis réessayez.",
       "cannot_connect": "Impossible de se connecter au cloud Mammotion. Vérifiez vos identifiants et votre réseau, puis réessayez.",
-      "no_account_no_ble": "Aucune information de compte saisie et aucun appareil Bluetooth trouvé. Saisissez les identifiants de votre compte Mammotion ou configurez un appareil Bluetooth."
+      "no_account_no_ble": "Aucune information de compte saisie et aucun appareil Bluetooth trouvé. Saisissez les identifiants de votre compte Mammotion ou configurez un appareil Bluetooth.",
+      "credentials_required": "Saisissez à la fois votre compte Mammotion et son mot de passe."
     },
     "flow_title": "{name}",
     "step": {
@@ -27,7 +28,8 @@
       "reconfigure": {
         "data": {
           "account_name": "E-mail ou numéro de compte Mammotion",
-          "password": "Mot de passe du compte Mammotion"
+          "password": "Mot de passe du compte Mammotion",
+          "remove_account": "Supprimer le compte et utiliser uniquement le Bluetooth"
         }
       },
       "user": {
@@ -1563,6 +1565,9 @@
     "command_unconfirmed": {
       "message": "Le robot n'a pas confirmé la commande. Elle a peut-être quand même été exécutée."
     },
+    "account_in_use": {
+      "message": "Votre compte Mammotion est actif dans une autre session (l'application Mammotion). Déconnectez-vous de l'application, ou patientez, puis réessayez."
+    },
     "api_limit_exceeded": {
       "message": "La limite de débit de l'API a été dépassée."
     },
@@ -1689,6 +1694,9 @@
     "remote_drive_needs_cloud": {
       "message": "La conduite à distance par le cloud nécessite une connexion cloud active avec la tondeuse. En Bluetooth, utilisez plutôt les boutons de déplacement."
     },
+    "remote_drive_start_failed": {
+      "message": "Impossible de démarrer la conduite à distance : la tondeuse est injoignable via le cloud."
+    },
     "remote_drive_already_running": {
       "message": "La conduite à distance par le cloud est déjà en cours. Désactivez-la avant de la relancer."
     },
@@ -1754,6 +1762,14 @@
     "account_in_use": {
       "title": "Compte Mammotion utilisé par une autre session",
       "description": "Votre compte Mammotion {account} est déjà actif dans une autre session, la connexion cloud est donc suspendue. Déconnectez-vous de l'application Mammotion ; l'intégration se reconnectera automatiquement d'ici quelques minutes."
+    },
+    "cloud_login_retrying": {
+      "title": "Cloud Mammotion indisponible",
+      "description": "Home Assistant n'a pas pu se connecter au cloud Mammotion pour {account} ({error}). Les appareils connectés en Bluetooth continuent de fonctionner. La connexion est retentée toutes les 15 minutes, jusqu'à 5 fois, avec la session enregistrée."
+    },
+    "cloud_login_failed": {
+      "title": "Cloud Mammotion non connecté",
+      "description": "Home Assistant n'a pas pu se connecter au cloud Mammotion pour {account} ({error}) et a cessé de réessayer. Les appareils connectés en Bluetooth continuent de fonctionner. Rechargez l'intégration Mammotion une fois le service Mammotion de nouveau accessible."
     }
   }
 }

@@ -164,6 +164,74 @@ async def test_a_device_already_in_the_registry_gets_its_mac_recorded(
     assert entry.data[CONF_BLE_DEVICES] == {_MOWER: _MOWER_MAC.lower()}
 
 
+async def _confirm_discovery(hass: HomeAssistant) -> dict:
+    """Discover an unknown mower and confirm its card; returns the step shown next."""
+    result = await _discover(hass, _MOWER, _MOWER_MAC)
+    assert result["step_id"] == "bluetooth_confirm"
+    return await hass.config_entries.flow.async_configure(result["flow_id"], {})
+
+
+@pytest.mark.usefixtures("enable_bluetooth")
+async def test_confirming_a_discovery_offers_the_optional_login_then_finishes_ble_only(
+    hass: HomeAssistant,
+) -> None:
+    """The confirm used to be handed to the wifi step as a blank login, so no form appeared."""
+    result = await _confirm_discovery(hass)
+
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "wifi"
+    assert not result["errors"]
+
+    with patch("custom_components.mammotion.async_setup_entry", return_value=True):
+        result = await hass.config_entries.flow.async_configure(result["flow_id"], {})
+
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert result["data"][CONF_HAS_CLOUD_ACCOUNT] is False
+    assert result["data"][CONF_BLE_DEVICES] == {_MOWER: _MOWER_MAC.lower()}
+
+
+@pytest.mark.usefixtures("enable_bluetooth")
+async def test_credentials_after_a_discovery_create_the_account_entry_with_the_mower(
+    hass: HomeAssistant,
+) -> None:
+    """One entry, the account's, holds the discovered mower."""
+    result = await _confirm_discovery(hass)
+
+    with (
+        patch(
+            "custom_components.mammotion.config_flow.MammotionClient",
+            return_value=_cloud_client(),
+        ),
+        patch("custom_components.mammotion.async_setup_entry", return_value=True),
+    ):
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], {CONF_ACCOUNTNAME: _ACCOUNT, CONF_PASSWORD: "pw"}
+        )
+
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert result["data"][CONF_HAS_CLOUD_ACCOUNT] is True
+    assert result["data"][CONF_BLE_DEVICES] == {_MOWER: _MOWER_MAC.lower()}
+    entries = hass.config_entries.async_entries(DOMAIN)
+    assert [entry.unique_id for entry in entries] == [_ACCOUNT]
+
+
+@pytest.mark.usefixtures("enable_bluetooth")
+async def test_a_legacy_entry_keyed_by_the_raw_address_owns_its_mower(
+    hass: HomeAssistant,
+) -> None:
+    """Old entries stored HA's uppercase address; the lowercase comparison missed them."""
+    MockConfigEntry(
+        domain=DOMAIN,
+        unique_id=_MOWER_MAC,
+        data={CONF_ACCOUNTNAME: _ACCOUNT, CONF_HAS_CLOUD_ACCOUNT: True},
+    ).add_to_hass(hass)
+
+    result = await _discover(hass, _MOWER, _MOWER_MAC)
+
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "already_configured"
+
+
 @pytest.mark.usefixtures("enable_bluetooth")
 async def test_an_unknown_device_is_not_forced_into_one_of_several_entries(
     hass: HomeAssistant,
@@ -295,9 +363,7 @@ async def test_removing_the_account_strips_every_cloud_key(
     )
     entry.add_to_hass(hass)
 
-    result = await _reconfigure(
-        hass, entry, {CONF_ACCOUNTNAME: "", CONF_PASSWORD: ""}, _cloud_client()
-    )
+    result = await _reconfigure(hass, entry, {"remove_account": True}, _cloud_client())
 
     assert result["type"] is FlowResultType.ABORT
     assert result["reason"] == "reconfigure_successful"
@@ -331,9 +397,7 @@ async def test_removing_the_account_of_an_entry_with_no_ble_is_refused(
     )
     entry.add_to_hass(hass)
 
-    result = await _reconfigure(
-        hass, entry, {CONF_ACCOUNTNAME: "", CONF_PASSWORD: ""}, _cloud_client()
-    )
+    result = await _reconfigure(hass, entry, {"remove_account": True}, _cloud_client())
 
     assert result["type"] is FlowResultType.FORM
     assert result["errors"] == {"base": "no_account_no_ble"}

@@ -17,7 +17,8 @@
     "error": {
       "login_failed": "Inloggen mislukt. Controleer het e-mailadres en wachtwoord van je account en probeer het opnieuw.",
       "cannot_connect": "Kan geen verbinding maken met de Mammotion-cloud. Controleer uw inloggegevens en netwerk en probeer het opnieuw.",
-      "no_account_no_ble": "Geen accountgegevens ingevoerd en geen Bluetooth-apparaat gevonden. Voer je Mammotion-accountgegevens in of stel een Bluetooth-apparaat in."
+      "no_account_no_ble": "Geen accountgegevens ingevoerd en geen Bluetooth-apparaat gevonden. Voer je Mammotion-accountgegevens in of stel een Bluetooth-apparaat in.",
+      "credentials_required": "Voer zowel je Mammotion-account als het wachtwoord in."
     },
     "flow_title": "{name}",
     "step": {
@@ -27,7 +28,8 @@
       "reconfigure": {
         "data": {
           "account_name": "Mammotion e-mailadres of accountnummer",
-          "password": "Mammotion account wachtwoord"
+          "password": "Mammotion account wachtwoord",
+          "remove_account": "Account verwijderen en alleen Bluetooth gebruiken"
         }
       },
       "user": {
@@ -1563,6 +1565,9 @@
     "command_unconfirmed": {
       "message": "De maaier heeft de opdracht niet bevestigd. Mogelijk is deze toch uitgevoerd."
     },
+    "account_in_use": {
+      "message": "Je Mammotion-account is actief in een andere sessie (de Mammotion-app). Meld je af in de app, of wacht, en probeer het opnieuw."
+    },
     "api_limit_exceeded": {
       "message": "De API-limiet is overschreden."
     },
@@ -1689,6 +1694,9 @@
     "remote_drive_needs_cloud": {
       "message": "Besturing op afstand via cloud heeft een werkende cloudverbinding met de maaier nodig. Gebruik via Bluetooth de duwknoppen."
     },
+    "remote_drive_start_failed": {
+      "message": "Besturing op afstand kon niet worden gestart: de maaier was via de cloud niet bereikbaar."
+    },
     "remote_drive_already_running": {
       "message": "Besturing op afstand via cloud is al actief. Schakel deze eerst uit voordat je opnieuw start."
     },
@@ -1754,6 +1762,14 @@
     "account_in_use": {
       "title": "Mammotion-account in gebruik door een andere sessie",
       "description": "Uw Mammotion-account {account} is al actief in een andere sessie, dus de cloudverbinding is gepauzeerd. Log uit de Mammotion-app; de integratie maakt binnen enkele minuten automatisch opnieuw verbinding."
+    },
+    "cloud_login_retrying": {
+      "title": "Mammotion-cloud niet beschikbaar",
+      "description": "Home Assistant kon niet inloggen bij de Mammotion-cloud voor {account} ({error}). Apparaten die via Bluetooth verbonden zijn, blijven werken. Het inloggen wordt elke 15 minuten opnieuw geprobeerd, maximaal 5 keer, met de opgeslagen sessie."
+    },
+    "cloud_login_failed": {
+      "title": "Mammotion-cloud niet verbonden",
+      "description": "Home Assistant kon niet inloggen bij de Mammotion-cloud voor {account} ({error}) en probeert het niet meer. Apparaten die via Bluetooth verbonden zijn, blijven werken. Herlaad de Mammotion-integratie zodra de Mammotion-dienst weer bereikbaar is."
     }
   }
 }

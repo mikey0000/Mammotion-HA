@@ -17,7 +17,8 @@
     "error": {
       "login_failed": "Login failed. Check your account email and password, then try again.",
       "cannot_connect": "Unable to connect to the Mammotion cloud. Check your credentials and network, then try again.",
-      "no_account_no_ble": "No account details entered and no Bluetooth device found. Enter your Mammotion account credentials, or set up a Bluetooth device."
+      "no_account_no_ble": "No account details entered and no Bluetooth device found. Enter your Mammotion account credentials, or set up a Bluetooth device.",
+      "credentials_required": "Enter both your Mammotion account and its password."
     },
     "flow_title": "{name}",
     "step": {
@@ -27,7 +28,8 @@
       "reconfigure": {
         "data": {
           "account_name": "Mammotion email or account number",
-          "password": "Mammotion account password"
+          "password": "Mammotion account password",
+          "remove_account": "Remove the account and use Bluetooth only"
         }
       },
       "user": {
@@ -1563,6 +1565,9 @@
     "command_unconfirmed": {
       "message": "The mower did not confirm the command. It may still have been carried out."
     },
+    "account_in_use": {
+      "message": "Your Mammotion account is active in another session (the Mammotion app). Sign out of the app, or wait, and try again."
+    },
     "api_limit_exceeded": {
       "message": "API rate limit has been exceeded."
     },
@@ -1689,6 +1694,9 @@
     "remote_drive_needs_cloud": {
       "message": "Cloud remote drive needs a working cloud connection to the mower. Over Bluetooth, use the nudge buttons instead."
     },
+    "remote_drive_start_failed": {
+      "message": "Remote drive could not be started: the mower could not be reached through the cloud."
+    },
     "remote_drive_already_running": {
       "message": "Cloud remote drive is already running. Turn it off before starting it again."
     },
@@ -1754,6 +1762,14 @@
     "account_in_use": {
       "title": "Mammotion account in use by another session",
       "description": "Your Mammotion account {account} is already active in another session, so the cloud connection is paused. Sign out of the Mammotion app; the integration reconnects automatically within a few minutes."
+    },
+    "cloud_login_retrying": {
+      "title": "Mammotion cloud unavailable",
+      "description": "Home Assistant could not sign in to the Mammotion cloud for {account} ({error}). Devices connected over Bluetooth keep working. The sign-in is retried every 15 minutes, up to 5 times, using the saved session."
+    },
+    "cloud_login_failed": {
+      "title": "Mammotion cloud not connected",
+      "description": "Home Assistant could not sign in to the Mammotion cloud for {account} ({error}) and has stopped retrying. Devices connected over Bluetooth keep working. Reload the Mammotion integration once the Mammotion service is reachable again."
     }
   }
 }

@@ -17,7 +17,8 @@
     "error": {
       "login_failed": "Přihlášení se nezdařilo. Zkontrolujte e-mail a heslo svého účtu a zkuste to znovu.",
       "cannot_connect": "Nelze se připojit ke cloudu Mammotion. Zkontrolujte přihlašovací údaje a síť a zkuste to znovu.",
-      "no_account_no_ble": "Nebyly zadány údaje účtu a nebylo nalezeno žádné zařízení Bluetooth. Zadejte přihlašovací údaje k účtu Mammotion nebo nastavte zařízení Bluetooth."
+      "no_account_no_ble": "Nebyly zadány údaje účtu a nebylo nalezeno žádné zařízení Bluetooth. Zadejte přihlašovací údaje k účtu Mammotion nebo nastavte zařízení Bluetooth.",
+      "credentials_required": "Zadejte účet Mammotion i jeho heslo."
     },
     "flow_title": "{name}",
     "step": {
@@ -27,7 +28,8 @@
       "reconfigure": {
         "data": {
           "account_name": "Mammotion e-mail nebo číslo účtu",
-          "password": "Mammotion heslo k účtu"
+          "password": "Mammotion heslo k účtu",
+          "remove_account": "Odebrat účet a používat pouze Bluetooth"
         }
       },
       "user": {
@@ -1563,6 +1565,9 @@
     "command_unconfirmed": {
       "message": "Sekačka příkaz nepotvrdila. Mohl být přesto proveden."
     },
+    "account_in_use": {
+      "message": "Váš účet Mammotion je aktivní v jiné relaci (aplikace Mammotion). Odhlaste se z aplikace nebo počkejte a zkuste to znovu."
+    },
     "api_limit_exceeded": {
       "message": "Byl překročen limit požadavků API."
     },
@@ -1689,6 +1694,9 @@
     "remote_drive_needs_cloud": {
       "message": "Dálkové řízení přes cloud potřebuje funkční cloudové připojení k sekačce. Přes Bluetooth místo toho použijte tlačítka posunu."
     },
+    "remote_drive_start_failed": {
+      "message": "Dálkové řízení se nepodařilo spustit: sekačka není přes cloud dosažitelná."
+    },
     "remote_drive_already_running": {
       "message": "Dálkové řízení přes cloud už běží. Před novým spuštěním ho nejprve vypněte."
     },
@@ -1754,6 +1762,14 @@
     "account_in_use": {
       "title": "Účet Mammotion je používán jinou relací",
       "description": "Váš účet Mammotion {account} je již aktivní v jiné relaci, proto je cloudové připojení pozastaveno. Odhlaste se z aplikace Mammotion; integrace se během několika minut automaticky znovu připojí."
+    },
+    "cloud_login_retrying": {
+      "title": "Cloud Mammotion není dostupný",
+      "description": "Home Assistant se nemohl přihlásit ke cloudu Mammotion pro účet {account} ({error}). Zařízení připojená přes Bluetooth fungují dál. Přihlášení se opakuje každých 15 minut, nejvýše 5krát, pomocí uložené relace."
+    },
+    "cloud_login_failed": {
+      "title": "Cloud Mammotion není připojen",
+      "description": "Home Assistant se nemohl přihlásit ke cloudu Mammotion pro účet {account} ({error}) a přestal to zkoušet. Zařízení připojená přes Bluetooth fungují dál. Jakmile bude služba Mammotion opět dostupná, znovu načtěte integraci Mammotion."
     }
   }
 }

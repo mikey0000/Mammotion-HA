@@ -17,7 +17,8 @@
     "error": {
       "login_failed": "Prijava ni uspela. Preverite e-poštni naslov in geslo računa ter poskusite znova.",
       "cannot_connect": "Povezava z oblakom Mammotion ni mogoča. Preverite poverilnice in omrežje ter poskusite znova.",
-      "no_account_no_ble": "Podatki računa niso bili vneseni in naprava Bluetooth ni bila najdena. Vnesite poverilnice računa Mammotion ali nastavite napravo Bluetooth."
+      "no_account_no_ble": "Podatki računa niso bili vneseni in naprava Bluetooth ni bila najdena. Vnesite poverilnice računa Mammotion ali nastavite napravo Bluetooth.",
+      "credentials_required": "Vnesite tako račun Mammotion kot njegovo geslo."
     },
     "flow_title": "{name}",
     "step": {
@@ -27,7 +28,8 @@
       "reconfigure": {
         "data": {
           "account_name": "E-poštni naslov Mammotion ali številka računa",
-          "password": "Geslo Mammotion računa"
+          "password": "Geslo Mammotion računa",
+          "remove_account": "Odstrani račun in uporabljaj samo Bluetooth"
         }
       },
       "user": {
@@ -1563,6 +1565,9 @@
     "command_unconfirmed": {
       "message": "Kosilnica ukaza ni potrdila. Morda je bil kljub temu izveden."
     },
+    "account_in_use": {
+      "message": "Vaš račun Mammotion je aktiven v drugi seji (aplikacija Mammotion). Odjavite se iz aplikacije ali počakajte in poskusite znova."
+    },
     "api_limit_exceeded": {
       "message": "Prekočena je bila omejitev API-ja."
     },
@@ -1689,6 +1694,9 @@
     "remote_drive_needs_cloud": {
       "message": "Daljinska vožnja prek oblaka potrebuje delujočo povezavo kosilnice z oblakom. Prek Bluetootha namesto tega uporabite gumbe za premik."
     },
+    "remote_drive_start_failed": {
+      "message": "Daljinske vožnje ni bilo mogoče zagnati: kosilnica prek oblaka ni dosegljiva."
+    },
     "remote_drive_already_running": {
       "message": "Daljinska vožnja prek oblaka že teče. Pred ponovnim zagonom jo izklopite."
     },
@@ -1754,6 +1762,14 @@
     "account_in_use": {
       "title": "Račun Mammotion uporablja druga seja",
       "description": "Vaš račun Mammotion {account} je že aktiven v drugi seji, zato je povezava z oblakom začasno ustavljena. Odjavite se iz aplikacije Mammotion; integracija se bo samodejno znova povezala v nekaj minutah."
+    },
+    "cloud_login_retrying": {
+      "title": "Oblak Mammotion ni na voljo",
+      "description": "Home Assistant se ni mogel prijaviti v oblak Mammotion za račun {account} ({error}). Naprave, povezane prek Bluetootha, še naprej delujejo. Prijava se ponovi vsakih 15 minut, največ 5-krat, z uporabo shranjene seje."
+    },
+    "cloud_login_failed": {
+      "title": "Oblak Mammotion ni povezan",
+      "description": "Home Assistant se ni mogel prijaviti v oblak Mammotion za račun {account} ({error}) in je prenehal s ponovnimi poskusi. Naprave, povezane prek Bluetootha, še naprej delujejo. Ko bo storitev Mammotion spet dosegljiva, znova naložite integracijo Mammotion."
     }
   }
 }

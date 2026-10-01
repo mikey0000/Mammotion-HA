@@ -17,7 +17,8 @@
     "error": {
       "login_failed": "Anmeldung fehlgeschlagen. Überprüfen Sie die E-Mail-Adresse und das Passwort Ihres Kontos und versuchen Sie es erneut.",
       "cannot_connect": "Es konnte keine Verbindung zur Mammotion-Cloud hergestellt werden. Überprüfen Sie Ihre Anmeldedaten sowie Netzwerkverbindung und versuchen Sie es erneut.",
-      "no_account_no_ble": "Es wurden keine Kontodaten eingegeben und kein Bluetooth-Gerät gefunden. Geben Sie Ihre Mammotion-Anmeldedaten ein oder richten Sie ein Bluetooth-Gerät ein."
+      "no_account_no_ble": "Es wurden keine Kontodaten eingegeben und kein Bluetooth-Gerät gefunden. Geben Sie Ihre Mammotion-Anmeldedaten ein oder richten Sie ein Bluetooth-Gerät ein.",
+      "credentials_required": "Geben Sie sowohl Ihr Mammotion-Konto als auch das zugehörige Kennwort ein."
     },
     "flow_title": "{name}",
     "step": {
@@ -27,7 +28,8 @@
       "reconfigure": {
         "data": {
           "account_name": "Mammotion E-Mail oder Account Nummer",
-          "password": "Mammotion Kennwort"
+          "password": "Mammotion Kennwort",
+          "remove_account": "Konto entfernen und nur Bluetooth verwenden"
         }
       },
       "user": {
@@ -1563,6 +1565,9 @@
     "command_unconfirmed": {
       "message": "Der Mähroboter hat den Befehl nicht bestätigt. Er wurde möglicherweise trotzdem ausgeführt."
     },
+    "account_in_use": {
+      "message": "Ihr Mammotion-Konto ist in einer anderen Sitzung aktiv (der Mammotion-App). Melden Sie sich in der App ab oder warten Sie und versuchen Sie es erneut."
+    },
     "api_limit_exceeded": {
       "message": "Das API-Anfragelimit wurde überschritten."
     },
@@ -1689,6 +1694,9 @@
     "remote_drive_needs_cloud": {
       "message": "Die Cloud-Fernsteuerung braucht eine funktionierende Cloud-Verbindung zum Mähroboter. Über Bluetooth stattdessen die Schubs-Tasten verwenden."
     },
+    "remote_drive_start_failed": {
+      "message": "Die Fernsteuerung konnte nicht gestartet werden: Der Mähroboter war über die Cloud nicht erreichbar."
+    },
     "remote_drive_already_running": {
       "message": "Die Cloud-Fernsteuerung läuft bereits. Vor einem Neustart zuerst ausschalten."
     },
@@ -1754,6 +1762,14 @@
     "account_in_use": {
       "title": "Mammotion-Konto wird von einer anderen Sitzung verwendet",
       "description": "Ihr Mammotion-Konto {account} ist bereits in einer anderen Sitzung aktiv, daher ist die Cloud-Verbindung pausiert. Melden Sie sich in der Mammotion-App ab; die Integration verbindet sich innerhalb weniger Minuten automatisch erneut."
+    },
+    "cloud_login_retrying": {
+      "title": "Mammotion-Cloud nicht verfügbar",
+      "description": "Home Assistant konnte sich für {account} nicht bei der Mammotion-Cloud anmelden ({error}). Über Bluetooth verbundene Geräte funktionieren weiter. Die Anmeldung wird alle 15 Minuten bis zu 5-mal mit der gespeicherten Sitzung erneut versucht."
+    },
+    "cloud_login_failed": {
+      "title": "Mammotion-Cloud nicht verbunden",
+      "description": "Home Assistant konnte sich für {account} nicht bei der Mammotion-Cloud anmelden ({error}) und versucht es nicht mehr. Über Bluetooth verbundene Geräte funktionieren weiter. Laden Sie die Mammotion-Integration neu, sobald der Mammotion-Dienst wieder erreichbar ist."
     }
   }
 }

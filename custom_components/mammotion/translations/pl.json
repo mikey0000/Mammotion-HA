@@ -17,7 +17,8 @@
     "error": {
       "login_failed": "Logowanie nie powiodło się. Sprawdź adres e-mail i hasło konta, a następnie spróbuj ponownie.",
       "cannot_connect": "Nie można połączyć się z chmurą Mammotion. Sprawdź dane logowania i sieć, a następnie spróbuj ponownie.",
-      "no_account_no_ble": "Nie wprowadzono danych konta i nie znaleziono urządzenia Bluetooth. Wprowadź dane logowania do konta Mammotion lub skonfiguruj urządzenie Bluetooth."
+      "no_account_no_ble": "Nie wprowadzono danych konta i nie znaleziono urządzenia Bluetooth. Wprowadź dane logowania do konta Mammotion lub skonfiguruj urządzenie Bluetooth.",
+      "credentials_required": "Wprowadź zarówno konto Mammotion, jak i jego hasło."
     },
     "flow_title": "{name}",
     "step": {
@@ -27,7 +28,8 @@
       "reconfigure": {
         "data": {
           "account_name": "E-mail lub numer konta Mammotion",
-          "password": "Hasło do konta Mammotion"
+          "password": "Hasło do konta Mammotion",
+          "remove_account": "Usuń konto i używaj tylko Bluetooth"
         }
       },
       "user": {
@@ -1563,6 +1565,9 @@
     "command_unconfirmed": {
       "message": "Kosiarka nie potwierdziła polecenia. Mogło ono jednak zostać wykonane."
     },
+    "account_in_use": {
+      "message": "Twoje konto Mammotion jest aktywne w innej sesji (aplikacja Mammotion). Wyloguj się z aplikacji lub poczekaj i spróbuj ponownie."
+    },
     "api_limit_exceeded": {
       "message": "Przekroczono limit API."
     },
@@ -1689,6 +1694,9 @@
     "remote_drive_needs_cloud": {
       "message": "Zdalne sterowanie przez chmurę wymaga działającego połączenia kosiarki z chmurą. Przez Bluetooth użyj zamiast tego przycisków przesuwania."
     },
+    "remote_drive_start_failed": {
+      "message": "Nie udało się uruchomić zdalnego sterowania: kosiarka jest nieosiągalna przez chmurę."
+    },
     "remote_drive_already_running": {
       "message": "Zdalne sterowanie przez chmurę już działa. Wyłącz je przed ponownym uruchomieniem."
     },
@@ -1754,6 +1762,14 @@
     "account_in_use": {
       "title": "Konto Mammotion jest używane w innej sesji",
       "description": "Twoje konto Mammotion {account} jest już aktywne w innej sesji, więc połączenie z chmurą jest wstrzymane. Wyloguj się z aplikacji Mammotion; integracja automatycznie połączy się ponownie w ciągu kilku minut."
+    },
+    "cloud_login_retrying": {
+      "title": "Chmura Mammotion niedostępna",
+      "description": "Home Assistant nie mógł zalogować się do chmury Mammotion dla konta {account} ({error}). Urządzenia połączone przez Bluetooth nadal działają. Logowanie jest ponawiane co 15 minut, maksymalnie 5 razy, przy użyciu zapisanej sesji."
+    },
+    "cloud_login_failed": {
+      "title": "Chmura Mammotion nie jest połączona",
+      "description": "Home Assistant nie mógł zalogować się do chmury Mammotion dla konta {account} ({error}) i przestał ponawiać próby. Urządzenia połączone przez Bluetooth nadal działają. Załaduj ponownie integrację Mammotion, gdy usługa Mammotion będzie znów dostępna."
     }
   }
 }

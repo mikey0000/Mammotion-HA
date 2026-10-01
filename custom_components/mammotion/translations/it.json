@@ -17,7 +17,8 @@
     "error": {
       "login_failed": "Accesso non riuscito. Controlla l'email e la password del tuo account, quindi riprova.",
       "cannot_connect": "Impossibile connettersi al cloud Mammotion. Verifica le credenziali e la rete, quindi riprova.",
-      "no_account_no_ble": "Nessun dato dell'account inserito e nessun dispositivo Bluetooth trovato. Inserisci le credenziali del tuo account Mammotion oppure configura un dispositivo Bluetooth."
+      "no_account_no_ble": "Nessun dato dell'account inserito e nessun dispositivo Bluetooth trovato. Inserisci le credenziali del tuo account Mammotion oppure configura un dispositivo Bluetooth.",
+      "credentials_required": "Inserisci sia l'account Mammotion sia la relativa password."
     },
     "flow_title": "{name}",
     "step": {
@@ -27,7 +28,8 @@
       "reconfigure": {
         "data": {
           "account_name": "Email o numero di conto Mammotion",
-          "password": "Password dell'account Mammotion"
+          "password": "Password dell'account Mammotion",
+          "remove_account": "Rimuovi l'account e usa solo il Bluetooth"
         }
       },
       "user": {
@@ -1563,6 +1565,9 @@
     "command_unconfirmed": {
       "message": "Il rasaerba non ha confermato il comando. Potrebbe essere stato comunque eseguito."
     },
+    "account_in_use": {
+      "message": "Il tuo account Mammotion è attivo in un'altra sessione (l'app Mammotion). Esci dall'app, oppure attendi, e riprova."
+    },
     "api_limit_exceeded": {
       "message": "Il limite di frequenza dell'API è stato superato."
     },
@@ -1689,6 +1694,9 @@
     "remote_drive_needs_cloud": {
       "message": "La guida remota via cloud richiede una connessione cloud funzionante con il tosaerba. Tramite Bluetooth usa invece i pulsanti di spostamento."
     },
+    "remote_drive_start_failed": {
+      "message": "Impossibile avviare la guida remota: il tosaerba non è raggiungibile tramite il cloud."
+    },
     "remote_drive_already_running": {
       "message": "La guida remota via cloud è già attiva. Disattivala prima di riavviarla."
     },
@@ -1754,6 +1762,14 @@
     "account_in_use": {
       "title": "Account Mammotion in uso in un'altra sessione",
       "description": "Il tuo account Mammotion {account} è già attivo in un'altra sessione, quindi la connessione cloud è sospesa. Disconnettiti dall'app Mammotion; l'integrazione si riconnetterà automaticamente entro pochi minuti."
+    },
+    "cloud_login_retrying": {
+      "title": "Cloud Mammotion non disponibile",
+      "description": "Home Assistant non è riuscito ad accedere al cloud Mammotion per {account} ({error}). I dispositivi collegati tramite Bluetooth continuano a funzionare. L'accesso viene ritentato ogni 15 minuti, fino a 5 volte, usando la sessione salvata."
+    },
+    "cloud_login_failed": {
+      "title": "Cloud Mammotion non connesso",
+      "description": "Home Assistant non è riuscito ad accedere al cloud Mammotion per {account} ({error}) e ha smesso di riprovare. I dispositivi collegati tramite Bluetooth continuano a funzionare. Ricarica l'integrazione Mammotion quando il servizio Mammotion sarà di nuovo raggiungibile."
     }
   }
 }
