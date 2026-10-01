@@ -115,6 +115,27 @@ async def test_network_identifiers_are_redacted(hass: HomeAssistant) -> None:
     assert "34:b7:da:6f:7f:ee" not in str(result)
 
 
+async def test_the_sim_and_modem_identifiers_are_redacted(hass: HomeAssistant) -> None:
+    """A 4G mower's IMEI, IMSI and ICCID identify the modem and the SIM, not the fault."""
+    mower = MowingDevice(name=_MOWER)
+    mnet = mower.report_data.dev.mnet_info
+    mnet.model, mnet.imei, mnet.imsi, mnet.iccid = "EC200A", "863819075685874", "232010867745532", "89430103525300305328"
+    mnet.sim, mnet.link_type, mnet.rssi, mnet.operator = "SIM_OK", "MNET_LINK_4G", -67, "24008"
+    entry = _entry()
+    entry.runtime_data.mowers = [_record(_MOWER, mower, reporting=True)]
+
+    result = await async_get_config_entry_diagnostics(hass, entry)
+
+    dumped = result[_MOWER]["report_data"]["dev"]["mnet_info"]
+    for key in ("imei", "imsi", "iccid"):
+        assert dumped[key] == REDACTED, key
+    assert (dumped["model"], dumped["sim"], dumped["link_type"], dumped["rssi"], dumped["operator"]) == (
+        "EC200A", "SIM_OK", "MNET_LINK_4G", -67, "24008"
+    )
+    for secret in ("863819075685874", "232010867745532", "89430103525300305328"):
+        assert secret not in str(result)
+
+
 async def test_what_makes_a_dump_readable_survives(hass: HomeAssistant) -> None:
     """Redaction has to stop short of the fields a maintainer reads it for.
 
