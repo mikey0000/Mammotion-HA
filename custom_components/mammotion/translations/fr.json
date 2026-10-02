@@ -262,6 +262,17 @@
           "UNKNOWN": "Inconnu"
         }
       },
+      "task_area_status_short": {
+        "name": "Tâche {name}",
+        "state": {
+          "NOT_STARTED": "Non démarré",
+          "WAITING": "En attente",
+          "MOWING": "En cours de tonte",
+          "COMPLETE": "Terminé",
+          "ABORTED": "Abandonné",
+          "UNKNOWN": "Inconnu"
+        }
+      },
       "maintenance_distance": {
         "name": "Kilométrage total"
       },
@@ -431,7 +442,16 @@
         }
       },
       "running_task": {
-        "name": "Tâche {name}",
+        "name": "{name}",
+        "state": {
+          "mowing": "Tonte",
+          "paused": "En pause",
+          "returning": "Retour",
+          "charging_pause": "En charge, reprendra ensuite"
+        }
+      },
+      "running_task_unnamed": {
+        "name": "Tâche {n}",
         "state": {
           "mowing": "Tonte",
           "paused": "En pause",
@@ -531,6 +551,9 @@
     "switch": {
       "area": {
         "name": "Zone {name}"
+      },
+      "area_plain": {
+        "name": "{name}"
       },
       "blade_status": {
         "name": "Activation des lames"

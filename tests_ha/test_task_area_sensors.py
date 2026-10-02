@@ -18,18 +18,16 @@ from area_rename_support import (
     DEVICE_AREA_NAME,
     ECHOED_NAME,
     AreaRenameRig,
+    add_synced_sensors,
     make_area_rename_rig,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
-from homeassistant.helpers.entity import Entity
 from pymammotion.data.model.device import MowingDevice
 from pymammotion.data.model.enums import TaskAreaStatus
 from pymammotion.data.model.hash_list import AreaHashNameList, FrameList
 from pymammotion.utility.constant import WorkMode
-from pytest_homeassistant_custom_component.common import MockEntityPlatform
 
-from custom_components.mammotion.const import DOMAIN
 from custom_components.mammotion.coordinator import MammotionReportUpdateCoordinator
 from custom_components.mammotion.sensor import (
     async_add_task_area_entities,
@@ -227,18 +225,35 @@ async def test_a_previous_sessions_zone_sensor_is_removed_at_setup(
     assert _exists("Luba-OTHER_1_task_area")
 
 
-@pytest.fixture
-async def renamed_zone_rig(hass: HomeAssistant) -> AsyncIterator[AreaRenameRig]:
-    """Build a mower mowing the zone the user renamed; shut its coordinator down after."""
+async def _mowing_zone_rig(hass: HomeAssistant, area_name: str) -> AreaRenameRig:
+    """Build a mower mowing the one zone, which the device calls *area_name*."""
     device = MowingDevice()
     device.map.area = {AREA_HASH: FrameList()}
-    device.map.area_name = [AreaHashNameList(name=DEVICE_AREA_NAME, hash=AREA_HASH)]
+    device.map.area_name = [AreaHashNameList(name=area_name, hash=AREA_HASH)]
     device.report_data.dev.sys_status = WorkMode.MODE_WORKING.value
     device.events.work_tasks_event.hash_area_map = {AREA_HASH: TaskAreaStatus.MOWING}
     device.events.work_tasks_event.ids = [AREA_HASH]
-    rig = await make_area_rename_rig(hass, device)
+    return await make_area_rename_rig(hass, device)
+
+
+@pytest.fixture
+async def renamed_zone_rig(hass: HomeAssistant) -> AsyncIterator[AreaRenameRig]:
+    """Build a mower mowing the zone the user renamed; shut its coordinator down after."""
+    rig = await _mowing_zone_rig(hass, DEVICE_AREA_NAME)
     yield rig
     await rig.coordinator.async_shutdown()
+
+
+@pytest.fixture
+async def unnamed_zone_rig(hass: HomeAssistant) -> AsyncIterator[AreaRenameRig]:
+    """Build a mower mowing a zone the device never named."""
+    rig = await _mowing_zone_rig(hass, "")
+    yield rig
+    await rig.coordinator.async_shutdown()
+
+
+def _zone_sync(rig: AreaRenameRig) -> partial[None]:
+    return partial(async_add_task_area_entities, rig.coordinator, set(), {})
 
 
 @pytest.mark.regression
@@ -251,18 +266,12 @@ async def test_a_zone_sensor_follows_its_area_when_the_mower_renames_it(
 
     ``update_name`` wrote ``_attr_translation_placeholders``, which clears only the
     cached placeholders; Home Assistant kept rendering the cached ``Entity.name``,
-    so the registry's ``original_name`` stayed on the area's old name.
+    so the registry's ``original_name`` stayed on the area's old name.  The echoed
+    name already starts with "Area", so only the "Task" word is added.
     """
-    coordinator = renamed_zone_rig.coordinator
-    platform = MockEntityPlatform(hass, domain="sensor", platform_name=DOMAIN)
-    platform.config_entry = renamed_zone_rig.entry
-    await platform.platform_data.async_load_translations()
-    added: list[Entity] = []
-    sync = partial(async_add_task_area_entities, coordinator, set(), {}, added.extend)
-    sync()
-    await platform.async_add_entities(added)
-    coordinator.async_add_listener(sync)
-    (entity,) = added
+    (entity,) = await add_synced_sensors(
+        hass, renamed_zone_rig, _zone_sync(renamed_zone_rig)
+    )
     assert entity_registry.async_get(entity.entity_id).original_name == (
         f"Task area {DEVICE_AREA_NAME}"
     ), "premise: the sensor starts on the area's old name"
@@ -271,7 +280,52 @@ async def test_a_zone_sensor_follows_its_area_when_the_mower_renames_it(
     await hass.async_block_till_done()
 
     assert entity_registry.async_get(entity.entity_id).original_name == (
-        f"Task area {ECHOED_NAME}"
+        f"Task {ECHOED_NAME}"
+    )
+
+
+@pytest.mark.regression
+@pytest.mark.parametrize(
+    ("language", "expected"),
+    [
+        pytest.param("en", "Task Area 1", id="en"),
+        pytest.param("de", "Aufgabe Area 1", id="de"),
+    ],
+)
+async def test_an_unnamed_zone_sensor_does_not_repeat_area(
+    hass: HomeAssistant,
+    entity_registry: er.EntityRegistry,
+    unnamed_zone_rig: AreaRenameRig,
+    language: str,
+    expected: str,
+) -> None:
+    """It read "Task area Area 1", prefixing pymammotion's own "Area 1" label."""
+    hass.config.language = language
+
+    (entity,) = await add_synced_sensors(
+        hass, unnamed_zone_rig, _zone_sync(unnamed_zone_rig)
+    )
+
+    assert entity_registry.async_get(entity.entity_id).original_name == expected
+
+
+async def test_a_zone_sensor_named_mid_job_regains_the_full_prefix(
+    hass: HomeAssistant,
+    entity_registry: er.EntityRegistry,
+    unnamed_zone_rig: AreaRenameRig,
+) -> None:
+    """The device naming the zone swaps "Task Area 1" for "Task area Orchard"."""
+    (entity,) = await add_synced_sensors(
+        hass, unnamed_zone_rig, _zone_sync(unnamed_zone_rig)
+    )
+    coordinator = unnamed_zone_rig.coordinator
+
+    coordinator.data.map.area_name = [AreaHashNameList(name="Orchard", hash=AREA_HASH)]
+    coordinator.async_update_listeners()
+    await hass.async_block_till_done()
+
+    assert entity_registry.async_get(entity.entity_id).original_name == (
+        "Task area Orchard"
     )
 
 
@@ -287,6 +341,28 @@ def test_every_locale_translates_every_zone_status(path: Path) -> None:
     ]
     assert "{name}" in entry["name"]
     assert set(entry["state"]) == {status.name for status in TaskAreaStatus}
+
+
+@pytest.mark.parametrize(
+    "path",
+    [_ROOT / "strings.json", *sorted((_ROOT / "translations").glob("*.json"))],
+    ids=lambda path: path.name,
+)
+def test_every_locale_has_the_short_zone_name(path: Path) -> None:
+    """The variant for "Area …" names carries the name and the same statuses."""
+    sensors = json.loads(path.read_text(encoding="utf-8"))["entity"]["sensor"]
+    entry = sensors["task_area_status_short"]
+    assert entry["name"].replace("{name}", "{n}") == (
+        sensors["running_task_unnamed"]["name"]
+    ), "the short form is the locale's task word, without the area word"
+    assert entry["state"] == sensors["task_area_status"]["state"]
+
+
+def test_the_short_zone_name_shows_the_same_icons() -> None:
+    """The frontend picks state icons by translation key, so both keys need them."""
+    icons = json.loads((_ROOT / "icons.json").read_text(encoding="utf-8"))
+    sensors = icons["entity"]["sensor"]
+    assert sensors["task_area_status_short"] == sensors["task_area_status"]
 
 
 def test_every_zone_status_has_an_icon() -> None:

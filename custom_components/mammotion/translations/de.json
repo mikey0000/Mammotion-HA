@@ -262,6 +262,17 @@
           "UNKNOWN": "Unbekannt"
         }
       },
+      "task_area_status_short": {
+        "name": "Aufgabe {name}",
+        "state": {
+          "NOT_STARTED": "Nicht gestartet",
+          "WAITING": "Warten",
+          "MOWING": "Mähen",
+          "COMPLETE": "Abgeschlossen",
+          "ABORTED": "Abgebrochen",
+          "UNKNOWN": "Unbekannt"
+        }
+      },
       "maintenance_distance": {
         "name": "Gesamtfahrleistung"
       },
@@ -431,7 +442,16 @@
         }
       },
       "running_task": {
-        "name": "Aufgabe {name}",
+        "name": "{name}",
+        "state": {
+          "mowing": "Mäht",
+          "paused": "Pausiert",
+          "returning": "Kehrt zur Ladestation zurück",
+          "charging_pause": "Lädt, Aufgabe wird danach fortgesetzt"
+        }
+      },
+      "running_task_unnamed": {
+        "name": "Aufgabe {n}",
         "state": {
           "mowing": "Mäht",
           "paused": "Pausiert",
@@ -531,6 +551,9 @@
     "switch": {
       "area": {
         "name": "Bereich {name}"
+      },
+      "area_plain": {
+        "name": "{name}"
       },
       "blade_status": {
         "name": "Mähwerk"

@@ -112,6 +112,8 @@ class AreaSwitches:
         """Add the entities created since the last call to Home Assistant."""
         pending, self._pending = self._pending, []
         if pending:
+            # Without these the name template never applies.
+            await self.platform.platform_data.async_load_translations()
             await self.platform.async_add_entities(pending)
 
     async def sync_live(self) -> list[MammotionConfigAreaSwitchEntity]:

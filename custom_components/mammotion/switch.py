@@ -42,12 +42,21 @@ from .entity import (
     async_add_when_firmware_supports,
     async_add_when_supported,
     invalidate_cached_name,
+    name_starts_with_prefix,
+    strip_prefix_word,
     supports_grass_collection,
 )
 
 # Matches pymammotion's auto-generated fallback names ("area 1", "area 2", …).
 # These carry no user intent and must be treated the same as empty names.
 _PYMAMMOTION_AUTO_NAME = re.compile(r"^area\s+\d+$", re.IGNORECASE)
+
+
+def _area_translation_key(hass: HomeAssistant, name: str) -> str:
+    """Prefix "Area " for grouping, unless the name already starts with it."""
+    if name_starts_with_prefix(hass, SWITCH_DOMAIN, "area", name):
+        return "area_plain"
+    return "area"
 
 
 def _area_unique_id(coordinator: MammotionBaseUpdateCoordinator[Any], area: int) -> str:
@@ -83,7 +92,7 @@ def _stale_area_registry_entries(
         if (
             reg_entry.domain != SWITCH_DOMAIN
             or reg_entry.platform != DOMAIN
-            or reg_entry.translation_key != "area"
+            or reg_entry.translation_key not in ("area", "area_plain")
             or not reg_entry.unique_id.startswith(prefix)
         ):
             continue
@@ -102,7 +111,8 @@ def _async_rekey_stale_entry_for_area(
 ) -> None:
     """Re-key a stale registry entry matching the area's name, if one exists.
 
-    original_name is the translated "Area {name}", so match on the suffix.
+    original_name is the translated "Area {name}" (or the bare name when it
+    already starts with "Area"), so match on the suffix.
     """
     for reg_entry in stale_entries:
         reg_name = reg_entry.original_name
@@ -757,6 +767,7 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
         self.entity_description = dataclass_replace(
             self.entity_description,
             name=new_name,
+            translation_key=_area_translation_key(self.coordinator.hass, new_name),
             translation_placeholders={"name": new_name},
         )
         invalidate_cached_name(self)
@@ -809,7 +820,8 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
         """Call when entity about to be added to hass."""
         await super().async_added_to_hass()
         # Seed with any existing name override so we only push live user edits.
-        self._pushed_name = self.registry_entry.name if self.registry_entry else None
+        label = self.registry_entry.name if self.registry_entry else None
+        self._pushed_name = self._mower_name(label) if label else None
         last_state = await self.async_get_last_state()
         if last_state and last_state.state == STATE_ON:
             await self.async_turn_on()
@@ -822,11 +834,23 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
         # (Luba 2) and newer models.
         if not DeviceType.is_luba_pro(self.coordinator.device_name):
             return
-        if self.registry_entry:
-            if new_name := self.registry_entry.name:
-                if new_name == self._pushed_name:
-                    return
-                self.hass.async_create_task(self._async_push_name(new_name))
+        if self.registry_entry and (label := self.registry_entry.name):
+            if not (new_name := self._mower_name(label)):
+                LOGGER.debug(
+                    "%s: area %s label %r is only the area word; not renamed",
+                    self.coordinator.device_name,
+                    self.area,
+                    label,
+                )
+                return
+            if new_name == self._pushed_name:
+                return
+            self.hass.async_create_task(self._async_push_name(new_name))
+
+    def _mower_name(self, label: str) -> str:
+        """Return the area name for the mower: the label without HA's area word."""
+        stripped = strip_prefix_word(self.hass, SWITCH_DOMAIN, "area", label)
+        return label if stripped is None else stripped
 
     async def _async_push_name(self, new_name: str) -> None:
         """Rename the area on the mower; a failed push is retried on the next rename."""
@@ -961,7 +985,7 @@ def async_add_area_entities(  # noqa: C901
         )
         base_area_switch_entity = MammotionConfigAreaSwitchEntityDescription(
             key=f"{area_id}",
-            translation_key="area",
+            translation_key=_area_translation_key(coordinator.hass, new_name),
             translation_placeholders={"name": new_name},
             area=area_id,
             name=new_name,

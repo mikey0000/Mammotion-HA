@@ -1507,11 +1507,9 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
     def _rw_expected_field(self, rw_id: int) -> str:
         """Return the expected response field for a read_write_device command.
 
-        Mirrors the routing in MammotionCommand.read_write_device(): only
-        rw_ids [3, 6, 7, 8, 10, 11] on Pro/X3 devices are sent via the nav
-        adapter (nav_sys_param_cmd).  Every other rw_id — including 12 and 13
-        used for wildlife safety — always goes through allpowerfull_rw() and
-        responds on bidire_comm_cmd, regardless of device type.
+        Mirrors the routing in MammotionCommand.read_write_device() for the
+        generic ids: [3, 6, 7, 8, 10, 11] go via the nav adapter
+        (nav_sys_param_cmd) on Pro/X3 devices, via bidire_comm_cmd otherwise.
         """
         if rw_id in (3, 6, 7, 8, 10, 11) and DeviceType.is_luba_pro(self.device_name):
             return "nav_sys_param_cmd"
@@ -1711,34 +1709,22 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
     async def async_set_wildlife_safety(self, mode: int) -> None:
         """Set wildlife safety mode (0=off, 1=stop mowing, 2=low-speed mowing).
 
-        Sends rw_id=13 (status) first, then rw_id=12 (mode).  Both are sent
-        via the device-appropriate channel (_rw_expected_field).
+        The app writes only the mode; the device derives the status from it.
         """
-        status = 0 if mode == 0 else 1
         await self.async_send_and_wait(
-            "read_write_device",
-            self._rw_expected_field(13),
+            "set_animal_protection_mode",
+            "nav_sys_param_cmd",
             priority=Priority.USER,
-            rw_id=13,
-            context=status,
-            rw=1,
-        )
-        await self.async_send_and_wait(
-            "read_write_device",
-            self._rw_expected_field(12),
-            priority=Priority.USER,
-            rw_id=12,
-            context=mode,
-            rw=1,
+            mode=mode,
         )
 
     async def async_read_wildlife_safety(self) -> None:
-        """Read current wildlife safety status and mode from device."""
+        """Read wildlife safety mode and status from device."""
         await self.async_send_and_wait(
-            "read_write_device", self._rw_expected_field(13), rw_id=13, context=0, rw=0
+            "read_animal_protection_mode", "nav_sys_param_cmd"
         )
         await self.async_send_and_wait(
-            "read_write_device", self._rw_expected_field(12), rw_id=12, context=0, rw=0
+            "read_animal_protection_status", "nav_sys_param_cmd"
         )
 
     async def async_set_turning_mode(self, context: int) -> None:

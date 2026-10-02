@@ -121,7 +121,27 @@
           "charging_pause": "mdi:battery-charging"
         }
       },
+      "running_task_unnamed": {
+        "default": "mdi:calendar-clock",
+        "state": {
+          "mowing": "mdi:robot-mower",
+          "paused": "mdi:pause-circle-outline",
+          "returning": "mdi:home-import-outline",
+          "charging_pause": "mdi:battery-charging"
+        }
+      },
       "task_area_status": {
+        "default": "mdi:texture-box",
+        "state": {
+          "UNKNOWN": "mdi:help-circle-outline",
+          "NOT_STARTED": "mdi:checkbox-blank-outline",
+          "WAITING": "mdi:timer-sand",
+          "MOWING": "mdi:robot-mower",
+          "COMPLETE": "mdi:check-circle-outline",
+          "ABORTED": "mdi:close-circle-outline"
+        }
+      },
+      "task_area_status_short": {
         "default": "mdi:texture-box",
         "state": {
           "UNKNOWN": "mdi:help-circle-outline",
@@ -242,6 +262,9 @@
     },
     "switch": {
       "area": {
+        "default": "mdi:texture-box"
+      },
+      "area_plain": {
         "default": "mdi:texture-box"
       },
       "blade_status": {

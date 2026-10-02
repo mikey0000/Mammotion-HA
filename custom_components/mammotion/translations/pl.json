@@ -262,6 +262,17 @@
           "UNKNOWN": "Nieznany"
         }
       },
+      "task_area_status_short": {
+        "name": "Zadanie {name}",
+        "state": {
+          "NOT_STARTED": "Nie rozpoczęto",
+          "WAITING": "Oczekiwanie",
+          "MOWING": "Koszenie",
+          "COMPLETE": "Ukończono",
+          "ABORTED": "Przerwano",
+          "UNKNOWN": "Nieznany"
+        }
+      },
       "maintenance_distance": {
         "name": "Całkowity przebieg"
       },
@@ -431,7 +442,16 @@
         }
       },
       "running_task": {
-        "name": "Zadanie {name}",
+        "name": "{name}",
+        "state": {
+          "mowing": "Koszenie",
+          "paused": "Wstrzymane",
+          "returning": "Powrót",
+          "charging_pause": "Ładowanie, potem wznowi"
+        }
+      },
+      "running_task_unnamed": {
+        "name": "Zadanie {n}",
         "state": {
           "mowing": "Koszenie",
           "paused": "Wstrzymane",
@@ -531,6 +551,9 @@
     "switch": {
       "area": {
         "name": "Obszar {name}"
+      },
+      "area_plain": {
+        "name": "{name}"
       },
       "blade_status": {
         "name": "Ostrza wł/wył"

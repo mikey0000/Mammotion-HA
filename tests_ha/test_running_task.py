@@ -6,11 +6,19 @@ digits to fit an int64.
 """
 
 import json
+from collections.abc import AsyncIterator
+from functools import partial
 from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
+from area_rename_support import (
+    MOWER,
+    AreaRenameRig,
+    add_synced_sensors,
+    make_area_rename_rig,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 from pymammotion.data.model.device import MowingDevice
@@ -147,8 +155,29 @@ def test_every_locale_translates_the_running_task_sensor(path: Path) -> None:
     entry = json.loads(path.read_text(encoding="utf-8"))["entity"]["sensor"][
         "running_task"
     ]
-    assert "{name}" in entry["name"]
+    assert entry["name"] == "{name}"
     assert set(entry["state"]) == set(RUNNING_TASK_STATES.values())
+
+
+@pytest.mark.parametrize(
+    "path",
+    [_ROOT / "strings.json", *sorted((_ROOT / "translations").glob("*.json"))],
+    ids=lambda path: path.name,
+)
+def test_every_locale_names_an_unnamed_task(path: Path) -> None:
+    """The fallback carries the task's number and translates the same phases."""
+    sensors = json.loads(path.read_text(encoding="utf-8"))["entity"]["sensor"]
+    entry = sensors["running_task_unnamed"]
+    assert "{n}" in entry["name"]
+    assert "{name}" not in entry["name"]
+    assert entry["state"] == sensors["running_task"]["state"]
+
+
+def test_an_unnamed_task_shows_the_same_icons() -> None:
+    """The frontend picks state icons by translation key, so both keys need them."""
+    icons = json.loads((_ROOT / "icons.json").read_text(encoding="utf-8"))
+    sensors = icons["entity"]["sensor"]
+    assert sensors["running_task_unnamed"] == sensors["running_task"]
 
 
 def test_the_task_button_says_whether_it_is_running(hass: HomeAssistant) -> None:
@@ -374,3 +403,94 @@ def test_the_unknown_job_sync_waits_for_a_running_saga(hass: HomeAssistant) -> N
     queued.return_value = False
     coordinator._async_sync_tasks_for_unknown_job()
     coordinator.config_entry.async_create_background_task.assert_called_once()
+
+
+async def _running_plan_rig(hass: HomeAssistant, name: str) -> AreaRenameRig:
+    """Build a Luba 2 running the second of two stored plans, called *name*."""
+    device = MowingDevice()
+    device.map.plan = {
+        _OTHER_PLAN: Plan(plan_id=_OTHER_PLAN, task_name="Front"),
+        _PLAN_ID: Plan(plan_id=_PLAN_ID, task_name=name),
+    }
+    device.work.job_id = _JOB_ID
+    device.report_data.dev.sys_status = WorkMode.MODE_WORKING.value
+    return await make_area_rename_rig(hass, device)
+
+
+@pytest.fixture
+async def named_plan_rig(hass: HomeAssistant) -> AsyncIterator[AreaRenameRig]:
+    """Run the plan the user called "Task Monday"; shut the coordinator down after."""
+    rig = await _running_plan_rig(hass, "Task Monday")
+    yield rig
+    await rig.coordinator.async_shutdown()
+
+
+@pytest.fixture
+async def unnamed_plan_rig(hass: HomeAssistant) -> AsyncIterator[AreaRenameRig]:
+    """Run a plan saved without a name; shut the coordinator down after."""
+    rig = await _running_plan_rig(hass, "")
+    yield rig
+    await rig.coordinator.async_shutdown()
+
+
+def _running_task_sync(rig: AreaRenameRig) -> partial[None]:
+    return partial(async_sync_running_task_entity, rig.coordinator, {})
+
+
+@pytest.mark.regression
+async def test_a_named_task_sensor_reads_as_the_task_name(
+    hass: HomeAssistant,
+    entity_registry: er.EntityRegistry,
+    named_plan_rig: AreaRenameRig,
+) -> None:
+    """It read "Task Task Monday": the template prefixed every task name."""
+    (entity,) = await add_synced_sensors(
+        hass, named_plan_rig, _running_task_sync(named_plan_rig)
+    )
+
+    assert entity_registry.async_get(entity.entity_id).original_name == "Task Monday"
+    assert hass.states.get(entity.entity_id).name == f"{MOWER} Task Monday"
+
+
+@pytest.mark.regression
+@pytest.mark.parametrize(
+    ("language", "expected"),
+    [
+        pytest.param("en", "Task 2", id="en"),
+        pytest.param("de", "Aufgabe 2", id="de"),
+    ],
+)
+async def test_an_unnamed_task_sensor_reads_as_its_position_in_the_plan_list(
+    hass: HomeAssistant,
+    entity_registry: er.EntityRegistry,
+    unnamed_plan_rig: AreaRenameRig,
+    language: str,
+    expected: str,
+) -> None:
+    """It read "Task " with nothing after it: the empty name filled the template."""
+    hass.config.language = language
+
+    (entity,) = await add_synced_sensors(
+        hass, unnamed_plan_rig, _running_task_sync(unnamed_plan_rig)
+    )
+
+    assert entity_registry.async_get(entity.entity_id).original_name == expected
+
+
+@pytest.mark.regression
+async def test_a_task_named_mid_job_drops_the_fallback(
+    hass: HomeAssistant,
+    entity_registry: er.EntityRegistry,
+    unnamed_plan_rig: AreaRenameRig,
+) -> None:
+    """Naming the running task mid-job gave "Task Monday" rather than "Monday"."""
+    (entity,) = await add_synced_sensors(
+        hass, unnamed_plan_rig, _running_task_sync(unnamed_plan_rig)
+    )
+    coordinator = unnamed_plan_rig.coordinator
+
+    coordinator.data.map.plan[_PLAN_ID] = Plan(plan_id=_PLAN_ID, task_name="Monday")
+    coordinator.async_update_listeners()
+    await hass.async_block_till_done()
+
+    assert entity_registry.async_get(entity.entity_id).original_name == "Monday"
