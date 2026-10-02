@@ -5,16 +5,22 @@ built by its own ``__init__`` with its push subscriptions in place; only the cli
 is a spec'd stand-in.  ``ECHO`` is the frame the mower sent back after the rename.
 """
 
+from collections.abc import Callable
 from dataclasses import dataclass
+from functools import partial
 from unittest.mock import create_autospec
 
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity import Entity
 from pymammotion.client import MammotionClient
 from pymammotion.data.model.device import MowingDevice
 from pymammotion.data.model.hash_list import AreaHashNameList, FrameList
 from pymammotion.device.handle import DeviceHandle
 from pymammotion.transport.base import TransportType
-from pytest_homeassistant_custom_component.common import MockConfigEntry
+from pytest_homeassistant_custom_component.common import (
+    MockConfigEntry,
+    MockEntityPlatform,
+)
 from remote_drive_support import make_mower_data, make_runtime_data
 from user_command_support import make_cloud_handle
 
@@ -84,3 +90,23 @@ def set_area_name_pushes(manager: MammotionClient) -> list[str]:
         for call in manager.send_command_and_wait.await_args_list
         if call.args[1] == "set_area_name"
     ]
+
+
+async def add_synced_sensors(
+    hass: HomeAssistant,
+    rig: AreaRenameRig,
+    sync: Callable[[Callable[[list[Entity]], None]], None],
+) -> list[Entity]:
+    """Register what *sync* adds on a translated sensor platform; re-sync on updates.
+
+    Entities a later sync adds are collected but not registered.  The caller
+    shuts the coordinator down, which drops the listener.
+    """
+    platform = MockEntityPlatform(hass, domain="sensor", platform_name=DOMAIN)
+    platform.config_entry = rig.entry
+    await platform.platform_data.async_load_translations()
+    added: list[Entity] = []
+    sync(added.extend)
+    await platform.async_add_entities(added)
+    rig.coordinator.async_add_listener(partial(sync, added.extend))
+    return added

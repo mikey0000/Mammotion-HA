@@ -14,6 +14,7 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
     SensorStateClass,
 )
+from homeassistant.components.switch import DOMAIN as SWITCH_DOMAIN
 from homeassistant.const import (
     DEGREE,
     PERCENTAGE,
@@ -38,6 +39,7 @@ from pymammotion.data.model.enums import (
     RTKStatus,
     TaskAreaStatus,
 )
+from pymammotion.data.model.hash_list import Plan
 from pymammotion.data.model.pool_state import SpinoSysStatus, SpinoWorkMode
 from pymammotion.device.remote_drive import RemoteDrivePhase
 from pymammotion.utility.constant import VioBrightness, VioState, WorkMode
@@ -68,6 +70,7 @@ from .entity import (
     MammotionBaseSpinoEntity,
     async_add_when_supported,
     invalidate_cached_name,
+    name_starts_with_prefix,
 )
 
 
@@ -1051,8 +1054,9 @@ class MammotionTaskAreaSensorEntity(MammotionBaseEntity, SensorEntity):
     are reflected automatically on every coordinator update, exactly like all
     other description-based sensors.
 
-    translation_key / translation_placeholders / device_class / options are all
-    read by HA from entity_description, so we never hard-code them on the class.
+    device_class / options are read by HA from entity_description; the
+    translation key and placeholders start there and ``update_label`` swaps them
+    between the key variants that carry the same states.
     """
 
     entity_description: MammotionSensorEntityDescription
@@ -1066,19 +1070,20 @@ class MammotionTaskAreaSensorEntity(MammotionBaseEntity, SensorEntity):
         """Initialise from a description that captures the zone hash via closure."""
         super().__init__(coordinator, entity_description.key)
         self.entity_description = entity_description
-        # Do NOT set _attr_translation_key here — HA reads it from
-        # entity_description.translation_key ("task_area_status").
-        # Do NOT set _attr_translation_placeholders — HA reads it from
-        # entity_description.translation_placeholders ({"name": area_name}).
 
     @property
     def native_value(self) -> StateType:
         """Return the state via value_fn, identical to MammotionSensorEntity."""
         return self.entity_description.value_fn(self.coordinator.data)
 
-    def update_name(self, new_name: str) -> None:
-        """Refresh the display name when the area is renamed on the device."""
-        self._attr_translation_placeholders = {"name": new_name}
+    @property
+    def label(self) -> tuple[str | None, dict[str, str]]:
+        """Return the translation key and placeholders the name is rendered from."""
+        return self.translation_key, dict(self.translation_placeholders)
+
+    def update_label(self, label: tuple[str, dict[str, str]]) -> None:
+        """Re-render the name after the zone or task it shows is renamed."""
+        self._attr_translation_key, self._attr_translation_placeholders = label
         invalidate_cached_name(self)
         if self.hass is not None:
             self.async_write_ha_state()
@@ -1093,6 +1098,16 @@ def _active_task_area_ids(coordinator: MammotionReportUpdateCoordinator) -> set[
     if coordinator.data is None or not coordinator.is_job_active:
         return set()
     return set(coordinator.data.events.work_tasks_event.ids)
+
+
+def _task_area_label(
+    coordinator: MammotionReportUpdateCoordinator, area_hash: int
+) -> tuple[str, dict[str, str]]:
+    """Name a zone sensor "Task area <name>", or "Task <name>" if it starts with "Area"."""
+    area_name = coordinator.get_area_entity_name(area_hash) or f"area {area_hash}"
+    if name_starts_with_prefix(coordinator.hass, SWITCH_DOMAIN, "area", area_name):
+        return "task_area_status_short", {"name": area_name}
+    return "task_area_status", {"name": area_name}
 
 
 @callback
@@ -1116,16 +1131,16 @@ def async_add_task_area_entities(
     sensor_entities: list[MammotionTaskAreaSensorEntity] = []
 
     for area_hash in sorted(current_ids):
-        area_name = coordinator.get_area_entity_name(area_hash) or f"area {area_hash}"
+        translation_key, placeholders = label = _task_area_label(coordinator, area_hash)
         if (entity := entities_by_hash.get(area_hash)) is not None:
             # Named "unknown" until the map that names it has loaded.
-            if entity.translation_placeholders.get("name") != area_name:
-                entity.update_name(area_name)
+            if entity.label != label:
+                entity.update_label(label)
             continue
         description = MammotionSensorEntityDescription(
             key=f"{area_hash}{_TASK_AREA_SUFFIX}",
-            translation_key="task_area_status",
-            translation_placeholders={"name": area_name},
+            translation_key=translation_key,
+            translation_placeholders=placeholders,
             device_class=SensorDeviceClass.ENUM,
             state_class=None,
             options=_TASK_AREA_OPTIONS,
@@ -1158,6 +1173,20 @@ RUNNING_TASK_STATES: dict[int, str] = {
 _RUNNING_TASK_SUFFIX = "_running_task"
 
 
+def _running_task_label(
+    coordinator: MammotionReportUpdateCoordinator, plan: Plan
+) -> tuple[str, dict[str, str]]:
+    """Name the sensor after the task, or "Task N" by its place in the plan list."""
+    if plan.task_name:
+        return "running_task", {"name": plan.task_name}
+    position = next(
+        i
+        for i, stored in enumerate(coordinator.data.map.plan.values(), 1)
+        if stored.plan_id == plan.plan_id
+    )
+    return "running_task_unnamed", {"n": str(position)}
+
+
 @callback
 def async_sync_running_task_entity(
     coordinator: MammotionReportUpdateCoordinator,
@@ -1186,14 +1215,15 @@ def async_sync_running_task_entity(
 
     if plan is None:
         return
+    translation_key, placeholders = label = _running_task_label(coordinator, plan)
     if (entity := entities_by_plan.get(plan.plan_id)) is not None:
-        if entity.translation_placeholders.get("name") != plan.task_name:
-            entity.update_name(plan.task_name)
+        if entity.label != label:
+            entity.update_label(label)
         return
     description = MammotionSensorEntityDescription(
         key=f"{plan.plan_id}{_RUNNING_TASK_SUFFIX}",
-        translation_key="running_task",
-        translation_placeholders={"name": plan.task_name},
+        translation_key=translation_key,
+        translation_placeholders=placeholders,
         device_class=SensorDeviceClass.ENUM,
         state_class=None,
         options=list(dict.fromkeys(RUNNING_TASK_STATES.values())),

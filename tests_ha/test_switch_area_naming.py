@@ -6,8 +6,19 @@ them; these run the real ``HashList.computed_areas`` and a real entity registry,
 so a numbering change in the library shows up here rather than in the field.
 """
 
-from area_switch_support import AreaSwitches, area_name, make_coordinator, set_map
+import json
+from pathlib import Path
+
+import pytest
+from area_switch_support import (
+    MOWER,
+    AreaSwitches,
+    area_name,
+    make_coordinator,
+    set_map,
+)
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_registry as er
 
 
 class TestEmptyAreaNameFallback:
@@ -453,3 +464,130 @@ class TestPoolAreaNoDuplication:
         assert await switches.sync_live() == []
         assert len(switches.added) == 1
         assert len(switches.by_name) == 1
+
+
+class TestRenderedName:
+    """The "Area" prefix groups the switches, but is never added twice."""
+
+    async def _original_name(
+        self, hass: HomeAssistant, device_name: str
+    ) -> tuple[str | None, str]:
+        """Register one area the device calls *device_name*; return its names."""
+        h = 100
+        switches = AreaSwitches(
+            hass, make_coordinator(hass, [h], [area_name(device_name, h)])
+        )
+        await switches.sync_live()
+        entity_id = switches.entity_id_for(h)
+        return (
+            er.async_get(hass).async_get(entity_id).original_name,
+            hass.states.get(entity_id).name,
+        )
+
+    async def test_a_named_area_is_prefixed(self, hass: HomeAssistant) -> None:
+        """A plain device name is grouped under "Area"."""
+        assert await self._original_name(hass, "Back backyard") == (
+            "Area Back backyard",
+            f"{MOWER} Area Back backyard",
+        )
+
+    @pytest.mark.regression
+    @pytest.mark.parametrize(
+        "device_name",
+        [
+            pytest.param("", id="library fallback"),
+            pytest.param("Area back backyard", id="typed prefix"),
+            pytest.param("area 3", id="lowercase"),
+        ],
+    )
+    async def test_a_name_already_starting_with_area_is_not_prefixed_again(
+        self, hass: HomeAssistant, device_name: str
+    ) -> None:
+        """Unnamed areas rendered "Area Area 1", typed "Area …" names likewise.
+
+        pymammotion labels an unnamed area "Area 1" and the template added
+        "Area " regardless.
+        """
+        original_name, _ = await self._original_name(hass, device_name)
+
+        assert original_name == (device_name or "Area 1")
+
+    async def test_a_name_merely_beginning_with_the_letters_is_prefixed(
+        self, hass: HomeAssistant
+    ) -> None:
+        """Only the whole word counts: "Areaway" is not already prefixed."""
+        assert (await self._original_name(hass, "Areaway"))[0] == "Area Areaway"
+
+    @pytest.mark.regression
+    @pytest.mark.parametrize(
+        ("device_name", "expected"),
+        [
+            pytest.param("Hinten", "Bereich Hinten", id="plain"),
+            pytest.param("Bereich hinten", "Bereich hinten", id="german prefix"),
+            pytest.param("", "Area 1", id="english library fallback"),
+        ],
+    )
+    async def test_the_german_prefix_is_skipped_for_either_language(
+        self, hass: HomeAssistant, device_name: str, expected: str
+    ) -> None:
+        """German rendered "Bereich Area 1" and "Bereich Bereich hinten".
+
+        The library's fallback is English, so the English word counts too.
+        """
+        hass.config.language = "de"
+
+        original_name, _ = await self._original_name(hass, device_name)
+
+        assert original_name == expected
+
+    async def test_an_auto_name_does_not_overwrite_a_real_one(
+        self, hass: HomeAssistant
+    ) -> None:
+        """A wiped device name falls back to "Area 1"; the switch keeps "Pool"."""
+        h = 100
+        coordinator = make_coordinator(hass, [h], [area_name("Pool", h)])
+        switches = AreaSwitches(hass, coordinator)
+        await switches.sync_live()
+        entity_id = switches.entity_id_for(h)
+
+        coordinator.data.map.area_name = [area_name("", h)]
+        await switches.sync_live()
+
+        assert er.async_get(hass).async_get(entity_id).original_name == "Area Pool"
+
+    @pytest.mark.regression
+    async def test_an_area_renamed_to_an_area_name_drops_the_added_prefix(
+        self, hass: HomeAssistant
+    ) -> None:
+        """A device rename from "Orchard" to "Area two" rendered "Area Area two"."""
+        h = 100
+        coordinator = make_coordinator(hass, [h], [area_name("Orchard", h)])
+        switches = AreaSwitches(hass, coordinator)
+        await switches.sync_live()
+        entity_id = switches.entity_id_for(h)
+
+        coordinator.data.map.area_name = [area_name("Area two", h)]
+        await switches.sync_live()
+
+        assert er.async_get(hass).async_get(entity_id).original_name == "Area two"
+
+
+_ROOT = Path(__file__).parent.parent / "custom_components" / "mammotion"
+
+
+@pytest.mark.parametrize(
+    "path",
+    [_ROOT / "strings.json", *sorted((_ROOT / "translations").glob("*.json"))],
+    ids=lambda path: path.name,
+)
+def test_every_locale_prefixes_areas_and_has_the_plain_variant(path: Path) -> None:
+    """The grouping word comes first; the variant without it is the bare name."""
+    switches = json.loads(path.read_text(encoding="utf-8"))["entity"]["switch"]
+    assert switches["area"]["name"].endswith(" {name}")
+    assert switches["area_plain"]["name"] == "{name}"
+
+
+def test_the_plain_area_switch_has_the_same_icon() -> None:
+    """Both keys render the same switch."""
+    icons = json.loads((_ROOT / "icons.json").read_text(encoding="utf-8"))
+    assert icons["entity"]["switch"]["area_plain"] == icons["entity"]["switch"]["area"]

@@ -262,6 +262,17 @@
           "UNKNOWN": "Neznano"
         }
       },
+      "task_area_status_short": {
+        "name": "Opravilo {name}",
+        "state": {
+          "NOT_STARTED": "Ni začeto",
+          "WAITING": "Čaka",
+          "MOWING": "Košnja",
+          "COMPLETE": "Dokončano",
+          "ABORTED": "Prekinjeno",
+          "UNKNOWN": "Neznano"
+        }
+      },
       "maintenance_distance": {
         "name": "Skupno opravljena pot"
       },
@@ -431,7 +442,16 @@
         }
       },
       "running_task": {
-        "name": "Opravilo {name}",
+        "name": "{name}",
+        "state": {
+          "mowing": "Košnja",
+          "paused": "Začasno ustavljeno",
+          "returning": "Vračanje",
+          "charging_pause": "Polnjenje, nato nadaljuje"
+        }
+      },
+      "running_task_unnamed": {
+        "name": "Opravilo {n}",
         "state": {
           "mowing": "Košnja",
           "paused": "Začasno ustavljeno",
@@ -531,6 +551,9 @@
     "switch": {
       "area": {
         "name": "Področje {name}"
+      },
+      "area_plain": {
+        "name": "{name}"
       },
       "blade_status": {
         "name": "Noži"

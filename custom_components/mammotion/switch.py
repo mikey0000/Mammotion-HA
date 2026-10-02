@@ -42,12 +42,20 @@ from .entity import (
     async_add_when_firmware_supports,
     async_add_when_supported,
     invalidate_cached_name,
+    name_starts_with_prefix,
     supports_grass_collection,
 )
 
 # Matches pymammotion's auto-generated fallback names ("area 1", "area 2", …).
 # These carry no user intent and must be treated the same as empty names.
 _PYMAMMOTION_AUTO_NAME = re.compile(r"^area\s+\d+$", re.IGNORECASE)
+
+
+def _area_translation_key(hass: HomeAssistant, name: str) -> str:
+    """Prefix "Area " for grouping, unless the name already starts with it."""
+    if name_starts_with_prefix(hass, SWITCH_DOMAIN, "area", name):
+        return "area_plain"
+    return "area"
 
 
 def _area_unique_id(coordinator: MammotionBaseUpdateCoordinator[Any], area: int) -> str:
@@ -83,7 +91,7 @@ def _stale_area_registry_entries(
         if (
             reg_entry.domain != SWITCH_DOMAIN
             or reg_entry.platform != DOMAIN
-            or reg_entry.translation_key != "area"
+            or reg_entry.translation_key not in ("area", "area_plain")
             or not reg_entry.unique_id.startswith(prefix)
         ):
             continue
@@ -102,7 +110,8 @@ def _async_rekey_stale_entry_for_area(
 ) -> None:
     """Re-key a stale registry entry matching the area's name, if one exists.
 
-    original_name is the translated "Area {name}", so match on the suffix.
+    original_name is the translated "Area {name}" (or the bare name when it
+    already starts with "Area"), so match on the suffix.
     """
     for reg_entry in stale_entries:
         reg_name = reg_entry.original_name
@@ -757,6 +766,7 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
         self.entity_description = dataclass_replace(
             self.entity_description,
             name=new_name,
+            translation_key=_area_translation_key(self.coordinator.hass, new_name),
             translation_placeholders={"name": new_name},
         )
         invalidate_cached_name(self)
@@ -961,7 +971,7 @@ def async_add_area_entities(  # noqa: C901
         )
         base_area_switch_entity = MammotionConfigAreaSwitchEntityDescription(
             key=f"{area_id}",
-            translation_key="area",
+            translation_key=_area_translation_key(coordinator.hass, new_name),
             translation_placeholders={"name": new_name},
             area=area_id,
             name=new_name,

@@ -11,6 +11,7 @@ from homeassistant.components.switch.const import DOMAIN as SWITCH_DOMAIN
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers import translation
 from homeassistant.helpers.device_registry import (
     CONNECTION_BLUETOOTH,
     CONNECTION_NETWORK_MAC,
@@ -168,7 +169,27 @@ def invalidate_cached_name(entity: Entity) -> None:
     """Re-derive *entity*'s name after changing the description or placeholders it is built from."""
     # Home Assistant caches these and clears each only on a write to its own ``_attr_``.
     entity.__dict__.pop("name", None)
+    entity.__dict__.pop("translation_key", None)
     entity.__dict__.pop("translation_placeholders", None)
+    entity.__dict__.pop("_name_translation_key", None)
+
+
+def name_starts_with_prefix(
+    hass: HomeAssistant, platform: str, translation_key: str, name: str
+) -> bool:
+    """Return True when *name* already starts with the word the "<word> {name}" template adds.
+
+    English counts in every locale: pymammotion's fallback names are English.
+    """
+    folded = name.lstrip().casefold()
+    for language in {hass.config.language, "en"}:
+        template = translation.async_get_cached_translations(
+            hass, language, "entity", DOMAIN
+        ).get(f"component.{DOMAIN}.entity.{platform}.{translation_key}.name", "")
+        word = template.partition("{name}")[0].strip().casefold()
+        if word and folded.startswith(word) and folded[len(word) :][:1] in ("", " "):
+            return True
+    return False
 
 
 class MammotionBaseEntity(CoordinatorEntity[MammotionBaseUpdateCoordinator[Any]]):  # type: ignore[misc]

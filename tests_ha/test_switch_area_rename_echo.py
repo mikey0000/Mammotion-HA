@@ -12,6 +12,7 @@ import pytest
 from area_rename_support import (
     AREA_HASH,
     ECHOED_NAME,
+    MOWER,
     AreaRenameRig,
     make_area_rename_rig,
     set_area_name_pushes,
@@ -64,5 +65,27 @@ async def test_the_echoed_rename_updates_the_switch_name(
 
     names = {a.hash: a.name for a in rig.coordinator.data.map.area_name}
     assert names[AREA_HASH] == ECHOED_NAME
-    assert registry.async_get(_ENTITY_ID).original_name == f"Area {ECHOED_NAME}"
+    assert registry.async_get(_ENTITY_ID).original_name == ECHOED_NAME
     assert set_area_name_pushes(rig.manager) == [ECHOED_NAME], "echo re-pushed"
+
+
+@pytest.mark.regression
+async def test_a_typed_area_prefix_is_rendered_once_after_the_echo(
+    hass: HomeAssistant, rig: AreaRenameRig
+) -> None:
+    """Typing "Area back backyard" came back from the mower as "Area Area back backyard".
+
+    The template prefixed "Area " to the echoed name, which already had it; that
+    is what the switch read as once the user's override was cleared.
+    """
+    registry = er.async_get(hass)
+    registry.async_update_entity(_ENTITY_ID, name=ECHOED_NAME)
+    await hass.async_block_till_done()
+    await rig.receive_echo()
+    await hass.async_block_till_done()
+
+    registry.async_update_entity(_ENTITY_ID, name=None)
+    await hass.async_block_till_done()
+
+    assert hass.states.get(_ENTITY_ID).name == f"{MOWER} {ECHOED_NAME}"
+    assert set_area_name_pushes(rig.manager) == [ECHOED_NAME], "a second push"

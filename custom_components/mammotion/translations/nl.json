@@ -262,6 +262,17 @@
           "UNKNOWN": "Onbekend"
         }
       },
+      "task_area_status_short": {
+        "name": "Taak {name}",
+        "state": {
+          "NOT_STARTED": "Niet gestart",
+          "WAITING": "Wachtend",
+          "MOWING": "Aan het maaien",
+          "COMPLETE": "Voltooid",
+          "ABORTED": "Afgebroken",
+          "UNKNOWN": "Onbekend"
+        }
+      },
       "maintenance_distance": {
         "name": "Totale kilometerstand"
       },
@@ -431,7 +442,16 @@
         }
       },
       "running_task": {
-        "name": "Taak {name}",
+        "name": "{name}",
+        "state": {
+          "mowing": "Maaien",
+          "paused": "Gepauzeerd",
+          "returning": "Keert terug",
+          "charging_pause": "Laadt, gaat daarna verder"
+        }
+      },
+      "running_task_unnamed": {
+        "name": "Taak {n}",
         "state": {
           "mowing": "Maaien",
           "paused": "Gepauzeerd",
@@ -531,6 +551,9 @@
     "switch": {
       "area": {
         "name": "Zones {name}"
+      },
+      "area_plain": {
+        "name": "{name}"
       },
       "blade_status": {
         "name": "Maai Messen aan/uit"

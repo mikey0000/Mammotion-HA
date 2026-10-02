@@ -262,6 +262,17 @@
           "UNKNOWN": "Neznámý"
         }
       },
+      "task_area_status_short": {
+        "name": "Úloha {name}",
+        "state": {
+          "NOT_STARTED": "Nezahájeno",
+          "WAITING": "Čeká se",
+          "MOWING": "Sečení",
+          "COMPLETE": "Dokončeno",
+          "ABORTED": "Přerušeno",
+          "UNKNOWN": "Neznámý"
+        }
+      },
       "maintenance_distance": {
         "name": "Celková vzdálenost"
       },
@@ -431,7 +442,16 @@
         }
       },
       "running_task": {
-        "name": "Úloha {name}",
+        "name": "{name}",
+        "state": {
+          "mowing": "Sečení",
+          "paused": "Pozastaveno",
+          "returning": "Návrat",
+          "charging_pause": "Nabíjení, bude pokračovat"
+        }
+      },
+      "running_task_unnamed": {
+        "name": "Úloha {n}",
         "state": {
           "mowing": "Sečení",
           "paused": "Pozastaveno",
@@ -531,6 +551,9 @@
     "switch": {
       "area": {
         "name": "Oblast {name}"
+      },
+      "area_plain": {
+        "name": "{name}"
       },
       "blade_status": {
         "name": "Zapnutí/Vypnutí nožů"
