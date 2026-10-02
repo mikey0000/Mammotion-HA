@@ -18,7 +18,7 @@
       "login_failed": "Anmeldung fehlgeschlagen. Überprüfen Sie die E-Mail-Adresse und das Passwort Ihres Kontos und versuchen Sie es erneut.",
       "cannot_connect": "Es konnte keine Verbindung zur Mammotion-Cloud hergestellt werden. Überprüfen Sie Ihre Anmeldedaten sowie Netzwerkverbindung und versuchen Sie es erneut.",
       "no_account_no_ble": "Es wurden keine Kontodaten eingegeben und kein Bluetooth-Gerät gefunden. Geben Sie Ihre Mammotion-Anmeldedaten ein oder richten Sie ein Bluetooth-Gerät ein.",
-      "credentials_required": "Geben Sie sowohl Ihr Mammotion-Konto als auch das zugehörige Kennwort ein."
+      "credentials_required": "Geben Sie Ihre Mammotion-ID oder E-Mail-Adresse und das dazugehörige Kennwort ein"
     },
     "flow_title": "{name}",
     "step": {
@@ -29,7 +29,7 @@
         "data": {
           "account_name": "Mammotion-ID oder E-Mail-Adresse",
           "password": "Mammotion-Kennwort",
-          "remove_account": "Konto entfernen und nur Bluetooth verwenden"
+          "remove_account": "Mammotion-Konto entfernen und nur Bluetooth verwenden"
         }
       },
       "user": {
@@ -1515,7 +1515,7 @@
     },
     "get_mow_progress_geojson": {
       "name": "Mähfortschritt-GeoJSON abrufen",
-      "description": "Gibt den bereits abgearbeiteten Teil des Mähpfads der aktuellen Aufgabe als GeoJSON-FeatureCollection zurück. Mähroboter, die eine dynamische Linie streamen, geben stattdessen diese Linie zurück. Während ein Auftrag läuft und noch nichts angezeigt werden kann, ruft das Gerät zudem höchstens einmal pro Minute die Daten ab, auf denen diese Ebene basiert. Über Bluetooth hält sich eine dynamische Linie selbst auf dem neuesten Stand."
+      "description": "Gibt den bereits abgearbeiteten Teil des Mähpfads der aktuellen Aufgabe als GeoJSON-FeatureCollection zurück. Mähroboter, die eine dynamische Linie streamen, geben stattdessen diese Linie zurück. Während eine Aufgabe läuft und noch nichts angezeigt werden kann, ruft das Gerät zudem höchstens einmal pro Minute die Daten ab, auf denen diese Ebene basiert. Über Bluetooth hält sich eine dynamische Linie selbst auf dem neuesten Stand."
     },
     "fetch_mow_path": {
       "name": "Mähpfad abrufen",
@@ -1568,28 +1568,28 @@
       "message": "Es gibt keine unterbrochene Aufgabe zum Fortsetzen."
     },
     "pause_failed": {
-      "message": "Pausieren des Mähroboters fehlgeschlagen."
+      "message": "Das Pausieren des Mähroboters ist fehlgeschlagen."
     },
     "resume_failed": {
-      "message": "Fortsetzen des Mähroboters fehlgeschlagen."
+      "message": "Das Fortsetzen des Mähroboters ist fehlgeschlagen."
     },
     "start_failed": {
-      "message": "Starten des Mähroboters fehlgeschlagen."
+      "message": "Das Starten des Mähroboters ist fehlgeschlagen."
     },
     "dock_failed": {
-      "message": "Rückkehr des Mähroboters zur Ladestation fehlgeschlagen."
+      "message": "Die Rückkehr des Mähroboters zur Ladestation ist fehlgeschlagen."
     },
     "dock_cancel_failed": {
-      "message": "Stoppen der Rückkehr des Mähroboters zur Ladestation fehlgeschlagen."
+      "message": "Das Stoppen der Rückkehr des Mähroboters zur Ladestation ist fehlgeschlagen."
     },
     "command_failed": {
-      "message": "Senden eines Befehls zum Mähroboter fehlgeschlagen."
+      "message": "Das Senden eines Befehls zum Mähroboter ist fehlgeschlagen."
     },
     "command_unconfirmed": {
-      "message": "Der Mähroboter hat den Befehl nicht bestätigt. Er wurde möglicherweise trotzdem ausgeführt."
+      "message": "Der Mähroboter hat den Befehl nicht bestätigt. Der Befehl wurde möglicherweise trotzdem ausgeführt."
     },
     "account_in_use": {
-      "message": "Ihr Mammotion-Konto ist in einer anderen Sitzung aktiv (der Mammotion-App). Melden Sie sich in der App ab oder warten Sie und versuchen Sie es erneut."
+      "message": "Ihr Mammotion-Konto ist in einer anderen Sitzung (Mammotion-App) aktiv. Melden Sie sich in der App ab oder warten Sie und versuchen es später erneut."
     },
     "api_limit_exceeded": {
       "message": "Das API-Anfragelimit wurde überschritten."
@@ -1598,10 +1598,10 @@
       "message": "Es konnte keine Verbindung zur Mammotion-Cloud hergestellt werden. Überprüfen Sie Ihre Netzwerkverbindung und laden Sie die Integration neu."
     },
     "task_not_found": {
-      "message": "Aufgabe {plan_id} wurde auf dem Gerät nicht gefunden. Aktualisiere den Zeitplan und versuche es erneut."
+      "message": "Die Aufgabe {plan_id} wurde auf dem Gerät nicht gefunden. Aktualisieren Sie den Zeitplan und versuchen es erneut."
     },
     "task_id_not_found": {
-      "message": "Aufgabe {task_id} wurde für {entity_id} nicht gefunden. Aktualisiere die Aufgaben und versuche es erneut."
+      "message": "Die Aufgabe {task_id} für {entity_id} wurde nicht gefunden. Aktualisieren Sie die Aufgaben und versuchen es erneut."
     },
     "start_task_unsupported_on_spino": {
       "message": "Das Starten eines Zeitplans auf Abruf wird vom Spino-Poolreiniger nicht unterstützt — die Geräte-Firmware hat keinen 'jetzt ausführen'-Befehl für gespeicherte Pläne."
@@ -1610,22 +1610,22 @@
       "message": "Dieser Mähroboter unterstützt kein Grassammeln."
     },
     "no_running_job": {
-      "message": "{device_name} führt gerade keinen Mähauftrag aus, daher gibt es nichts zu ändern. Starte zuerst einen Auftrag."
+      "message": "{device_name} führt gerade keine Mähaufgabe aus, daher gibt es nichts zu ändern. Starten Sie zuerst eine Aufgabe."
     },
     "running_job_modify_unsupported": {
-      "message": "{device_name} unterstützt das Ändern eines laufenden Auftrags nicht. Das können nur Luba 2 und neuer."
+      "message": "{device_name} unterstützt das Ändern einer laufenden Aufgabe nicht. Das können nur Luba 2 und neuer."
     },
     "auto_change_direction_unsupported": {
-      "message": "Mährichtung automatisch umkehren wird von {device_name} oder seiner Firmware nicht unterstützt."
+      "message": "Die Mährichtung automatisch umkehren wird von {device_name} oder seiner Firmware nicht unterstützt."
     },
     "map_backup_cloud_unavailable": {
-      "message": "Kartensicherungen erfordern eine funktionierende Anmeldung bei der Mammotion-Cloud."
+      "message": "Die Kartensicherungen erfordern eine funktionierende Anmeldung bei der Mammotion-Cloud."
     },
     "map_backup_failed": {
       "message": "Die Mammotion-Cloud hat die Anfrage zur Kartensicherung abgelehnt: {reason}"
     },
     "map_backup_device_not_found": {
-      "message": "{device_name} ist in diesem Mammotion-Konto nicht für Kartensicherungen aufgeführt."
+      "message": "{device_name} ist in diesem Mammotion-Konto nicht für die Kartensicherungen aufgeführt."
     },
     "mower_not_found": {
       "message": "{entity_id} ist kein Mammotion-Mähroboter."
@@ -1643,58 +1643,58 @@
       "message": "{device_name}: {state}"
     },
     "self_check_emergency_stop": {
-      "message": "Der Not-Aus ist aktiv. Deaktiviere ihn am Mähroboter, bevor du erneut startest."
+      "message": "Der Not-Aus ist aktiv. Deaktivieren Sie ihn am Mähroboter, bevor Sie erneut starten."
     },
     "self_check_stop_button": {
-      "message": "Die STOP-Taste am Mähroboter wurde gedrückt. Setze ihn am Mähroboter zurück, bevor du erneut startest."
+      "message": "Die STOP-Taste am Mähroboter wurde gedrückt. Setzen Sie den Zustand am Mähroboter zurück, bevor Sie erneut starten."
     },
     "self_check_safety_key_missing": {
-      "message": "Der Sicherheitsschlüssel ist nicht eingesteckt. Stecke ihn ein, um mit dem Mähen zu beginnen."
+      "message": "Der Sicherheitsschlüssel ist nicht eingesteckt. Stecken Sie ihn ein, um mit dem Mähen zu beginnen."
     },
     "self_check_lifted": {
-      "message": "Der Mähroboter wurde vom Boden angehoben. Stelle ihn zurück auf den Rasen."
+      "message": "Der Mähroboter wurde vom Boden angehoben. Stellen Sie ihn zurück auf den Rasen."
     },
     "self_check_tilted": {
-      "message": "Der Mähroboter ist geneigt. Stelle ihn auf ebenen Boden."
+      "message": "Der Mähroboter ist geneigt. Stellen Sie ihn auf ebenen Boden."
     },
     "self_check_tipped_over": {
-      "message": "Der Mähroboter ist umgekippt. Stelle ihn wieder auf."
+      "message": "Der Mähroboter ist umgekippt. Stellen Sie ihn wieder auf."
     },
     "self_check_bumper_missing": {
-      "message": "Der Stoßfänger ist nicht montiert. Montiere ihn vor dem Mähen."
+      "message": "Der Stoßfänger ist nicht montiert. Montieren Sie ihn vor dem Mähen."
     },
     "self_check_rain": {
       "message": "Es wurde Regen erkannt und „Bei Regen nicht mähen“ ist aktiviert. Gemäht werden kann, sobald der Regen aufhört oder die Funktion deaktiviert wird."
     },
     "self_check_low_battery": {
-      "message": "Der Akku ist zu schwach zum Mähen. Lade den Mähroboter auf."
+      "message": "Der Akku ist zu schwach zum Mähen. Laden Sie den Mähroboter auf."
     },
     "self_check_non_working_hours": {
-      "message": "Es ist außerhalb der Arbeitszeit des Mähroboters."
+      "message": "Es ist innerhalb der Ruhezeit des Mähroboters."
     },
     "self_check_rtk_station_moved": {
-      "message": "Die RTK-Station wurde verschoben. Prüfe ihre Position in der App."
+      "message": "Die RTK-Station wurde verschoben. Prüfen Sie die Position in der App."
     },
     "self_check_outside_task_area": {
-      "message": "Der Mähroboter ist außerhalb seines Aufgabenbereichs. Bringe ihn zurück in einen kartierten Bereich."
+      "message": "Der Mähroboter ist außerhalb seines Aufgabenbereichs. Bringen Sie ihn zurück in einen kartierten Bereich."
     },
     "self_check_wheel_motor_error": {
       "message": "Ein Radnabenmotor hat einen Fehler gemeldet."
     },
     "self_check_blade_motor_overheated": {
-      "message": "Der Mähwerksmotor ist zu heiß. Lass ihn abkühlen."
+      "message": "Der Mähwerksmotor ist zu heiß. Lassen Sie ihn abkühlen."
     },
     "self_check_dock_moved": {
-      "message": "Die Ladestation wurde verschoben. Prüfe ihre Position in der App."
+      "message": "Die Ladestation wurde verschoben. Prüfen Sie die Position in der App."
     },
     "self_check_no_task_area": {
-      "message": "Es wurde kein Aufgabenbereich gefunden. Erstelle eine Karte in der App."
+      "message": "Es wurde kein Aufgabenbereich gefunden. Erstellen Sie eine Karte in der App."
     },
     "self_check_night_protection": {
       "message": "Der Nachtschutz ist aktiv, daher mäht der Mähroboter nachts nicht."
     },
     "self_check_rain_protection": {
-      "message": "Der Regenschutz verhindert den Start des Mähroboters. Er nutzt den Regensensor und Online-Wetterdaten, um zu beurteilen, ob sich die Bedingungen zum Mähen eignen, und berechnet, wann das Mähen fortgesetzt wird. Warte ab oder ändere bzw. deaktiviere den Regenschutz in den Mährobotereinstellungen der App."
+      "message": "Der Regenschutz verhindert den Start des Mähroboters. Er nutzt den Regensensor und Online-Wetterdaten, um zu beurteilen, ob sich die Bedingungen zum Mähen eignen, und berechnet, wann das Mähen fortgesetzt wird. Warten Sie ab oder änderen bzw. deaktivieren Sie den Regenschutz in den Mährobotereinstellungen der App."
     },
     "self_check_rtk_not_ready": {
       "message": "Die RTK-Station ist noch nicht bereit."
@@ -1715,10 +1715,10 @@
       "message": "Der Mähroboter hat den unbekannten Selbsttest-Code {code} gemeldet."
     },
     "remote_drive_needs_cloud": {
-      "message": "Die Cloud-Fernsteuerung braucht eine funktionierende Cloud-Verbindung zum Mähroboter. Über Bluetooth stattdessen die Schub-Tasten verwenden."
+      "message": "Die Cloud-Fernsteuerung braucht eine funktionierende Cloud-Verbindung zum Mähroboter. Über Bluetooth können stattdessen die Schub-Tasten verwenden werden."
     },
     "remote_drive_start_failed": {
-      "message": "Die Fernsteuerung konnte nicht gestartet werden: Der Mähroboter war über die Cloud nicht erreichbar."
+      "message": "Die Cloud-Fernsteuerung konnte nicht gestartet werden: Der Mähroboter war über die Cloud nicht erreichbar."
     },
     "remote_drive_already_running": {
       "message": "Die Cloud-Fernsteuerung läuft bereits. Vor einem Neustart zuerst ausschalten."
@@ -1733,7 +1733,7 @@
       "message": "Der Mähroboter hat nahe der Grenze angehalten. Vor dem Weiterfahren „Grenzwarnung bestätigen“ drücken."
     },
     "remote_drive_safety_notice": {
-      "message": "Vor dem Fernsteuern sicherstellen, dass sich keine Personen oder Tiere im Arbeitsbereich befinden, und den Mähroboter die ganze Zeit im Blick behalten. Innerhalb von 3 Minuten „Fernsteuerung bestätigen“ drücken, um zu starten. Die Sitzung endet von selbst kurz nach der letzten Eingabe."
+      "message": "Vor dem Fernsteuern sicherstellen, dass sich keine Personen oder Tiere im Arbeitsbereich befinden und den Mähroboter die ganze Zeit im Blick behalten. Innerhalb von 3 Minuten „Fernsteuerung bestätigen“ drücken, um zu starten. Die Sitzung endet kurz nach der letzten Eingabe von selbst."
     },
     "movement_unavailable": {
       "message": "Der Mähroboter kann gerade nicht bewegt werden. In Bluetooth-Reichweite bringen oder die Cloud-Fernsteuerung einschalten und „Fernsteuerung bestätigen“ drücken."
@@ -1742,56 +1742,56 @@
       "message": "{device_name}: Cloud-Fernsteuerung"
     },
     "remote_drive_token_unavailable": {
-      "message": "Der Mammotion-Server hat die Fernsteuerung nicht erlaubt (Code {detail}). Später erneut versuchen."
+      "message": "Der Mammotion-Server hat die Fernsteuerung nicht erlaubt (Code {detail}). Bitte versuchen Sie es ppäter erneut."
     },
     "remote_drive_occupied_by_other": {
       "message": "Der Mähroboter wird bereits von einem anderen Konto gesteuert ({detail})."
     },
     "remote_drive_network_poor": {
-      "message": "Fernsteuerung beendet: Die Netzwerkverbindung des Mähroboters ist zu schlecht."
+      "message": "Cloud-Fernsteuerung beendet: Die Netzwerkverbindung des Mähroboters ist zu schlecht."
     },
     "remote_drive_token_expired": {
-      "message": "Fernsteuerung beendet: Die Fahrberechtigung ist abgelaufen."
+      "message": "Cloud-Fernsteuerung beendet: Die Fahrberechtigung ist abgelaufen."
     },
     "remote_drive_out_of_fence": {
-      "message": "Fernsteuerung beendet: Der Mähroboter befindet sich außerhalb des erlaubten Bereichs."
+      "message": "Cloud-Fernsteuerung beendet: Der Mähroboter befindet sich außerhalb des erlaubten Bereichs."
     },
     "remote_drive_ble_preempt": {
-      "message": "Fernsteuerung beendet: Der Mähroboter wird jetzt von {detail} über Bluetooth gesteuert."
+      "message": "Cloud-Fernsteuerung beendet: Der Mähroboter wird jetzt von {detail} über Bluetooth gesteuert."
     },
     "remote_drive_no_loc_mileage_exhausted": {
-      "message": "Fernsteuerung beendet: Der Mähroboter ist so weit gefahren wie es ohne Positionsbestimmung erlaubt ist."
+      "message": "Cloud-Fernsteuerung beendet: Der Mähroboter ist so weit gefahren wie es ohne Positionsbestimmung erlaubt ist."
     },
     "remote_drive_env_not_ready": {
-      "message": "Fernsteuerung beendet: Der Mähroboter ist nicht bereit gesteuert zu werden (Code {detail})."
+      "message": "Cloud-Fernsteuerung beendet: Der Mähroboter ist nicht bereit gesteuert zu werden (Code {detail})."
     },
     "remote_drive_send_failed": {
-      "message": "Fernsteuerung beendet: Ein Befehl konnte nicht gesendet werden ({detail})."
+      "message": "Cloud-Fernsteuerung beendet: Ein Befehl konnte nicht gesendet werden ({detail})."
     },
     "remote_drive_approach_fence": {
       "message": "Der Mähroboter hat dicht an der Grenze angehalten. „Grenzwarnung bestätigen“ drücken, um weiterzufahren."
     },
     "remote_drive_safety_notice_timeout": {
-      "message": "Fernsteuerung beendet: Der Sicherheitshinweis wurde nicht innerhalb von 3 Minuten bestätigt."
+      "message": "Cloud-Fernsteuerung beendet: Der Sicherheitshinweis wurde nicht innerhalb von 3 Minuten bestätigt."
     },
     "remote_drive_video_unavailable": {
-      "message": "Fernsteuerung beendet: Das Kamerabild ist ausgefallen."
+      "message": "Cloud-Fernsteuerung beendet: Das Kamerabild ist ausgefallen."
     },
     "battery_settings_unread": {
-      "message": "Die Akkueinstellungen wurden noch nicht vom Mähroboter gelesen. Eine Änderung würde jetzt das Nebenzeit-Ladefenster zurücksetzen, daher wurde nichts gesendet. Bitte erneut versuchen, sobald der Mähroboter verbunden ist."
+      "message": "Die Akkueinstellungen wurden noch nicht vom Mähroboter gelesen. Eine Änderung würde jetzt das Nebenzeit-Ladefenster zurücksetzen, daher wurde nichts gesendet. Bitte versuchen Sie es erneut, sobald der Mähroboter verbunden ist."
     }
   },
   "issues": {
     "account_in_use": {
-      "title": "Mammotion-Konto wird von einer anderen Sitzung verwendet",
-      "description": "Ihr Mammotion-Konto {account} ist bereits in einer anderen Sitzung aktiv, daher ist die Cloud-Verbindung pausiert. Melden Sie sich in der Mammotion-App ab; die Integration verbindet sich innerhalb weniger Minuten automatisch erneut."
+      "title": "Das Mammotion-Konto wird in einer anderen Sitzung verwendet.",
+      "description": "Ihr Mammotion-Konto {account} ist bereits in einer anderen Sitzung aktiv, daher ist die Cloud-Verbindung pausiert. Melden Sie sich in der Mammotion-App ab. Die Integration verbindet sich automatisch innerhalb weniger Minuten erneut."
     },
     "cloud_login_retrying": {
-      "title": "Mammotion-Cloud nicht verfügbar",
-      "description": "Home Assistant konnte sich für {account} nicht bei der Mammotion-Cloud anmelden ({error}). Über Bluetooth verbundene Geräte funktionieren weiter. Die Anmeldung wird alle 15 Minuten bis zu 5-mal mit der gespeicherten Sitzung erneut versucht."
+      "title": "Die Mammotion-Cloud ist nicht verfügbar.",
+      "description": "Home Assistant konnte sich für {account} nicht bei der Mammotion-Cloud anmelden ({error}). Über Bluetooth verbundene Geräte funktionieren weiter. Die Anmeldung wird alle 15 Minuten mit der gespeicherten Sitzung erneut versucht. (bis zu 5 mal)"
     },
     "cloud_login_failed": {
-      "title": "Mammotion-Cloud nicht verbunden",
+      "title": "Die Mammotion-Cloud ist nicht verbunden.",
       "description": "Home Assistant konnte sich für {account} nicht bei der Mammotion-Cloud anmelden ({error}) und versucht es nicht mehr. Über Bluetooth verbundene Geräte funktionieren weiter. Laden Sie die Mammotion-Integration neu, sobald der Mammotion-Dienst wieder erreichbar ist."
     }
   }
