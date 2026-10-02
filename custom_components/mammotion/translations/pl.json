@@ -1793,6 +1793,10 @@
     "cloud_login_failed": {
       "title": "Chmura Mammotion nie jest połączona",
       "description": "Home Assistant nie mógł zalogować się do chmury Mammotion dla konta {account} ({error}) i przestał ponawiać próby. Urządzenia połączone przez Bluetooth nadal działają. Załaduj ponownie integrację Mammotion, gdy usługa Mammotion będzie znów dostępna."
+    },
+    "deprecated_rain_tactics": {
+      "title": "Użyto wycofanej opcji w akcji Mammotion",
+      "description": "Automatyzacja lub skrypt wywołuje `{service}` z `{field}`. Ta opcja została usunięta: nigdy nie docierała do kosiarki, więc jest ignorowana, a zadanie uruchamia się normalnie. Zamiast niej użyj przełącznika Wykrywanie deszczu kosiarki i usuń `{field}` z wywołania akcji, aby zamknąć ten komunikat."
     }
   }
 }

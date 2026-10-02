@@ -18,6 +18,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers import service
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pymammotion.data.model.report_info import DeviceData, ReportData
@@ -47,6 +48,11 @@ SERVICE_ADD_DUMP_POINT = "add_dump_point"
 SERVICE_UNDO_DUMP_POINT = "undo_dump_point"
 SERVICE_FINISH_DUMP_POINT_SETUP = "finish_dump_point_setup"
 SERVICE_FINISH_OUTSIDE_DUMP_POINT = "finish_outside_dump_point"
+
+#: Removed from the job services but still accepted, and ignored, so existing
+#: automations keep running; it never reached the mower.
+_RETIRED_JOB_FIELD = "rain_tactics"
+_RETIRED_JOB_FIELD_SCHEMA = vol.All(vol.Coerce(int), vol.In([0, 1]))
 
 START_MOW_SCHEMA: dict[str | vol.Marker, Any] = {
     # No defaults: a route field left out keeps the config entity's value.
@@ -79,6 +85,7 @@ START_MOW_SCHEMA: dict[str | vol.Marker, Any] = {
         vol.Coerce(float), vol.Range(min=0, max=1)
     ),
     vol.Optional("areas"): vol.All(cv.ensure_list, [cv.entity_id]),
+    vol.Optional(_RETIRED_JOB_FIELD): _RETIRED_JOB_FIELD_SCHEMA,
 }
 
 #: How long to wait for the mower to report the mode a job transition leads to.
@@ -98,6 +105,7 @@ MODIFY_RUNNING_JOB_SCHEMA: dict[str | vol.Marker, Any] = {
     vol.Optional("auto_change_direction"): vol.All(vol.Coerce(int), vol.In([0, 1])),
     # The cloud schema caps progress at 99.
     vol.Optional("start_progress"): vol.All(vol.Coerce(int), vol.Range(min=0, max=99)),
+    vol.Optional(_RETIRED_JOB_FIELD): _RETIRED_JOB_FIELD_SCHEMA,
 }
 
 START_STOP_BLADES_SCHEMA = {
@@ -304,9 +312,36 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
             return LawnMowerActivity.DOCKED
         return None
 
+    def _drop_retired_job_field(
+        self, service_name: str, kwargs: dict[str, Any]
+    ) -> None:
+        """Ignore a retired field and point the user at the automation still sending it."""
+        if kwargs.pop(_RETIRED_JOB_FIELD, None) is None:
+            return
+        service_id = f"{DOMAIN}.{service_name}"
+        LOGGER.warning(
+            "%s no longer supports %s; the value is ignored, remove it from the calling automation or script",
+            service_id,
+            _RETIRED_JOB_FIELD,
+        )
+        ir.async_create_issue(
+            self.hass,
+            DOMAIN,
+            f"deprecated_{_RETIRED_JOB_FIELD}_{service_name}",
+            is_fixable=False,
+            is_persistent=False,
+            severity=ir.IssueSeverity.WARNING,
+            translation_key=f"deprecated_{_RETIRED_JOB_FIELD}",
+            translation_placeholders={
+                "service": service_id,
+                "field": _RETIRED_JOB_FIELD,
+            },
+        )
+
     async def async_start_mowing(self, **kwargs: Any) -> None:  # noqa: C901
         """Start a job, or resume the paused one when no new route is asked for."""
         trans_key = "pause_failed"
+        self._drop_retired_job_field(SERVICE_START_MOWING, kwargs)
 
         await self.coordinator.async_ensure_fresh_state(wait=True)
 
@@ -618,6 +653,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
 
     async def async_modify_running_job(self, **kwargs: Any) -> None:
         """Change settings on the job already running, without re-planning it."""
+        self._drop_retired_job_field(SERVICE_MODIFY_RUNNING_JOB, kwargs)
         await self.coordinator.async_modify_running_job(
             priority=Priority.USER, **kwargs
         )

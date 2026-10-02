@@ -1793,6 +1793,10 @@
     "cloud_login_failed": {
       "title": "Mammotion-cloud niet verbonden",
       "description": "Home Assistant kon niet inloggen bij de Mammotion-cloud voor {account} ({error}) en probeert het niet meer. Apparaten die via Bluetooth verbonden zijn, blijven werken. Herlaad de Mammotion-integratie zodra de Mammotion-dienst weer bereikbaar is."
+    },
+    "deprecated_rain_tactics": {
+      "title": "Vervallen optie gebruikt in een Mammotion-actie",
+      "description": "Een automatisering of script roept `{service}` aan met `{field}`. Deze optie is verwijderd: ze bereikte de maaier nooit, dus ze wordt genegeerd en de taak start zoals gewoonlijk. Gebruik in plaats daarvan de schakelaar Regendetectie van de maaier en verwijder `{field}` uit de actie-aanroep om deze melding te sluiten."
     }
   }
 }

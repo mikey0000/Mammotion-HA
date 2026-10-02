@@ -1793,6 +1793,10 @@
     "cloud_login_failed": {
       "title": "Mammotion-molnet är inte anslutet",
       "description": "Home Assistant kunde inte logga in i Mammotion-molnet för {account} ({error}) och har slutat försöka. Enheter anslutna via Bluetooth fortsätter att fungera. Ladda om Mammotion-integrationen när Mammotion-tjänsten är nåbar igen."
+    },
+    "deprecated_rain_tactics": {
+      "title": "Borttaget alternativ används i en Mammotion-åtgärd",
+      "description": "En automatisering eller ett skript anropar `{service}` med `{field}`. Det här alternativet har tagits bort: det nådde aldrig gräsklipparen, så det ignoreras och jobbet startar som vanligt. Använd i stället gräsklipparens brytare för regndetektering och ta bort `{field}` från åtgärdsanropet för att stänga det här meddelandet."
     }
   }
 }

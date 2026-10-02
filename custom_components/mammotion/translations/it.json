@@ -1793,6 +1793,10 @@
     "cloud_login_failed": {
       "title": "Cloud Mammotion non connesso",
       "description": "Home Assistant non è riuscito ad accedere al cloud Mammotion per {account} ({error}) e ha smesso di riprovare. I dispositivi collegati tramite Bluetooth continuano a funzionare. Ricarica l'integrazione Mammotion quando il servizio Mammotion sarà di nuovo raggiungibile."
+    },
+    "deprecated_rain_tactics": {
+      "title": "Opzione ritirata usata in un'azione Mammotion",
+      "description": "Un'automazione o uno script chiama `{service}` con `{field}`. Questa opzione è stata rimossa: non raggiungeva mai il tosaerba, quindi viene ignorata e il lavoro parte normalmente. Usa invece l'interruttore Rilevamento pioggia del tosaerba e rimuovi `{field}` dalla chiamata dell'azione per chiudere questo messaggio."
     }
   }
 }
