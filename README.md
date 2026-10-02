@@ -38,6 +38,8 @@ This integration allows you to control and monitor Mammotion products, e.g robot
 
 - A second account with your mower/s shared to it for using Wi-Fi (If you use your primary accouunt it will log you out of your mobile app)
 - (Optional)[Bluetooth proxy for Home Assistant](https://esphome.io/components/bluetooth_proxy.html)
+  - [ESP32-S3 mini (Amazon)](https://www.amazon.com/s?k=ESP32-S3+mini&tag=homeassistant-mammotion-20)
+  - [USB-A to USB-C 0.3 m data cable (Amazon)](https://www.amazon.com/s?k=USB+A+to+USB+C+0.3m+data+cable&tag=homeassistant-mammotion-20)
 
 ## Troubleshooting
 
