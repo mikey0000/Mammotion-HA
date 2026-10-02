@@ -2,7 +2,8 @@
 
 ``make_area_rename_rig`` builds a real ``DeviceHandle`` and a report coordinator
 built by its own ``__init__`` with its push subscriptions in place; only the client
-is a spec'd stand-in.  ``ECHO`` is the frame the mower sent back after the rename.
+is a spec'd stand-in.  ``ECHO`` is the frame the mower sent back after the rename;
+``echo_of`` is that frame carrying another name.
 """
 
 from collections.abc import Callable
@@ -16,6 +17,7 @@ from pymammotion.client import MammotionClient
 from pymammotion.data.model.device import MowingDevice
 from pymammotion.data.model.hash_list import AreaHashNameList, FrameList
 from pymammotion.device.handle import DeviceHandle
+from pymammotion.proto import LubaMsg
 from pymammotion.transport.base import TransportType
 from pytest_homeassistant_custom_component.common import (
     MockConfigEntry,
@@ -38,6 +40,15 @@ ECHO = bytes.fromhex(
     "636b206261636b796172642a1a5649666e73674951436d48716e34495858576b51303030303030"
 )
 ECHOED_NAME = "Area back backyard"
+#: What HA pushes for the label ``ECHOED_NAME``: the area word is HA's, not the mower's.
+STRIPPED_NAME = "back backyard"
+
+
+def echo_of(name: str) -> bytes:
+    """Return ``ECHO`` as the mower would send it for an area renamed to *name*."""
+    msg = LubaMsg.parse(ECHO)
+    msg.nav.toapp_map_name_msg.name = name
+    return bytes(msg)
 
 
 @dataclass
@@ -49,9 +60,9 @@ class AreaRenameRig:
     manager: MammotionClient
     entry: MockConfigEntry
 
-    async def receive_echo(self) -> None:
+    async def receive_echo(self, frame: bytes = ECHO) -> None:
         """Deliver the mower's rename echo the way a cloud frame arrives."""
-        await self.handle.on_raw_message(ECHO, TransportType.CLOUD_MAMMOTION)
+        await self.handle.on_raw_message(frame, TransportType.CLOUD_MAMMOTION)
 
 
 async def make_area_rename_rig(

@@ -43,6 +43,7 @@ from .entity import (
     async_add_when_supported,
     invalidate_cached_name,
     name_starts_with_prefix,
+    strip_prefix_word,
     supports_grass_collection,
 )
 
@@ -819,7 +820,8 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
         """Call when entity about to be added to hass."""
         await super().async_added_to_hass()
         # Seed with any existing name override so we only push live user edits.
-        self._pushed_name = self.registry_entry.name if self.registry_entry else None
+        label = self.registry_entry.name if self.registry_entry else None
+        self._pushed_name = self._mower_name(label) if label else None
         last_state = await self.async_get_last_state()
         if last_state and last_state.state == STATE_ON:
             await self.async_turn_on()
@@ -832,11 +834,23 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
         # (Luba 2) and newer models.
         if not DeviceType.is_luba_pro(self.coordinator.device_name):
             return
-        if self.registry_entry:
-            if new_name := self.registry_entry.name:
-                if new_name == self._pushed_name:
-                    return
-                self.hass.async_create_task(self._async_push_name(new_name))
+        if self.registry_entry and (label := self.registry_entry.name):
+            if not (new_name := self._mower_name(label)):
+                LOGGER.debug(
+                    "%s: area %s label %r is only the area word; not renamed",
+                    self.coordinator.device_name,
+                    self.area,
+                    label,
+                )
+                return
+            if new_name == self._pushed_name:
+                return
+            self.hass.async_create_task(self._async_push_name(new_name))
+
+    def _mower_name(self, label: str) -> str:
+        """Return the area name for the mower: the label without HA's area word."""
+        stripped = strip_prefix_word(self.hass, SWITCH_DOMAIN, "area", label)
+        return label if stripped is None else stripped
 
     async def _async_push_name(self, new_name: str) -> None:
         """Rename the area on the mower; a failed push is retried on the next rename."""

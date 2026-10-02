@@ -174,22 +174,30 @@ def invalidate_cached_name(entity: Entity) -> None:
     entity.__dict__.pop("_name_translation_key", None)
 
 
-def name_starts_with_prefix(
+def strip_prefix_word(
     hass: HomeAssistant, platform: str, translation_key: str, name: str
-) -> bool:
-    """Return True when *name* already starts with the word the "<word> {name}" template adds.
+) -> str | None:
+    """Return *name* after the word the "<word> {name}" template adds, or None if absent.
 
     English counts in every locale: pymammotion's fallback names are English.
     """
-    folded = name.lstrip().casefold()
+    stripped = name.lstrip()
+    folded = stripped.casefold()
     for language in {hass.config.language, "en"}:
         template = translation.async_get_cached_translations(
             hass, language, "entity", DOMAIN
         ).get(f"component.{DOMAIN}.entity.{platform}.{translation_key}.name", "")
         word = template.partition("{name}")[0].strip().casefold()
         if word and folded.startswith(word) and folded[len(word) :][:1] in ("", " "):
-            return True
-    return False
+            return stripped[len(word) :].lstrip()
+    return None
+
+
+def name_starts_with_prefix(
+    hass: HomeAssistant, platform: str, translation_key: str, name: str
+) -> bool:
+    """Return True when *name* already starts with the word the "<word> {name}" template adds."""
+    return strip_prefix_word(hass, platform, translation_key, name) is not None
 
 
 class MammotionBaseEntity(CoordinatorEntity[MammotionBaseUpdateCoordinator[Any]]):  # type: ignore[misc]
