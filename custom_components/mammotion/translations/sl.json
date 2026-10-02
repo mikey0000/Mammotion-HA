@@ -1793,6 +1793,10 @@
     "cloud_login_failed": {
       "title": "Oblak Mammotion ni povezan",
       "description": "Home Assistant se ni mogel prijaviti v oblak Mammotion za račun {account} ({error}) in je prenehal s ponovnimi poskusi. Naprave, povezane prek Bluetootha, še naprej delujejo. Ko bo storitev Mammotion spet dosegljiva, znova naložite integracijo Mammotion."
+    },
+    "deprecated_rain_tactics": {
+      "title": "V dejanju Mammotion je uporabljena opuščena možnost",
+      "description": "Avtomatizacija ali skripta kliče `{service}` z `{field}`. Ta možnost je bila odstranjena: do kosilnice ni nikoli prišla, zato je prezrta in opravilo se zažene kot običajno. Namesto nje uporabite stikalo Zaznavanje dežja na kosilnici in odstranite `{field}` iz klica dejanja, da to sporočilo izgine."
     }
   }
 }

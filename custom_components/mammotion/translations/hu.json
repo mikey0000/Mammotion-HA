@@ -1793,6 +1793,10 @@
     "cloud_login_failed": {
       "title": "A Mammotion felhő nincs csatlakoztatva",
       "description": "A Home Assistant nem tudott bejelentkezni a Mammotion felhőbe a(z) {account} fiókkal ({error}), és felhagyott a próbálkozással. A Bluetooth-on csatlakozó eszközök továbbra is működnek. Töltsd újra a Mammotion integrációt, amint a Mammotion szolgáltatás ismét elérhető."
+    },
+    "deprecated_rain_tactics": {
+      "title": "Megszűnt beállítás egy Mammotion műveletben",
+      "description": "Egy automatizálás vagy szkript a(z) `{service}` műveletet hívja a(z) `{field}` mezővel. Ez a beállítás megszűnt: soha nem jutott el a fűnyíróhoz, ezért figyelmen kívül marad, és a feladat a szokásos módon indul. Használja helyette a fűnyíró Esőérzékelés kapcsolóját, és távolítsa el a(z) `{field}` mezőt a műveleti hívásból az üzenet eltüntetéséhez."
     }
   }
 }

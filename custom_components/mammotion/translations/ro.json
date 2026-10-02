@@ -1793,6 +1793,10 @@
     "cloud_login_failed": {
       "title": "Cloud Mammotion neconectat",
       "description": "Home Assistant nu s-a putut conecta la cloud-ul Mammotion pentru {account} ({error}) și a încetat să mai încerce. Dispozitivele conectate prin Bluetooth continuă să funcționeze. Reîncărcați integrarea Mammotion după ce serviciul Mammotion este din nou accesibil."
+    },
+    "deprecated_rain_tactics": {
+      "title": "Opțiune retrasă folosită într-o acțiune Mammotion",
+      "description": "O automatizare sau un script apelează `{service}` cu `{field}`. Această opțiune a fost eliminată: nu a ajuns niciodată la mașina de tuns, așa că este ignorată, iar sarcina pornește normal. Folosiți în schimb comutatorul Detectare ploaie al mașinii de tuns și eliminați `{field}` din apelul acțiunii pentru a închide acest mesaj."
     }
   }
 }

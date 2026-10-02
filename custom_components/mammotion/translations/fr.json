@@ -1793,6 +1793,10 @@
     "cloud_login_failed": {
       "title": "Cloud Mammotion non connecté",
       "description": "Home Assistant n'a pas pu se connecter au cloud Mammotion pour {account} ({error}) et a cessé de réessayer. Les appareils connectés en Bluetooth continuent de fonctionner. Rechargez l'intégration Mammotion une fois le service Mammotion de nouveau accessible."
+    },
+    "deprecated_rain_tactics": {
+      "title": "Option retirée utilisée dans une action Mammotion",
+      "description": "Une automatisation ou un script appelle `{service}` avec `{field}`. Cette option a été supprimée : elle n'atteignait jamais la tondeuse, elle est donc ignorée et la tâche démarre normalement. Utilisez plutôt l'interrupteur Détection de pluie de la tondeuse, puis retirez `{field}` de l'appel d'action pour faire disparaître ce message."
     }
   }
 }

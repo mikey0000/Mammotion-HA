@@ -1793,6 +1793,10 @@
     "cloud_login_failed": {
       "title": "Mammotion cloud not connected",
       "description": "Home Assistant could not sign in to the Mammotion cloud for {account} ({error}) and has stopped retrying. Devices connected over Bluetooth keep working. Reload the Mammotion integration once the Mammotion service is reachable again."
+    },
+    "deprecated_rain_tactics": {
+      "title": "Retired option used in a Mammotion action",
+      "description": "An automation or script calls `{service}` with `{field}`. This option has been removed: it never reached the mower, so it is ignored and the job starts as usual. Use the mower's Rain detection switch instead, and remove `{field}` from the action call to dismiss this message."
     }
   }
 }

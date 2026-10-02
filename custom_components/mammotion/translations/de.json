@@ -1793,6 +1793,10 @@
     "cloud_login_failed": {
       "title": "Die Mammotion-Cloud ist nicht verbunden.",
       "description": "Home Assistant konnte sich für {account} nicht bei der Mammotion-Cloud anmelden ({error}) und versucht es nicht mehr. Über Bluetooth verbundene Geräte funktionieren weiter. Laden Sie die Mammotion-Integration neu, sobald der Mammotion-Dienst wieder erreichbar ist."
+    },
+    "deprecated_rain_tactics": {
+      "title": "Entfernte Option in einer Mammotion-Aktion verwendet",
+      "description": "Eine Automatisierung oder ein Skript ruft `{service}` mit `{field}` auf. Diese Option wurde entfernt: Sie hat den Mäher nie erreicht, daher wird sie ignoriert und der Auftrag startet wie gewohnt. Verwende stattdessen den Schalter Regenerkennung des Mähers und entferne `{field}` aus dem Aktionsaufruf, um diese Meldung zu schließen."
     }
   }
 }

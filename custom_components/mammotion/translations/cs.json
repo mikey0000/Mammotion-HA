@@ -1793,6 +1793,10 @@
     "cloud_login_failed": {
       "title": "Cloud Mammotion není připojen",
       "description": "Home Assistant se nemohl přihlásit ke cloudu Mammotion pro účet {account} ({error}) a přestal to zkoušet. Zařízení připojená přes Bluetooth fungují dál. Jakmile bude služba Mammotion opět dostupná, znovu načtěte integraci Mammotion."
+    },
+    "deprecated_rain_tactics": {
+      "title": "Použita zrušená volba v akci Mammotion",
+      "description": "Automatizace nebo skript volá `{service}` s `{field}`. Tato volba byla odstraněna: do sekačky se nikdy nedostala, proto je ignorována a úloha se spustí jako obvykle. Místo ní použijte přepínač Detekce deště na sekačce a odeberte `{field}` z volání akce, aby tato zpráva zmizela."
     }
   }
 }

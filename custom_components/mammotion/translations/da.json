@@ -1793,6 +1793,10 @@
     "cloud_login_failed": {
       "title": "Mammotion-cloud ikke forbundet",
       "description": "Home Assistant kunne ikke logge ind på Mammotion-cloud for {account} ({error}) og har stoppet med at prøve igen. Enheder forbundet via Bluetooth fungerer fortsat. Genindlæs Mammotion-integrationen, når Mammotion-tjenesten er tilgængelig igen."
+    },
+    "deprecated_rain_tactics": {
+      "title": "Udgået indstilling brugt i en Mammotion-handling",
+      "description": "En automatisering eller et script kalder `{service}` med `{field}`. Denne indstilling er fjernet: den nåede aldrig plæneklipperen, så den ignoreres, og opgaven starter som normalt. Brug i stedet plæneklipperens kontakt til regndetektering, og fjern `{field}` fra handlingskaldet for at afvise denne meddelelse."
     }
   }
 }
