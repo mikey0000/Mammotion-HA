@@ -12,9 +12,10 @@ the refresh actually runs with the transport reporting itself offline, and the
 advertisement callback is the one the integration registers.
 """
 
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, create_autospec, patch
 
 import pytest
+from homeassistant.helpers.debounce import Debouncer
 from pymammotion.data.model.device import MowingDevice
 from pymammotion.transport.base import TransportType
 
@@ -66,6 +67,7 @@ def _coordinator(
     coordinator._subscriptions = []
     coordinator._mow_progress_debouncer = MagicMock()
     coordinator._job_id_query_debouncer = MagicMock()
+    coordinator.poll_debouncer = create_autospec(Debouncer, instance=True)
     coordinator.hass = MagicMock()
     coordinator.manager = MagicMock()
     coordinator.manager.get_device_by_name.return_value = device

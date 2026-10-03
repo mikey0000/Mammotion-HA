@@ -1120,7 +1120,9 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             LOGGER.debug("%s: send rate limited: %s", self.device_name, exc)
         except AccountInUseError as exc:
             self._raise_if_user_waiting(priority, exc, "account_in_use")
-            LOGGER.debug("%s: account held by another session: %s", self.device_name, exc)
+            LOGGER.debug(
+                "%s: account held by another session: %s", self.device_name, exc
+            )
         except CommandTimeoutError as exc:
             # The command may have landed; only its reply is missing.
             self._raise_if_user_waiting(priority, exc, "command_unconfirmed")
@@ -3235,34 +3237,22 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
         service_info: BluetoothServiceInfoBleak,
         change: BluetoothChange,
     ) -> None:
-        """Handle a bluetooth advertisement for this mower's MAC.
+        """Cache the advertisement and hand it to the BLE transport, at most once a minute.
 
-        Two responsibilities:
-
-        1. Cache the latest ``service_info`` for downstream use (RSSI gates,
-           freshness checks, etc.).
-        2. Push the freshest ``BLEDevice`` into the existing BLETransport so
-           ``bleak_retry_connector``'s ``ble_device_callback`` always has the
-           most recent advertisement.  This is a synchronous pointer-swap
-           (``BLETransport.set_ble_device``) — no event-loop work needed,
-           safe to run in this ``@callback``-decorated handler.
-
-        Initial transport wire-up (``add_ble_to_device``) is handled by
-        :func:`_attach_ble_to_mower` in ``__init__.py``, which has access to
-        the ``stay_connected_ble`` config flag.  Once the transport exists,
-        every subsequent advertisement flows through this fast path.
+        The hand-off, and the connect it may start, run in ``poll_debouncer``'s
+        background task: Home Assistant replays the last advertisement when this
+        callback is registered, and startup must not wait on that connect.
         """
         self.service_info = service_info
-
         self.poll_debouncer.async_schedule_call()
 
-    def _add_ble_device(self) -> None:
+    async def _add_ble_device(self) -> None:
         if not self.service_info or not self._bluetooth_enabled:
             return
         handle = self.manager.mower(self.device_name)
         if handle is None:
             return
-        self.hass.create_task(self._async_push_advertisement(handle))
+        await self._async_push_advertisement(handle)
 
     async def _async_push_advertisement(self, handle: DeviceHandle) -> None:
         """Hand the freshest advertisement to the BLE transport (creating it if needed) and connect."""
@@ -3271,6 +3261,9 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
         await self.manager.update_ble_device(
             self.device_name, self.service_info.device, self.service_info.rssi
         )
+        # The Bluetooth switch may have gone off during the hand-off.
+        if not self._bluetooth_enabled:
+            return
         ble = handle.get_transport(TransportType.BLE)
         if (
             ble is not None
@@ -3284,8 +3277,12 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
     async def async_set_bluetooth_enabled(self, enabled: bool) -> None:
         """Enable or disable Bluetooth, reconnecting if re-enabled."""
         await super().async_set_bluetooth_enabled(enabled)
-        if enabled:
-            self._add_ble_device()
+        if enabled and (entry := self.config_entry) is not None:
+            entry.async_create_background_task(
+                self.hass,
+                self._add_ble_device(),
+                name=f"{DOMAIN}_ble_handoff_{self.device_name}",
+            )
 
     @callback
     def _async_start(self) -> None:
@@ -3318,6 +3315,7 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
     async def async_shutdown(self) -> None:
         """Drop the advertisement subscription along with the rest."""
         self._async_stop()
+        self.poll_debouncer.async_shutdown()
         self._mow_progress_debouncer.async_shutdown()
         self._job_id_query_debouncer.async_shutdown()
         await super().async_shutdown()
