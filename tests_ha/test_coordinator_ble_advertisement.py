@@ -26,7 +26,7 @@ from pytest_homeassistant_custom_component.common import (
 from custom_components.mammotion import _create_ble_only_device
 from custom_components.mammotion.const import CONF_BLE_DEVICES, DOMAIN
 from custom_components.mammotion.coordinator import MammotionReportUpdateCoordinator
-from tests_ha.ble_advertisements import inject_advertisement
+from tests_ha.ble_advertisements import inject_advertisement, make_service_info
 
 _MOWER = "Luba-VS123456"
 _MOWER_MAC = "AA:BB:CC:DD:EE:FF"
@@ -119,13 +119,35 @@ async def test_bluetooth_switched_off_mid_handoff_does_not_connect(
     coordinator._async_start()
 
     inject_advertisement(hass, _MOWER, _MOWER_MAC)
-    await asyncio.wait_for(handing_over.wait(), timeout=_WAIT)
-    await coordinator.async_set_bluetooth_enabled(False)
-    release.set()
-    await hass.async_block_till_done(wait_background_tasks=True)
+    try:
+        await asyncio.wait_for(handing_over.wait(), timeout=_WAIT)
+        await coordinator.async_set_bluetooth_enabled(False)
+    finally:
+        release.set()
+        await hass.async_block_till_done(wait_background_tasks=True)
+        await coordinator.async_shutdown()
 
     ble.connect.assert_not_awaited()
-    await coordinator.async_shutdown()
+
+
+@pytest.mark.usefixtures("enable_bluetooth")
+async def test_switching_bluetooth_back_on_hands_over_the_last_advertisement(
+    hass: HomeAssistant,
+) -> None:
+    """The cached advertisement reaches the transport without waiting for the next one."""
+    coordinator = _coordinator(hass, _idle_ble())
+    service_info = make_service_info(_MOWER, _MOWER_MAC, rssi=-70)
+    coordinator.service_info = service_info
+
+    try:
+        await coordinator.async_set_bluetooth_enabled(True)
+        await hass.async_block_till_done(wait_background_tasks=True)
+    finally:
+        await coordinator.async_shutdown()
+
+    coordinator.manager.update_ble_device.assert_awaited_once_with(
+        _MOWER, service_info.device, -70
+    )
 
 
 @pytest.mark.regression
