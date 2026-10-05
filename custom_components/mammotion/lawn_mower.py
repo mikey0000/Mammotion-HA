@@ -440,6 +440,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
                                 failure_key=trans_key,
                             )
                         )
+                        await self._async_wait_for_resume()
                 if mode in (WorkMode.MODE_READY, WorkMode.MODE_INITIALIZATION):
                     trans_key = "start_failed"
                     if breakpoint_info != 0:
@@ -650,6 +651,20 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
             failure_key=failure_key,
         )
         return WorkMode(device.report_data.dev.sys_status)
+
+    async def _async_wait_for_resume(self) -> None:
+        """Hold the report snapshot until the mower reports WORKING again.
+
+        The resume already went out, so a mower slow to report it is not a failure.
+        """
+        try:
+            await self._async_wait_for_mode(
+                WorkMode.MODE_WORKING, failure_key="resume_failed"
+            )
+        except HomeAssistantError as exc:
+            if not isinstance(exc.__cause__, TimeoutError):
+                raise
+            LOGGER.debug("Mower did not report WORKING after resume: %s", exc)
 
     async def async_modify_running_job(self, **kwargs: Any) -> None:
         """Change settings on the job already running, without re-planning it."""
