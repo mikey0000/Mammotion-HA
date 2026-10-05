@@ -2444,11 +2444,9 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
 
     async def start_task(self, plan_id: str) -> None:
         """Start task."""
-        await self.async_send_and_wait(
-            "single_schedule",
-            "todev_planjob_set",
-            priority=Priority.USER,
-            plan_id=plan_id,
+        # plan_task_execute has no reply the library matches; waiting would time out.
+        await self.async_send_command(
+            "single_schedule", priority=Priority.USER, plan_id=plan_id
         )
 
     # ------------------------------------------------------------------
