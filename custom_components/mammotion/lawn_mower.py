@@ -180,7 +180,7 @@ async def async_setup_entry(
         SERVICE_CANCEL_JOB,
         entity_domain=LAWN_MOWER_DOMAIN,
         schema=None,
-        func="async_cancel",
+        func="async_stop",
     )
     service.async_register_platform_entity_service(
         hass,
@@ -271,6 +271,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
         LawnMowerEntityFeature.DOCK
         | LawnMowerEntityFeature.PAUSE
         | LawnMowerEntityFeature.START_MOWING
+        | LawnMowerEntityFeature.STOP
     )
 
     def __init__(self, coordinator: MammotionReportUpdateCoordinator) -> None:
@@ -298,9 +299,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
             return None
 
         LOGGER.debug("activity mode %s", mode)
-        if mode in (WorkMode.MODE_PAUSE, WorkMode.MODE_CHARGING_PAUSE) or (
-            mode == WorkMode.MODE_READY and charge_state == 0
-        ):
+        if mode in (WorkMode.MODE_PAUSE, WorkMode.MODE_CHARGING_PAUSE):
             return LawnMowerActivity.PAUSED
         if mode == WorkMode.MODE_WORKING:
             return LawnMowerActivity.MOWING
@@ -308,6 +307,8 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
             return LawnMowerActivity.RETURNING
         if mode == WorkMode.MODE_LOCK:
             return LawnMowerActivity.ERROR
+        if mode == WorkMode.MODE_READY and charge_state == 0:
+            return LawnMowerActivity.IDLE
         if mode == WorkMode.MODE_READY and charge_state != 0:
             return LawnMowerActivity.DOCKED
         return None
@@ -565,8 +566,8 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
             finally:
                 await self.coordinator.async_request_report_snapshot()
 
-    async def async_cancel(self) -> None:
-        """Cancel Job."""
+    async def async_stop(self) -> None:
+        """Cancel the current job without sending the mower back to the dock."""
         await self.coordinator.async_ensure_fresh_state(wait=True)
         mode = self.rpt_dev_status.sys_status
         if mode is None:
