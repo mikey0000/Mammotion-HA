@@ -1,10 +1,10 @@
 """Fetching mow path data — the ``fetch_mow_path`` service and the map card's progress trigger.
 
-The map card polls ``get_mow_progress_geojson``.  During a job, while the
-progress layer is still empty, that poll asks pymammotion (at most once a
-minute) for what the layer is drawn from: the dynamics line on dynamics-line
-mowers over the cloud (BLE is left to the library's own loop), otherwise the
-cover path.
+The map card polls ``get_mow_progress_geojson``.  During a job, on a
+dynamics-line mower every poll extends pymammotion's five-minute dynamics-line
+window, so over the cloud the line is polled only while someone is looking.  Otherwise, while
+the progress layer is still empty, the poll fetches the cover path at most once
+a minute.
 """
 
 import json
@@ -152,37 +152,21 @@ async def test_fetch_mow_path_also_fetches_the_dynamics_line(
     )
 
 
-async def test_progress_poll_fetches_a_missing_dynamics_line_over_the_cloud(
-    hass: HomeAssistant, entity_registry: er.EntityRegistry
-) -> None:
-    """Nothing shown yet on a cloud-only mower: fetch the line, not the cover path."""
-    async_setup_services(hass)
-    coordinator = _coordinator(hass, device_name=_DYNAMICS_MOWER)
-    entity_id = _register_mower(hass, entity_registry, coordinator)
-
-    await _poll_progress(hass, entity_id)
-
-    coordinator.manager.check_and_get_dynamics_line.assert_awaited_once_with(
-        _DYNAMICS_MOWER
-    )
-    coordinator.manager.check_and_get_mow_path.assert_not_awaited()
-    coordinator._mow_progress_debouncer.async_shutdown()
-
-
 @pytest.mark.parametrize(
     ("ble_connected", "shown"),
     [
+        pytest.param(False, False, id="cloud, line missing"),
         pytest.param(False, True, id="cloud, line shown"),
-        pytest.param(True, False, id="ble, line missing"),
+        pytest.param(True, True, id="ble, line shown"),
     ],
 )
-async def test_progress_poll_leaves_the_dynamics_line_alone(
+async def test_every_progress_poll_keeps_the_dynamics_line_watched(
     hass: HomeAssistant,
     entity_registry: er.EntityRegistry,
     ble_connected: bool,
     shown: bool,
 ) -> None:
-    """Each cloud fetch costs several invokes; over BLE the library's 10 s loop owns it."""
+    """The window, not a one-shot fetch, keeps the line moving while the card is open."""
     async_setup_services(hass)
     coordinator = _coordinator(
         hass, device_name=_DYNAMICS_MOWER, ble_connected=ble_connected
@@ -192,9 +176,26 @@ async def test_progress_poll_leaves_the_dynamics_line_alone(
     entity_id = _register_mower(hass, entity_registry, coordinator)
 
     await _poll_progress(hass, entity_id)
+    await _poll_progress(hass, entity_id)
 
+    assert coordinator.manager.watch_dynamics_line.call_count == 2
     coordinator.manager.check_and_get_dynamics_line.assert_not_awaited()
     coordinator.manager.check_and_get_mow_path.assert_not_awaited()
+
+
+async def test_progress_poll_outside_a_job_does_not_watch_the_dynamics_line(
+    hass: HomeAssistant, entity_registry: er.EntityRegistry
+) -> None:
+    """Nothing is being mowed, so there is no line to keep fresh."""
+    async_setup_services(hass)
+    coordinator = _coordinator(
+        hass, device_name=_DYNAMICS_MOWER, sys_status=WorkMode.MODE_READY.value
+    )
+    entity_id = _register_mower(hass, entity_registry, coordinator)
+
+    await _poll_progress(hass, entity_id)
+
+    coordinator.manager.watch_dynamics_line.assert_not_called()
 
 
 async def test_empty_progress_during_a_job_fetches_the_path_once_per_cooldown(

@@ -3048,7 +3048,7 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
             background=True,
         )
         # The map card polls mow progress every few seconds; this caps the
-        # fetches those polls trigger at one a minute.
+        # cover-path fetches those polls trigger at one a minute.
         self._mow_progress_debouncer = Debouncer(
             hass,
             LOGGER,
@@ -3201,31 +3201,25 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
         return started
 
     async def _async_refresh_mow_progress_source(self) -> None:
-        """Fetch whatever the map's progress layer is drawn from."""
-        if self.supports_dynamics_line:
-            await self.manager.check_and_get_dynamics_line(self.device_name)
-        else:
-            await self.manager.check_and_get_mow_path(self.device_name)
+        """Fetch the cover path the progress layer is drawn from."""
+        await self.manager.check_and_get_mow_path(self.device_name)
 
     @callback
     def async_request_mow_progress(self) -> None:
-        """Fetch the progress layer's data after the map card polled it, if it is missing.
+        """Keep the progress layer's data coming while the map card polls it, during a job.
 
-        Only during a job, and only while nothing can be shown yet: every fetch
-        over the cloud costs several invokes (request, per-frame acks, re-sync).
-        Over BLE a dynamics line is left to pymammotion's 10 s dynamics_line_loop,
-        which already keeps it current.
+        Over the cloud pymammotion polls a dynamics-line mower's line only inside a
+        five-minute window that each card poll extends (over BLE, for the whole job).
+        The cover path is fetched while nothing can be shown yet, at most once a minute.
         """
         if (data := self.data) is None:
             return
         if data.report_data.dev.sys_status not in MOWING_ACTIVE_MODES:
             return
         if self.supports_dynamics_line:
-            if self._ble_is_connected() or data.map.generated_dynamics_line_geojson.get(
-                "features"
-            ):
-                return
-        elif data.report_data.work.path_hash <= 1 or (
+            self.manager.watch_dynamics_line(self.device_name)
+            return
+        if data.report_data.work.path_hash <= 1 or (
             data.map.generated_mow_progress_geojson.get("features")
         ):
             return

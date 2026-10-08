@@ -136,6 +136,14 @@ def test_check_and_get_mow_path_reports_whether_it_fetched() -> None:
     assert "def is_mow_path_current(" in _source("data/model/hash_list.py")
 
 
+def test_the_dynamics_line_is_polled_through_a_viewing_window() -> None:
+    """``get_mow_progress_geojson`` extends this window on every map-card poll."""
+    assert (
+        "def watch_dynamics_line(self, device_name: str, account_id: str | None = None) -> None:"
+        in _source("client.py")
+    )
+
+
 def test_work_ends_with_the_job_and_fetches_record_their_job() -> None:
     """running_plan and the unknown-job task sync read these from the data."""
     assert "plans_fetched_job_id: int = 0" in _source("data/model/hash_list.py")

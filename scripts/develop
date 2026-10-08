@@ -32,6 +32,7 @@ logger:
 YAML
 fi
 
+ENV_ARGS=()
 # Any uv sync replaces these with the pinned wheels; relink the sibling checkouts
 # when they exist (LOCAL_LIBS=0 to run against the pinned versions instead).
 if [ "${LOCAL_LIBS:-1}" != "0" ]; then
@@ -42,6 +43,11 @@ if [ "${LOCAL_LIBS:-1}" != "0" ]; then
       rm -rf "$SITE/$name" && ln -s "$src" "$SITE/$name" && echo "linked $name -> $src"
     fi
   done
+  # A source checkout's const.py has blank credentials and load_dotenv() searches
+  # up from the symlinked path in this venv, so it never finds Luba-API's .env.
+  if [ -f ../Luba-API/.env ]; then
+    ENV_ARGS=(--env-file "$(cd ../Luba-API && pwd)/.env")
+  fi
 fi
 
-exec uv run --no-sync hass --config "$CONFIG" --debug "$@"
+exec uv run --no-sync "${ENV_ARGS[@]}" hass --config "$CONFIG" --debug "$@"
