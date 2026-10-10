@@ -440,6 +440,9 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
                                 failure_key=trans_key,
                             )
                         )
+                        await self._async_wait_for_mode(
+                            WorkMode.MODE_WORKING, failure_key=trans_key
+                        )
                 if mode in (WorkMode.MODE_READY, WorkMode.MODE_INITIALIZATION):
                     trans_key = "start_failed"
                     if breakpoint_info != 0:
