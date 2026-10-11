@@ -276,7 +276,12 @@ async def test_start_without_route_fields_resumes_a_paused_job(
     data: dict[str, Any] | None,
 ) -> None:
     """Nothing new was asked for, so the paused job is resumed, never ended (#485)."""
-    entity = make_mower_entity(OperationSettings(), mode=WorkMode.MODE_PAUSE, bp_info=1)
+    entity = make_mower_entity(
+        OperationSettings(),
+        mode=WorkMode.MODE_PAUSE,
+        bp_info=1,
+        responses={"resume_execute_task": WorkMode.MODE_WORKING},
+    )
 
     if data is None:
         await entity.async_start_mowing()
