@@ -1,6 +1,6 @@
 [project]
 name = "mammotion-ha"
-version = "0.6.17-beta1"
+version = "0.6.18"
 description = "Mammotion integration for HACS"
 authors = [
     {name = "Michael Arthur", email = "michael@jumblesoft.co.nz"},
@@ -9,8 +9,8 @@ authors = [
 readme = "README.md"
 requires-python = ">=3.14.2"
 dependencies = [
-    "pymammotion==0.10.9",
-    "homeassistant>=2026.1.0",
+    "pymammotion==0.10.10",
+    "homeassistant>=2026.10.0",
     "autotyping>=24.3.0",
     "pyagorartc==0.2.3",
 ]
@@ -22,7 +22,7 @@ dev = [
     "ruff>=0.16.8",
     "mypy>=1.18.2",
     "pytest>=8.0.0",
-    "pytest-homeassistant-custom-component==0.13.366",
+    "pytest-homeassistant-custom-component==0.13.372",
     "aiousbwatcher>=1.1.2",
     "serialx>=1.10.0",
     "pyturbojpeg>=2.5.0",
