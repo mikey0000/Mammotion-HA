@@ -1,7 +1,8 @@
-"""``start_task`` runs a stored schedule now, through ``single_schedule``.
+"""The report coordinator's user commands.
 
-The command is ``NavPlanTaskExecute``; nothing in the library matches a reply to
-it, so the press has to succeed once the command went out.
+``start_task`` runs a stored schedule now, through ``single_schedule``. The
+command is ``NavPlanTaskExecute``; nothing in the library matches a reply to it,
+so the press has to succeed once the command went out.
 """
 
 import pytest
