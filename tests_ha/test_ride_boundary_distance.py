@@ -15,7 +15,6 @@ from typing import Any
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from homeassistant.components import number as number_component
 from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers.entity import EntityCategory
 from pymammotion.data.model.device import MowingDevice
@@ -24,6 +23,14 @@ from pymammotion.data.model.device_config import OperationSettings
 from custom_components.mammotion import number as number_platform
 from custom_components.mammotion import select as select_platform
 from custom_components.mammotion.coordinator import MammotionBaseUpdateCoordinator
+
+
+class MockHass:
+    """Minimal mock for Home Assistant service calls."""
+
+    async def async_add_executor_job(self, fn, *args):
+        return fn(*args)
+
 
 _ROOT = Path(__file__).parent.parent / "custom_components" / "mammotion"
 _KEY = "ride_boundary_distance"
@@ -80,9 +87,7 @@ async def _number(name: str = "Luba-VA123456") -> Any:
 
 async def _set(entity: Any, value: float) -> None:
     """Set a value the way HA's ``number.set_value`` service does."""
-    await number_component.async_set_value(
-        entity, SimpleNamespace(data={"value": value})
-    )
+    await entity.async_set_native_value(value)
 
 
 def _route_coordinator(name: str) -> AsyncMock:

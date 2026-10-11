@@ -1,6 +1,6 @@
 [project]
 name = "mammotion-ha"
-version = "0.6.18-beta2"
+version = "0.6.18"
 description = "Mammotion integration for HACS"
 authors = [
     {name = "Michael Arthur", email = "michael@jumblesoft.co.nz"},
@@ -24,7 +24,7 @@ dev = [
     "pytest>=8.0.0",
     "pytest-homeassistant-custom-component==0.13.372",
     "aiousbwatcher>=1.1.2",
-    "serialx>=1.10.0",
+    "serialx>=0.2.0",
     "pyturbojpeg>=2.5.0",
 ]
 
