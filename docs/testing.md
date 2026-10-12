@@ -436,13 +436,13 @@ every `@pytest.mark.regression` test has a docstring.
 
 Measured 2026-10-02 against a tree mid-edit.
 
-| Debt                                                      | Size                                                                                                                                 | Fix                                                                        |
-| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------- |
-| test modules not named for a source module                | 73 of 101                                                                                                                            | §2 — new tests go to the mirrored file; rename when a file is next touched |
-| source modules with no `test_<module>*`                   | `binary_sensor`, `device_tracker`, `entity`, `number`, `select`, `sensor`, `update`, `vacuum` (+ `const`, `models`, `geojson_utils`) | §11                                                                        |
-| timers driven without `async_fire_time_changed`           | most timer tests                                                                                                                     | §6                                                                         |
-| config-flow tests patching `async_setup_entry` per module | 3 modules                                                                                                                            | §5 — one shared `mock_setup_entry` fixture                                 |
-| repo-root `test_sdp.py`, `test_credential_fallback.py`    | 2                                                                                                                                    | §2 — delete or move                                                        |
+| Debt                                                      | Size                                                                                                               | Fix                                                                        |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------- |
+| test modules not named for a source module                | 73 of 101                                                                                                          | §2 — new tests go to the mirrored file; rename when a file is next touched |
+| source modules with no `test_<module>*`                   | `binary_sensor`, `entity`, `number`, `select`, `sensor`, `update`, `vacuum` (+ `const`, `models`, `geojson_utils`) | §11                                                                        |
+| timers driven without `async_fire_time_changed`           | most timer tests                                                                                                   | §6                                                                         |
+| config-flow tests patching `async_setup_entry` per module | 3 modules                                                                                                          | §5 — one shared `mock_setup_entry` fixture                                 |
+| repo-root `test_sdp.py`, `test_credential_fallback.py`    | 2                                                                                                                  | §2 — delete or move                                                        |
 
 The meta-test baselines as first written (the constants in `tests_ha/meta/`
 are the authority):
