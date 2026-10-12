@@ -70,7 +70,7 @@
         "data_description": {
           "movement_use_wifi": "A régi mozgatási parancsot küldi Wi-Fi-n a felhőalapú távvezérlés helyett. Enélkül a léptetőgombok és a mozgatási műveletek az 1.30.31.19-es firmware-től a LUBA 2, LUBA 2X, YUKA, LUBA mini és YUKA mini, a 2.3.31.69-es firmware-től a LUBA 3, LUBA mini 2 és YUKA mini 2, valamint azokon az újabb modelleken, amelyekhez a Mammotion szerver támogatást jelez, csak akkor működnek a felhőn keresztül, ha a Felhőalapú távvezérlés be van kapcsolva és meg van erősítve. Kapcsolja be, hogy a régi parancsot bármely firmware-rel használja, például a kettő összehasonlításához egy LUBA 3-on; a csatlakoztatott Bluetooth-kapcsolat továbbra is elsőbbséget élvez.",
           "notify": "Az önellenőrzési értesítések alapértelmezés szerint be vannak kapcsolva, a többi ki. Minden értesítés a fűnyíró értesítési eseményentitását és egy mammotion_event buszeseményt is kivált, amelyeket az automatizálások helyette használhatnak.",
-          "go2rtc_url": "Egy go2rtc-szerver API-címe, például a Frigate-é: http://frigate:1984. Minden kamera mammotion_<eszköz>_<kamera> nevű streamként regisztrálódik ott, és ezután rtsp://<go2rtc-gép>:8554/<streamnév> címen érhető el. A go2rtc-nek el kell érnie a Home Assistant belső URL-jét. Hagyja üresen a továbbítás kikapcsolásához."
+          "go2rtc_url": "Egy go2rtc-szerver API-címe, például a Frigate-é: http://frigate:1984. Minden kamera a fűnyíróról és a kameráról elnevezett streamként regisztrálódik ott, például mammotion_luba_mnab12cd_camera néven, amelyet a go2rtc RTSP-n, a 8554-es porton szolgáltat. A go2rtc-nek el kell érnie a Home Assistant belső URL-jét. Hagyja üresen a továbbítás kikapcsolásához."
         }
       }
     },

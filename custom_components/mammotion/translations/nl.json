@@ -70,7 +70,7 @@
         "data_description": {
           "movement_use_wifi": "Verzendt de oude bewegingsopdracht via Wi-Fi in plaats van besturing op afstand via cloud te gebruiken. Zonder deze optie werken de duwknoppen en bewegingsacties via de cloud vanaf firmware 1.30.31.19 op LUBA 2, LUBA 2X, YUKA, LUBA mini en YUKA mini, vanaf 2.3.31.69 op LUBA 3, LUBA mini 2 en YUKA mini 2, en op nieuwere modellen waarvoor de Mammotion-server ondersteuning meldt, alleen terwijl Besturing op afstand via cloud aan staat en bevestigd is. Schakel dit in om de oude opdracht met elke firmware te gebruiken, bijvoorbeeld om beide op een LUBA 3 te vergelijken; een verbonden Bluetooth-verbinding gaat nog steeds voor.",
           "notify": "Zelftestmeldingen staan standaard aan, de andere uit. Elke melding activeert ook de meldingsgebeurtenis-entiteit van de maaier en een mammotion_event op de bus, die automatiseringen in plaats daarvan kunnen gebruiken.",
-          "go2rtc_url": "API-adres van een go2rtc-server, zoals die van Frigate: http://frigate:1984. Elke camera wordt daar geregistreerd als een stream met de naam mammotion_<apparaat>_<camera> en is daarna beschikbaar als rtsp://<go2rtc-host>:8554/<streamnaam>. go2rtc moet de interne URL van Home Assistant kunnen bereiken. Laat leeg om doorstreamen uit te zetten."
+          "go2rtc_url": "API-adres van een go2rtc-server, zoals die van Frigate: http://frigate:1984. Elke camera wordt daar geregistreerd als een stream genoemd naar de maaier en de camera, bijvoorbeeld mammotion_luba_mnab12cd_camera, die go2rtc via RTSP op poort 8554 aanbiedt. go2rtc moet de interne URL van Home Assistant kunnen bereiken. Laat leeg om doorstreamen uit te zetten."
         }
       }
     },

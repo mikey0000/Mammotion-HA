@@ -70,7 +70,7 @@
         "data_description": {
           "movement_use_wifi": "Skickar det gamla rörelsekommandot via Wi-Fi i stället för att använda fjärrkörning via moln. Utan detta fungerar knuffknapparna och rörelseåtgärderna via molnet från firmware 1.30.31.19 på LUBA 2, LUBA 2X, YUKA, LUBA mini och YUKA mini, från 2.3.31.69 på LUBA 3, LUBA mini 2 och YUKA mini 2 och på nyare modeller som Mammotion-servern rapporterar stöd för, bara medan Fjärrkörning via moln är på och bekräftad. Slå på för att använda det gamla kommandot med all firmware, till exempel för att jämföra båda på en LUBA 3; en ansluten Bluetooth-länk används fortfarande först.",
           "notify": "Självtestaviseringar är på som standard, de andra är av. Varje avisering utlöser också gräsklipparens aviseringshändelseentitet och en mammotion_event-händelse på bussen, som automatiseringar kan använda i stället.",
-          "go2rtc_url": "API-adress till en go2rtc-server, till exempel Frigates: http://frigate:1984. Varje kamera registreras där som en ström med namnet mammotion_<enhet>_<kamera> och blir då tillgänglig som rtsp://<go2rtc-värd>:8554/<strömnamn>. go2rtc måste kunna nå Home Assistants interna URL. Lämna tomt för att stänga av omströmningen."
+          "go2rtc_url": "API-adress till en go2rtc-server, till exempel Frigates: http://frigate:1984. Varje kamera registreras där som en ström uppkallad efter klipparen och kameran, till exempel mammotion_luba_mnab12cd_camera, som go2rtc sedan delar ut via RTSP på port 8554. go2rtc måste kunna nå Home Assistants interna URL. Lämna tomt för att stänga av omströmningen."
         }
       }
     },

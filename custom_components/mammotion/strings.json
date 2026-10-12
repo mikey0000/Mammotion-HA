@@ -70,7 +70,7 @@
         "data_description": {
           "movement_use_wifi": "Sends the legacy movement command over Wi-Fi instead of using Cloud remote drive. Without it, from firmware 1.30.31.19 on LUBA 2, LUBA 2X, YUKA, LUBA mini and YUKA mini, from 2.3.31.69 on LUBA 3, LUBA mini 2 and YUKA mini 2, and on newer models the Mammotion server reports remote-drive support for, the nudge buttons and move actions work over the cloud only while Cloud remote drive is on and confirmed. Turn this on to use the legacy command on any firmware, for example to compare both on a LUBA 3; a connected Bluetooth link is still used first.",
           "notify": "Self-check notifications are on by default; the others are off. Every notification also fires the mower's notification event entity and a mammotion_event bus event, which automations can use instead.",
-          "go2rtc_url": "API address of a go2rtc server, such as Frigate's: http://frigate:1984. Each camera is registered there as a stream named mammotion_<device>_<camera> and is then available as rtsp://<go2rtc host>:8554/<stream name>. go2rtc must be able to reach Home Assistant's internal URL. Leave empty to turn re-streaming off."
+          "go2rtc_url": "API address of a go2rtc server, such as Frigate's: http://frigate:1984. Each camera is registered there as a stream named after the mower and the camera, for example mammotion_luba_mnab12cd_camera, which go2rtc serves over RTSP on port 8554. go2rtc must be able to reach Home Assistant's internal URL. Leave empty to turn re-streaming off."
         }
       }
     },

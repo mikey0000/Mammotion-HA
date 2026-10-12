@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 import pytest
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
@@ -83,3 +86,24 @@ async def test_the_form_suggests_the_saved_address(
 
     field = next(k for k in result["data_schema"].schema if k == CONF_GO2RTC_URL)
     assert field.description == {"suggested_value": suggested}
+
+
+_TRANSLATIONS = Path(__file__).parents[1] / "custom_components/mammotion/translations"
+
+
+@pytest.mark.regression
+@pytest.mark.parametrize("locale", sorted(p.stem for p in _TRANSLATIONS.glob("*.json")))
+def test_the_go2rtc_option_texts_are_valid_icu_messages(locale: str) -> None:
+    """The frontend renders translations as ICU messages.
+
+    The help text showed ``mammotion_<device>_<camera>``; ICU reads ``<device>`` as
+    a tag, so the form showed "Translation error: INVALID_TAG" instead of the text.
+    """
+    options = json.loads((_TRANSLATIONS / f"{locale}.json").read_text())["options"]
+    texts = [
+        options["step"]["init"]["data"][CONF_GO2RTC_URL],
+        options["step"]["init"]["data_description"][CONF_GO2RTC_URL],
+        options["error"]["invalid_go2rtc_url"],
+    ]
+
+    assert [t for t in texts if set(t) & set("<>{}")] == []

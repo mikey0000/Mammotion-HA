@@ -70,7 +70,7 @@
         "data_description": {
           "movement_use_wifi": "Sender den gamle bevægelseskommando via Wi-Fi i stedet for at bruge fjernkørsel via skyen. Uden denne indstilling virker skubbeknapperne og bevægelseshandlingerne via skyen fra firmware 1.30.31.19 på LUBA 2, LUBA 2X, YUKA, LUBA mini og YUKA mini, fra 2.3.31.69 på LUBA 3, LUBA mini 2 og YUKA mini 2 og på nyere modeller, som Mammotion-serveren melder understøttelse for, kun mens Fjernkørsel via skyen er slået til og bekræftet. Slå dette til for at bruge den gamle kommando med al firmware, fx for at sammenligne begge på en LUBA 3; en tilsluttet Bluetooth-forbindelse bruges stadig først.",
           "notify": "Selvtestmeddelelser er slået til som standard; de andre er slået fra. Hver meddelelse udløser også plæneklipperens meddelelseshændelsesenhed og en mammotion_event-hændelse på bussen, som automatiseringer kan bruge i stedet.",
-          "go2rtc_url": "API-adresse på en go2rtc-server, f.eks. Frigates: http://frigate:1984. Hvert kamera registreres der som en stream med navnet mammotion_<enhed>_<kamera> og er derefter tilgængeligt som rtsp://<go2rtc-vært>:8554/<streamnavn>. go2rtc skal kunne nå Home Assistants interne URL. Lad feltet være tomt for at slå genudsendelse fra."
+          "go2rtc_url": "API-adresse på en go2rtc-server, f.eks. Frigates: http://frigate:1984. Hvert kamera registreres der som en stream opkaldt efter robotten og kameraet, f.eks. mammotion_luba_mnab12cd_camera, som go2rtc derefter udsender via RTSP på port 8554. go2rtc skal kunne nå Home Assistants interne URL. Lad feltet være tomt for at slå genudsendelse fra."
         }
       }
     },
