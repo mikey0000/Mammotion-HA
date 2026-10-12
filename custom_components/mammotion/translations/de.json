@@ -64,13 +64,18 @@
           "movement_use_wifi": "Bewegungsbefehle über WLAN senden",
           "mow_path_fetch_enabled": "Mähpfad-Abruf aktivieren (Cloud)",
           "full_map_fetch_enabled": "Vollständigen Kartenabruf aktivieren (Cloud) — wenn aus, werden nur Bereichsnamen abgerufen",
-          "notify": "Dauerhafte Benachrichtigungen anzeigen für:"
+          "notify": "Dauerhafte Benachrichtigungen anzeigen für:",
+          "go2rtc_url": "go2rtc-Server für das Weiterstreamen der Kameras (z. B. Frigate)"
         },
         "data_description": {
           "movement_use_wifi": "Sendet den bisherigen Bewegungsbefehl über WLAN, anstatt die Cloud-Fernsteuerung zu verwenden. Ohne diese Funktion (ab Firmware 1.30.31.19 auf LUBA 2, LUBA 2X, YUKA, LUBA mini und YUKA mini / ab 2.3.31.69 auf LUBA 3, LUBA mini 2 und YUKA mini 2 sowie auf neueren Modellen, für die der Mammotion-Server die Unterstützung von „Remote Drive“ meldet) funktionieren die Schub-Tasten und Bewegungsaktionen über die Cloud nur, solange „Cloud Remote Drive“ aktiviert und bestätigt ist. Aktivieren Sie diese Option, um den Legacy-Befehl auf jeder Firmware zu verwenden, beispielsweise um beide auf einem LUBA 3 zu vergleichen. Eine verbundene Bluetooth-Verbindung wird weiterhin vorrangig genutzt.",
-          "notify": "Selbsttest-Benachrichtigungen sind standardmäßig aktiviert, die anderen deaktiviert. Jede Benachrichtigung löst außerdem die Benachrichtigungs-Event-Entität des Mähroboters sowie ein „mammotion_event“-Bus-Ereignis aus, auf das Automationen stattdessen zurückgreifen können."
+          "notify": "Selbsttest-Benachrichtigungen sind standardmäßig aktiviert, die anderen deaktiviert. Jede Benachrichtigung löst außerdem die Benachrichtigungs-Event-Entität des Mähroboters sowie ein „mammotion_event“-Bus-Ereignis aus, auf das Automationen stattdessen zurückgreifen können.",
+          "go2rtc_url": "API-Adresse eines go2rtc-Servers, etwa der von Frigate: http://frigate:1984. Jede Kamera wird dort als Stream mit dem Namen mammotion_<Gerät>_<Kamera> registriert und ist dann als rtsp://<go2rtc-Host>:8554/<Streamname> erreichbar. go2rtc muss die interne URL von Home Assistant erreichen können. Leer lassen, um das Weiterstreamen abzuschalten."
         }
       }
+    },
+    "error": {
+      "invalid_go2rtc_url": "Gib eine http://- oder https://-Adresse ein, zum Beispiel http://frigate:1984."
     }
   },
   "entity": {

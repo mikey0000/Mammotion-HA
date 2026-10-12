@@ -64,13 +64,18 @@
           "movement_use_wifi": "Invia comandi di movimento tramite Wi-Fi",
           "mow_path_fetch_enabled": "Abilita recupero percorso di taglio (cloud)",
           "full_map_fetch_enabled": "Abilita recupero completo della mappa (cloud) — se disabilitato, vengono recuperati solo i nomi delle aree",
-          "notify": "Mostra notifiche persistenti per"
+          "notify": "Mostra notifiche persistenti per",
+          "go2rtc_url": "Server go2rtc per la ritrasmissione delle telecamere (ad es. Frigate)"
         },
         "data_description": {
           "movement_use_wifi": "Invia il vecchio comando di movimento tramite Wi-Fi invece di usare la guida remota via cloud. Senza questa opzione, dal firmware 1.30.31.19 su LUBA 2, LUBA 2X, YUKA, LUBA mini e YUKA mini, dal 2.3.31.69 su LUBA 3, LUBA mini 2 e YUKA mini 2 e sui modelli più recenti per cui il server Mammotion segnala il supporto, i pulsanti di spostamento e le azioni di movimento funzionano via cloud solo mentre Guida remota via cloud è attiva e confermata. Attivala per usare il vecchio comando con qualsiasi firmware, ad esempio per confrontare i due su un LUBA 3; una connessione Bluetooth attiva viene comunque usata per prima.",
-          "notify": "Le notifiche di autodiagnosi sono attive per impostazione predefinita, le altre no. Ogni notifica attiva anche l'entità evento di notifica del tosaerba e un evento mammotion_event sul bus, che le automazioni possono usare al loro posto."
+          "notify": "Le notifiche di autodiagnosi sono attive per impostazione predefinita, le altre no. Ogni notifica attiva anche l'entità evento di notifica del tosaerba e un evento mammotion_event sul bus, che le automazioni possono usare al loro posto.",
+          "go2rtc_url": "Indirizzo API di un server go2rtc, come quello di Frigate: http://frigate:1984. Ogni telecamera vi viene registrata come flusso chiamato mammotion_<dispositivo>_<telecamera> ed è poi disponibile come rtsp://<host go2rtc>:8554/<nome flusso>. go2rtc deve poter raggiungere l'URL interno di Home Assistant. Lascia vuoto per disattivare la ritrasmissione."
         }
       }
+    },
+    "error": {
+      "invalid_go2rtc_url": "Inserisci un indirizzo http:// o https://, ad esempio http://frigate:1984."
     }
   },
   "entity": {

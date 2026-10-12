@@ -64,13 +64,18 @@
           "movement_use_wifi": "Trimiteți comenzi de mișcare prin Wi-Fi",
           "mow_path_fetch_enabled": "Activați descărcarea traseului de tuns (cloud)",
           "full_map_fetch_enabled": "Activați descărcarea completă a hărții (cloud) — când este oprit, se descarcă doar numele zonelor",
-          "notify": "Afișează notificări persistente pentru"
+          "notify": "Afișează notificări persistente pentru",
+          "go2rtc_url": "Server go2rtc pentru retransmiterea camerelor (de ex. Frigate)"
         },
         "data_description": {
           "movement_use_wifi": "Trimite vechea comandă de mișcare prin Wi-Fi în loc să folosească conducerea de la distanță prin cloud. Fără această opțiune, începând cu firmware-ul 1.30.31.19 pe LUBA 2, LUBA 2X, YUKA, LUBA mini și YUKA mini, cu 2.3.31.69 pe LUBA 3, LUBA mini 2 și YUKA mini 2 și pe modelele mai noi pentru care serverul Mammotion raportează suport, butoanele de deplasare și acțiunile de mișcare funcționează prin cloud doar cât timp Conducere de la distanță prin cloud este pornită și confirmată. Activați pentru a folosi vechea comandă cu orice firmware, de exemplu pentru a le compara pe un LUBA 3; o conexiune Bluetooth activă are în continuare prioritate.",
-          "notify": "Notificările de autotest sunt activate implicit, celelalte sunt dezactivate. Fiecare notificare declanșează și entitatea de eveniment de notificare a mașinii și un eveniment mammotion_event pe magistrală, pe care automatizările le pot folosi în schimb."
+          "notify": "Notificările de autotest sunt activate implicit, celelalte sunt dezactivate. Fiecare notificare declanșează și entitatea de eveniment de notificare a mașinii și un eveniment mammotion_event pe magistrală, pe care automatizările le pot folosi în schimb.",
+          "go2rtc_url": "Adresa API a unui server go2rtc, de exemplu cel al Frigate: http://frigate:1984. Fiecare cameră este înregistrată acolo ca flux numit mammotion_<dispozitiv>_<cameră> și devine apoi disponibilă ca rtsp://<gazdă go2rtc>:8554/<nume flux>. go2rtc trebuie să poată accesa URL-ul intern al Home Assistant. Lăsați gol pentru a dezactiva retransmiterea."
         }
       }
+    },
+    "error": {
+      "invalid_go2rtc_url": "Introduceți o adresă http:// sau https://, de exemplu http://frigate:1984."
     }
   },
   "entity": {
