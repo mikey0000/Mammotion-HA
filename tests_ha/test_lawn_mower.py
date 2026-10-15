@@ -22,7 +22,7 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import issue_registry as ir
 from job_service_support import make_mower_entity, start_mow
 from pymammotion.aliyun.exceptions import DeviceOfflineException
-from pymammotion.data.model.device import MowingDevice
+from pymammotion.data.model.device import MowingDevice, PoolCleanerDevice
 from pymammotion.data.model.device_config import OperationSettings
 from pymammotion.messaging.command_queue import Priority
 from pymammotion.transport.base import CommandTimeoutError, TransportRateLimitedError
@@ -254,3 +254,18 @@ async def test_a_resume_the_mower_never_reports_fails_with_resume_failed(
         "query_generate_route_information",
     ]
     assert snapshot_modes == [WorkMode.MODE_PAUSE]
+
+
+async def test_the_mode_wait_ignores_a_state_that_is_not_a_mower() -> None:
+    """The library hands the predicate its base Device; one without report_data never matches."""
+    entity = make_mower_entity(
+        OperationSettings(),
+        mode=WorkMode.MODE_PAUSE,
+        bp_info=1,
+        responses={"resume_execute_task": WorkMode.MODE_WORKING},
+    )
+
+    await entity.async_start_mowing()
+
+    predicate = entity.coordinator.async_wait_for.call_args.args[0]
+    assert not predicate(PoolCleanerDevice())

@@ -1245,8 +1245,8 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         if device is None:
             return
         device_registry = dr.async_get(self.hass)
-        device_entry = device_registry.async_get_device(
-            identifiers={(DOMAIN, self.device_name)}
+        device_entry = device_registry.async_get_device_by_identifier(
+            (DOMAIN, self.device_name), self.config_entry.entry_id
         )
         if device_entry is None:
             return
@@ -2291,15 +2291,20 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         The library asks for a report while the device is silent.  A direct wait:
         running out of time, like every other failure, raises *failure_key*.
         """
-        state = await self._async_device_call(
-            lambda: self.manager.wait_for(
-                self.device_name,
-                cast("Callable[[DeviceModel], bool]", predicate),
-                timeout=timeout,
-            ),
-            Priority.USER,
-            failure_key,
-        )
+        try:
+            state = await self._async_device_call(
+                lambda: self.manager.wait_for(
+                    self.device_name,
+                    cast("Callable[[DeviceModel], bool]", predicate),
+                    timeout=timeout,
+                ),
+                Priority.USER,
+                failure_key,
+            )
+        except KeyError as exc:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key=failure_key
+            ) from exc
         return cast(DataT, state)
 
     async def async_refresh_status(self) -> None:

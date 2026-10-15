@@ -58,10 +58,14 @@ def _device(name: str, product_key: str) -> Device:
 
 
 def _coordinator(
-    name: str = _NAME, product_key: str = _E1_PRODUCT_KEY
+    name: str = _NAME,
+    product_key: str = _E1_PRODUCT_KEY,
+    entry: MockConfigEntry | None = None,
 ) -> MammotionSpinoCoordinator:
     """Build the real coordinator; only the client and the store are stand-ins."""
     coordinator = MammotionSpinoCoordinator.__new__(MammotionSpinoCoordinator)
+    if entry is not None:
+        coordinator.config_entry = entry
     coordinator.device_name = name
     coordinator.unique_name = name
     coordinator.device = _device(name, product_key)
@@ -158,7 +162,7 @@ async def test_the_app_nickname_becomes_the_device_name(
     device_registry.async_get_or_create(
         config_entry_id=entry.entry_id, identifiers={(DOMAIN, _NAME)}
     )
-    coordinator = _coordinator()
+    coordinator = _coordinator(entry=entry)
     coordinator.device.nick_name = "Pool robot"
     coordinator.async_add_listener = MagicMock(return_value=MagicMock())
     entity = MammotionBaseSpinoEntity.__new__(MammotionBaseSpinoEntity)
@@ -184,7 +188,7 @@ async def test_a_user_chosen_name_is_left_alone(
         config_entry_id=entry.entry_id, identifiers={(DOMAIN, _NAME)}
     )
     device_registry.async_update_device(created.id, name_by_user="Deep end")
-    coordinator = _coordinator()
+    coordinator = _coordinator(entry=entry)
     coordinator.device.nick_name = "Pool robot"
     entity = MammotionBaseSpinoEntity.__new__(MammotionBaseSpinoEntity)
     entity.coordinator = coordinator

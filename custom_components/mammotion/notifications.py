@@ -290,8 +290,9 @@ class MowerNotifier:
         self.hass.bus.async_fire(EVENT_MAMMOTION, payload)
 
     def _device_id(self) -> str | None:
-        device = dr.async_get(self.hass).async_get_device(
-            identifiers={(DOMAIN, self.coordinator.unique_name)}
+        device = dr.async_get(self.hass).async_get_device_by_identifier(
+            (DOMAIN, self.coordinator.unique_name),
+            self.coordinator.config_entry.entry_id,
         )
         return device.id if device else None
 

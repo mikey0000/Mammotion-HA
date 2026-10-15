@@ -28,11 +28,11 @@ There is one tier: a real Home Assistant from
 integration, the real pymammotion models, and doubles only at the edge where
 pymammotion would do I/O.
 
-| May touch | Must not touch |
-|---|---|
-| `hass`, the config-entry, entity, device and issue registries, `MockConfigEntry`, real platforms | the network, a real Mammotion account, real Bluetooth hardware |
-| real `MowingDevice` / `Device` / protobuf models, real `DeviceHandle` with a scripted transport | the real clock (§6), files outside `tmp_path`, `~` |
-| a spec'd `MammotionClient` stand-in, hand-written fakes (`FakeAgoraSession`) | private HA internals beyond what `pytest_homeassistant_custom_component.common` exposes |
+| May touch                                                                                        | Must not touch                                                                          |
+| ------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
+| `hass`, the config-entry, entity, device and issue registries, `MockConfigEntry`, real platforms | the network, a real Mammotion account, real Bluetooth hardware                          |
+| real `MowingDevice` / `Device` / protobuf models, real `DeviceHandle` with a scripted transport  | the real clock (§6), files outside `tmp_path`, `~`                                      |
+| a spec'd `MammotionClient` stand-in, hand-written fakes (`FakeAgoraSession`)                     | private HA internals beyond what `pytest_homeassistant_custom_component.common` exposes |
 
 Budget: under 1 s per test; the whole suite under a minute. A test that needs
 more is doing real waiting (§6).
@@ -124,7 +124,7 @@ Prefer, in this order, and justify every step down:
 Rules for the third:
 
 - **Spec every mock.** The client is `create_autospec(MammotionClient,
-  instance=True)` or `MagicMock(spec=MammotionClient)`; a coordinator stand-in
+instance=True)` or `MagicMock(spec=MammotionClient)`; a coordinator stand-in
   is `MagicMock(spec=MammotionReportUpdateCoordinator)`. A bare `MagicMock()`
   answers every attribute truthily forever: rename the method under test and
   the assertion still passes. There are 183 bare `MagicMock()` calls in 51
@@ -144,12 +144,12 @@ Rules for the third:
   shared `mock_setup_entry` fixture may stub
   `custom_components.mammotion.async_setup_entry` so a flow test asserts the
   flow result and the created entry's `data`/`unique_id` without a full
-  bring-up. A flow test whose subject is what happens *after* the flow (a
+  bring-up. A flow test whose subject is what happens _after_ the flow (a
   reload, credentials kept or dropped) uses the real lifecycle.
 - **Assert on outcomes, not plumbing.** Entity state, a raised
   `HomeAssistantError` with the expected `translation_key`, a `FlowResult`,
   an issue in the issue registry, a service response. A call assertion is
-  right only when the call *is* the contract ("does not send to an offline
+  right only when the call _is_ the contract ("does not send to an offline
   mower" is `send.assert_not_awaited()`).
 - **One mock per boundary, configured once.** Six mocks to stand up one entity
   is a design note, not a setup to grow.
@@ -436,34 +436,34 @@ every `@pytest.mark.regression` test has a docstring.
 
 Measured 2026-10-02 against a tree mid-edit.
 
-| Debt | Size | Fix |
-|---|---|---|
-| test modules not named for a source module | 73 of 101 | §2 — new tests go to the mirrored file; rename when a file is next touched |
-| source modules with no `test_<module>*` | `binary_sensor`, `device_tracker`, `entity`, `number`, `select`, `sensor`, `update`, `vacuum` (+ `const`, `models`, `geojson_utils`) | §11 |
-| timers driven without `async_fire_time_changed` | most timer tests | §6 |
-| config-flow tests patching `async_setup_entry` per module | 3 modules | §5 — one shared `mock_setup_entry` fixture |
-| repo-root `test_sdp.py`, `test_credential_fallback.py` | 2 | §2 — delete or move |
+| Debt                                                      | Size                                                                                                                                 | Fix                                                                        |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------- |
+| test modules not named for a source module                | 73 of 101                                                                                                                            | §2 — new tests go to the mirrored file; rename when a file is next touched |
+| source modules with no `test_<module>*`                   | `binary_sensor`, `device_tracker`, `entity`, `number`, `select`, `sensor`, `update`, `vacuum` (+ `const`, `models`, `geojson_utils`) | §11                                                                        |
+| timers driven without `async_fire_time_changed`           | most timer tests                                                                                                                     | §6                                                                         |
+| config-flow tests patching `async_setup_entry` per module | 3 modules                                                                                                                            | §5 — one shared `mock_setup_entry` fixture                                 |
+| repo-root `test_sdp.py`, `test_credential_fallback.py`    | 2                                                                                                                                    | §2 — delete or move                                                        |
 
 The meta-test baselines as first written (the constants in `tests_ha/meta/`
 are the authority):
 
-| Baseline | Rule | Size |
-|---|---|---|
-| `UNMAPPED_ACTION_CALLS` | §14.5 | 21 call sites: 11 button `press_fn`, 4 service handlers (`fetch_mow_path`, `svg_*`), 3 switch (remote drive off, Bluetooth / cloud toggles), 3 `update.async_install` |
-| `UNTRANSLATED_RAISES` | §14.5 | 1 (`coordinator.py`, an f-string credential-refresh raise) |
-| `CATCH_ALL_RETURNS` / `SWALLOWED_IN_ACTIONS` | §14.4 | 0 / 0 (`async_check_stream_expiry` allow-listed: the camera path, not setup) |
-| `COPIED_EXCEPTION_TUPLES` | §14.6 | 0 |
-| `UNREDACTED_FIELDS` | §14.7 | 0 (`product_key`, `category_key`, `_category_key`, `is_edge_gateway` allow-listed with reasons) |
-| `WORKMODE_LITERALS` | §14.8 | 11: `lawn_mower.py` 8, `coordinator.py` 2, `button.py` 1 (`_DROPMOW_MODES`, `ERROR_LOG_READ_MODES` allow-listed) |
-| `MISSING_ENTITY_TRANSLATIONS` | §14.9 | 2 (`device_tracker.device_tracker`, `update.update`) |
-| `MISSING_ICONS` | §14.9 | 32 keys with neither `icon`, `device_class` nor an icons.json entry |
-| `MISSING_EXCEPTION_KEYS` | §14.9 | 0 (repair-issue keys are checked against `issues`, no baseline) |
-| `UNSPECCED_MAGICMOCKS` | §14.10 | 265 in 54 modules |
-| `UNANNOTATED_PARAMETERS` | §14.10 | 16 in 3 modules |
-| `OVERSIZED` | §14.10 | 2 (`test_notifications.py` 734, `test_switch_area_lifecycle.py` 604) |
-| `WALL_CLOCK_SLEEPS` | §14.10 | 1 (`test_ble_first_setup.py`) |
-| `DUPLICATE_BUILDERS` | §14.10 | `make_coordinator` in 4 modules |
-| `UNDOCUMENTED_MODULES`, bare asyncio markers | §14.10 | 0 |
+| Baseline                                     | Rule   | Size                                                                                                                                                                  |
+| -------------------------------------------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `UNMAPPED_ACTION_CALLS`                      | §14.5  | 21 call sites: 11 button `press_fn`, 4 service handlers (`fetch_mow_path`, `svg_*`), 3 switch (remote drive off, Bluetooth / cloud toggles), 3 `update.async_install` |
+| `UNTRANSLATED_RAISES`                        | §14.5  | 1 (`coordinator.py`, an f-string credential-refresh raise)                                                                                                            |
+| `CATCH_ALL_RETURNS` / `SWALLOWED_IN_ACTIONS` | §14.4  | 0 / 0 (`async_check_stream_expiry` allow-listed: the camera path, not setup)                                                                                          |
+| `COPIED_EXCEPTION_TUPLES`                    | §14.6  | 0                                                                                                                                                                     |
+| `UNREDACTED_FIELDS`                          | §14.7  | 0 (`product_key`, `category_key`, `_category_key`, `is_edge_gateway` allow-listed with reasons)                                                                       |
+| `WORKMODE_LITERALS`                          | §14.8  | 11: `lawn_mower.py` 8, `coordinator.py` 2, `button.py` 1 (`_DROPMOW_MODES`, `ERROR_LOG_READ_MODES` allow-listed)                                                      |
+| `MISSING_ENTITY_TRANSLATIONS`                | §14.9  | 2 (`device_tracker.device_tracker`, `update.update`)                                                                                                                  |
+| `MISSING_ICONS`                              | §14.9  | 32 keys with neither `icon`, `device_class` nor an icons.json entry                                                                                                   |
+| `MISSING_EXCEPTION_KEYS`                     | §14.9  | 0 (repair-issue keys are checked against `issues`, no baseline)                                                                                                       |
+| `UNSPECCED_MAGICMOCKS`                       | §14.10 | 260 in 53 modules                                                                                                                                                     |
+| `UNANNOTATED_PARAMETERS`                     | §14.10 | 16 in 3 modules                                                                                                                                                       |
+| `OVERSIZED`                                  | §14.10 | 2 (`test_notifications.py` 734, `test_switch_area_lifecycle.py` 604)                                                                                                  |
+| `WALL_CLOCK_SLEEPS`                          | §14.10 | 1 (`test_ble_first_setup.py`)                                                                                                                                         |
+| `DUPLICATE_BUILDERS`                         | §14.10 | `make_coordinator` in 4 modules                                                                                                                                       |
+| `UNDOCUMENTED_MODULES`, bare asyncio markers | §14.10 | 0                                                                                                                                                                     |
 
 Fix the debt your change touches and shrink its baseline entry; do not fix it
 in bulk as a side effect of unrelated work.

@@ -75,7 +75,6 @@ UNSPECCED_MAGICMOCKS: dict[str, int] = {
     "test_notifications.py": 3,
     "test_options_flow_prefer_ble.py": 1,
     "test_restore_salvage.py": 3,
-    "test_ride_boundary_distance.py": 5,
     "test_rtk_device_info.py": 3,
     "test_running_task.py": 7,
     "test_schedule_auto_change_direction.py": 3,
@@ -113,7 +112,9 @@ UNDOCUMENTED_MODULES: frozenset[str] = frozenset()
 def _python_files() -> list[Path]:
     """Every module under tests_ha except this one."""
     return sorted(
-        p for p in TESTS.rglob("*.py") if "__pycache__" not in p.parts and p.resolve() != SELF
+        p
+        for p in TESTS.rglob("*.py")
+        if "__pycache__" not in p.parts and p.resolve() != SELF
     )
 
 
@@ -129,13 +130,16 @@ def _tests(tree: ast.Module) -> list[ast.FunctionDef | ast.AsyncFunctionDef]:
     return [
         node
         for node in ast.walk(tree)
-        if isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef) and node.name.startswith("test_")
+        if isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef)
+        and node.name.startswith("test_")
     ]
 
 
 def test_nothing_calls_time_sleep() -> None:
     """A blocking sleep stalls the event loop and the whole suite (§6)."""
-    offenders = [_rel(p) for p in _python_files() if re.search(r"\btime\.sleep\(", p.read_text())]
+    offenders = [
+        _rel(p) for p in _python_files() if re.search(r"\btime\.sleep\(", p.read_text())
+    ]
     assert not offenders, offenders
 
 
@@ -148,7 +152,10 @@ def test_nothing_sleeps_on_the_wall_clock() -> None:
         if float(value) > 0
     )
     assert_ratchet(
-        dict(counts), WALL_CLOCK_SLEEPS, "WALL_CLOCK_SLEEPS", "wait on an event or move the clock"
+        dict(counts),
+        WALL_CLOCK_SLEEPS,
+        "WALL_CLOCK_SLEEPS",
+        "wait on an event or move the clock",
     )
 
 
@@ -159,7 +166,9 @@ def test_no_bare_asyncio_marker() -> None:
         for p in _python_files()
         if (n := len(re.findall(r"pytest\.mark\.asyncio(?!\s*\()", p.read_text())))
     }
-    assert_ratchet(counts, BARE_ASYNCIO_MARKER, "BARE_ASYNCIO_MARKER", "delete the decorator")
+    assert_ratchet(
+        counts, BARE_ASYNCIO_MARKER, "BARE_ASYNCIO_MARKER", "delete the decorator"
+    )
 
 
 def test_nothing_prints_or_runs_as_a_script() -> None:
@@ -204,9 +213,12 @@ def test_every_module_has_a_docstring() -> None:
     missing = {
         _rel(p)
         for p in _python_files()
-        if p.name != "__init__.py" and ast.get_docstring(ast.parse(p.read_text())) is None
+        if p.name != "__init__.py"
+        and ast.get_docstring(ast.parse(p.read_text())) is None
     }
-    assert_frozen(missing, UNDOCUMENTED_MODULES, "UNDOCUMENTED_MODULES", "add a module docstring")
+    assert_frozen(
+        missing, UNDOCUMENTED_MODULES, "UNDOCUMENTED_MODULES", "add a module docstring"
+    )
 
 
 def test_test_modules_stay_under_the_size_cap() -> None:
@@ -216,7 +228,12 @@ def test_test_modules_stay_under_the_size_cap() -> None:
         for p in _test_modules()
         if (n := len(p.read_text().splitlines())) > MAX_MODULE_LINES
     }
-    assert_ratchet(lengths, OVERSIZED, "OVERSIZED", f"split by concern (cap {MAX_MODULE_LINES} lines)")
+    assert_ratchet(
+        lengths,
+        OVERSIZED,
+        "OVERSIZED",
+        f"split by concern (cap {MAX_MODULE_LINES} lines)",
+    )
 
 
 def test_every_test_parameter_is_annotated() -> None:
@@ -229,7 +246,10 @@ def test_every_test_parameter_is_annotated() -> None:
         if arg.annotation is None and arg.arg != "self"
     )
     assert_ratchet(
-        dict(counts), UNANNOTATED_PARAMETERS, "UNANNOTATED_PARAMETERS", "annotate the parameter"
+        dict(counts),
+        UNANNOTATED_PARAMETERS,
+        "UNANNOTATED_PARAMETERS",
+        "annotate the parameter",
     )
 
 
@@ -246,7 +266,10 @@ def test_magicmocks_are_specced() -> None:
         and not {"spec", "spec_set"} & {k.arg for k in node.keywords}
     )
     assert_ratchet(
-        dict(counts), UNSPECCED_MAGICMOCKS, "UNSPECCED_MAGICMOCKS", "pass spec= (or use create_autospec)"
+        dict(counts),
+        UNSPECCED_MAGICMOCKS,
+        "UNSPECCED_MAGICMOCKS",
+        "pass spec= (or use create_autospec)",
     )
 
 
@@ -255,11 +278,13 @@ def test_builders_are_not_duplicated_across_modules() -> None:
     where: dict[str, list[str]] = collections.defaultdict(list)
     for module in _python_files():
         for node in ast.parse(module.read_text()).body:
-            if isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef) and BUILDER_NAME.fullmatch(
-                node.name
-            ):
+            if isinstance(
+                node, ast.FunctionDef | ast.AsyncFunctionDef
+            ) and BUILDER_NAME.fullmatch(node.name):
                 where[node.name].append(_rel(module))
-    duplicated = {name: tuple(sorted(paths)) for name, paths in where.items() if len(paths) > 1}
+    duplicated = {
+        name: tuple(sorted(paths)) for name, paths in where.items() if len(paths) > 1
+    }
     assert duplicated == DUPLICATE_BUILDERS, (
         "DUPLICATE_BUILDERS (docs/testing.md §14.10): promote a new duplicate to a *_support.py, "
         f"and record one that was merged: {duplicated}"
@@ -272,7 +297,10 @@ def test_regression_tests_document_the_defect() -> None:
         f"{_rel(module)}::{node.name}"
         for module in _test_modules()
         for node in _tests(ast.parse(module.read_text()))
-        if any(ast.unparse(d).startswith("pytest.mark.regression") for d in node.decorator_list)
+        if any(
+            ast.unparse(d).startswith("pytest.mark.regression")
+            for d in node.decorator_list
+        )
         and not ast.get_docstring(node)
     ]
     assert not undocumented, undocumented

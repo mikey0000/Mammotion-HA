@@ -21,6 +21,7 @@ from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers import service
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from pymammotion.data.model.device import MowingDevice
 from pymammotion.data.model.report_info import DeviceData, ReportData
 from pymammotion.messaging.command_queue import Priority
 from pymammotion.utility.constant.device_constant import WorkMode
@@ -458,6 +459,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
                         if not plan_only:
                             await self.coordinator.async_send_command(
                                 "start_job",
+                                "todev_taskctrl_ack",
                                 priority=Priority.USER,
                                 failure_key=trans_key,
                             )
@@ -472,7 +474,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
                         if not plan_only:
                             await self.coordinator.async_send_and_wait(
                                 "start_job",
-                                "zone_start_precent_t",
+                                "todev_taskctrl_ack",
                                 priority=Priority.USER,
                                 failure_key=trans_key,
                             )
@@ -645,15 +647,16 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
 
         With *job_ended*, the breakpoint must also have cleared.
         """
-        device = await self.coordinator.async_wait_for(
-            lambda device: (
-                device.report_data.dev.sys_status in modes
-                and not (job_ended and device.report_data.work.bp_info != 0)
+        reported = await self.coordinator.async_wait_for(
+            lambda state: (
+                isinstance(state, MowingDevice)
+                and state.report_data.dev.sys_status in modes
+                and not (job_ended and state.report_data.work.bp_info != 0)
             ),
             timeout=_MODE_WAIT_TIMEOUT,
             failure_key=failure_key,
         )
-        return WorkMode(device.report_data.dev.sys_status)
+        return WorkMode(reported.report_data.dev.sys_status)
 
     async def async_modify_running_job(self, **kwargs: Any) -> None:
         """Change settings on the job already running, without re-planning it."""
@@ -738,8 +741,9 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
 
         device_registry = dr.async_get(self.hass)
 
-        device = device_registry.async_get_device(
-            identifiers={(DOMAIN, self.coordinator.device_name)}
+        device = device_registry.async_get_device_by_identifier(
+            (DOMAIN, self.coordinator.unique_name),
+            self.coordinator.config_entry.entry_id,
         )
 
         if device:

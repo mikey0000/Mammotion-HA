@@ -50,6 +50,7 @@ async def test_wait_for_returns_the_state_the_library_reached() -> None:
     [
         pytest.param(DeviceStateTimeoutError(_DEVICE_NAME, 60), id="timeout"),
         pytest.param(NoTransportAvailableError("no transport"), id="no_transport"),
+        pytest.param(KeyError(_DEVICE_NAME), id="not_registered"),
     ],
 )
 async def test_wait_for_fails_with_the_steps_translation_key(exc: Exception) -> None:
@@ -58,7 +59,9 @@ async def test_wait_for_fails_with_the_steps_translation_key(exc: Exception) -> 
     coordinator.manager.wait_for.side_effect = exc
 
     with pytest.raises(HomeAssistantError) as raised:
-        await coordinator.async_wait_for(_is_paused, timeout=60, failure_key="start_failed")
+        await coordinator.async_wait_for(
+            _is_paused, timeout=60, failure_key="start_failed"
+        )
 
     assert raised.value.translation_key == "start_failed"
     assert raised.value.__cause__ is exc
@@ -75,7 +78,9 @@ async def test_a_waiting_fresh_state_read_asks_the_library_to_wait() -> None:
     )
 
 
-async def test_a_fresh_state_read_the_mower_never_answers_lets_the_action_proceed() -> None:
+async def test_a_fresh_state_read_the_mower_never_answers_lets_the_action_proceed() -> (
+    None
+):
     """A silent mower leaves the current snapshot to act on: the read returns, not raises."""
     coordinator = _coordinator()
     coordinator.manager.ensure_fresh_state.side_effect = DeviceStateTimeoutError(
@@ -98,7 +103,9 @@ async def test_a_fresh_state_read_is_bounded_by_the_coordinator(
 
     coordinator.manager.ensure_fresh_state.side_effect = _hang
 
-    await asyncio.wait_for(coordinator.async_ensure_fresh_state(wait=True), _WAIT_BOUND_S)
+    await asyncio.wait_for(
+        coordinator.async_ensure_fresh_state(wait=True), _WAIT_BOUND_S
+    )
 
 
 async def test_a_fresh_state_read_with_no_transport_fails_translated() -> None:

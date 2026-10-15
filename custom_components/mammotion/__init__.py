@@ -726,8 +726,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
                 iot_id,
             )
             device_registry = async_get_device_registry(hass)
-            device = device_registry.async_get_device(
-                identifiers={(DOMAIN, device_name)}
+            device = device_registry.async_get_device_by_identifier(
+                (DOMAIN, device_name), entry.entry_id
             )
             if device is not None:
                 device_registry.async_remove_device(device.id)
