@@ -12,7 +12,12 @@ from unittest.mock import create_autospec, patch
 
 import pytest
 from freezegun.api import FrozenDateTimeFactory
-from homeassistant.const import ATTR_LATITUDE, EVENT_STATE_CHANGED, Platform
+from homeassistant.const import (
+    ATTR_LATITUDE,
+    ATTR_LONGITUDE,
+    EVENT_STATE_CHANGED,
+    Platform,
+)
 from homeassistant.core import Event, EventStateChangedData, HomeAssistant
 from homeassistant.helpers import entity_registry as er
 from pymammotion.client import MammotionClient
@@ -26,6 +31,7 @@ from pytest_homeassistant_custom_component.common import (
 import custom_components.mammotion as mammotion_init
 from custom_components.mammotion.const import ATTR_DIRECTION, CONF_BLE_DEVICES, DOMAIN
 from custom_components.mammotion.coordinator import MammotionReportUpdateCoordinator
+from custom_components.mammotion.device_tracker import COORDINATE_DECIMALS
 
 _MOWER = "Luba-VS123456"
 _MOWER_MAC = "aa:bb:cc:dd:ee:ff"
@@ -175,3 +181,51 @@ async def test_a_moved_or_turned_mower_is_written(
     attribute, value = written_attribute
     assert new_state.attributes[attribute] == value
     assert new_state.last_updated == old_state.last_updated + _PUSH_INTERVAL
+
+
+async def test_sub_centimetre_jitter_is_not_written(
+    hass: HomeAssistant, freezer: FrozenDateTimeFactory, tracker: _Tracker
+) -> None:
+    """A parked mower's position wobbles by about 1e-9 degrees between frames.
+
+    That is well under a millimetre, from the conversion of the mower's local
+    coordinates, not movement.  Rounded to ``COORDINATE_DECIMALS`` it is the
+    same position, so the frame is not a state change.
+    """
+    await tracker.push(latitude=0.5, longitude=0.5, orientation=90)
+    events = async_capture_events(hass, EVENT_STATE_CHANGED)
+    freezer.tick(_PUSH_INTERVAL)
+
+    await tracker.push(latitude=0.5 + 2e-9, longitude=0.5 - 3e-9)
+
+    assert tracker.changes(events) == []
+
+
+async def test_a_move_of_about_ten_centimetres_is_written(
+    hass: HomeAssistant, freezer: FrozenDateTimeFactory, tracker: _Tracker
+) -> None:
+    """Rounding keeps centimetre steps, so a short real move still reaches HA."""
+    await tracker.push(latitude=0.5, longitude=0.5, orientation=90)
+    events = async_capture_events(hass, EVENT_STATE_CHANGED)
+    freezer.tick(_PUSH_INTERVAL)
+
+    await tracker.push(latitude=0.500001)
+
+    (written,) = tracker.changes(events)
+    new_state = written["new_state"]
+    assert new_state is not None
+    assert new_state.attributes[ATTR_LATITUDE] == 0.500001
+
+
+async def test_reported_coordinates_are_rounded(
+    hass: HomeAssistant, tracker: _Tracker
+) -> None:
+    """The state carries ``COORDINATE_DECIMALS`` places, not the converter's noise."""
+    await tracker.push(latitude=47.123456789, longitude=-122.987654321)
+
+    state = hass.states.get(tracker.entity_id)
+    assert state is not None
+    assert state.attributes[ATTR_LATITUDE] == round(47.123456789, COORDINATE_DECIMALS)
+    assert state.attributes[ATTR_LONGITUDE] == round(
+        -122.987654321, COORDINATE_DECIMALS
+    )
