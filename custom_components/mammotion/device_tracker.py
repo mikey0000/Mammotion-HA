@@ -34,7 +34,6 @@ async def async_setup_entry(
 class MammotionTracker(MammotionBaseEntity, TrackerEntity, RestoreEntity):  # type: ignore[misc]
     """Mammotion device tracker."""
 
-    _attr_force_update = False
     _attr_translation_key = "device_tracker"
 
     _attr_source_type = SourceType.GPS
@@ -42,6 +41,11 @@ class MammotionTracker(MammotionBaseEntity, TrackerEntity, RestoreEntity):  # ty
     def __init__(self, coordinator: MammotionBaseUpdateCoordinator[Any]) -> None:
         """Initialize the Tracker."""
         super().__init__(coordinator, f"{coordinator.device_name}_gps")
+
+    @property
+    def force_update(self) -> bool:
+        """Write state only on a real change; TrackerEntity ignores _attr_force_update."""
+        return False
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
