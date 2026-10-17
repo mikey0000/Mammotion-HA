@@ -202,12 +202,16 @@ async def test_no_failure_of_a_direct_command_escapes_as_a_raw_exception(
     assert raised.value.__cause__ is exc
 
 
+@pytest.mark.regression
 @pytest.mark.parametrize("priority", _DIRECT)
 @_SENDERS
 async def test_a_direct_command_to_a_device_no_longer_in_the_account_says_so(
     send: Any, priority: Priority
 ) -> None:
-    """A removed device (Mammotion 50101 / Aliyun 29004) is not a transient failure to retry."""
+    """A removed device (Mammotion 50101 / Aliyun 29004) surfaced as the generic ``command_failed``.
+
+    Nothing told the user the device had left the account, so they retried a press that can never land.
+    """
     coordinator = _coordinator()
     exc = DeviceUnboundException(50101, "iot-1")
     _fail_with(coordinator, exc)

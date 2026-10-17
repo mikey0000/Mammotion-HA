@@ -8,6 +8,7 @@ no longer has it, or when a restore's fresh list drops it.
 from typing import Any
 from unittest.mock import MagicMock, create_autospec, patch
 
+import pytest
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr
@@ -68,15 +69,21 @@ async def _setup(hass: HomeAssistant, client: MagicMock) -> MockConfigEntry:
     return entry
 
 
+@pytest.mark.regression
 async def test_a_device_gone_from_the_account_is_removed_and_the_entry_reloaded(
     hass: HomeAssistant,
 ) -> None:
-    """Removing the registry device alone left its coordinators polling a device the cloud rejects."""
+    """The entry stayed loaded after the registry delete.
+
+    Its coordinators kept polling a device the cloud rejects with 50101.
+    """
     client = _client()
     entry = await _setup(hass, client)
     assert entry.state is ConfigEntryState.LOADED
 
-    with patch.object(hass.config_entries, "async_schedule_reload") as reload:
+    with patch.object(
+        hass.config_entries, "async_schedule_reload", autospec=True
+    ) as reload:
         await client.on_device_removed(_GONE, "VIfnsgIQCmHqn4IXXWkQ000000")
 
     registry = dr.async_get(hass)
@@ -89,3 +96,23 @@ async def test_a_device_gone_from_the_account_is_removed_and_the_entry_reloaded(
     )
     reload.assert_called_once_with(entry.entry_id)
     await hass.config_entries.async_unload(entry.entry_id)
+
+
+async def test_a_device_gone_while_the_entry_is_not_loaded_is_removed_without_a_reload(
+    hass: HomeAssistant,
+) -> None:
+    """A restore prunes during setup; reloading an entry mid-setup or unloaded would loop."""
+    client = _client()
+    entry = await _setup(hass, client)
+    await hass.config_entries.async_unload(entry.entry_id)
+
+    with patch.object(
+        hass.config_entries, "async_schedule_reload", autospec=True
+    ) as reload:
+        await client.on_device_removed(_GONE, "VIfnsgIQCmHqn4IXXWkQ000000")
+
+    registry = dr.async_get(hass)
+    assert (
+        registry.async_get_device_by_identifier((DOMAIN, _GONE), entry.entry_id) is None
+    )
+    reload.assert_not_called()
