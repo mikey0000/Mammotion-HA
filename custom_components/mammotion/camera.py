@@ -10,6 +10,7 @@ import secrets
 import time
 from collections.abc import Callable, Coroutine
 from dataclasses import dataclass
+from http import HTTPStatus
 from pathlib import Path
 from typing import Any
 
@@ -17,6 +18,7 @@ from homeassistant.components.camera import (
     CameraEntityDescription,
     WebRTCAnswer,
     WebRTCError,
+    WebRTCMessage,
     WebRTCSendMessage,
 )
 from homeassistant.components.web_rtc import (
@@ -48,10 +50,16 @@ from pymammotion.utility.device_type import DeviceType
 from webrtc_models import RTCIceCandidateInit, RTCIceServer
 
 from . import MammotionConfigEntry
-from .const import DOMAIN
+from .const import CONF_GO2RTC_URL, DOMAIN
 from .coordinator import MammotionBaseUpdateCoordinator
 from .entity import MammotionCameraBaseEntity
 from .models import MammotionMowerData
+from .restream import (
+    WHEP_SESSION_PREFIX,
+    Go2RtcRestreamer,
+    WhepOfferError,
+    keep_relayed_video_codec,
+)
 from .stream_session import mammotion_credentials, to_ice_candidate, to_rtc_ice_servers
 
 _LOGGER = logging.getLogger(__name__)
@@ -153,6 +161,11 @@ async def async_setup_entry(
         )
     async_add_entities(entities)
     await async_setup_platform_services(hass, entry)
+
+    if go2rtc_url := entry.options.get(CONF_GO2RTC_URL):
+        restreamer = Go2RtcRestreamer(hass, entry, go2rtc_url, entities)
+        await restreamer.async_start()
+        entry.async_on_unload(restreamer.async_stop)
 
 
 class MammotionWebRTCCamera(MammotionCameraBaseEntity):
@@ -271,6 +284,41 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
                     # The viewer closed while negotiation was still running.
                     await self.async_close_webrtc_session()
 
+    async def async_handle_whep_offer(
+        self, offer_sdp: str, *, replaces: str | None = None
+    ) -> tuple[str, str]:
+        """Answer a WHEP offer from go2rtc; return its session id and answer SDP.
+
+        Goes through the same negotiation as a frontend viewer.  *replaces* is
+        the previous WHEP session of this feed: go2rtc redials without saying
+        goodbye, and the new join replaces its Agora session anyway, so it is
+        forgotten rather than closed (a close would race the new join).
+        """
+        if replaces is not None:
+            self._sessions.pop(replaces, None)
+        session_id = f"{WHEP_SESSION_PREFIX}{secrets.token_hex(8)}"
+        replies: list[WebRTCMessage] = []
+
+        @callback
+        def send_message(message: WebRTCMessage) -> None:
+            if replies:
+                if isinstance(message, WebRTCError):
+                    _LOGGER.debug(
+                        "go2rtc stream of %s ended: %s", self.entity_id, message.message
+                    )
+                return
+            replies.append(message)
+
+        await self.async_handle_async_webrtc_offer(offer_sdp, session_id, send_message)
+        match replies:
+            case [WebRTCAnswer(answer=answer_sdp)]:
+                return session_id, answer_sdp
+            case [WebRTCError(code=code, message=message)]:
+                raise WhepOfferError(
+                    int(code) if code.isdigit() else HTTPStatus.BAD_GATEWAY, message
+                )
+        raise WhepOfferError(HTTPStatus.BAD_GATEWAY, "No answer from the camera")
+
     async def _async_answer_offer(
         self, offer_sdp: str, session_id: str, send_message: WebRTCSendMessage
     ) -> bool:
@@ -309,12 +357,17 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         await self._async_close_session()
         try:
             # Built in here: a malformed token (salt, uid) must reach the viewer as a 500.
-            session = self._new_session(stream_data, agora_response)
+            whep = session_id.startswith(WHEP_SESSION_PREFIX)
+            session = self._new_session(stream_data, agora_response, whep=whep)
             candidates, self._early_candidates = self._early_candidates, None
             for candidate in candidates or ():
                 session.add_ice_candidate(candidate)
             self._session = session
             answer_sdp = await session.join(offer_sdp, session_id)
+            if whep and (streams := session.remote_streams):
+                answer_sdp = keep_relayed_video_codec(
+                    answer_sdp, streams[0].payload_type
+                )
         except (PyAgoraRTCError, ValueError, TypeError) as ex:
             _LOGGER.warning(
                 "WebRTC negotiation failed for session %s: %s: %s",
@@ -330,9 +383,18 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         return True
 
     def _new_session(
-        self, data: StreamSubscriptionResponse, agora_response: APResponse
+        self,
+        data: StreamSubscriptionResponse,
+        agora_response: APResponse,
+        *,
+        whep: bool = False,
     ) -> AgoraSession:
-        """Build the session for one offer on this feed's publisher uid."""
+        """Build the session for one offer on this feed's publisher uid.
+
+        A WHEP session (go2rtc, pion) waits for the stream so its answer can
+        declare the remote SSRC, which pion routes on with MID stripped, and
+        answers audio inactive: what pyagorartc documents for a go2rtc ingest.
+        """
         if data.openEncrypt:
             _LOGGER.warning(
                 "Stream token for %s has openEncrypt=%s; pyagorartc cannot decrypt "
@@ -354,6 +416,8 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
                 client_codec="vp8",
                 target_uid=self.entity_description.target_uid,
                 gateway_edge_offset=self.entity_description.target_uid - 1,
+                declare_remote_video_ssrc=whep,
+                disable_audio=whep,
             ),
             on_peer_left=self._on_peer_left,
             on_closed=self._on_closed,

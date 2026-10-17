@@ -1,0 +1,67 @@
+{
+  "cname": "o/i14u9pJrxRKAsu",
+  "iceParameters": {
+    "iceUfrag": "KdDV",
+    "icePwd": "ICEPWD_REDACTED_24chars1",
+    "candidates": [
+      {
+        "foundation": "udpcandidate",
+        "ip": "198.51.100.13",
+        "port": 4707,
+        "priority": 2103266323,
+        "protocol": "udp",
+        "type": "host"
+      }
+    ]
+  },
+  "dtlsParameters": {
+    "role": "client",
+    "fingerprints": [{ "algorithm": "sha-256", "fingerprint": "BD:3E:08" }]
+  },
+  "rtpCapabilities": {
+    "sendrecv": {
+      "audioCodecs": [
+        {
+          "payloadType": 101,
+          "rtpMap": {
+            "encodingName": "opus",
+            "clockRate": 48000,
+            "channels": 2
+          }
+        }
+      ],
+      "videoCodecs": [
+        {
+          "payloadType": 96,
+          "rtpMap": { "encodingName": "H264", "clockRate": 90000 },
+          "fmtp": {
+            "parameters": {
+              "level-asymmetry-allowed": "1",
+              "packetization-mode": "1",
+              "profile-level-id": "42001f"
+            }
+          },
+          "rtcpFeedbacks": [
+            { "type": "nack", "parameter": "" },
+            { "type": "nack", "parameter": "pli" }
+          ]
+        },
+        {
+          "payloadType": 100,
+          "rtpMap": { "encodingName": "H265", "clockRate": 90000 },
+          "rtcpFeedbacks": [
+            { "type": "nack", "parameter": "" },
+            { "type": "nack", "parameter": "pli" }
+          ]
+        },
+        {
+          "payloadType": 99,
+          "rtpMap": { "encodingName": "rtx", "clockRate": 90000 },
+          "fmtp": { "parameters": { "apt": "100" } }
+        }
+      ],
+      "audioExtensions": [],
+      "videoExtensions": []
+    }
+  }
+}
