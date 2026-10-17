@@ -1588,6 +1588,9 @@
     "command_unconfirmed": {
       "message": "A fűnyíró nem igazolta vissza a parancsot. Lehet, hogy ennek ellenére végrehajtotta."
     },
+    "device_not_in_account": {
+      "message": "Ez az eszköz már nincs a Mammotion-fiókjában. El lesz távolítva a Home Assistantből."
+    },
     "account_in_use": {
       "message": "A Mammotion-fiókja egy másik munkamenetben aktív (a Mammotion alkalmazásban). Jelentkezzen ki az alkalmazásból, vagy várjon, majd próbálja újra."
     },

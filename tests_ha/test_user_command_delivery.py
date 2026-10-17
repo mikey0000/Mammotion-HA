@@ -171,7 +171,6 @@ async def test_a_direct_send_and_wait_without_a_reply_says_it_is_unconfirmed(
         _server_disconnected,
         _html_error_page,
         aiohttp.ConnectionTimeoutError,
-        lambda: DeviceUnboundException("device is unbind", "iot-1"),
         lambda: FailedRequestException("iot-1"),
         lambda: CommandRejectedError("RES_FAILURE"),
         lambda: BLEUnavailableError("no proxy reached the mower"),
@@ -181,7 +180,6 @@ async def test_a_direct_send_and_wait_without_a_reply_says_it_is_unconfirmed(
         "server_disconnected",
         "content_type",
         "connection_timeout",
-        "device_unbound",
         "failed_request",
         "command_rejected",
         "ble_unavailable",
@@ -201,6 +199,27 @@ async def test_no_failure_of_a_direct_command_escapes_as_a_raw_exception(
         await send(coordinator, priority)
 
     assert raised.value.translation_key == "command_failed"
+    assert raised.value.__cause__ is exc
+
+
+@pytest.mark.regression
+@pytest.mark.parametrize("priority", _DIRECT)
+@_SENDERS
+async def test_a_direct_command_to_a_device_no_longer_in_the_account_says_so(
+    send: Any, priority: Priority
+) -> None:
+    """A removed device (Mammotion 50101 / Aliyun 29004) surfaced as the generic ``command_failed``.
+
+    Nothing told the user the device had left the account, so they retried a press that can never land.
+    """
+    coordinator = _coordinator()
+    exc = DeviceUnboundException(50101, "iot-1")
+    _fail_with(coordinator, exc)
+
+    with pytest.raises(HomeAssistantError) as raised:
+        await send(coordinator, priority)
+
+    assert raised.value.translation_key == "device_not_in_account"
     assert raised.value.__cause__ is exc
 
 

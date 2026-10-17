@@ -1588,6 +1588,9 @@
     "command_unconfirmed": {
       "message": "Mașina de tuns iarba nu a confirmat comanda. Este posibil să fi fost totuși executată."
     },
+    "device_not_in_account": {
+      "message": "Acest dispozitiv nu mai face parte din contul tău Mammotion. Va fi eliminat din Home Assistant."
+    },
     "account_in_use": {
       "message": "Contul dvs. Mammotion este activ într-o altă sesiune (aplicația Mammotion). Deconectați-vă din aplicație sau așteptați și încercați din nou."
     },

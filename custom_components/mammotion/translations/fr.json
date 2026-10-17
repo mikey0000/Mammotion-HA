@@ -1588,6 +1588,9 @@
     "command_unconfirmed": {
       "message": "Le robot n'a pas confirmé la commande. Elle a peut-être quand même été exécutée."
     },
+    "device_not_in_account": {
+      "message": "Cet appareil ne fait plus partie de votre compte Mammotion. Il va être supprimé de Home Assistant."
+    },
     "account_in_use": {
       "message": "Votre compte Mammotion est actif dans une autre session (l'application Mammotion). Déconnectez-vous de l'application, ou patientez, puis réessayez."
     },

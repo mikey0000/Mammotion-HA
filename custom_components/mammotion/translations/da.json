@@ -1588,6 +1588,9 @@
     "command_unconfirmed": {
       "message": "Plæneklipperen bekræftede ikke kommandoen. Den kan stadig være udført."
     },
+    "device_not_in_account": {
+      "message": "Denne enhed er ikke længere på din Mammotion-konto. Den bliver fjernet fra Home Assistant."
+    },
     "account_in_use": {
       "message": "Din Mammotion-konto er aktiv i en anden session (Mammotion-appen). Log ud af appen, eller vent, og prøv igen."
     },

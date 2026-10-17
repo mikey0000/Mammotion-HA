@@ -713,15 +713,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
         _track_account_in_use(hass, entry, mammotion)
 
         async def _on_device_removed(device_name: str, iot_id: str) -> None:
-            """Delete a device unbound from the account from the HA device registry.
+            """Delete a device that is no longer in the account from the HA device registry.
 
-            pymammotion fires this when a device returns 29004 ("device is unbind")
-            and is no longer present on either cloud after re-discovery — i.e. it has
-            been removed from the account.  Removing the HA device also removes all of
-            its entities.
+            pymammotion fires this when the cloud rejects the device as unbound (Aliyun
+            29004, Mammotion 50101) and the account's device list no longer has it, and
+            when a restore's fresh device list drops it.  Removing the HA device also
+            removes its entities; a loaded entry is reloaded so its coordinators go too.
             """
             LOGGER.warning(
-                "Mammotion device %s (iot_id=%s) unbound from account — removing from Home Assistant",
+                "Mammotion device %s (iot_id=%s) is no longer in the account — removing from Home Assistant",
                 device_name,
                 iot_id,
             )
@@ -731,6 +731,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
             )
             if device is not None:
                 device_registry.async_remove_device(device.id)
+            if entry.state is ConfigEntryState.LOADED:
+                hass.config_entries.async_schedule_reload(entry.entry_id)
 
         mammotion.on_device_removed = _on_device_removed
 

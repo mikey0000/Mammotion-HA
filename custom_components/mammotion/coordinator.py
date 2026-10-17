@@ -42,6 +42,7 @@ from pyagorartc import APResponse, PyAgoraRTCError
 from pymammotion.aliyun.exceptions import (
     CloudSetupError,
     DeviceOfflineException,
+    DeviceUnboundException,
     FailedRequestException,
     GatewayTimeoutException,
     TooManyRequestsException,
@@ -1126,6 +1127,9 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         except CommandTimeoutError as exc:
             # The command may have landed; only its reply is missing.
             self._raise_if_user_waiting(priority, exc, "command_unconfirmed")
+        except DeviceUnboundException as exc:
+            # The library drops the device and HA reloads without it; say why the press failed.
+            self._raise_if_user_waiting(priority, exc, "device_not_in_account")
         except FailedRequestException as exc:
             self.update_failures += 1
             self._raise_if_user_waiting(priority, exc, failure_key)

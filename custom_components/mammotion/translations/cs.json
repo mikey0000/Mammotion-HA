@@ -1588,6 +1588,9 @@
     "command_unconfirmed": {
       "message": "Sekačka příkaz nepotvrdila. Mohl být přesto proveden."
     },
+    "device_not_in_account": {
+      "message": "Toto zařízení již není ve vašem účtu Mammotion. Bude odebráno z Home Assistantu."
+    },
     "account_in_use": {
       "message": "Váš účet Mammotion je aktivní v jiné relaci (aplikace Mammotion). Odhlaste se z aplikace nebo počkejte a zkuste to znovu."
     },

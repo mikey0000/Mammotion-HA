@@ -1588,6 +1588,9 @@
     "command_unconfirmed": {
       "message": "De maaier heeft de opdracht niet bevestigd. Mogelijk is deze toch uitgevoerd."
     },
+    "device_not_in_account": {
+      "message": "Dit apparaat staat niet meer in je Mammotion-account. Het wordt uit Home Assistant verwijderd."
+    },
     "account_in_use": {
       "message": "Je Mammotion-account is actief in een andere sessie (de Mammotion-app). Meld je af in de app, of wacht, en probeer het opnieuw."
     },

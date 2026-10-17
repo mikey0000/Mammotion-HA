@@ -1588,6 +1588,9 @@
     "command_unconfirmed": {
       "message": "Kosilnica ukaza ni potrdila. Morda je bil kljub temu izveden."
     },
+    "device_not_in_account": {
+      "message": "Ta naprava ni več v vašem računu Mammotion. Odstranjena bo iz Home Assistanta."
+    },
     "account_in_use": {
       "message": "Vaš račun Mammotion je aktiven v drugi seji (aplikacija Mammotion). Odjavite se iz aplikacije ali počakajte in poskusite znova."
     },
