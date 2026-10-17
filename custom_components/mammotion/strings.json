@@ -1588,6 +1588,9 @@
     "command_unconfirmed": {
       "message": "The mower did not confirm the command. It may still have been carried out."
     },
+    "device_not_in_account": {
+      "message": "This device is no longer in your Mammotion account. It will be removed from Home Assistant."
+    },
     "account_in_use": {
       "message": "Your Mammotion account is active in another session (the Mammotion app). Sign out of the app, or wait, and try again."
     },

@@ -1588,6 +1588,9 @@
     "command_unconfirmed": {
       "message": "Gräsklipparen bekräftade inte kommandot. Det kan ändå ha utförts."
     },
+    "device_not_in_account": {
+      "message": "Den här enheten finns inte längre i ditt Mammotion-konto. Den tas bort från Home Assistant."
+    },
     "account_in_use": {
       "message": "Ditt Mammotion-konto är aktivt i en annan session (Mammotion-appen). Logga ut ur appen, eller vänta, och försök igen."
     },

@@ -1588,6 +1588,9 @@
     "command_unconfirmed": {
       "message": "Der Mähroboter hat den Befehl nicht bestätigt. Der Befehl wurde möglicherweise trotzdem ausgeführt."
     },
+    "device_not_in_account": {
+      "message": "Dieses Gerät ist nicht mehr in deinem Mammotion-Konto. Es wird aus Home Assistant entfernt."
+    },
     "account_in_use": {
       "message": "Ihr Mammotion-Konto ist in einer anderen Sitzung (Mammotion-App) aktiv. Melden Sie sich in der App ab oder warten Sie und versuchen es später erneut."
     },

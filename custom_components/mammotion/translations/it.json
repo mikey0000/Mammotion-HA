@@ -1588,6 +1588,9 @@
     "command_unconfirmed": {
       "message": "Il rasaerba non ha confermato il comando. Potrebbe essere stato comunque eseguito."
     },
+    "device_not_in_account": {
+      "message": "Questo dispositivo non è più nel tuo account Mammotion. Verrà rimosso da Home Assistant."
+    },
     "account_in_use": {
       "message": "Il tuo account Mammotion è attivo in un'altra sessione (l'app Mammotion). Esci dall'app, oppure attendi, e riprova."
     },

@@ -1588,6 +1588,9 @@
     "command_unconfirmed": {
       "message": "Kosiarka nie potwierdziła polecenia. Mogło ono jednak zostać wykonane."
     },
+    "device_not_in_account": {
+      "message": "To urządzenie nie jest już przypisane do Twojego konta Mammotion. Zostanie usunięte z Home Assistant."
+    },
     "account_in_use": {
       "message": "Twoje konto Mammotion jest aktywne w innej sesji (aplikacja Mammotion). Wyloguj się z aplikacji lub poczekaj i spróbuj ponownie."
     },
