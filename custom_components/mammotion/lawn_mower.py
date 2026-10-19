@@ -14,6 +14,7 @@ from homeassistant.components.lawn_mower import (
     LawnMowerEntity,
     LawnMowerEntityFeature,
 )
+from homeassistant.const import MAJOR_VERSION, MINOR_VERSION
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import config_validation as cv
@@ -31,6 +32,9 @@ from . import MammotionConfigEntry
 from .const import COMMAND_EXCEPTIONS, DOMAIN, LOGGER
 from .coordinator import MammotionReportUpdateCoordinator
 from .entity import MammotionBaseEntity, supports_grass_collection
+
+#: Home Assistant 2026.10 added the lawn mower stop action and the idle activity.
+HAS_STOP_AND_IDLE = (MAJOR_VERSION, MINOR_VERSION) >= (2026, 10)
 
 SERVICE_START_MOWING = "start_mow"
 SERVICE_MODIFY_RUNNING_JOB = "modify_running_job"
@@ -268,17 +272,18 @@ async def async_setup_entry(
 class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: ignore[misc]
     """Representation of a Mammotion Lawn Mower."""
 
-    _attr_supported_features = (
-        LawnMowerEntityFeature.DOCK
-        | LawnMowerEntityFeature.PAUSE
-        | LawnMowerEntityFeature.START_MOWING
-        | LawnMowerEntityFeature.STOP
-    )
-
     def __init__(self, coordinator: MammotionReportUpdateCoordinator) -> None:
         """Initialize the Lawn Mower."""
         super().__init__(coordinator, "mower")
         self._attr_name = None  # main feature of device
+        features = (
+            LawnMowerEntityFeature.DOCK
+            | LawnMowerEntityFeature.PAUSE
+            | LawnMowerEntityFeature.START_MOWING
+        )
+        if HAS_STOP_AND_IDLE:
+            features |= LawnMowerEntityFeature.STOP
+        self._attr_supported_features = features
 
     @property
     def rpt_dev_status(self) -> DeviceData:
@@ -309,7 +314,12 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
         if mode == WorkMode.MODE_LOCK:
             return LawnMowerActivity.ERROR
         if mode == WorkMode.MODE_READY and charge_state == 0:
-            return LawnMowerActivity.IDLE
+            # Older Home Assistant has no idle activity; paused is the closest it has.
+            return (
+                LawnMowerActivity.IDLE
+                if HAS_STOP_AND_IDLE
+                else LawnMowerActivity.PAUSED
+            )
         if mode == WorkMode.MODE_READY and charge_state != 0:
             return LawnMowerActivity.DOCKED
         return None
