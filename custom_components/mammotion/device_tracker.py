@@ -18,6 +18,11 @@ from .entity import MammotionBaseEntity
 
 _LOGGER = logging.getLogger(__name__)
 
+#: Decimal places kept in the reported latitude and longitude: 1e-7 degrees is
+#: about 1 cm, within the accuracy of an RTK fix, and it drops the sub-millimetre
+#: jitter that the position conversion adds to a parked mower's frames.
+COORDINATE_DECIMALS = 7
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -68,7 +73,10 @@ class MammotionTracker(MammotionBaseEntity, TrackerEntity, RestoreEntity):  # ty
         lat = device.location.device.latitude
         if lat is None:
             return None
-        return cast(float, lat) + self.coordinator.map_offset_lat / 111_111.0
+        return round(
+            cast(float, lat) + self.coordinator.map_offset_lat / 111_111.0,
+            COORDINATE_DECIMALS,
+        )
 
     @property
     def longitude(self) -> float | None:
@@ -86,7 +94,8 @@ class MammotionTracker(MammotionBaseEntity, TrackerEntity, RestoreEntity):  # ty
             return None
         cos_lat = math.cos(math.radians(lat))
         if cos_lat == 0:
-            return cast(float, lon)
-        return cast(float, lon) + self.coordinator.map_offset_lon / (
-            111_111.0 * cos_lat
+            return round(cast(float, lon), COORDINATE_DECIMALS)
+        return round(
+            cast(float, lon) + self.coordinator.map_offset_lon / (111_111.0 * cos_lat),
+            COORDINATE_DECIMALS,
         )
