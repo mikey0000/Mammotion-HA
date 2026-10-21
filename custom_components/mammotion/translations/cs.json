@@ -64,13 +64,18 @@
           "movement_use_wifi": "Odesílat příkazy pohybu přes Wi-Fi",
           "mow_path_fetch_enabled": "Povolit načítání cesty sekání (cloud)",
           "full_map_fetch_enabled": "Povolit úplné načítání mapy (cloud) — pokud vypnuto, načítají se pouze názvy oblastí",
-          "notify": "Zobrazovat trvalá oznámení pro"
+          "notify": "Zobrazovat trvalá oznámení pro",
+          "go2rtc_url": "Server go2rtc pro přeposílání kamer (např. Frigate)"
         },
         "data_description": {
           "movement_use_wifi": "Posílá původní příkaz pohybu přes Wi-Fi místo dálkového řízení přes cloud. Bez této volby fungují tlačítka posunu a akce pohybu přes cloud od firmwaru 1.30.31.19 u modelů LUBA 2, LUBA 2X, YUKA, LUBA mini a YUKA mini, od 2.3.31.69 u modelů LUBA 3, LUBA mini 2 a YUKA mini 2 a u novějších modelů, pro které server Mammotion hlásí podporu, jen dokud je Dálkové řízení přes cloud zapnuté a potvrzené. Zapněte ji, chcete-li původní příkaz používat s libovolným firmwarem, například pro porovnání obou na LUBA 3; připojené Bluetooth má stále přednost.",
-          "notify": "Oznámení autotestu jsou ve výchozím stavu zapnutá, ostatní vypnutá. Každé oznámení také spustí entitu událostí oznámení sekačky a událost mammotion_event na sběrnici, které mohou místo toho využít automatizace."
+          "notify": "Oznámení autotestu jsou ve výchozím stavu zapnutá, ostatní vypnutá. Každé oznámení také spustí entitu událostí oznámení sekačky a událost mammotion_event na sběrnici, které mohou místo toho využít automatizace.",
+          "go2rtc_url": "Adresa API serveru go2rtc, například serveru Frigate: http://frigate:1984. Každá kamera se tam zaregistruje jako stream pojmenovaný podle sekačky a kamery, například mammotion_luba_mnab12cd_camera, který go2rtc poskytuje přes RTSP na portu 8554. go2rtc musí mít přístup k interní URL Home Assistantu. Ponechte prázdné pro vypnutí přeposílání."
         }
       }
+    },
+    "error": {
+      "invalid_go2rtc_url": "Zadejte adresu http:// nebo https://, například http://frigate:1984."
     }
   },
   "entity": {
