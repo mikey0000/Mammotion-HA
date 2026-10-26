@@ -1309,7 +1309,15 @@
         },
         "edge_mode": {
           "name": "Szegélymód",
-          "description": "Csak fűnyíró: 0 = nincs, 1 = egyszer, 2 = kétszer."
+          "description": "Csak fűnyíró: szegélykörök száma nyírás előtt, 0–4."
+        },
+        "route_model": {
+          "name": "Útvonalminta",
+          "description": "Csak fűnyíró: 0 = cikcakk, 1 = sakktábla, 2 = adaptív cikcakk, 3 = csak szegély."
+        },
+        "ultrasonic_barrier": {
+          "name": "Akadályérzékelés",
+          "description": "Csak fűnyíró: 0 = ki, 1 = alap vagy lassú érintés, 2 = kevesebb érintés, 10 = normál, 11 = érzékeny. Az elérhető értékek a típustól és a firmware-től függnek."
         },
         "ride_boundary_distance": {
           "name": "Szegélylefedettség",
@@ -1408,6 +1416,14 @@
         "edge_mode": {
           "name": "Szegélymód",
           "description": "Csak fűnyíró."
+        },
+        "route_model": {
+          "name": "Útvonalminta",
+          "description": "Csak fűnyíró: 0 = cikcakk, 1 = sakktábla, 2 = adaptív cikcakk, 3 = csak szegély."
+        },
+        "ultrasonic_barrier": {
+          "name": "Akadályérzékelés",
+          "description": "Csak fűnyíró: 0 = ki, 1 = alap vagy lassú érintés, 2 = kevesebb érintés, 10 = normál, 11 = érzékeny. Az elérhető értékek a típustól és a firmware-től függnek."
         },
         "ride_boundary_distance": {
           "name": "Szegélylefedettség",
@@ -1620,6 +1636,12 @@
     },
     "auto_change_direction_unsupported": {
       "message": "A(z) {device_name} vagy a firmware-e nem támogatja a nyírási irány automatikus váltását."
+    },
+    "detection_strategy_unsupported": {
+      "message": "A(z) {value} akadályérzékelést a(z) {device_name} vagy a firmware-e nem kínálja. Elérhető: {offered}."
+    },
+    "spino_speed_not_whole": {
+      "message": "A Spino ütemezés sebességének egész számnak kell lennie, nem {speed}."
     },
     "map_backup_cloud_unavailable": {
       "message": "A térképmentésekhez működő Mammotion felhőbejelentkezés szükséges."

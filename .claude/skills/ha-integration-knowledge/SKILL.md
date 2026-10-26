@@ -59,6 +59,7 @@ The defects these rules most often catch here, each with the rule it breaks:
 - **Except clauses ordered child before parent.** A subclass caught after its parent is dead code (the `AccountInUseError` branch behind its parent class).
 - **Firmware fields are untrusted** (#916). Validate raw values (zero timestamps, uptime-relative times, out-of-range enums) before turning them into HA state.
 - **Tables come from pymammotion** (#917). Mode tables such as `NO_REQUEST_MODES` and refresh triggers are imported, not copied and hand-picked.
+- **Service fields drift from the library and from each other** (#947). Field sets merged with `{**a, **b}` let a shared key's later validator win silently (the Spino's `Coerce(int)` truncated the mower's 0.2 m/s `speed` to 0); a range typed by hand (`edge_mode` 0–2) drifts from the pymammotion enum (`BorderPatrolMode` 0–4); a service exposing a hand-picked subset of a library dataclass leaves out settings the app edits. Merge with `services._merge_fields`, build choices with `services._in_enum(<enum>)`, and see "Adding or extending a service" in `CLAUDE.md`.
 - **Diagnostics redaction is by key name** (`diagnostics`, #919). See `platform-diagnostics.md`.
 - **Unload must not persist stale credentials.** A flow or another entry may have saved newer ones; unload writes only what this entry still owns.
 - **Config-flow error mapping is one helper**, shared by the user, reauth and reconfigure steps, so the steps cannot drift.

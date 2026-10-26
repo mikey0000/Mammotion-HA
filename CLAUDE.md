@@ -50,6 +50,18 @@ Integrations with Gold or Platinum on the quality scale in Home Assistant core a
 
 - All imports within the integration must be relative (e.g. `from . import Foo`, `from .services import bar`). Never use `from custom_components.mammotion import ...` — HA loads integrations in a way that makes absolute imports from `custom_components` fail at runtime.
 
+## Adding or extending a service
+
+A service that reads or writes a pymammotion object (a `Plan`, `PoolPlan`, `OperationSettings`) wraps the whole object, not the few fields the request named. #947 shipped `create_task`/`edit_task` with a truncated speed, a hand-typed range and missing settings, all with passing tests. Before reporting a service done:
+
+1. **Inventory the library object.** List every attribute of the dataclass. Each one is either a service field or an entry in the exclusion list in `tests_ha/meta/test_conventions_service_fields.py`, with the reason. Check what the app edits for the same object (the APK notes in Luba-API), not only what the request mentions.
+2. **Ranges come from the library.** Use `services._in_enum(<pymammotion enum>)` for choices, and check numeric bounds against the library or APK. Never type a `vol.In([...])` or `vol.Range(max=...)` from memory.
+3. **One validator per field name.** Merge field sets with `services._merge_fields`, never with `{**a, **b}`. A field two device kinds share goes in the shared set, with a validator that keeps both kinds' values; the per-kind builder narrows it.
+4. **Read and write round-trip.** If a get/read service exists, it returns every writable field under the write service's name. The round-trip test (`tests_ha/test_services_task_fields.py` for tasks) gives *every* field a non-default value and asserts the object sent equals the one stored. "The row validates" proves nothing; assert on the values that arrive.
+5. **Encoded fields go through the library.** Byte buffers, offsets (`RESERVED_ECHO_OFFSET`) and bit packing belong in a pymammotion helper. If one is missing, add it there (or list the field as pending in the exclusion list); do not twiddle bytes here.
+6. **Surface it everywhere.** Add the field to `services.yaml` (reuse an existing `selector:` translation key where the options match), to `strings.json` and every locale, and to the get service's response.
+7. Run `uv run --no-sync python -m pytest tests_ha/meta -q`. It enforces 2, 3 and the inventory.
+
 ## Bluetooth via ESPHome proxies
 
 - Most users reach the mower over BLE through ESP32 (ESPHome) proxies, not a local adapter. Home Assistant's bluetooth integration owns scanning; this integration only forwards advertisements to pymammotion: `_register_ble_reconnect_callback` in `__init__.py` (per configured mower) and the report coordinator's `_add_ble_device` / `update_ble_device` path. Both re-create the BLE transport if it is missing, so any place that must _keep_ it detached (the Bluetooth switch) has to guard them on the stored switch state.

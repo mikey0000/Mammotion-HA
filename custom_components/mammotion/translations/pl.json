@@ -1309,7 +1309,15 @@
         },
         "edge_mode": {
           "name": "Tryb krawędzi",
-          "description": "Tylko kosiarka: 0 = brak, 1 = raz, 2 = dwa razy."
+          "description": "Tylko kosiarka: liczba okrążeń krawędzi przed koszeniem, 0–4."
+        },
+        "route_model": {
+          "name": "Wzór trasy",
+          "description": "Tylko kosiarka: 0 = zygzak, 1 = szachownica, 2 = adaptacyjny zygzak, 3 = tylko krawędź."
+        },
+        "ultrasonic_barrier": {
+          "name": "Wykrywanie przeszkód",
+          "description": "Tylko kosiarka: 0 = wyłączone, 1 = podstawowe lub powolny dotyk, 2 = mniej dotyku, 10 = standardowe, 11 = czułe. Dostępne wartości zależą od modelu i oprogramowania."
         },
         "ride_boundary_distance": {
           "name": "Pokrycie krawędzi",
@@ -1408,6 +1416,14 @@
         "edge_mode": {
           "name": "Tryb krawędzi",
           "description": "Tylko kosiarka."
+        },
+        "route_model": {
+          "name": "Wzór trasy",
+          "description": "Tylko kosiarka: 0 = zygzak, 1 = szachownica, 2 = adaptacyjny zygzak, 3 = tylko krawędź."
+        },
+        "ultrasonic_barrier": {
+          "name": "Wykrywanie przeszkód",
+          "description": "Tylko kosiarka: 0 = wyłączone, 1 = podstawowe lub powolny dotyk, 2 = mniej dotyku, 10 = standardowe, 11 = czułe. Dostępne wartości zależą od modelu i oprogramowania."
         },
         "ride_boundary_distance": {
           "name": "Pokrycie krawędzi",
@@ -1620,6 +1636,12 @@
     },
     "auto_change_direction_unsupported": {
       "message": "Automatyczna zmiana kierunku koszenia nie jest obsługiwana przez {device_name} lub jego oprogramowanie."
+    },
+    "detection_strategy_unsupported": {
+      "message": "Wykrywanie przeszkód {value} nie jest oferowane przez {device_name} lub jego oprogramowanie. Dostępne: {offered}."
+    },
+    "spino_speed_not_whole": {
+      "message": "Prędkość harmonogramu Spino musi być liczbą całkowitą, a nie {speed}."
     },
     "map_backup_cloud_unavailable": {
       "message": "Kopie map wymagają działającego logowania do chmury Mammotion."

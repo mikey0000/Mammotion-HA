@@ -1309,7 +1309,15 @@
         },
         "edge_mode": {
           "name": "Mod margine",
-          "description": "Doar mașina de tuns: 0 = deloc, 1 = o dată, 2 = de două ori."
+          "description": "Doar mașina de tuns: ture pe margine înainte de tuns, 0–4."
+        },
+        "route_model": {
+          "name": "Model de traseu",
+          "description": "Doar mașina de tuns: 0 = zigzag, 1 = tablă de șah, 2 = zigzag adaptiv, 3 = doar margine."
+        },
+        "ultrasonic_barrier": {
+          "name": "Detectarea obstacolelor",
+          "description": "Doar mașina de tuns: 0 = oprit, 1 = de bază sau atingere lentă, 2 = atingere redusă, 10 = standard, 11 = sensibil. Valorile disponibile depind de model și firmware."
         },
         "ride_boundary_distance": {
           "name": "Acoperire margini",
@@ -1408,6 +1416,14 @@
         "edge_mode": {
           "name": "Mod margine",
           "description": "Doar mașina de tuns."
+        },
+        "route_model": {
+          "name": "Model de traseu",
+          "description": "Doar mașina de tuns: 0 = zigzag, 1 = tablă de șah, 2 = zigzag adaptiv, 3 = doar margine."
+        },
+        "ultrasonic_barrier": {
+          "name": "Detectarea obstacolelor",
+          "description": "Doar mașina de tuns: 0 = oprit, 1 = de bază sau atingere lentă, 2 = atingere redusă, 10 = standard, 11 = sensibil. Valorile disponibile depind de model și firmware."
         },
         "ride_boundary_distance": {
           "name": "Acoperire margini",
@@ -1620,6 +1636,12 @@
     },
     "auto_change_direction_unsupported": {
       "message": "Inversarea automată a direcției de tuns nu este acceptată de {device_name} sau de firmware-ul său."
+    },
+    "detection_strategy_unsupported": {
+      "message": "Detectarea obstacolelor {value} nu este oferită de {device_name} sau de firmware-ul său. Disponibile: {offered}."
+    },
+    "spino_speed_not_whole": {
+      "message": "Viteza unui program Spino trebuie să fie un număr întreg, nu {speed}."
     },
     "map_backup_cloud_unavailable": {
       "message": "Copiile de rezervă ale hărților necesită o autentificare funcțională în cloudul Mammotion."

@@ -1309,7 +1309,15 @@
         },
         "edge_mode": {
           "name": "Kantläge",
-          "description": "Endast klippare: 0 = inga, 1 = en gång, 2 = två gånger."
+          "description": "Endast klippare: varv längs kanten före klippning, 0–4."
+        },
+        "route_model": {
+          "name": "Körmönster",
+          "description": "Endast klippare: 0 = sicksack, 1 = schackbräde, 2 = adaptiv sicksack, 3 = endast kant."
+        },
+        "ultrasonic_barrier": {
+          "name": "Hinderdetektering",
+          "description": "Endast klippare: 0 = av, 1 = grundläggande eller långsam beröring, 2 = mindre beröring, 10 = standard, 11 = känslig. Vilka värden som finns beror på modell och firmware."
         },
         "ride_boundary_distance": {
           "name": "Kanttäckning",
@@ -1408,6 +1416,14 @@
         "edge_mode": {
           "name": "Kantläge",
           "description": "Endast klippare."
+        },
+        "route_model": {
+          "name": "Körmönster",
+          "description": "Endast klippare: 0 = sicksack, 1 = schackbräde, 2 = adaptiv sicksack, 3 = endast kant."
+        },
+        "ultrasonic_barrier": {
+          "name": "Hinderdetektering",
+          "description": "Endast klippare: 0 = av, 1 = grundläggande eller långsam beröring, 2 = mindre beröring, 10 = standard, 11 = känslig. Vilka värden som finns beror på modell och firmware."
         },
         "ride_boundary_distance": {
           "name": "Kanttäckning",
@@ -1620,6 +1636,12 @@
     },
     "auto_change_direction_unsupported": {
       "message": "Automatisk växling av klippriktning stöds inte av {device_name} eller dess firmware."
+    },
+    "detection_strategy_unsupported": {
+      "message": "Hinderdetektering {value} erbjuds inte av {device_name} eller dess firmware. Tillgängliga: {offered}."
+    },
+    "spino_speed_not_whole": {
+      "message": "Hastigheten i ett Spino-schema måste vara ett heltal, inte {speed}."
     },
     "map_backup_cloud_unavailable": {
       "message": "Kartsäkerhetskopior kräver en fungerande inloggning i Mammotion-molnet."
