@@ -1,0 +1,198 @@
+{
+  "created_at": "2026-05-22T09:57:07.787629+00:00",
+  "data": {
+    "account_name": "user@example.com",
+    "aep_data": {
+      "code": 200,
+      "data": {
+        "deviceName": "00000000000000000000000000000002",
+        "deviceSecret": "REDACTED_DEVICESECRET",
+        "productKey": "a2J57ijG5fe"
+      },
+      "id": "00000000-0000-0000-0000-000000000004"
+    },
+    "auth_data": {
+      "api": "/account/api/loginbyoauth.json",
+      "data": {
+        "code": 1,
+        "data": {
+          "loginSuccessResult": {
+            "initPwd": "null",
+            "oauthOtherInfo": {
+              "SidExpiredTime": 1873098133
+            },
+            "openAccount": {
+              "avatarUrl": "",
+              "country": "NZ",
+              "displayName": "user@example.com",
+              "domainId": 1005,
+              "enableDevice": "true",
+              "hasPassword": "false",
+              "id": 1005,
+              "mobileConflictAccount": "false",
+              "mobileLocationCode": "86",
+              "openId": "000000000000000006",
+              "pwdVersion": 0,
+              "status": 1,
+              "subAccount": "false"
+            },
+            "reTokenExpireIn": 7776000,
+            "refreshToken": "REDACTED_REFRESHTOKEN",
+            "sid": "REDACTED_SID",
+            "sidExpireIn": 86400,
+            "token": "REDACTED_TOKEN",
+            "uidToken": "user@example.com"
+          },
+          "mobileBindRequired": "false"
+        },
+        "deviceId": null,
+        "message": "SUCCESS",
+        "subCode": 0,
+        "successful": "true",
+        "traceId": "000000000000000000000000000010",
+        "vid": "0-00000000-0000-0000-0000-000000000011"
+      },
+      "errorMsg": "",
+      "success": "true"
+    },
+    "connect_data": {
+      "api": "/api/sdk/connect",
+      "data": {
+        "code": 1,
+        "data": {
+          "config": {
+            "code": 27552,
+            "message": "NO_CHANGE",
+            "subCode": 0,
+            "successful": "false",
+            "traceId": "000000000000000000000000000012"
+          },
+          "device": {
+            "code": 1,
+            "data": {
+              "deviceId": "00000000-0000-0000-0000-000000000013"
+            },
+            "message": "SUCCESS",
+            "subCode": 0,
+            "successful": "true",
+            "traceId": "000000000000000000000000000012"
+          }
+        },
+        "message": "SUCCESS",
+        "subCode": 0,
+        "successful": "true",
+        "traceId": "000000000000000000000000000012",
+        "vid": "0-00000000-0000-0000-0000-000000000014"
+      },
+      "success": "true"
+    },
+    "device_data": {
+      "code": 200,
+      "data": {
+        "data": [],
+        "pageNo": 1,
+        "pageSize": 100,
+        "total": 0
+      },
+      "id": "00000000-0000-0000-0000-000000000015"
+    },
+    "device_name": null,
+    "has_cloud_account": true,
+    "mammotion_account_id": "00000016",
+    "mammotion_data": {
+      "code": 0,
+      "data": {
+        "access_token": "REDACTED_ACCESS_TOKEN",
+        "authorization_code": "REDACTED_AUTHORIZATION_CODE",
+        "expires_in": 2591999,
+        "grant_type": null,
+        "jti": null,
+        "refresh_token": "REDACTED_REFRESH_TOKEN",
+        "scope": null,
+        "token_type": "Bearer",
+        "userInformation": {
+          "areaCode": "NZL",
+          "authType": "0",
+          "domainAbbreviation": "NZ",
+          "email": "user@example.com",
+          "userAccount": "00000016",
+          "userId": "000000000000000006"
+        }
+      },
+      "msg": "Request success",
+      "request_id": null
+    },
+    "mammotion_device_list": [],
+    "mammotion_device_records": {
+      "current": 1,
+      "pages": 1,
+      "records": [
+        {
+          "bind_time": 1773687004000,
+          "create_time": "2026-03-16T18:50:04",
+          "device_name": "Luba-VA000020",
+          "identity_id": "000000000000000021",
+          "iot_id": "00000000000000000000000022",
+          "owned": 0,
+          "product_key": "uY54W5rM8YH",
+          "status": 1
+        }
+      ],
+      "size": 100,
+      "total": 1
+    },
+    "mammotion_jwt_info": {
+      "iot": "REDACTED_IOT",
+      "robot": "REDACTED_ROBOT"
+    },
+    "mammotion_mqtt": {
+      "client_id": "000000000000000021",
+      "host": "mqtts://mqtt-ap.mammotion.com:3083",
+      "jwt": "REDACTED_JWT",
+      "username": "000000000000000021"
+    },
+    "password": "REDACTED_PASSWORD",
+    "region_data": {
+      "code": 200,
+      "data": {
+        "apiGatewayEndpoint": "ap-southeast-1.api-iot.aliyuncs.com",
+        "mqttEndpoint": "public.iot-as-mqtt.ap-southeast-1.aliyuncs.com:1883",
+        "oaApiGatewayEndpoint": "living-account.ap-southeast-1.aliyuncs.com",
+        "pushChannelEndpoint": "living-accs.ap-southeast-1.aliyuncs.com",
+        "regionEnglishName": "Singapore",
+        "regionId": "ap-southeast-1",
+        "shortRegionId": "1"
+      },
+      "id": "00000000-0000-0000-0000-000000000027",
+      "msg": null
+    },
+    "session_data": {
+      "code": 200,
+      "data": {
+        "identityId": "0000000000000000000000000000000000000028",
+        "iotToken": "REDACTED_IOTTOKEN",
+        "iotTokenExpire": 72000,
+        "refreshToken": "REDACTED_REFRESHTOKEN",
+        "refreshTokenExpire": 720000
+      },
+      "token_issued_at": 1786749115
+    },
+    "use_wifi": true
+  },
+  "disabled_by": "user",
+  "discovery_keys": {},
+  "domain": "mammotion",
+  "entry_id": "00000000000000000000000031",
+  "minor_version": 1,
+  "modified_at": "2026-08-14T23:11:58.295849+00:00",
+  "options": {
+    "prefer_ble_over_wifi": true
+  },
+  "pref_disable_new_entities": false,
+  "pref_disable_polling": false,
+  "source": "user",
+  "subentries": [],
+  "title": "user@example.com",
+  "unique_id": "00000016",
+  "version": 1
+}

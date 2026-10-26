@@ -713,24 +713,37 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
         _track_account_in_use(hass, entry, mammotion)
 
         async def _on_device_removed(device_name: str, iot_id: str) -> None:
-            """Delete a device that is no longer in the account from the HA device registry.
+            """Drop a device that is no longer in the account from Home Assistant.
 
             pymammotion fires this when the cloud rejects the device as unbound (Aliyun
             29004, Mammotion 50101) and the account's device list no longer has it, and
-            when a restore's fresh device list drops it.  Removing the HA device also
-            removes its entities; a loaded entry is reloaded so its coordinators go too.
+            when a restore's fresh device list drops it, which can be during setup,
+            before ``runtime_data`` exists.  A device also configured over BLE keeps its
+            registry entry and stored state: the reload brings it back as BLE-only.
+            Otherwise the HA device (and so its entities) and its stored state go.  A
+            loaded entry is reloaded either way, which rebuilds ``runtime_data``.
             """
-            LOGGER.warning(
-                "Mammotion device %s (iot_id=%s) is no longer in the account — removing from Home Assistant",
-                device_name,
-                iot_id,
-            )
-            device_registry = async_get_device_registry(hass)
-            device = device_registry.async_get_device_by_identifier(
-                (DOMAIN, device_name), entry.entry_id
-            )
-            if device is not None:
-                device_registry.async_remove_device(device.id)
+            if device_name in entry.data.get(CONF_BLE_DEVICES, {}):
+                LOGGER.warning(
+                    "Mammotion device %s (iot_id=%s) is no longer in the account — keeping it over Bluetooth only",
+                    device_name,
+                    iot_id,
+                )
+            else:
+                LOGGER.warning(
+                    "Mammotion device %s (iot_id=%s) is no longer in the account — removing from Home Assistant",
+                    device_name,
+                    iot_id,
+                )
+                device_registry = async_get_device_registry(hass)
+                if (
+                    device := device_registry.async_get_device_by_identifier(
+                        (DOMAIN, device_name), entry.entry_id
+                    )
+                ) is not None:
+                    device_registry.async_remove_device(device.id)
+                await store.async_remove_device(device_name)
+
             if entry.state is ConfigEntryState.LOADED:
                 hass.config_entries.async_schedule_reload(entry.entry_id)
 
@@ -1174,13 +1187,11 @@ async def async_remove_config_entry_device(
         ),
         None,
     )
-    mower = next(
-        (
-            mower
-            for mower in config_entry.runtime_data.mowers
-            if mower.unique_name == device_identifier
-        ),
-        None,
-    )
 
-    return not bool(mower)
+    runtime_data = config_entry.runtime_data
+    in_use = (
+        {mower.unique_name for mower in runtime_data.mowers}
+        | {rtk.unique_name for rtk in runtime_data.RTK}
+        | {spino.unique_name for spino in runtime_data.spino}
+    )
+    return device_identifier not in in_use
