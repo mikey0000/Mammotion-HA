@@ -861,15 +861,6 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         return True
 
     @property
-    def mqtt_transport_connected(self) -> bool:
-        """Return True while either cloud MQTT transport of this mower is connected."""
-        if handle := self.manager.mower(self.device_name):
-            for t_type in (TransportType.CLOUD_ALIYUN, TransportType.CLOUD_MAMMOTION):
-                if handle.is_transport_connected(t_type):
-                    return True
-        return False
-
-    @property
     def mqtt_device_online(self) -> bool:
         """Return True while the cloud reports this mower online."""
         device = self.manager.get_device_by_name(self.device_name)
