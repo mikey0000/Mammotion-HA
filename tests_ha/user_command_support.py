@@ -8,8 +8,10 @@ coordinator consults is pymammotion's own.
 
 import time
 from types import SimpleNamespace
+from typing import Any
 from unittest.mock import create_autospec
 
+from homeassistant.core import HomeAssistant
 from pymammotion.client import MammotionClient
 from pymammotion.data.model.device import Device, MowingDevice
 from pymammotion.data.model.device_config import OperationSettings
@@ -117,3 +119,12 @@ def make_cloud_report_coordinator(
     coordinator._operation_settings = operation_settings or OperationSettings()
     coordinator.unique_name = device_name
     return coordinator
+
+
+def without_state_machine(entity: Any, hass: HomeAssistant) -> Any:
+    """Return *entity* wired to *hass* but writing no state, for driving its actions directly."""
+    entity.hass = hass
+    entity.entity_id = f"test.{entity.entity_description.key}"
+    # Not added to a platform, so there is no state machine entry to write.
+    entity.async_write_ha_state = lambda: None
+    return entity

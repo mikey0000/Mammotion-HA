@@ -805,6 +805,9 @@
       "working_speed": {
         "name": "Velocità di lavoro"
       },
+      "autonomous_drive_speed": {
+        "name": "Velocità di guida autonoma"
+      },
       "cutting_angle": {
         "name": "Angolo Tracciato Di Taglio"
       },

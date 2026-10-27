@@ -805,6 +805,9 @@
       "working_speed": {
         "name": "Viteza de lucru"
       },
+      "autonomous_drive_speed": {
+        "name": "Viteză de deplasare autonomă"
+      },
       "cutting_angle": {
         "name": "Unghiul de tăiere"
       },

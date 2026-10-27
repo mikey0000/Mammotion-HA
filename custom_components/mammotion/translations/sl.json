@@ -805,6 +805,9 @@
       "working_speed": {
         "name": "Hitrost košnje"
       },
+      "autonomous_drive_speed": {
+        "name": "Hitrost avtonomne vožnje"
+      },
       "cutting_angle": {
         "name": "Kot poti rezanja"
       },

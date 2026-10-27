@@ -805,6 +805,9 @@
       "working_speed": {
         "name": "Pracovní rychlost"
       },
+      "autonomous_drive_speed": {
+        "name": "Rychlost autonomní jízdy"
+      },
       "cutting_angle": {
         "name": "Úhel sečení"
       },

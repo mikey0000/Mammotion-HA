@@ -332,6 +332,8 @@ def firmware_gated_reads(
         reads.append("async_read_wildlife_safety")
     if DeviceType.supports_charge_limit(device_name, firmware):
         reads.extend(("async_read_battery_info", "async_read_charge_levels"))
+    if DeviceType.supports_autonomous_drive_speed(device_name, firmware):
+        reads.append("async_read_autonomous_drive_speed")
     if (
         rain_protection is not None
         and DeviceType.supports_rain_protection_modes(
@@ -1645,6 +1647,21 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             "nav_sys_param_cmd",
             priority=Priority.USER,
             level=level,
+        )
+
+    async def async_read_autonomous_drive_speed(self) -> None:
+        """Read the X5 autonomous drive speed."""
+        await self.async_send_and_wait(
+            "read_autonomous_drive_speed", "nav_sys_param_cmd"
+        )
+
+    async def async_set_autonomous_drive_speed(self, speed: float) -> None:
+        """Set the X5 autonomous drive speed in m/s."""
+        await self.async_send_and_wait(
+            "set_autonomous_drive_speed",
+            "nav_sys_param_cmd",
+            priority=Priority.USER,
+            speed=speed,
         )
 
     async def async_set_sidelight(self, on_off: int) -> None:

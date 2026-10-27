@@ -805,6 +805,9 @@
       "working_speed": {
         "name": "Arbejdshastighed"
       },
+      "autonomous_drive_speed": {
+        "name": "Autonom kørehastighed"
+      },
       "cutting_angle": {
         "name": "Klippebanevinkel"
       },

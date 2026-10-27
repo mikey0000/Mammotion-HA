@@ -805,6 +805,9 @@
       "working_speed": {
         "name": "Robot Snelheid"
       },
+      "autonomous_drive_speed": {
+        "name": "Autonome rijsnelheid"
+      },
       "cutting_angle": {
         "name": "Hoek van maaien"
       },

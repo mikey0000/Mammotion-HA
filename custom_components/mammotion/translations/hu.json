@@ -805,6 +805,9 @@
       "working_speed": {
         "name": "Munkasebesség"
       },
+      "autonomous_drive_speed": {
+        "name": "Autonóm haladási sebesség"
+      },
       "cutting_angle": {
         "name": "Nyírási szög"
       },

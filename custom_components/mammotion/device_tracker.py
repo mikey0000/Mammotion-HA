@@ -10,6 +10,7 @@ from homeassistant.components.device_tracker import SourceType, TrackerEntity
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.restore_state import RestoreEntity
+from pymammotion.data.model.enums import RTKStatus
 
 from . import MammotionConfigEntry
 from .const import ATTR_DIRECTION
@@ -17,6 +18,16 @@ from .coordinator import MammotionBaseUpdateCoordinator
 from .entity import MammotionBaseEntity
 
 _LOGGER = logging.getLogger(__name__)
+
+#: Typical horizontal error in metres for each fix type; the mower reports no
+#: per-fix figure. A coarse lookup also keeps ``gps_accuracy`` from changing on
+#: every frame, which would write a state row each time.
+_ACCURACY_BY_FIX: dict[RTKStatus, float] = {
+    RTKStatus.FIX: 0.05,
+    RTKStatus.FLOAT: 0.5,
+}
+#: Single-point fix, and the no-fix case, where 0 would claim an exact position.
+_FALLBACK_ACCURACY = 3.0
 
 
 async def async_setup_entry(
@@ -56,6 +67,17 @@ class MammotionTracker(MammotionBaseEntity, TrackerEntity, RestoreEntity):  # ty
         if device is None:
             return {}
         return {ATTR_DIRECTION: device.location.orientation}
+
+    @property
+    def location_accuracy(self) -> float:
+        """Return the position's accuracy radius in metres, from the RTK fix type."""
+        device = self.coordinator.manager.get_device_by_name(
+            self.coordinator.device_name
+        )
+        if device is None:
+            return _FALLBACK_ACCURACY
+        fix = RTKStatus.from_value(device.report_data.rtk.status)
+        return _ACCURACY_BY_FIX.get(fix, _FALLBACK_ACCURACY)
 
     @property
     def latitude(self) -> float | None:

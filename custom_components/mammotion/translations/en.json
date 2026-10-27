@@ -805,6 +805,9 @@
       "working_speed": {
         "name": "Working speed"
       },
+      "autonomous_drive_speed": {
+        "name": "Autonomous drive speed"
+      },
       "cutting_angle": {
         "name": "Cutting path angle"
       },
