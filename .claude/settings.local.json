@@ -93,7 +93,8 @@
       "Read(//home/michael/git/Luba-API/**)",
       "Read(//home/michael/git/Luba-API/pymammotion/utility/**)",
       "Bash(adb devices *)",
-      "Bash(adb shell *)"
+      "Bash(adb shell *)",
+      "Bash(gh issue *)"
     ]
   },
   "enableAllProjectMcpServers": false

@@ -139,6 +139,22 @@ CHARGE_LIMIT_NUMBER_ENTITY = MammotionConfigNumberEntityDescription(
 )
 
 
+# The app's driving-page slider: X5 on firmware 2.3.28+, bounded by the model's working speed.
+AUTONOMOUS_DRIVE_SPEED_NUMBER_ENTITY = MammotionConfigNumberEntityDescription(
+    key="autonomous_drive_speed",
+    device_class=NumberDeviceClass.SPEED,
+    native_unit_of_measurement=UnitOfSpeed.METERS_PER_SECOND,
+    native_min_value=0.2,
+    native_max_value=0.6,
+    native_step=0.1,
+    mode=NumberMode.SLIDER,
+    set_async_fn=lambda coordinator, value: (
+        coordinator.async_set_autonomous_drive_speed(value)
+    ),
+    get_fn=lambda coordinator: coordinator.data.mower_state.autonomous_drive_speed,
+)
+
+
 def _charge_level(level: int, levels: range) -> int | None:
     """Return a recharge/resume level as the app shows it: smart as the slider's top."""
     if level == 0:
@@ -336,6 +352,21 @@ async def async_setup_entry(
             async_add_entities=async_add_entities,
         )
 
+        async_add_when_firmware_supports(
+            entry,
+            mower.reporting_coordinator,
+            supported=partial(
+                DeviceType.supports_autonomous_drive_speed, mower.device.device_name
+            ),
+            descriptions=(AUTONOMOUS_DRIVE_SPEED_NUMBER_ENTITY,),
+            build=partial(
+                MammotionAutonomousDriveSpeedNumberEntity,
+                mower.reporting_coordinator,
+                limits=limits,
+            ),
+            async_add_entities=async_add_entities,
+        )
+
         if DeviceType.supports_ride_boundary_distance(mower.device.device_name):
             entities.append(
                 MammotionConfigNumberEntity(
@@ -514,6 +545,32 @@ class MammotionWorkingNumberEntity(MammotionConfigNumberEntity):
         if self.entity_description.set_async_fn is not None:
             await self.entity_description.set_async_fn(self.coordinator, value)
         self.async_write_ha_state()
+
+
+class MammotionAutonomousDriveSpeedNumberEntity(MammotionConfigNumberEntity):
+    """X5 autonomous drive speed, ranged and clamped as the app's slider is."""
+
+    def __init__(
+        self,
+        coordinator: MammotionBaseUpdateCoordinator[Any],
+        entity_description: MammotionConfigNumberEntityDescription,
+        limits: DeviceLimits | None,
+    ) -> None:
+        """Take the range from the model's working speed, as the app does."""
+        super().__init__(coordinator, entity_description)
+        if limits is not None:
+            self._attr_native_min_value = limits.working_speed.min
+            self._attr_native_max_value = limits.working_speed.max
+        # CarDrivingActivity widens a degenerate range by 0.4 m/s.
+        if self._attr_native_max_value <= self._attr_native_min_value + 0.01:
+            self._attr_native_max_value = self._attr_native_min_value + 0.4
+        self._attr_native_value = self._current_value()
+
+    def _current_value(self) -> float | None:
+        """Clamp the reported speed into the slider's range, as the app does."""
+        if (value := super()._current_value()) is None:
+            return None
+        return min(max(value, self._attr_native_min_value), self._attr_native_max_value)
 
 
 class MammotionSpinoNumberEntity(MammotionBaseSpinoEntity, NumberEntity):  # type: ignore[misc]

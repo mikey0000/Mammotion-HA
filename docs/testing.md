@@ -309,7 +309,8 @@ reviewer never rewrites.
 
 Implemented in `tests_ha/meta/`: `test_conventions_schemas.py` (§14.1–14.2),
 `test_conventions.py` (§14.3–14.6), `test_conventions_tables.py`
-(§14.7–14.9) and `test_conventions_suite.py` (§14.10), sharing
+(§14.7–14.9), `test_conventions_suite.py` (§14.10) and
+`test_conventions_service_fields.py` (§14.11), sharing
 `conventions_support.py` (`assert_ratchet`, ported from Luba-API). Each check
 runs over source text, the AST or the shipped JSON — no `hass` — and carries
 a baseline of today's offenders as a ratchet: exceeding an entry fails, and so
@@ -430,6 +431,21 @@ parameter annotated, no `MagicMock()` without `spec`/`spec_set` (baselined
 per module), no builder name (`make_*`, `_make_*`) defined in two modules,
 every `@pytest.mark.regression` test has a docstring.
 
+### 14.11 Service fields: declared once, ranged by the library, covering the plan (#947)
+
+`meta/test_conventions_service_fields.py`. No dict display in `services.py`,
+`lawn_mower.py` or `camera.py` merges two field sets with `**` (a shared key
+lets the later validator silently replace the earlier one; use
+`services._merge_fields`, which raises). Choices are built from the
+pymammotion enum (`services._in_enum`), not a `vol.In([0, 1, 2])` typed by
+hand (`HAND_TYPED_CHOICES` ratchet). Every schema field is in `services.yaml`
+unless `_SCHEMA_ONLY_FIELDS` says why. Every `Plan` / `PoolPlan` attribute is
+an edit_task field or in `_PLAN_NOT_EDITABLE` / `_POOL_PLAN_NOT_EDITABLE`
+with the reason, so a setting the library adds fails until someone decides.
+The value round trip (get_task row → edit_task → the plan sent equals the
+stored plan, every field set to a non-default value) is
+`test_services_task_fields.py`.
+
 ---
 
 ## 15. Legacy debt
@@ -464,6 +480,7 @@ are the authority):
 | `WALL_CLOCK_SLEEPS`                          | §14.10 | 1 (`test_ble_first_setup.py`)                                                                                                                                         |
 | `DUPLICATE_BUILDERS`                         | §14.10 | `make_coordinator` in 4 modules                                                                                                                                       |
 | `UNDOCUMENTED_MODULES`, bare asyncio markers | §14.10 | 0                                                                                                                                                                     |
+| `HAND_TYPED_CHOICES`                         | §14.11 | 13: `lawn_mower.py` 12, `services.py` 1 (`auto_change_direction`, an on/off flag)                                                                                      |
 
 Fix the debt your change touches and shrink its baseline entry; do not fix it
 in bulk as a side effect of unrelated work.

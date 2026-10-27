@@ -805,6 +805,9 @@
       "working_speed": {
         "name": "Hitrost košnje"
       },
+      "autonomous_drive_speed": {
+        "name": "Hitrost avtonomne vožnje"
+      },
       "cutting_angle": {
         "name": "Kot poti rezanja"
       },
@@ -1309,7 +1312,15 @@
         },
         "edge_mode": {
           "name": "Način robov",
-          "description": "Samo kosilnica: 0 = brez, 1 = enkrat, 2 = dvakrat."
+          "description": "Samo kosilnica: število krogov ob robu pred košnjo, 0–4."
+        },
+        "route_model": {
+          "name": "Vzorec poti",
+          "description": "Samo kosilnica: 0 = cikcak, 1 = šahovnica, 2 = prilagodljivi cikcak, 3 = samo rob."
+        },
+        "ultrasonic_barrier": {
+          "name": "Zaznavanje ovir",
+          "description": "Samo kosilnica: 0 = izklopljeno, 1 = osnovno ali počasen dotik, 2 = manj dotikov, 10 = standardno, 11 = občutljivo. Razpoložljive vrednosti so odvisne od modela in vdelane programske opreme."
         },
         "ride_boundary_distance": {
           "name": "Pokritost robov",
@@ -1408,6 +1419,14 @@
         "edge_mode": {
           "name": "Način robov",
           "description": "Samo kosilnica."
+        },
+        "route_model": {
+          "name": "Vzorec poti",
+          "description": "Samo kosilnica: 0 = cikcak, 1 = šahovnica, 2 = prilagodljivi cikcak, 3 = samo rob."
+        },
+        "ultrasonic_barrier": {
+          "name": "Zaznavanje ovir",
+          "description": "Samo kosilnica: 0 = izklopljeno, 1 = osnovno ali počasen dotik, 2 = manj dotikov, 10 = standardno, 11 = občutljivo. Razpoložljive vrednosti so odvisne od modela in vdelane programske opreme."
         },
         "ride_boundary_distance": {
           "name": "Pokritost robov",
@@ -1620,6 +1639,12 @@
     },
     "auto_change_direction_unsupported": {
       "message": "{device_name} ali njegova vdelana programska oprema ne podpira samodejnega menjavanja smeri košnje."
+    },
+    "detection_strategy_unsupported": {
+      "message": "Zaznavanje ovir {value} ni na voljo za {device_name} ali njegovo vdelano programsko opremo. Na voljo: {offered}."
+    },
+    "spino_speed_not_whole": {
+      "message": "Hitrost urnika Spino mora biti celo število, ne {speed}."
     },
     "map_backup_cloud_unavailable": {
       "message": "Varnostne kopije zemljevidov zahtevajo delujočo prijavo v oblak Mammotion."

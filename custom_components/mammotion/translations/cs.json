@@ -805,6 +805,9 @@
       "working_speed": {
         "name": "Pracovní rychlost"
       },
+      "autonomous_drive_speed": {
+        "name": "Rychlost autonomní jízdy"
+      },
       "cutting_angle": {
         "name": "Úhel sečení"
       },
@@ -1309,7 +1312,15 @@
         },
         "edge_mode": {
           "name": "Režim okrajů",
-          "description": "Pouze sekačka: 0 = žádné, 1 = jednou, 2 = dvakrát."
+          "description": "Pouze sekačka: počet objezdů obvodu před sečením, 0–4."
+        },
+        "route_model": {
+          "name": "Vzor trasy",
+          "description": "Pouze sekačka: 0 = cik-cak, 1 = šachovnice, 2 = adaptivní cik-cak, 3 = pouze obvod."
+        },
+        "ultrasonic_barrier": {
+          "name": "Detekce překážek",
+          "description": "Pouze sekačka: 0 = vypnuto, 1 = základní nebo pomalý dotyk, 2 = méně dotyků, 10 = standardní, 11 = citlivá. Dostupné hodnoty závisí na modelu a firmwaru."
         },
         "ride_boundary_distance": {
           "name": "Pokrytí okrajů",
@@ -1408,6 +1419,14 @@
         "edge_mode": {
           "name": "Režim okrajů",
           "description": "Pouze sekačka."
+        },
+        "route_model": {
+          "name": "Vzor trasy",
+          "description": "Pouze sekačka: 0 = cik-cak, 1 = šachovnice, 2 = adaptivní cik-cak, 3 = pouze obvod."
+        },
+        "ultrasonic_barrier": {
+          "name": "Detekce překážek",
+          "description": "Pouze sekačka: 0 = vypnuto, 1 = základní nebo pomalý dotyk, 2 = méně dotyků, 10 = standardní, 11 = citlivá. Dostupné hodnoty závisí na modelu a firmwaru."
         },
         "ride_boundary_distance": {
           "name": "Pokrytí okrajů",
@@ -1620,6 +1639,12 @@
     },
     "auto_change_direction_unsupported": {
       "message": "Automatické střídání směru sečení není podporováno zařízením {device_name} nebo jeho firmwarem."
+    },
+    "detection_strategy_unsupported": {
+      "message": "Detekce překážek {value} není u zařízení {device_name} nebo jeho firmwaru k dispozici. Dostupné: {offered}."
+    },
+    "spino_speed_not_whole": {
+      "message": "Rychlost plánu Spino musí být celé číslo, ne {speed}."
     },
     "map_backup_cloud_unavailable": {
       "message": "Zálohy map vyžadují funkční přihlášení ke cloudu Mammotion."

@@ -17,7 +17,7 @@ from pymammotion.aliyun.exceptions import DeviceOfflineException
 from pymammotion.data.model.device import MowingDevice
 from pymammotion.data.model.device_config import OperationSettings
 from pymammotion.data.model.device_info import ChargeSettings
-from user_command_support import make_coordinator
+from user_command_support import make_coordinator, without_state_machine
 
 from custom_components.mammotion import select as select_platform
 from custom_components.mammotion.coordinator import MammotionReportUpdateCoordinator
@@ -63,14 +63,6 @@ def _charge_reported() -> MowingDevice:
     return device
 
 
-def _without_state_machine(entity: Any, hass: HomeAssistant) -> Any:
-    entity.hass = hass
-    entity.entity_id = f"test.{entity.entity_description.key}"
-    # Not added to a platform, so there is no state machine entry to write.
-    entity.async_write_ha_state = lambda: None
-    return entity
-
-
 @pytest.mark.regression
 async def test_a_smart_charge_change_the_mower_never_got_reverts_the_switch(
     hass: HomeAssistant,
@@ -82,7 +74,7 @@ async def test_a_smart_charge_change_the_mower_never_got_reverts_the_switch(
     """
     coordinator = _offline_coordinator(_charge_reported())
     description = next(d for d in CHARGE_SWITCH_ENTITIES if d.key == "smart_charge")
-    switch = _without_state_machine(
+    switch = without_state_machine(
         MammotionSwitchEntity(coordinator, description), hass
     )
 
@@ -98,7 +90,7 @@ async def test_a_charge_limit_the_mower_never_got_is_reported(
 ) -> None:
     """The number reported success and showed a limit the mower never took."""
     coordinator = _offline_coordinator(_charge_reported())
-    number = _without_state_machine(
+    number = without_state_machine(
         MammotionConfigNumberEntity(coordinator, CHARGE_LIMIT_NUMBER_ENTITY), hass
     )
 
@@ -116,7 +108,7 @@ async def test_a_charge_level_change_the_mower_never_got_is_reported(
     """The recharge and resume levels went out at NORMAL too."""
     coordinator = _offline_coordinator(_charge_reported())
     description = next(d for d in CHARGE_SWITCH_ENTITIES if d.key == key)
-    switch = _without_state_machine(
+    switch = without_state_machine(
         MammotionSwitchEntity(coordinator, description), hass
     )
 

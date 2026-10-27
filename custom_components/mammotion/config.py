@@ -49,6 +49,9 @@ class MammotionConfigStore(Store):  # type: ignore[misc]
         # "<product_key>/<int_mod>" rather than by device: it describes the
         # model, so two mowers of the same model share one copy.
         self.capabilities: dict[str, dict[str, Any]] = {}
+        # Devices purged while their coordinators may still be polling, until
+        # the reload that drops them pops this store.
+        self._removed: set[str] = set()
         self._save_pending = False
 
     async def _async_migrate_func(
@@ -87,6 +90,8 @@ class MammotionConfigStore(Store):  # type: ignore[misc]
         self, device_name: str, transport: str, enabled: bool
     ) -> None:
         """Persist a connectivity switch position right away; toggles are rare."""
+        if device_name in self._removed:
+            return
         self.transport_settings.setdefault(device_name, {})[transport] = enabled
         await self.async_save(self._data_to_save())
 
@@ -107,6 +112,8 @@ class MammotionConfigStore(Store):  # type: ignore[misc]
         self, device_name: str, when: datetime
     ) -> None:
         """Persist a firmware check straight away; it happens about once a week."""
+        if device_name in self._removed:
+            return
         self.firmware_checks[device_name] = when.isoformat()
         await self.async_save(self._data_to_save())
 
@@ -144,7 +151,7 @@ class MammotionConfigStore(Store):  # type: ignore[misc]
     @callback
     def async_update_device_data(self, device_name: str, data: dict[str, Any]) -> None:
         """Update a device in memory, writing to disk at most once per SAVE_DELAY."""
-        if self.device_data.get(device_name) == data:
+        if device_name in self._removed or self.device_data.get(device_name) == data:
             return
         self.device_data[device_name] = data
         # A pending write keeps its own deadline: async_delay_save would push the
@@ -171,10 +178,15 @@ class MammotionConfigStore(Store):  # type: ignore[misc]
         await self.async_save(self._data_to_save())
 
     async def async_remove_device(self, device_name: str) -> None:
-        """Drop the stored state and transport settings of a single device."""
+        """Drop the stored state and transport settings of a single device.
+
+        Model capabilities stay: another device of the same model shares them.
+        """
+        self._removed.add(device_name)
         had_data = self.device_data.pop(device_name, None) is not None
         had_settings = self.transport_settings.pop(device_name, None) is not None
         had_check = self.firmware_checks.pop(device_name, None) is not None
+
         if not (had_data or had_settings or had_check):
             return
         self._save_pending = True

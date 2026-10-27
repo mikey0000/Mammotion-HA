@@ -12,7 +12,12 @@ from unittest.mock import create_autospec, patch
 
 import pytest
 from freezegun.api import FrozenDateTimeFactory
-from homeassistant.const import ATTR_LATITUDE, EVENT_STATE_CHANGED, Platform
+from homeassistant.const import (
+    ATTR_GPS_ACCURACY,
+    ATTR_LATITUDE,
+    EVENT_STATE_CHANGED,
+    Platform,
+)
 from homeassistant.core import Event, EventStateChangedData, HomeAssistant
 from homeassistant.helpers import entity_registry as er
 from pymammotion.client import MammotionClient
@@ -68,6 +73,7 @@ class _Tracker:
         latitude: float | None = None,
         longitude: float | None = None,
         orientation: int | None = None,
+        rtk_status: int | None = None,
     ) -> None:
         """Deliver a snapshot with the given fields changed and the rest as they were."""
         record = self.coordinator.manager.get_device_by_name(_MOWER)
@@ -78,6 +84,8 @@ class _Tracker:
             record.location.device.longitude = longitude
         if orientation is not None:
             record.location.orientation = orientation
+        if rtk_status is not None:
+            record.report_data.rtk.status = rtk_status
         self.coordinator.async_set_updated_data(record)
         await self.hass.async_block_till_done()
 
@@ -175,3 +183,37 @@ async def test_a_moved_or_turned_mower_is_written(
     attribute, value = written_attribute
     assert new_state.attributes[attribute] == value
     assert new_state.last_updated == old_state.last_updated + _PUSH_INTERVAL
+
+
+@pytest.mark.parametrize(
+    ("rtk_status", "accuracy"),
+    [
+        pytest.param(4, 0.05, id="rtk-fix"),
+        pytest.param(5, 0.5, id="rtk-float"),
+        pytest.param(1, 3.0, id="single"),
+        pytest.param(0, 3.0, id="no-fix"),
+        pytest.param(6, 3.0, id="unknown"),
+    ],
+)
+async def test_gps_accuracy_follows_the_fix_type(
+    hass: HomeAssistant, tracker: _Tracker, rtk_status: int, accuracy: float
+) -> None:
+    """Zone matching gets a radius for the fix, never 0 m for a degraded one."""
+    await tracker.push(latitude=0.5, longitude=0.5, rtk_status=rtk_status)
+
+    state = hass.states.get(tracker.entity_id)
+    assert state is not None
+    assert state.attributes[ATTR_GPS_ACCURACY] == accuracy
+
+
+async def test_a_status_change_within_one_fix_type_is_not_written(
+    hass: HomeAssistant, freezer: FrozenDateTimeFactory, tracker: _Tracker
+) -> None:
+    """Raw statuses 1 and 2 are both a single-point fix, so the accuracy holds."""
+    await tracker.push(latitude=0.5, longitude=0.5, orientation=90, rtk_status=1)
+    events = async_capture_events(hass, EVENT_STATE_CHANGED)
+    freezer.tick(_PUSH_INTERVAL)
+
+    await tracker.push(rtk_status=2)
+
+    assert tracker.changes(events) == []

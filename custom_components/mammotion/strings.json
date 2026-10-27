@@ -805,6 +805,9 @@
       "working_speed": {
         "name": "Working speed"
       },
+      "autonomous_drive_speed": {
+        "name": "Autonomous drive speed"
+      },
       "cutting_angle": {
         "name": "Cutting path angle"
       },
@@ -1309,7 +1312,15 @@
         },
         "edge_mode": {
           "name": "Edge mode",
-          "description": "Mower-only: 0 = none, 1 = once, 2 = twice."
+          "description": "Mower-only: perimeter laps before mowing, 0–4."
+        },
+        "route_model": {
+          "name": "Path pattern",
+          "description": "Mower-only: 0 = zigzag, 1 = chessboard, 2 = adaptive zigzag, 3 = perimeter only."
+        },
+        "ultrasonic_barrier": {
+          "name": "Obstacle detection",
+          "description": "Mower-only: 0 = off, 1 = basic or slow touch, 2 = less touch, 10 = standard, 11 = sensitive. Which values a mower offers depends on model and firmware."
         },
         "ride_boundary_distance": {
           "name": "Edge coverage",
@@ -1408,6 +1419,14 @@
         "edge_mode": {
           "name": "Edge mode",
           "description": "Mower-only."
+        },
+        "route_model": {
+          "name": "Path pattern",
+          "description": "Mower-only: 0 = zigzag, 1 = chessboard, 2 = adaptive zigzag, 3 = perimeter only."
+        },
+        "ultrasonic_barrier": {
+          "name": "Obstacle detection",
+          "description": "Mower-only: 0 = off, 1 = basic or slow touch, 2 = less touch, 10 = standard, 11 = sensitive. Which values a mower offers depends on model and firmware."
         },
         "ride_boundary_distance": {
           "name": "Edge coverage",
@@ -1620,6 +1639,12 @@
     },
     "auto_change_direction_unsupported": {
       "message": "Auto-reverse mowing direction is not supported by {device_name} or its firmware."
+    },
+    "detection_strategy_unsupported": {
+      "message": "Obstacle detection {value} is not offered by {device_name} or its firmware. It offers: {offered}."
+    },
+    "spino_speed_not_whole": {
+      "message": "A Spino schedule speed must be a whole number, not {speed}."
     },
     "map_backup_cloud_unavailable": {
       "message": "Map backups need a working Mammotion cloud login."

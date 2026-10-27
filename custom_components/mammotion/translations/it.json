@@ -805,6 +805,9 @@
       "working_speed": {
         "name": "Velocità di lavoro"
       },
+      "autonomous_drive_speed": {
+        "name": "Velocità di guida autonoma"
+      },
       "cutting_angle": {
         "name": "Angolo Tracciato Di Taglio"
       },
@@ -1309,7 +1312,15 @@
         },
         "edge_mode": {
           "name": "Modalità bordo",
-          "description": "Solo tosaerba: 0 = nessuno, 1 = una volta, 2 = due volte."
+          "description": "Solo tosaerba: giri del perimetro prima del taglio, da 0 a 4."
+        },
+        "route_model": {
+          "name": "Schema di percorso",
+          "description": "Solo tosaerba: 0 = zigzag, 1 = scacchiera, 2 = zigzag adattivo, 3 = solo perimetro."
+        },
+        "ultrasonic_barrier": {
+          "name": "Rilevamento ostacoli",
+          "description": "Solo tosaerba: 0 = disattivato, 1 = base o contatto lento, 2 = meno contatto, 10 = standard, 11 = sensibile. I valori disponibili dipendono da modello e firmware."
         },
         "ride_boundary_distance": {
           "name": "Copertura bordi",
@@ -1408,6 +1419,14 @@
         "edge_mode": {
           "name": "Modalità bordo",
           "description": "Solo tosaerba."
+        },
+        "route_model": {
+          "name": "Schema di percorso",
+          "description": "Solo tosaerba: 0 = zigzag, 1 = scacchiera, 2 = zigzag adattivo, 3 = solo perimetro."
+        },
+        "ultrasonic_barrier": {
+          "name": "Rilevamento ostacoli",
+          "description": "Solo tosaerba: 0 = disattivato, 1 = base o contatto lento, 2 = meno contatto, 10 = standard, 11 = sensibile. I valori disponibili dipendono da modello e firmware."
         },
         "ride_boundary_distance": {
           "name": "Copertura bordi",
@@ -1620,6 +1639,12 @@
     },
     "auto_change_direction_unsupported": {
       "message": "L'inversione automatica della direzione di taglio non è supportata da {device_name} o dal suo firmware."
+    },
+    "detection_strategy_unsupported": {
+      "message": "Il rilevamento ostacoli {value} non è offerto da {device_name} o dal suo firmware. Disponibili: {offered}."
+    },
+    "spino_speed_not_whole": {
+      "message": "La velocità di una programmazione Spino deve essere un numero intero, non {speed}."
     },
     "map_backup_cloud_unavailable": {
       "message": "I backup delle mappe richiedono un accesso funzionante al cloud Mammotion."

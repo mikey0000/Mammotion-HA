@@ -805,6 +805,9 @@
       "working_speed": {
         "name": "Arbejdshastighed"
       },
+      "autonomous_drive_speed": {
+        "name": "Autonom kørehastighed"
+      },
       "cutting_angle": {
         "name": "Klippebanevinkel"
       },
@@ -1309,7 +1312,15 @@
         },
         "edge_mode": {
           "name": "Kanttilstand",
-          "description": "Kun plæneklipper: 0 = ingen, 1 = én gang, 2 = to gange."
+          "description": "Kun plæneklipper: omgange langs kanten før klipning, 0–4."
+        },
+        "route_model": {
+          "name": "Kørselsmønster",
+          "description": "Kun plæneklipper: 0 = zigzag, 1 = skakbræt, 2 = adaptiv zigzag, 3 = kun kant."
+        },
+        "ultrasonic_barrier": {
+          "name": "Forhindringsregistrering",
+          "description": "Kun plæneklipper: 0 = fra, 1 = basis eller langsom berøring, 2 = mindre berøring, 10 = standard, 11 = følsom. Hvilke værdier der findes, afhænger af model og firmware."
         },
         "ride_boundary_distance": {
           "name": "Kantdækning",
@@ -1408,6 +1419,14 @@
         "edge_mode": {
           "name": "Kanttilstand",
           "description": "Kun plæneklipper."
+        },
+        "route_model": {
+          "name": "Kørselsmønster",
+          "description": "Kun plæneklipper: 0 = zigzag, 1 = skakbræt, 2 = adaptiv zigzag, 3 = kun kant."
+        },
+        "ultrasonic_barrier": {
+          "name": "Forhindringsregistrering",
+          "description": "Kun plæneklipper: 0 = fra, 1 = basis eller langsom berøring, 2 = mindre berøring, 10 = standard, 11 = følsom. Hvilke værdier der findes, afhænger af model og firmware."
         },
         "ride_boundary_distance": {
           "name": "Kantdækning",
@@ -1620,6 +1639,12 @@
     },
     "auto_change_direction_unsupported": {
       "message": "Automatisk vending af klipperetning understøttes ikke af {device_name} eller dens firmware."
+    },
+    "detection_strategy_unsupported": {
+      "message": "Forhindringsregistrering {value} tilbydes ikke af {device_name} eller dens firmware. Tilgængelige: {offered}."
+    },
+    "spino_speed_not_whole": {
+      "message": "Hastigheden i en Spino-plan skal være et heltal, ikke {speed}."
     },
     "map_backup_cloud_unavailable": {
       "message": "Kortsikkerhedskopier kræver et fungerende login til Mammotion-skyen."

@@ -676,12 +676,39 @@ edit_task:
           mode: box
     edge_mode:
       required: false
-      example: 1
+      example: "1"
       selector:
-        number:
-          min: 0
-          max: 2
-          mode: box
+        select:
+          translation_key: "mowing_laps"
+          options:
+            - "0"
+            - "1"
+            - "2"
+            - "3"
+            - "4"
+    route_model:
+      required: false
+      example: "0"
+      selector:
+        select:
+          translation_key: "channel_mode"
+          options:
+            - "0"
+            - "1"
+            - "2"
+            - "3"
+    ultrasonic_barrier:
+      required: false
+      example: "10"
+      selector:
+        select:
+          translation_key: "ultra_wave"
+          options:
+            - "0"
+            - "1"
+            - "2"
+            - "10"
+            - "11"
     ride_boundary_distance:
       required: false
       example: 0.2
@@ -840,12 +867,39 @@ create_task:
           mode: box
     edge_mode:
       required: false
-      example: 1
+      example: "1"
       selector:
-        number:
-          min: 0
-          max: 2
-          mode: box
+        select:
+          translation_key: "mowing_laps"
+          options:
+            - "0"
+            - "1"
+            - "2"
+            - "3"
+            - "4"
+    route_model:
+      required: false
+      example: "0"
+      selector:
+        select:
+          translation_key: "channel_mode"
+          options:
+            - "0"
+            - "1"
+            - "2"
+            - "3"
+    ultrasonic_barrier:
+      required: false
+      example: "10"
+      selector:
+        select:
+          translation_key: "ultra_wave"
+          options:
+            - "0"
+            - "1"
+            - "2"
+            - "10"
+            - "11"
     ride_boundary_distance:
       required: false
       example: 0.2

@@ -805,6 +805,9 @@
       "working_speed": {
         "name": "Vitesse de fonctionnement"
       },
+      "autonomous_drive_speed": {
+        "name": "Vitesse de conduite autonome"
+      },
       "cutting_angle": {
         "name": "Angle de coupe"
       },
@@ -1309,7 +1312,15 @@
         },
         "edge_mode": {
           "name": "Mode bordure",
-          "description": "Tondeuse uniquement : 0 = aucun, 1 = une fois, 2 = deux fois."
+          "description": "Tondeuse uniquement : tours de bordure avant la tonte, de 0 à 4."
+        },
+        "route_model": {
+          "name": "Motif de trajet",
+          "description": "Tondeuse uniquement : 0 = zigzag, 1 = damier, 2 = zigzag adaptatif, 3 = bordure uniquement."
+        },
+        "ultrasonic_barrier": {
+          "name": "Détection d'obstacles",
+          "description": "Tondeuse uniquement : 0 = désactivée, 1 = basique ou contact lent, 2 = moins de contact, 10 = standard, 11 = sensible. Les valeurs disponibles dépendent du modèle et du firmware."
         },
         "ride_boundary_distance": {
           "name": "Couverture des bordures",
@@ -1408,6 +1419,14 @@
         "edge_mode": {
           "name": "Mode bordure",
           "description": "Tondeuse uniquement."
+        },
+        "route_model": {
+          "name": "Motif de trajet",
+          "description": "Tondeuse uniquement : 0 = zigzag, 1 = damier, 2 = zigzag adaptatif, 3 = bordure uniquement."
+        },
+        "ultrasonic_barrier": {
+          "name": "Détection d'obstacles",
+          "description": "Tondeuse uniquement : 0 = désactivée, 1 = basique ou contact lent, 2 = moins de contact, 10 = standard, 11 = sensible. Les valeurs disponibles dépendent du modèle et du firmware."
         },
         "ride_boundary_distance": {
           "name": "Couverture des bordures",
@@ -1620,6 +1639,12 @@
     },
     "auto_change_direction_unsupported": {
       "message": "L'inversion automatique du sens de tonte n'est pas prise en charge par {device_name} ou son firmware."
+    },
+    "detection_strategy_unsupported": {
+      "message": "La détection d'obstacles {value} n'est pas proposée par {device_name} ou son firmware. Valeurs disponibles : {offered}."
+    },
+    "spino_speed_not_whole": {
+      "message": "La vitesse d'un programme Spino doit être un nombre entier, pas {speed}."
     },
     "map_backup_cloud_unavailable": {
       "message": "Les sauvegardes de carte nécessitent une connexion fonctionnelle au cloud Mammotion."

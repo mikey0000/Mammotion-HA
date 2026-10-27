@@ -805,6 +805,9 @@
       "working_speed": {
         "name": "Robot Snelheid"
       },
+      "autonomous_drive_speed": {
+        "name": "Autonome rijsnelheid"
+      },
       "cutting_angle": {
         "name": "Hoek van maaien"
       },
@@ -1309,7 +1312,15 @@
         },
         "edge_mode": {
           "name": "Randmodus",
-          "description": "Alleen maaier: 0 = geen, 1 = één keer, 2 = twee keer."
+          "description": "Alleen maaier: rondes langs de rand vóór het maaien, 0–4."
+        },
+        "route_model": {
+          "name": "Rijpatroon",
+          "description": "Alleen maaier: 0 = zigzag, 1 = schaakbord, 2 = adaptieve zigzag, 3 = alleen rand."
+        },
+        "ultrasonic_barrier": {
+          "name": "Obstakeldetectie",
+          "description": "Alleen maaier: 0 = uit, 1 = basis of langzaam aanraken, 2 = minder aanraken, 10 = standaard, 11 = gevoelig. Welke waarden beschikbaar zijn, hangt af van model en firmware."
         },
         "ride_boundary_distance": {
           "name": "Randdekking",
@@ -1408,6 +1419,14 @@
         "edge_mode": {
           "name": "Randmodus",
           "description": "Alleen maaier."
+        },
+        "route_model": {
+          "name": "Rijpatroon",
+          "description": "Alleen maaier: 0 = zigzag, 1 = schaakbord, 2 = adaptieve zigzag, 3 = alleen rand."
+        },
+        "ultrasonic_barrier": {
+          "name": "Obstakeldetectie",
+          "description": "Alleen maaier: 0 = uit, 1 = basis of langzaam aanraken, 2 = minder aanraken, 10 = standaard, 11 = gevoelig. Welke waarden beschikbaar zijn, hangt af van model en firmware."
         },
         "ride_boundary_distance": {
           "name": "Randdekking",
@@ -1620,6 +1639,12 @@
     },
     "auto_change_direction_unsupported": {
       "message": "Maairichting automatisch omkeren wordt niet ondersteund door {device_name} of de firmware ervan."
+    },
+    "detection_strategy_unsupported": {
+      "message": "Obstakeldetectie {value} wordt niet aangeboden door {device_name} of de firmware ervan. Beschikbaar: {offered}."
+    },
+    "spino_speed_not_whole": {
+      "message": "De snelheid van een Spino-schema moet een geheel getal zijn, niet {speed}."
     },
     "map_backup_cloud_unavailable": {
       "message": "Kaartback-ups vereisen een werkende aanmelding bij de Mammotion-cloud."

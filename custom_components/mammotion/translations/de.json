@@ -805,6 +805,9 @@
       "working_speed": {
         "name": "Arbeitsgeschwindigkeit"
       },
+      "autonomous_drive_speed": {
+        "name": "Autonome Fahrgeschwindigkeit"
+      },
       "cutting_angle": {
         "name": "Schnittbahnenwinkel"
       },
@@ -1309,7 +1312,15 @@
         },
         "edge_mode": {
           "name": "Kantenmodus",
-          "description": "Nur Mähroboter: 0 = keine, 1 = einmal, 2 = zweimal"
+          "description": "Nur Mähroboter: Randrunden vor dem Mähen, 0–4."
+        },
+        "route_model": {
+          "name": "Fahrmuster",
+          "description": "Nur Mähroboter: 0 = Zickzack, 1 = Schachbrett, 2 = adaptives Zickzack, 3 = nur Rand."
+        },
+        "ultrasonic_barrier": {
+          "name": "Hinderniserkennung",
+          "description": "Nur Mähroboter: 0 = aus, 1 = einfach bzw. sanfte Berührung, 2 = weniger Berührung, 10 = Standard, 11 = empfindlich. Welche Werte verfügbar sind, hängt von Modell und Firmware ab."
         },
         "ride_boundary_distance": {
           "name": "Abstand der Eingrenzungsfahrt",
@@ -1408,6 +1419,14 @@
         "edge_mode": {
           "name": "Kantenmodus",
           "description": "Nur Mähroboter"
+        },
+        "route_model": {
+          "name": "Fahrmuster",
+          "description": "Nur Mähroboter: 0 = Zickzack, 1 = Schachbrett, 2 = adaptives Zickzack, 3 = nur Rand."
+        },
+        "ultrasonic_barrier": {
+          "name": "Hinderniserkennung",
+          "description": "Nur Mähroboter: 0 = aus, 1 = einfach bzw. sanfte Berührung, 2 = weniger Berührung, 10 = Standard, 11 = empfindlich. Welche Werte verfügbar sind, hängt von Modell und Firmware ab."
         },
         "ride_boundary_distance": {
           "name": "Abstand der Eingrenzungsfahrt",
@@ -1620,6 +1639,12 @@
     },
     "auto_change_direction_unsupported": {
       "message": "Die Mährichtung automatisch umkehren wird von {device_name} oder seiner Firmware nicht unterstützt."
+    },
+    "detection_strategy_unsupported": {
+      "message": "Hinderniserkennung {value} wird von {device_name} oder seiner Firmware nicht angeboten. Verfügbar: {offered}."
+    },
+    "spino_speed_not_whole": {
+      "message": "Die Geschwindigkeit eines Spino-Zeitplans muss eine ganze Zahl sein, nicht {speed}."
     },
     "map_backup_cloud_unavailable": {
       "message": "Die Kartensicherungen erfordern eine funktionierende Anmeldung bei der Mammotion-Cloud."

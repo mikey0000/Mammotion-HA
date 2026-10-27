@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import dataclasses
+from enum import IntEnum
 from typing import TYPE_CHECKING, Any, cast
 
 import voluptuous as vol
@@ -14,6 +15,12 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.service import async_register_admin_service
 from homeassistant.util import dt as dt_util
 from pymammotion.data.model.hash_list import CommDataCouple, Plan, SvgFrameList
+from pymammotion.data.model.mowing_modes import (
+    BorderPatrolMode,
+    CuttingMode,
+    DetectionStrategy,
+    PathAngleSetting,
+)
 from pymammotion.data.model.pool_state import PoolPlan
 from pymammotion.http.model.map_backup import BACKUP_STATE_DONE, BackupMapItem
 from pymammotion.utility.device_type import DeviceType
@@ -84,13 +91,22 @@ _SCHEDULE_FIELDS = {
     vol.Optional("end_date"): cv.string,
     vol.Optional("trigger_type"): vol.All(vol.Coerce(int), vol.Range(min=0, max=3)),
     vol.Optional("day"): vol.All(vol.Coerce(int), vol.Range(min=0)),
+    # Mower m/s (float); a Spino takes whole numbers only (_check_spino_speed).
+    vol.Optional("speed"): vol.All(vol.Coerce(float), vol.Range(min=0)),
 }
+
+
+def _in_enum(enum: type[IntEnum]) -> vol.All:
+    """Accept the values of a pymammotion enum, so the range cannot drift from the library."""
+    return vol.All(vol.Coerce(int), vol.In([member.value for member in enum]))
+
 
 # Mower-only fields keyed by the names used on ``pymammotion.Plan``.
 _MOWER_ONLY_FIELDS = {
     vol.Optional("knife_height"): vol.All(vol.Coerce(int), vol.Range(min=20, max=100)),
-    vol.Optional("speed"): vol.Coerce(float),
-    vol.Optional("edge_mode"): vol.All(vol.Coerce(int), vol.Range(min=0, max=2)),
+    vol.Optional("edge_mode"): _in_enum(BorderPatrolMode),
+    vol.Optional("route_model"): _in_enum(CuttingMode),
+    vol.Optional("ultrasonic_barrier"): _in_enum(DetectionStrategy),
     vol.Optional("ride_boundary_distance"): vol.All(
         vol.Coerce(float), vol.Range(min=0, max=1)
     ),
@@ -99,7 +115,7 @@ _MOWER_ONLY_FIELDS = {
         None, vol.All(vol.Coerce(int), vol.In([0, 1]))
     ),
     vol.Optional("route_angle"): vol.All(vol.Coerce(int), vol.Range(min=0, max=179)),
-    vol.Optional("toward_mode"): vol.All(vol.Coerce(int), vol.In([0, 1, 2])),
+    vol.Optional("toward_mode"): _in_enum(PathAngleSetting),
     vol.Optional("toward_included_angle"): vol.All(
         vol.Coerce(int), vol.Range(min=-180, max=180)
     ),
@@ -111,10 +127,26 @@ _MOWER_ONLY_FIELDS = {
 _SPINO_ONLY_FIELDS = {
     vol.Optional("work_mode"): vol.All(vol.Coerce(int), vol.Range(min=0, max=6)),
     vol.Optional("sub_mode"): vol.All(cv.ensure_list, [vol.Coerce(int)]),
-    vol.Optional("speed"): vol.All(vol.Coerce(int), vol.Range(min=0)),
     vol.Optional("operating_power"): vol.All(vol.Coerce(int), vol.Range(min=0)),
     vol.Optional("starttime"): vol.All(vol.Coerce(int), vol.Range(min=0)),
 }
+
+
+def _merge_fields(*field_sets: dict[Any, Any]) -> dict[Any, Any]:
+    """Merge service field sets, refusing a field that two of them define.
+
+    A dict merge would let the later set's validator silently replace the
+    earlier one's for a shared name.
+    """
+    merged: dict[Any, Any] = {}
+    for fields in field_sets:
+        if clash := merged.keys() & fields.keys():
+            raise ValueError(f"service field defined twice: {sorted(map(str, clash))}")
+        merged.update(fields)
+    return merged
+
+
+_TASK_FIELDS = _merge_fields(_SCHEDULE_FIELDS, _MOWER_ONLY_FIELDS, _SPINO_ONLY_FIELDS)
 
 
 # Task services declare ``target:`` in services.yaml, so the HA UI delivers
@@ -144,9 +176,7 @@ CREATE_TASK_SCHEMA = vol.Schema(
         vol.Required(ATTR_ENTITY_ID): _single_entity_id,
         vol.Required("name"): cv.string,
         vol.Optional("enabled", default=True): cv.boolean,
-        **_SCHEDULE_FIELDS,
-        **_MOWER_ONLY_FIELDS,
-        **_SPINO_ONLY_FIELDS,
+        **_TASK_FIELDS,
     },
     extra=vol.ALLOW_EXTRA,
 )
@@ -156,9 +186,7 @@ EDIT_TASK_SCHEMA = vol.Schema(
         vol.Required(ATTR_ENTITY_ID): _single_entity_id,
         vol.Optional("name"): cv.string,
         vol.Optional("enabled"): cv.boolean,
-        **_SCHEDULE_FIELDS,
-        **_MOWER_ONLY_FIELDS,
-        **_SPINO_ONLY_FIELDS,
+        **_TASK_FIELDS,
     },
     extra=vol.ALLOW_EXTRA,
 )
@@ -479,6 +507,8 @@ def _mower_task_info(
         "knife_height": plan.knife_height,
         "speed": plan.speed,
         "edge_mode": plan.edge_mode,
+        "route_model": plan.route_model,
+        "ultrasonic_barrier": plan.ultrasonic_barrier,
         "ride_boundary_distance": plan.ride_boundary_distance,
         "auto_change_direction": plan.auto_change_direction,
         "route_angle": plan.route_angle,
@@ -547,6 +577,8 @@ def _build_mower_plan(data: dict[str, Any], base: Plan | None = None) -> Plan:
         "knife_height",
         "speed",
         "edge_mode",
+        "route_model",
+        "ultrasonic_barrier",
         "ride_boundary_distance",
         "route_angle",
         "toward_mode",
@@ -582,6 +614,45 @@ def _check_auto_change_direction(
         )
 
 
+def _check_detection_strategy(
+    coordinator: MammotionReportUpdateCoordinator,
+    data: Mapping[str, Any],
+    stored: Plan | None = None,
+) -> None:
+    """Refuse an obstacle detection mode the mower's model and firmware do not offer.
+
+    The value the schedule already holds is let through, so a get_task row can
+    be fed back unchanged.
+    """
+    if (value := data.get("ultrasonic_barrier")) is None or (
+        stored is not None and value == stored.ultrasonic_barrier
+    ):
+        return
+    offered = DetectionStrategy.for_device(
+        coordinator.device_name, device_firmware_version(coordinator.data)
+    )
+    if value not in offered:
+        raise ServiceValidationError(
+            translation_domain=DOMAIN,
+            translation_key="detection_strategy_unsupported",
+            translation_placeholders={
+                "device_name": coordinator.device_name,
+                "value": str(value),
+                "offered": ", ".join(str(int(option)) for option in offered),
+            },
+        )
+
+
+def _check_spino_speed(data: Mapping[str, Any]) -> None:
+    """Refuse a fractional speed for a Spino, which stores a whole number."""
+    if "speed" in data and not float(data["speed"]).is_integer():
+        raise ServiceValidationError(
+            translation_domain=DOMAIN,
+            translation_key="spino_speed_not_whole",
+            translation_placeholders={"speed": str(data["speed"])},
+        )
+
+
 def _build_spino_plan(data: dict[str, Any], base: PoolPlan | None = None) -> PoolPlan:
     """Map service kwargs onto a ``PoolPlan`` dataclass (spino side)."""
     plan = dataclasses.replace(base) if base is not None else PoolPlan()
@@ -600,9 +671,11 @@ def _build_spino_plan(data: dict[str, Any], base: PoolPlan | None = None) -> Poo
     ):
         if key in data:
             plan = dataclasses.replace(plan, **{target: data[key]})
-    for key in ("day", "work_mode", "speed", "operating_power", "starttime"):
+    for key in ("day", "work_mode", "operating_power", "starttime"):
         if key in data:
             plan = dataclasses.replace(plan, **{key: data[key]})
+    if "speed" in data:
+        plan = dataclasses.replace(plan, speed=int(data["speed"]))
     return plan
 
 
@@ -843,13 +916,15 @@ def async_setup_services(hass: HomeAssistant) -> None:  # noqa: C901
     async def handle_edit_task(call: ServiceCall) -> None:
         entity_id = call.data[ATTR_ENTITY_ID]
         if (mower := _resolve_mower_task(hass, entity_id)) is not None:
-            _check_auto_change_direction(mower[0], call.data)
             base = mower[0].data.map.plan[mower[1]]
+            _check_auto_change_direction(mower[0], call.data)
+            _check_detection_strategy(mower[0], call.data, base)
             await mower[0].async_edit_mower_task(
                 _build_mower_plan(dict(call.data), base)
             )
             return
         if (spino := _resolve_spino_task(hass, entity_id)) is not None:
+            _check_spino_speed(call.data)
             base = spino[0].data.plans[spino[1]]
             await spino[0].async_edit_spino_task(
                 _build_spino_plan(dict(call.data), base)
@@ -867,8 +942,10 @@ def async_setup_services(hass: HomeAssistant) -> None:  # noqa: C901
         if kind == "mower":
             mower = cast(MammotionReportUpdateCoordinator, coord)
             _check_auto_change_direction(mower, call.data)
+            _check_detection_strategy(mower, call.data)
             await mower.async_create_mower_task(_build_mower_plan(dict(call.data)))
         else:
+            _check_spino_speed(call.data)
             await cast(MammotionSpinoCoordinator, coord).async_create_spino_task(
                 _build_spino_plan(dict(call.data))
             )

@@ -235,6 +235,9 @@
       "working_speed": {
         "default": "mdi:speedometer"
       },
+      "autonomous_drive_speed": {
+        "default": "mdi:speedometer-medium"
+      },
       "cutting_angle": {
         "default": "mdi:angle-acute"
       },
