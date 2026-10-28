@@ -15,6 +15,7 @@ from freezegun.api import FrozenDateTimeFactory
 from homeassistant.const import (
     ATTR_GPS_ACCURACY,
     ATTR_LATITUDE,
+    ATTR_LONGITUDE,
     EVENT_STATE_CHANGED,
     Platform,
 )
@@ -217,3 +218,115 @@ async def test_a_status_change_within_one_fix_type_is_not_written(
     await tracker.push(rtk_status=2)
 
     assert tracker.changes(events) == []
+
+
+@pytest.mark.regression
+@pytest.mark.parametrize(
+    ("latitude", "longitude"),
+    [
+        pytest.param(0.5 + 5e-8, 0.5, id="north-6-mm"),
+        pytest.param(0.5, 0.5 - 8e-8, id="west-9-mm"),
+        pytest.param(0.5 + 6e-8, 0.5 + 6e-8, id="north-east-9-mm"),
+    ],
+)
+async def test_position_noise_of_a_still_mower_is_not_written(
+    hass: HomeAssistant,
+    freezer: FrozenDateTimeFactory,
+    tracker: _Tracker,
+    latitude: float,
+    longitude: float,
+) -> None:
+    """A parked mower's fix wanders by a few millimetres from frame to frame.
+
+    Each of those frames changed the latitude or longitude, so a docked mower
+    that had not moved still wrote a state row about once a minute (73 an hour
+    over 12 days of one Luba 3's frames).  A reading less than 1 cm from the
+    published position is not a state change.
+    """
+    await tracker.push(latitude=0.5, longitude=0.5, orientation=90)
+    events = async_capture_events(hass, EVENT_STATE_CHANGED)
+    freezer.tick(_PUSH_INTERVAL)
+
+    await tracker.push(latitude=latitude, longitude=longitude)
+
+    assert tracker.changes(events) == []
+
+
+async def test_a_move_of_a_centimetre_is_written_at_full_precision(
+    hass: HomeAssistant, freezer: FrozenDateTimeFactory, tracker: _Tracker
+) -> None:
+    """A 1.4 cm move is published exactly as the mower reported it, not rounded."""
+    await tracker.push(latitude=0.5, longitude=0.5, orientation=90)
+    events = async_capture_events(hass, EVENT_STATE_CHANGED)
+    freezer.tick(_PUSH_INTERVAL)
+
+    await tracker.push(latitude=0.500000123456, longitude=0.500000000789)
+
+    (written,) = tracker.changes(events)
+    new_state = written["new_state"]
+    assert new_state is not None
+    assert new_state.attributes[ATTR_LATITUDE] == 0.500000123456
+    assert new_state.attributes[ATTR_LONGITUDE] == 0.500000000789
+
+
+async def test_slow_movement_is_written_once_it_adds_up_to_a_centimetre(
+    hass: HomeAssistant, freezer: FrozenDateTimeFactory, tracker: _Tracker
+) -> None:
+    """Steps of 4.4 mm are each held, but they are measured from the published point.
+
+    The second step leaves the mower 8.9 mm away, still held; the third takes it
+    to 13.3 mm, so that reading is published and nothing drifts away unseen.
+    """
+    await tracker.push(latitude=0.5, longitude=0.5, orientation=90)
+    events = async_capture_events(hass, EVENT_STATE_CHANGED)
+    freezer.tick(_PUSH_INTERVAL)
+    await tracker.push(latitude=0.5 + 4e-8)
+    freezer.tick(_PUSH_INTERVAL)
+    await tracker.push(latitude=0.5 + 8e-8)
+    assert tracker.changes(events) == [], "both steps stay within 1 cm"
+    freezer.tick(_PUSH_INTERVAL)
+
+    await tracker.push(latitude=0.5 + 1.2e-7)
+
+    (written,) = tracker.changes(events)
+    new_state = written["new_state"]
+    assert new_state is not None
+    assert new_state.attributes[ATTR_LATITUDE] == 0.5 + 1.2e-7
+
+
+async def test_a_turn_on_the_spot_is_written_with_the_held_position(
+    hass: HomeAssistant, freezer: FrozenDateTimeFactory, tracker: _Tracker
+) -> None:
+    """A new heading is written at once, even when the position is held."""
+    await tracker.push(latitude=0.5, longitude=0.5, orientation=90)
+    events = async_capture_events(hass, EVENT_STATE_CHANGED)
+    freezer.tick(_PUSH_INTERVAL)
+
+    await tracker.push(latitude=0.5 + 5e-8, orientation=180)
+
+    (written,) = tracker.changes(events)
+    new_state = written["new_state"]
+    assert new_state is not None
+    assert new_state.attributes[ATTR_DIRECTION] == 180
+    assert new_state.attributes[ATTR_LATITUDE] == 0.5
+
+
+async def test_a_new_map_offset_is_written_at_the_next_frame(
+    hass: HomeAssistant, freezer: FrozenDateTimeFactory, tracker: _Tracker
+) -> None:
+    """The offset is added when the held position is read, not stored with it.
+
+    So the frame after an offset change writes the new position, although the
+    mower has not moved.
+    """
+    await tracker.push(latitude=0.5, longitude=0.5, orientation=90)
+    events = async_capture_events(hass, EVENT_STATE_CHANGED)
+    freezer.tick(_PUSH_INTERVAL)
+    tracker.coordinator.map_offset_lat = 1.0
+
+    await tracker.push()
+
+    (written,) = tracker.changes(events)
+    new_state = written["new_state"]
+    assert new_state is not None
+    assert new_state.attributes[ATTR_LATITUDE] == pytest.approx(0.5 + 9.0e-6, abs=1e-9)
