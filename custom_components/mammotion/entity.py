@@ -25,6 +25,7 @@ from homeassistant.helpers.entity import Entity, EntityDescription
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from pymammotion.data.model.device import PoolCleanerDevice, RTKBaseStationDevice
+from pymammotion.transport.base import AccountInUseError
 from pymammotion.utility.device_type import DeviceType
 
 from .const import DOMAIN
@@ -308,16 +309,42 @@ class MammotionBaseEntity(CoordinatorEntity[MammotionBaseUpdateCoordinator[Any]]
         # self._update_attr()
         super()._handle_coordinator_update()
 
+    def _coordinator_available(self, *, user_initiated: bool = False) -> bool:
+        """Return whether the coordinator has data and a transport right now.
+
+        The default path uses ``is_reachable()`` — an actually confirmed
+        connection, not merely a transport permitted to attempt one. A raw "is
+        the MQTT socket merely connected" check, or ``is_online()`` alone, both
+        get this wrong: a mower whose BLE link tries and fails every cycle left
+        either signal "available" (with stale cached data) for the whole
+        multi-second window the attempt was in flight, whether or not it ever
+        succeeded.
+
+        *user_initiated* waives the cloud's advisory offline flag instead, for
+        entities (remote-drive's switch and buttons) whose whole point is
+        reaching a mower the cloud's last heartbeat called offline — the same
+        waiver a direct-priority command send already gets. ``is_online()``
+        itself (not ``is_reachable()``) is deliberately used for this path: it
+        is deciding whether a command sent *right now* would go anywhere, which
+        legitimately wants "is there a transport worth trying", not "is one
+        already confirmed connected". ``is_online(user_initiated=True)`` can
+        raise ``AccountInUseError`` (another session holds the account lock); a
+        passive availability check has nobody to surface that to, so it is
+        simply treated as unavailable.
+        """
+        if self.coordinator.data is None:
+            return False
+        if not user_initiated:
+            return self.coordinator.is_reachable()
+        try:
+            return self.coordinator.is_online(user_initiated=True)
+        except AccountInUseError:
+            return False
+
     @property
     def available(self) -> bool:
         """Return True if entity is available."""
-        if (
-            not self.coordinator.is_online()
-            and self.coordinator.mqtt_transport_connected
-        ):
-            return True
-
-        return self.coordinator.data is not None and self.coordinator.is_online()
+        return self._coordinator_available()
 
 
 class MammotionBaseRTKEntity(CoordinatorEntity[MammotionRTKCoordinator]):  # type: ignore[misc]
