@@ -1188,10 +1188,36 @@ async def async_remove_config_entry_device(
         None,
     )
 
+    if device_identifier is None:
+        return True
+
     runtime_data = config_entry.runtime_data
-    in_use = (
-        {mower.unique_name for mower in runtime_data.mowers}
-        | {rtk.unique_name for rtk in runtime_data.RTK}
-        | {spino.unique_name for spino in runtime_data.spino}
+    cloud_listed = {
+        record.unique_name
+        for record in (*runtime_data.mowers, *runtime_data.RTK, *runtime_data.spino)
+        if record.device.iot_id
+    }
+    if device_identifier in cloud_listed:
+        return False
+
+    ble_devices: dict[str, str] = config_entry.data.get(CONF_BLE_DEVICES, {})
+    if (ble_address := ble_devices.get(device_identifier)) is None:
+        return True
+
+    if bluetooth.async_address_present(hass, ble_address.upper(), connectable=False):
+        return False
+
+    hass.config_entries.async_update_entry(
+        config_entry,
+        data={
+            **config_entry.data,
+            CONF_BLE_DEVICES: {
+                name: address
+                for name, address in ble_devices.items()
+                if name != device_identifier
+            },
+        },
     )
-    return device_identifier not in in_use
+    await async_get_store(hass, config_entry).async_remove_device(device_identifier)
+    hass.config_entries.async_schedule_reload(config_entry.entry_id)
+    return True
