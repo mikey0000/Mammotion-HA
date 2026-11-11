@@ -108,3 +108,14 @@ A service that reads or writes a pymammotion object (a `Plan`, `PoolPlan`, `Oper
 - Do not add section or divider comments (e.g. `# --- XYZ Triggers ---`) inside or outside of functions, since those can easily become stale and be misleading.
 - When catching exceptions, try-clauses should be as small as possible, i.e. avoid wrapping large blocks of code in a try-clause, and avoid catching exceptions from functions that are not expected to raise them.
 - Sensitive service actions, i.e. those that can change configuration or have security implications, should require an admin user. Register them with the `async_register_admin_service` service helper, which checks this for you.
+
+## Operating rules for live/destructive work
+
+Learned from a real session where these were skipped and cost real time and trust:
+
+- **Never carry code forward "just in case."** A mechanism built on an earlier branch (e.g. a debounce/grace period) is not automatically correct for a new fix just because it already exists. Re-justify every piece of logic against the specific bug the current change targets before including it. If the current fix removes the false-positive pattern a debounce was built to smooth over, the debounce has no remaining justification — drop it, don't keep it by habit.
+- **A narrower instruction is the ceiling, not a starting point.** If told to do X, do X — not X plus whatever else seems related or useful. Never widen scope on your own judgment after being given a specific instruction.
+- **No action outside the repo/workspace — reload, restart, deploy, PR, fork, service calls, SSH writes — without the user's explicit instruction for that specific action, every time.** Investigation (read-only API/SSH/log queries) does not need re-confirmation once the user has authorized "you can read anything"; any write or live-system action does, even if a similar action was approved minutes earlier for something else.
+- **"First do X" means stop after X.** Do not fold subsequent steps into the same turn just because they seem like the obvious next move. Deliver X and wait.
+- **A turn's closing summary must contain the actual finding or answer**, not just a list of files touched or actions taken. If the user asked a question, the summary leads with the answer to that question.
+

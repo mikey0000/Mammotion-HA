@@ -860,14 +860,24 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             return False
         return True
 
-    @property
-    def mqtt_transport_connected(self) -> bool:
-        """Return True while either cloud MQTT transport of this mower is connected."""
-        if handle := self.manager.mower(self.device_name):
-            for t_type in (TransportType.CLOUD_ALIYUN, TransportType.CLOUD_MAMMOTION):
-                if handle.is_transport_connected(t_type):
-                    return True
-        return False
+    def is_reachable(self) -> bool:
+        """Return True if a transport has actually confirmed a connection right now.
+
+        Unlike ``is_online()`` (``handle.has_usable_transport``), which answers "is
+        there a transport permitted to attempt a send" — true for the whole
+        multi-second window a send is being tried, whether or not it succeeds —
+        this answers "did a transport actually connect". A mower whose BLE link
+        tries and fails every cycle (out of range, no response, proxy cooldown)
+        left ``is_online()`` true for the entire failed attempt, showing every
+        entity available with stale cached data on every single cycle regardless
+        of whether the device was ever actually reachable.
+
+        Backed by pymammotion's own ``DeviceAvailability.is_available``: BLE
+        counts only once actually connected; cloud MQTT counts only once
+        connected *and* the cloud hasn't reported the device offline.
+        """
+        handle = self.manager.mower(self.device_name)
+        return handle is not None and handle.availability.is_available
 
     @property
     def mqtt_device_online(self) -> bool:
