@@ -104,6 +104,8 @@ CONF_STAY_CONNECTED_BLUETOOTH: Final = "stay_connected_bluetooth"
 CONF_PREFER_BLE: Final = "prefer_ble_over_wifi"
 CONF_MOVEMENT_USE_WIFI: Final = "movement_use_wifi"
 CONF_MOW_PATH_FETCH_ENABLED: Final = "mow_path_fetch_enabled"
+#: API of an external go2rtc (e.g. Frigate's) to re-stream the cameras through.
+CONF_GO2RTC_URL: Final = "go2rtc_url"
 CONF_FULL_MAP_FETCH_ENABLED: Final = "full_map_fetch_enabled"
 CONF_ACCOUNTNAME: Final = "account_name"
 CONF_ACCOUNT_ID: Final = "mammotion_account_id"

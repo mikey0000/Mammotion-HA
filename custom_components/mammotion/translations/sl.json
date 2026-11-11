@@ -64,13 +64,18 @@
           "movement_use_wifi": "Pošiljaj ukaze gibanja prek Wi-Fi",
           "mow_path_fetch_enabled": "Omogoči pridobivanje poti košnje (oblak)",
           "full_map_fetch_enabled": "Omogoči pridobivanje celotnega zemljevida (oblak) — če izklopljeno, se pridobijo samo imena območij",
-          "notify": "Prikaži trajna obvestila za"
+          "notify": "Prikaži trajna obvestila za",
+          "go2rtc_url": "Strežnik go2rtc za posredovanje kamer (npr. Frigate)"
         },
         "data_description": {
           "movement_use_wifi": "Pošilja stari ukaz gibanja prek Wi-Fi namesto daljinske vožnje prek oblaka. Brez te možnosti gumbi za premik in dejanja gibanja od različice 1.30.31.19 pri LUBA 2, LUBA 2X, YUKA, LUBA mini in YUKA mini, od 2.3.31.69 pri LUBA 3, LUBA mini 2 in YUKA mini 2 ter pri novejših modelih, za katere strežnik Mammotion sporoči podporo, delujejo prek oblaka le, ko je Daljinska vožnja prek oblaka vklopljena in potrjena. Vklopite, da stari ukaz uporabljate s katero koli različico, na primer za primerjavo obeh na LUBA 3; povezan Bluetooth ima še vedno prednost.",
-          "notify": "Obvestila samopreverjanja so privzeto vklopljena, ostala izklopljena. Vsako obvestilo sproži tudi entiteto dogodkov obvestil kosilnice in dogodek mammotion_event na vodilu, ki ju lahko namesto tega uporabijo avtomatizacije."
+          "notify": "Obvestila samopreverjanja so privzeto vklopljena, ostala izklopljena. Vsako obvestilo sproži tudi entiteto dogodkov obvestil kosilnice in dogodek mammotion_event na vodilu, ki ju lahko namesto tega uporabijo avtomatizacije.",
+          "go2rtc_url": "Naslov API strežnika go2rtc, na primer Frigatovega: http://frigate:1984. Vsaka kamera se tam registrira kot tok, poimenovan po kosilnici in kameri, na primer mammotion_luba_mnab12cd_camera, ki ga go2rtc nato ponuja prek RTSP na vratih 8554. go2rtc mora doseči notranji URL Home Assistanta. Pustite prazno, da izklopite posredovanje."
         }
       }
+    },
+    "error": {
+      "invalid_go2rtc_url": "Vnesite naslov http:// ali https://, na primer http://frigate:1984."
     }
   },
   "entity": {

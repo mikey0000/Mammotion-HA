@@ -20,6 +20,8 @@ from agora_session_support import (
     FakeAgoraSession,
     install_fake_sessions,
     make_ap_response,
+    make_camera,
+    make_camera_coordinator,
     make_stream_data,
 )
 from homeassistant.components.camera import WebRTCAnswer, WebRTCError
@@ -34,7 +36,6 @@ from pyagorartc import (
     SdpError,
     SessionOptions,
 )
-from pymammotion.http.model.camera_stream import StreamSubscriptionResponse
 from pymammotion.http.model.http import Response
 from pymammotion.messaging.command_queue import Priority
 from webrtc_models import RTCIceCandidateInit
@@ -52,35 +53,6 @@ _CANDIDATE = "candidate:1 1 udp 2122260223 192.168.1.20 54321 typ host"
 _LATE_CANDIDATE = "candidate:7 1 udp 1686052607 203.0.113.7 40000 typ srflx"
 
 
-def _coordinator(stream: StreamSubscriptionResponse | None = None) -> MagicMock:
-    coordinator = MagicMock(spec=MammotionBaseUpdateCoordinator)
-    coordinator.device = MagicMock()
-    coordinator.manager = MagicMock()
-    coordinator.unique_name = _DEVICE
-    coordinator.device.device_name = _DEVICE
-    coordinator.device.iot_id = "iot-123"
-    coordinator.is_on_4g = False
-    coordinator.all_cameras_streaming = True
-    coordinator.streams_all_cameras = True
-    coordinator.async_check_stream_expiry = AsyncMock(
-        return_value=(stream or make_stream_data(), make_ap_response())
-    )
-    coordinator.async_send_command = AsyncMock()
-    coordinator.async_register_camera_session = AsyncMock()
-    coordinator.async_release_camera_session = AsyncMock()
-    coordinator.manager.get_stream_subscription = AsyncMock()
-    return coordinator
-
-
-def _camera(
-    hass: HomeAssistant, coordinator: MagicMock, slot: int = 0
-) -> MammotionWebRTCCamera:
-    camera = MammotionWebRTCCamera(coordinator, CAMERAS[slot], hass)
-    camera.hass = hass
-    camera.entity_id = f"camera.{CAMERAS[slot].key}"
-    return camera
-
-
 @pytest.fixture
 def sessions(monkeypatch: pytest.MonkeyPatch) -> list[FakeAgoraSession]:
     """Every session the camera builds, in order."""
@@ -90,13 +62,13 @@ def sessions(monkeypatch: pytest.MonkeyPatch) -> list[FakeAgoraSession]:
 @pytest.fixture
 def coordinator() -> MagicMock:
     """Build a coordinator on WiFi holding a fresh token and AP answer."""
-    return _coordinator()
+    return make_camera_coordinator()
 
 
 @pytest.fixture
 def camera(hass: HomeAssistant, coordinator: MagicMock) -> MammotionWebRTCCamera:
     """Build the left camera of a Yuka."""
-    return _camera(hass, coordinator)
+    return make_camera(hass, coordinator)
 
 
 async def _offer(
@@ -119,7 +91,7 @@ async def test_each_feed_joins_for_its_own_publisher_uid_on_its_own_edge(
     The cameras share one viewer uid, and the gateway only evicts a same-uid
     viewer on the edge it joined, so each slot takes the next edge.
     """
-    await _offer(_camera(hass, coordinator, slot))
+    await _offer(make_camera(hass, coordinator, slot))
 
     assert sessions[0].kwargs["options"] == SessionOptions(
         client_codec="vp8", target_uid=slot + 1, gateway_edge_offset=slot
@@ -190,10 +162,12 @@ async def test_no_deadline_without_a_4g_budget(
     available_time: int | None,
 ) -> None:
     """WiFi streams stay unbounded, as the old keep-alive loop left them."""
-    coordinator = _coordinator(make_stream_data(availableTime=available_time))
+    coordinator = make_camera_coordinator(
+        make_stream_data(availableTime=available_time)
+    )
     coordinator.is_on_4g = on_4g
 
-    await _offer(_camera(hass, coordinator))
+    await _offer(make_camera(hass, coordinator))
 
     assert sessions[0].kwargs["deadline"] is None
 
