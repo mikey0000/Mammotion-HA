@@ -1,6 +1,10 @@
 ---
 ci:
   autoupdate_commit_msg: "chore: pre-commit autoupdate"
+# Unpinned, nodeenv takes the newest entry in the Node.js index and cannot parse
+# a pre-release such as v27.0.0-alpha.
+default_language_version:
+  node: lts
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.16.8
