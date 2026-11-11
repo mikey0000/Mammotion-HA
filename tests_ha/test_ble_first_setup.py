@@ -531,9 +531,10 @@ async def test_devices_still_present_on_a_loaded_entry_are_protected(
     """Removing a mower the account still lists is refused; an orphaned device is allowed."""
     entry = _entry(hass, {})
     entry.mock_state(hass, ConfigEntryState.LOADED)
-    entry.runtime_data = MammotionDevices(
-        mowers=[_mower_data(_MOWER, _client())], RTK=[], spino=[]
-    )
+    listed = _mower_data(_MOWER, _client())
+    # Only a device the account lists has an iot_id; a BLE-only one is removable.
+    listed.device.iot_id = "VIfnsgIQCmHqn4IXXWkQ000000"
+    entry.runtime_data = MammotionDevices(mowers=[listed], RTK=[], spino=[])
     present = device_registry.async_get_or_create(
         config_entry_id=entry.entry_id, identifiers={(DOMAIN, _MOWER)}
     )

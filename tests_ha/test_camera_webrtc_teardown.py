@@ -9,8 +9,9 @@ native cameras have no ``_webrtc_provider``).  A coroutine named
 schedules it so the coordinator can stop the mower after the final feed closes.
 
 Here the hook is invoked exactly as core invokes it — synchronously, return
-value discarded, on a real event loop — and the ICE-server registration is read
-back out of the real ``web_rtc`` integration instead of a mock.
+value discarded, on a real event loop — and the ICE servers are read back
+through core's ``async_get_webrtc_client_configuration`` against the real
+``web_rtc`` integration instead of a mock.
 """
 
 from __future__ import annotations
@@ -250,36 +251,48 @@ async def test_the_older_viewer_closing_last_still_tears_down(
     )
 
 
-async def test_reload_does_not_leave_ice_servers_registered(
+@pytest.mark.regression
+async def test_agora_ice_servers_are_not_offered_to_other_cameras(
     hass: HomeAssistant, camera: MammotionWebRTCCamera
 ) -> None:
-    """Core keeps the getter in a global list until the returned callback runs.
+    """The Agora TURN servers were registered in core's global ICE list (#965).
 
-    Dropping that callback left another copy behind on every reload, and the
-    browser gathered a duplicate set of Agora relay candidates for each one.
+    Core appends that list to every WebRTC camera's client configuration, so an
+    unrelated camera tried to gather a relay through a server scoped to the
+    mower's Agora channel and its stream took many seconds to start.
     """
-    await camera.async_added_to_hass()
-    assert async_get_ice_servers(hass).count(_ICE_SERVER) == 1
-
-    await camera.async_will_remove_from_hass()
-    assert _ICE_SERVER not in async_get_ice_servers(hass)
+    before = async_get_ice_servers(hass)
 
     await camera.async_added_to_hass()
-    await camera.async_will_remove_from_hass()
-    await camera.async_added_to_hass()
-    assert async_get_ice_servers(hass).count(_ICE_SERVER) == 1
+
+    other = Camera()
+    other.hass = hass
+    offered = other.async_get_webrtc_client_configuration().configuration.ice_servers
+    assert _ICE_SERVER not in offered
+    assert async_get_ice_servers(hass) == before
+    own = camera.async_get_webrtc_client_configuration().configuration.ice_servers
+    assert own.count(_ICE_SERVER) == 1
+
+
+async def test_client_configuration_does_not_grow_the_coordinator_list(
+    camera: MammotionWebRTCCamera,
+) -> None:
+    """Core extends the returned list with the global servers on every call."""
+    camera.async_get_webrtc_client_configuration()
+    camera.async_get_webrtc_client_configuration()
+
+    assert camera.coordinator.ice_servers == [_ICE_SERVER]
 
 
 async def test_a_camera_built_before_the_first_refresh_still_serves_ice(
     hass: HomeAssistant,
 ) -> None:
-    """The coordinator seeded this as None, which core cannot extend.
+    """The coordinator seeded this as None, which cannot be copied or extended.
 
     ``async_setup_entry`` happens to assign the list before building entities,
     so the ``None`` never escaped; any path that reversed that order made
-    ``get_ice_servers`` return ``None`` and core's ``servers.extend(...)`` raise
-    ``TypeError`` — taking out ICE for every camera in the install, not just
-    this one.
+    ``get_ice_servers`` return ``None`` and building the client configuration
+    raise ``TypeError``.
     """
     assert await async_setup_component(hass, "web_rtc", {})
     entry = MockConfigEntry(domain="mammotion", unique_id="account@example.com")
@@ -293,17 +306,14 @@ async def test_a_camera_built_before_the_first_refresh_still_serves_ice(
     entity = MammotionWebRTCCamera(coordinator, CAMERAS[0], hass)
     entity.hass = hass
     entity.entity_id = "camera.luba_vs00cld"
-    assert entity.get_ice_servers() == []
 
-    # Core's own defaults are already registered; ours must add nothing and,
-    # crucially, must not make the whole list unbuildable.
-    before = async_get_ice_servers(hass)
-    await entity.async_added_to_hass()
-    assert async_get_ice_servers(hass) == before
+    # Only core's own defaults: ours adds nothing and the call still succeeds.
+    servers = entity.async_get_webrtc_client_configuration().configuration.ice_servers
+    assert servers == async_get_ice_servers(hass)
 
 
 async def test_a_token_refresh_reaches_the_next_session(
-    hass: HomeAssistant, camera: MammotionWebRTCCamera
+    camera: MammotionWebRTCCamera,
 ) -> None:
     """Agora rotates TURN credentials on every stream-token refresh.
 
@@ -312,9 +322,6 @@ async def test_a_token_refresh_reaches_the_next_session(
     the setup-time username and got 401s.  Core asks again for each new
     session, so reading through is enough.
     """
-    await camera.async_added_to_hass()
-    assert _ICE_SERVER in async_get_ice_servers(hass)
-
     rotated = RTCIceServer(
         urls="turn:45.196.22.13:3478?transport=udp",
         username="agora-user-2",
@@ -322,7 +329,7 @@ async def test_a_token_refresh_reaches_the_next_session(
     )
     camera.coordinator.ice_servers = [rotated]
 
-    servers = async_get_ice_servers(hass)
+    servers = camera.async_get_webrtc_client_configuration().configuration.ice_servers
     assert rotated in servers
     assert _ICE_SERVER not in servers
 

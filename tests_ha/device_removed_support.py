@@ -1,6 +1,6 @@
 """Shared scaffolding for the device-removal tests: a client double and the set-up seams."""
 
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from unittest.mock import MagicMock, create_autospec, patch
 
@@ -32,14 +32,19 @@ def make_removal_client(devices: list[Device] | None = None) -> MagicMock:
 
 @contextmanager
 def patched_setup(
-    client: MagicMock, *, logged_in: bool, platforms: bool = True
+    client: MagicMock,
+    *,
+    logged_in: bool,
+    platforms: bool = True,
+    login: Callable[..., object] | None = None,
 ) -> Iterator[None]:
     """Hand ``client`` to every set-up, with the login answered and the device bring-up held back.
 
     The login and bring-up are the integration's own seams, autospecced so a
     signature change still breaks these tests: the real ones drive pymammotion's
     whole session and per-device connect, which the removal path does not touch.
-    Without ``platforms`` no entity platform loads.
+    Without ``platforms`` no entity platform loads; ``login`` replaces the
+    answered login, for a login that acts or raises.
     """
     with (
         patch.object(mammotion_init, "MammotionClient", return_value=client),
@@ -48,6 +53,7 @@ def patched_setup(
             "_async_attempt_login",
             autospec=True,
             return_value=logged_in,
+            side_effect=login,
         ),
         patch.object(
             mammotion_init, "_async_bring_up_devices", autospec=True, return_value=None

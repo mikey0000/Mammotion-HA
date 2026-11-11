@@ -1,5 +1,5 @@
 version = 1
-revision = 5
+revision = 3
 requires-python = ">=3.14.2"
 resolution-markers = [
     "python_full_version >= '3.15'",
@@ -1791,7 +1791,7 @@ wheels = [
 
 [[package]]
 name = "mammotion-ha"
-version = "0.6.19b7"
+version = "0.6.20"
 source = { virtual = "." }
 dependencies = [
     { name = "autotyping" },
@@ -1818,7 +1818,7 @@ requires-dist = [
     { name = "autotyping", specifier = ">=24.3.0" },
     { name = "homeassistant", specifier = ">=2026.10.0" },
     { name = "pyagorartc", specifier = "==0.2.3" },
-    { name = "pymammotion", specifier = "==0.10.13" },
+    { name = "pymammotion", specifier = "==0.10.15" },
 ]
 
 [package.metadata.requires-dev]
@@ -2731,7 +2731,7 @@ wheels = [
 
 [[package]]
 name = "pymammotion"
-version = "0.10.13"
+version = "0.10.15"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -2756,9 +2756,9 @@ dependencies = [
     { name = "webrtc-models" },
     { name = "websockets" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/76/03/90edadf36ae5bdd2821cbd123b4d95d2a4ec8bd216d97cdd2bbd141a4877/pymammotion-0.10.13.tar.gz", hash = "sha256:b75b815d19a7e897195a0a9ca5431ba8fbf3cbbfbb92ef15ce5840760ae30949", size = 754052, upload-time = "2026-10-26T23:23:39.551Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/bd/27/95af3718a8f6fce0d48d638c24480819487ec733b0a6837d2b5af2175865/pymammotion-0.10.15.tar.gz", hash = "sha256:cbd963c2967b00884541265093cdf1ad32ac8e8477696e681549323249dc9183", size = 757840, upload-time = "2026-11-11T06:32:16.85Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/90/0e/136330afbdca66071a86e688f6247b87f4940e63813686e3c72e04eb165b/pymammotion-0.10.13-py3-none-any.whl", hash = "sha256:f269e5ff17548cba443a185b23d50b7296d139df9a0ff5d05d29fc5411fea0de", size = 838845, upload-time = "2026-10-26T23:23:37.546Z" },
+    { url = "https://files.pythonhosted.org/packages/33/42/5c527b60fbaec54db13ee0d04bb2dd8808143d1d8dedc6fed9814206f50e/pymammotion-0.10.15-py3-none-any.whl", hash = "sha256:82634831eddf0d636ec0681003c6c4bc961afbbe928be7ea40283169ff33e0a6", size = 843175, upload-time = "2026-11-11T06:32:14.943Z" },
 ]
 
 [[package]]

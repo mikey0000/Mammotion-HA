@@ -77,6 +77,8 @@ class MammotionConfigStore(Store):  # type: ignore[misc]
     async def async_load_device_data(self) -> None:
         """Load the persisted device state and transport settings into memory."""
         data = await self.async_load() or {}
+        # A setup that failed after a removal keeps this store; its retry starts afresh.
+        self._removed.clear()
         self.device_data = data.get("devices", {})
         self.transport_settings = data.get("transports", {})
         self.firmware_checks = data.get("firmware_checks", {})

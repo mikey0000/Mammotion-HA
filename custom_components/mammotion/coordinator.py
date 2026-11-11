@@ -1691,6 +1691,8 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             priority=Priority.USER,
             manual_ctrl=manual_ctrl,
         )
+        # set_lamp_rsp carries no state; without the read the next push undoes it.
+        await self.async_read_manual_light()
 
     async def async_read_manual_light(self) -> None:
         """Read current manual light state from device."""
@@ -1704,6 +1706,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             priority=Priority.USER,
             on_off=night_light,
         )
+        await self.async_read_night_light()
 
     async def async_read_night_light(self) -> None:
         """Read current night light state from device."""

@@ -1169,6 +1169,22 @@ async def async_remove_entry(hass: HomeAssistant, entry: MammotionConfigEntry) -
         hass.data.pop(DOMAIN, None)
 
 
+async def _async_forget_stored_device(
+    hass: HomeAssistant, config_entry: MammotionConfigEntry, device_name: str
+) -> None:
+    """Drop the stored state of a device removed from its device page.
+
+    An entry that is not loaded has no store holding its data, so the one on
+    disk is read and rewritten.
+    """
+    if config_entry.state is ConfigEntryState.LOADED:
+        store = async_get_store(hass, config_entry)
+    else:
+        store = MammotionConfigStore(hass, config_entry.entry_id)
+        await store.async_load_device_data()
+    await store.async_remove_device(device_name)
+
+
 async def async_remove_config_entry_device(
     hass: HomeAssistant, config_entry: MammotionConfigEntry, device_entry: DeviceEntry
 ) -> bool:
@@ -1177,8 +1193,6 @@ async def async_remove_config_entry_device(
     A disabled or otherwise unloaded entry has no runtime data and nothing to
     protect, so its devices can always be removed.
     """
-    if config_entry.state is not ConfigEntryState.LOADED:
-        return True
     device_identifier = next(
         (
             identifier[1]
@@ -1189,6 +1203,10 @@ async def async_remove_config_entry_device(
     )
 
     if device_identifier is None:
+        return True
+
+    if config_entry.state is not ConfigEntryState.LOADED:
+        await _async_forget_stored_device(hass, config_entry, device_identifier)
         return True
 
     runtime_data = config_entry.runtime_data
@@ -1202,6 +1220,7 @@ async def async_remove_config_entry_device(
 
     ble_devices: dict[str, str] = config_entry.data.get(CONF_BLE_DEVICES, {})
     if (ble_address := ble_devices.get(device_identifier)) is None:
+        await _async_forget_stored_device(hass, config_entry, device_identifier)
         return True
 
     if bluetooth.async_address_present(hass, ble_address.upper(), connectable=False):
@@ -1218,6 +1237,6 @@ async def async_remove_config_entry_device(
             },
         },
     )
-    await async_get_store(hass, config_entry).async_remove_device(device_identifier)
+    await _async_forget_stored_device(hass, config_entry, device_identifier)
     hass.config_entries.async_schedule_reload(config_entry.entry_id)
     return True

@@ -16,11 +16,9 @@ from typing import Any
 from homeassistant.components.camera import (
     CameraEntityDescription,
     WebRTCAnswer,
+    WebRTCClientConfiguration,
     WebRTCError,
     WebRTCSendMessage,
-)
-from homeassistant.components.web_rtc import (
-    async_register_ice_servers,
 )
 from homeassistant.core import (
     HomeAssistant,
@@ -45,7 +43,7 @@ from pymammotion.http.model.camera_stream import (
 from pymammotion.http.model.http import Response
 from pymammotion.messaging.command_queue import Priority
 from pymammotion.utility.device_type import DeviceType
-from webrtc_models import RTCIceCandidateInit, RTCIceServer
+from webrtc_models import RTCConfiguration, RTCIceCandidateInit, RTCIceServer
 
 from . import MammotionConfigEntry
 from .const import DOMAIN
@@ -160,7 +158,6 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
 
     entity_description: MammotionCameraEntityDescription
     _attr_capability_attributes = None
-    _unregister_ice_servers: Callable[[], None] | None = None
 
     def __init__(
         self,
@@ -196,21 +193,12 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         self.coordinator.register_webrtc_session_control(
             self, self.entity_description.key
         )
-        # Core appends the getter to a global list and hands back the only way to
-        # take it off again; without releasing it every reload leaves another copy
-        # behind and the browser gathers duplicate relay candidates for each.
-        self._unregister_ice_servers = async_register_ice_servers(
-            self.hass, self.get_ice_servers
-        )
 
     async def async_will_remove_from_hass(self) -> None:
         """Tear the stream down on unload/reload so it cannot outlive the entity."""
         self.coordinator.register_webrtc_session_control(
             None, self.entity_description.key
         )
-        if self._unregister_ice_servers is not None:
-            self._unregister_ice_servers()
-            self._unregister_ice_servers = None
         had_viewers = bool(self._sessions)
         self._sessions.clear()
         if had_viewers:
@@ -512,6 +500,18 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         running keeps the servers it negotiated with.
         """
         return self.coordinator.ice_servers
+
+    @callback
+    def _async_get_webrtc_client_configuration(self) -> WebRTCClientConfiguration:
+        """Offer the Agora TURN servers to this camera's viewers only.
+
+        They are scoped to the mower's channel; registered with ``web_rtc`` they
+        reach every camera in the install, which then stalls gathering a relay.
+        """
+        # Copied: core extends the returned list with the global servers.
+        return WebRTCClientConfiguration(
+            configuration=RTCConfiguration(ice_servers=list(self.get_ice_servers()))
+        )
 
 
 # Global
