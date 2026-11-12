@@ -73,7 +73,7 @@ A service that reads or writes a pymammotion object (a `Plan`, `PoolPlan`, `Oper
 
 - Agora signalling comes from the `pyagorartc` library (source and docs in the PyAgoraRTC repo; `docs/migration.md` §2 is the Mammotion mapping). Do not add SDP, gateway or access-point code here; fix it in the library.
 - `stream_session.py` holds the pure conversions (stream token → `ChannelCredentials`, AP answer → `RTCIceServer`, browser candidate → `IceCandidate`) and the AP call; `coordinator.async_check_stream_expiry` caches the token and AP answer.
-- `camera.py` builds one `AgoraSession` per offer (single use) and supplies the host callbacks: `_fpv_keepalive` (MQTT `refresh_fpv` on 4G, `False` on WiFi), `_on_peer_left` (BLE sync + re-subscribe), `_on_closed` (503 to viewers, release the feed). The `availableTime` deadline is set only on 4G.
+- `camera.py` builds one `AgoraSession` per offer (single use) and supplies the host callbacks: `_fpv_keepalive` (MQTT `refresh_fpv` on every call on 4G, at most every 15 s on WiFi), `_on_peer_left` (BLE sync + re-subscribe), `_on_closed` (503 to viewers, release the feed). The `availableTime` deadline is set only on 4G.
 - Only candidates that arrive before the join reach Agora; the gateway has no trickle message.
 
 ## Translations

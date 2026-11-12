@@ -56,6 +56,11 @@ _LOGGER = logging.getLogger(__name__)
 
 PLACEHOLDER = Path(__file__).parent / "placeholder.png"
 
+# The session calls the keep-alive every 3 s (pyagorartc KEEPALIVE_INTERVAL_S), the
+# cadence 4G needs. On WiFi some mowers still leave the channel about every 54 s
+# without it, so poke them too, but no more than this often.
+WIFI_FPV_KEEPALIVE_INTERVAL_S = 15.0
+
 _CLOSE_MESSAGES = {
     CloseReason.GATEWAY_QUIT: "Another camera on this mower took over the stream",
     CloseReason.DEADLINE: "4G streaming budget exhausted",
@@ -184,6 +189,7 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
         self._stream_data: StreamSubscriptionResponse | None = None
         self._sessions: dict[str, WebRTCSendMessage] = {}
         self._teardown_lock = asyncio.Lock()
+        self._last_wifi_keepalive: float | None = None
         self._attr_model = coordinator.device.device_name
         self.access_tokens = [secrets.token_hex(16)]
 
@@ -445,17 +451,26 @@ class MammotionWebRTCCamera(MammotionCameraBaseEntity):
                 _LOGGER.debug("Stop-stream command failed on close: %s", ex)
 
     async def _fpv_keepalive(self) -> bool:
-        """Re-arm the mower's video encoder on 4G; return False on WiFi.
+        """Re-arm the mower's video encoder with ``refresh_fpv``.
 
         Invoked by the Agora session every few seconds while it is joined.
-        Over cellular the encoder stops publishing unless poked with
-        ``refresh_fpv``; on WiFi the stream is continuous, so return False to
-        stop the keep-alive loop without sending anything.  A ``refresh_fpv`` that
-        did not land also returns False: the session stops calling (pyagorartc D15)
-        and the stream ends when the encoder does.
+        Over cellular the encoder stops publishing unless it is poked on every
+        call.  On WiFi the stream is not always continuous either: a Luba mini
+        AWD (firmware 2.3.31.70) leaves the channel about every 54 s without it,
+        and the peer-left recovery that brings it back sometimes fails, which
+        ends the stream.  So WiFi is poked
+        too, at most every ``WIFI_FPV_KEEPALIVE_INTERVAL_S``; the calls in
+        between return True without sending.  A ``refresh_fpv`` that did not land
+        returns False: the session stops calling (pyagorartc D15).
         """
         if not self.coordinator.is_on_4g:
-            return False
+            now = time.monotonic()
+            if (
+                self._last_wifi_keepalive is not None
+                and now - self._last_wifi_keepalive < WIFI_FPV_KEEPALIVE_INTERVAL_S
+            ):
+                return True
+            self._last_wifi_keepalive = now
         try:
             return await self.coordinator.async_send_command(
                 "refresh_fpv", priority=Priority.USER
