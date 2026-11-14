@@ -24,7 +24,12 @@ from pytest_homeassistant_custom_component.common import (
 )
 
 from custom_components.mammotion import _create_ble_only_device
-from custom_components.mammotion.const import CONF_BLE_DEVICES, DOMAIN
+from custom_components.mammotion.const import (
+    CONF_BLE_DEVICES,
+    CONF_PREFER_BLE,
+    CONF_USE_WIFI,
+    DOMAIN,
+)
 from custom_components.mammotion.coordinator import MammotionReportUpdateCoordinator
 from tests_ha.ble_advertisements import inject_advertisement, make_service_info
 
@@ -173,3 +178,95 @@ async def test_no_advertisement_is_handed_over_after_shutdown(
     await hass.async_block_till_done(wait_background_tasks=True)
 
     coordinator.manager.update_ble_device.assert_awaited_once()
+
+
+@pytest.mark.regression
+@pytest.mark.usefixtures("enable_bluetooth")
+async def test_cloud_preferring_mower_updates_advertisement_without_connecting(
+    hass: HomeAssistant,
+) -> None:
+    """An advertisement still connected BLE when the mower preferred the cloud (#931).
+
+    _async_push_advertisement checked only the Bluetooth switch after updating the
+    cached BLEDevice, so the advertisement Home Assistant replays on registration
+    connected BLE and held a proxy slot with "Use Bluetooth instead of WiFi" off.
+    """
+    ble = _idle_ble()
+    coordinator = _coordinator(hass, ble)
+    assert coordinator.handle is not None
+    coordinator.handle.prefer_ble = False
+    coordinator._async_start()
+
+    try:
+        inject_advertisement(hass, _MOWER, _MOWER_MAC, rssi=-64)
+        await hass.async_block_till_done(wait_background_tasks=True)
+    finally:
+        await coordinator.async_shutdown()
+
+    coordinator.manager.update_ble_device.assert_awaited_once()
+    ble.connect.assert_not_awaited()
+
+
+@pytest.mark.regression
+@pytest.mark.usefixtures("enable_bluetooth")
+async def test_switching_bluetooth_on_respects_cloud_preference(
+    hass: HomeAssistant,
+) -> None:
+    """Turning the Bluetooth switch on forced prefer_ble=True and connected BLE (#931).
+
+    async_set_bluetooth_enabled ignored the entry's CONF_PREFER_BLE option, so
+    re-enabling the switch on a cloud-preferring mower flipped handle.prefer_ble
+    back on and connected BLE immediately.
+    """
+    ble = _idle_ble()
+    coordinator = _coordinator(hass, ble)
+    hass.config_entries.async_update_entry(
+        coordinator.config_entry,
+        data={**coordinator.config_entry.data, CONF_USE_WIFI: True},
+        options={CONF_PREFER_BLE: False},
+    )
+    assert coordinator.handle is not None
+    coordinator.handle.prefer_ble = False
+    coordinator.service_info = make_service_info(_MOWER, _MOWER_MAC, rssi=-70)
+
+    try:
+        await coordinator.async_set_bluetooth_enabled(True)
+        await hass.async_block_till_done(wait_background_tasks=True)
+    finally:
+        await coordinator.async_shutdown()
+
+    coordinator.handle.set_prefer_ble.assert_called_once_with(value=False)
+    coordinator.manager.update_ble_device.assert_awaited_once()
+    ble.connect.assert_not_awaited()
+
+
+@pytest.mark.regression
+async def test_commands_do_not_override_cloud_preference(
+    hass: HomeAssistant,
+) -> None:
+    """Sending a command with Bluetooth enabled passed prefer_ble=True (#931).
+
+    async_send_command and async_send_and_wait passed self._bluetooth_enabled as
+    prefer_ble, which in pymammotion overrides handle.prefer_ble=False and schedules
+    a background BLE connection on every command.
+    """
+    coordinator = _coordinator(hass, _idle_ble())
+    assert coordinator.handle is not None
+    coordinator.handle.prefer_ble = False
+    coordinator.data.online = True
+    coordinator.handle.has_usable_transport = True
+
+    try:
+        await coordinator.async_send_command("get_report_cfg")
+        await coordinator.async_send_and_wait("query_battery_info", "bms_ctrl_info_msg")
+    finally:
+        await coordinator.async_shutdown()
+
+    assert (
+        coordinator.manager.send_command_with_args.await_args.kwargs["prefer_ble"]
+        is False
+    )
+    assert (
+        coordinator.manager.send_command_and_wait.await_args.kwargs["prefer_ble"]
+        is False
+    )

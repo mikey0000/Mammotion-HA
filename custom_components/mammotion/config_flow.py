@@ -33,7 +33,7 @@ from homeassistant.helpers.typing import UNDEFINED
 from homeassistant.loader import async_get_integration
 from pymammotion.aliyun.exceptions import CloudSetupError, TooManyRequestsException
 from pymammotion.client import MammotionClient
-from pymammotion.transport.base import LoginFailedError
+from pymammotion.transport.base import LoginFailedError, TransportType
 
 from .const import (
     BLE_SUPPORT,
@@ -674,6 +674,13 @@ class MammotionConfigFlowHandler(OptionsFlow):
                         not use_wifi or new_prefer_ble
                     )
                     mower.api.set_prefer_ble(mower.name, prefer_ble=use_ble)
+                    if (
+                        not use_ble
+                        and (handle := mower.api.mower(mower.name)) is not None
+                    ):
+                        # DeviceHandle.active_transport selects a connected BLE link
+                        # regardless of prefer_ble, so release it now.
+                        await handle.disconnect_transport(TransportType.BLE)
                     mower.api.set_mow_path_fetch_enabled(
                         mower.name,
                         enabled=user_input.get(CONF_MOW_PATH_FETCH_ENABLED, False),
