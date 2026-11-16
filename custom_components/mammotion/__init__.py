@@ -1043,7 +1043,10 @@ def _build_device_list(
             spino_devices.append(device)
             continue
         if not device.device_name.startswith(DEVICE_SUPPORT):
-            if device.category_key == "Tracker":
+            # Mammotion-direct records come with an empty category_key (#971).
+            if device.category_key == "Tracker" or DeviceType.is_rtk(
+                device.device_name, device.product_key
+            ):
                 rtk_devices.append(device)
             continue
         mower_devices.append(device)
