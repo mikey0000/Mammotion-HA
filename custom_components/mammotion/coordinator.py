@@ -134,6 +134,8 @@ from .const import (
     CONF_HAS_CLOUD_ACCOUNT,
     CONF_MAMMOTION_DATA,
     CONF_MOVEMENT_USE_WIFI,
+    CONF_PREFER_BLE,
+    CONF_USE_WIFI,
     DOMAIN,
     EXPIRED_CREDENTIAL_EXCEPTIONS,
     LOGGER,
@@ -889,6 +891,29 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         """Return whether Cloud transport is enabled."""
         return self._cloud_enabled
 
+    def _entry_prefers_ble(self) -> bool:
+        """Return whether the entry and Bluetooth switch prefer BLE (setup's rule)."""
+        if not self._bluetooth_enabled:
+            return False
+        if (entry := getattr(self, "config_entry", None)) is None:
+            return True
+        data = getattr(entry, "data", None) or {}
+        options = getattr(entry, "options", None) or {}
+        use_wifi = data.get(CONF_USE_WIFI, True)
+        prefer_ble = options.get(CONF_PREFER_BLE, data.get(CONF_PREFER_BLE, True))
+        return bool(not use_wifi or prefer_ble)
+
+    @property
+    def _prefer_ble(self) -> bool:
+        """Return whether commands from this coordinator should warm up a disconnected BLE link."""
+        if not self._bluetooth_enabled:
+            return False
+        if (handle := self.handle) is not None and isinstance(
+            prefer_ble := getattr(handle, "prefer_ble", None), bool
+        ):
+            return prefer_ble
+        return self._entry_prefers_ble()
+
     async def async_set_bluetooth_enabled(self, enabled: bool) -> None:
         """Enable or disable Bluetooth transport."""
         self._bluetooth_enabled = enabled
@@ -904,8 +929,10 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             # still selectable and gets reconnected once the cloud path is unusable.
             await handle.remove_transport(TransportType.BLE)
         else:
-            handle.set_prefer_ble(value=True)
-            await self._async_ensure_ble_client()
+            prefer_ble = self._entry_prefers_ble()
+            handle.set_prefer_ble(value=prefer_ble)
+            if prefer_ble:
+                await self._async_ensure_ble_client()
 
     async def async_set_cloud_enabled(self, enabled: bool) -> None:
         """Enable or disable Cloud transport."""
@@ -1066,7 +1093,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
                 self.device_name,
                 command,
                 expected_field,
-                prefer_ble=self._bluetooth_enabled,
+                prefer_ble=self._prefer_ble,
                 priority=priority,
                 **kwargs,
             ),
@@ -1231,7 +1258,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         light toggle queued behind a map sync still ends up correct and gains
         nothing from jumping it.
         """
-        prefer_ble = kwargs.pop("prefer_ble", self._bluetooth_enabled)
+        prefer_ble = kwargs.pop("prefer_ble", self._prefer_ble)
         return await self._async_delivered(
             lambda: self.manager.send_command_with_args(
                 self.device_name,
@@ -3281,8 +3308,9 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
         await self.manager.update_ble_device(
             self.device_name, self.service_info.device, self.service_info.rssi
         )
-        # The Bluetooth switch may have gone off during the hand-off.
-        if not self._bluetooth_enabled:
+        # The Bluetooth switch may have gone off during the hand-off, or the
+        # mower may prefer the cloud and keep BLE only as a fallback.
+        if not self._bluetooth_enabled or not handle.prefer_ble:
             return
         ble = handle.get_transport(TransportType.BLE)
         if (
