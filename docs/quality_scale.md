@@ -47,7 +47,7 @@ Status: **done** / **partial** (implemented with known gaps) / **todo** /
 | config-entry-unloading | done | `async_unload_entry` (unloads platforms, stops handles, flushes the store; no credential write-back). `test_unload_credentials.py`. |
 | docs-configuration-parameters | partial | Options flow has `prefer_ble`, notifications etc.; not documented in README. |
 | docs-installation-parameters | partial | Account/password and BLE path explained in README, not per field. |
-| entity-unavailable | done | `available` on the base entities keys off `coordinator.is_online()` and data presence (`entity.py`). |
+| entity-unavailable | done | `available` on the base entities keys off `coordinator.is_reachable()` — an actually confirmed connection, backed by pymammotion's `DeviceAvailability.is_available`, not merely a transport permitted to attempt one — and data presence (`entity.py`, `coordinator.py`). |
 | integration-owner | done | `codeowners: ["@mikey0000"]`. |
 | log-when-unavailable | **todo (verify)** | The coordinators do not raise `UpdateFailed` (none in `coordinator.py`), so HA's once-only "unavailable / back online" logging never runs; whether the integration logs the transition once itself is unverified. |
 | parallel-updates | **todo** | No platform sets `PARALLEL_UPDATES`. Add `PARALLEL_UPDATES = 0` to read-only platforms (sensor, binary_sensor, device_tracker, event) and `1` to action platforms (button, switch, number, select, lawn_mower, vacuum, update, camera) — the mower serialises commands anyway, and concurrent user commands race the queue. Mechanical: a meta-test that every platform module defines it. |

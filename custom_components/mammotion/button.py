@@ -286,7 +286,7 @@ async def async_setup_entry(
             coordinator,
             supported=coordinator.supports_remote_drive,
             descriptions=BUTTON_REMOTE_DRIVE,
-            build=partial(MammotionButtonSensorEntity, coordinator),
+            build=partial(MammotionRemoteDriveButtonEntity, coordinator),
             async_add_entities=async_add_entities,
         )
 
@@ -349,6 +349,19 @@ class MammotionButtonSensorEntity(MammotionBaseEntity, ButtonEntity):
     async def async_press(self) -> None:
         """Handle the button press."""
         await self.entity_description.press_fn(self.coordinator)
+
+
+class MammotionRemoteDriveButtonEntity(MammotionButtonSensorEntity):
+    """Remote-drive's confirm/acknowledge buttons: user actions on the same session the switch starts.
+
+    Pressing one is user-initiated, so like the switch it waives the cloud's
+    advisory offline flag — the whole point of remote drive is to reach a mower
+    the cloud's last heartbeat called offline.
+    """
+
+    def _coordinator_available(self, *, user_initiated: bool = False) -> bool:
+        """Apply the offline-flag waiver regardless of the caller's own setting."""
+        return super()._coordinator_available(user_initiated=True)
 
 
 class MammotionTaskButtonSensorEntity(MammotionBaseEntity, ButtonEntity):

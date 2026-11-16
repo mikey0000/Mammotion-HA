@@ -623,6 +623,16 @@ class MammotionRemoteDriveSwitchEntity(MammotionBaseEntity, SwitchEntity):
         """On while the session holds, or is requesting, the drive token."""
         return self.coordinator.remote_drive_phase in REMOTE_DRIVE_LIVE_PHASES
 
+    @property
+    def available(self) -> bool:
+        """Return True if entity is available.
+
+        Starting or stopping remote drive is user-initiated, so it waives the
+        cloud's advisory offline flag — the whole point of the control is to
+        reach a mower the cloud's last heartbeat called offline.
+        """
+        return self._coordinator_available(user_initiated=True)
+
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Request the token; the confirm button then accepts the safety notice."""
         await self.coordinator.async_start_remote_drive()
