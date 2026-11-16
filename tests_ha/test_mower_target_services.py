@@ -8,6 +8,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import entity_registry as er
 from pymammotion.data.model.device import MowingDevice
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -85,3 +86,32 @@ async def test_svg_delete_accepts_both_entity_id_forms(
     )
 
     coordinator.send_svg_command.assert_awaited_once()
+
+
+@pytest.mark.regression
+@pytest.mark.usefixtures("mower")
+async def test_get_geojson_skips_an_entry_that_is_not_loaded(
+    hass: HomeAssistant, entity_registry: er.EntityRegistry
+) -> None:
+    """A Mammotion entry that is not loaded has no runtime_data (#844).
+
+    The mower lookup read it on every entry, so an entry left behind by a failed
+    setup or a replaced account raised AttributeError and get_geojson answered
+    with a 500 instead of the translated error.
+    """
+    entry = MockConfigEntry(domain=DOMAIN)
+    entry.add_to_hass(hass)
+    entity_id = entity_registry.async_get_or_create(
+        "lawn_mower", DOMAIN, "Luba-VS1000002", config_entry=entry
+    ).entity_id
+
+    with pytest.raises(HomeAssistantError) as err:
+        await hass.services.async_call(
+            DOMAIN,
+            "get_geojson",
+            {"entity_id": entity_id},
+            blocking=True,
+            return_response=True,
+        )
+
+    assert err.value.translation_key == "mower_not_found"
