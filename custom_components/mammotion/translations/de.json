@@ -694,6 +694,7 @@
         "name": "Wendemodus",
         "state": {
           "multipoint": "Mehr-Punkt-Drehung",
+          "u_turn": "U-Wende",
           "zero_turn": "Null-Punkt-Drehung"
         }
       },

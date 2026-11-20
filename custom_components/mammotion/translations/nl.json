@@ -694,6 +694,7 @@
         "name": "Draaimodus",
         "state": {
           "multipoint": "Meerpunts draai",
+          "u_turn": "U-bocht",
           "zero_turn": "Nulpunts draai"
         }
       },

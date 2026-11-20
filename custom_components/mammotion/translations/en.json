@@ -694,6 +694,7 @@
         "name": "Turnaround Mode",
         "state": {
           "multipoint": "Multipoint turn",
+          "u_turn": "U-turn",
           "zero_turn": "Zero turn"
         }
       },

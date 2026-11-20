@@ -694,6 +694,7 @@
         "name": "Megfordulási mód",
         "state": {
           "multipoint": "Többpontos forduló",
+          "u_turn": "U-forduló",
           "zero_turn": "Helyben fordulás"
         }
       },

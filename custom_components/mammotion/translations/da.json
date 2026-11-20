@@ -694,6 +694,7 @@
         "name": "Vende-tilstand",
         "state": {
           "multipoint": "Multipunkt vending",
+          "u_turn": "U-vending",
           "zero_turn": "Nul vending"
         }
       },

@@ -694,6 +694,7 @@
         "name": "Vändningsläge",
         "state": {
           "multipoint": "Flerpunktssväng",
+          "u_turn": "U-sväng",
           "zero_turn": "Runt egen axel"
         }
       },

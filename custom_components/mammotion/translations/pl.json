@@ -694,6 +694,7 @@
         "name": "Tryb zawracania",
         "state": {
           "multipoint": "Zawracanie wielopunktowe",
+          "u_turn": "Zawracanie po łuku",
           "zero_turn": "Zawracanie w miejscu"
         }
       },

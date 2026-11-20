@@ -694,6 +694,7 @@
         "name": "Način obračanja",
         "state": {
           "multipoint": "Obrat v več točkah",
+          "u_turn": "Obrat v obliki črke U",
           "zero_turn": "Obrat na mestu"
         }
       },

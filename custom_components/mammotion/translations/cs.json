@@ -694,6 +694,7 @@
         "name": "Režim otáčení",
         "state": {
           "multipoint": "Vícebodové otáčení",
+          "u_turn": "Otáčení do U",
           "zero_turn": "Otáčení na místě"
         }
       },

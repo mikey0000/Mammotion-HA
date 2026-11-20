@@ -694,6 +694,7 @@
         "name": "Mode de demi-tour",
         "state": {
           "multipoint": "Virage multipoint",
+          "u_turn": "Demi-tour en U",
           "zero_turn": "Virage sur place"
         }
       },

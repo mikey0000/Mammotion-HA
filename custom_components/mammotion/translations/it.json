@@ -694,6 +694,7 @@
         "name": "Modalità di svolta",
         "state": {
           "multipoint": "Svolta multipunto",
+          "u_turn": "Inversione a U",
           "zero_turn": "Svolta zero"
         }
       },

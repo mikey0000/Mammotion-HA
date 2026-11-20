@@ -694,6 +694,7 @@
         "name": "Mod de întoarcere",
         "state": {
           "multipoint": "Întoarcere în mai multe puncte",
+          "u_turn": "Întoarcere în U",
           "zero_turn": "Întoarcere pe loc"
         }
       },

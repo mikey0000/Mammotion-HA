@@ -63,6 +63,8 @@ class MammotionAsyncConfigSelectEntityDescription(MammotionBaseEntity, SelectEnt
     options: list[str]
     get_fn: Callable[[MammotionBaseUpdateCoordinator[Any]], int | None]
     set_fn: Callable[[MammotionBaseUpdateCoordinator[Any], str], Awaitable[None]]
+    # For options the device gains or loses at runtime; ``options`` stays the full set.
+    options_fn: Callable[[MammotionBaseUpdateCoordinator[Any]], list[str]] | None = None
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -168,6 +170,23 @@ AUDIO_SELECT_ENTITIES: tuple[MammotionAsyncConfigSelectEntityDescription, ...] =
     ),
 )
 
+
+def _turning_mode_options(
+    coordinator: MammotionBaseUpdateCoordinator[Any],
+) -> list[str]:
+    """U-turn is listed for firmware the cloud says has it, or a mower already using it."""
+    device = coordinator.data
+    has_u_turn = (
+        device.supports_u_turn()
+        or device.mower_state.turning_mode == TurningMode.u_turn
+    )
+    return [
+        mode.name
+        for mode in TurningMode
+        if mode is not TurningMode.u_turn or has_u_turn
+    ]
+
+
 ASYNC_SELECT_ENTITIES: tuple[MammotionAsyncConfigSelectEntityDescription, ...] = (
     MammotionAsyncConfigSelectEntityDescription(
         key="traversal_mode",
@@ -180,6 +199,7 @@ ASYNC_SELECT_ENTITIES: tuple[MammotionAsyncConfigSelectEntityDescription, ...] =
     MammotionAsyncConfigSelectEntityDescription(
         key="turning_mode",
         options=[mode.name for mode in TurningMode],
+        options_fn=_turning_mode_options,
         get_fn=lambda coordinator: coordinator.data.mower_state.turning_mode,
         set_fn=lambda coordinator, value: coordinator.async_set_turning_mode(
             TurningMode[value].value
@@ -484,8 +504,14 @@ class MammotionAsyncConfigSelectEntity(
         self.coordinator = coordinator
         self.entity_description = entity_description
         self._attr_translation_key = entity_description.key
-        self._attr_options = entity_description.options
+        self._attr_options = self._available_options()
         self._attr_current_option = self._resolve_option()
+
+    def _available_options(self) -> list[str]:
+        """Return the options this device offers right now."""
+        if options_fn := self.entity_description.options_fn:
+            return options_fn(self.coordinator)
+        return self.entity_description.options
 
     def _resolve_option(self) -> str:
         """Return the current option, falling back to the first if the index is out of range."""
@@ -498,6 +524,7 @@ class MammotionAsyncConfigSelectEntity(
     @callback
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
+        self._attr_options = self._available_options()
         self._attr_current_option = self._resolve_option()
         super()._handle_coordinator_update()
 
@@ -511,15 +538,13 @@ class MammotionAsyncConfigSelectEntity(
         """Restore last state."""
         await super().async_added_to_hass()
         if (state := await self.async_get_last_state()) is not None:
-            if state.state in self.entity_description.options:
+            if state.state in self._attr_options:
                 self._attr_current_option = state.state
 
     async def async_update(self) -> None:
         """Update entity state from coordinator."""
-        if callable(self.entity_description.get_fn):
-            self._attr_current_option = self._attr_options[
-                self.entity_description.get_fn(self.coordinator)
-            ]
+        self._attr_options = self._available_options()
+        self._attr_current_option = self._resolve_option()
         self.async_write_ha_state()
 
 
