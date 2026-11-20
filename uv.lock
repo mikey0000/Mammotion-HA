@@ -1791,7 +1791,7 @@ wheels = [
 
 [[package]]
 name = "mammotion-ha"
-version = "0.6.22"
+version = "0.6.23"
 source = { virtual = "." }
 dependencies = [
     { name = "autotyping" },
@@ -1818,7 +1818,7 @@ requires-dist = [
     { name = "autotyping", specifier = ">=24.3.0" },
     { name = "homeassistant", specifier = ">=2026.10.0" },
     { name = "pyagorartc", specifier = "==0.2.3" },
-    { name = "pymammotion", specifier = "==0.10.17" },
+    { name = "pymammotion", specifier = "==0.10.19" },
 ]
 
 [package.metadata.requires-dev]
@@ -2731,7 +2731,7 @@ wheels = [
 
 [[package]]
 name = "pymammotion"
-version = "0.10.17"
+version = "0.10.19"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -2756,9 +2756,9 @@ dependencies = [
     { name = "webrtc-models" },
     { name = "websockets" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f5/6c/264fdfeb48ae663170ca3d527f067ddb5ded8c8d35f428d47b88468bc82d/pymammotion-0.10.17.tar.gz", hash = "sha256:d52783c1ff611cfdb7b96f127eadbe0ac172416694345a15c5deeabe2974fc7d", size = 759114, upload-time = "2026-11-20T10:48:06.67Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/13/cc/b673cd82ce0af82dc72fce0673d94df6e185eb6f14134b013f5fd6ed3b96/pymammotion-0.10.19.tar.gz", hash = "sha256:0e98bb5e159f17da4025755f71857d39414c35def8f9fa09e2275d792dec0e88", size = 759558, upload-time = "2026-11-20T22:45:28.518Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/5a/e6/3a9ba1d77cbaaf57d551f22b6bd98c9700c0a09e6806242282a2a440546c/pymammotion-0.10.17-py3-none-any.whl", hash = "sha256:1cb93d491b2ebf71d68567badf585c9bf08f4f36ec2ee71ccef3a9a0f79fd5d5", size = 844416, upload-time = "2026-11-20T10:48:04.971Z" },
+    { url = "https://files.pythonhosted.org/packages/39/d7/9e95ca5ce9eb46b898142097e1cb2ff88438b76c9ec85d153fee309939bc/pymammotion-0.10.19-py3-none-any.whl", hash = "sha256:971543d4ff2326e0d1febc038c6ba0c0611b06c69037c5dd1ef0e5bf13c9b19d", size = 844941, upload-time = "2026-11-20T22:45:26.461Z" },
 ]
 
 [[package]]
