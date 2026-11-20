@@ -1,7 +1,8 @@
 """A route modify must carry the running job's auto-reverse setting, not the planning default.
 
 Route writes always send the auto-reverse buffer now, so a modify built from default operation settings
-would switch the setting off on the running job.
+would switch the setting off on the running job.  The one exception is the user changing it on
+the running job, which has to win.
 """
 
 from types import MethodType, SimpleNamespace
@@ -68,3 +69,52 @@ async def test_a_job_that_reports_no_auto_reverse_keeps_the_users_choice() -> No
         "generate_route_information"
     ]
     assert route.auto_change_direction == 1
+
+
+def _job_service_coordinator(*, reported: bool) -> SimpleNamespace:
+    """Return a running job with the real ``modify_running_job`` path bound as well."""
+    coordinator = _running_job_coordinator(reported=reported)
+    for name in (
+        "_is_route_job_running",
+        "_running_job_fields",
+        "_seed_operation_settings_from_running_job",
+        "_running_job_refusal",
+        "async_modify_running_job",
+    ):
+        setattr(
+            coordinator,
+            name,
+            MethodType(getattr(MammotionBaseUpdateCoordinator, name), coordinator),
+        )
+    return coordinator
+
+
+@pytest.mark.regression
+@pytest.mark.parametrize(("reported", "chosen"), [(True, 0), (False, 1)])
+async def test_changing_auto_reverse_on_the_running_job_reaches_the_route(
+    reported: bool, chosen: int
+) -> None:
+    """The service took the field, then the route was rebuilt with the job's old value."""
+    coordinator = _job_service_coordinator(reported=reported)
+
+    await coordinator.async_modify_running_job(auto_change_direction=chosen)
+
+    route = coordinator.async_send_command.await_args.kwargs[
+        "generate_route_information"
+    ]
+    assert route.auto_change_direction == chosen
+
+
+@pytest.mark.parametrize(("reported", "expected"), [(True, 1), (False, 0)])
+async def test_changing_another_setting_keeps_the_jobs_auto_reverse(
+    reported: bool, expected: int
+) -> None:
+    """Only a choice the user made overrides the running job's own setting."""
+    coordinator = _job_service_coordinator(reported=reported)
+
+    await coordinator.async_modify_running_job(speed=0.5)
+
+    route = coordinator.async_send_command.await_args.kwargs[
+        "generate_route_information"
+    ]
+    assert route.auto_change_direction == expected

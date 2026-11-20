@@ -1,4 +1,4 @@
-"""The lawn mower entity: failure keys, the retired job field and resuming a job.
+"""The lawn mower entity: failure keys, the retired job field, resuming a job and its attributes.
 
 A failed action says which action it was. The coordinator maps every send
 failure to a HomeAssistantError, so the entity names its action to the
@@ -11,6 +11,8 @@ coordinator, and raise a repair naming the action.
 Resuming a paused job waits for the mower to report WORKING before the report
 snapshot that refreshes the mode sensor; taken while the mower is still in
 PAUSE, it pinned PAUSE until the next report.
+
+Its state attributes carry the running job, which is how a card reads it.
 """
 
 from typing import Any
@@ -269,3 +271,30 @@ async def test_the_mode_wait_ignores_a_state_that_is_not_a_mower() -> None:
 
     predicate = entity.coordinator.async_wait_for.call_args.args[0]
     assert not predicate(PoolCleanerDevice())
+
+
+def test_the_entity_carries_the_running_job_for_cards() -> None:
+    """Attributes reach the frontend with every state push, with no service call."""
+    entity = _entity(WorkMode.MODE_WORKING, _offline())
+    device = entity.coordinator.data
+    device.work.zone_hashs = [123]
+    device.work.speed = 0.4
+    device.report_data.work.bp_hash = "123"
+
+    attributes = entity.extra_state_attributes
+
+    assert attributes["running_job_modifiable"] is True
+    assert (attributes["running_job"]["areas"], attributes["running_job"]["speed"]) == (
+        [123],
+        0.4,
+    )
+
+
+def test_an_idle_mower_carries_no_running_job() -> None:
+    """A card must not offer to change a job that is not there."""
+    entity = _entity(WorkMode.MODE_READY, _offline())
+
+    assert entity.extra_state_attributes == {
+        "running_job": None,
+        "running_job_modifiable": False,
+    }

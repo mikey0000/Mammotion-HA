@@ -286,6 +286,7 @@ def _running_job_coordinator() -> SimpleNamespace:
         async_send_command=AsyncMock(),
     )
     for name in (
+        "_running_job_fields",
         "_seed_operation_settings_from_running_job",
         "async_modify_plan_route",
         "generate_route_information",

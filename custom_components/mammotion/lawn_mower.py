@@ -296,6 +296,14 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
         return self.coordinator.data.report_data
 
     @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Expose the running job, so a card can show and change what is being mown."""
+        return {
+            "running_job": self.coordinator.running_job,
+            "running_job_modifiable": self.coordinator.running_job_modifiable,
+        }
+
+    @property
     def activity(self) -> LawnMowerActivity | None:
         """Return the state of the mower."""
 

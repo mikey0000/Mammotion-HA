@@ -42,6 +42,7 @@ _RUNNING_JOB = {
 
 _METHODS = (
     "_is_route_job_running",
+    "_running_job_fields",
     "_seed_operation_settings_from_running_job",
     "async_modify_plan_if_mowing",
     "async_change_blade_height_if_working",

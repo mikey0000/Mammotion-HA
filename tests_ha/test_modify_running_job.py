@@ -39,6 +39,7 @@ _ECHOED_RESERVED = "\n\x0b\n\n\n\x12\x14("
 
 _METHODS = (
     "_is_route_job_running",
+    "_running_job_fields",
     "_seed_operation_settings_from_running_job",
     "_running_job_refusal",
     "async_modify_running_job",
@@ -312,3 +313,46 @@ async def test_each_offered_field_actually_reaches_the_route(field: str) -> None
 
     sent = coordinator.async_modify_plan_route.await_args.args[0]
     assert getattr(sent, field) == before
+
+
+def _property(coordinator: SimpleNamespace, name: str) -> object:
+    """Read a coordinator property against the fake self."""
+    return getattr(MammotionBaseUpdateCoordinator, name).fget(coordinator)
+
+
+def test_the_running_job_is_exposed_with_its_own_values() -> None:
+    """A card editing the job has to start from what is being mown, not the planning values."""
+    job = _property(_coordinator(), "running_job")
+
+    assert job is not None
+    assert (job["speed"], job["channel_width"], job["blade_height"]) == (0.4, 30, 60)
+    assert (job["obstacle_laps"], job["start_progress"]) == (1, 0)
+    assert job["areas"] == [123]
+
+
+def test_no_job_is_exposed_while_the_mower_is_not_on_one() -> None:
+    """The last job's values would read as a job still running."""
+    assert _property(_coordinator(running=False), "running_job") is None
+
+
+@pytest.mark.parametrize(
+    ("device_name", "running", "expected"),
+    [(_LUBA_PRO, True, True), (_LUBA_PRO, False, False), (_LUBA1, True, False)],
+    ids=["running", "idle", "luba-1"],
+)
+def test_the_job_is_reported_modifiable_only_when_a_change_would_be_accepted(
+    device_name: str, running: bool, expected: bool
+) -> None:
+    """It answers for the service: where it says no, the service refuses."""
+    coordinator = _coordinator(device_name=device_name, running=running)
+
+    assert _property(coordinator, "running_job_modifiable") is expected
+
+
+def test_a_coordinator_with_no_state_yet_exposes_no_job() -> None:
+    """Entities read these on every state write, including before the first refresh."""
+    coordinator = _coordinator()
+    coordinator.data = None
+
+    assert _property(coordinator, "running_job") is None
+    assert _property(coordinator, "running_job_modifiable") is False

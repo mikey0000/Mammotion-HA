@@ -2522,8 +2522,12 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         operation_settings: OperationSettings,
         priority: Priority = Priority.NORMAL,
         failure_key: str = "command_failed",
+        auto_change_direction: int | None = None,
     ) -> bool:
         """Modify plan mow; return whether the command went out.
+
+        *auto_change_direction* is the user's choice for this send; without one
+        the running job's own setting is kept.
 
         Reached both from user actions (``Priority.USER``) and from
         ``async_modify_plan_if_mowing`` re-planning on its own, so the caller
@@ -2537,7 +2541,9 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             operation_settings.toward_included_angle = work.toward_included_angle
             operation_settings.mowing_laps = work.edge_mode
             operation_settings.ride_boundary_distance = work.ride_boundary_distance
-            if work.auto_change_direction is not None:
+            if auto_change_direction is not None:
+                operation_settings.auto_change_direction = auto_change_direction
+            elif work.auto_change_direction is not None:
                 operation_settings.auto_change_direction = int(
                     work.auto_change_direction
                 )
@@ -2694,42 +2700,58 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             and (_mdata.report_data.work.area >> 16) != 100
         )
 
+    def _running_job_fields(self) -> dict[str, Any]:
+        """Return the running job's parameters, keyed by operation-settings field."""
+        work = cast(MowingDevice, self.data).work
+        fields: dict[str, Any] = {
+            "areas": list(dict.fromkeys(work.zone_hashs)),
+            "toward": work.toward,
+            "toward_mode": work.toward_mode,
+            "toward_included_angle": work.toward_included_angle,
+            "mowing_laps": work.edge_mode,
+            "ride_boundary_distance": work.ride_boundary_distance,
+            "job_mode": work.job_mode,
+            "job_id": work.job_id,
+            "job_version": work.job_ver,
+            "speed": work.speed,
+            "channel_width": work.channel_width,
+            "ultra_wave": work.ultra_wave,
+            "channel_mode": work.channel_mode,
+            "blade_height": work.knife_height,
+        }
+        if (auto_change := work.auto_change_direction) is not None:
+            fields["auto_change_direction"] = int(auto_change)
+        # The device echoes the reserved buffer with every byte raised by ten.
+        if work.reserved:
+            order = GenerateRouteInformation.decode_path_order(work.reserved)
+            fields |= {
+                "border_mode": order.edge_mode,
+                "obstacle_laps": order.obstacle_laps,
+                "start_progress": order.start_progress,
+            }
+        return fields
+
+    @property
+    def running_job(self) -> dict[str, Any] | None:
+        """The running route job's settings by ``start_mow`` field, or None without one."""
+        if self.data is None or not self._is_route_job_running():
+            return None
+        return self._running_job_fields()
+
+    @property
+    def running_job_modifiable(self) -> bool:
+        """Whether ``async_modify_running_job`` would accept a change right now."""
+        return self.data is not None and self._running_job_refusal() is None
+
     def _seed_operation_settings_from_running_job(self) -> None:
         """Copy the running job's parameters into operation settings.
 
-        The app seeds its in-job WorkingOptionView from the active route
-        (``queryGenerateRouteInformation``) and re-sends the whole set with only
-        the edited field changed, so the running job's real speed, spacing,
-        detection and route settings must survive a mid-job tweak rather than
-        being reset to the planning defaults.
+        The app seeds its in-job WorkingOptionView from the active route and
+        re-sends the whole set with only the edited field changed, so a mid-job
+        tweak must not reset the rest to the planning values.
         """
-        work = cast(MowingDevice, self.data).work
-        settings = self._operation_settings
-        settings.areas = list(dict.fromkeys(work.zone_hashs))
-        settings.toward = work.toward
-        settings.toward_mode = work.toward_mode
-        settings.toward_included_angle = work.toward_included_angle
-        settings.mowing_laps = work.edge_mode
-        settings.ride_boundary_distance = work.ride_boundary_distance
-        settings.job_mode = work.job_mode
-        settings.job_id = work.job_id
-        settings.job_version = work.job_ver
-        settings.speed = work.speed
-        settings.channel_width = work.channel_width
-        settings.ultra_wave = work.ultra_wave
-        settings.channel_mode = work.channel_mode
-        settings.blade_height = work.knife_height
-        if (auto_change := work.auto_change_direction) is not None:
-            settings.auto_change_direction = int(auto_change)
-        # create_path_order rebuilds the reserved buffer from these three, so
-        # without seeding them a mid-job tweak ships the planning values —
-        # notably start_progress, which would otherwise go out as whatever the
-        # slider happens to hold rather than where the mower actually is.
-        if work.reserved:
-            order = GenerateRouteInformation.decode_path_order(work.reserved)
-            settings.border_mode = order.edge_mode
-            settings.obstacle_laps = order.obstacle_laps
-            settings.start_progress = order.start_progress
+        for field, value in self._running_job_fields().items():
+            setattr(self._operation_settings, field, value)
 
     async def async_modify_plan_if_mowing(self) -> None:
         """Re-plan the current mow route if the device is actively mowing."""
@@ -2813,7 +2835,11 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         for field, value in changes.items():
             if value is not None:
                 setattr(self._operation_settings, field, value)
-        await self.async_modify_plan_route(self._operation_settings, priority=priority)
+        await self.async_modify_plan_route(
+            self._operation_settings,
+            priority=priority,
+            auto_change_direction=changes.get("auto_change_direction"),
+        )
 
     async def async_change_speed_if_working(
         self, *, priority: Priority = Priority.NORMAL
