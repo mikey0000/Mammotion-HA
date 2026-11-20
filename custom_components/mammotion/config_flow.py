@@ -28,6 +28,9 @@ from homeassistant.helpers.selector import (
     SelectSelector,
     SelectSelectorConfig,
     SelectSelectorMode,
+    TextSelector,
+    TextSelectorConfig,
+    TextSelectorType,
 )
 from homeassistant.helpers.typing import UNDEFINED
 from homeassistant.loader import async_get_integration
@@ -41,6 +44,7 @@ from .const import (
     CONF_ACCOUNTNAME,
     CONF_BLE_DEVICES,
     CONF_DEVICE_NAME,
+    CONF_GO2RTC_URL,
     CONF_HAS_CLOUD_ACCOUNT,
     CONF_MOVEMENT_USE_WIFI,
     CONF_MOW_PATH_FETCH_ENABLED,
@@ -53,6 +57,7 @@ from .const import (
     LOGGER,
     NOTIFY_CATEGORIES,
 )
+from .restream import validate_go2rtc_url
 
 CONF_REMOVE_ACCOUNT = "remove_account"
 
@@ -656,12 +661,19 @@ class MammotionConfigFlowHandler(OptionsFlow):
             CONF_MOW_PATH_FETCH_ENABLED, False
         )
         self.notify = config_entry.options.get(CONF_NOTIFY, DEFAULT_NOTIFY)
+        self.go2rtc_url: str | None = config_entry.options.get(CONF_GO2RTC_URL)
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Manage the options for the custom component."""
-        if user_input:
+        errors: dict[str, str] = {}
+        if user_input and (go2rtc_url := user_input.get(CONF_GO2RTC_URL)):
+            try:
+                user_input[CONF_GO2RTC_URL] = validate_go2rtc_url(go2rtc_url)
+            except ValueError:
+                errors[CONF_GO2RTC_URL] = "invalid_go2rtc_url"
+        if user_input and not errors:
             new_prefer_ble = user_input.get(CONF_PREFER_BLE, True)
             use_wifi = self._config_entry.data.get(CONF_USE_WIFI, True)
 
@@ -703,9 +715,15 @@ class MammotionConfigFlowHandler(OptionsFlow):
                         translation_key=CONF_NOTIFY,
                     )
                 ),
+                # A suggestion, not a default: a cleared field must turn it off.
+                vol.Optional(
+                    CONF_GO2RTC_URL,
+                    description={"suggested_value": self.go2rtc_url},
+                ): TextSelector(TextSelectorConfig(type=TextSelectorType.URL)),
             }
         )
 
         return self.async_show_form(
             data_schema=options_schema,
+            errors=errors,
         )

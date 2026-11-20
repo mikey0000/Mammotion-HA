@@ -48,7 +48,7 @@ UNSPECCED_MAGICMOCKS: dict[str, int] = {
     "test_ble_reconnect_after_range_loss.py": 16,
     "test_button_tasks.py": 4,
     "test_bypass_mode_options.py": 4,
-    "test_camera_agora_session.py": 4,
+    "test_camera_agora_session.py": 2,
     "test_camera_ble_only.py": 3,
     "test_camera_session_tracking.py": 10,
     "test_camera_webrtc_teardown.py": 16,

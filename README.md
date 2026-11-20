@@ -88,6 +88,37 @@ Satellite map tiles (Google Maps, OpenStreetMap, etc.) are sometimes misaligned 
 
 Typical offsets are within ±20 m. Positive latitude = north, positive longitude = east.
 
+## Camera Re-streaming (Frigate, go2rtc)
+
+The camera entities stream over WebRTC through Agora, so Home Assistant has no RTSP URL to hand an NVR. The integration can instead register each camera with a go2rtc server, such as the one inside Frigate, which then serves it as RTSP.
+
+1. Make go2rtc's API reachable from Home Assistant. For Frigate that means publishing port `1984` of the container; keep it on your LAN, since go2rtc's API has no authentication unless you configure it (`http://user:password@host:1984` is supported).
+2. In **Settings > Devices & Services > Mammotion > Configure**, set **go2rtc server** to the API address, for example `http://frigate:1984`.
+3. Check that go2rtc can reach Home Assistant's internal URL (**Settings > System > Network**), by a name or address the go2rtc container resolves and, for `https`, with a certificate it trusts. go2rtc pulls each camera from Home Assistant, not the other way round.
+
+Each camera then appears in go2rtc as `mammotion_<device>_<camera>`, for example `mammotion_luba_mnab12cd_camera` and `mammotion_luba_mnab12cd_camera_right`. The streams are added to go2rtc's memory, not its config file, and are re-registered every 30 seconds, so they come back after either side restarts.
+
+A Frigate camera using it:
+
+```yaml
+cameras:
+  luba_front:
+    ffmpeg:
+      inputs:
+        - path: rtsp://127.0.0.1:8554/mammotion_luba_mnab12cd_camera
+          input_args: preset-rtsp-restream
+          roles: [record, detect]
+```
+
+Things to know before relying on it:
+
+- **The mowers publish H.265.** Frigate records it as is; detection decodes it, which costs more CPU than H.264. To transcode, add a go2rtc stream such as `luba_front_h264: ffmpeg:rtsp://127.0.0.1:8554/mammotion_luba_mnab12cd_camera#video=h264` and point Frigate at that instead.
+- **Every view goes through Mammotion's cloud (Agora)**, also when go2rtc pulls it. A 24/7 Frigate recording keeps the mower's camera streaming all the time; on 4G it uses mobile data and Mammotion's streaming budget for the device.
+- **One viewer per camera.** Opening the camera in a Home Assistant dashboard takes the stream from go2rtc, and go2rtc takes it back when it reconnects. Watch it through Frigate or go2rtc instead.
+- go2rtc never says when it stops pulling, so the integration closes a camera's stream within a minute of go2rtc having no consumer for it.
+- When a camera fails to start (mower asleep, offline or out of streaming budget), go2rtc is refused for 30 seconds, then longer on each further failure up to 10 minutes, so Frigate's constant retries do not keep waking the mower or asking Mammotion's cloud for stream tokens.
+- Leaving the field empty turns re-streaming off; nothing is sent to go2rtc then.
+
 ## Dashboard Plugins
 
 Companion HACS dashboard plugins that extend the Mammotion integration with visual tools.

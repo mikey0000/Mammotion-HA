@@ -26,7 +26,8 @@
   ],
   "config_flow": true,
   "dependencies": [
-    "bluetooth_adapters"
+    "bluetooth_adapters",
+    "http"
   ],
   "documentation": "https://github.com/mikey0000/Mammotion-HA/wiki",
   "loggers": [
