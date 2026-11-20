@@ -315,12 +315,27 @@ def restore_device_state[StateT: DataClassDictMixin](
     return state_type()
 
 
+def supports_child_safety(device_name: str, device: MowingDevice | None) -> bool:
+    """Return True for an X3 or X5 mower whose server function list has child safety.
+
+    The family comes from the name: only those mowers have a command for it.
+    """
+    return (
+        device is not None
+        and DeviceType.is_luba_pro(device_name)
+        and device.supports_child_safety()
+    )
+
+
 def firmware_gated_reads(
     device_name: str,
     firmware: str,
     rain_protection: RainProtectionSettings | None = None,
+    child_safety: bool = False,
 ) -> list[str]:
     """Return the report coordinator's setting reads whose gate the device now passes.
+
+    *child_safety* is the server's function list saying the mower has the setting.
 
     Rain protection is gated at runtime rather than on firmware: its read is due once
     the device proved support (self-check 34) without the values having been read.
@@ -336,6 +351,8 @@ def firmware_gated_reads(
         reads.append("async_read_autonomous_drive_speed")
     if DeviceType.supports_smart_sleep(device_name, firmware):
         reads.append("async_read_smart_sleep")
+    if child_safety:
+        reads.append("async_read_child_safety")
     if (
         rain_protection is not None
         and DeviceType.supports_rain_protection_modes(
@@ -1615,13 +1632,40 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
                 translation_domain=DOMAIN, translation_key="command_failed"
             )
 
+    async def async_read_child_safety(self) -> None:
+        """Read the child-safety switch."""
+        await self._async_device_call(
+            lambda: self.manager.read_child_safety(self.device_name), Priority.NORMAL
+        )
+
+    async def async_set_child_safety(self, enabled: bool) -> None:
+        """Switch child safety; the library confirms the write and re-reads it."""
+        await self._async_device_call(
+            lambda: self.manager.set_child_safety(self.device_name, enabled),
+            Priority.USER,
+        )
+
     async def async_read_battery_info(self) -> None:
         """Read the battery charge limit and off-peak charging settings."""
         await self.async_send_and_wait("query_battery_info", "bms_ctrl_info_msg")
 
     async def async_set_charge_limit(self, charge_limit: int) -> None:
         """Set a fixed battery charge limit, which turns smart charging off."""
-        await self._async_set_battery_info(False, charge_limit)
+        await self._async_set_battery_info(
+            smart_charge=False, charge_limit=charge_limit
+        )
+
+    async def async_set_off_peak_charging(self, enabled: bool) -> None:
+        """Turn charging only inside the off-peak window on or off."""
+        await self._async_set_battery_info(peak_valley_charge=enabled)
+
+    async def async_set_off_peak_start(self, minutes: int) -> None:
+        """Set when the off-peak window opens, in minutes since midnight."""
+        await self._async_set_battery_info(valley_charge_start_time=minutes)
+
+    async def async_set_off_peak_end(self, minutes: int) -> None:
+        """Set when the off-peak window closes, in minutes since midnight."""
+        await self._async_set_battery_info(valley_charge_end_time=minutes)
 
     async def async_set_smart_charge(self, smart_charge: bool) -> None:
         """Turn smart charging on or off.
@@ -1629,16 +1673,14 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         Switching it off keeps the limit the device last reported, which is 100
         while smart charging is active — the same value the app sends.
         """
-        await self._async_set_battery_info(smart_charge)
+        await self._async_set_battery_info(smart_charge=smart_charge)
 
-    async def _async_set_battery_info(
-        self, smart_charge: bool, charge_limit: int | None = None
-    ) -> None:
-        """Send bms_ctrl_info_msg, resending the off-peak window it would otherwise reset.
+    async def _async_set_battery_info(self, **changes: Any) -> None:
+        """Send bms_ctrl_info_msg with *changes* over the settings the device reported.
 
-        *charge_limit* defaults to the reported one.  Unread settings are read
-        first, and the write is refused if they stay unread: sending defaults
-        would reset the device's window to 00:00-00:00.
+        The message carries every setting.  Unread settings are read first, and
+        the write is refused if they stay unread: sending defaults would reset
+        the device's window to 00:00-00:00.
         """
         current = self._reported_charge_settings()
         if not current.reported:
@@ -1652,11 +1694,14 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             "set_battery_info",
             "bms_ctrl_info_msg",
             priority=Priority.USER,
-            smart_charge=smart_charge,
-            charge_limit=current.charge_limit if charge_limit is None else charge_limit,
-            peak_valley_charge=current.peak_valley_charge,
-            valley_charge_start_time=current.valley_charge_start_time,
-            valley_charge_end_time=current.valley_charge_end_time,
+            **{
+                "smart_charge": current.smart_charge,
+                "charge_limit": current.charge_limit,
+                "peak_valley_charge": current.peak_valley_charge,
+                "valley_charge_start_time": current.valley_charge_start_time,
+                "valley_charge_end_time": current.valley_charge_end_time,
+                **changes,
+            },
         )
 
     def _reported_charge_settings(self) -> ChargeSettings:
@@ -3527,6 +3572,7 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
                 self.device_name,
                 firmware or "",
                 self.data.mower_state.rain_protection,
+                supports_child_safety(self.device_name, self.data),
             )
             if read not in self._gated_reads_issued
         ]
@@ -3559,6 +3605,7 @@ class MammotionReportUpdateCoordinator(MammotionBaseUpdateCoordinator[MowingDevi
                 self.device_name,
                 data.device_firmwares.device_version,
                 data.mower_state.rain_protection,
+                supports_child_safety(self.device_name, data),
             )
             if read not in self._gated_reads_issued
         ]

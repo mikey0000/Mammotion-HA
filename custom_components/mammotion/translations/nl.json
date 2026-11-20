@@ -579,6 +579,12 @@
       "smart_charge": {
         "name": "Slim opladen"
       },
+      "off_peak_charging": {
+        "name": "Opladen in daluren"
+      },
+      "child_safety": {
+        "name": "Kinderveiligheid"
+      },
       "eco_sleep": {
         "name": "EcoSleep (in het laadstation)"
       },
@@ -838,6 +844,14 @@
       },
       "spino_floor_speed": {
         "name": "Snelheid op de zwembadbodem"
+      }
+    },
+    "time": {
+      "off_peak_charging_start": {
+        "name": "Begin opladen in daluren"
+      },
+      "off_peak_charging_end": {
+        "name": "Einde opladen in daluren"
       }
     },
     "device_tracker": {

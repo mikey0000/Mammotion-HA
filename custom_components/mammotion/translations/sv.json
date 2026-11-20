@@ -579,6 +579,12 @@
       "smart_charge": {
         "name": "Smart laddning"
       },
+      "off_peak_charging": {
+        "name": "Laddning under lågtrafik"
+      },
+      "child_safety": {
+        "name": "Barnsäkerhet"
+      },
       "eco_sleep": {
         "name": "EcoSleep (i laddstationen)"
       },
@@ -838,6 +844,14 @@
       },
       "spino_floor_speed": {
         "name": "Hastighet på poolbotten"
+      }
+    },
+    "time": {
+      "off_peak_charging_start": {
+        "name": "Start för laddning under lågtrafik"
+      },
+      "off_peak_charging_end": {
+        "name": "Slut för laddning under lågtrafik"
       }
     },
     "device_tracker": {

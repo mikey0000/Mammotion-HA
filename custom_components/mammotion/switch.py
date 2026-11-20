@@ -35,6 +35,7 @@ from .coordinator import (
     MammotionBaseUpdateCoordinator,
     MammotionReportUpdateCoordinator,
     MammotionSpinoCoordinator,
+    supports_child_safety,
 )
 from .entity import (
     MammotionBaseEntity,
@@ -309,6 +310,18 @@ CHARGE_SWITCH_ENTITIES: tuple[MammotionAsyncSwitchEntityDescription, ...] = (
         set_fn=lambda coordinator, value: coordinator.async_set_smart_charge(value),
         entity_category=EntityCategory.CONFIG,
     ),
+    MammotionAsyncSwitchEntityDescription(
+        key="off_peak_charging",
+        is_on_func=lambda coordinator: (
+            settings.peak_valley_charge
+            if (settings := coordinator.data.mower_state.charge_settings).reported
+            else None
+        ),
+        set_fn=lambda coordinator, value: coordinator.async_set_off_peak_charging(
+            value
+        ),
+        entity_category=EntityCategory.CONFIG,
+    ),
     # Leaving smart, the app writes the top of the level's slider.
     MammotionAsyncSwitchEntityDescription(
         key="smart_recharge_level",
@@ -347,6 +360,16 @@ async def _async_set_scheduled_updates(
     """Adapt the coordinator's setter, which reports whether the position changed."""
     await coordinator.set_scheduled_updates(value)
 
+
+# Gated per device on the server's function list (MowerDevice.supports_child_safety).
+CHILD_SAFETY_SWITCH_ENTITIES: tuple[MammotionAsyncSwitchEntityDescription, ...] = (
+    MammotionAsyncSwitchEntityDescription(
+        key="child_safety",
+        is_on_func=lambda coordinator: coordinator.data.mower_state.child_safety,
+        set_fn=lambda coordinator, value: coordinator.async_set_child_safety(value),
+        entity_category=EntityCategory.CONFIG,
+    ),
+)
 
 # Gated per device on DeviceType.supports_smart_sleep (device family + firmware).
 SMART_SLEEP_SWITCH_ENTITIES: tuple[MammotionAsyncSwitchEntityDescription, ...] = (
@@ -486,6 +509,17 @@ async def async_setup_entry(
             coordinator,
             supported=partial(DeviceType.supports_smart_sleep, device_name),
             descriptions=SMART_SLEEP_SWITCH_ENTITIES,
+            build=partial(MammotionSwitchEntity, coordinator),
+            async_add_entities=async_add_entities,
+        )
+
+        async_add_when_supported(
+            entry,
+            coordinator,
+            supported=lambda coordinator=coordinator: supports_child_safety(
+                coordinator.device_name, coordinator.data
+            ),
+            descriptions=CHILD_SAFETY_SWITCH_ENTITIES,
             build=partial(MammotionSwitchEntity, coordinator),
             async_add_entities=async_add_entities,
         )

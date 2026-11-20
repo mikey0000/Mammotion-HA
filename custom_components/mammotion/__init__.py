@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 import asyncio
-import time
 import weakref
 from collections.abc import Coroutine
 from contextlib import suppress
 from datetime import datetime, timedelta
 from enum import Enum, auto
+from time import monotonic
 from typing import Any, cast
 
 from homeassistant.components import bluetooth
@@ -105,6 +105,7 @@ PLATFORMS: list[Platform] = [
     Platform.SWITCH,
     Platform.NUMBER,
     Platform.SELECT,
+    Platform.TIME,
     Platform.CAMERA,
     Platform.UPDATE,
     Platform.VACUUM,
@@ -613,7 +614,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
     are built from restored data and every device round-trip runs afterwards in a
     background task, so one unreachable mower never delays the others or the entry.
     """
-    started = time.monotonic()
+    started = monotonic()
     addresses = entry.data.get(CONF_BLE_DEVICES, {})
     integration = await async_get_integration(hass, DOMAIN)
     mammotion = MammotionClient(ha_version=integration.version.split("-")[0])
@@ -898,7 +899,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
     LOGGER.debug(
         "Setup of %s blocked for %.1fs; devices connect in the background",
         entry.title,
-        time.monotonic() - started,
+        monotonic() - started,
     )
 
     return True

@@ -1,5 +1,13 @@
 {
   "entity": {
+    "time": {
+      "off_peak_charging_start": {
+        "default": "mdi:clock-start"
+      },
+      "off_peak_charging_end": {
+        "default": "mdi:clock-end"
+      }
+    },
     "device_tracker": {
       "device_tracker": {
         "default": "mdi:map-marker-radius"
@@ -294,6 +302,12 @@
       },
       "smart_charge": {
         "default": "mdi:battery-sync"
+      },
+      "off_peak_charging": {
+        "default": "mdi:battery-clock"
+      },
+      "child_safety": {
+        "default": "mdi:human-child"
       },
       "eco_sleep": {
         "default": "mdi:sleep"

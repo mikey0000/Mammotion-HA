@@ -579,6 +579,12 @@
       "smart_charge": {
         "name": "Intelligentes Laden"
       },
+      "off_peak_charging": {
+        "name": "Laden außerhalb der Spitzenzeiten"
+      },
+      "child_safety": {
+        "name": "Kindersicherheit"
+      },
       "eco_sleep": {
         "name": "EcoSleep (in der Ladestation)"
       },
@@ -838,6 +844,14 @@
       },
       "spino_floor_speed": {
         "name": "Geschwindigkeit am Poolboden"
+      }
+    },
+    "time": {
+      "off_peak_charging_start": {
+        "name": "Beginn des Ladens außerhalb der Spitzenzeiten"
+      },
+      "off_peak_charging_end": {
+        "name": "Ende des Ladens außerhalb der Spitzenzeiten"
       }
     },
     "device_tracker": {

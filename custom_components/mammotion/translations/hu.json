@@ -579,6 +579,12 @@
       "smart_charge": {
         "name": "Intelligens töltés"
       },
+      "off_peak_charging": {
+        "name": "Csúcsidőn kívüli töltés"
+      },
+      "child_safety": {
+        "name": "Gyermekbiztonság"
+      },
       "eco_sleep": {
         "name": "EcoSleep (dokkolva)"
       },
@@ -838,6 +844,14 @@
       },
       "spino_floor_speed": {
         "name": "Sebesség a medence alján"
+      }
+    },
+    "time": {
+      "off_peak_charging_start": {
+        "name": "Csúcsidőn kívüli töltés kezdete"
+      },
+      "off_peak_charging_end": {
+        "name": "Csúcsidőn kívüli töltés vége"
       }
     },
     "device_tracker": {

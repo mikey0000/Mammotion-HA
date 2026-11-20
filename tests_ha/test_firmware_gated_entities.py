@@ -2,8 +2,8 @@
 
 Platforms set up once, often before the mower has reported its firmware (a first
 run, or a restore that lost it).  A gate evaluated only then fails closed for
-good: the Luba 3's Smart charging switch vanished that way.  The real switch and
-number platforms run here over a real ``DataUpdateCoordinator``, and firmware
+good: the Luba 3's Smart charging switch vanished that way.  The real switch,
+number and time platforms run here over a real ``DataUpdateCoordinator``, and firmware
 arrives through ``async_set_updated_data`` as it does at runtime.
 """
 
@@ -18,19 +18,25 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from pymammotion.data.model.device import MowingDevice
 from pymammotion.data.model.device_config import OperationSettings
+from pymammotion.data.model.function_codes import FunctionCodes
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.mammotion import number as number_platform
 from custom_components.mammotion import switch as switch_platform
+from custom_components.mammotion import time as time_platform
 from custom_components.mammotion.const import DOMAIN
 
 _GATED = {
     "smart_charge",
+    "off_peak_charging",
     "charge_limit",
     "auto_change_direction",
     "eco_sleep",
     "live_sleep",
+    "off_peak_charging_start",
+    "off_peak_charging_end",
 }
+_CHILD_SAFETY = FunctionCodes(product_version="2.3.30.39", codes=["003.001"])
 _SUPPORTED = "2.3.30.39"
 
 
@@ -73,13 +79,20 @@ class _Platforms:
     async def async_setup(self, hass: HomeAssistant) -> None:
         """Run both platforms' own setup."""
         platform: ModuleType
-        for platform in (switch_platform, number_platform):
+        for platform in (switch_platform, number_platform, time_platform):
             await platform.async_setup_entry(hass, self.entry, self._add)
 
     def push_firmware(self, firmware: str) -> None:
         """Deliver a new device snapshot carrying *firmware*, as the state bus does."""
         device = copy.deepcopy(self.coordinator.data)
         device.device_firmwares.device_version = firmware
+        self.coordinator.data = device
+        self._listeners.async_set_updated_data(device)
+
+    def push_function_codes(self, function_codes: FunctionCodes) -> None:
+        """Deliver a snapshot carrying the server's function list for the mower."""
+        device = copy.deepcopy(self.coordinator.data)
+        device.function_codes = function_codes
         self.coordinator.data = device
         self._listeners.async_set_updated_data(device)
 
@@ -145,3 +158,18 @@ async def test_unloading_the_entry_stops_listening(hass: HomeAssistant) -> None:
     platforms.push_firmware(_SUPPORTED)
 
     assert platforms.gated() == []
+
+
+async def test_child_safety_appears_once_when_the_function_list_arrives(
+    hass: HomeAssistant,
+) -> None:
+    """The server's list is fetched after setup; a repeated push must not add it again."""
+    platforms = _Platforms(hass, "Luba-VA123456")
+    platforms.coordinator.data.device_firmwares.device_version = _SUPPORTED
+    await platforms.async_setup(hass)
+    assert "child_safety" not in platforms.added
+
+    platforms.push_function_codes(_CHILD_SAFETY)
+    platforms.push_function_codes(_CHILD_SAFETY)
+
+    assert platforms.added.count("child_safety") == 1

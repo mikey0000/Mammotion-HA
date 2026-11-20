@@ -579,6 +579,12 @@
       "smart_charge": {
         "name": "Charge intelligente"
       },
+      "off_peak_charging": {
+        "name": "Charge en heures creuses"
+      },
+      "child_safety": {
+        "name": "Sécurité enfants"
+      },
       "eco_sleep": {
         "name": "EcoSleep (sur la station)"
       },
@@ -838,6 +844,14 @@
       },
       "spino_floor_speed": {
         "name": "Vitesse au fond de la piscine"
+      }
+    },
+    "time": {
+      "off_peak_charging_start": {
+        "name": "Début de la charge en heures creuses"
+      },
+      "off_peak_charging_end": {
+        "name": "Fin de la charge en heures creuses"
       }
     },
     "device_tracker": {
