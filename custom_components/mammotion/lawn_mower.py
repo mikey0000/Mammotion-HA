@@ -590,6 +590,10 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
                 translation_domain=DOMAIN, translation_key="device_not_ready"
             )
 
+        # A paused return to the dock still holds the job; the app ends it from there too.
+        if mode == WorkMode.MODE_CHARGING_PAUSE:
+            mode = WorkMode.MODE_PAUSE
+
         if mode in (
             WorkMode.MODE_PAUSE,
             WorkMode.MODE_WORKING,

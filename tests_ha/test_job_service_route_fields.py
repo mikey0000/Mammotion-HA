@@ -267,6 +267,26 @@ async def test_cancel_job_on_a_working_mower_ends_the_job() -> None:
     assert entity.coordinator.sent == ["pause_execute_task", "cancel_job"]
 
 
+async def test_cancel_job_on_a_paused_return_to_dock_ends_the_job() -> None:
+    """The job is still held there, and the app's End button cancels it."""
+    entity = make_mower_entity(OperationSettings(), mode=WorkMode.MODE_CHARGING_PAUSE)
+
+    await entity.async_stop()
+
+    assert entity.coordinator.sent == ["cancel_job"]
+
+
+async def test_start_does_not_resume_from_a_paused_return_to_dock() -> None:
+    """The app only resumes from MODE_PAUSE; in MODE_CHARGING_PAUSE its continue sends nothing."""
+    entity = make_mower_entity(
+        OperationSettings(), mode=WorkMode.MODE_CHARGING_PAUSE, bp_info=1
+    )
+
+    await entity.async_start_mowing()
+
+    assert entity.coordinator.sent == [], "start must send nothing in this state"
+
+
 @pytest.mark.parametrize(
     "data",
     [None, {}],
