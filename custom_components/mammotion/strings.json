@@ -532,6 +532,9 @@
       "refresh_status": {
         "name": "Refresh status"
       },
+      "wake_up": {
+        "name": "Wake up"
+      },
       "spino_fetch_map": {
         "name": "Fetch pool map"
       },
@@ -575,6 +578,12 @@
       },
       "smart_charge": {
         "name": "Smart charging"
+      },
+      "eco_sleep": {
+        "name": "EcoSleep (docked)"
+      },
+      "live_sleep": {
+        "name": "LiveSleep (off the dock)"
       },
       "smart_recharge_level": {
         "name": "Smart return-to-charge level"

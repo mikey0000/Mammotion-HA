@@ -6,6 +6,9 @@
       }
     },
     "button": {
+      "wake_up": {
+        "default": "mdi:alarm"
+      },
       "start_map_sync": {
         "default": "mdi:map-clock"
       },
@@ -291,6 +294,12 @@
       },
       "smart_charge": {
         "default": "mdi:battery-sync"
+      },
+      "eco_sleep": {
+        "default": "mdi:sleep"
+      },
+      "live_sleep": {
+        "default": "mdi:sleep"
       },
       "smart_recharge_level": {
         "default": "mdi:battery-sync-outline"

@@ -532,6 +532,9 @@
       "refresh_status": {
         "name": "Status aktualisieren"
       },
+      "wake_up": {
+        "name": "Aufwecken"
+      },
       "spino_fetch_map": {
         "name": "Poolkarte abrufen"
       },
@@ -575,6 +578,12 @@
       },
       "smart_charge": {
         "name": "Intelligentes Laden"
+      },
+      "eco_sleep": {
+        "name": "EcoSleep (in der Ladestation)"
+      },
+      "live_sleep": {
+        "name": "LiveSleep (außerhalb der Ladestation)"
       },
       "smart_recharge_level": {
         "name": "Intelligenter Akkustand zum Laden"

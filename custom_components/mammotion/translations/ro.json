@@ -532,6 +532,9 @@
       "refresh_status": {
         "name": "Reîmprospătează starea"
       },
+      "wake_up": {
+        "name": "Trezește"
+      },
       "spino_fetch_map": {
         "name": "Preia harta piscinei"
       },
@@ -575,6 +578,12 @@
       },
       "smart_charge": {
         "name": "Încărcare inteligentă"
+      },
+      "eco_sleep": {
+        "name": "EcoSleep (în stație)"
+      },
+      "live_sleep": {
+        "name": "LiveSleep (în afara stației)"
       },
       "smart_recharge_level": {
         "name": "Nivel inteligent de revenire la încărcare"

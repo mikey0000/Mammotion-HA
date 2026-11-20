@@ -166,6 +166,14 @@ BUTTON_CONTINUE_LAST_JOB: tuple[MammotionButtonSensorEntityDescription, ...] = (
 )
 
 
+# The wake goes through the account's cloud login, so a BLE-only mower has none.
+BUTTON_WAKE_UP: tuple[MammotionButtonSensorEntityDescription, ...] = (
+    MammotionButtonSensorEntityDescription(
+        key="wake_up",
+        press_fn=lambda coordinator: coordinator.async_wake_up(),
+    ),
+)
+
 BUTTON_SENSORS: tuple[MammotionButtonSensorEntityDescription, ...] = (
     MammotionButtonSensorEntityDescription(
         key="start_map_sync",
@@ -262,6 +270,14 @@ async def async_setup_entry(
             MammotionButtonSensorEntity(mower.reporting_coordinator, entity_description)
             for entity_description in BUTTON_SENSORS
         )
+
+        if mower.device.iot_id:
+            async_add_entities(
+                MammotionButtonSensorEntity(
+                    mower.reporting_coordinator, entity_description
+                )
+                for entity_description in BUTTON_WAKE_UP
+            )
 
         if supports_no_area_work(mower.device.device_name):
             async_add_entities(

@@ -532,6 +532,9 @@
       "refresh_status": {
         "name": "Odśwież stan"
       },
+      "wake_up": {
+        "name": "Wybudź"
+      },
       "spino_fetch_map": {
         "name": "Pobierz mapę basenu"
       },
@@ -575,6 +578,12 @@
       },
       "smart_charge": {
         "name": "Inteligentne ładowanie"
+      },
+      "eco_sleep": {
+        "name": "EcoSleep (w stacji)"
+      },
+      "live_sleep": {
+        "name": "LiveSleep (poza stacją)"
       },
       "smart_recharge_level": {
         "name": "Inteligentny poziom powrotu do ładowania"

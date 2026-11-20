@@ -532,6 +532,9 @@
       "refresh_status": {
         "name": "Opdater status"
       },
+      "wake_up": {
+        "name": "Væk plæneklipperen"
+      },
       "spino_fetch_map": {
         "name": "Hent poolkort"
       },
@@ -575,6 +578,12 @@
       },
       "smart_charge": {
         "name": "Smart opladning"
+      },
+      "eco_sleep": {
+        "name": "EcoSleep (i ladestationen)"
+      },
+      "live_sleep": {
+        "name": "LiveSleep (uden for ladestationen)"
       },
       "smart_recharge_level": {
         "name": "Smart niveau for returnering til opladning"

@@ -532,6 +532,9 @@
       "refresh_status": {
         "name": "Állapot frissítése"
       },
+      "wake_up": {
+        "name": "Ébresztés"
+      },
       "spino_fetch_map": {
         "name": "Medencetérkép lekérése"
       },
@@ -575,6 +578,12 @@
       },
       "smart_charge": {
         "name": "Intelligens töltés"
+      },
+      "eco_sleep": {
+        "name": "EcoSleep (dokkolva)"
+      },
+      "live_sleep": {
+        "name": "LiveSleep (dokkolón kívül)"
       },
       "smart_recharge_level": {
         "name": "Intelligens töltésre visszatérési szint"

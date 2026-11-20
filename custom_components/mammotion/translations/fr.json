@@ -532,6 +532,9 @@
       "refresh_status": {
         "name": "Actualiser le statut"
       },
+      "wake_up": {
+        "name": "Réveiller"
+      },
       "spino_fetch_map": {
         "name": "Récupérer la carte de la piscine"
       },
@@ -575,6 +578,12 @@
       },
       "smart_charge": {
         "name": "Charge intelligente"
+      },
+      "eco_sleep": {
+        "name": "EcoSleep (sur la station)"
+      },
+      "live_sleep": {
+        "name": "LiveSleep (hors de la station)"
       },
       "smart_recharge_level": {
         "name": "Niveau de retour à la charge intelligent"

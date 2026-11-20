@@ -532,6 +532,9 @@
       "refresh_status": {
         "name": "Obnovit stav"
       },
+      "wake_up": {
+        "name": "Probudit"
+      },
       "spino_fetch_map": {
         "name": "Načíst mapu bazénu"
       },
@@ -575,6 +578,12 @@
       },
       "smart_charge": {
         "name": "Chytré nabíjení"
+      },
+      "eco_sleep": {
+        "name": "EcoSleep (v nabíječce)"
+      },
+      "live_sleep": {
+        "name": "LiveSleep (mimo nabíječku)"
       },
       "smart_recharge_level": {
         "name": "Chytrá úroveň návratu k nabíjení"

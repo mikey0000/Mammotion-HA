@@ -532,6 +532,9 @@
       "refresh_status": {
         "name": "Status vernieuwen"
       },
+      "wake_up": {
+        "name": "Wekken"
+      },
       "spino_fetch_map": {
         "name": "Zwembadkaart ophalen"
       },
@@ -575,6 +578,12 @@
       },
       "smart_charge": {
         "name": "Slim opladen"
+      },
+      "eco_sleep": {
+        "name": "EcoSleep (in het laadstation)"
+      },
+      "live_sleep": {
+        "name": "LiveSleep (buiten het laadstation)"
       },
       "smart_recharge_level": {
         "name": "Slim niveau voor terugkeer naar laadstation"

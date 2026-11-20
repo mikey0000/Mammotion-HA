@@ -348,6 +348,22 @@ async def _async_set_scheduled_updates(
     await coordinator.set_scheduled_updates(value)
 
 
+# Gated per device on DeviceType.supports_smart_sleep (device family + firmware).
+SMART_SLEEP_SWITCH_ENTITIES: tuple[MammotionAsyncSwitchEntityDescription, ...] = (
+    MammotionAsyncSwitchEntityDescription(
+        key="eco_sleep",
+        is_on_func=lambda coordinator: coordinator.data.mower_state.eco_sleep,
+        set_fn=lambda coordinator, value: coordinator.async_set_eco_sleep(value),
+        entity_category=EntityCategory.CONFIG,
+    ),
+    MammotionAsyncSwitchEntityDescription(
+        key="live_sleep",
+        is_on_func=lambda coordinator: coordinator.data.mower_state.live_sleep,
+        set_fn=lambda coordinator, value: coordinator.async_set_live_sleep(value),
+        entity_category=EntityCategory.CONFIG,
+    ),
+)
+
 UPDATE_SWITCH_ENTITIES: tuple[MammotionAsyncSwitchEntityDescription, ...] = (
     MammotionAsyncSwitchEntityDescription(
         key="schedule_updates",
@@ -461,6 +477,15 @@ async def async_setup_entry(
             coordinator,
             supported=partial(DeviceType.supports_charge_limit, device_name),
             descriptions=CHARGE_SWITCH_ENTITIES,
+            build=partial(MammotionSwitchEntity, coordinator),
+            async_add_entities=async_add_entities,
+        )
+
+        async_add_when_firmware_supports(
+            entry,
+            coordinator,
+            supported=partial(DeviceType.supports_smart_sleep, device_name),
+            descriptions=SMART_SLEEP_SWITCH_ENTITIES,
             build=partial(MammotionSwitchEntity, coordinator),
             async_add_entities=async_add_entities,
         )

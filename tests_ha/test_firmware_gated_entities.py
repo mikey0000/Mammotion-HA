@@ -24,7 +24,13 @@ from custom_components.mammotion import number as number_platform
 from custom_components.mammotion import switch as switch_platform
 from custom_components.mammotion.const import DOMAIN
 
-_GATED = {"smart_charge", "charge_limit", "auto_change_direction"}
+_GATED = {
+    "smart_charge",
+    "charge_limit",
+    "auto_change_direction",
+    "eco_sleep",
+    "live_sleep",
+}
 _SUPPORTED = "2.3.30.39"
 
 

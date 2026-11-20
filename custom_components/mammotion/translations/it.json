@@ -532,6 +532,9 @@
       "refresh_status": {
         "name": "Aggiorna stato"
       },
+      "wake_up": {
+        "name": "Riattiva"
+      },
       "spino_fetch_map": {
         "name": "Recupera mappa della piscina"
       },
@@ -575,6 +578,12 @@
       },
       "smart_charge": {
         "name": "Ricarica intelligente"
+      },
+      "eco_sleep": {
+        "name": "EcoSleep (in stazione)"
+      },
+      "live_sleep": {
+        "name": "LiveSleep (fuori dalla stazione)"
       },
       "smart_recharge_level": {
         "name": "Livello di ritorno in ricarica intelligente"

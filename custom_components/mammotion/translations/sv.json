@@ -532,6 +532,9 @@
       "refresh_status": {
         "name": "Uppdatera status"
       },
+      "wake_up": {
+        "name": "Väck"
+      },
       "spino_fetch_map": {
         "name": "Hämta poolkarta"
       },
@@ -575,6 +578,12 @@
       },
       "smart_charge": {
         "name": "Smart laddning"
+      },
+      "eco_sleep": {
+        "name": "EcoSleep (i laddstationen)"
+      },
+      "live_sleep": {
+        "name": "LiveSleep (utanför laddstationen)"
       },
       "smart_recharge_level": {
         "name": "Smart nivå för återvändande till laddning"

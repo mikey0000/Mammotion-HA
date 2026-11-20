@@ -1791,7 +1791,7 @@ wheels = [
 
 [[package]]
 name = "mammotion-ha"
-version = "0.6.21"
+version = "0.6.22"
 source = { virtual = "." }
 dependencies = [
     { name = "autotyping" },
@@ -1818,7 +1818,7 @@ requires-dist = [
     { name = "autotyping", specifier = ">=24.3.0" },
     { name = "homeassistant", specifier = ">=2026.10.0" },
     { name = "pyagorartc", specifier = "==0.2.3" },
-    { name = "pymammotion", specifier = "==0.10.16" },
+    { name = "pymammotion", specifier = "==0.10.17" },
 ]
 
 [package.metadata.requires-dev]
@@ -2731,7 +2731,7 @@ wheels = [
 
 [[package]]
 name = "pymammotion"
-version = "0.10.16"
+version = "0.10.17"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -2756,9 +2756,9 @@ dependencies = [
     { name = "webrtc-models" },
     { name = "websockets" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f9/88/30aebef4eba0fe88535eb8a83dd39aecab19dabb26212f1766f2ba49edf3/pymammotion-0.10.16.tar.gz", hash = "sha256:3950b91377a400a25bccb1d2490f6bfae271a94becf5b9dd1f3c751befcbe314", size = 758078, upload-time = "2026-11-20T07:12:07.772Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/f5/6c/264fdfeb48ae663170ca3d527f067ddb5ded8c8d35f428d47b88468bc82d/pymammotion-0.10.17.tar.gz", hash = "sha256:d52783c1ff611cfdb7b96f127eadbe0ac172416694345a15c5deeabe2974fc7d", size = 759114, upload-time = "2026-11-20T10:48:06.67Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a7/6a/7780937748ffbcd4deaed829017dfd7cc67d10aa277d74a31de1680eb521/pymammotion-0.10.16-py3-none-any.whl", hash = "sha256:1df4fe34479be584749003624e5cafd207077221f3b08fc9b767a320bd29610f", size = 843439, upload-time = "2026-11-20T07:12:05.917Z" },
+    { url = "https://files.pythonhosted.org/packages/5a/e6/3a9ba1d77cbaaf57d551f22b6bd98c9700c0a09e6806242282a2a440546c/pymammotion-0.10.17-py3-none-any.whl", hash = "sha256:1cb93d491b2ebf71d68567badf585c9bf08f4f36ec2ee71ccef3a9a0f79fd5d5", size = 844416, upload-time = "2026-11-20T10:48:04.971Z" },
 ]
 
 [[package]]

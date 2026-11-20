@@ -334,6 +334,8 @@ def firmware_gated_reads(
         reads.extend(("async_read_battery_info", "async_read_charge_levels"))
     if DeviceType.supports_autonomous_drive_speed(device_name, firmware):
         reads.append("async_read_autonomous_drive_speed")
+    if DeviceType.supports_smart_sleep(device_name, firmware):
+        reads.append("async_read_smart_sleep")
     if (
         rain_protection is not None
         and DeviceType.supports_rain_protection_modes(
@@ -1575,6 +1577,42 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             LOGGER.warning(
                 "%s: rain protection was set on the mower but the weather server was not updated",
                 self.device_name,
+            )
+
+    async def async_read_smart_sleep(self) -> None:
+        """Read the EcoSleep and LiveSleep switches."""
+        await self._async_device_call(
+            lambda: self.manager.read_smart_sleep(self.device_name), Priority.NORMAL
+        )
+
+    async def async_set_eco_sleep(self, enabled: bool) -> None:
+        """Let the docked mower sleep, or keep it awake."""
+        await self._async_device_call(
+            lambda: self.manager.set_eco_sleep(self.device_name, enabled),
+            Priority.USER,
+        )
+
+    async def async_set_live_sleep(self, enabled: bool) -> None:
+        """Let the idle mower sleep off its dock, or keep it awake."""
+        await self._async_device_call(
+            lambda: self.manager.set_live_sleep(self.device_name, enabled),
+            Priority.USER,
+        )
+
+    async def async_wake_up(self) -> None:
+        """Ask the cloud to wake the mower out of low-power sleep.
+
+        Not a device send: a sleeping mower has no transport to gate on.
+        """
+        try:
+            woken = await self.manager.wake_device(self.device_name)
+        except (*COMMAND_EXCEPTIONS, *EXPIRED_CREDENTIAL_EXCEPTIONS) as exc:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key="command_failed"
+            ) from exc
+        if not woken:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key="command_failed"
             )
 
     async def async_read_battery_info(self) -> None:

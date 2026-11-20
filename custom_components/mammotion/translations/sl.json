@@ -532,6 +532,9 @@
       "refresh_status": {
         "name": "Osveži stanje"
       },
+      "wake_up": {
+        "name": "Prebudi"
+      },
       "spino_fetch_map": {
         "name": "Pridobi zemljevid bazena"
       },
@@ -575,6 +578,12 @@
       },
       "smart_charge": {
         "name": "Pametno polnjenje"
+      },
+      "eco_sleep": {
+        "name": "EcoSleep (v postaji)"
+      },
+      "live_sleep": {
+        "name": "LiveSleep (zunaj postaje)"
       },
       "smart_recharge_level": {
         "name": "Pametna raven vrnitve na polnjenje"
