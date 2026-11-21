@@ -1791,7 +1791,7 @@ wheels = [
 
 [[package]]
 name = "mammotion-ha"
-version = "0.6.23"
+version = "0.6.24"
 source = { virtual = "." }
 dependencies = [
     { name = "autotyping" },
@@ -1818,7 +1818,7 @@ requires-dist = [
     { name = "autotyping", specifier = ">=24.3.0" },
     { name = "homeassistant", specifier = ">=2026.10.0" },
     { name = "pyagorartc", specifier = "==0.2.3" },
-    { name = "pymammotion", specifier = "==0.10.19" },
+    { name = "pymammotion", specifier = "==0.10.20" },
 ]
 
 [package.metadata.requires-dev]
@@ -2731,7 +2731,7 @@ wheels = [
 
 [[package]]
 name = "pymammotion"
-version = "0.10.19"
+version = "0.10.20"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -2756,9 +2756,9 @@ dependencies = [
     { name = "webrtc-models" },
     { name = "websockets" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/13/cc/b673cd82ce0af82dc72fce0673d94df6e185eb6f14134b013f5fd6ed3b96/pymammotion-0.10.19.tar.gz", hash = "sha256:0e98bb5e159f17da4025755f71857d39414c35def8f9fa09e2275d792dec0e88", size = 759558, upload-time = "2026-11-20T22:45:28.518Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/27/63/955356d21ae947053c57b6d993032f0d801baf7dd754133711f0afedf9a4/pymammotion-0.10.20.tar.gz", hash = "sha256:d7289bd4c69b028a4acadde404e9d5973a4d49cc5c4d6edf2e615839ddc4bdf9", size = 760207, upload-time = "2026-11-21T01:48:15.765Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/39/d7/9e95ca5ce9eb46b898142097e1cb2ff88438b76c9ec85d153fee309939bc/pymammotion-0.10.19-py3-none-any.whl", hash = "sha256:971543d4ff2326e0d1febc038c6ba0c0611b06c69037c5dd1ef0e5bf13c9b19d", size = 844941, upload-time = "2026-11-20T22:45:26.461Z" },
+    { url = "https://files.pythonhosted.org/packages/d3/8e/416f8f4d7dd7c1d86a5011a7df15ea8e056f02ebaa4888242d226fd748e1/pymammotion-0.10.20-py3-none-any.whl", hash = "sha256:62a56cd3855089ddae273f7e6f5a0ddd9674a521a14cfafed2c4d384e9a4fc19", size = 845536, upload-time = "2026-11-21T01:48:13.816Z" },
 ]
 
 [[package]]
