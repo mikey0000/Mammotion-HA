@@ -12,6 +12,7 @@ from area_switch_support import (
     AreaSwitches,
     area_name,
     make_coordinator,
+    register_area_row,
     set_map,
 )
 from homeassistant.core import HomeAssistant
@@ -21,28 +22,6 @@ from custom_components.mammotion.const import DOMAIN
 from custom_components.mammotion.switch import async_remove_stale_area_entities
 
 
-def _register_area_row(
-    hass: HomeAssistant,
-    unique_id: str,
-    *,
-    object_id: str,
-    original_name: str | None = None,
-) -> str:
-    """Seed the registry with an area switch from a previous session."""
-    return (
-        er.async_get(hass)
-        .async_get_or_create(
-            "switch",
-            DOMAIN,
-            unique_id,
-            suggested_object_id=object_id,
-            original_name=original_name,
-            translation_key="area",
-        )
-        .entity_id
-    )
-
-
 class TestRemoveStaleAreaEntities:
     """Removal has to find the row by the unique_id the entity registered with."""
 
@@ -50,7 +29,7 @@ class TestRemoveStaleAreaEntities:
         """Both rows must be gone, not merely looked up."""
         coordinator = make_coordinator(hass, [], [])
         for h in (111, 222):
-            _register_area_row(hass, f"{MOWER}_{h}", object_id=f"area_{h}")
+            register_area_row(hass, f"{MOWER}_{h}", object_id=f"area_{h}")
 
         async_remove_stale_area_entities(coordinator, {111, 222})
 
@@ -65,7 +44,7 @@ class TestRemoveStaleAreaEntities:
     ) -> None:
         """An area removed before its entity was ever registered still passes here."""
         coordinator = make_coordinator(hass, [], [])
-        kept = _register_area_row(hass, f"{MOWER}_111", object_id="area_111")
+        kept = register_area_row(hass, f"{MOWER}_111", object_id="area_111")
 
         async_remove_stale_area_entities(coordinator, {999})
 
@@ -77,7 +56,7 @@ class TestRemoveStaleAreaEntities:
         """Real hashes are 19 digits; the unique_id must be built from the int."""
         h = 2282538357909116923
         coordinator = make_coordinator(hass, [], [])
-        _register_area_row(hass, f"{MOWER}_{h}", object_id="area_big")
+        register_area_row(hass, f"{MOWER}_{h}", object_id="area_big")
 
         async_remove_stale_area_entities(coordinator, {h})
 
@@ -98,7 +77,7 @@ class TestRemoveStaleAreaEntities:
         coordinator = make_coordinator(
             hass, [], [], device_name=MOWER, unique_name=unique_name
         )
-        entity_id = _register_area_row(hass, f"{unique_name}_{h}", object_id="area_555")
+        entity_id = register_area_row(hass, f"{unique_name}_{h}", object_id="area_555")
 
         async_remove_stale_area_entities(coordinator, {h})
 
@@ -114,7 +93,7 @@ class TestRemoveStaleAreaEntities:
         """
         unique_name = f"{MOWER}_someUniquePrefix"
         h = 555
-        _register_area_row(hass, f"{unique_name}_{h}", object_id="area_555")
+        register_area_row(hass, f"{unique_name}_{h}", object_id="area_555")
 
         registry = er.async_get(hass)
 
@@ -185,7 +164,7 @@ class TestReloadDoesNotDuplicateEntities:
     @staticmethod
     def _stale_baksida(hass: HomeAssistant, old_hash: int) -> str:
         """Return the previous session's row for the area named "Baksida"."""
-        return _register_area_row(
+        return register_area_row(
             hass,
             f"{MOWER}_{old_hash}",
             object_id="garden_luba_test_area_baksida",
@@ -223,7 +202,7 @@ class TestReloadDoesNotDuplicateEntities:
     ) -> None:
         """``switch.garden_luba_vame9r5s_area_area_1`` became ``..._area_1_2``."""
         old_h, new_h = 6630234128293022052, 865714081496397399
-        entity_id = _register_area_row(
+        entity_id = register_area_row(
             hass,
             f"{MOWER}_{old_h}",
             object_id="garden_luba_test_area_area_1",

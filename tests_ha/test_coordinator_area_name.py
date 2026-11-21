@@ -124,14 +124,14 @@ class TestGetAreaEntityName:
         assert _coordinator(hass, [h], []).get_area_entity_name(h) == "Area 1"
 
     async def test_mixed_named_and_unnamed(self, hass: HomeAssistant) -> None:
-        """A named area does not consume a number, so the unnamed one is "Area 1"."""
+        """A named area still holds its place, so the unnamed second one is "Area 2"."""
         h_named, h_unnamed = 10, 20
         coordinator = _coordinator(
             hass, [h_named, h_unnamed], [("Back Garden", h_named), ("", h_unnamed)]
         )
 
         assert coordinator.get_area_entity_name(h_named) == "Back Garden"
-        assert coordinator.get_area_entity_name(h_unnamed) == "Area 1"
+        assert coordinator.get_area_entity_name(h_unnamed) == "Area 2"
 
 
 class TestHomeAssistantNameOverride:

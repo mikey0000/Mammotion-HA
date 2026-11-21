@@ -66,6 +66,28 @@ def make_coordinator(
     return coordinator
 
 
+def register_area_row(
+    hass: HomeAssistant,
+    unique_id: str,
+    *,
+    object_id: str,
+    original_name: str | None = None,
+) -> str:
+    """Seed the registry with an area switch from a previous session."""
+    return (
+        er.async_get(hass)
+        .async_get_or_create(
+            "switch",
+            DOMAIN,
+            unique_id,
+            suggested_object_id=object_id,
+            original_name=original_name,
+            translation_key="area",
+        )
+        .entity_id
+    )
+
+
 def set_map(
     coordinator: MagicMock,
     area_hashes: list[int],
@@ -89,8 +111,7 @@ class AreaSwitches:
         """Start a session with empty tracking state, as platform setup does."""
         self.hass = hass
         self.coordinator = coordinator
-        self.added_areas: set[int] = set()
-        self.by_name: dict[str, MammotionConfigAreaSwitchEntity] = {}
+        self.entities: dict[int, MammotionConfigAreaSwitchEntity] = {}
         self.added: list[MammotionConfigAreaSwitchEntity] = []
         self._pending: list[MammotionConfigAreaSwitchEntity] = []
         self.config_entry = MockConfigEntry(domain=DOMAIN)
@@ -101,9 +122,7 @@ class AreaSwitches:
     def sync(self) -> list[MammotionConfigAreaSwitchEntity]:
         """Run one update cycle; returns only the entities created by it."""
         new: list[MammotionConfigAreaSwitchEntity] = []
-        async_add_area_entities(
-            self.coordinator, self.added_areas, self.by_name, new.extend
-        )
+        async_add_area_entities(self.coordinator, self.entities, new.extend)
         self.added.extend(new)
         self._pending.extend(new)
         return new
@@ -121,6 +140,16 @@ class AreaSwitches:
         new = self.sync()
         await self.register()
         return new
+
+    @property
+    def added_areas(self) -> set[int]:
+        """The area hashes that currently have a switch."""
+        return set(self.entities)
+
+    @property
+    def by_name(self) -> dict[str, MammotionConfigAreaSwitchEntity]:
+        """The tracked switches by their current label."""
+        return {e.area_name: e for e in self.entities.values()}
 
     def entity_id_for(self, area_hash: int) -> str | None:
         """Resolve the registry row an area hash currently owns."""

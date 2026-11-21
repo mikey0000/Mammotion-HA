@@ -69,7 +69,7 @@ class TestEmptyAreaNameFallback:
 
         assert len(await switches.sync_live()) == 2
         assert switches.by_name["Front Lawn"].area == h_named
-        assert switches.by_name["Area 1"].area == h_unnamed
+        assert switches.by_name["Area 2"].area == h_unnamed
 
 
 class TestUnnamedAreaDeduplication:
@@ -163,7 +163,7 @@ class TestAreaNameUpdate:
     async def test_unnamed_area_gets_a_name_on_a_later_update(
         self, hass: HomeAssistant
     ) -> None:
-        """Naming h1 frees its number, so h2 renumbers from "Area 2" to "Area 1"."""
+        """Naming h1 renames it in place; h2 keeps "Area 2", its place in the map."""
         h1, h2 = 10, 20
         coordinator = make_coordinator(
             hass, [h1, h2], [area_name("", h1), area_name("", h2)]
@@ -175,9 +175,9 @@ class TestAreaNameUpdate:
         coordinator.data.map.area_name = [area_name("My Garden", h1), area_name("", h2)]
         assert await switches.sync_live() == []
 
-        assert set(switches.by_name) == {"My Garden", "Area 1"}
+        assert set(switches.by_name) == {"My Garden", "Area 2"}
         assert switches.by_name["My Garden"].area == h1
-        assert switches.by_name["Area 1"].area == h2
+        assert switches.by_name["Area 2"].area == h2
         assert len(switches.added) == 2
         entity = switches.by_name["My Garden"]
         assert entity.entity_description.name == "My Garden"
@@ -244,7 +244,7 @@ class TestAreaCounterAfterDeletion:
     async def test_deleting_one_area_renumbers_the_survivors(
         self, hass: HomeAssistant
     ) -> None:
-        """Deleting "Area 2" frees the slot, so "Area 3" slides down into it."""
+        """Labels follow the map's order, so deleting "Area 2" moves "Area 3" up into its place."""
         h1, h2, h3, h4 = 10, 20, 30, 40
         coordinator = make_coordinator(
             hass, [h1, h2, h3], [area_name("", h) for h in (h1, h2, h3)]
@@ -265,7 +265,7 @@ class TestAreaCounterAfterDeletion:
     async def test_two_deletions_renumber_the_same_way(
         self, hass: HomeAssistant
     ) -> None:
-        """Gaps are filled from the lowest free number, not left open."""
+        """No gap is left open where the deleted areas were."""
         h1, h2, h3, h4, h5 = 10, 20, 30, 40, 50
         coordinator = make_coordinator(
             hass, [h1, h2, h3, h4], [area_name("", h) for h in (h1, h2, h3, h4)]

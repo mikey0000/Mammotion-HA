@@ -7,7 +7,7 @@ from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from dataclasses import replace as dataclass_replace
 from functools import partial
-from typing import Any
+from typing import Any, cast
 from weakref import WeakKeyDictionary
 
 from homeassistant.components.switch import DOMAIN as SWITCH_DOMAIN
@@ -49,9 +49,11 @@ from .entity import (
     supports_grass_collection,
 )
 
-# Matches pymammotion's auto-generated fallback names ("area 1", "area 2", …).
-# These carry no user intent and must be treated the same as empty names.
+# pymammotion's "Area N" label for an unnamed area (older versions stored "area N").
 _PYMAMMOTION_AUTO_NAME = re.compile(r"^area\s+\d+$", re.IGNORECASE)
+
+#: Registry option holding the area's stable id, so a reload can adopt a re-hashed area's row.
+_AREA_ID_OPTION = "area_id"
 
 
 #: Saved mowing order of the areas restored so far, per coordinator.
@@ -108,26 +110,44 @@ def _stale_area_registry_entries(
     return stale
 
 
+def _stored_area_id(reg_entry: er.RegistryEntry) -> int | None:
+    """Return the stable area id saved on a registry entry, if any."""
+    options = reg_entry.options.get(DOMAIN)
+    return options.get(_AREA_ID_OPTION) if options else None
+
+
 def _async_rekey_stale_entry_for_area(
     registry: er.EntityRegistry,
     stale_entries: list[er.RegistryEntry],
     coordinator: MammotionReportUpdateCoordinator,
-    area_id: int,
+    area_hash: int,
     area_name: str,
+    *,
+    area_id: int | None,
 ) -> None:
-    """Re-key a stale registry entry matching the area's name, if one exists.
+    """Re-key the stale registry entry of this area: by stable id, else by name.
 
     original_name is the translated "Area {name}" (or the bare name when it
-    already starts with "Area"), so match on the suffix.
+    already starts with "Area"), so match on the suffix.  An entry saved with
+    another area's id is never matched by name.
     """
-    for reg_entry in stale_entries:
-        reg_name = reg_entry.original_name
-        if reg_name and (reg_name == area_name or reg_name.endswith(f" {area_name}")):
-            _async_rekey_area_unique_id(
-                registry, reg_entry.entity_id, _area_unique_id(coordinator, area_id)
-            )
-            stale_entries.remove(reg_entry)
-            return
+    by_id = [
+        e
+        for e in stale_entries
+        if area_id is not None and _stored_area_id(e) == area_id
+    ]
+    by_name = [
+        e
+        for e in stale_entries
+        if _stored_area_id(e) is None
+        and (reg_name := e.original_name)
+        and (reg_name == area_name or reg_name.endswith(f" {area_name}"))
+    ]
+    if reg_entry := next(iter(by_id or by_name), None):
+        _async_rekey_area_unique_id(
+            registry, reg_entry.entity_id, _area_unique_id(coordinator, area_hash)
+        )
+        stale_entries.remove(reg_entry)
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -162,6 +182,7 @@ class MammotionConfigAreaSwitchEntityDescription(MammotionSwitchEntityDescriptio
     """Describes the Areas entities."""
 
     area: int
+    area_id: int | None = None
     set_fn: Callable[[MammotionBaseUpdateCoordinator[Any], bool, int], None]
 
 
@@ -475,16 +496,11 @@ async def async_setup_entry(
     mammotion_devices = entry.runtime_data.mowers
 
     for mower in mammotion_devices:
-        added_areas: set[int] = set()
-        area_entities_by_name: dict[str, MammotionConfigAreaSwitchEntity] = {}
+        area_entities: dict[int, MammotionConfigAreaSwitchEntity] = {}
         coordinator = mower.reporting_coordinator
 
         update_areas = partial(
-            async_add_area_entities,
-            coordinator,
-            added_areas,
-            area_entities_by_name,
-            async_add_entities,
+            async_add_area_entities, coordinator, area_entities, async_add_entities
         )
 
         update_areas()
@@ -820,6 +836,7 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
         self.coordinator = coordinator
         self.entity_description = entity_description
         self.area = entity_description.area
+        self.area_id = entity_description.area_id
         self._attr_is_on = self.area in self.coordinator.operation_settings.areas
         # Last custom name we pushed to the device, so an unrelated registry
         # update (icon, area assignment, …) doesn't re-send set_area_name.
@@ -843,8 +860,30 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
         if self.hass is not None:
             self.async_write_ha_state()
 
+    @property
+    def area_name(self) -> str:
+        """Return the area's name as pymammotion reports it."""
+        return cast(str, self.entity_description.name)
+
+    def set_area_id(self, area_id: int) -> None:
+        """Record the area's stable id, on the entity and its registry entry."""
+        self.area_id = area_id
+        self._async_store_area_id()
+
+    def _async_store_area_id(self) -> None:
+        if (
+            self.hass is None
+            or self.registry_entry is None
+            or self.area_id is None
+            or _stored_area_id(self.registry_entry) == self.area_id
+        ):
+            return
+        er.async_get(self.hass).async_update_entity_options(
+            self.registry_entry.entity_id, DOMAIN, {_AREA_ID_OPTION: self.area_id}
+        )
+
     def update_area(self, new_area_id: int) -> None:
-        """Update the area hash when the device reports a new hash for the same named area."""
+        """Move the switch to the new hash the device gave the same area."""
         old_area = self.area
         self.area = new_area_id
         # Re-key the unique_id to the new hash, or the next restart mints a
@@ -858,11 +897,12 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
             )
         ):
             self._attr_unique_id = new_unique_id
-        if old_area in self.coordinator.operation_settings.areas:
-            self.coordinator.operation_settings.areas.remove(old_area)
-            if new_area_id not in self.coordinator.operation_settings.areas:
-                self.coordinator.operation_settings.areas.append(new_area_id)
-        self._attr_is_on = new_area_id in self.coordinator.operation_settings.areas
+        areas = self.coordinator.operation_settings.areas
+        if old_area in areas:
+            areas[areas.index(old_area)] = new_area_id
+        if old_area in (orders := _RESTORED_AREA_ORDER.get(self.coordinator, {})):
+            orders[new_area_id] = orders.pop(old_area)
+        self._attr_is_on = new_area_id in areas
         if self.hass is not None:
             self.async_write_ha_state()
 
@@ -891,6 +931,7 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
     async def async_added_to_hass(self) -> None:
         """Call when entity about to be added to hass."""
         await super().async_added_to_hass()
+        self._async_store_area_id()
         # Seed with any existing name override so we only push live user edits.
         label = self.registry_entry.name if self.registry_entry else None
         self._pushed_name = self._mower_name(label) if label else None
@@ -954,14 +995,6 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
     async def async_update(self) -> None:
         """Update the entity state."""
         self._attr_is_on = self.area in self.coordinator.operation_settings.areas
-        area_keys: set[int] = {
-            int(k)
-            for k in self.coordinator.data.map.area
-            if str(k).lstrip("-").isdigit()
-        }
-        if self.area not in area_keys:
-            await self.async_remove()
-            return
         self.async_write_ha_state()
 
     @property
@@ -970,128 +1003,136 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
         return True
 
 
+def _set_area_selected(
+    coordinator: MammotionReportUpdateCoordinator, selected: bool, area: int
+) -> None:
+    areas = coordinator.operation_settings.areas
+    if selected and area not in areas:
+        areas.append(area)
+    elif not selected and area in areas:
+        areas.remove(area)
+
+
+def _rehashed_entity(
+    gone: dict[int, MammotionConfigAreaSwitchEntity], name: str, area_id: int | None
+) -> MammotionConfigAreaSwitchEntity | None:
+    """Return the switch of an area that left the map, if *name*/*area_id* is that area re-hashed.
+
+    The stable id decides; a real name is matched only against switches whose id is unknown.
+    """
+    by_id = [e for e in gone.values() if area_id is not None and e.area_id == area_id]
+    by_name = [
+        e
+        for e in gone.values()
+        if e.area_id is None
+        and not _PYMAMMOTION_AUTO_NAME.match(name)
+        and e.area_name == name
+    ]
+    matches = by_id or by_name
+    return matches[0] if len(matches) == 1 else None
+
+
+def _keeps_its_name(current: str, new: str) -> bool:
+    """Whether a switch keeps *current*: same name, or a real name a fallback must not replace."""
+    return current == new or (
+        bool(_PYMAMMOTION_AUTO_NAME.match(new))
+        and not _PYMAMMOTION_AUTO_NAME.match(current)
+    )
+
+
+def _new_area_entity(
+    coordinator: MammotionReportUpdateCoordinator,
+    area_hash: int,
+    name: str,
+    area_id: int | None,
+) -> MammotionConfigAreaSwitchEntity:
+    return MammotionConfigAreaSwitchEntity(
+        coordinator,
+        MammotionConfigAreaSwitchEntityDescription(
+            key=f"{area_hash}",
+            translation_key=_area_translation_key(coordinator.hass, name),
+            translation_placeholders={"name": name},
+            area=area_hash,
+            area_id=area_id,
+            name=name,
+            set_fn=_set_area_selected,
+        ),
+    )
+
+
 @callback
 def async_add_area_entities(  # noqa: C901
     coordinator: MammotionReportUpdateCoordinator,
-    added_areas: set[int],
-    area_entities_by_name: dict[str, MammotionConfigAreaSwitchEntity],
+    area_entities: dict[int, MammotionConfigAreaSwitchEntity],
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Handle addition of mowing areas."""
+    """Add, follow and remove the area switches, keyed by area hash in *area_entities*."""
     if coordinator.data is None:
         return
 
-    switch_entities: list[MammotionConfigAreaSwitchEntity] = []
-    computed = coordinator.data.map.computed_areas
-    all_current_areas = {a.hash for a in computed}
+    hash_map = coordinator.data.map
     map_area_hashes: set[int] = {
-        int(k) for k in coordinator.data.map.area if str(k).lstrip("-").isdigit()
+        int(k) for k in hash_map.area if str(k).lstrip("-").isdigit()
     }
 
-    # Trigger re-fetch when the device hasn't yet sent names for all areas.
-    # Luba 1 / Yuka never provides area_name, so skip for it.
-    if not DeviceType.is_luba1(coordinator.device_name):
-        area_name_hashes: set[int] = {a.hash for a in coordinator.data.map.area_name}
-        if map_area_hashes - area_name_hashes:
-            coordinator.hass.async_create_task(coordinator.async_get_area_list())
+    # Re-fetch names while the device has not sent one for every area; a Luba 1 never does.
+    if not DeviceType.is_luba1(coordinator.device_name) and map_area_hashes - {
+        a.hash for a in hash_map.area_name
+    }:
+        coordinator.hass.async_create_task(coordinator.async_get_area_list())
 
-    # Early exit when neither the set of area hashes nor any name has changed.
-    if all_current_areas == added_areas:
-        entities_by_area = {e.area: n for n, e in area_entities_by_name.items()}
-        if all(entities_by_area.get(a.hash) == a.name for a in computed):
-            return
-
-    # Pre-clear auto-generated names for areas about to be removed so that
-    # surviving areas can be renumbered into the freed slots without collision.
-    if map_area_hashes:
-        for old_hash in added_areas - all_current_areas:
-            for n in [
-                n
-                for n, e in list(area_entities_by_name.items())
-                if e.area == old_hash and _PYMAMMOTION_AUTO_NAME.match(n)
-            ]:
-                del area_entities_by_name[n]
-
-    def set_area_entity(
-        coord: MammotionReportUpdateCoordinator, bool_val: bool, value: int
-    ) -> None:
-        if bool_val:
-            if value not in coord.operation_settings.areas:
-                coord.operation_settings.areas.append(value)
-        elif value in coord.operation_settings.areas:
-            coord.operation_settings.areas.remove(value)
-
-    entities_by_hash: dict[int, tuple[str, MammotionConfigAreaSwitchEntity]] = {
-        e.area: (name, e) for name, e in area_entities_by_name.items()
+    # Names left behind for deleted hashes are not areas while the map holds any.
+    live = {
+        a.hash: a
+        for a in hash_map.computed_areas
+        if not map_area_hashes or a.hash in map_area_hashes
     }
-
+    if not live and not area_entities:
+        return
+    gone = {h: e for h, e in area_entities.items() if h not in live}
     registry = er.async_get(coordinator.hass)
     stale_registry_entries = _stale_area_registry_entries(
-        registry, coordinator, added_areas | all_current_areas
+        registry, coordinator, set(area_entities) | set(live)
     )
+    switch_entities: list[MammotionConfigAreaSwitchEntity] = []
 
-    for entry in computed:
-        area_id = entry.hash
-        new_name = entry.name
-
-        if area_id in added_areas:
-            # Already tracked — update name unless we'd overwrite a real device name
-            # with an auto-generated one (protects user-visible names from renumbering).
-            if area_id in entities_by_hash:
-                current_name, entity = entities_by_hash[area_id]
-                if current_name != new_name:
-                    is_new_auto = bool(_PYMAMMOTION_AUTO_NAME.match(new_name))
-                    is_cur_auto = bool(_PYMAMMOTION_AUTO_NAME.match(current_name))
-                    if not (is_new_auto and not is_cur_auto):
-                        if current_name in area_entities_by_name:
-                            del area_entities_by_name[current_name]
-                        entity.update_name(new_name)
-                        area_entities_by_name[new_name] = entity
-            continue
-
-        # Not yet tracked — for real (non-auto) names, update the existing entity's
-        # hash if the same name already exists (same logical area, device rebuilt it).
-        if (
-            not _PYMAMMOTION_AUTO_NAME.match(new_name)
-            and new_name in area_entities_by_name
-        ):
-            existing = area_entities_by_name[new_name]
-            added_areas.discard(existing.area)
-            existing.update_area(area_id)
-            added_areas.add(area_id)
-            continue
-
-        # Missing area — re-key a stale registry entry with a matching name so
-        # the previous session's entity_id and customisations are reused, then
-        # add a new entity with the name supplied by computed_areas.
-        _async_rekey_stale_entry_for_area(
-            registry, stale_registry_entries, coordinator, area_id, new_name
+    for area_hash, area in live.items():
+        area_id = hash_map.area_id(area_hash)
+        entity = area_entities.get(area_hash) or _rehashed_entity(
+            gone, area.name, area_id
         )
-        base_area_switch_entity = MammotionConfigAreaSwitchEntityDescription(
-            key=f"{area_id}",
-            translation_key=_area_translation_key(coordinator.hass, new_name),
-            translation_placeholders={"name": new_name},
-            area=area_id,
-            name=new_name,
-            set_fn=set_area_entity,
-        )
-        entity = MammotionConfigAreaSwitchEntity(coordinator, base_area_switch_entity)
-        switch_entities.append(entity)
-        area_entities_by_name[new_name] = entity
-        added_areas.add(area_id)
+        if entity is None:
+            # Its old hash is still listed mid re-hash; the switch follows once it goes.
+            if area_id is not None and any(
+                e.area_id == area_id and e.area in live for e in area_entities.values()
+            ):
+                continue
+            _async_rekey_stale_entry_for_area(
+                registry,
+                stale_registry_entries,
+                coordinator,
+                area_hash,
+                area.name,
+                area_id=area_id,
+            )
+            entity = _new_area_entity(coordinator, area_hash, area.name, area_id)
+            switch_entities.append(entity)
+            area_entities[area_hash] = entity
+            continue
+        if entity.area != area_hash:
+            del gone[entity.area], area_entities[entity.area]
+            entity.update_area(area_hash)
+            area_entities[area_hash] = entity
+        if area_id is not None and area_id != entity.area_id:
+            entity.set_area_id(area_id)
+        if not _keeps_its_name(entity.area_name, area.name):
+            entity.update_name(area.name)
 
-    # Guard: only remove when map.area is non-empty — an empty map is a transient
-    # refresh state and must not wipe the entity registry.
-    if map_area_hashes:
-        old_areas = added_areas - all_current_areas
-        if old_areas:
-            async_remove_stale_area_entities(coordinator, old_areas)
-            for area in old_areas:
-                added_areas.discard(area)
-                for n in [
-                    n for n, e in list(area_entities_by_name.items()) if e.area == area
-                ]:
-                    del area_entities_by_name[n]
+    # An empty map is a transient refresh state and must not wipe the registry.
+    if map_area_hashes and gone:
+        async_remove_stale_area_entities(coordinator, set(gone))
+        for area_hash in gone:
+            del area_entities[area_hash]
 
     if switch_entities:
         async_add_entities(switch_entities)
