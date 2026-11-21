@@ -68,7 +68,6 @@ from .const import (
     CONF_STAY_CONNECTED_BLUETOOTH,
     CONF_USE_WIFI,
     CREDENTIAL_CACHE_KEYS,
-    DEVICE_SUPPORT,
     DOMAIN,
     LOGGER,
     NOTIFY_SELF_CHECK,
@@ -1043,14 +1042,16 @@ def _build_device_list(
         ):
             spino_devices.append(device)
             continue
-        if not device.device_name.startswith(DEVICE_SUPPORT):
-            # Mammotion-direct records come with an empty category_key (#971).
-            if device.category_key == "Tracker" or DeviceType.is_rtk(
-                device.device_name, device.product_key
-            ):
-                rtk_devices.append(device)
-            continue
-        mower_devices.append(device)
+        # Mammotion-direct records come with an empty category_key (#971).
+        if device.category_key == "Tracker" or DeviceType.is_rtk(
+            device.device_name, device.product_key
+        ):
+            rtk_devices.append(device)
+        # Not every mower is sold as a Luba or Yuka (Ezy, Kumar, Maston, Taru).
+        elif device_type not in (DeviceType.UNKNOWN, DeviceType.SD_PX):
+            mower_devices.append(device)
+        else:
+            LOGGER.debug("Skipping unsupported device %s", device.device_name)
 
     return mower_devices, rtk_devices, spino_devices
 
