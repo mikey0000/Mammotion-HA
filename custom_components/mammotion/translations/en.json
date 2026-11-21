@@ -1600,7 +1600,7 @@
     },
     "plan_route": {
       "name": "Plan route",
-      "description": "Plans a mowing route with the given settings without starting it, waits for the mower to share that route, and returns it as GeoJSON together with the plan the mower confirmed. The mower must be idle. Over the cloud this needs 'Enable mow path fetching (cloud)' switched on in the options.",
+      "description": "Plans a mowing route with the given settings without starting it, waits for the mower to share that route, and returns it as GeoJSON together with the hash that identifies it. The mower must be idle. Over the cloud this needs 'Enable mow path fetching (cloud)' switched on in the options.",
       "fields": {
         "is_mow": {
           "name": "Is mowing",

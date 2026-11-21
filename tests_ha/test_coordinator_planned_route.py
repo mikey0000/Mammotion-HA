@@ -16,6 +16,7 @@ from custom_components.mammotion.geojson_utils import apply_geojson_offset
 
 _MOWER = "Luba-VS123456"
 _OFFSET = (0.5, -0.25)
+_PATH_HASH = 7372458040660269014
 _ROUTE = {
     "type": "FeatureCollection",
     "features": [
@@ -33,17 +34,14 @@ _ROUTE = {
 def _coordinator(*, fetched: bool, route: dict[str, Any]) -> Any:
     """Return the real coordinator over a mower whose planned route fetch ends as given."""
     device = MowingDevice()
-    device.work.path_hash = 7372458040660269014
-    device.work.toward = 30
-    device.work.toward_mode = 1
-    device.work.toward_included_angle = 60
-    device.work.channel_mode = 2
     device.map.generated_mow_path_geojson = route
     coordinator = make_coordinator(
         MammotionReportUpdateCoordinator, device, device_name=_MOWER
     )
     coordinator.map_offset_lat, coordinator.map_offset_lon = _OFFSET
-    coordinator.manager.fetch_planned_mow_path.return_value = fetched
+    coordinator.manager.fetch_planned_mow_path.return_value = (
+        _PATH_HASH if fetched else 0
+    )
     return coordinator
 
 
@@ -62,19 +60,13 @@ async def test_the_route_comes_back_shifted_like_the_map_it_is_drawn_on() -> Non
     coordinator.manager.fetch_planned_mow_path.assert_awaited_once_with(_MOWER)
 
 
-async def test_the_route_carries_the_plan_the_mower_confirmed() -> None:
-    """The hash is text: a 64-bit number is rounded by a browser's JSON parser."""
+async def test_the_route_carries_the_hash_that_identifies_it() -> None:
+    """As text: a 64-bit number is rounded by a browser's JSON parser."""
     coordinator = _coordinator(fetched=True, route=_ROUTE)
 
     response = await coordinator.async_planned_route()
 
-    assert response["plan"] == {
-        "path_hash": "7372458040660269014",
-        "toward": 30,
-        "toward_mode": 1,
-        "toward_included_angle": 60,
-        "channel_mode": 2,
-    }
+    assert response["path_hash"] == "7372458040660269014"
 
 
 @pytest.mark.parametrize(

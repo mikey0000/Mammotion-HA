@@ -2502,12 +2502,12 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         )
 
     async def async_planned_route(self) -> dict[str, Any]:
-        """Return the route the mower just planned, with the plan it confirmed.
+        """Return the route the mower just planned, with the hash that identifies it.
 
-        The library fetches by the plan reply's own ``path_hash``, so a route left
+        The library fetches by that route's own ``path_hash``, so a route left
         over from an earlier job is never returned in its place.
         """
-        fetched = await self._async_device_call(
+        path_hash = await self._async_device_call(
             lambda: self.manager.fetch_planned_mow_path(self.device_name),
             Priority.USER,
         )
@@ -2515,23 +2515,16 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             MowingDevice, self.manager.get_device_by_name(self.device_name) or self.data
         )
         route = device.map.generated_mow_path_geojson
-        if not fetched or not route.get("features"):
+        if not path_hash or not route.get("features"):
             raise HomeAssistantError(
                 translation_domain=DOMAIN,
                 translation_key="planned_route_unavailable",
                 translation_placeholders={"device_name": self.device_name},
             )
-        work = device.work
         return {
             **apply_geojson_offset(route, self.map_offset_lat, self.map_offset_lon),
-            "plan": {
-                # A 64-bit hash does not survive as a JSON number in a browser.
-                "path_hash": str(work.path_hash),
-                "toward": work.toward,
-                "toward_mode": work.toward_mode,
-                "toward_included_angle": work.toward_included_angle,
-                "channel_mode": work.channel_mode,
-            },
+            # Text: a 64-bit hash does not survive as a JSON number in a browser.
+            "path_hash": str(path_hash),
         }
 
     def _ble_is_connected(self) -> bool:

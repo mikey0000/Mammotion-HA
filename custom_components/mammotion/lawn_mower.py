@@ -407,6 +407,13 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
 
         mode = self.rpt_dev_status.sys_status
         breakpoint_info = self.report_data.work.bp_info
+        # Checked on the state just refreshed: a job started elsewhere may not have shown yet.
+        if plan_only and (mode in MOWING_ACTIVE_MODES or breakpoint_info != 0):
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="plan_needs_idle_mower",
+                translation_placeholders={"device_name": self.coordinator.device_name},
+            )
         if mode is None:
             raise HomeAssistantError(
                 translation_domain=DOMAIN, translation_key="device_not_ready"
@@ -703,14 +710,8 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
     async def async_plan_route(self, **kwargs: Any) -> ServiceResponse:
         """Plan a route without starting it and return the route the mower planned.
 
-        Refused while a job is active: planning would end it.
+        Refused while the mower holds a job, running or unfinished: planning would end it.
         """
-        if self.rpt_dev_status.sys_status in MOWING_ACTIVE_MODES:
-            raise ServiceValidationError(
-                translation_domain=DOMAIN,
-                translation_key="plan_needs_idle_mower",
-                translation_placeholders={"device_name": self.coordinator.device_name},
-            )
         await self._async_start_job(plan_only=True, **kwargs)
         return await self.coordinator.async_planned_route()
 

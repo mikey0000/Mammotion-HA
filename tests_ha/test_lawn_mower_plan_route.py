@@ -64,6 +64,32 @@ async def test_a_mower_on_a_job_is_refused_and_left_alone(mode: int) -> None:
     entity.coordinator.async_planned_route.assert_not_awaited()
 
 
+async def test_a_docked_mower_holding_an_unfinished_job_is_refused() -> None:
+    """It reports ready, but planning would discard the job it could still resume."""
+    entity = make_mower_entity(OperationSettings(), bp_info=1)
+
+    with pytest.raises(ServiceValidationError) as raised:
+        await _plan(entity, areas=["switch.area_front"])
+
+    assert raised.value.translation_key == "plan_needs_idle_mower"
+    assert entity.coordinator.sent == []
+
+
+async def test_a_job_started_elsewhere_is_seen_before_planning() -> None:
+    """The refusal reads the state the call itself refreshed, not the one it arrived with."""
+    entity = make_mower_entity(OperationSettings())
+
+    async def _job_started_meanwhile(**_: Any) -> None:
+        entity.coordinator.data.report_data.dev.sys_status = WorkMode.MODE_WORKING
+
+    entity.coordinator.async_ensure_fresh_state.side_effect = _job_started_meanwhile
+
+    with pytest.raises(ServiceValidationError):
+        await _plan(entity, areas=["switch.area_front"])
+
+    assert entity.coordinator.sent == []
+
+
 def test_it_takes_no_field_that_would_modify_a_job() -> None:
     """A plan describes a new job; it has no running one to change."""
     with pytest.raises(vol.Invalid):
