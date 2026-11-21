@@ -239,7 +239,7 @@ class TestHashOnlyChange:
         await switches.sync_live()
 
         entity = switches.by_name["front yard"]
-        assert entity.extra_state_attributes == {"hash": new_h}
+        assert entity.extra_state_attributes["hash"] == new_h
 
     async def test_description_key_unchanged(self, hass: HomeAssistant) -> None:
         """The key is not the identity; ``update_area`` re-keys the unique_id."""

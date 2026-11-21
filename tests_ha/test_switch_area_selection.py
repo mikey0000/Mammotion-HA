@@ -8,7 +8,8 @@ which reads each entity's ``hash`` attribute off the state machine.
 """
 
 from area_switch_support import AreaSwitches, area_name, make_coordinator
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, State
+from pytest_homeassistant_custom_component.common import mock_restore_cache
 
 from custom_components.mammotion.lawn_mower import get_entity_attribute
 
@@ -67,6 +68,57 @@ class TestToggleOrder:
 
         assert coordinator.operation_settings.areas == [h1, h3]
 
+    async def test_each_switch_shows_its_place_in_the_mowing_order(
+        self, hass: HomeAssistant
+    ) -> None:
+        """A card can only show and save the order if every switch says where it stands."""
+        _, switches, _ = await _three_areas(hass)
+
+        for name in ("Area 3", "Area 1"):
+            await switches.by_name[name].async_turn_on()
+
+        assert [
+            switches.by_name[f"Area {n}"].extra_state_attributes["order"]
+            for n in (1, 2, 3)
+        ] == [2, None, 1]
+
+    async def test_turning_an_area_off_moves_the_later_ones_up(
+        self, hass: HomeAssistant
+    ) -> None:
+        """Their place is read from the list, so it cannot go stale when one leaves."""
+        _, switches, _ = await _three_areas(hass)
+
+        for name in ("Area 1", "Area 2", "Area 3"):
+            await switches.by_name[name].async_turn_on()
+        await switches.by_name["Area 1"].async_turn_off()
+
+        assert [
+            switches.by_name[f"Area {n}"].extra_state_attributes["order"]
+            for n in (1, 2, 3)
+        ] == [None, 1, 2]
+
+    async def test_a_toggle_makes_the_other_switches_republish_their_place(
+        self, hass: HomeAssistant
+    ) -> None:
+        """Their place is only visible once written; the toggled switch alone would leave it stale."""
+        coordinator, switches, _ = await _three_areas(hass)
+        coordinator.async_update_listeners.reset_mock()
+
+        await switches.by_name["Area 1"].async_turn_on()
+
+        coordinator.async_update_listeners.assert_called_once_with()
+
+    async def test_the_toggled_switch_publishes_its_own_place(
+        self, hass: HomeAssistant
+    ) -> None:
+        """The state machine is what a card reads."""
+        _, switches, (h1, _, _) = await _three_areas(hass)
+
+        await switches.by_name["Area 1"].async_turn_on()
+
+        state = hass.states.get(switches.entity_id_for(h1))
+        assert (state.state, state.attributes["order"]) == ("on", 1)
+
     async def test_reselecting_an_area_puts_it_last(self, hass: HomeAssistant) -> None:
         """Order is selection order, not the order the areas were created in."""
         coordinator, switches, (h1, h2, h3) = await _three_areas(hass)
@@ -120,3 +172,52 @@ class TestServiceAreaOrder:
         entity_ids = ["switch.not_an_area", switches.by_name["Area 1"].entity_id]
 
         assert _service_areas(hass, entity_ids) == [h1]
+
+
+def _restored(order: dict[int, int | None], state: str = "on") -> list[State]:
+    """Return saved states for "Area n" switches, as the restore cache holds them after a restart."""
+    return [
+        State(
+            f"switch.luba_vs123456_area_{n}",
+            state,
+            {} if place is None else {"order": place},
+        )
+        for n, place in order.items()
+    ]
+
+
+async def _restart(hass: HomeAssistant, saved: list[State]) -> object:
+    """Bring three area switches up from *saved*, through their real restore path."""
+    hashes = [10, 20, 30]
+    coordinator = make_coordinator(hass, hashes, [area_name("", h) for h in hashes])
+    switches = AreaSwitches(hass, coordinator)
+    switches.sync()
+    mock_restore_cache(hass, saved)
+    await switches.register()
+    return coordinator
+
+
+class TestRestoredOrder:
+    """A restart brings the areas back in the order they were to be mown."""
+
+    async def test_a_restart_restores_the_mowing_order(
+        self, hass: HomeAssistant
+    ) -> None:
+        """Entities restore in no particular order, which used to become the mowing order."""
+        coordinator = await _restart(hass, _restored({1: 3, 2: 1, 3: 2}))
+
+        assert coordinator.operation_settings.areas == [20, 30, 10]
+
+    async def test_a_state_saved_before_areas_had_a_place_still_restores(
+        self, hass: HomeAssistant
+    ) -> None:
+        """An upgrade must not drop the selection for want of an attribute it never wrote."""
+        coordinator = await _restart(hass, _restored({1: None, 2: None}))
+
+        assert sorted(coordinator.operation_settings.areas) == [10, 20]
+
+    async def test_an_area_saved_as_off_stays_out(self, hass: HomeAssistant) -> None:
+        """Only the areas that were selected come back."""
+        coordinator = await _restart(hass, _restored({1: 1}, state="off"))
+
+        assert coordinator.operation_settings.areas == []

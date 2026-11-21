@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from dataclasses import replace as dataclass_replace
 from functools import partial
 from typing import Any
+from weakref import WeakKeyDictionary
 
 from homeassistant.components.switch import DOMAIN as SWITCH_DOMAIN
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
@@ -51,6 +52,10 @@ from .entity import (
 # Matches pymammotion's auto-generated fallback names ("area 1", "area 2", …).
 # These carry no user intent and must be treated the same as empty names.
 _PYMAMMOTION_AUTO_NAME = re.compile(r"^area\s+\d+$", re.IGNORECASE)
+
+
+#: Saved mowing order of the areas restored so far, per coordinator.
+_RESTORED_AREA_ORDER: WeakKeyDictionary[Any, dict[int, int]] = WeakKeyDictionary()
 
 
 def _area_translation_key(hass: HomeAssistant, name: str) -> str:
@@ -815,7 +820,6 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
         self.coordinator = coordinator
         self.entity_description = entity_description
         self.area = entity_description.area
-        self._attr_extra_state_attributes = {"hash": self.area}
         self._attr_is_on = self.area in self.coordinator.operation_settings.areas
         # Last custom name we pushed to the device, so an unrelated registry
         # update (icon, area assignment, …) doesn't re-send set_area_name.
@@ -843,7 +847,6 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
         """Update the area hash when the device reports a new hash for the same named area."""
         old_area = self.area
         self.area = new_area_id
-        self._attr_extra_state_attributes = {"hash": new_area_id}
         # Re-key the unique_id to the new hash, or the next restart mints a
         # duplicate entity with a "_2" suffixed entity_id.
         new_unique_id = _area_unique_id(self.coordinator, new_area_id)
@@ -863,17 +866,27 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
         if self.hass is not None:
             self.async_write_ha_state()
 
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Expose the area's hash and its place in the mowing order (1-based; None while off)."""
+        areas = self.coordinator.operation_settings.areas
+        order = areas.index(self.area) + 1 if self.area in areas else None
+        return {"hash": self.area, "order": order}
+
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn the entity on."""
-        self._attr_is_on = True
-        self.entity_description.set_fn(self.coordinator, True, self.area)
-        self.async_write_ha_state()
+        await self._async_select(True)
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn the entity off."""
-        self._attr_is_on = False
-        self.entity_description.set_fn(self.coordinator, False, self.area)
+        await self._async_select(False)
+
+    async def _async_select(self, selected: bool) -> None:
+        self._attr_is_on = selected
+        self.entity_description.set_fn(self.coordinator, selected, self.area)
         self.async_write_ha_state()
+        # Leaving or joining the list moves every later area's place in the order.
+        self.coordinator.async_update_listeners()
 
     async def async_added_to_hass(self) -> None:
         """Call when entity about to be added to hass."""
@@ -884,6 +897,18 @@ class MammotionConfigAreaSwitchEntity(MammotionBaseEntity, SwitchEntity, Restore
         last_state = await self.async_get_last_state()
         if last_state and last_state.state == STATE_ON:
             await self.async_turn_on()
+            self._restore_order(last_state.attributes.get("order"))
+
+    def _restore_order(self, order: object) -> None:
+        """Put the area back at its saved place; entities restore in no particular order."""
+        if not isinstance(order, int):
+            return
+        orders = _RESTORED_AREA_ORDER.setdefault(self.coordinator, {})
+        orders[self.area] = order
+        self.coordinator.operation_settings.areas.sort(
+            key=lambda area: orders.get(area, len(orders) + 1)
+        )
+        self.coordinator.async_update_listeners()
 
     @callback
     def async_registry_entry_updated(self) -> None:
