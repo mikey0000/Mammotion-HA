@@ -1601,6 +1601,96 @@
           "description": "Kopia do usunięcia."
         }
       }
+    },
+    "plan_route": {
+      "name": "Zaplanuj trasę",
+      "description": "Planuje trasę koszenia z podanymi ustawieniami bez jej uruchamiania, czeka, aż kosiarka udostępni tę trasę, i zwraca ją jako GeoJSON wraz z planem potwierdzonym przez kosiarkę. Kosiarka musi być bezczynna. Przez chmurę wymaga to włączenia w opcjach „Włącz pobieranie ścieżki koszenia (chmura)”.",
+      "fields": {
+        "is_mow": {
+          "name": "Jest siew",
+          "description": "Czy koszenie jest aktywne. (Yuka)."
+        },
+        "is_dump": {
+          "name": "Opróżnianie",
+          "description": "Czy opróżnianie trawy jest aktywne. (Yuka)."
+        },
+        "is_edge": {
+          "name": "Kosiarka krawędzi",
+          "description": "Czy tryb krawędziowy jest aktywny. (Yuka)."
+        },
+        "collect_grass_frequency": {
+          "name": "Częstotliwość zbierania trawy",
+          "description": "Częstotliwość zbierania trawy (w metrach kwadratowych). (Yuka)."
+        },
+        "border_mode": {
+          "name": "Kolejność ruchów",
+          "description": "Kolejność ścieżki (najpierw Perimeter lub siatka)."
+        },
+        "job_version": {
+          "name": "Wersja zadania",
+          "description": "Wersja pracy."
+        },
+        "job_id": {
+          "name": "ID Zadania",
+          "description": "ID Zadania."
+        },
+        "speed": {
+          "name": "Prędkość",
+          "description": "Prędkość siewu."
+        },
+        "ultra_wave": {
+          "name": "Wykrywanie przeszkód",
+          "description": "Tryb unikania przeszkód"
+        },
+        "channel_mode": {
+          "name": "Tryb cięcia ścieżki",
+          "description": "Ścieżka cięcia (tylko zigzag, szachownica, adaptacyjny zigzag, lub obwódka)."
+        },
+        "channel_width": {
+          "name": "Szerokość ścieżki",
+          "description": "Szerokość toru kotwiczenia (w cm)."
+        },
+        "blade_height": {
+          "name": "Wysokość Ostrza",
+          "description": "Wysokość ostrza."
+        },
+        "toward": {
+          "name": "Kąt ścieżki startowej",
+          "description": "Kierunek początkowy dla koszenia."
+        },
+        "toward_included_angle": {
+          "name": "Kąt skrzyżowania",
+          "description": "Podczas wybierania siatki zmień drugi kąt (domyślnie 90 stopni)."
+        },
+        "toward_mode": {
+          "name": "Tryb cięcia kąta",
+          "description": "Kierunek kotwiczenia."
+        },
+        "mowing_laps": {
+          "name": "Lojanie Perimetru",
+          "description": "Liczba okrążeń wokół obwodu kości."
+        },
+        "obstacle_laps": {
+          "name": "Strefa No-go Mowing Laps",
+          "description": "Liczba okrążeń wokół stref bez zmian."
+        },
+        "start_progress": {
+          "name": "Rozpocznij postęp",
+          "description": "Początkowy procent postępu."
+        },
+        "auto_change_direction": {
+          "name": "Automatyczna zmiana kierunku koszenia",
+          "description": "Odwraca kierunek koszenia między przejazdami: 0 = wyłączone, 1 = włączone. Używane tylko w modelach i oprogramowaniu, które to obsługują. Jeśli pominięte, obowiązuje ustawienie przełącznika."
+        },
+        "ride_boundary_distance": {
+          "name": "Pokrycie krawędzi",
+          "description": "Jak daleko kosiarka wysuwa się na zewnątrz podczas koszenia obwodu, od 0 (wewnątrz krawędzi) do 1 (na krawędzi). Używane tylko w modelach, które to obsługują, i przy włączonym koszeniu obwodu."
+        },
+        "areas": {
+          "name": "Wybór obszaru",
+          "description": "Wykaz obszarów do mow (reprezentowanych jako liczby całkowite)."
+        }
+      }
     }
   },
   "exceptions": {
@@ -1831,6 +1921,12 @@
     },
     "battery_settings_unread": {
       "message": "Ustawienia baterii nie zostały jeszcze odczytane z kosiarki. Zmiana teraz zresetowałaby okno ładowania poza szczytem, więc nic nie wysłano. Spróbuj ponownie, gdy kosiarka będzie połączona."
+    },
+    "plan_needs_idle_mower": {
+      "message": "{device_name} musi być bezczynna, aby zaplanować trasę. Najpierw zatrzymaj lub zakończ bieżące zadanie."
+    },
+    "planned_route_unavailable": {
+      "message": "{device_name} nie udostępniła zaplanowanej trasy. Przez chmurę włącz w opcjach „Włącz pobieranie ścieżki koszenia (chmura)” lub połącz się przez Bluetooth."
     }
   },
   "issues": {

@@ -1601,6 +1601,96 @@
           "description": "Te verwijderen back-up."
         }
       }
+    },
+    "plan_route": {
+      "name": "Route plannen",
+      "description": "Plant een maairoute met de opgegeven instellingen zonder deze te starten, wacht tot de maaier die route deelt en geeft deze terug als GeoJSON, samen met het plan dat de maaier heeft bevestigd. De maaier moet inactief zijn. Via de cloud moet in de opties 'Maaipad ophalen inschakelen (cloud)' aan staan.",
+      "fields": {
+        "is_mow": {
+          "name": "Is aan het maaien",
+          "description": "Of maaien actief is. (Yuka)."
+        },
+        "is_dump": {
+          "name": "Bezig met dumpen",
+          "description": "Of gras dumpen actief is. (Yuka)."
+        },
+        "is_edge": {
+          "name": "Maait randen",
+          "description": "Of randmodus actief is. (Yuka)."
+        },
+        "collect_grass_frequency": {
+          "name": "Gras Collectie Frequentie",
+          "description": "Frequentie om gras te verzamelen (in vierkante meters). (Yuka)."
+        },
+        "border_mode": {
+          "name": "Maaivolgorde",
+          "description": "Maaivolgorde (rand eerst of gazon eerst)."
+        },
+        "job_version": {
+          "name": "Taak versie",
+          "description": "Taak versie."
+        },
+        "job_id": {
+          "name": "Taak ID",
+          "description": "Taak ID."
+        },
+        "speed": {
+          "name": "Snelheid",
+          "description": "Maaisnelheid."
+        },
+        "ultra_wave": {
+          "name": "Obstakeldetectie",
+          "description": "Obstakel Vermijding Modus."
+        },
+        "channel_mode": {
+          "name": "Pad-knip mode",
+          "description": "Snijpad (zigzag, schaakbord, adaptieve zigzag, of alleen de rand)."
+        },
+        "channel_width": {
+          "name": "Pad breedte",
+          "description": "Breedte van de paden (in cm)."
+        },
+        "blade_height": {
+          "name": "Meshoogte",
+          "description": "Hoogte van de messen."
+        },
+        "toward": {
+          "name": "Beginhoek",
+          "description": "Aanvankelijke richting voor maaien."
+        },
+        "toward_included_angle": {
+          "name": "Kruisende Hoek",
+          "description": "Bij het selecteren van het raster verander de tweede hoek (standaard is 90 graden)."
+        },
+        "toward_mode": {
+          "name": "Hoek modus knippen",
+          "description": "Grijpbare richting maaien."
+        },
+        "mowing_laps": {
+          "name": "Hoeveelheid de rand maaien",
+          "description": "Het aantal ronden rond de rand."
+        },
+        "obstacle_laps": {
+          "name": "Het aantal ronden rond verboden zones",
+          "description": "Het aantal ronden rond verboden zones."
+        },
+        "start_progress": {
+          "name": "Begin Voortgang",
+          "description": "Begin voortgangspercentage."
+        },
+        "auto_change_direction": {
+          "name": "Maairichting automatisch omkeren",
+          "description": "Keert de maairichting om tussen de rondes: 0 = uit, 1 = aan. Alleen gebruikt op modellen en firmware die dit ondersteunen. Indien weggelaten, geldt de instelling van de schakelaar."
+        },
+        "ride_boundary_distance": {
+          "name": "Randdekking",
+          "description": "Hoe ver de maaier tijdens de randrondes naar buiten rijdt, van 0 (binnenrand) tot 1 (op de rand). Alleen gebruikt op modellen die dit ondersteunen en wanneer randrondes aan staan."
+        },
+        "areas": {
+          "name": "Gebiedselectie",
+          "description": "Lijst van te maaien gebieden (weergegeven als geheel getal)."
+        }
+      }
     }
   },
   "exceptions": {
@@ -1831,6 +1921,12 @@
     },
     "battery_settings_unread": {
       "message": "De batterij-instellingen zijn nog niet van de maaier gelezen. Ze nu wijzigen zou het daluren-laadvenster resetten, dus er is niets verzonden. Probeer het opnieuw zodra de maaier verbonden is."
+    },
+    "plan_needs_idle_mower": {
+      "message": "{device_name} moet inactief zijn om een route te plannen. Stop of voltooi eerst de huidige taak."
+    },
+    "planned_route_unavailable": {
+      "message": "{device_name} heeft de geplande route niet gedeeld. Schakel via de cloud in de opties 'Maaipad ophalen inschakelen (cloud)' in, of verbind via Bluetooth."
     }
   },
   "issues": {

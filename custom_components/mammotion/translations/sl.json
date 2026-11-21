@@ -1601,6 +1601,96 @@
           "description": "Varnostna kopija za izbris."
         }
       }
+    },
+    "plan_route": {
+      "name": "Načrtuj pot",
+      "description": "Načrtuje pot košnje z danimi nastavitvami, ne da bi jo zagnal, počaka, da kosilnica deli to pot, in jo vrne kot GeoJSON skupaj z načrtom, ki ga je kosilnica potrdila. Kosilnica mora biti nedejavna. Prek oblaka mora biti v možnostih vklopljeno »Omogoči pridobivanje poti košnje (oblak)«.",
+      "fields": {
+        "is_mow": {
+          "name": "Kosi",
+          "description": "Košnja aktivna. (Yuka)"
+        },
+        "is_dump": {
+          "name": "Pobiranje",
+          "description": "Pobiranje aktivno. (Yuka)"
+        },
+        "is_edge": {
+          "name": "Košnja roba",
+          "description": "Navaja, ali je način rezanja robov aktiven. (Yuka)."
+        },
+        "collect_grass_frequency": {
+          "name": "Interval košnje",
+          "description": "Pogostost zbiranja trave (v kvadratnih metrih). (Yuka)."
+        },
+        "border_mode": {
+          "name": "Vrstni red",
+          "description": "Vrstni red poti (obod ali cikcak prvo)."
+        },
+        "job_version": {
+          "name": "Različica naloge",
+          "description": "Različica naloge."
+        },
+        "job_id": {
+          "name": "ID naloge",
+          "description": "ID naloge."
+        },
+        "speed": {
+          "name": "Hitrost",
+          "description": "Hitrost košnje."
+        },
+        "ultra_wave": {
+          "name": "Način zaznavanja ovir",
+          "description": "Način izmikanja oviram."
+        },
+        "channel_mode": {
+          "name": "Način poti rezanja",
+          "description": "Način poti (cikcak, šahovnica, prilagodljiva cikcak pot, samo obod)."
+        },
+        "channel_width": {
+          "name": "Razmik med potmi",
+          "description": "Razmik med potmi (v cm)."
+        },
+        "blade_height": {
+          "name": "Višina rezil",
+          "description": "Višina rezil."
+        },
+        "toward": {
+          "name": "Kot rezalne poti",
+          "description": "Kot rezalne poti."
+        },
+        "toward_included_angle": {
+          "name": "Kot prehoda mreže",
+          "description": "Za spreminjanje kota mreže."
+        },
+        "toward_mode": {
+          "name": "Kot rezalne poti",
+          "description": "Kot rezalne poti."
+        },
+        "mowing_laps": {
+          "name": "Krogi košnje po obodu",
+          "description": "Krogi košnje po obodu."
+        },
+        "obstacle_laps": {
+          "name": "Krogi košnje po robu prepovedanih con",
+          "description": "Krogi košnje po robu prepovedanih con."
+        },
+        "start_progress": {
+          "name": "Začetek napredka",
+          "description": "Začetek napredka v odstotkih."
+        },
+        "auto_change_direction": {
+          "name": "Samodejno menjavanje smeri košnje",
+          "description": "Med zagoni obrne smer košnje: 0 = izklopljeno, 1 = vklopljeno. Uporablja se samo pri modelih in vdelani programski opremi, ki to podpirajo. Če ga izpustite, velja nastavitev stikala."
+        },
+        "ride_boundary_distance": {
+          "name": "Pokritost robov",
+          "description": "Kako daleč se kosilnica med krogi po obodu zamakne navzven, od 0 (notranji rob) do 1 (na robu). Uporablja se samo pri modelih, ki to podpirajo, in ko so vklopljeni krogi po obodu."
+        },
+        "areas": {
+          "name": "Območje naloge",
+          "description": "Spisek območij."
+        }
+      }
     }
   },
   "exceptions": {
@@ -1831,6 +1921,12 @@
     },
     "battery_settings_unread": {
       "message": "Nastavitve baterije še niso bile prebrane iz kosilnice. Sprememba bi zdaj ponastavila okno polnjenja izven konice, zato ni bilo nič poslano. Poskusite znova, ko bo kosilnica povezana."
+    },
+    "plan_needs_idle_mower": {
+      "message": "{device_name} mora biti nedejavna, da lahko načrtuje pot. Najprej ustavite ali dokončajte trenutno opravilo."
+    },
+    "planned_route_unavailable": {
+      "message": "{device_name} ni delila načrtovane poti. Prek oblaka v možnostih vklopite »Omogoči pridobivanje poti košnje (oblak)« ali se povežite prek povezave Bluetooth."
     }
   },
   "issues": {

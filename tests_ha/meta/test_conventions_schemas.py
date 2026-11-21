@@ -24,6 +24,7 @@ _SERVICES_YAML = INTEGRATION / "services.yaml"
 _SCHEMAS: dict[str, Mapping[Any, Any] | vol.Schema] = {
     lawn_mower.SERVICE_START_MOWING: lawn_mower.START_MOW_SCHEMA,
     lawn_mower.SERVICE_MODIFY_RUNNING_JOB: lawn_mower.MODIFY_RUNNING_JOB_SCHEMA,
+    lawn_mower.SERVICE_PLAN_ROUTE: lawn_mower.PLAN_ROUTE_SCHEMA,
     lawn_mower.SERVICE_START_STOP_BLADES: lawn_mower.START_STOP_BLADES_SCHEMA,
     lawn_mower.SERVICE_SET_NON_WORK_HOURS: lawn_mower.SET_NON_WORK_HOURS_SCHEMA,
     lawn_mower.SERVICE_SET_BLADE_WARNING_TIME: lawn_mower.SET_BLADE_WARNING_TIME_SCHEMA,

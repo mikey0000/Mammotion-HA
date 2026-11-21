@@ -1601,6 +1601,96 @@
           "description": "Záloha ke smazání."
         }
       }
+    },
+    "plan_route": {
+      "name": "Naplánovat trasu",
+      "description": "Naplánuje trasu sečení s danými nastaveními, aniž by ji spustil, počká, až ji sekačka nasdílí, a vrátí ji jako GeoJSON spolu s plánem, který sekačka potvrdila. Sekačka musí být nečinná. Přes cloud je nutné mít v možnostech zapnuto „Povolit načítání trasy sečení (cloud)“.",
+      "fields": {
+        "is_mow": {
+          "name": "Sečení",
+          "description": "Zda je sekání aktivní. (Yuka)."
+        },
+        "is_dump": {
+          "name": "Vysypávání",
+          "description": "Zda je vyhazování trávy aktivní. (Yuka)."
+        },
+        "is_edge": {
+          "name": "Sečení obvodu",
+          "description": "Zda je aktivní režim okrajů. (Yuka)."
+        },
+        "collect_grass_frequency": {
+          "name": "Frekvence sběru trávy",
+          "description": "Frekvence sběru trávy (v metrech čtverečních). (Yuka)."
+        },
+        "border_mode": {
+          "name": "Pořadí trasy sečení",
+          "description": "Pořadí trasy cesty (nejprve obvod nebo mřížka)."
+        },
+        "job_version": {
+          "name": "Verze úlohy",
+          "description": "Verze úlohy."
+        },
+        "job_id": {
+          "name": "ID úlohy",
+          "description": "ID úlohy."
+        },
+        "speed": {
+          "name": "Rychlost",
+          "description": "Rychlost sekání."
+        },
+        "ultra_wave": {
+          "name": "Detekce překážek",
+          "description": "Režim vyhýbání se překážkám."
+        },
+        "channel_mode": {
+          "name": "Režim dráhy cesty",
+          "description": "Dráha cesty (pouze zig-zag, šachovnice, adaptivní zig-zag, nebo obvod)."
+        },
+        "channel_width": {
+          "name": "Šířka dráhy",
+          "description": "Šířka dráhy sečení (v cm)."
+        },
+        "blade_height": {
+          "name": "Výška nožů",
+          "description": "Výška nožů."
+        },
+        "toward": {
+          "name": "Úhel cesty",
+          "description": "Počáteční směr sečení."
+        },
+        "toward_included_angle": {
+          "name": "Úhel křížení",
+          "description": "Při výběru mřížky změnit druhý úhel (výchozí hodnota je 90°)."
+        },
+        "toward_mode": {
+          "name": "Režim sečení",
+          "description": "Úhlový směr sečení."
+        },
+        "mowing_laps": {
+          "name": "Obvodové sečení",
+          "description": "Počet sečení obvodů."
+        },
+        "obstacle_laps": {
+          "name": "Sečení no-go zón",
+          "description": "Počet okruhů kolem no-go zón."
+        },
+        "start_progress": {
+          "name": "Pokrok při zahájení",
+          "description": "Procento při zahájení"
+        },
+        "auto_change_direction": {
+          "name": "Automatické střídání směru sečení",
+          "description": "Střídá směr sečení mezi běhy: 0 = vypnuto, 1 = zapnuto. Použije se jen u modelů a firmwaru, které to podporují. Pokud pole vynecháte, platí nastavení přepínače."
+        },
+        "ride_boundary_distance": {
+          "name": "Pokrytí okrajů",
+          "description": "Jak daleko se sekačka při sečení obvodu posouvá ven, od 0 (vnitřní okraj) do 1 (na okraji). Použije se jen u modelů, které to podporují, a při zapnutém sečení obvodu."
+        },
+        "areas": {
+          "name": "Výběr oblasti",
+          "description": "Seznam oblastí k sečení (reprezentovaný jako celá čísla)."
+        }
+      }
     }
   },
   "exceptions": {
@@ -1831,6 +1921,12 @@
     },
     "battery_settings_unread": {
       "message": "Nastavení baterie se ze sekačky zatím nepodařilo načíst. Změna by nyní vynulovala okno nabíjení mimo špičku, proto nebylo nic odesláno. Zkuste to znovu, až bude sekačka připojena."
+    },
+    "plan_needs_idle_mower": {
+      "message": "{device_name} musí být nečinná, aby bylo možné naplánovat trasu. Nejprve zastavte nebo dokončete aktuální úlohu."
+    },
+    "planned_route_unavailable": {
+      "message": "{device_name} nesdílela naplánovanou trasu. Přes cloud zapněte v možnostech „Povolit načítání trasy sečení (cloud)“, nebo se připojte přes Bluetooth."
     }
   },
   "issues": {

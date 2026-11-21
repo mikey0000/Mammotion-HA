@@ -1601,6 +1601,96 @@
           "description": "Backup da eliminare."
         }
       }
+    },
+    "plan_route": {
+      "name": "Pianifica percorso",
+      "description": "Pianifica un percorso di taglio con le impostazioni indicate senza avviarlo, attende che il robot condivida il percorso e lo restituisce come GeoJSON insieme al piano confermato dal robot. Il robot deve essere inattivo. Tramite cloud è necessario attivare nelle opzioni «Abilita recupero del percorso di taglio (cloud)».",
+      "fields": {
+        "is_mow": {
+          "name": "Sta tagliando",
+          "description": "Se la falciatura è attiva. (Yuka)."
+        },
+        "is_dump": {
+          "name": "Sta scaricando l'erba",
+          "description": "Se lo scarico dell'erba è attivo. (Yuka)."
+        },
+        "is_edge": {
+          "name": "Rasatura dei bordi",
+          "description": "Se la modalità bordo è attiva. (Yuka)."
+        },
+        "collect_grass_frequency": {
+          "name": "Frequenza Di Raccolta Erba",
+          "description": "Frequenza di raccolta dell'erba (in metri quadrati). (Yuka)."
+        },
+        "border_mode": {
+          "name": "Ordine di taglio",
+          "description": "Ordine tracciato (prima perimetro o griglia)."
+        },
+        "job_version": {
+          "name": "Versione Job",
+          "description": "Versione lavoro."
+        },
+        "job_id": {
+          "name": "Id Lavoro",
+          "description": "Id Lavoro."
+        },
+        "speed": {
+          "name": "Velocità",
+          "description": "Velocità di falciatura."
+        },
+        "ultra_wave": {
+          "name": "Rilevamento Degli Ostacoli",
+          "description": "Modalità Evitamento Ostacoli."
+        },
+        "channel_mode": {
+          "name": "Modalità Tracciato Di Taglio",
+          "description": "Percorso di taglio (solo zigzag, scacchiera, zigzag adattivo o perimetro)."
+        },
+        "channel_width": {
+          "name": "Larghezza Tracciato",
+          "description": "Larghezza del percorso di falciatura (in cm)."
+        },
+        "blade_height": {
+          "name": "Altezza Lama",
+          "description": "Altezza della lama."
+        },
+        "toward": {
+          "name": "Angolo Tracciato Iniziale",
+          "description": "Direzione di partenza per falciatura."
+        },
+        "toward_included_angle": {
+          "name": "Angolo Di Attraversamento",
+          "description": "Quando si seleziona la griglia cambiare il secondo angolo (predefinito è 90 gradi)."
+        },
+        "toward_mode": {
+          "name": "Modalità Angolo Di Taglio",
+          "description": "Direzione angolare del falcio."
+        },
+        "mowing_laps": {
+          "name": "Numero di giri sul perimetro",
+          "description": "Numero di giri attorno al perimetro dell'area di falciatura."
+        },
+        "obstacle_laps": {
+          "name": "Numero di giri sulle zone No-go",
+          "description": "Numero di giri intorno alle zone No-go."
+        },
+        "start_progress": {
+          "name": "Avvia Progresso",
+          "description": "Inizio percentuale di progresso."
+        },
+        "auto_change_direction": {
+          "name": "Inversione automatica della direzione di taglio",
+          "description": "Inverte la direzione di taglio tra un'esecuzione e l'altra: 0 = disattivato, 1 = attivato. Usato solo su modelli e firmware che lo supportano. Se omesso, vale l'impostazione dell'interruttore."
+        },
+        "ride_boundary_distance": {
+          "name": "Copertura bordi",
+          "description": "Quanto il tosaerba si sposta verso l'esterno durante i giri perimetrali, da 0 (bordo interno) a 1 (sul bordo). Usato solo sui modelli che lo supportano e quando i giri perimetrali sono attivi."
+        },
+        "areas": {
+          "name": "Selezione Area",
+          "description": "Elenco di aree da tagliare(rappresentati come interi)."
+        }
+      }
     }
   },
   "exceptions": {
@@ -1831,6 +1921,12 @@
     },
     "battery_settings_unread": {
       "message": "Le impostazioni della batteria non sono ancora state lette dal tosaerba. Modificarle ora azzererebbe la fascia di ricarica fuori picco, quindi non è stato inviato nulla. Riprova quando il tosaerba è connesso."
+    },
+    "plan_needs_idle_mower": {
+      "message": "{device_name} deve essere inattivo per pianificare un percorso. Interrompi o completa prima il lavoro in corso."
+    },
+    "planned_route_unavailable": {
+      "message": "{device_name} non ha condiviso il percorso pianificato. Tramite cloud, attiva nelle opzioni «Abilita recupero del percorso di taglio (cloud)» oppure connettiti via Bluetooth."
     }
   },
   "issues": {

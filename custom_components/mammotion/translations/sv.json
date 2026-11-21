@@ -1601,6 +1601,96 @@
           "description": "Säkerhetskopia att ta bort."
         }
       }
+    },
+    "plan_route": {
+      "name": "Planera rutt",
+      "description": "Planerar en klipprutt med angivna inställningar utan att starta den, väntar på att klipparen delar rutten och returnerar den som GeoJSON tillsammans med planen som klipparen bekräftade. Klipparen måste vara inaktiv. Via molnet måste 'Aktivera hämtning av klippväg (moln)' vara påslaget i alternativen.",
+      "fields": {
+        "is_mow": {
+          "name": "Klipper",
+          "description": "Om klippning är aktiv. (Yuka)."
+        },
+        "is_dump": {
+          "name": "Tömmer",
+          "description": "Om tömning är aktiv. (Yuka)."
+        },
+        "is_edge": {
+          "name": "Kantklippning",
+          "description": "Om kantläge är aktivt. (Yuka)."
+        },
+        "collect_grass_frequency": {
+          "name": "Frekvens för gräsuppsamling",
+          "description": "Frekvens för gräsuppsamling (i kvadratmeter). (Yuka)."
+        },
+        "border_mode": {
+          "name": "Klippordning",
+          "description": "Klippordning (kantklippning först eller rutnät först)."
+        },
+        "job_version": {
+          "name": "Jobbversion",
+          "description": "Jobbversion."
+        },
+        "job_id": {
+          "name": "Jobb-ID",
+          "description": "Jobb-ID."
+        },
+        "speed": {
+          "name": "Hastighet",
+          "description": "Klipphastighet."
+        },
+        "ultra_wave": {
+          "name": "Hinderdetektering",
+          "description": "Läge för att undvika hinder."
+        },
+        "channel_mode": {
+          "name": "Klippmönster",
+          "description": "Klippmönster (sicksack, schackmönster, adaptiv sicksack eller endast kantklippning)."
+        },
+        "channel_width": {
+          "name": "Spårbredd",
+          "description": "Bredd på klippspåret (i cm)."
+        },
+        "blade_height": {
+          "name": "Bladens höjd",
+          "description": "Höjd på bladet."
+        },
+        "toward": {
+          "name": "Startvinkel på vägen",
+          "description": "Startriktning för klippning."
+        },
+        "toward_included_angle": {
+          "name": "Korsningsvinkel",
+          "description": "När du väljer rutnät ändra den andra vinkeln (standard är 90 grader)."
+        },
+        "toward_mode": {
+          "name": "Klippvinkelläge",
+          "description": "Riktningen för gräsklippningen."
+        },
+        "mowing_laps": {
+          "name": "Antal varv kantklippning",
+          "description": "Antal varv runt klippområdets kant."
+        },
+        "obstacle_laps": {
+          "name": "Varv för kantklippning i förbjudna zoner",
+          "description": "Antal varv runt förbjudna zoner."
+        },
+        "start_progress": {
+          "name": "Startförlopp",
+          "description": "Startförlopp i procent."
+        },
+        "auto_change_direction": {
+          "name": "Automatisk växling av klippriktning",
+          "description": "Växlar klippriktning mellan körningar: 0 = av, 1 = på. Används bara på modeller och firmware som stöder det. Utelämnas fältet gäller brytarens inställning."
+        },
+        "ride_boundary_distance": {
+          "name": "Kanttäckning",
+          "description": "Hur långt ut gräsklipparen kör under kantklippningsvarven, från 0 (innerkant) till 1 (på kanten). Används bara på modeller som stöder det och när kantklippningsvarv är på."
+        },
+        "areas": {
+          "name": "Val av område",
+          "description": "Lista över områden att klippa (representeras som heltal)."
+        }
+      }
     }
   },
   "exceptions": {
@@ -1831,6 +1921,12 @@
     },
     "battery_settings_unread": {
       "message": "Batteriinställningarna har ännu inte lästs från gräsklipparen. En ändring nu skulle återställa laddningsfönstret för lågpristid, så inget skickades. Försök igen när gräsklipparen är ansluten."
+    },
+    "plan_needs_idle_mower": {
+      "message": "{device_name} måste vara inaktiv för att planera en rutt. Stoppa eller slutför det pågående jobbet först."
+    },
+    "planned_route_unavailable": {
+      "message": "{device_name} delade inte den planerade rutten. Slå på 'Aktivera hämtning av klippväg (moln)' i alternativen via molnet, eller anslut via Bluetooth."
     }
   },
   "issues": {

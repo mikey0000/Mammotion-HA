@@ -141,6 +141,7 @@ from .const import (
     NOTIFY_WARNINGS,
 )
 from .error_codes import async_refresh_error_codes
+from .geojson_utils import apply_geojson_offset
 from .stream_session import async_choose_server, to_rtc_ice_servers
 
 if TYPE_CHECKING:
@@ -2499,6 +2500,39 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             failure_key=failure_key,
             generate_route_information=route_information,
         )
+
+    async def async_planned_route(self) -> dict[str, Any]:
+        """Return the route the mower just planned, with the plan it confirmed.
+
+        The library fetches by the plan reply's own ``path_hash``, so a route left
+        over from an earlier job is never returned in its place.
+        """
+        fetched = await self._async_device_call(
+            lambda: self.manager.fetch_planned_mow_path(self.device_name),
+            Priority.USER,
+        )
+        device = cast(
+            MowingDevice, self.manager.get_device_by_name(self.device_name) or self.data
+        )
+        route = device.map.generated_mow_path_geojson
+        if not fetched or not route.get("features"):
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="planned_route_unavailable",
+                translation_placeholders={"device_name": self.device_name},
+            )
+        work = device.work
+        return {
+            **apply_geojson_offset(route, self.map_offset_lat, self.map_offset_lon),
+            "plan": {
+                # A 64-bit hash does not survive as a JSON number in a browser.
+                "path_hash": str(work.path_hash),
+                "toward": work.toward,
+                "toward_mode": work.toward_mode,
+                "toward_included_angle": work.toward_included_angle,
+                "channel_mode": work.channel_mode,
+            },
+        }
 
     def _ble_is_connected(self) -> bool:
         """Return True if BLE transport exists and is currently connected."""

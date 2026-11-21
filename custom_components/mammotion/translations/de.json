@@ -1601,6 +1601,96 @@
           "description": "Zu löschende Sicherung"
         }
       }
+    },
+    "plan_route": {
+      "name": "Route planen",
+      "description": "Plant eine Mähroute mit den angegebenen Einstellungen, ohne sie zu starten, wartet, bis der Mähroboter diese Route übermittelt, und gibt sie als GeoJSON zusammen mit dem vom Mähroboter bestätigten Plan zurück. Der Mähroboter muss im Leerlauf sein. Über die Cloud muss dazu in den Optionen „Mähpfadabruf aktivieren (Cloud)“ eingeschaltet sein.",
+      "fields": {
+        "is_mow": {
+          "name": "Mähen",
+          "description": "Gibt an, ob der Modus für das Mähen aktiv ist. (Yuka)"
+        },
+        "is_dump": {
+          "name": "Grasschnitt sammeln",
+          "description": "Gibt an, ob der Modus für das Grasschnittsammeln aktiv ist. (Yuka)"
+        },
+        "is_edge": {
+          "name": "Kanten schneiden",
+          "description": "Gibt an, ob der Modus für das Kantenschneiden aktiv ist. (Yuka)"
+        },
+        "collect_grass_frequency": {
+          "name": "Intervall für das Grasschnittsammeln",
+          "description": "Gibt an, wie oft Grasschnitt gesammelt wird (in Quadratmetern). (Yuka)"
+        },
+        "border_mode": {
+          "name": "Mähreihenfolge",
+          "description": "Gibt an, in welcher Reihenfolge gemäht wird. (zuerst Eingrenzung oder Fläche)"
+        },
+        "job_version": {
+          "name": "Aufgaben-Version",
+          "description": "Gibt die Version der Aufgabe an."
+        },
+        "job_id": {
+          "name": "Aufgaben-ID",
+          "description": "Gibt die ID der Aufgabe an."
+        },
+        "speed": {
+          "name": "Geschwindigkeit",
+          "description": "Gibt an, welche Geschwindigkeit beim Mähen verwendet wird."
+        },
+        "ultra_wave": {
+          "name": "Hinderniserkennungsmodus",
+          "description": "Gibt an, welcher Modus der Hinderniserkennung beim Mähen verwendet wird."
+        },
+        "channel_mode": {
+          "name": "Schnittbahnenmodus",
+          "description": "Gibt an, welcher Modus für die Schnittbahnennavigation verwendet wird. (Zick-Zack, Schachbrett, Adaptives Zick-Zack oder nur Eingrenzung)"
+        },
+        "channel_width": {
+          "name": "Schnittbahnenabstand",
+          "description": "Gibt an, welcher Abstand zwischen den einzelnen Schnittbahnen eingestellt ist. (in cm)"
+        },
+        "blade_height": {
+          "name": "Schnitthöhe",
+          "description": "Gibt an, welche Schnitthöhe eingestellt ist."
+        },
+        "toward": {
+          "name": "Ausgangswinkel",
+          "description": "Gibt an, welcher Ausgangswinkel für das Mähen verwendet wird."
+        },
+        "toward_included_angle": {
+          "name": "Kreuzungswinkel",
+          "description": "Gibt an, welcher Kreuzungswinkel im Schachbrett-Modus verwendet wird. (Standardwert ist 90 Grad)"
+        },
+        "toward_mode": {
+          "name": "Schnittwinkelmodus",
+          "description": "Gibt an, welche Mährichtung verwendet wird."
+        },
+        "mowing_laps": {
+          "name": "Umrundungsanzahl für Eingrenzung",
+          "description": "Gibt an, wie viele Runden entlang der Eingrenzung des Mähbereichs durchgeführt werden."
+        },
+        "obstacle_laps": {
+          "name": "Umrundungsanzahl für No-Go-Zonen",
+          "description": "Gibt an, wie viele Runden entlang der No-Go-Zonen durchgeführt werden."
+        },
+        "start_progress": {
+          "name": "Fortschritt beim Start",
+          "description": "Gibt an, welcher prozentuale Fortschritt beim Start einer Aufgabe angenommen wird."
+        },
+        "auto_change_direction": {
+          "name": "Mährichtung automatisch umkehren",
+          "description": "Kehrt die Mährichtung zwischen den Durchläufen um: 0 = aus, 1 = ein. Wird nur bei Modellen und Firmware verwendet, die es unterstützen. Ohne Angabe gilt die Einstellung des Schalters."
+        },
+        "ride_boundary_distance": {
+          "name": "Abstand der Eingrenzungsfahrt",
+          "description": "Gibt an, wie weit der Mähroboter entlang der Eingrenzung nach außen fährt. (von 0 bis 1) Wird nur bei unterstützten Modellen und bei aktivierten Eingrenzungsrunden verwendet."
+        },
+        "areas": {
+          "name": "Bereichsauswahl",
+          "description": "Gibt an, welche zu mähenden Bereiche ausgewählt werden können."
+        }
+      }
     }
   },
   "exceptions": {
@@ -1831,6 +1921,12 @@
     },
     "battery_settings_unread": {
       "message": "Die Akkueinstellungen wurden noch nicht vom Mähroboter gelesen. Eine Änderung würde jetzt das Nebenzeit-Ladefenster zurücksetzen, daher wurde nichts gesendet. Bitte versuchen Sie es erneut, sobald der Mähroboter verbunden ist."
+    },
+    "plan_needs_idle_mower": {
+      "message": "{device_name} muss im Leerlauf sein, um eine Route zu planen. Beenden Sie zuerst die aktuelle Aufgabe."
+    },
+    "planned_route_unavailable": {
+      "message": "{device_name} hat die geplante Route nicht übermittelt. Aktivieren Sie über die Cloud in den Optionen „Mähpfadabruf aktivieren (Cloud)“ oder verbinden Sie sich per Bluetooth."
     }
   },
   "issues": {

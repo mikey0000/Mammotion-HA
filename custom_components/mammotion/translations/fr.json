@@ -1601,6 +1601,96 @@
           "description": "Sauvegarde à supprimer."
         }
       }
+    },
+    "plan_route": {
+      "name": "Planifier l'itinéraire",
+      "description": "Planifie un itinéraire de tonte avec les réglages indiqués sans le démarrer, attend que la tondeuse transmette cet itinéraire et le renvoie en GeoJSON avec le plan confirmé par la tondeuse. La tondeuse doit être inactive. Via le cloud, l'option « Activer la récupération du trajet de tonte (cloud) » doit être activée.",
+      "fields": {
+        "is_mow": {
+          "name": "Tonte",
+          "description": "Si la tonte est active. (Yuka)."
+        },
+        "is_dump": {
+          "name": "Ramassage de l'herbe",
+          "description": "Si le ramassage de l''herbe est actif. (Yuka)."
+        },
+        "is_edge": {
+          "name": "Mode bordure",
+          "description": "Si le mode bordure est actif. (Yuka)."
+        },
+        "collect_grass_frequency": {
+          "name": "Fréquence de ramassage de l'herbe",
+          "description": "Fréquence de ramassage de l'herbe (en mètres carrés). (Yuka)."
+        },
+        "border_mode": {
+          "name": "Ordre de tonte",
+          "description": "Ordre du chemin de tonte (bordure d'abord ou grille d'abord)."
+        },
+        "job_version": {
+          "name": "Version de la tâche",
+          "description": "Version de la tâche."
+        },
+        "job_id": {
+          "name": "Identifiant de la tâche",
+          "description": "Identifiant de la tâche."
+        },
+        "speed": {
+          "name": "Vitesse",
+          "description": "Vitesse de tonte."
+        },
+        "ultra_wave": {
+          "name": "Détection d'obstacles",
+          "description": "Stratégie de contournement pour la tonte."
+        },
+        "channel_mode": {
+          "name": "Mode canal",
+          "description": "Mode de trajectoire (quadrillage, zigzag, zigzag adaptatif ou périmètre seulement)."
+        },
+        "channel_width": {
+          "name": "Espacement des trajectoires",
+          "description": "Espacement des trajectoires (en cm)."
+        },
+        "blade_height": {
+          "name": "Hauteur de coupe",
+          "description": "Hauteur de coupe."
+        },
+        "toward": {
+          "name": "Angle",
+          "description": "Angle de direction pour la tonte."
+        },
+        "toward_included_angle": {
+          "name": "Angle par rapport à la grille",
+          "description": "Lors de la sélection de la grille, modifiez le deuxième angle."
+        },
+        "toward_mode": {
+          "name": "Mode de direction",
+          "description": "Mode angle."
+        },
+        "mowing_laps": {
+          "name": "Tours de tonte du périmètre",
+          "description": "Nombre de tours de tonte du périmètre."
+        },
+        "obstacle_laps": {
+          "name": "Tours de tonte des zones interdites",
+          "description": "Nombre de tours de tonte des zones interdites."
+        },
+        "start_progress": {
+          "name": "Démarrer à un pourcentage de progression",
+          "description": "Démarrer à un pourcentage de progression."
+        },
+        "auto_change_direction": {
+          "name": "Inversion automatique du sens de tonte",
+          "description": "Inverse le sens de tonte d'un passage à l'autre : 0 = désactivé, 1 = activé. Utilisé uniquement sur les modèles et firmwares compatibles. S'il est omis, le réglage de l'interrupteur s'applique."
+        },
+        "ride_boundary_distance": {
+          "name": "Couverture des bordures",
+          "description": "Jusqu'où la tondeuse se décale vers l'extérieur pendant les tours de périmètre, de 0 (bord intérieur) à 1 (sur le bord). Utilisé uniquement sur les modèles compatibles et lorsque les tours de périmètre sont activés."
+        },
+        "areas": {
+          "name": "Zones",
+          "description": "Liste des zones à tondre (représentées sous forme d'entiers)."
+        }
+      }
     }
   },
   "exceptions": {
@@ -1831,6 +1921,12 @@
     },
     "battery_settings_unread": {
       "message": "Les réglages de la batterie n'ont pas encore été lus depuis la tondeuse. Les modifier maintenant réinitialiserait la plage de charge en heures creuses ; rien n'a donc été envoyé. Réessayez une fois la tondeuse connectée."
+    },
+    "plan_needs_idle_mower": {
+      "message": "{device_name} doit être inactive pour planifier un itinéraire. Arrêtez ou terminez d'abord la tâche en cours."
+    },
+    "planned_route_unavailable": {
+      "message": "{device_name} n'a pas transmis l'itinéraire planifié. Via le cloud, activez « Activer la récupération du trajet de tonte (cloud) » dans les options, ou connectez-vous en Bluetooth."
     }
   },
   "issues": {

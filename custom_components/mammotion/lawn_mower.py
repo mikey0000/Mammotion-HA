@@ -15,8 +15,8 @@ from homeassistant.components.lawn_mower import (
     LawnMowerEntityFeature,
 )
 from homeassistant.const import MAJOR_VERSION, MINOR_VERSION
-from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import HomeAssistantError
+from homeassistant.core import HomeAssistant, ServiceResponse, SupportsResponse
+from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import issue_registry as ir
@@ -26,6 +26,7 @@ from pymammotion.data.model.device import MowingDevice
 from pymammotion.data.model.report_info import DeviceData, ReportData
 from pymammotion.messaging.command_queue import Priority
 from pymammotion.utility.constant.device_constant import WorkMode
+from pymammotion.utility.constant.poll_policy import MOWING_ACTIVE_MODES
 from pymammotion.utility.device_type import DeviceType
 
 from . import MammotionConfigEntry
@@ -38,6 +39,7 @@ HAS_STOP_AND_IDLE = (MAJOR_VERSION, MINOR_VERSION) >= (2026, 10)
 
 SERVICE_START_MOWING = "start_mow"
 SERVICE_MODIFY_RUNNING_JOB = "modify_running_job"
+SERVICE_PLAN_ROUTE = "plan_route"
 SERVICE_CANCEL_JOB = "cancel_job"
 SERVICE_START_STOP_BLADES = "start_stop_blades"
 SERVICE_SET_NON_WORK_HOURS = "set_non_work_hours"
@@ -91,6 +93,13 @@ START_MOW_SCHEMA: dict[str | vol.Marker, Any] = {
     ),
     vol.Optional("areas"): vol.All(cv.ensure_list, [cv.entity_id]),
     vol.Optional(_RETIRED_JOB_FIELD): _RETIRED_JOB_FIELD_SCHEMA,
+}
+
+#: A plan takes the route settings of a new job; it neither modifies nor starts one.
+PLAN_ROUTE_SCHEMA: dict[str | vol.Marker, Any] = {
+    key: value
+    for key, value in START_MOW_SCHEMA.items()
+    if key not in ("modify", "plan_only", _RETIRED_JOB_FIELD)
 }
 
 #: How long to wait for the mower to report the mode a job transition leads to.
@@ -170,6 +179,15 @@ async def async_setup_entry(
         entity_domain=LAWN_MOWER_DOMAIN,
         schema=START_MOW_SCHEMA,
         func="async_start_mowing",
+    )
+    service.async_register_platform_entity_service(
+        hass,
+        DOMAIN,
+        SERVICE_PLAN_ROUTE,
+        entity_domain=LAWN_MOWER_DOMAIN,
+        schema=PLAN_ROUTE_SCHEMA,
+        func="async_plan_route",
+        supports_response=SupportsResponse.ONLY,
     )
     service.async_register_platform_entity_service(
         hass,
@@ -679,6 +697,20 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
             failure_key=failure_key,
         )
         return WorkMode(reported.report_data.dev.sys_status)
+
+    async def async_plan_route(self, **kwargs: Any) -> ServiceResponse:
+        """Plan a route without starting it and return the route the mower planned.
+
+        Refused while a job is active: planning would end it.
+        """
+        if self.rpt_dev_status.sys_status in MOWING_ACTIVE_MODES:
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="plan_needs_idle_mower",
+                translation_placeholders={"device_name": self.coordinator.device_name},
+            )
+        await self.async_start_mowing(plan_only=True, **kwargs)
+        return await self.coordinator.async_planned_route()
 
     async def async_modify_running_job(self, **kwargs: Any) -> None:
         """Change settings on the job already running, without re-planning it."""

@@ -1601,6 +1601,96 @@
           "description": "A törlendő mentés."
         }
       }
+    },
+    "plan_route": {
+      "name": "Útvonal tervezése",
+      "description": "Megtervez egy nyírási útvonalat a megadott beállításokkal anélkül, hogy elindítaná, megvárja, amíg a fűnyíró megosztja az útvonalat, és GeoJSON-ként adja vissza a fűnyíró által megerősített tervvel együtt. A fűnyírónak tétlennek kell lennie. Felhőn keresztül ehhez a beállításokban be kell kapcsolni a „Nyírási útvonal lekérésének engedélyezése (felhő)” opciót.",
+      "fields": {
+        "is_mow": {
+          "name": "Nyírás",
+          "description": "A nyírás aktív-e. (Yuka)."
+        },
+        "is_dump": {
+          "name": "Ürítés",
+          "description": "A fűürítés aktív-e. (Yuka)."
+        },
+        "is_edge": {
+          "name": "Szegélynyírás",
+          "description": "A szegély mód aktív-e. (Yuka)."
+        },
+        "collect_grass_frequency": {
+          "name": "Fűgyűjtés gyakorisága",
+          "description": "A fűgyűjtés gyakorisága (négyzetméterben). (Yuka)."
+        },
+        "border_mode": {
+          "name": "Nyírási sorrend",
+          "description": "Nyírási útvonal sorrendje (kerület először vagy rács először)."
+        },
+        "job_version": {
+          "name": "Feladatverzió",
+          "description": "Feladatverzió."
+        },
+        "job_id": {
+          "name": "Feladatazonosító",
+          "description": "Feladatazonosító."
+        },
+        "speed": {
+          "name": "Sebesség",
+          "description": "Nyírási sebesség."
+        },
+        "ultra_wave": {
+          "name": "Akadályészlelés",
+          "description": "Akadályelkerülési mód."
+        },
+        "channel_mode": {
+          "name": "Nyírási útvonal mód",
+          "description": "Nyírási útvonal (cikcakk, sakktábla, adaptív cikcakk vagy csak kerület)."
+        },
+        "channel_width": {
+          "name": "Útvonalszélesség",
+          "description": "A nyírási útvonal szélessége (cm-ben)."
+        },
+        "blade_height": {
+          "name": "Késmagasság",
+          "description": "A kés magassága."
+        },
+        "toward": {
+          "name": "Kezdő útvonal szöge",
+          "description": "A nyírás kezdő iránya."
+        },
+        "toward_included_angle": {
+          "name": "Keresztezési szög",
+          "description": "Rács választásakor a második szög (alapértelmezett: 90 fok)."
+        },
+        "toward_mode": {
+          "name": "Nyírási szög mód",
+          "description": "A nyírás szögiránya."
+        },
+        "mowing_laps": {
+          "name": "Kerületnyírási körök",
+          "description": "A nyírási terület kerülete körüli körök száma."
+        },
+        "obstacle_laps": {
+          "name": "Tiltott zóna körök",
+          "description": "A tiltott zónák körüli körök száma."
+        },
+        "start_progress": {
+          "name": "Kezdési százalék",
+          "description": "Kezdő előrehaladási százalék."
+        },
+        "auto_change_direction": {
+          "name": "Nyírási irány automatikus váltása",
+          "description": "Futásonként megfordítja a nyírási irányt: 0 = ki, 1 = be. Csak az ezt támogató modelleken és firmware-en használatos. Ha kihagyja, a kapcsoló beállítása érvényes."
+        },
+        "ride_boundary_distance": {
+          "name": "Szegélylefedettség",
+          "description": "Milyen messzire tolódik kifelé a fűnyíró a kerületnyírási körök alatt, 0 (belső szegély) és 1 (a szegélyen) között. Csak a támogatott modelleken és bekapcsolt kerületnyírási körök esetén használatos."
+        },
+        "areas": {
+          "name": "Terület kiválasztása",
+          "description": "A nyírandó területek listája (egész számokként)."
+        }
+      }
     }
   },
   "exceptions": {
@@ -1831,6 +1921,12 @@
     },
     "battery_settings_unread": {
       "message": "Az akkumulátor beállításait még nem sikerült kiolvasni a fűnyíróból. A módosítás most visszaállítaná a csúcsidőn kívüli töltési időszakot, ezért semmi sem lett elküldve. Próbálja újra, amikor a fűnyíró csatlakozik."
+    },
+    "plan_needs_idle_mower": {
+      "message": "{device_name} csak tétlen állapotban tud útvonalat tervezni. Előbb állítsa le vagy fejezze be a folyamatban lévő feladatot."
+    },
+    "planned_route_unavailable": {
+      "message": "{device_name} nem osztotta meg a megtervezett útvonalat. Felhőn keresztül kapcsolja be a beállításokban a „Nyírási útvonal lekérésének engedélyezése (felhő)” opciót, vagy csatlakozzon Bluetooth-on."
     }
   },
   "issues": {

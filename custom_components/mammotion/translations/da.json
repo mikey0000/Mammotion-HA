@@ -1601,6 +1601,96 @@
           "description": "Sikkerhedskopi, der skal slettes."
         }
       }
+    },
+    "plan_route": {
+      "name": "Planlæg rute",
+      "description": "Planlægger en klipperute med de angivne indstillinger uden at starte den, venter på, at plæneklipperen deler ruten, og returnerer den som GeoJSON sammen med den plan, plæneklipperen bekræftede. Plæneklipperen skal være inaktiv. Via skyen skal 'Aktivér hentning af klippesti (sky)' være slået til i indstillingerne.",
+      "fields": {
+        "is_mow": {
+          "name": "Klipper",
+          "description": "Om klipning er aktiv. (Yuka)."
+        },
+        "is_dump": {
+          "name": "Tømmer",
+          "description": "Om græs tømming er aktiv. (Yuka)."
+        },
+        "is_edge": {
+          "name": "Kantklipning",
+          "description": "Om kantklipning er aktiv. (Yuka)."
+        },
+        "collect_grass_frequency": {
+          "name": "Hyppigheden af ​​græsopsamling",
+          "description": "Hyppigheden af ​​græsopsamling (i kvadratmeter). (Yuka)."
+        },
+        "border_mode": {
+          "name": "Klipningsrækkefølge",
+          "description": "Klippebane rækkefølge (Kant først eller gitter først)."
+        },
+        "job_version": {
+          "name": "Opgaveversion",
+          "description": "Opgaveversion."
+        },
+        "job_id": {
+          "name": "Opgave ID",
+          "description": "Opgave ID."
+        },
+        "speed": {
+          "name": "Hastighed",
+          "description": "Klippehastighed."
+        },
+        "ultra_wave": {
+          "name": "Forhindringsregistrering",
+          "description": "Forhindringsundgåelsestilstand."
+        },
+        "channel_mode": {
+          "name": "Klippebanetilstand",
+          "description": "Klippebane (zigzag, skakbræt, adaptiv zigzag eller kun kant)."
+        },
+        "channel_width": {
+          "name": "Banebredde",
+          "description": "Bredde på klippebanen (i cm)."
+        },
+        "blade_height": {
+          "name": "Klinge højde",
+          "description": "Højde på Klinge."
+        },
+        "toward": {
+          "name": "Startbanevinkel",
+          "description": "Startretning for klipning."
+        },
+        "toward_included_angle": {
+          "name": "Krydsningsvinkel",
+          "description": "Når du vælger gitter, ændre den anden vinkel (standard er 90 grader)."
+        },
+        "toward_mode": {
+          "name": "Klippevinkeltilstand",
+          "description": "Vinkelretning for klipning."
+        },
+        "mowing_laps": {
+          "name": "Omgange af kantklippning",
+          "description": "Antal omgange rundt om klippeområdets kant."
+        },
+        "obstacle_laps": {
+          "name": "No-go Zone Klipning Omgange",
+          "description": "Antal omgange rundt om No-go Zones."
+        },
+        "start_progress": {
+          "name": "Start forløb på",
+          "description": "Start forløb procent."
+        },
+        "auto_change_direction": {
+          "name": "Automatisk vending af klipperetning",
+          "description": "Skifter klipperetning mellem kørsler: 0 = fra, 1 = til. Bruges kun på modeller og firmware, der understøtter det. Udelades feltet, gælder kontaktens indstilling."
+        },
+        "ride_boundary_distance": {
+          "name": "Kantdækning",
+          "description": "Hvor langt ud plæneklipperen kører under kantklipningsomgangene, fra 0 (inderkant) til 1 (på kanten). Bruges kun på modeller, der understøtter det, og når kantklipningsomgange er slået til."
+        },
+        "areas": {
+          "name": "Områdevalg",
+          "description": "Liste over områder, der skal klippes (repræsenteret som heltal)."
+        }
+      }
     }
   },
   "exceptions": {
@@ -1831,6 +1921,12 @@
     },
     "battery_settings_unread": {
       "message": "Batteriindstillingerne er endnu ikke læst fra plæneklipperen. En ændring nu ville nulstille opladningsvinduet uden for spidsbelastning, så intet blev sendt. Prøv igen, når plæneklipperen er forbundet."
+    },
+    "plan_needs_idle_mower": {
+      "message": "{device_name} skal være inaktiv for at planlægge en rute. Stop eller afslut først den aktuelle opgave."
+    },
+    "planned_route_unavailable": {
+      "message": "{device_name} delte ikke den planlagte rute. Slå 'Aktivér hentning af klippesti (sky)' til i indstillingerne via skyen, eller opret forbindelse via Bluetooth."
     }
   },
   "issues": {

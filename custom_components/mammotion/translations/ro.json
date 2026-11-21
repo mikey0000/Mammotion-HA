@@ -1601,6 +1601,96 @@
           "description": "Copia de rezervă de șters."
         }
       }
+    },
+    "plan_route": {
+      "name": "Planifică traseul",
+      "description": "Planifică un traseu de tuns cu setările date fără a-l porni, așteaptă ca robotul să partajeze traseul și îl returnează ca GeoJSON împreună cu planul confirmat de robot. Robotul trebuie să fie inactiv. Prin cloud este necesar ca în opțiuni să fie activată „Activează preluarea traseului de tuns (cloud)”.",
+      "fields": {
+        "is_mow": {
+          "name": "Se datorează",
+          "description": "Dacă tunderea este activă. (Yuka)."
+        },
+        "is_dump": {
+          "name": "Fac Dumping",
+          "description": "Dacă descărcarea ierbii este activă. (Yuka)."
+        },
+        "is_edge": {
+          "name": "Mat de margine",
+          "description": "Dacă modul de bordură este activ. (Yuka)."
+        },
+        "collect_grass_frequency": {
+          "name": "Frecvență colectare iarbă",
+          "description": "Frecvența de colectare a ierbii (în metri pătrați). (Yuka)."
+        },
+        "border_mode": {
+          "name": "Comanda Mow",
+          "description": "Ordinul căii de mormânt (primul sau grila întâi)."
+        },
+        "job_version": {
+          "name": "Versiune Job",
+          "description": "Versiunea postului."
+        },
+        "job_id": {
+          "name": "ID job",
+          "description": "ID Job"
+        },
+        "speed": {
+          "name": "Viteză",
+          "description": "Viteza mormântării."
+        },
+        "ultra_wave": {
+          "name": "Detectarea obstacolelor",
+          "description": "Modul de evitare a obstacolelor."
+        },
+        "channel_mode": {
+          "name": "Modul cale de tăiere",
+          "description": "Calea de tăiere (doar pentru zigzag, șescom, zigzag adaptiv sau perimetr)."
+        },
+        "channel_width": {
+          "name": "Lățimea căii",
+          "description": "Lățimea căii de cosit (în cm)."
+        },
+        "blade_height": {
+          "name": "Înălțime lamă",
+          "description": "Înălţimea lamei."
+        },
+        "toward": {
+          "name": "Unghiul de pornire a traiectoriei",
+          "description": "Direcţia de pornire pentru umăr."
+        },
+        "toward_included_angle": {
+          "name": "Unghiul de trecere",
+          "description": "La selectarea grilei schimbă al doilea unghi (implicit este de 90 de grade)."
+        },
+        "toward_mode": {
+          "name": "Mod unghi tăiat",
+          "description": "Direcţia glulară a muşchiului."
+        },
+        "mowing_laps": {
+          "name": "Perimetru Lapţi de portaj",
+          "description": "Numărul de robinete în jurul perimetrului zonei de umezire."
+        },
+        "obstacle_laps": {
+          "name": "Zonele fără urme",
+          "description": "Numărul de lacuri în jurul zonelor fără destinaţie."
+        },
+        "start_progress": {
+          "name": "Progres Start",
+          "description": "Progres de inceput procent."
+        },
+        "auto_change_direction": {
+          "name": "Inversare automată a direcției de tuns",
+          "description": "Inversează direcția de tuns între rulări: 0 = oprit, 1 = pornit. Folosit doar pe modelele și firmware-ul care îl acceptă. Dacă este omis, se aplică setarea comutatorului."
+        },
+        "ride_boundary_distance": {
+          "name": "Acoperire margini",
+          "description": "Cât de mult se deplasează spre exterior mașina de tuns în timpul turelor de perimetru, de la 0 (margine interioară) la 1 (pe margine). Folosit doar pe modelele care îl acceptă și când turele de perimetru sunt activate."
+        },
+        "areas": {
+          "name": "Selecția zonei",
+          "description": "Lista zonelor care trebuie aruncate (reprezentate ca întregi)."
+        }
+      }
     }
   },
   "exceptions": {
@@ -1831,6 +1921,12 @@
     },
     "battery_settings_unread": {
       "message": "Setările bateriei nu au fost încă citite de pe mașina de tuns. Modificarea lor acum ar reseta intervalul de încărcare în afara orelor de vârf, așa că nu s-a trimis nimic. Încercați din nou după ce mașina de tuns este conectată."
+    },
+    "plan_needs_idle_mower": {
+      "message": "{device_name} trebuie să fie inactiv pentru a planifica un traseu. Opriți sau finalizați mai întâi lucrarea curentă."
+    },
+    "planned_route_unavailable": {
+      "message": "{device_name} nu a partajat traseul planificat. Prin cloud, activați în opțiuni „Activează preluarea traseului de tuns (cloud)” sau conectați-vă prin Bluetooth."
     }
   },
   "issues": {

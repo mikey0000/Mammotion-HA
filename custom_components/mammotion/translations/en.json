@@ -1601,6 +1601,96 @@
           "description": "Backup to delete."
         }
       }
+    },
+    "plan_route": {
+      "name": "Plan route",
+      "description": "Plans a mowing route with the given settings without starting it, waits for the mower to share that route, and returns it as GeoJSON together with the plan the mower confirmed. The mower must be idle. Over the cloud this needs 'Enable mow path fetching (cloud)' switched on in the options.",
+      "fields": {
+        "is_mow": {
+          "name": "Is mowing",
+          "description": "Whether mowing is active. (Yuka)"
+        },
+        "is_dump": {
+          "name": "Is dumping",
+          "description": "Whether grass dumping is active. (Yuka)"
+        },
+        "is_edge": {
+          "name": "Edge mowing",
+          "description": "Whether edge mode is active. (Yuka)"
+        },
+        "collect_grass_frequency": {
+          "name": "Grass collection frequency",
+          "description": "Frequency to collect grass (in meters squared). (Yuka)"
+        },
+        "border_mode": {
+          "name": "Mow order",
+          "description": "Mowing path order (Perimeter first or grid first)."
+        },
+        "job_version": {
+          "name": "Job version",
+          "description": "Job version."
+        },
+        "job_id": {
+          "name": "Job ID",
+          "description": "Job ID."
+        },
+        "speed": {
+          "name": "Speed",
+          "description": "Mowing speed."
+        },
+        "ultra_wave": {
+          "name": "Obstacle detection",
+          "description": "Obstacle avoidance mode."
+        },
+        "channel_mode": {
+          "name": "Cutting path mode",
+          "description": "Cutting path (zigzag, chessboard, adaptive zigzag, or perimeter only)."
+        },
+        "channel_width": {
+          "name": "Path width",
+          "description": "Width of the mowing path (in cm)."
+        },
+        "blade_height": {
+          "name": "Blade height",
+          "description": "Height of the blade."
+        },
+        "toward": {
+          "name": "Starting path angle",
+          "description": "Starting direction for mowing."
+        },
+        "toward_included_angle": {
+          "name": "Crossing angle",
+          "description": "When selecting grid change the second angle (default is 90 degrees)."
+        },
+        "toward_mode": {
+          "name": "Cutting angle mode",
+          "description": "Angular direction of mow."
+        },
+        "mowing_laps": {
+          "name": "Perimeter mowing laps",
+          "description": "Number of laps around the mowing area perimeter."
+        },
+        "obstacle_laps": {
+          "name": "No-go zone mowing laps",
+          "description": "Number of laps around No-go zones."
+        },
+        "start_progress": {
+          "name": "Start progress",
+          "description": "Starting progress percentage."
+        },
+        "auto_change_direction": {
+          "name": "Auto-reverse mowing direction",
+          "description": "Flip the mowing direction between runs: 0 = off, 1 = on. Only used on models and firmware that support it. Leave it out to keep the switch's setting."
+        },
+        "ride_boundary_distance": {
+          "name": "Edge coverage",
+          "description": "How far out the mower drives during the perimeter laps, from 0 (inside edge) to 1 (on the edge). Only used on models that support it and when perimeter laps are on."
+        },
+        "areas": {
+          "name": "Area selection",
+          "description": "List of areas to mow (represented as integers)."
+        }
+      }
     }
   },
   "exceptions": {
@@ -1831,6 +1921,12 @@
     },
     "battery_settings_unread": {
       "message": "The battery settings have not been read from the mower yet. Changing them now would reset its off-peak charging window, so nothing was sent. Try again once the mower is connected."
+    },
+    "plan_needs_idle_mower": {
+      "message": "{device_name} must be idle to plan a route. Stop or finish the current job first."
+    },
+    "planned_route_unavailable": {
+      "message": "{device_name} did not share the route it planned. Over the cloud, switch on 'Enable mow path fetching (cloud)' in the options, or connect over Bluetooth."
     }
   },
   "issues": {
