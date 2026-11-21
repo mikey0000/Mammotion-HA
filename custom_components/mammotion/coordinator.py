@@ -4077,12 +4077,7 @@ class MammotionMapUpdateCoordinator(MammotionBaseUpdateCoordinator[MowerInfo]):
         if device.location.RTK.latitude == 0.0 or device.location.dock.latitude == 0.0:
             await self.async_rtk_dock_location(Priority.NORMAL)
 
-        bol_hash = (
-            device.report_data.locations[0].bol_hash
-            if device.report_data.locations
-            else 0
-        )
-        if not device.map.is_map_synced(bol_hash):
+        if device.map_sync_due:
             await self.manager.start_map_sync(self.device_name)
 
         _d = self.manager.get_device_by_name(self.device_name)
