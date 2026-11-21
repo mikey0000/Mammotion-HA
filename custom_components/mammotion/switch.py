@@ -56,6 +56,8 @@ _PYMAMMOTION_AUTO_NAME = re.compile(r"^area\s+\d+$", re.IGNORECASE)
 _AREA_ID_OPTION = "area_id"
 
 
+#: The unnamed areas last asked about, per coordinator.
+_NAMES_REQUESTED_FOR: WeakKeyDictionary[Any, frozenset[int]] = WeakKeyDictionary()
 #: Saved mowing order of the areas restored so far, per coordinator.
 _RESTORED_AREA_ORDER: WeakKeyDictionary[Any, dict[int, int]] = WeakKeyDictionary()
 
@@ -1075,10 +1077,19 @@ def async_add_area_entities(  # noqa: C901
         int(k) for k in hash_map.area if str(k).lstrip("-").isdigit()
     }
 
-    # Re-fetch names while the device has not sent one for every area; a Luba 1 never does.
-    if not DeviceType.is_luba1(coordinator.device_name) and map_area_hashes - {
-        a.hash for a in hash_map.area_name
-    }:
+    # A Luba 1 never sends names.  Only areas in the current manifest count: a stale
+    # map names hashes the device has moved on from.  Each reply re-runs this, so one
+    # set of unnamed areas is asked about once.
+    unnamed = frozenset(
+        (set(hash_map.area_root_hashlist) & map_area_hashes)
+        - {a.hash for a in hash_map.area_name}
+    )
+    if (
+        not DeviceType.is_luba1(coordinator.device_name)
+        and unnamed
+        and _NAMES_REQUESTED_FOR.get(coordinator) != unnamed
+    ):
+        _NAMES_REQUESTED_FOR[coordinator] = unnamed
         coordinator.hass.async_create_task(coordinator.async_get_area_list())
 
     # Names left behind for deleted hashes are not areas while the map holds any.

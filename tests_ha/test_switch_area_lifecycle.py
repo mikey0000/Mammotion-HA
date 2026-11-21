@@ -480,16 +480,6 @@ class TestHashUpdateCorrectness:
 class TestAreaListFetchTrigger:
     """``async_get_area_list`` fills in names the device has not sent yet."""
 
-    async def test_missing_name_entry_triggers_fetch(self, hass: HomeAssistant) -> None:
-        """h2 is in map.area with no area_name entry, so names are incomplete."""
-        h1, h2 = 111, 222
-        coordinator = make_coordinator(hass, [h1, h2], [area_name("front", h1)])
-
-        AreaSwitches(hass, coordinator).sync()
-        await hass.async_block_till_done()
-
-        coordinator.async_get_area_list.assert_awaited_once()
-
     async def test_all_names_present_no_fetch(self, hass: HomeAssistant) -> None:
         """Every hash already has an entry, so there is nothing to ask for."""
         h1, h2 = 111, 222

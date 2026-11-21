@@ -28,7 +28,6 @@ BARE_ASYNCIO_MARKER: dict[str, int] = {}
 #: Test modules over the size cap, at the length they had when the cap landed.
 OVERSIZED: dict[str, int] = {
     "test_notifications.py": 734,
-    "test_switch_area_lifecycle.py": 604,
 }
 
 #: Test parameters without a type annotation, per module.
