@@ -167,7 +167,7 @@ def test_start_mow_fills_in_no_route_field_the_caller_left_out() -> None:
     """HA applies schema defaults before the entity sees the call (#913)."""
     validated = vol.Schema(START_MOW_SCHEMA)({})
 
-    assert set(validated) <= {"modify", "plan_only"}
+    assert set(validated) <= {"modify"}
 
 
 async def test_start_mow_keeps_the_entity_settings_it_was_not_given() -> None:
@@ -206,7 +206,7 @@ def test_services_yaml_shows_no_default_for_the_route_fields() -> None:
     assert [
         name
         for name, field in fields.items()
-        if "default" in field and name not in ("modify", "plan_only")
+        if "default" in field and name != "modify"
     ] == []
 
 

@@ -64,7 +64,6 @@ _RETIRED_JOB_FIELD_SCHEMA = vol.All(vol.Coerce(int), vol.In([0, 1]))
 START_MOW_SCHEMA: dict[str | vol.Marker, Any] = {
     # No defaults: a route field left out keeps the config entity's value.
     vol.Optional("modify"): cv.boolean,
-    vol.Optional("plan_only"): cv.boolean,
     vol.Optional("is_mow"): cv.boolean,
     vol.Optional("is_dump"): cv.boolean,
     vol.Optional("is_edge"): cv.boolean,
@@ -99,7 +98,7 @@ START_MOW_SCHEMA: dict[str | vol.Marker, Any] = {
 PLAN_ROUTE_SCHEMA: dict[str | vol.Marker, Any] = {
     key: value
     for key, value in START_MOW_SCHEMA.items()
-    if key not in ("modify", "plan_only", _RETIRED_JOB_FIELD)
+    if key not in ("modify", _RETIRED_JOB_FIELD)
 }
 
 #: How long to wait for the mower to report the mode a job transition leads to.
@@ -376,15 +375,18 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
             },
         )
 
-    async def async_start_mowing(self, **kwargs: Any) -> None:  # noqa: C901
+    async def async_start_mowing(self, **kwargs: Any) -> None:
         """Start a job, or resume the paused one when no new route is asked for."""
+        await self._async_start_job(plan_only=False, **kwargs)
+
+    async def _async_start_job(self, *, plan_only: bool, **kwargs: Any) -> None:  # noqa: C901
+        """Plan the job *kwargs* describe and, unless *plan_only*, start it."""
         trans_key = "pause_failed"
         self._drop_retired_job_field(SERVICE_START_MOWING, kwargs)
 
         await self.coordinator.async_ensure_fresh_state(wait=True)
 
         modify_plan = kwargs.pop("modify", False)
-        plan_only = kwargs.pop("plan_only", False)
         areas = [
             # TODO this should not need to be cast.
             int(entity_hash)
@@ -709,7 +711,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
                 translation_key="plan_needs_idle_mower",
                 translation_placeholders={"device_name": self.coordinator.device_name},
             )
-        await self.async_start_mowing(plan_only=True, **kwargs)
+        await self._async_start_job(plan_only=True, **kwargs)
         return await self.coordinator.async_planned_route()
 
     async def async_modify_running_job(self, **kwargs: Any) -> None:

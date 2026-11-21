@@ -17,6 +17,7 @@ from pymammotion.utility.constant.device_constant import WorkMode
 
 from custom_components.mammotion.lawn_mower import (
     PLAN_ROUTE_SCHEMA,
+    START_MOW_SCHEMA,
     MammotionLawnMowerEntity,
 )
 
@@ -63,8 +64,13 @@ async def test_a_mower_on_a_job_is_refused_and_left_alone(mode: int) -> None:
     entity.coordinator.async_planned_route.assert_not_awaited()
 
 
-@pytest.mark.parametrize("field", ["plan_only", "modify"])
-def test_it_takes_no_field_that_would_start_or_modify_a_job(field: str) -> None:
-    """A plan that could be told to start the job would not be a plan."""
+def test_it_takes_no_field_that_would_modify_a_job() -> None:
+    """A plan describes a new job; it has no running one to change."""
     with pytest.raises(vol.Invalid):
-        vol.Schema(PLAN_ROUTE_SCHEMA)({field: True})
+        vol.Schema(PLAN_ROUTE_SCHEMA)({"modify": True})
+
+
+def test_starting_a_job_no_longer_takes_a_plan_only_switch() -> None:
+    """Planning without starting is this service; a second way to ask would drift from it."""
+    with pytest.raises(vol.Invalid):
+        vol.Schema(START_MOW_SCHEMA)({"plan_only": True})

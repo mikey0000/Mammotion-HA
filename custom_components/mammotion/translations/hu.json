@@ -1029,10 +1029,6 @@
         "areas": {
           "name": "Terület kiválasztása",
           "description": "A nyírandó területek listája (egész számokként)."
-        },
-        "plan_only": {
-          "name": "Csak terv",
-          "description": "Nyírási terv készítése indítás nélkül."
         }
       }
     },

@@ -265,10 +265,6 @@ start_mow:
           multiple: true
           integration: mammotion
           domain: switch
-    plan_only:
-      required: false
-      selector:
-        boolean:
 plan_route:
   target:
     entity:

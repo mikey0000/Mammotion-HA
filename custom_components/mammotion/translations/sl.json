@@ -1029,10 +1029,6 @@
         "areas": {
           "name": "Območje naloge",
           "description": "Spisek območij."
-        },
-        "plan_only": {
-          "name": "Samo načrt",
-          "description": "Ustvari načrt košnje brez zagona naloge."
         }
       }
     },

@@ -1029,10 +1029,6 @@
         "areas": {
           "name": "Bereichsauswahl",
           "description": "Gibt an, welche zu mähenden Bereiche ausgewählt werden können."
-        },
-        "plan_only": {
-          "name": "Nur planen",
-          "description": "Erstellt einen Mähplan, ohne die Aufgabe zu starten."
         }
       }
     },

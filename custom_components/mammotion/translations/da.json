@@ -1029,10 +1029,6 @@
         "areas": {
           "name": "Områdevalg",
           "description": "Liste over områder, der skal klippes (repræsenteret som heltal)."
-        },
-        "plan_only": {
-          "name": "Kun planlægning",
-          "description": "Generer klippeplanen uden at starte jobbet."
         }
       }
     },
