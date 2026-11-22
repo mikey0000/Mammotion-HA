@@ -38,6 +38,7 @@ from custom_components.mammotion.const import CONF_AEP_DATA
 pytestmark = pytest.mark.usefixtures("enable_bluetooth")
 
 _RETRY_INTERVAL = timedelta(minutes=15)
+_CALLBACK_TIMEOUT = 1.0
 
 
 def _outage() -> ConnectionError:
@@ -323,9 +324,12 @@ async def test_an_unrecoverable_auth_error_starts_reauth_before_any_ble_connect(
         client.on_unrecoverable_auth_error(
             ACCOUNT, TransportType.CLOUD_MAMMOTION, _rejected()
         ),
-        timeout=1,
+        timeout=_CALLBACK_TIMEOUT,
     )
     await asyncio.sleep(0)
+    # Release the hung connect so no task outlives the test.
+    never.set()
+    await hass.async_block_till_done()
 
     assert len(reauth_flows(hass)) == 1
     assert [call.args[0] for call in client.connect_ble.await_args_list] == [

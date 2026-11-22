@@ -31,6 +31,7 @@ from pymammotion.transport.base import (
 )
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
+from custom_components.mammotion import config_flow
 from custom_components.mammotion.const import (
     CONF_ACCOUNT_ID,
     CONF_AEP_DATA,
@@ -102,10 +103,7 @@ async def _password_step(
 async def _sign_in(
     hass: HomeAssistant, result: dict[str, Any], flow_client: MagicMock
 ) -> dict[str, Any]:
-    with patch(
-        "custom_components.mammotion.config_flow.MammotionClient",
-        return_value=flow_client,
-    ):
+    with patch.object(config_flow, "MammotionClient", return_value=flow_client):
         return await _submit(hass, result, {CONF_PASSWORD: "new-password"})
 
 

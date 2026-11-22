@@ -29,6 +29,7 @@ from custom_components.mammotion.const import (
 #: Ceiling on a transport connecting to the loopback broker.
 _SETTLE_TIMEOUT = 5.0
 
+
 async def add_account(hass: HomeAssistant, scenario: Scenario) -> ConfigFlowResult:
     """Drive Add Integration with nothing in Bluetooth range, signing in as the fake account."""
     result = await hass.config_entries.flow.async_init(

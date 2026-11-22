@@ -151,6 +151,7 @@ async def test_a_rate_limited_refresh_costs_one_request_per_attempt_and_no_passw
         "password_grants": 0,
         "oauth_429": 2,
     }
+    assert entry.state is ConfigEntryState.SETUP_RETRY
 
 
 async def _restore_with_aliyun_refused(
@@ -191,7 +192,10 @@ async def test_an_aliyun_refusal_keeps_the_aliyun_mower_as_an_unavailable_entity
     await _restore_with_aliyun_refused(hass, fake_cloud)
 
     assert mower_state(hass, "Luba-ALIYUN1") == STATE_UNAVAILABLE
-    assert mower_state(hass, fake_cloud.scenario.device.device_name) is not None
+    assert mower_state(hass, fake_cloud.scenario.device.device_name) not in (
+        None,
+        STATE_UNAVAILABLE,
+    )
 
 
 @pytest.mark.regression

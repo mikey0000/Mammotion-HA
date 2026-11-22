@@ -209,6 +209,7 @@ async def test_a_refused_saved_login_asks_to_sign_in_and_drops_the_cache(
     assert len(reauth_flows(hass)) == 1
     assert CONF_AEP_DATA not in entry.data
     client.login_and_initiate_cloud.assert_not_awaited()
+    assert login_issue(hass, entry) is None
 
 
 async def test_a_login_the_server_refused_asks_to_sign_in(
