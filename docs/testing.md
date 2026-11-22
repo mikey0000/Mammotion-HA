@@ -34,6 +34,13 @@ pymammotion would do I/O.
 | real `MowingDevice` / `Device` / protobuf models, real `DeviceHandle` with a scripted transport  | the real clock (§6), files outside `tmp_path`, `~`                                      |
 | a spec'd `MammotionClient` stand-in, hand-written fakes (`FakeAgoraSession`)                     | private HA internals beyond what `pytest_homeassistant_custom_component.common` exposes |
 
+The exception is `tests_ha/fake_cloud/`: real setup and flows against
+pymammotion's fake Mammotion cloud over loopback (`socket_enabled`, connects to
+127.0.0.1 only), asserting the server's counters (password grants, refreshes).
+The fake lives in the library's source checkout, so the tier runs only with it
+on the path (`PYTHONPATH=<Luba-API> uv run --no-sync python -m pytest tests_ha`)
+and skips otherwise.
+
 Budget: under 1 s per test; the whole suite under a minute. A test that needs
 more is doing real waiting (§6).
 
