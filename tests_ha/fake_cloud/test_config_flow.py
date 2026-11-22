@@ -1,8 +1,4 @@
-"""Signing in from a flow against the fake cloud: the one password grant setup reuses.
-
-Each test here stops the flow's throwaway client while its MQTT connect is in
-flight, which trips a pymammotion defect at teardown (see ``FLOW_CLIENT_LEAK``).
-"""
+"""Signing in from a flow against the fake cloud: the one password grant setup reuses."""
 
 import pytest
 from homeassistant.config_entries import ConfigEntryState
@@ -12,7 +8,6 @@ from tests.fakeserver.cloud import FakeMammotionCloud
 from tests.integration.fake_cloud._helpers import counts, make_aliyun_account
 
 from .fake_cloud_support import (
-    FLOW_CLIENT_LEAK,
     add_account,
     entry_client,
     make_cache,
@@ -20,7 +15,7 @@ from .fake_cloud_support import (
     settle,
 )
 
-pytestmark = [pytest.mark.usefixtures("enable_bluetooth"), FLOW_CLIENT_LEAK]
+pytestmark = pytest.mark.usefixtures("enable_bluetooth")
 
 
 async def test_adding_the_account_signs_in_once_and_setup_reuses_that_login(

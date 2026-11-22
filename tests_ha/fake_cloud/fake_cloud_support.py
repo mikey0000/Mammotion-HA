@@ -29,16 +29,6 @@ from custom_components.mammotion.const import (
 #: Ceiling on a transport connecting to the loopback broker.
 _SETTLE_TIMEOUT = 5.0
 
-#: A flow stops its throwaway client right after the login, mid MQTT connect;
-#: pymammotion's MQTTTransport.disconnect then leaves aiomqtt's socket behind and,
-#: when the broker closes it, aiomqtt raises CancelledError in a loop callback,
-#: which fails the test at teardown.  The assertions themselves pass.
-FLOW_CLIENT_LEAK = pytest.mark.skip(
-    reason="blocked on pymammotion: a client stopped mid MQTT connect leaks its "
-    "aiomqtt socket (MQTTTransport.disconnect); unskip once the library fixes it"
-)
-
-
 async def add_account(hass: HomeAssistant, scenario: Scenario) -> ConfigFlowResult:
     """Drive Add Integration with nothing in Bluetooth range, signing in as the fake account."""
     result = await hass.config_entries.flow.async_init(

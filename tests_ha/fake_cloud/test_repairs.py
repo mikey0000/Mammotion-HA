@@ -16,7 +16,6 @@ from tests.integration.fake_cloud._helpers import counts, make_aliyun_account
 from custom_components.mammotion.const import DOMAIN
 
 from .fake_cloud_support import (
-    FLOW_CLIENT_LEAK,
     entry_client,
     make_cache,
     make_saved_entry,
@@ -76,7 +75,6 @@ async def test_a_retry_the_cloud_refuses_asks_for_the_password(
     assert counts(fake_cloud.scenario, "password_grants") == {"password_grants": 0}
 
 
-@FLOW_CLIENT_LEAK
 async def test_signing_in_from_the_repair_logs_in_once_and_reloads_from_it(
     hass: HomeAssistant, fake_cloud: FakeMammotionCloud, entry: MockConfigEntry
 ) -> None:
