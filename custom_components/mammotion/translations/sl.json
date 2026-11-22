@@ -1938,6 +1938,32 @@
       "title": "Oblak Mammotion ni povezan",
       "description": "Home Assistant se ni mogel prijaviti v oblak Mammotion za račun {account} ({error}) in je prenehal s ponovnimi poskusi. Naprave, povezane prek Bluetootha, še naprej delujejo. Ko bo storitev Mammotion spet dosegljiva, znova naložite integracijo Mammotion."
     },
+    "cloud_transport_unavailable": {
+      "title": "Povezavo z oblakom Mammotion je treba znova nastaviti",
+      "fix_flow": {
+        "step": {
+          "retry": {
+            "title": "Povezavo z oblakom Mammotion je treba znova nastaviti",
+            "description": "Home Assistant ni mogel obnoviti povezave {service} za {account}, zato {mowers} niso na voljo. Naprave, povezane prek Bluetootha, delujejo naprej. Pošljite obrazec za ponoven poskus brez gesla; če ne uspe, boste pozvani k ponovni prijavi."
+          },
+          "password": {
+            "title": "Znova se prijavite v Mammotion",
+            "description": "Povezave {service} še vedno ni bilo mogoče obnoviti. Vnesite geslo za {account}, da se znova prijavite.",
+            "data": {
+              "password": "Geslo računa Mammotion"
+            }
+          }
+        },
+        "error": {
+          "cannot_connect": "Povezave z oblakom Mammotion ni mogoče vzpostaviti. Preverite omrežje in poskusite znova.",
+          "login_failed": "Prijava ni uspela. Preverite geslo in poskusite znova."
+        },
+        "abort": {
+          "wrong_account": "Ti podatki za prijavo pripadajo drugemu računu Mammotion. Prijavite se z računom, s katerim je bil ta vnos nastavljen.",
+          "api_limit_exceeded": "Omejitev zahtev API je bila presežena. Poskusite znova pozneje."
+        }
+      }
+    },
     "deprecated_rain_tactics": {
       "title": "V dejanju Mammotion je uporabljena opuščena možnost",
       "description": "Avtomatizacija ali skripta kliče `{service}` z `{field}`. Ta možnost je bila odstranjena: do kosilnice ni nikoli prišla, zato je prezrta in opravilo se zažene kot običajno. Namesto nje uporabite stikalo Zaznavanje dežja na kosilnici in odstranite `{field}` iz klica dejanja, da to sporočilo izgine."

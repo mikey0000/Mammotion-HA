@@ -1938,6 +1938,32 @@
       "title": "A Mammotion felhő nincs csatlakoztatva",
       "description": "A Home Assistant nem tudott bejelentkezni a Mammotion felhőbe a(z) {account} fiókkal ({error}), és felhagyott a próbálkozással. A Bluetooth-on csatlakozó eszközök továbbra is működnek. Töltsd újra a Mammotion integrációt, amint a Mammotion szolgáltatás ismét elérhető."
     },
+    "cloud_transport_unavailable": {
+      "title": "A Mammotion felhőkapcsolatot újra be kell állítani",
+      "fix_flow": {
+        "step": {
+          "retry": {
+            "title": "A Mammotion felhőkapcsolatot újra be kell állítani",
+            "description": "A Home Assistant nem tudta megújítani a(z) {service} kapcsolatot ehhez: {account}, ezért a következők nem érhetők el: {mowers}. A Bluetooth-on csatlakozó eszközök továbbra is működnek. Küldje el az űrlapot, hogy jelszó nélkül újrapróbálja; ha ez nem sikerül, újra be kell jelentkeznie."
+          },
+          "password": {
+            "title": "Jelentkezzen be újra a Mammotionba",
+            "description": "A(z) {service} kapcsolatot továbbra sem sikerült megújítani. Adja meg a(z) {account} fiók jelszavát az újbóli bejelentkezéshez.",
+            "data": {
+              "password": "Mammotion fiók jelszava"
+            }
+          }
+        },
+        "error": {
+          "cannot_connect": "Nem lehet csatlakozni a Mammotion felhőhöz. Ellenőrizze a hálózatot, majd próbálja újra.",
+          "login_failed": "A bejelentkezés sikertelen. Ellenőrizze a jelszót, majd próbálja újra."
+        },
+        "abort": {
+          "wrong_account": "Ezek a hitelesítő adatok egy másik Mammotion fiókhoz tartoznak. Jelentkezzen be azzal a fiókkal, amellyel ezt a bejegyzést beállították.",
+          "api_limit_exceeded": "Túllépte az API kéréskorlátot. Kérjük, próbálja újra később."
+        }
+      }
+    },
     "deprecated_rain_tactics": {
       "title": "Megszűnt beállítás egy Mammotion műveletben",
       "description": "Egy automatizálás vagy szkript a(z) `{service}` műveletet hívja a(z) `{field}` mezővel. Ez a beállítás megszűnt: soha nem jutott el a fűnyíróhoz, ezért figyelmen kívül marad, és a feladat a szokásos módon indul. Használja helyette a fűnyíró Esőérzékelés kapcsolóját, és távolítsa el a(z) `{field}` mezőt a műveleti hívásból az üzenet eltüntetéséhez."

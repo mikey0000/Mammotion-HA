@@ -65,3 +65,5 @@ class MammotionDevices:
     spino: list[MammotionSpinoData]
     #: The startup bring-up task; unload cancels it before tearing the handles down.
     bring_up_task: asyncio.Task[None] | None = None
+    #: The entry's client, which an entry with no devices has no other route to.
+    client: MammotionClient | None = None

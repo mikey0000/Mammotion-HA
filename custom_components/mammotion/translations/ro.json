@@ -1938,6 +1938,32 @@
       "title": "Cloud Mammotion neconectat",
       "description": "Home Assistant nu s-a putut conecta la cloud-ul Mammotion pentru {account} ({error}) și a încetat să mai încerce. Dispozitivele conectate prin Bluetooth continuă să funcționeze. Reîncărcați integrarea Mammotion după ce serviciul Mammotion este din nou accesibil."
     },
+    "cloud_transport_unavailable": {
+      "title": "Conexiunea la cloudul Mammotion trebuie reconfigurată",
+      "fix_flow": {
+        "step": {
+          "retry": {
+            "title": "Conexiunea la cloudul Mammotion trebuie reconfigurată",
+            "description": "Home Assistant nu a putut reînnoi conexiunea {service} pentru {account}, așa că {mowers} nu sunt disponibile. Dispozitivele conectate prin Bluetooth funcționează în continuare. Trimiteți pentru a reîncerca fără parolă; dacă nu reușește, vi se va cere să vă autentificați din nou."
+          },
+          "password": {
+            "title": "Autentificați-vă din nou la Mammotion",
+            "description": "Conexiunea {service} tot nu a putut fi reînnoită. Introduceți parola pentru {account} pentru a vă autentifica din nou.",
+            "data": {
+              "password": "Parola contului Mammotion"
+            }
+          }
+        },
+        "error": {
+          "cannot_connect": "Nu se poate realiza conexiunea la cloudul Mammotion. Verificați rețeaua, apoi încercați din nou.",
+          "login_failed": "Autentificarea a eșuat. Verificați parola, apoi încercați din nou."
+        },
+        "abort": {
+          "wrong_account": "Aceste date de autentificare aparțin altui cont Mammotion. Autentificați-vă cu contul cu care a fost configurată această intrare.",
+          "api_limit_exceeded": "Limita de solicitări API a fost depășită. Vă rugăm să încercați din nou mai târziu."
+        }
+      }
+    },
     "deprecated_rain_tactics": {
       "title": "Opțiune retrasă folosită într-o acțiune Mammotion",
       "description": "O automatizare sau un script apelează `{service}` cu `{field}`. Această opțiune a fost eliminată: nu a ajuns niciodată la mașina de tuns, așa că este ignorată, iar sarcina pornește normal. Folosiți în schimb comutatorul Detectare ploaie al mașinii de tuns și eliminați `{field}` din apelul acțiunii pentru a închide acest mesaj."

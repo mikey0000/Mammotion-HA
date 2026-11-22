@@ -1938,6 +1938,32 @@
       "title": "Mammotion-cloud ikke forbundet",
       "description": "Home Assistant kunne ikke logge ind på Mammotion-cloud for {account} ({error}) og har stoppet med at prøve igen. Enheder forbundet via Bluetooth fungerer fortsat. Genindlæs Mammotion-integrationen, når Mammotion-tjenesten er tilgængelig igen."
     },
+    "cloud_transport_unavailable": {
+      "title": "Forbindelsen til Mammotion-skyen skal konfigureres igen",
+      "fix_flow": {
+        "step": {
+          "retry": {
+            "title": "Forbindelsen til Mammotion-skyen skal konfigureres igen",
+            "description": "Home Assistant kunne ikke forny {service}-forbindelsen for {account}, så {mowers} er utilgængelige. Enheder forbundet via Bluetooth virker fortsat. Send for at prøve igen uden din adgangskode; hvis det mislykkes, bliver du bedt om at logge ind igen."
+          },
+          "password": {
+            "title": "Log ind på Mammotion igen",
+            "description": "{service}-forbindelsen kunne stadig ikke fornyes. Indtast adgangskoden til {account} for at logge ind igen.",
+            "data": {
+              "password": "Adgangskode til Mammotion-kontoen"
+            }
+          }
+        },
+        "error": {
+          "cannot_connect": "Kan ikke oprette forbindelse til Mammotion-skyen. Kontrollér dit netværk, og prøv igen.",
+          "login_failed": "Login mislykkedes. Kontrollér din adgangskode, og prøv igen."
+        },
+        "abort": {
+          "wrong_account": "Disse loginoplysninger tilhører en anden Mammotion-konto. Log ind med den konto, denne post blev oprettet med.",
+          "api_limit_exceeded": "API-grænsen er overskredet. Prøv igen senere."
+        }
+      }
+    },
     "deprecated_rain_tactics": {
       "title": "Udgået indstilling brugt i en Mammotion-handling",
       "description": "En automatisering eller et script kalder `{service}` med `{field}`. Denne indstilling er fjernet: den nåede aldrig plæneklipperen, så den ignoreres, og opgaven starter som normalt. Brug i stedet plæneklipperens kontakt til regndetektering, og fjern `{field}` fra handlingskaldet for at afvise denne meddelelse."

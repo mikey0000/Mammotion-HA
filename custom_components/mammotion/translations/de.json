@@ -1938,6 +1938,32 @@
       "title": "Die Mammotion-Cloud ist nicht verbunden.",
       "description": "Home Assistant konnte sich für {account} nicht bei der Mammotion-Cloud anmelden ({error}) und versucht es nicht mehr. Über Bluetooth verbundene Geräte funktionieren weiter. Laden Sie die Mammotion-Integration neu, sobald der Mammotion-Dienst wieder erreichbar ist."
     },
+    "cloud_transport_unavailable": {
+      "title": "Die Verbindung zur Mammotion-Cloud muss neu eingerichtet werden",
+      "fix_flow": {
+        "step": {
+          "retry": {
+            "title": "Die Verbindung zur Mammotion-Cloud muss neu eingerichtet werden",
+            "description": "Home Assistant konnte die {service}-Verbindung für {account} nicht erneuern, daher sind {mowers} nicht verfügbar. Über Bluetooth verbundene Geräte funktionieren weiter. Senden Sie das Formular ab, um es ohne Ihr Passwort erneut zu versuchen; schlägt das fehl, werden Sie gebeten, sich erneut anzumelden."
+          },
+          "password": {
+            "title": "Erneut bei Mammotion anmelden",
+            "description": "Die {service}-Verbindung konnte weiterhin nicht erneuert werden. Geben Sie das Passwort für {account} ein, um sich erneut anzumelden.",
+            "data": {
+              "password": "Passwort des Mammotion-Kontos"
+            }
+          }
+        },
+        "error": {
+          "cannot_connect": "Es konnte keine Verbindung zur Mammotion-Cloud hergestellt werden. Überprüfen Sie Ihr Netzwerk und versuchen Sie es erneut.",
+          "login_failed": "Anmeldung fehlgeschlagen. Überprüfen Sie Ihr Passwort und versuchen Sie es erneut."
+        },
+        "abort": {
+          "wrong_account": "Diese Anmeldedaten gehören zu einem anderen Mammotion-Konto. Melden Sie sich mit dem Konto an, mit dem dieser Eintrag eingerichtet wurde.",
+          "api_limit_exceeded": "Das API-Limit wurde überschritten. Bitte versuchen Sie es später erneut."
+        }
+      }
+    },
     "deprecated_rain_tactics": {
       "title": "Entfernte Option in einer Mammotion-Aktion verwendet",
       "description": "Eine Automatisierung oder ein Skript ruft `{service}` mit `{field}` auf. Diese Option wurde entfernt: Sie hat den Mäher nie erreicht, daher wird sie ignoriert und der Auftrag startet wie gewohnt. Verwende stattdessen den Schalter Regenerkennung des Mähers und entferne `{field}` aus dem Aktionsaufruf, um diese Meldung zu schließen."

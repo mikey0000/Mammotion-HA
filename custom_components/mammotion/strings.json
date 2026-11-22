@@ -1938,6 +1938,32 @@
       "title": "Mammotion cloud not connected",
       "description": "Home Assistant could not sign in to the Mammotion cloud for {account} ({error}) and has stopped retrying. Devices connected over Bluetooth keep working. Reload the Mammotion integration once the Mammotion service is reachable again."
     },
+    "cloud_transport_unavailable": {
+      "title": "Mammotion cloud connection needs reconfiguring",
+      "fix_flow": {
+        "step": {
+          "retry": {
+            "title": "Mammotion cloud connection needs reconfiguring",
+            "description": "Home Assistant could not renew the {service} connection for {account}, so {mowers} are unavailable. Devices connected over Bluetooth keep working. Submit to try again without your password; if that fails, you will be asked to sign in again."
+          },
+          "password": {
+            "title": "Sign in to Mammotion again",
+            "description": "The {service} connection still could not be renewed. Enter the password for {account} to sign in again.",
+            "data": {
+              "password": "Mammotion account password"
+            }
+          }
+        },
+        "error": {
+          "cannot_connect": "Unable to connect to the Mammotion cloud. Check your network, then try again.",
+          "login_failed": "Login failed. Check your password, then try again."
+        },
+        "abort": {
+          "wrong_account": "These credentials belong to a different Mammotion account. Sign in with the account this entry was set up with.",
+          "api_limit_exceeded": "API rate limit has been exceeded. Please try again later."
+        }
+      }
+    },
     "deprecated_rain_tactics": {
       "title": "Retired option used in a Mammotion action",
       "description": "An automation or script calls `{service}` with `{field}`. This option has been removed: it never reached the mower, so it is ignored and the job starts as usual. Use the mower's Rain detection switch instead, and remove `{field}` from the action call to dismiss this message."

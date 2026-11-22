@@ -1938,6 +1938,32 @@
       "title": "Cloud Mammotion non connecté",
       "description": "Home Assistant n'a pas pu se connecter au cloud Mammotion pour {account} ({error}) et a cessé de réessayer. Les appareils connectés en Bluetooth continuent de fonctionner. Rechargez l'intégration Mammotion une fois le service Mammotion de nouveau accessible."
     },
+    "cloud_transport_unavailable": {
+      "title": "La connexion au cloud Mammotion doit être reconfigurée",
+      "fix_flow": {
+        "step": {
+          "retry": {
+            "title": "La connexion au cloud Mammotion doit être reconfigurée",
+            "description": "Home Assistant n'a pas pu renouveler la connexion {service} pour {account} ; {mowers} sont donc indisponibles. Les appareils connectés en Bluetooth continuent de fonctionner. Validez pour réessayer sans votre mot de passe ; en cas d'échec, il vous sera demandé de vous reconnecter."
+          },
+          "password": {
+            "title": "Se reconnecter à Mammotion",
+            "description": "La connexion {service} n'a toujours pas pu être renouvelée. Saisissez le mot de passe de {account} pour vous reconnecter.",
+            "data": {
+              "password": "Mot de passe du compte Mammotion"
+            }
+          }
+        },
+        "error": {
+          "cannot_connect": "Impossible de se connecter au cloud Mammotion. Vérifiez votre réseau, puis réessayez.",
+          "login_failed": "Échec de la connexion. Vérifiez votre mot de passe, puis réessayez."
+        },
+        "abort": {
+          "wrong_account": "Ces identifiants appartiennent à un autre compte Mammotion. Connectez-vous avec le compte utilisé pour configurer cette entrée.",
+          "api_limit_exceeded": "La limite de requêtes de l'API a été dépassée. Veuillez réessayer plus tard."
+        }
+      }
+    },
     "deprecated_rain_tactics": {
       "title": "Option retirée utilisée dans une action Mammotion",
       "description": "Une automatisation ou un script appelle `{service}` avec `{field}`. Cette option a été supprimée : elle n'atteignait jamais la tondeuse, elle est donc ignorée et la tâche démarre normalement. Utilisez plutôt l'interrupteur Détection de pluie de la tondeuse, puis retirez `{field}` de l'appel d'action pour faire disparaître ce message."

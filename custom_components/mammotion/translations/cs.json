@@ -1938,6 +1938,32 @@
       "title": "Cloud Mammotion není připojen",
       "description": "Home Assistant se nemohl přihlásit ke cloudu Mammotion pro účet {account} ({error}) a přestal to zkoušet. Zařízení připojená přes Bluetooth fungují dál. Jakmile bude služba Mammotion opět dostupná, znovu načtěte integraci Mammotion."
     },
+    "cloud_transport_unavailable": {
+      "title": "Připojení ke cloudu Mammotion je třeba znovu nastavit",
+      "fix_flow": {
+        "step": {
+          "retry": {
+            "title": "Připojení ke cloudu Mammotion je třeba znovu nastavit",
+            "description": "Home Assistant nemohl obnovit připojení {service} pro {account}, proto jsou {mowers} nedostupné. Zařízení připojená přes Bluetooth fungují dál. Odešlete formulář pro nový pokus bez hesla; pokud se nezdaří, budete vyzváni k opětovnému přihlášení."
+          },
+          "password": {
+            "title": "Znovu se přihlaste k Mammotion",
+            "description": "Připojení {service} se stále nepodařilo obnovit. Zadejte heslo k účtu {account} a znovu se přihlaste.",
+            "data": {
+              "password": "Heslo k účtu Mammotion"
+            }
+          }
+        },
+        "error": {
+          "cannot_connect": "Nelze se připojit ke cloudu Mammotion. Zkontrolujte síť a zkuste to znovu.",
+          "login_failed": "Přihlášení se nezdařilo. Zkontrolujte heslo a zkuste to znovu."
+        },
+        "abort": {
+          "wrong_account": "Tyto přihlašovací údaje patří jinému účtu Mammotion. Přihlaste se účtem, se kterým byla tato položka nastavena.",
+          "api_limit_exceeded": "Byl překročen limit požadavků API. Zkuste to prosím později."
+        }
+      }
+    },
     "deprecated_rain_tactics": {
       "title": "Použita zrušená volba v akci Mammotion",
       "description": "Automatizace nebo skript volá `{service}` s `{field}`. Tato volba byla odstraněna: do sekačky se nikdy nedostala, proto je ignorována a úloha se spustí jako obvykle. Místo ní použijte přepínač Detekce deště na sekačce a odeberte `{field}` z volání akce, aby tato zpráva zmizela."

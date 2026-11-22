@@ -13,6 +13,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import issue_registry as ir
 from pymammotion.client import MammotionClient
 from pymammotion.device.handle import DeviceRegistry
+from pymammotion.http.http import MammotionHTTP
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 import custom_components.mammotion as mammotion_init
@@ -95,3 +96,14 @@ def reauth_flows(hass: HomeAssistant) -> list[Any]:
 def login_issue(hass: HomeAssistant, entry: MockConfigEntry) -> ir.IssueEntry | None:
     """Return the entry's cloud-login repair, if one is shown."""
     return ir.async_get(hass).async_get_issue(DOMAIN, f"cloud_login_{entry.entry_id}")
+
+
+def make_flow_client(account_id: str, cache: dict[str, Any]) -> MagicMock:
+    """Return a flow's throwaway client whose password login succeeds as *account_id*."""
+    client = create_autospec(MammotionClient, instance=True)
+    client.mammotion_http = MagicMock(spec=MammotionHTTP)
+    client.mammotion_http.login_info.userInformation.userAccount = account_id
+    client.to_cache.return_value = cache
+    client.aliyun_device_list = []
+    client.mammotion_device_list = []
+    return client

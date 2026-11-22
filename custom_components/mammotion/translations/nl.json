@@ -1938,6 +1938,32 @@
       "title": "Mammotion-cloud niet verbonden",
       "description": "Home Assistant kon niet inloggen bij de Mammotion-cloud voor {account} ({error}) en probeert het niet meer. Apparaten die via Bluetooth verbonden zijn, blijven werken. Herlaad de Mammotion-integratie zodra de Mammotion-dienst weer bereikbaar is."
     },
+    "cloud_transport_unavailable": {
+      "title": "De verbinding met de Mammotion-cloud moet opnieuw worden ingesteld",
+      "fix_flow": {
+        "step": {
+          "retry": {
+            "title": "De verbinding met de Mammotion-cloud moet opnieuw worden ingesteld",
+            "description": "Home Assistant kon de {service}-verbinding voor {account} niet vernieuwen, dus {mowers} zijn niet beschikbaar. Apparaten die via Bluetooth zijn verbonden blijven werken. Verstuur om het zonder je wachtwoord opnieuw te proberen; als dat mislukt, word je gevraagd opnieuw in te loggen."
+          },
+          "password": {
+            "title": "Opnieuw inloggen bij Mammotion",
+            "description": "De {service}-verbinding kon nog steeds niet worden vernieuwd. Voer het wachtwoord voor {account} in om opnieuw in te loggen.",
+            "data": {
+              "password": "Wachtwoord van het Mammotion-account"
+            }
+          }
+        },
+        "error": {
+          "cannot_connect": "Kan geen verbinding maken met de Mammotion-cloud. Controleer je netwerk en probeer het opnieuw.",
+          "login_failed": "Inloggen mislukt. Controleer je wachtwoord en probeer het opnieuw."
+        },
+        "abort": {
+          "wrong_account": "Deze inloggegevens horen bij een ander Mammotion-account. Log in met het account waarmee deze vermelding is ingesteld.",
+          "api_limit_exceeded": "De API-limiet is overschreden. Probeer het later opnieuw."
+        }
+      }
+    },
     "deprecated_rain_tactics": {
       "title": "Vervallen optie gebruikt in een Mammotion-actie",
       "description": "Een automatisering of script roept `{service}` aan met `{field}`. Deze optie is verwijderd: ze bereikte de maaier nooit, dus ze wordt genegeerd en de taak start zoals gewoonlijk. Gebruik in plaats daarvan de schakelaar Regendetectie van de maaier en verwijder `{field}` uit de actie-aanroep om deze melding te sluiten."

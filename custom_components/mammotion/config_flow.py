@@ -19,7 +19,7 @@ from homeassistant.config_entries import (
     OptionsFlow,
 )
 from homeassistant.const import CONF_ADDRESS, CONF_PASSWORD
-from homeassistant.core import callback
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import aiohttp_client
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry as dr
@@ -97,6 +97,77 @@ def _same_account(left: Any, right: Any) -> bool:
     )
 
 
+async def async_cloud_login(
+    hass: HomeAssistant, account: str, password: str, errors: dict[str, str]
+) -> _CloudLogin | None:
+    """Log in with a throwaway client, stopped on every exit; on failure fill *errors*.
+
+    The only password login in the integration: callers are user actions.
+    """
+    integration = await async_get_integration(hass, DOMAIN)
+    client = MammotionClient(ha_version=integration.version.split("-")[0])
+    try:
+        await client.login_and_initiate_cloud(
+            account, password, aiohttp_client.async_get_clientsession(hass)
+        )
+        if (http := client.mammotion_http) is None or http.login_info is None:
+            errors["base"] = "login_failed"
+            return None
+        return _CloudLogin(
+            user_account=http.login_info.userInformation.userAccount,
+            cache=client.to_cache(),
+            device_names=frozenset(
+                device.device_name
+                for device in (
+                    *client.aliyun_device_list,
+                    *client.mammotion_device_list,
+                )
+            ),
+        )
+    except TooManyRequestsException as err:
+        raise data_entry_flow.AbortFlow("api_limit_exceeded") from err
+    except LoginFailedError as err:
+        LOGGER.warning("Mammotion login rejected: %s", err)
+        errors["base"] = "login_failed"
+    except CloudSetupError as err:
+        LOGGER.error("Aliyun cloud setup failed during login: %s", err)
+        errors["base"] = "cannot_connect"
+    except Exception:
+        LOGGER.exception("Unexpected error during Mammotion login")
+        errors["base"] = "cannot_connect"
+    finally:
+        await client.stop()
+    return None
+
+
+async def async_sign_in_again(
+    hass: HomeAssistant, entry: ConfigEntry, password: str, errors: dict[str, str]
+) -> _CloudLogin | None:
+    """Log in as *entry*'s account; abort when the credentials belong to another one."""
+    login = await async_cloud_login(
+        hass, entry.data.get(CONF_ACCOUNTNAME) or "", password, errors
+    )
+    # Legacy entries are keyed by a BLE address or device name, so the account id
+    # in the data is the only reliable identity.
+    if (
+        login is not None
+        and (expected := entry.data.get(CONF_ACCOUNT_ID))
+        and not _same_account(expected, login.user_account)
+    ):
+        raise data_entry_flow.AbortFlow("wrong_account")
+    return login
+
+
+def signed_in_data(
+    entry: ConfigEntry, password: str, login: _CloudLogin
+) -> dict[str, Any]:
+    """Return *entry*'s data carrying *login*'s session, the password and the account id."""
+    data = _with_login(entry.data, login)
+    data[CONF_PASSWORD] = password
+    data[CONF_ACCOUNT_ID] = login.user_account
+    return data
+
+
 class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Mammotion."""
 
@@ -150,45 +221,6 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
             held = (entry.data.get(CONF_ACCOUNTNAME), entry.data.get(CONF_ACCOUNT_ID))
             if any(_same_account(a, h) for a in accounts for h in held):
                 return entry
-        return None
-
-    async def _async_login(
-        self, account: str, password: str, errors: dict[str, str]
-    ) -> _CloudLogin | None:
-        """Log in with a throwaway client, stopped on every exit; on failure fill *errors*."""
-        integration = await async_get_integration(self.hass, DOMAIN)
-        client = MammotionClient(ha_version=integration.version.split("-")[0])
-        try:
-            await client.login_and_initiate_cloud(
-                account, password, aiohttp_client.async_get_clientsession(self.hass)
-            )
-            if (http := client.mammotion_http) is None or http.login_info is None:
-                errors["base"] = "login_failed"
-                return None
-            return _CloudLogin(
-                user_account=http.login_info.userInformation.userAccount,
-                cache=client.to_cache(),
-                device_names=frozenset(
-                    device.device_name
-                    for device in (
-                        *client.aliyun_device_list,
-                        *client.mammotion_device_list,
-                    )
-                ),
-            )
-        except TooManyRequestsException as err:
-            raise data_entry_flow.AbortFlow("api_limit_exceeded") from err
-        except LoginFailedError as err:
-            LOGGER.warning("Mammotion login rejected: %s", err)
-            errors["base"] = "login_failed"
-        except CloudSetupError as err:
-            LOGGER.error("Aliyun cloud setup failed during login: %s", err)
-            errors["base"] = "cannot_connect"
-        except Exception:
-            LOGGER.exception("Unexpected error during Mammotion login")
-            errors["base"] = "cannot_connect"
-        finally:
-            await client.stop()
         return None
 
     async def _async_take_ble_devices(
@@ -409,7 +441,9 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                 # A login replaces the live entry's session, so recognise it first.
                 if self._entry_for_account(account) is not None:
                     return self.async_abort(reason="already_configured")
-                if login := await self._async_login(account, password, errors):
+                if login := await async_cloud_login(
+                    self.hass, account, password, errors
+                ):
                     return await self._async_create_account_entry(
                         account, password, login
                     )
@@ -522,19 +556,12 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             password = (user_input.get(CONF_PASSWORD) or "").strip()
-            if login := await self._async_login(account, password, errors):
-                # Legacy entries are keyed by a BLE address or device name, so the
-                # account id in the data is the only reliable identity.
-                if (expected := entry.data.get(CONF_ACCOUNT_ID)) and not _same_account(
-                    expected, login.user_account
-                ):
-                    return self.async_abort(reason="wrong_account")
+            if login := await async_sign_in_again(self.hass, entry, password, errors):
                 # One atomic update: the reload restores from the fresh login only.
-                data = _with_login(entry.data, login)
-                data[CONF_PASSWORD] = password
-                data[CONF_ACCOUNT_ID] = login.user_account
                 return self.async_update_reload_and_abort(
-                    entry, unique_id=self._account_unique_id(entry, login), data=data
+                    entry,
+                    unique_id=self._account_unique_id(entry, login),
+                    data=signed_in_data(entry, password, login),
                 )
 
         return self.async_show_form(
@@ -583,7 +610,7 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
             elif other := self._entry_for_account(account, exclude=entry.entry_id):
                 # The other entry's session already works; a login would replace it.
                 return await self._async_merge_into(other, entry)
-            elif login := await self._async_login(account, password, errors):
+            elif login := await async_cloud_login(self.hass, account, password, errors):
                 if other := self._entry_for_account(
                     login.user_account, exclude=entry.entry_id
                 ):

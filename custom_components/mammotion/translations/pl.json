@@ -1938,6 +1938,32 @@
       "title": "Chmura Mammotion nie jest połączona",
       "description": "Home Assistant nie mógł zalogować się do chmury Mammotion dla konta {account} ({error}) i przestał ponawiać próby. Urządzenia połączone przez Bluetooth nadal działają. Załaduj ponownie integrację Mammotion, gdy usługa Mammotion będzie znów dostępna."
     },
+    "cloud_transport_unavailable": {
+      "title": "Połączenie z chmurą Mammotion wymaga ponownej konfiguracji",
+      "fix_flow": {
+        "step": {
+          "retry": {
+            "title": "Połączenie z chmurą Mammotion wymaga ponownej konfiguracji",
+            "description": "Home Assistant nie mógł odnowić połączenia {service} dla {account}, dlatego {mowers} są niedostępne. Urządzenia połączone przez Bluetooth działają dalej. Zatwierdź, aby spróbować ponownie bez hasła; jeśli to się nie uda, zostaniesz poproszony o ponowne zalogowanie."
+          },
+          "password": {
+            "title": "Zaloguj się ponownie do Mammotion",
+            "description": "Nadal nie udało się odnowić połączenia {service}. Wprowadź hasło do konta {account}, aby zalogować się ponownie.",
+            "data": {
+              "password": "Hasło do konta Mammotion"
+            }
+          }
+        },
+        "error": {
+          "cannot_connect": "Nie można połączyć się z chmurą Mammotion. Sprawdź sieć i spróbuj ponownie.",
+          "login_failed": "Logowanie nie powiodło się. Sprawdź hasło i spróbuj ponownie."
+        },
+        "abort": {
+          "wrong_account": "Te dane logowania należą do innego konta Mammotion. Zaloguj się kontem, za pomocą którego skonfigurowano ten wpis.",
+          "api_limit_exceeded": "Przekroczono limit zapytań API. Spróbuj ponownie później."
+        }
+      }
+    },
     "deprecated_rain_tactics": {
       "title": "Użyto wycofanej opcji w akcji Mammotion",
       "description": "Automatyzacja lub skrypt wywołuje `{service}` z `{field}`. Ta opcja została usunięta: nigdy nie docierała do kosiarki, więc jest ignorowana, a zadanie uruchamia się normalnie. Zamiast niej użyj przełącznika Wykrywanie deszczu kosiarki i usuń `{field}` z wywołania akcji, aby zamknąć ten komunikat."

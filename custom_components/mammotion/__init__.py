@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 import weakref
-from collections.abc import Coroutine
+from collections.abc import Callable, Coroutine
 from contextlib import suppress
 from datetime import datetime, timedelta
 from enum import Enum, auto
@@ -582,6 +583,99 @@ def _track_account_in_use(
     entry.async_on_unload(_clear_issues)
 
 
+_CLOUD_SERVICES = {
+    TransportType.CLOUD_ALIYUN: "Aliyun IoT",
+    TransportType.CLOUD_MAMMOTION: "Mammotion MQTT",
+}
+
+
+def _transport_issue_id(entry_id: str, transport_type: TransportType) -> str:
+    """Return the id of the repair shown while *transport_type* is given up."""
+    return f"cloud_transport_unavailable_{entry_id}_{transport_type.value}"
+
+
+def _transport_mowers(
+    mammotion: MammotionClient, transport_type: TransportType
+) -> list[str]:
+    """Return the names of the account's devices *transport_type* carries."""
+    on_mammotion = {device.device_name for device in mammotion.mammotion_device_list}
+    if transport_type is TransportType.CLOUD_MAMMOTION:
+        return sorted(on_mammotion)
+    # A login whose Aliyun half was refused saved no listing; the owned list still names them.
+    owned = (
+        {device.device_name for device in http.device_info}
+        if (http := mammotion.mammotion_http) is not None
+        else set()
+    )
+    listed = {device.device_name for device in mammotion.aliyun_device_list}
+    return sorted((listed | owned) - on_mammotion)
+
+
+def _track_transport_availability(
+    hass: HomeAssistant, entry: MammotionConfigEntry, mammotion: MammotionClient
+) -> Callable[[str], None]:
+    """Show a repair while a cloud transport is given up on a healthy login.
+
+    Returns the reconciler setup runs once the restore returns, since the library
+    delivers the callback as a detached task.
+    """
+
+    @callback
+    def _show(account_id: str, transport_type: TransportType, available: bool) -> None:
+        issue_id = _transport_issue_id(entry.entry_id, transport_type)
+        if available:
+            ir.async_delete_issue(hass, DOMAIN, issue_id)
+            return
+        ir.async_create_issue(
+            hass,
+            DOMAIN,
+            issue_id,
+            is_fixable=True,
+            severity=ir.IssueSeverity.ERROR,
+            translation_key="cloud_transport_unavailable",
+            translation_placeholders={
+                "account": account_id,
+                "service": _CLOUD_SERVICES[transport_type],
+                "mowers": ", ".join(_transport_mowers(mammotion, transport_type))
+                or "-",
+            },
+            data={"entry_id": entry.entry_id, "transport": transport_type.value},
+        )
+
+    async def _on_transport_availability_changed(
+        account_id: str,
+        transport_type: TransportType,
+        available: bool,
+        reason: str | None,
+    ) -> None:
+        LOGGER.log(
+            logging.INFO if available else logging.WARNING,
+            "Mammotion %s for %s is %s%s",
+            _CLOUD_SERVICES[transport_type],
+            account_id,
+            "available again" if available else "unavailable: ",
+            reason or "",
+        )
+        _show(account_id, transport_type, available)
+
+    @callback
+    def _reconcile(account_id: str) -> None:
+        given_up = mammotion.unavailable_transports(account_id)
+        for transport_type in _CLOUD_SERVICES:
+            _show(account_id, transport_type, transport_type not in given_up)
+
+    @callback
+    def _clear_issues() -> None:
+        for transport_type in _CLOUD_SERVICES:
+            ir.async_delete_issue(
+                hass, DOMAIN, _transport_issue_id(entry.entry_id, transport_type)
+            )
+
+    mammotion.on_transport_availability_changed = _on_transport_availability_changed
+    entry.async_on_unload(_clear_issues)
+    return _reconcile
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) -> bool:  # noqa: C901
     """Set up Mammotion from a config entry.
 
@@ -647,7 +741,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
         mammotion.on_credentials_updated = _on_credentials_updated
 
     mammotion_mowers: list[MammotionMowerData] = []
-    mammotion_devices: MammotionDevices = MammotionDevices([], [], [])
+    mammotion_devices = MammotionDevices([], [], [], client=mammotion)
     mammotion_rtk: list[MammotionRTKData] = []
     mammotion_spino: list[MammotionSpinoData] = []
 
@@ -725,6 +819,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
 
         mammotion.on_device_removed = _on_device_removed
 
+    reconcile_transports = _track_transport_availability(hass, entry, mammotion)
+
     # BLE first: the handles exist before any cloud login, which then adopts them.
     ble_mowers = await _register_ble_devices(hass, entry, mammotion)
 
@@ -739,6 +835,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
     spino_devices: list[Device] = []
     if cloud_available:
         store_cloud_credentials(hass, entry, mammotion)
+        reconcile_transports(account or "")
         mower_devices, mammotion_rtk_devices, spino_devices = _build_device_list(
             mammotion
         )

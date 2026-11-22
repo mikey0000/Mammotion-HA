@@ -77,7 +77,7 @@ Status: **done** / **partial** (implemented with known gaps) / **todo** /
 | exception-translations | **partial** | Most raises carry `translation_domain`/`translation_key`; at least one f-string raise remains (coordinator credential refresh failure). §14.5 makes it a ratchet. |
 | icon-translations | done | `icons.json`. |
 | reconfiguration-flow | done | `async_step_reconfigure` → `async_update_reload_and_abort`. Gap: the login→`errors["base"]` mapping is repeated in the user, wifi, reauth, reconfigure and options steps; one helper would keep them from drifting. |
-| repair-issues | done | `cloud_login_failed`/`cloud_login_retrying`, `account_in_use_<account>` (`__init__.py`), deleted on recovery/unload. |
+| repair-issues | done | `cloud_login_failed`/`cloud_login_retrying`, `account_in_use_<account>`, and the fixable `cloud_transport_unavailable_<entry>_<transport>` (fix flow in `repairs.py`: a password-free retry, then a sign-in) (`__init__.py`), deleted on recovery/unload. |
 | stale-devices | done | `async_remove_config_entry_device`, `on_device_removed` callback. |
 
 ## Platinum
