@@ -105,12 +105,13 @@ async def test_a_refused_cached_login_with_ble_asks_for_reauthentication(
     hass: HomeAssistant, logins: list[_CloudLogin]
 ) -> None:
     """It fell back to BLE silently, leaving the user no prompt to fix the password."""
-    entry = make_cloud_entry(hass, cached=False)
+    entry = make_cloud_entry(hass)
     client = make_cloud_client(LoginFailedError(ACCOUNT, "wrong password"))
 
     assert await _attempt(hass, entry, client, logins) is False
     await hass.async_block_till_done()
 
+    client.restore_credentials.assert_awaited_once()
     assert len(reauth_flows(hass)) == 1
 
 
@@ -198,7 +199,7 @@ async def test_an_unexpected_fault_with_ble_is_shown_and_never_retried(
     async_fire_time_changed(
         hass, dt_util.utcnow() + CLOUD_LOGIN_RETRY_INTERVAL + timedelta(seconds=1)
     )
-    await hass.async_block_till_done()
+    await hass.async_block_till_done(wait_background_tasks=True)
 
     assert _issue_key(hass, entry) == "cloud_login_failed"
     client.restore_credentials.assert_awaited_once()
