@@ -135,7 +135,7 @@ async def test_a_rejected_password_with_ble_asks_for_reauthentication(
 async def test_a_dead_login_is_not_followed_by_a_second_password_login(
     hass: HomeAssistant, logins: list[_CloudLogin]
 ) -> None:
-    """``restore_credentials`` already made the one sanctioned fallback login."""
+    """It answered a dead login with a second, password login before the reauth."""
     entry = _entry(hass, **{CONF_AEP_DATA: {"token": "dead"}})
     client = _client(_dead_login(), reauth_required="refresh token rejected")
 
@@ -156,19 +156,17 @@ async def test_a_dead_login_without_ble_raises_auth_failed(
         await _attempt(hass, entry, client, logins, ble_fallback=False)
 
 
-@pytest.mark.regression
-@pytest.mark.parametrize("ble", [False, True], ids=["cloud_only", "ble"])
-async def test_a_cloud_setup_failure_loads_and_retries_from_the_cache(
-    hass: HomeAssistant, logins: list[_CloudLogin], ble: bool
+async def test_a_cloud_setup_refusal_continues_ble_only_and_is_not_retried(
+    hass: HomeAssistant, logins: list[_CloudLogin]
 ) -> None:
-    """Without BLE it raised ConfigEntryNotReady, so HA retried setup indefinitely."""
+    """A deterministic refusal does not succeed by waiting."""
     entry = _entry(hass, **{CONF_AEP_DATA: {"token": "cached"}})
-    client = _client(CloudSetupError("Error in getting mqtt credentials: refused"))
+    client = _client(CloudSetupError("openId isEmpty,result_code=100002"))
 
-    assert await _attempt(hass, entry, client, logins, ble_fallback=ble) is False
+    assert await _attempt(hass, entry, client, logins) is False
 
-    assert _issue_key(hass, entry) == "cloud_login_retrying"
-    assert entry.data[CONF_HAS_CLOUD_ACCOUNT] is True
+    assert _issue_key(hass, entry) == "cloud_login_failed"
+    assert entry.data[CONF_AEP_DATA] == {"token": "cached"}
 
 
 @pytest.mark.regression

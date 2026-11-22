@@ -21,7 +21,7 @@ from homeassistant.components.bluetooth import (
 from homeassistant.config_entries import ConfigEntry, ConfigEntryState
 from homeassistant.const import CONF_PASSWORD, EVENT_HOMEASSISTANT_STOP, Platform
 from homeassistant.core import CALLBACK_TYPE, Event, HomeAssistant, callback
-from homeassistant.exceptions import ConfigEntryAuthFailed
+from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.helpers import aiohttp_client
 from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.device_registry import DeviceEntry
@@ -30,21 +30,16 @@ from homeassistant.helpers.device_registry import (
 )
 from homeassistant.helpers.event import async_call_later
 from homeassistant.loader import async_get_integration
-from pymammotion.aliyun.exceptions import CloudSetupError, TooManyRequestsException
 from pymammotion.aliyun.model.dev_by_account_response import Device
 from pymammotion.client import MammotionClient
 from pymammotion.data.model.device import MowingDevice, PoolCleanerDevice
-from pymammotion.http.model.http import UnauthorizedExceptionError
 from pymammotion.transport.base import (
-    AuthError,
     LoginFailedError,
     TransportError,
-    TransportRateLimitedError,
     TransportType,
     is_transient_network_error,
 )
 from pymammotion.utility.device_type import DeviceType
-from Tea.exceptions import UnretryableException
 
 from .config import (
     TRANSPORT_BLUETOOTH,
@@ -137,48 +132,33 @@ class _LoginFailure(Enum):
     REJECTED = auto()
     """The account's login is dead: reauthenticate, never retry."""
     TRANSIENT = auto()
-    """The server was unreachable or one transport failed: retry from the cache."""
+    """The cloud was unreachable: retry from the cache."""
     FAILED = auto()
-    """Anything else: show it and leave it to a reload."""
+    """A refusal, a rate limit or a fault: show it, never retry."""
 
 
 def _classify_login_failure(
     err: Exception, mammotion: MammotionClient
 ) -> _LoginFailure:
-    """Classify *err*; only ``reauth_required`` makes an auth error terminal.
+    """Classify *err*; only a network fault is retried.
 
     A transport-scoped give-up raises the same ``ReLoginRequiredError`` while the
-    login stays valid, so the exception type alone cannot decide it.
+    login stays valid, so ``reauth_required``, not the type, decides a rejection.
     """
     if isinstance(err, LoginFailedError) or mammotion.reauth_required is not None:
         return _LoginFailure.REJECTED
-    if isinstance(err, UnretryableException):
-        # Tea keeps the cause in inner_exception, not __cause__.
-        inner = err.inner_exception
-        if isinstance(inner, Exception) and is_transient_network_error(inner):
-            return _LoginFailure.TRANSIENT
-        return _LoginFailure.FAILED
-    if isinstance(
-        err,
-        (
-            AuthError,
-            UnauthorizedExceptionError,
-            CloudSetupError,
-            TooManyRequestsException,
-            TransportRateLimitedError,
-        ),
-    ) or is_transient_network_error(err):
+    if is_transient_network_error(err):
         return _LoginFailure.TRANSIENT
     return _LoginFailure.FAILED
 
 
 class _CloudLogin:
-    """The entry's cloud login: one attempt at setup, then bounded cached-session retries.
+    """The entry's cloud login: a restore of the saved session, never a password grant.
 
-    Setup never raises ``ConfigEntryNotReady`` for a login: Home Assistant would
-    retry it every 5…600 s with no end, and without a cache every retry is a
-    password grant.  A retry only ever calls ``restore_credentials`` with the
-    cache; a success reloads the entry, since only setup builds the cloud devices.
+    Without BLE mowers a network fault raises ``ConfigEntryNotReady`` and Home
+    Assistant's retries restore the cache again.  With them the entry loads
+    BLE-only and retries the restore itself; a success reloads the entry, since
+    only setup builds the cloud devices.
     """
 
     def __init__(
@@ -228,34 +208,42 @@ class _CloudLogin:
         return True
 
     async def async_setup_login(self, *, ble_fallback: bool) -> bool:
-        """Log in once; return True when the cloud is up.
+        """Restore the saved session; return True when the cloud is up.
 
-        Raises ConfigEntryAuthFailed only for a dead login with no BLE mower to
-        keep the entry useful.
+        Without a BLE mower to keep the entry useful, a dead or missing login raises
+        ConfigEntryAuthFailed and a network fault ConfigEntryNotReady.
         """
-        session = aiohttp_client.async_get_clientsession(self._hass)
-        cached = self._load_cache()
+        if not (cached := self._load_cache()):
+            if not ble_fallback:
+                raise ConfigEntryAuthFailed("No saved Mammotion session")
+            LOGGER.warning(
+                "No saved Mammotion session for %s; continuing in BLE-only mode "
+                "until signed in again",
+                self._account,
+            )
+            self.async_rejected()
+            return False
         try:
-            if cached:
-                await self._mammotion.restore_credentials(
-                    self._account,
-                    self._password,
-                    cached,
-                    session,
-                    check_for_new_devices=True,
-                )
-            else:
-                await self._mammotion.login_and_initiate_cloud(
-                    self._account, self._password, session
-                )
+            await self._async_restore(cached)
         except Exception as err:  # noqa: BLE001 — every failure is classified below
             outcome = _classify_login_failure(err, self._mammotion)
-            if outcome is _LoginFailure.REJECTED and not ble_fallback:
+            if not ble_fallback and outcome is _LoginFailure.REJECTED:
                 self._async_clear_own_cache()
                 raise ConfigEntryAuthFailed(err) from err
-            self._async_failed(err, outcome, can_retry=bool(cached))
+            if not ble_fallback and outcome is _LoginFailure.TRANSIENT:
+                raise ConfigEntryNotReady(err) from err
+            self._async_failed(err, outcome)
             return False
         return True
+
+    async def _async_restore(self, cached: dict[str, Any]) -> None:
+        await self._mammotion.restore_credentials(
+            self._account,
+            self._password,
+            cached,
+            aiohttp_client.async_get_clientsession(self._hass),
+            check_for_new_devices=True,
+        )
 
     @callback
     def async_rejected(self) -> None:
@@ -284,9 +272,7 @@ class _CloudLogin:
             self._cancel_retry = None
 
     @callback
-    def _async_failed(
-        self, err: Exception, outcome: _LoginFailure, *, can_retry: bool
-    ) -> None:
+    def _async_failed(self, err: Exception, outcome: _LoginFailure) -> None:
         if outcome is _LoginFailure.REJECTED:
             LOGGER.warning(
                 "Mammotion login for %s was rejected; continuing in BLE-only mode "
@@ -298,7 +284,6 @@ class _CloudLogin:
             return
         retrying = (
             outcome is _LoginFailure.TRANSIENT
-            and can_retry
             and self._failed_retries < CLOUD_LOGIN_MAX_RETRIES
         )
         if outcome is _LoginFailure.FAILED:
@@ -348,22 +333,13 @@ class _CloudLogin:
 
     async def _async_retry(self) -> None:
         if not (cached := self._load_cache()):
-            # Only a password grant could follow, and retries never make one.
             LOGGER.debug("Mammotion cloud retry skipped: no cached session left")
             return
         try:
-            await self._mammotion.restore_credentials(
-                self._account,
-                self._password,
-                cached,
-                aiohttp_client.async_get_clientsession(self._hass),
-                check_for_new_devices=True,
-            )
+            await self._async_restore(cached)
         except Exception as err:  # noqa: BLE001 — every failure is classified below
             self._failed_retries += 1
-            self._async_failed(
-                err, _classify_login_failure(err, self._mammotion), can_retry=True
-            )
+            self._async_failed(err, _classify_login_failure(err, self._mammotion))
             return
         LOGGER.info(
             "Mammotion cloud is reachable again for %s; reloading to bring it up",
