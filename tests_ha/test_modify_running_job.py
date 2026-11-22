@@ -356,3 +356,22 @@ def test_a_coordinator_with_no_state_yet_exposes_no_job() -> None:
 
     assert _property(coordinator, "running_job") is None
     assert _property(coordinator, "running_job_modifiable") is False
+
+
+@pytest.mark.regression
+def test_a_docked_mower_with_no_breakpoint_is_not_on_a_job() -> None:
+    """The mower pads its area list with zeros, which a breakpoint hash of 0 (none) matched."""
+    coordinator = _coordinator()
+    coordinator.data.work.zone_hashs = [123, 0, 0, 0]
+    coordinator.data.report_data.work.bp_hash = "0"
+
+    assert _property(coordinator, "running_job") is None
+    assert _property(coordinator, "running_job_modifiable") is False
+
+
+def test_the_running_job_lists_only_real_areas() -> None:
+    """The zero padding is not an area a card could show or match to a switch."""
+    coordinator = _coordinator()
+    coordinator.data.work.zone_hashs = [123, 0, 0, 0]
+
+    assert _property(coordinator, "running_job")["areas"] == [123]

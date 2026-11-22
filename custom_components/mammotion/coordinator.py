@@ -2722,8 +2722,10 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         task from a manually started one.
         """
         _mdata = cast(MowingDevice, self.data)
+        # 0 is "no breakpoint", and the mower pads its area list with zeros.
         return (
-            int(_mdata.report_data.work.bp_hash) in _mdata.work.zone_hashs
+            (bp_hash := int(_mdata.report_data.work.bp_hash)) != 0
+            and bp_hash in _mdata.work.zone_hashs
             and (_mdata.report_data.work.area >> 16) != 100
         )
 
@@ -2731,7 +2733,7 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
         """Return the running job's parameters, keyed by operation-settings field."""
         work = cast(MowingDevice, self.data).work
         fields: dict[str, Any] = {
-            "areas": list(dict.fromkeys(work.zone_hashs)),
+            "areas": list(dict.fromkeys(h for h in work.zone_hashs if h)),
             "toward": work.toward,
             "toward_mode": work.toward_mode,
             "toward_included_angle": work.toward_included_angle,
