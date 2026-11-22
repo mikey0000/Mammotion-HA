@@ -676,6 +676,101 @@ def _track_transport_availability(
     return _reconcile
 
 
+def _migrate_prefer_ble_option(
+    hass: HomeAssistant, entry: MammotionConfigEntry
+) -> None:
+    """Default ``prefer_ble`` on, replacing the retired ``stay_connected_bluetooth`` option."""
+    if not entry.options:
+        hass.config_entries.async_update_entry(entry, options={CONF_PREFER_BLE: True})
+    elif (
+        CONF_STAY_CONNECTED_BLUETOOTH in entry.options
+        and CONF_PREFER_BLE not in entry.options
+    ):
+        new_opts = {
+            k: v for k, v in entry.options.items() if k != CONF_STAY_CONNECTED_BLUETOOTH
+        }
+        new_opts[CONF_PREFER_BLE] = True
+        hass.config_entries.async_update_entry(entry, options=new_opts)
+
+
+def _wire_cloud_account(
+    hass: HomeAssistant,
+    entry: MammotionConfigEntry,
+    mammotion: MammotionClient,
+    store: MammotionConfigStore,
+    cloud_login: _CloudLogin,
+) -> None:
+    """Persist refreshed credentials, reauthenticate a dead login and drop devices the account loses.
+
+    Wired before the login, so a refresh or removal during the restore is caught.
+    """
+    account = entry.data.get(CONF_ACCOUNTNAME)
+
+    async def _on_credentials_updated() -> None:
+        LOGGER.debug(
+            "Credentials refreshed for account %s — persisting to config entry",
+            account,
+        )
+        store_cloud_credentials(hass, entry, mammotion)
+
+    async def _on_unrecoverable_auth_error(
+        account_id: str, transport_type: TransportType, _: Exception
+    ) -> None:
+        """Reauthenticate a dead login; mowers with BLE carry on over it meanwhile.
+
+        Runs inside the library's quiesce under suppress(Exception), so raising
+        ConfigEntryAuthFailed would be discarded: the flow is started explicitly.
+        """
+        LOGGER.error(
+            "Mammotion account %s: %s auth recovery exhausted — re-authentication required",
+            account_id,
+            transport_type.value,
+        )
+        cloud_login.async_rejected()
+        for handle in mammotion.device_registry.all_devices:
+            if handle.has_transport(TransportType.BLE):
+                handle.set_prefer_ble(value=True)
+                entry.async_create_background_task(
+                    hass,
+                    _async_connect_ble_after_cloud_loss(mammotion, handle.device_name),
+                    name=f"{DOMAIN}_ble_after_cloud_loss_{handle.device_name}",
+                )
+
+    async def _on_device_removed(device_name: str, iot_id: str) -> None:
+        """Drop a device the account no longer has; one configured over BLE stays as BLE-only.
+
+        Can fire during setup, before ``runtime_data`` exists; a loaded entry is reloaded.
+        """
+        if device_name in entry.data.get(CONF_BLE_DEVICES, {}):
+            LOGGER.warning(
+                "Mammotion device %s (iot_id=%s) is no longer in the account — keeping it over Bluetooth only",
+                device_name,
+                iot_id,
+            )
+        else:
+            LOGGER.warning(
+                "Mammotion device %s (iot_id=%s) is no longer in the account — removing from Home Assistant",
+                device_name,
+                iot_id,
+            )
+            device_registry = async_get_device_registry(hass)
+            if (
+                device := device_registry.async_get_device_by_identifier(
+                    (DOMAIN, device_name), entry.entry_id
+                )
+            ) is not None:
+                device_registry.async_remove_device(device.id)
+            await store.async_remove_device(device_name)
+
+        if entry.state is ConfigEntryState.LOADED:
+            hass.config_entries.async_schedule_reload(entry.entry_id)
+
+    mammotion.on_credentials_updated = _on_credentials_updated
+    mammotion.on_unrecoverable_auth_error = _on_unrecoverable_auth_error
+    mammotion.on_device_removed = _on_device_removed
+    _track_account_in_use(hass, entry, mammotion)
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) -> bool:  # noqa: C901
     """Set up Mammotion from a config entry.
 
@@ -704,41 +799,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
     password = entry.data.get(CONF_PASSWORD)
     use_wifi = entry.data.get(CONF_USE_WIFI, True)
 
-    # Migrate options: move from stay_connected_bluetooth to prefer_ble default.
-    if not entry.options:
-        hass.config_entries.async_update_entry(entry, options={CONF_PREFER_BLE: True})
-    elif (
-        CONF_STAY_CONNECTED_BLUETOOTH in entry.options
-        and CONF_PREFER_BLE not in entry.options
-    ):
-        new_opts = {
-            k: v for k, v in entry.options.items() if k != CONF_STAY_CONNECTED_BLUETOOTH
-        }
-        new_opts[CONF_PREFER_BLE] = True
-        hass.config_entries.async_update_entry(entry, options=new_opts)
-
+    _migrate_prefer_ble_option(hass, entry)
     prefer_ble = entry.options.get(CONF_PREFER_BLE, True)
     mow_path_fetch_enabled = entry.options.get(CONF_MOW_PATH_FETCH_ENABLED, False)
 
-    # Default to True for older entries that predate this key, as long as they
-    # have account credentials configured.
+    # Entries that predate this key have a cloud account when they hold credentials.
     has_cloud_account = entry.data.get(
         CONF_HAS_CLOUD_ACCOUNT, bool(account and password)
     )
-
-    # Wire credential-save callback before login so any re-login triggered
-    # during transport bind setup (e.g. _on_aliyun_auth_failure) is captured.
-    if has_cloud_account:
-
-        async def _on_credentials_updated() -> None:
-            """Persist refreshed credentials to the config entry."""
-            LOGGER.debug(
-                "Credentials refreshed for account %s — persisting to config entry",
-                account,
-            )
-            store_cloud_credentials(hass, entry, mammotion)
-
-        mammotion.on_credentials_updated = _on_credentials_updated
 
     mammotion_mowers: list[MammotionMowerData] = []
     mammotion_devices = MammotionDevices([], [], [], client=mammotion)
@@ -747,77 +815,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: MammotionConfigEntry) ->
 
     cloud_login = _CloudLogin(hass, entry, mammotion, account or "", password or "")
     entry.async_on_unload(cloud_login.async_cancel)
-
     if has_cloud_account:
-
-        async def _on_unrecoverable_auth_error(
-            account_id: str, transport_type: TransportType, _: Exception
-        ) -> None:
-            """Trigger HA re-authentication when the account's login itself is dead.
-
-            pymammotion fires this only when the HTTP refresh token has been
-            rejected; a single transport failing on a valid login does not reach
-            here.  It runs inside the library's quiesce under suppress(Exception),
-            so raising ConfigEntryAuthFailed would be discarded: start the flow
-            explicitly, first, and leave the BLE connects to background tasks.
-            The client keeps running so mowers with BLE carry on meanwhile.
-            """
-            LOGGER.error(
-                "Mammotion account %s: %s auth recovery exhausted — re-authentication required",
-                account_id,
-                transport_type.value,
-            )
-            cloud_login.async_rejected()
-            for handle in mammotion.device_registry.all_devices:
-                if handle.has_transport(TransportType.BLE):
-                    handle.set_prefer_ble(value=True)
-                    entry.async_create_background_task(
-                        hass,
-                        _async_connect_ble_after_cloud_loss(
-                            mammotion, handle.device_name
-                        ),
-                        name=f"{DOMAIN}_ble_after_cloud_loss_{handle.device_name}",
-                    )
-
-        mammotion.on_unrecoverable_auth_error = _on_unrecoverable_auth_error
-        _track_account_in_use(hass, entry, mammotion)
-
-        async def _on_device_removed(device_name: str, iot_id: str) -> None:
-            """Drop a device that is no longer in the account from Home Assistant.
-
-            pymammotion fires this when the cloud rejects the device as unbound (Aliyun
-            29004, Mammotion 50101) and the account's device list no longer has it, and
-            when a restore's fresh device list drops it, which can be during setup,
-            before ``runtime_data`` exists.  A device also configured over BLE keeps its
-            registry entry and stored state: the reload brings it back as BLE-only.
-            Otherwise the HA device (and so its entities) and its stored state go.  A
-            loaded entry is reloaded either way, which rebuilds ``runtime_data``.
-            """
-            if device_name in entry.data.get(CONF_BLE_DEVICES, {}):
-                LOGGER.warning(
-                    "Mammotion device %s (iot_id=%s) is no longer in the account — keeping it over Bluetooth only",
-                    device_name,
-                    iot_id,
-                )
-            else:
-                LOGGER.warning(
-                    "Mammotion device %s (iot_id=%s) is no longer in the account — removing from Home Assistant",
-                    device_name,
-                    iot_id,
-                )
-                device_registry = async_get_device_registry(hass)
-                if (
-                    device := device_registry.async_get_device_by_identifier(
-                        (DOMAIN, device_name), entry.entry_id
-                    )
-                ) is not None:
-                    device_registry.async_remove_device(device.id)
-                await store.async_remove_device(device_name)
-
-            if entry.state is ConfigEntryState.LOADED:
-                hass.config_entries.async_schedule_reload(entry.entry_id)
-
-        mammotion.on_device_removed = _on_device_removed
+        _wire_cloud_account(hass, entry, mammotion, store, cloud_login)
 
     reconcile_transports = _track_transport_availability(hass, entry, mammotion)
 
