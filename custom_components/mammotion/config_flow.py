@@ -615,21 +615,16 @@ class MammotionConfigFlow(ConfigFlow, domain=DOMAIN):
                     login.user_account, exclude=entry.entry_id
                 ):
                     return await self._async_merge_into(other, entry, login)
-                data = _with_login(entry.data, login)
-                data.update(
-                    {
-                        CONF_ACCOUNTNAME: account,
-                        CONF_PASSWORD: password,
-                        CONF_ACCOUNT_ID: login.user_account,
-                        CONF_USE_WIFI: True,
-                        CONF_HAS_CLOUD_ACCOUNT: True,
-                    }
-                )
                 return self.async_update_reload_and_abort(
                     entry,
                     unique_id=self._account_unique_id(entry, login),
                     title=account,
-                    data=data,
+                    data=signed_in_data(entry, password, login)
+                    | {
+                        CONF_ACCOUNTNAME: account,
+                        CONF_USE_WIFI: True,
+                        CONF_HAS_CLOUD_ACCOUNT: True,
+                    },
                     reason="reconfigure_successful",
                 )
 

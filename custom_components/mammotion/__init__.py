@@ -300,6 +300,14 @@ class _CloudLogin:
                 if retrying
                 else "not retrying until the integration is reloaded",
             )
+        self._async_show_issue(err, retrying=retrying)
+        if retrying:
+            self._cancel_retry = async_call_later(
+                self._hass, CLOUD_LOGIN_RETRY_INTERVAL, self._async_retry_due
+            )
+
+    @callback
+    def _async_show_issue(self, err: Exception, *, retrying: bool) -> None:
         key, severity = (
             ("cloud_login_retrying", ir.IssueSeverity.WARNING)
             if retrying
@@ -317,10 +325,6 @@ class _CloudLogin:
                 "error": str(err) or type(err).__name__,
             },
         )
-        if retrying:
-            self._cancel_retry = async_call_later(
-                self._hass, CLOUD_LOGIN_RETRY_INTERVAL, self._async_retry_due
-            )
 
     @callback
     def _async_retry_due(self, _now: datetime) -> None:
