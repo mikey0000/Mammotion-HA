@@ -1791,7 +1791,7 @@ wheels = [
 
 [[package]]
 name = "mammotion-ha"
-version = "0.6.26"
+version = "0.6.27"
 source = { virtual = "." }
 dependencies = [
     { name = "autotyping" },
@@ -1818,7 +1818,7 @@ requires-dist = [
     { name = "autotyping", specifier = ">=24.3.0" },
     { name = "homeassistant", specifier = ">=2026.10.0" },
     { name = "pyagorartc", specifier = "==0.2.3" },
-    { name = "pymammotion", specifier = "==0.10.21" },
+    { name = "pymammotion", specifier = "==0.11.0" },
 ]
 
 [package.metadata.requires-dev]
@@ -2731,7 +2731,7 @@ wheels = [
 
 [[package]]
 name = "pymammotion"
-version = "0.10.21"
+version = "0.11.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -2756,9 +2756,9 @@ dependencies = [
     { name = "webrtc-models" },
     { name = "websockets" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/00/1c/4f4f1a2449d5fe406908d56a215a1e1146193d245cd7a37b187958e929c6/pymammotion-0.10.21.tar.gz", hash = "sha256:7db7e7d07cadd74621ec32ed47c4a9d7e9234b6b0ce7b333136f8da60daf522b", size = 761608, upload-time = "2026-11-21T11:12:40.885Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/e9/07/d2dcbaff9a361a95e4c0a4b95e05cff7de7f9e885d38e9c6f601a8046a0d/pymammotion-0.11.0.tar.gz", hash = "sha256:c8ca1f84942590623bf30d6631e2f629b908cb5325ca129dd4a252978144e332", size = 765580, upload-time = "2026-11-23T01:16:08.629Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/8e/f7/2bed358c1869f3dff4d73fb93ed932d0579ac7a0e11da044c7af7a9c7eb2/pymammotion-0.10.21-py3-none-any.whl", hash = "sha256:b7b5ca09fb89aa8dc15e78283fdc6e6e04556d42350d0cfa8f0e71734f93916f", size = 846865, upload-time = "2026-11-21T11:12:38.929Z" },
+    { url = "https://files.pythonhosted.org/packages/79/50/bc93e2b4e7d4343d8eb51d09b83a7614b8aed5babc961b691ed93965abd2/pymammotion-0.11.0-py3-none-any.whl", hash = "sha256:9356a174157d80ba6ba0afce30eb4a563cc47df5e8c9cefbf9fb096417643841", size = 851020, upload-time = "2026-11-23T01:16:06.88Z" },
 ]
 
 [[package]]
