@@ -1938,6 +1938,10 @@
       "title": "A Mammotion felhő nincs csatlakoztatva",
       "description": "A Home Assistant nem tudott bejelentkezni a Mammotion felhőbe a(z) {account} fiókkal ({error}), és felhagyott a próbálkozással. A Bluetooth-on csatlakozó eszközök továbbra is működnek. Töltsd újra a Mammotion integrációt, amint a Mammotion szolgáltatás ismét elérhető."
     },
+    "cloud_login_rate_limited": {
+      "title": "A Mammotion felhőbe való bejelentkezés korlátozva",
+      "description": "A Mammotion felhő korlátozza a bejelentkezési kéréseket ehhez: {account}, ezért a Home Assistant nem tudott csatlakozni, és nem próbálkozik újra. A Bluetooth-on csatlakoztatott eszközök továbbra is működnek. Várjon körülbelül egy órát, majd töltse újra a Mammotion integrációt."
+    },
     "cloud_transport_unavailable": {
       "title": "A Mammotion felhőkapcsolatot újra be kell állítani",
       "fix_flow": {
@@ -1956,7 +1960,8 @@
         },
         "error": {
           "cannot_connect": "Nem lehet csatlakozni a Mammotion felhőhöz. Ellenőrizze a hálózatot, majd próbálja újra.",
-          "login_failed": "A bejelentkezés sikertelen. Ellenőrizze a jelszót, majd próbálja újra."
+          "login_failed": "A bejelentkezés sikertelen. Ellenőrizze a jelszót, majd próbálja újra.",
+          "api_limit_exceeded": "Túllépte az API kéréskorlátot. Kérjük, próbálja újra később."
         },
         "abort": {
           "wrong_account": "Ezek a hitelesítő adatok egy másik Mammotion fiókhoz tartoznak. Jelentkezzen be azzal a fiókkal, amellyel ezt a bejegyzést beállították.",

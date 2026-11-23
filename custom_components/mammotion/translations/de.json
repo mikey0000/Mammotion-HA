@@ -1938,6 +1938,10 @@
       "title": "Die Mammotion-Cloud ist nicht verbunden.",
       "description": "Home Assistant konnte sich für {account} nicht bei der Mammotion-Cloud anmelden ({error}) und versucht es nicht mehr. Über Bluetooth verbundene Geräte funktionieren weiter. Laden Sie die Mammotion-Integration neu, sobald der Mammotion-Dienst wieder erreichbar ist."
     },
+    "cloud_login_rate_limited": {
+      "title": "Anmeldung bei der Mammotion-Cloud begrenzt",
+      "description": "Die Mammotion-Cloud begrenzt Anmeldeanfragen für {account}, daher konnte Home Assistant keine Verbindung herstellen und versucht es nicht erneut. Über Bluetooth verbundene Geräte funktionieren weiter. Warten Sie etwa eine Stunde und laden Sie dann die Mammotion-Integration neu."
+    },
     "cloud_transport_unavailable": {
       "title": "Die Verbindung zur Mammotion-Cloud muss neu eingerichtet werden",
       "fix_flow": {
@@ -1956,7 +1960,8 @@
         },
         "error": {
           "cannot_connect": "Es konnte keine Verbindung zur Mammotion-Cloud hergestellt werden. Überprüfen Sie Ihr Netzwerk und versuchen Sie es erneut.",
-          "login_failed": "Anmeldung fehlgeschlagen. Überprüfen Sie Ihr Passwort und versuchen Sie es erneut."
+          "login_failed": "Anmeldung fehlgeschlagen. Überprüfen Sie Ihr Passwort und versuchen Sie es erneut.",
+          "api_limit_exceeded": "Das API-Limit wurde überschritten. Bitte versuchen Sie es später erneut."
         },
         "abort": {
           "wrong_account": "Diese Anmeldedaten gehören zu einem anderen Mammotion-Konto. Melden Sie sich mit dem Konto an, mit dem dieser Eintrag eingerichtet wurde.",

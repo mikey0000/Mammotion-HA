@@ -33,6 +33,7 @@ from pymammotion.aliyun.exceptions import (
 )
 from pymammotion.http.model.http import (
     AuthorizationCodeError,
+    RateLimitedError,
     UnauthorizedExceptionError,
 )
 from pymammotion.transport.base import (
@@ -259,6 +260,27 @@ async def test_a_refusal_or_rate_limit_is_shown_and_never_retried(
     issue = login_issue(hass, entry)
     assert issue is not None
     assert issue.translation_key == "cloud_login_failed"
+
+
+@pytest.mark.regression
+async def test_an_auth_rate_limit_shows_the_rate_limit_issue_and_is_not_retried(
+    hass: HomeAssistant,
+    slot: list[MagicMock],
+    entries: list[MockConfigEntry],
+) -> None:
+    """An oauth2/token 429 was retried as a network fault, then shown as a generic outage."""
+    client = make_cloud_client(RateLimitedError("oauth2/token", 3600.0), None)
+    entry = await _setup(hass, slot, entries, client)
+
+    await _later(hass)
+
+    assert entry.state is ConfigEntryState.LOADED
+    assert client.restore_credentials.await_count == 1
+    assert entry.data[CONF_AEP_DATA] == CACHED_SESSION
+    assert reauth_flows(hass) == []
+    issue = login_issue(hass, entry)
+    assert issue is not None
+    assert issue.translation_key == "cloud_login_rate_limited"
 
 
 @pytest.mark.parametrize(

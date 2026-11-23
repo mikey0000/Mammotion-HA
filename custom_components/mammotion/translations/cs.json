@@ -1938,6 +1938,10 @@
       "title": "Cloud Mammotion není připojen",
       "description": "Home Assistant se nemohl přihlásit ke cloudu Mammotion pro účet {account} ({error}) a přestal to zkoušet. Zařízení připojená přes Bluetooth fungují dál. Jakmile bude služba Mammotion opět dostupná, znovu načtěte integraci Mammotion."
     },
+    "cloud_login_rate_limited": {
+      "title": "Přihlášení do cloudu Mammotion je omezeno",
+      "description": "Cloud Mammotion omezuje požadavky na přihlášení pro {account}, takže se Home Assistant nemohl připojit a nebude to zkoušet znovu. Zařízení připojená přes Bluetooth fungují dál. Počkejte přibližně hodinu a poté integraci Mammotion znovu načtěte."
+    },
     "cloud_transport_unavailable": {
       "title": "Připojení ke cloudu Mammotion je třeba znovu nastavit",
       "fix_flow": {
@@ -1956,7 +1960,8 @@
         },
         "error": {
           "cannot_connect": "Nelze se připojit ke cloudu Mammotion. Zkontrolujte síť a zkuste to znovu.",
-          "login_failed": "Přihlášení se nezdařilo. Zkontrolujte heslo a zkuste to znovu."
+          "login_failed": "Přihlášení se nezdařilo. Zkontrolujte heslo a zkuste to znovu.",
+          "api_limit_exceeded": "Byl překročen limit požadavků API. Zkuste to prosím později."
         },
         "abort": {
           "wrong_account": "Tyto přihlašovací údaje patří jinému účtu Mammotion. Přihlaste se účtem, se kterým byla tato položka nastavena.",

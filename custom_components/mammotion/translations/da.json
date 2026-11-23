@@ -1938,6 +1938,10 @@
       "title": "Mammotion-cloud ikke forbundet",
       "description": "Home Assistant kunne ikke logge ind på Mammotion-cloud for {account} ({error}) og har stoppet med at prøve igen. Enheder forbundet via Bluetooth fungerer fortsat. Genindlæs Mammotion-integrationen, når Mammotion-tjenesten er tilgængelig igen."
     },
+    "cloud_login_rate_limited": {
+      "title": "Log-ind til Mammotion-skyen er begrænset",
+      "description": "Mammotion-skyen begrænser log-ind-anmodninger for {account}, så Home Assistant kunne ikke oprette forbindelse og prøver ikke igen. Enheder forbundet via Bluetooth virker fortsat. Vent cirka en time, og genindlæs derefter Mammotion-integrationen."
+    },
     "cloud_transport_unavailable": {
       "title": "Forbindelsen til Mammotion-skyen skal konfigureres igen",
       "fix_flow": {
@@ -1956,7 +1960,8 @@
         },
         "error": {
           "cannot_connect": "Kan ikke oprette forbindelse til Mammotion-skyen. Kontrollér dit netværk, og prøv igen.",
-          "login_failed": "Login mislykkedes. Kontrollér din adgangskode, og prøv igen."
+          "login_failed": "Login mislykkedes. Kontrollér din adgangskode, og prøv igen.",
+          "api_limit_exceeded": "API-grænsen er overskredet. Prøv igen senere."
         },
         "abort": {
           "wrong_account": "Disse loginoplysninger tilhører en anden Mammotion-konto. Log ind med den konto, denne post blev oprettet med.",

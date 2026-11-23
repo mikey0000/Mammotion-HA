@@ -1938,6 +1938,10 @@
       "title": "Chmura Mammotion nie jest połączona",
       "description": "Home Assistant nie mógł zalogować się do chmury Mammotion dla konta {account} ({error}) i przestał ponawiać próby. Urządzenia połączone przez Bluetooth nadal działają. Załaduj ponownie integrację Mammotion, gdy usługa Mammotion będzie znów dostępna."
     },
+    "cloud_login_rate_limited": {
+      "title": "Logowanie do chmury Mammotion ograniczone",
+      "description": "Chmura Mammotion ogranicza żądania logowania dla {account}, więc Home Assistant nie mógł się połączyć i nie będzie ponawiać prób. Urządzenia połączone przez Bluetooth nadal działają. Odczekaj około godziny, a następnie ponownie załaduj integrację Mammotion."
+    },
     "cloud_transport_unavailable": {
       "title": "Połączenie z chmurą Mammotion wymaga ponownej konfiguracji",
       "fix_flow": {
@@ -1956,7 +1960,8 @@
         },
         "error": {
           "cannot_connect": "Nie można połączyć się z chmurą Mammotion. Sprawdź sieć i spróbuj ponownie.",
-          "login_failed": "Logowanie nie powiodło się. Sprawdź hasło i spróbuj ponownie."
+          "login_failed": "Logowanie nie powiodło się. Sprawdź hasło i spróbuj ponownie.",
+          "api_limit_exceeded": "Przekroczono limit zapytań API. Spróbuj ponownie później."
         },
         "abort": {
           "wrong_account": "Te dane logowania należą do innego konta Mammotion. Zaloguj się kontem, za pomocą którego skonfigurowano ten wpis.",

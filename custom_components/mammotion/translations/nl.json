@@ -1938,6 +1938,10 @@
       "title": "Mammotion-cloud niet verbonden",
       "description": "Home Assistant kon niet inloggen bij de Mammotion-cloud voor {account} ({error}) en probeert het niet meer. Apparaten die via Bluetooth verbonden zijn, blijven werken. Herlaad de Mammotion-integratie zodra de Mammotion-dienst weer bereikbaar is."
     },
+    "cloud_login_rate_limited": {
+      "title": "Aanmelden bij de Mammotion-cloud beperkt",
+      "description": "De Mammotion-cloud beperkt aanmeldverzoeken voor {account}, waardoor Home Assistant geen verbinding kon maken en het niet opnieuw probeert. Apparaten die via Bluetooth zijn verbonden blijven werken. Wacht ongeveer een uur en herlaad daarna de Mammotion-integratie."
+    },
     "cloud_transport_unavailable": {
       "title": "De verbinding met de Mammotion-cloud moet opnieuw worden ingesteld",
       "fix_flow": {
@@ -1956,7 +1960,8 @@
         },
         "error": {
           "cannot_connect": "Kan geen verbinding maken met de Mammotion-cloud. Controleer je netwerk en probeer het opnieuw.",
-          "login_failed": "Inloggen mislukt. Controleer je wachtwoord en probeer het opnieuw."
+          "login_failed": "Inloggen mislukt. Controleer je wachtwoord en probeer het opnieuw.",
+          "api_limit_exceeded": "De API-limiet is overschreden. Probeer het later opnieuw."
         },
         "abort": {
           "wrong_account": "Deze inloggegevens horen bij een ander Mammotion-account. Log in met het account waarmee deze vermelding is ingesteld.",

@@ -1938,6 +1938,10 @@
       "title": "Oblak Mammotion ni povezan",
       "description": "Home Assistant se ni mogel prijaviti v oblak Mammotion za račun {account} ({error}) in je prenehal s ponovnimi poskusi. Naprave, povezane prek Bluetootha, še naprej delujejo. Ko bo storitev Mammotion spet dosegljiva, znova naložite integracijo Mammotion."
     },
+    "cloud_login_rate_limited": {
+      "title": "Prijava v oblak Mammotion je omejena",
+      "description": "Oblak Mammotion omejuje zahteve za prijavo za {account}, zato se Home Assistant ni mogel povezati in ne bo poskusil znova. Naprave, povezane prek Bluetootha, še naprej delujejo. Počakajte približno eno uro, nato znova naložite integracijo Mammotion."
+    },
     "cloud_transport_unavailable": {
       "title": "Povezavo z oblakom Mammotion je treba znova nastaviti",
       "fix_flow": {
@@ -1956,7 +1960,8 @@
         },
         "error": {
           "cannot_connect": "Povezave z oblakom Mammotion ni mogoče vzpostaviti. Preverite omrežje in poskusite znova.",
-          "login_failed": "Prijava ni uspela. Preverite geslo in poskusite znova."
+          "login_failed": "Prijava ni uspela. Preverite geslo in poskusite znova.",
+          "api_limit_exceeded": "Omejitev zahtev API je bila presežena. Poskusite znova pozneje."
         },
         "abort": {
           "wrong_account": "Ti podatki za prijavo pripadajo drugemu računu Mammotion. Prijavite se z računom, s katerim je bil ta vnos nastavljen.",

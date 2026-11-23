@@ -33,6 +33,7 @@ from homeassistant.helpers.typing import UNDEFINED
 from homeassistant.loader import async_get_integration
 from pymammotion.aliyun.exceptions import CloudSetupError, TooManyRequestsException
 from pymammotion.client import MammotionClient
+from pymammotion.http.model.http import RateLimitedError
 from pymammotion.transport.base import LoginFailedError
 
 from .const import (
@@ -124,7 +125,7 @@ async def async_cloud_login(
                 )
             ),
         )
-    except TooManyRequestsException as err:
+    except (TooManyRequestsException, RateLimitedError) as err:
         raise data_entry_flow.AbortFlow("api_limit_exceeded") from err
     except LoginFailedError as err:
         LOGGER.warning("Mammotion login rejected: %s", err)

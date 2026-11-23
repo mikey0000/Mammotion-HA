@@ -24,6 +24,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 from homeassistant.helpers import issue_registry as ir
 from homeassistant.setup import async_setup_component
+from pymammotion.http.model.http import RateLimitedError
 from pymammotion.transport.base import (
     LoginFailedError,
     ReLoginRequiredError,
@@ -155,6 +156,20 @@ async def test_a_network_fault_on_retry_offers_to_try_again(
     assert result["type"] is FlowResultType.FORM
     assert result["step_id"] == "retry"
     assert result["errors"] == {"base": "cannot_connect"}
+
+
+@pytest.mark.regression
+async def test_a_rate_limited_retry_says_so_and_does_not_ask_for_the_password(
+    hass: HomeAssistant, client: MagicMock, entry: MockConfigEntry
+) -> None:
+    """A throttle was read as a refusal and sent the user to the password step, which a 429 cannot cure."""
+    client.retry_transport.side_effect = RateLimitedError("authorization/code", 3600.0)
+
+    result = await _submit(hass, await _start(hass, entry), {})
+
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "retry"
+    assert result["errors"] == {"base": "api_limit_exceeded"}
 
 
 async def test_a_refused_retry_asks_for_the_password(

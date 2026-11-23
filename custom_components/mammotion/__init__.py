@@ -34,6 +34,7 @@ from homeassistant.loader import async_get_integration
 from pymammotion.aliyun.model.dev_by_account_response import Device
 from pymammotion.client import MammotionClient
 from pymammotion.data.model.device import MowingDevice, PoolCleanerDevice
+from pymammotion.http.model.http import RateLimitedError
 from pymammotion.transport.base import (
     LoginFailedError,
     TransportError,
@@ -308,11 +309,12 @@ class _CloudLogin:
 
     @callback
     def _async_show_issue(self, err: Exception, *, retrying: bool) -> None:
-        key, severity = (
-            ("cloud_login_retrying", ir.IssueSeverity.WARNING)
-            if retrying
-            else ("cloud_login_failed", ir.IssueSeverity.ERROR)
-        )
+        if retrying:
+            key, severity = "cloud_login_retrying", ir.IssueSeverity.WARNING
+        elif isinstance(err, RateLimitedError):
+            key, severity = "cloud_login_rate_limited", ir.IssueSeverity.ERROR
+        else:
+            key, severity = "cloud_login_failed", ir.IssueSeverity.ERROR
         ir.async_create_issue(
             self._hass,
             DOMAIN,

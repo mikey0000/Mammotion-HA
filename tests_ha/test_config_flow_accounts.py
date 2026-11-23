@@ -7,6 +7,7 @@ three steps, and stop its throwaway client however the step ends.
 """
 
 import logging
+from collections.abc import Callable
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -17,6 +18,7 @@ from homeassistant.const import CONF_PASSWORD
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 from pymammotion.aliyun.exceptions import CloudSetupError, TooManyRequestsException
+from pymammotion.http.model.http import RateLimitedError
 from pymammotion.transport.base import LoginFailedError
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -273,14 +275,19 @@ async def test_reauth_and_reconfigure_map_login_failures_like_the_wifi_step(
 
 
 @pytest.mark.usefixtures("enable_bluetooth")
+@pytest.mark.parametrize(
+    "make_exc",
+    [
+        pytest.param(lambda: TooManyRequestsException("429", "slow down"), id="device"),
+        pytest.param(lambda: RateLimitedError("oauth2/token", 3600.0), id="auth"),
+    ],
+)
 async def test_a_rate_limited_login_aborts_and_stops_the_client(
-    hass: HomeAssistant,
+    hass: HomeAssistant, make_exc: Callable[[], Exception]
 ) -> None:
     """An abort leaves the step early; the client must not be left running."""
     client = _client()
-    client.login_and_initiate_cloud.side_effect = TooManyRequestsException(
-        "429", "slow down"
-    )
+    client.login_and_initiate_cloud.side_effect = make_exc()
 
     result = await _add_account(hass, client)
 

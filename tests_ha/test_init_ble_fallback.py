@@ -21,6 +21,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.util import dt as dt_util
 from pymammotion.aliyun.exceptions import CloudSetupError
+from pymammotion.http.model.http import RateLimitedError
 from pymammotion.transport.base import LoginFailedError, ReLoginRequiredError
 from pytest_homeassistant_custom_component.common import (
     MockConfigEntry,
@@ -186,6 +187,26 @@ async def test_a_transport_scoped_auth_error_with_ble_keeps_the_cache_and_skips_
     client.login_and_initiate_cloud.assert_not_awaited()
     assert entry.data[CONF_AEP_DATA] == CACHED_SESSION
     assert reauth_flows(hass) == []
+
+
+@pytest.mark.regression
+async def test_an_auth_rate_limit_with_ble_shows_the_rate_limit_issue_and_is_not_retried(
+    hass: HomeAssistant, logins: list[_CloudLogin]
+) -> None:
+    """An oauth2/token 429 was retried every 15 minutes, then shown as a generic outage."""
+    entry = make_cloud_entry(hass)
+    client = make_cloud_client(RateLimitedError("oauth2/token", 3600.0))
+
+    assert await _attempt(hass, entry, client, logins) is False
+    async_fire_time_changed(
+        hass, dt_util.utcnow() + CLOUD_LOGIN_RETRY_INTERVAL + timedelta(seconds=1)
+    )
+    await hass.async_block_till_done(wait_background_tasks=True)
+
+    assert _issue_key(hass, entry) == "cloud_login_rate_limited"
+    client.restore_credentials.assert_awaited_once()
+    assert reauth_flows(hass) == []
+    assert entry.data[CONF_AEP_DATA] == CACHED_SESSION
 
 
 async def test_an_unexpected_fault_with_ble_is_shown_and_never_retried(

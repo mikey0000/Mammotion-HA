@@ -6,7 +6,7 @@ The counters are the server's, so they see every grant and refresh the library m
 from datetime import timedelta
 
 import pytest
-from cloud_login_support import reauth_flows
+from cloud_login_support import login_issue, reauth_flows
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.const import STATE_UNAVAILABLE
 from homeassistant.core import HomeAssistant
@@ -130,14 +130,11 @@ async def test_setup_recovers_once_the_cloud_is_back(
     }
 
 
-async def test_a_rate_limited_refresh_costs_one_request_per_attempt_and_no_password(
+@pytest.mark.regression
+async def test_a_rate_limited_refresh_costs_one_request_and_is_not_retried(
     hass: HomeAssistant, fake_cloud: FakeMammotionCloud
 ) -> None:
-    """No retry loop inside an attempt.
-
-    pymammotion raises an oauth2/token 429 as a plain ConnectionError, so it is
-    retried on Home Assistant's backoff like a 503 rather than surfaced.
-    """
+    """An oauth2/token 429 was a plain ConnectionError, so Home Assistant retried it like a 503."""
     scenario = fake_cloud.scenario
     cache = await make_cache(fake_cloud)
     scenario.age_cached_access_token(cache)
@@ -147,11 +144,16 @@ async def test_a_rate_limited_refresh_costs_one_request_per_attempt_and_no_passw
     await _set_up(hass, entry)
     await _home_assistant_retries(hass)
 
-    assert counts(scenario, "password_grants", "oauth_429") == {
+    # Every oauth2/token request answers 429 here, a password grant included.
+    assert counts(scenario, "oauth_429", "password_grants") == {
+        "oauth_429": 1,
         "password_grants": 0,
-        "oauth_429": 2,
     }
-    assert entry.state is ConfigEntryState.SETUP_RETRY
+    assert entry.state is ConfigEntryState.LOADED
+    assert reauth_flows(hass) == []
+    issue = login_issue(hass, entry)
+    assert issue is not None
+    assert issue.translation_key == "cloud_login_rate_limited"
 
 
 async def _restore_with_aliyun_refused(

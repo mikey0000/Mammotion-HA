@@ -1938,6 +1938,10 @@
       "title": "Mammotion cloud not connected",
       "description": "Home Assistant could not sign in to the Mammotion cloud for {account} ({error}) and has stopped retrying. Devices connected over Bluetooth keep working. Reload the Mammotion integration once the Mammotion service is reachable again."
     },
+    "cloud_login_rate_limited": {
+      "title": "Mammotion cloud sign-in rate limited",
+      "description": "The Mammotion cloud is limiting sign-in requests for {account}, so Home Assistant could not connect and will not retry. Devices connected over Bluetooth keep working. Wait about an hour, then reload the Mammotion integration."
+    },
     "cloud_transport_unavailable": {
       "title": "Mammotion cloud connection needs reconfiguring",
       "fix_flow": {
@@ -1956,7 +1960,8 @@
         },
         "error": {
           "cannot_connect": "Unable to connect to the Mammotion cloud. Check your network, then try again.",
-          "login_failed": "Login failed. Check your password, then try again."
+          "login_failed": "Login failed. Check your password, then try again.",
+          "api_limit_exceeded": "API rate limit has been exceeded. Please try again later."
         },
         "abort": {
           "wrong_account": "These credentials belong to a different Mammotion account. Sign in with the account this entry was set up with.",

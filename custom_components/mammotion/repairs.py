@@ -9,6 +9,7 @@ from homeassistant.const import CONF_PASSWORD
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import issue_registry as ir
+from pymammotion.http.model.http import RateLimitedError
 from pymammotion.transport.base import TransportType, is_transient_network_error
 
 from .config_flow import async_sign_in_again, signed_in_data
@@ -40,6 +41,8 @@ class CloudTransportRepairFlow(RepairsFlow):
         if user_input is not None:
             try:
                 await self._async_retry_transport()
+            except RateLimitedError:
+                errors["base"] = "api_limit_exceeded"
             except Exception as err:  # noqa: BLE001 — only a network fault is retried here
                 if not is_transient_network_error(err):
                     LOGGER.warning(
