@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# Print the release notes for a commit range, e.g. scripts/release_notes v0.6.26..v0.6.27
+
+set -euo pipefail
+
+range=$1
+
+breaking=$(git log --no-merges --grep='^BREAKING-CHANGE:' \
+  --format='- %(trailers:key=BREAKING-CHANGE,valueonly,unfold,separator=%x20)' "$range" | sed '/^- $/d')
+
+# Only commits that touch the integration: tests, docs and CI are of no interest to a user.
+changes=$(git log --no-merges --invert-grep \
+  --grep='^Release [0-9]' --grep='^chore' --grep='\[skip ci\]' \
+  --format='- %s' "$range" -- custom_components)
+
+if [[ -n $breaking ]]; then
+  printf '## ⚠️ Breaking changes\n\n%s\n\n' "$breaking"
+fi
+printf "## What's changed\n\n%s\n" "${changes:-- No user-facing changes}"

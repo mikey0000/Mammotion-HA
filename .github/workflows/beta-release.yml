@@ -108,9 +108,7 @@ jobs:
         run: |
           {
             echo 'changelog<<EOF'
-            git log --pretty=format:"- %h - %an: %s" \
-              "${{ steps.previous_tag.outputs.previous_tag }}".."${{ steps.version.outputs.tag }}" \
-              | grep -v "\[skip ci\]" || echo "- No user-facing changes"
+            scripts/release_notes "${{ steps.previous_tag.outputs.previous_tag }}..${{ steps.version.outputs.tag }}"
             echo EOF
           } >> "$GITHUB_OUTPUT"
 
@@ -122,28 +120,10 @@ jobs:
           tag_name: ${{ steps.version.outputs.tag }}
           release_name: Beta Release ${{ steps.version.outputs.tag }}
           body: |
-            # Mammotion - Home Assistant Integration ${{ steps.version.outputs.tag }} (Beta)
-
-            [![Discord](https://img.shields.io/discord/1247286396297678879)](https://discord.gg/vpZdWhJX8x)
-
-            > ⚠️ **This is a beta release.** To install via HACS, enable "Show beta versions" in your HACS settings.
-
-            ## Changes since last stable release
+            > ⚠️ **This is a beta release**, listing everything since ${{ steps.previous_tag.outputs.previous_tag }}. To install it, enable "Show beta versions" for Mammotion in HACS.
 
             ${{ steps.changelog.outputs.changelog }}
 
-            ## Installation via HACS
-
-            1. In HACS, go to **Settings** and enable **"Show beta versions"**.
-            2. Find the Mammotion integration and install the beta version.
-            3. Restart Home Assistant.
-
-            ## Feedback and Support
-
-            If you encounter any issues, please:
-            - [Open an issue](https://github.com/${{ github.repository }}/issues) on GitHub
-            - [Join our Discord](https://discord.gg/vpZdWhJX8x) for community support
-
-            **Full Changelog**: https://github.com/${{ github.repository }}/compare/${{ steps.previous_tag.outputs.previous_tag }}...${{ steps.version.outputs.tag }}
+            [Full changelog](https://github.com/${{ github.repository }}/compare/${{ steps.previous_tag.outputs.previous_tag }}...${{ steps.version.outputs.tag }}) · [Report an issue](https://github.com/${{ github.repository }}/issues) · [Discord](https://discord.gg/vpZdWhJX8x)
           draft: false
           prerelease: true
