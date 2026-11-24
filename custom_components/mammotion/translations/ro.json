@@ -1296,7 +1296,7 @@
         },
         "weeks": {
           "name": "Zilele săptămânii",
-          "description": "Lista numerelor zilelor săptămânii (0 = duminică … 6 = sâmbătă) în care rulează programul."
+          "description": "Lista numerelor zilelor săptămânii (1 = duminică … 7 = sâmbătă) în care rulează programul."
         },
         "start_time": {
           "name": "Ora de început",
@@ -1402,7 +1402,7 @@
         },
         "weeks": {
           "name": "Zilele săptămânii",
-          "description": "Lista numerelor zilelor săptămânii (0 = duminică … 6 = sâmbătă)."
+          "description": "Lista numerelor zilelor săptămânii (1 = duminică … 7 = sâmbătă)."
         },
         "start_time": {
           "name": "Ora de început",

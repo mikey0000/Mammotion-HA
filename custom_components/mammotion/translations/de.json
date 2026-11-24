@@ -1296,7 +1296,7 @@
         },
         "weeks": {
           "name": "Wochentage",
-          "description": "Gibt eine Liste der Wochentage (0 = Sonntag … 6 = Samstag) aus, an denen der Zeitplan gilt."
+          "description": "Gibt eine Liste der Wochentage (1 = Sonntag … 7 = Samstag) aus, an denen der Zeitplan gilt."
         },
         "start_time": {
           "name": "Startzeitpunkt",
@@ -1402,7 +1402,7 @@
         },
         "weeks": {
           "name": "Wochentage",
-          "description": "Liste der Wochentagszahlen (0 = Sonntag … 6 = Samstag)"
+          "description": "Liste der Wochentagszahlen (1 = Sonntag … 7 = Samstag)"
         },
         "start_time": {
           "name": "Startzeitpunkt",

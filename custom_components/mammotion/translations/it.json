@@ -1296,7 +1296,7 @@
         },
         "weeks": {
           "name": "Giorni della settimana",
-          "description": "Elenco dei giorni della settimana come interi (0 = domenica … 6 = sabato) in cui viene eseguita la pianificazione."
+          "description": "Elenco dei giorni della settimana come interi (1 = domenica … 7 = sabato) in cui viene eseguita la pianificazione."
         },
         "start_time": {
           "name": "Ora di inizio",
@@ -1402,7 +1402,7 @@
         },
         "weeks": {
           "name": "Giorni della settimana",
-          "description": "Elenco dei giorni della settimana come interi (0 = domenica … 6 = sabato)."
+          "description": "Elenco dei giorni della settimana come interi (1 = domenica … 7 = sabato)."
         },
         "start_time": {
           "name": "Ora di inizio",

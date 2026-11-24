@@ -82,8 +82,9 @@ SERVICE_DELETE_MAP_BACKUP = "delete_map_backup"
 # layer normalises them into the per-kind Plan / PoolPlan dataclass.  No
 # defaults: an edit must leave whatever the caller omits as stored.
 _SCHEDULE_FIELDS = {
+    # 1 = Sunday … 7 = Saturday, as the mower stores them; it drops a 0.
     vol.Optional("weeks"): vol.All(
-        cv.ensure_list, [vol.All(vol.Coerce(int), vol.Range(min=0, max=6))]
+        cv.ensure_list, [vol.All(vol.Coerce(int), vol.Range(min=1, max=7))]
     ),
     vol.Optional("start_time"): cv.string,  # "HH:MM"
     vol.Optional("end_time"): cv.string,

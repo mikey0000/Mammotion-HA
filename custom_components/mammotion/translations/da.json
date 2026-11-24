@@ -1296,7 +1296,7 @@
         },
         "weeks": {
           "name": "Ugedage",
-          "description": "Liste over ugedagstal (0 = søndag … 6 = lørdag), som planen kører på."
+          "description": "Liste over ugedagstal (1 = søndag … 7 = lørdag), som planen kører på."
         },
         "start_time": {
           "name": "Starttidspunkt",
@@ -1402,7 +1402,7 @@
         },
         "weeks": {
           "name": "Ugedage",
-          "description": "Liste over ugedagstal (0 = søndag … 6 = lørdag)."
+          "description": "Liste over ugedagstal (1 = søndag … 7 = lørdag)."
         },
         "start_time": {
           "name": "Starttidspunkt",

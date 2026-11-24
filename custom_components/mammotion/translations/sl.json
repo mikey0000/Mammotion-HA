@@ -1296,7 +1296,7 @@
         },
         "weeks": {
           "name": "Dnevi v tednu",
-          "description": "Seznam številk dni v tednu (0 = nedelja … 6 = sobota), ob katerih se urnik izvaja."
+          "description": "Seznam številk dni v tednu (1 = nedelja … 7 = sobota), ob katerih se urnik izvaja."
         },
         "start_time": {
           "name": "Začetni čas",
@@ -1402,7 +1402,7 @@
         },
         "weeks": {
           "name": "Dnevi v tednu",
-          "description": "Seznam številk dni v tednu (0 = nedelja … 6 = sobota)."
+          "description": "Seznam številk dni v tednu (1 = nedelja … 7 = sobota)."
         },
         "start_time": {
           "name": "Začetni čas",

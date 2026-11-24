@@ -1296,7 +1296,7 @@
         },
         "weeks": {
           "name": "Dni tygodnia",
-          "description": "Lista numerów dni tygodnia (0 = niedziela … 6 = sobota), w które działa plan."
+          "description": "Lista numerów dni tygodnia (1 = niedziela … 7 = sobota), w które działa plan."
         },
         "start_time": {
           "name": "Godzina rozpoczęcia",
@@ -1402,7 +1402,7 @@
         },
         "weeks": {
           "name": "Dni tygodnia",
-          "description": "Lista numerów dni tygodnia (0 = niedziela … 6 = sobota)."
+          "description": "Lista numerów dni tygodnia (1 = niedziela … 7 = sobota)."
         },
         "start_time": {
           "name": "Godzina rozpoczęcia",
