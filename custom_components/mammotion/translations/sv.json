@@ -1296,7 +1296,7 @@
         },
         "weeks": {
           "name": "Veckodagar",
-          "description": "Lista med veckodagsnummer (0 = söndag … 6 = lördag) som schemat körs på."
+          "description": "Lista med veckodagsnummer (1 = söndag … 7 = lördag) som schemat körs på."
         },
         "start_time": {
           "name": "Starttid",
@@ -1402,7 +1402,7 @@
         },
         "weeks": {
           "name": "Veckodagar",
-          "description": "Lista med veckodagsnummer (0 = söndag … 6 = lördag)."
+          "description": "Lista med veckodagsnummer (1 = söndag … 7 = lördag)."
         },
         "start_time": {
           "name": "Starttid",

@@ -1296,7 +1296,7 @@
         },
         "weeks": {
           "name": "Weekdagen",
-          "description": "Lijst met weekdagnummers (0 = zondag … 6 = zaterdag) waarop het schema draait."
+          "description": "Lijst met weekdagnummers (1 = zondag … 7 = zaterdag) waarop het schema draait."
         },
         "start_time": {
           "name": "Starttijd",
@@ -1402,7 +1402,7 @@
         },
         "weeks": {
           "name": "Weekdagen",
-          "description": "Lijst met weekdagnummers (0 = zondag … 6 = zaterdag)."
+          "description": "Lijst met weekdagnummers (1 = zondag … 7 = zaterdag)."
         },
         "start_time": {
           "name": "Starttijd",

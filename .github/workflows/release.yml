@@ -46,8 +46,8 @@ jobs:
       - name: Get previous version
         id: get_previous_version
         run: |
-          # Get the previous tag, or the first commit if no previous tag exists
-          previous_tag=$(git tag --sort=-v:refname | sed -n 2p)
+          # The stable release this one follows; betas in between are part of this release.
+          previous_tag=$(git describe --tags --abbrev=0 --exclude '*beta*' "${{ github.ref_name }}^" 2>/dev/null || true)
           if [ -z "$previous_tag" ]; then
             previous_tag=$(git rev-list --max-parents=0 HEAD)
           fi
@@ -58,7 +58,7 @@ jobs:
         run: |
           {
             echo 'changelog<<EOF'
-            echo $(git log --pretty=format:"- %h - %an: %s" ${{ steps.get_previous_version.outputs.previous_version }}..${{ github.ref_name }} | sed 's|%0A|\n|g' | sed 's|%0D|\r|g')
+            scripts/release_notes "${{ steps.get_previous_version.outputs.previous_version }}..${{ github.ref_name }}"
             echo EOF
           } >> "$GITHUB_OUTPUT"
 
@@ -71,34 +71,8 @@ jobs:
           tag_name: ${{ github.ref_name }}
           release_name: Release ${{ github.ref_name }}
           body: |
-            # Mammotion - Home Assistant Integration ${{ github.ref_name }} 🚀
-
-            [![Discord](https://img.shields.io/discord/1247286396297678879)](https://discord.gg/vpZdWhJX8x)
-
-            This release brings new features and improvements to the Mammotion integration for Home Assistant. 🌿🤖
-
-            ## What's New 🎉
-
             ${{ steps.changelog.outputs.changelog }}
 
-            ## Installation 🛠️
-
-            1. Use HACS to install this custom repository.
-            2. Restart Home Assistant.
-            3. Add the Mammotion integration via the UI.
-
-            For detailed instructions, please refer to the [README](https://github.com/${{ github.repository }}/blob/main/README.md).
-
-            ## Feedback and Support 💬
-
-            If you encounter any issues or have suggestions, please:
-            - [Open an issue](https://github.com/${{ github.repository }}/issues) on GitHub
-            - [Join our Discord](https://discord.gg/vpZdWhJX8x) for community support
-
-            ## Thank You 🙏
-
-            A big thank you to all contributors and users of this integration. Your feedback and support help make this project better!
-
-            **Full Changelog**: https://github.com/${{ github.repository }}/compare/${{ steps.get_previous_version.outputs.previous_version }}...${{ github.ref_name }}
+            [Full changelog](https://github.com/${{ github.repository }}/compare/${{ steps.get_previous_version.outputs.previous_version }}...${{ github.ref_name }}) · [Report an issue](https://github.com/${{ github.repository }}/issues) · [Discord](https://discord.gg/vpZdWhJX8x)
           draft: false
           prerelease: false

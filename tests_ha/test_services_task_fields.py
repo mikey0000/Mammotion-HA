@@ -167,6 +167,77 @@ async def test_edit_task_accepts_the_four_perimeter_laps_the_app_sets(
 
 @pytest.mark.regression
 @pytest.mark.parametrize(
+    ("service", "method"),
+    [
+        pytest.param(SERVICE_EDIT_TASK, "async_edit_mower_task", id="edit"),
+        pytest.param(SERVICE_CREATE_TASK, "async_create_mower_task", id="create"),
+    ],
+)
+async def test_a_task_can_be_scheduled_on_saturday(
+    hass: HomeAssistant, entity_registry: er.EntityRegistry, service: str, method: str
+) -> None:
+    """``weeks`` was validated as 0-6 while the mower counts 1 = Sunday to 7 = Saturday (#978).
+
+    A Saturday plan read back from get_task as ``weeks: [7]`` was rejected.
+    """
+    task_mower = setup_task_mower(hass, entity_registry, Plan(plan_id=_PLAN_ID))
+    target = {
+        SERVICE_EDIT_TASK: task_mower.buttons[_PLAN_ID],
+        SERVICE_CREATE_TASK: task_mower.mower,
+    }[service]
+
+    await hass.services.async_call(
+        DOMAIN,
+        service,
+        {"entity_id": target, "name": "Front lawn", "weeks": [1, 7]},
+        blocking=True,
+    )
+
+    assert _sent_plan(task_mower, method).weeks == [1, 7]
+
+
+@pytest.mark.regression
+@pytest.mark.parametrize(
+    ("service", "method"),
+    [
+        pytest.param(SERVICE_EDIT_TASK, "async_edit_mower_task", id="edit"),
+        pytest.param(SERVICE_CREATE_TASK, "async_create_mower_task", id="create"),
+    ],
+)
+@pytest.mark.parametrize(
+    "weekday",
+    [pytest.param(0, id="before-sunday"), pytest.param(8, id="after-saturday")],
+)
+async def test_a_weekday_the_mower_does_not_know_is_rejected(
+    hass: HomeAssistant,
+    entity_registry: er.EntityRegistry,
+    service: str,
+    method: str,
+    weekday: int,
+) -> None:
+    """0 passed validation and the mower dropped it, leaving a schedule with no days (#978).
+
+    8 was always refused; it pins the upper bound.
+    """
+    task_mower = setup_task_mower(hass, entity_registry, Plan(plan_id=_PLAN_ID))
+    target = {
+        SERVICE_EDIT_TASK: task_mower.buttons[_PLAN_ID],
+        SERVICE_CREATE_TASK: task_mower.mower,
+    }[service]
+
+    with pytest.raises(vol.Invalid):
+        await hass.services.async_call(
+            DOMAIN,
+            service,
+            {"entity_id": target, "name": "Front lawn", "weeks": [weekday]},
+            blocking=True,
+        )
+
+    getattr(task_mower.coordinator, method).assert_not_awaited()
+
+
+@pytest.mark.regression
+@pytest.mark.parametrize(
     ("field", "value"),
     [
         pytest.param("route_model", 3, id="path-pattern"),

@@ -76,6 +76,11 @@ A service that reads or writes a pymammotion object (a `Plan`, `PoolPlan`, `Oper
 - `camera.py` builds one `AgoraSession` per offer (single use) and supplies the host callbacks: `_fpv_keepalive` (MQTT `refresh_fpv` on 4G, `False` on WiFi), `_on_peer_left` (BLE sync + re-subscribe), `_on_closed` (503 to viewers, release the feed). The `availableTime` deadline is set only on 4G.
 - Only candidates that arrive before the join reach Agora; the gateway has no trickle message.
 
+## Release notes
+
+- `scripts/release_notes` builds them from commit subjects (both release workflows), keeping only commits that touch `custom_components/`. Users read these in Home Assistant's update dialog: write the subject of such a commit as what changes for them.
+- A change that needs action from the user carries a `BREAKING-CHANGE: <what to do>` trailer, on one line in the trailer block; it is listed first under "Breaking changes".
+
 ## Translations
 
 - When adding or renaming any entity (sensor, switch, button, number, select, etc.) or an ENUM entity state, you MUST update the translations in **every** language file, not just English.

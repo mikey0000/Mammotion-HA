@@ -1296,7 +1296,7 @@
         },
         "weeks": {
           "name": "Weekdays",
-          "description": "List of weekday integers (0 = Sunday … 6 = Saturday) the schedule runs on."
+          "description": "List of weekday integers (1 = Sunday … 7 = Saturday) the schedule runs on."
         },
         "start_time": {
           "name": "Start time",
@@ -1402,7 +1402,7 @@
         },
         "weeks": {
           "name": "Weekdays",
-          "description": "List of weekday integers (0 = Sunday … 6 = Saturday)."
+          "description": "List of weekday integers (1 = Sunday … 7 = Saturday)."
         },
         "start_time": {
           "name": "Start time",

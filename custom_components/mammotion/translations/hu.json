@@ -1296,7 +1296,7 @@
         },
         "weeks": {
           "name": "Hét napjai",
-          "description": "A hét napjainak számai (0 = vasárnap … 6 = szombat), amelyeken az ütemezés fut."
+          "description": "A hét napjainak számai (1 = vasárnap … 7 = szombat), amelyeken az ütemezés fut."
         },
         "start_time": {
           "name": "Kezdés időpontja",
@@ -1402,7 +1402,7 @@
         },
         "weeks": {
           "name": "Hét napjai",
-          "description": "A hét napjainak számai (0 = vasárnap … 6 = szombat)."
+          "description": "A hét napjainak számai (1 = vasárnap … 7 = szombat)."
         },
         "start_time": {
           "name": "Kezdés időpontja",

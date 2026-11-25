@@ -1296,7 +1296,7 @@
         },
         "weeks": {
           "name": "Jours de la semaine",
-          "description": "Liste des jours de la semaine en entiers (0 = dimanche … 6 = samedi) où le programme s'exécute."
+          "description": "Liste des jours de la semaine en entiers (1 = dimanche … 7 = samedi) où le programme s'exécute."
         },
         "start_time": {
           "name": "Heure de début",
@@ -1402,7 +1402,7 @@
         },
         "weeks": {
           "name": "Jours de la semaine",
-          "description": "Liste des jours de la semaine en entiers (0 = dimanche … 6 = samedi)."
+          "description": "Liste des jours de la semaine en entiers (1 = dimanche … 7 = samedi)."
         },
         "start_time": {
           "name": "Heure de début",

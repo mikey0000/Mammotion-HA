@@ -1296,7 +1296,7 @@
         },
         "weeks": {
           "name": "Dny v týdnu",
-          "description": "Seznam čísel dnů v týdnu (0 = neděle … 6 = sobota), kdy plán běží."
+          "description": "Seznam čísel dnů v týdnu (1 = neděle … 7 = sobota), kdy plán běží."
         },
         "start_time": {
           "name": "Čas zahájení",
@@ -1402,7 +1402,7 @@
         },
         "weeks": {
           "name": "Dny v týdnu",
-          "description": "Seznam čísel dnů v týdnu (0 = neděle … 6 = sobota)."
+          "description": "Seznam čísel dnů v týdnu (1 = neděle … 7 = sobota)."
         },
         "start_time": {
           "name": "Čas zahájení",
