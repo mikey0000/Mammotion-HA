@@ -2601,6 +2601,9 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             operation_settings.job_version = work.job_ver
 
         route_information = self.generate_route_information(operation_settings)
+        # Set on the route only: there is no trimmer control here to undo it on the next job.
+        if work and work.use_trimmer is not None:
+            route_information.use_trimmer = work.use_trimmer
 
         return await self.async_send_command(
             "modify_route_information",

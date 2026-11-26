@@ -1,4 +1,4 @@
-"""A route modify must carry the running job's auto-reverse setting, not the planning default.
+"""A route modify must carry the running job's auto-reverse and trimmer settings, not the planning defaults.
 
 Route writes always send the auto-reverse buffer now, so a modify built from default operation settings
 would switch the setting off on the running job.  The one exception is the user changing it on
@@ -118,3 +118,34 @@ async def test_changing_another_setting_keeps_the_jobs_auto_reverse(
         "generate_route_information"
     ]
     assert route.auto_change_direction == expected
+
+
+@pytest.mark.regression
+@pytest.mark.parametrize("reported", [True, False])
+async def test_modifying_the_running_route_keeps_its_trimmer_setting(
+    reported: bool,
+) -> None:
+    """A job started in the app with the trimmer off had it switched back on by a modify."""
+    coordinator = _running_job_coordinator(reported=None)
+    coordinator.data.work.use_trimmer = reported
+
+    await coordinator.async_modify_plan_route(coordinator.operation_settings)
+
+    route = coordinator.async_send_command.await_args.kwargs[
+        "generate_route_information"
+    ]
+    assert route.use_trimmer is reported
+    assert coordinator.operation_settings.use_trimmer is True
+
+
+async def test_a_job_that_reports_no_trimmer_setting_keeps_the_users_choice() -> None:
+    """``None`` means the mower did not report it, so the route keeps the stored setting."""
+    coordinator = _running_job_coordinator(reported=None)
+    coordinator.operation_settings.use_trimmer = False
+
+    await coordinator.async_modify_plan_route(coordinator.operation_settings)
+
+    route = coordinator.async_send_command.await_args.kwargs[
+        "generate_route_information"
+    ]
+    assert route.use_trimmer is False
