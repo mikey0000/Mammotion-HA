@@ -15,8 +15,9 @@ from unittest.mock import MagicMock, patch
 import pytest
 import voluptuous as vol
 import yaml
-from homeassistant.exceptions import HomeAssistantError
+from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from pymammotion.data.model.device_config import OperationSettings
+from pymammotion.http.model.product_params import WorkSettingCode
 from pymammotion.messaging.command_queue import Priority
 from pymammotion.utility.constant.device_constant import WorkMode
 
@@ -450,4 +451,75 @@ async def test_start_mow_still_fails_on_any_other_error(command: str, key: str) 
     assert raised.value.translation_key == key
     assert entity.coordinator.sent[-1] == (
         "start_job" if command == "start_job" else "plan_route in MODE_READY"
+    )
+
+
+@pytest.mark.parametrize(
+    ("field", "offered"),
+    [
+        pytest.param("mowing_laps", WorkSettingCode.obstacle_edge_mode, id="perimeter"),
+        pytest.param("obstacle_laps", WorkSettingCode.edge_mode, id="no-go-zones"),
+    ],
+)
+async def test_start_mow_refuses_auto_laps_the_model_does_not_offer(
+    field: str, offered: WorkSettingCode
+) -> None:
+    """Auto is offered per model by the cloud schema; refused before the mower is asked anything."""
+    entity = make_mower_entity(OperationSettings())
+    # Only the other row offers Auto, so asking for the wrong row would pass.
+    entity.coordinator.offers_auto_laps.side_effect = lambda code: code == offered
+
+    with pytest.raises(ServiceValidationError) as err:
+        await call_start_mow(entity, **{field: 100})
+
+    assert err.value.translation_key == "auto_laps_unsupported"
+    assert err.value.translation_placeholders["field"] == field
+    entity.coordinator.async_ensure_fresh_state.assert_not_awaited()
+    entity.coordinator.async_plan_route.assert_not_awaited()
+
+
+async def test_start_mow_plans_auto_laps_where_the_model_offers_them() -> None:
+    """Both lap settings reach the route builder as the app's sentinel."""
+    entity = make_mower_entity(OperationSettings())
+    entity.coordinator.offers_auto_laps.return_value = True
+
+    planned = await start_mow(entity, mowing_laps=100, obstacle_laps=100)
+
+    assert (planned.mowing_laps, planned.obstacle_laps) == (100, 100)
+
+
+async def test_modify_running_job_refuses_auto_no_go_laps_the_model_does_not_offer() -> (
+    None
+):
+    """The in-job editor takes the same gate as a new job."""
+    entity = make_mower_entity(OperationSettings())
+    entity.coordinator.offers_auto_laps.side_effect = lambda code: (
+        code == WorkSettingCode.edge_mode
+    )
+
+    with pytest.raises(ServiceValidationError) as err:
+        await entity.async_modify_running_job(
+            **vol.Schema(MODIFY_RUNNING_JOB_SCHEMA)({"obstacle_laps": 100})
+        )
+
+    assert err.value.translation_key == "auto_laps_unsupported"
+    entity.coordinator.async_modify_running_job.assert_not_awaited()
+
+
+async def test_modify_running_job_sends_auto_no_go_laps_where_the_model_offers_them() -> (
+    None
+):
+    """The sentinel passes through to the running job unchanged."""
+    entity = make_mower_entity(OperationSettings())
+    entity.coordinator.offers_auto_laps.side_effect = lambda code: (
+        code == WorkSettingCode.obstacle_edge_mode
+    )
+
+    await entity.async_modify_running_job(
+        **vol.Schema(MODIFY_RUNNING_JOB_SCHEMA)({"obstacle_laps": 100})
+    )
+
+    assert (
+        entity.coordinator.async_modify_running_job.await_args.kwargs["obstacle_laps"]
+        == 100
     )

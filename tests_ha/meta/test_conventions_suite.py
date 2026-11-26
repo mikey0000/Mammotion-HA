@@ -51,7 +51,7 @@ UNSPECCED_MAGICMOCKS: dict[str, int] = {
     "test_camera_ble_only.py": 3,
     "test_camera_session_tracking.py": 10,
     "test_camera_webrtc_teardown.py": 16,
-    "test_capabilities.py": 4,
+    "test_capabilities.py": 3,
     "test_config_flow_accounts.py": 1,
     "test_config_flow_ble_merge.py": 1,
     "test_config_flow_user_step.py": 1,

@@ -660,7 +660,8 @@
           "one": "Uno",
           "two": "Due",
           "three": "Tre",
-          "four": "Quattro"
+          "four": "Quattro",
+          "auto": "Automatico"
         }
       },
       "obstacle_laps": {
@@ -670,7 +671,8 @@
           "one": "Uno",
           "two": "Due",
           "three": "Tre",
-          "four": "Quattro"
+          "four": "Quattro",
+          "auto": "Automatico"
         }
       },
       "border_mode": {
@@ -913,7 +915,8 @@
         "1": "Un giro",
         "2": "Due giri",
         "3": "Tre giri",
-        "4": "Quattro giri"
+        "4": "Quattro giri",
+        "100": "Automatico"
       }
     },
     "obstacle_laps": {
@@ -922,7 +925,8 @@
         "1": "Un giro",
         "2": "Due giri",
         "3": "Tre giri",
-        "4": "Quattro giri"
+        "4": "Quattro giri",
+        "100": "Automatico"
       }
     },
     "notify": {
@@ -1332,7 +1336,7 @@
         },
         "edge_mode": {
           "name": "Modalità bordo",
-          "description": "Solo tosaerba: giri del perimetro prima del taglio, da 0 a 4."
+          "description": "Solo tosaerba: giri del perimetro prima del taglio, da 0 a 4, 100 = Automatico."
         },
         "route_model": {
           "name": "Schema di percorso",
@@ -1923,6 +1927,9 @@
     },
     "planned_route_unavailable": {
       "message": "{device_name} non ha condiviso il percorso pianificato. Tramite cloud, attiva nelle opzioni «Abilita recupero del percorso di taglio (cloud)» oppure connettiti via Bluetooth."
+    },
+    "auto_laps_unsupported": {
+      "message": "I giri automatici ({field}) non sono offerti da {device_name} o dal suo firmware. Scegli invece un numero di giri."
     }
   },
   "issues": {

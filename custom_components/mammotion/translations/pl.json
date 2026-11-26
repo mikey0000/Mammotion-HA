@@ -660,7 +660,8 @@
           "one": "Jeden raz",
           "two": "Dwa razy",
           "three": "Trzy razy",
-          "four": "Cztery razy"
+          "four": "Cztery razy",
+          "auto": "Automatycznie"
         }
       },
       "obstacle_laps": {
@@ -670,7 +671,8 @@
           "one": "Jeden raz",
           "two": "Dwa razy",
           "three": "Trzy razy",
-          "four": "Cztery razy"
+          "four": "Cztery razy",
+          "auto": "Automatycznie"
         }
       },
       "border_mode": {
@@ -913,7 +915,8 @@
         "1": "Jeden raz",
         "2": "Dwa razy",
         "3": "Trzy razy",
-        "4": "Cztery razy"
+        "4": "Cztery razy",
+        "100": "Automatycznie"
       }
     },
     "obstacle_laps": {
@@ -922,7 +925,8 @@
         "1": "Jeden raz",
         "2": "Dwa razy",
         "3": "Trzy razy",
-        "4": "Cztery razy"
+        "4": "Cztery razy",
+        "100": "Automatycznie"
       }
     },
     "notify": {
@@ -1332,7 +1336,7 @@
         },
         "edge_mode": {
           "name": "Tryb krawędzi",
-          "description": "Tylko kosiarka: liczba okrążeń krawędzi przed koszeniem, 0–4."
+          "description": "Tylko kosiarka: liczba okrążeń krawędzi przed koszeniem, 0–4, 100 = Automatycznie."
         },
         "route_model": {
           "name": "Wzór trasy",
@@ -1923,6 +1927,9 @@
     },
     "planned_route_unavailable": {
       "message": "{device_name} nie udostępniła zaplanowanej trasy. Przez chmurę włącz w opcjach „Włącz pobieranie ścieżki koszenia (chmura)” lub połącz się przez Bluetooth."
+    },
+    "auto_laps_unsupported": {
+      "message": "Automatyczna liczba okrążeń ({field}) nie jest oferowana przez {device_name} lub jego oprogramowanie. Wybierz zamiast tego liczbę okrążeń."
     }
   },
   "issues": {

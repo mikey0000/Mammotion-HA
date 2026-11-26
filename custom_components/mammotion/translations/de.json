@@ -660,7 +660,8 @@
           "one": "Eine",
           "two": "Zwei",
           "three": "Drei",
-          "four": "Vier"
+          "four": "Vier",
+          "auto": "Automatisch"
         }
       },
       "obstacle_laps": {
@@ -670,7 +671,8 @@
           "one": "Eine",
           "two": "Zwei",
           "three": "Drei",
-          "four": "Vier"
+          "four": "Vier",
+          "auto": "Automatisch"
         }
       },
       "border_mode": {
@@ -913,7 +915,8 @@
         "1": "Eine Runde",
         "2": "Zwei Runden",
         "3": "Drei Runden",
-        "4": "Vier Runden"
+        "4": "Vier Runden",
+        "100": "Automatisch"
       }
     },
     "obstacle_laps": {
@@ -922,7 +925,8 @@
         "1": "Eine Runde",
         "2": "Zwei Runden",
         "3": "Drei Runden",
-        "4": "Vier Runden"
+        "4": "Vier Runden",
+        "100": "Automatisch"
       }
     },
     "notify": {
@@ -1332,7 +1336,7 @@
         },
         "edge_mode": {
           "name": "Kantenmodus",
-          "description": "Nur Mähroboter: Randrunden vor dem Mähen, 0–4."
+          "description": "Nur Mähroboter: Randrunden vor dem Mähen, 0–4, 100 = Automatisch."
         },
         "route_model": {
           "name": "Fahrmuster",
@@ -1923,6 +1927,9 @@
     },
     "planned_route_unavailable": {
       "message": "{device_name} hat die geplante Route nicht übermittelt. Aktivieren Sie über die Cloud in den Optionen „Mähpfadabruf aktivieren (Cloud)“ oder verbinden Sie sich per Bluetooth."
+    },
+    "auto_laps_unsupported": {
+      "message": "Automatische Runden ({field}) werden von {device_name} oder seiner Firmware nicht angeboten. Wählen Sie stattdessen eine Rundenzahl."
     }
   },
   "issues": {

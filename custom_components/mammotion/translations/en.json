@@ -660,7 +660,8 @@
           "one": "One",
           "two": "Two",
           "three": "Three",
-          "four": "Four"
+          "four": "Four",
+          "auto": "Auto"
         }
       },
       "obstacle_laps": {
@@ -670,7 +671,8 @@
           "one": "One",
           "two": "Two",
           "three": "Three",
-          "four": "Four"
+          "four": "Four",
+          "auto": "Auto"
         }
       },
       "border_mode": {
@@ -913,7 +915,8 @@
         "1": "One lap",
         "2": "Two laps",
         "3": "Three laps",
-        "4": "Four laps"
+        "4": "Four laps",
+        "100": "Auto"
       }
     },
     "obstacle_laps": {
@@ -922,7 +925,8 @@
         "1": "One lap",
         "2": "Two laps",
         "3": "Three laps",
-        "4": "Four laps"
+        "4": "Four laps",
+        "100": "Auto"
       }
     },
     "notify": {
@@ -1332,7 +1336,7 @@
         },
         "edge_mode": {
           "name": "Edge mode",
-          "description": "Mower-only: perimeter laps before mowing, 0–4."
+          "description": "Mower-only: perimeter laps before mowing, 0–4, 100 = Auto."
         },
         "route_model": {
           "name": "Path pattern",
@@ -1923,6 +1927,9 @@
     },
     "planned_route_unavailable": {
       "message": "{device_name} did not share the route it planned. Over the cloud, switch on 'Enable mow path fetching (cloud)' in the options, or connect over Bluetooth."
+    },
+    "auto_laps_unsupported": {
+      "message": "Auto laps ({field}) are not offered by {device_name} or its firmware. Choose a number of laps instead."
     }
   },
   "issues": {

@@ -31,6 +31,7 @@ from pymammotion.data.model.pool_state import (
     SpinoWorkMode,
     WallMaterial,
 )
+from pymammotion.http.model.product_params import WorkSettingCode
 from pymammotion.messaging.command_queue import Priority
 from pymammotion.utility.device_type import DeviceType
 
@@ -53,6 +54,8 @@ class MammotionConfigSelectEntityDescription(SelectEntityDescription):
     async_set_fn: Callable[[MammotionBaseUpdateCoordinator[Any]], Awaitable[None]] = (
         None
     )
+    # For options the model gains once its cloud schema is known; ``options`` stays the full set.
+    options_fn: Callable[[MammotionBaseUpdateCoordinator[Any]], list[str]] | None = None
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -187,6 +190,19 @@ def _turning_mode_options(
     ]
 
 
+def _lap_options(
+    modes: type[BorderPatrolMode | ObstacleLapsMode],
+    code: WorkSettingCode,
+    coordinator: MammotionBaseUpdateCoordinator[Any],
+) -> list[str]:
+    """Auto is listed only where the model's schema offers it, as in the app."""
+    return [
+        mode.name
+        for mode in modes
+        if mode is not modes.auto or coordinator.offers_auto_laps(code)
+    ]
+
+
 ASYNC_SELECT_ENTITIES: tuple[MammotionAsyncConfigSelectEntityDescription, ...] = (
     MammotionAsyncConfigSelectEntityDescription(
         key="traversal_mode",
@@ -246,6 +262,7 @@ SELECT_ENTITIES: tuple[MammotionConfigSelectEntityDescription, ...] = (
     MammotionConfigSelectEntityDescription(
         key="mowing_laps",
         options=[mode.name for mode in BorderPatrolMode],
+        options_fn=partial(_lap_options, BorderPatrolMode, WorkSettingCode.edge_mode),
         set_fn=lambda coordinator, value: setattr(
             coordinator.operation_settings, "mowing_laps", BorderPatrolMode[value].value
         ),
@@ -253,6 +270,9 @@ SELECT_ENTITIES: tuple[MammotionConfigSelectEntityDescription, ...] = (
     MammotionConfigSelectEntityDescription(
         key="obstacle_laps",
         options=[mode.name for mode in ObstacleLapsMode],
+        options_fn=partial(
+            _lap_options, ObstacleLapsMode, WorkSettingCode.obstacle_edge_mode
+        ),
         set_fn=lambda coordinator, value: setattr(
             coordinator.operation_settings,
             "obstacle_laps",
@@ -460,9 +480,24 @@ class MammotionConfigSelectEntity(MammotionBaseEntity, SelectEntity, RestoreEnti
         self.coordinator = coordinator
         self.entity_description = entity_description
         self._attr_translation_key = entity_description.key
-        self._attr_options = entity_description.options
+        self._attr_options = self._available_options()
         self._attr_current_option = entity_description.options[0]
         self.entity_description.set_fn(self.coordinator, self._attr_current_option)
+
+    def _available_options(self) -> list[str]:
+        """Return the options this device offers right now."""
+        if options_fn := self.entity_description.options_fn:
+            return options_fn(self.coordinator)
+        return self.entity_description.options
+
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        """Pick up options the model gained or lost, such as Auto laps."""
+        self._attr_options = self._available_options()
+        if self._attr_current_option not in self._attr_options:
+            self._attr_current_option = self._attr_options[0]
+            self.entity_description.set_fn(self.coordinator, self._attr_current_option)
+        super()._handle_coordinator_update()
 
     async def async_select_option(self, option: str) -> None:
         """Select an option."""
@@ -476,7 +511,7 @@ class MammotionConfigSelectEntity(MammotionBaseEntity, SelectEntity, RestoreEnti
         """Restore last state."""
         await super().async_added_to_hass()
         if (state := await self.async_get_last_state()) is not None:
-            if state.state in self.entity_description.options:
+            if state.state in self._attr_options:
                 self._attr_current_option = state.state
                 self.entity_description.set_fn(
                     self.coordinator, self._attr_current_option

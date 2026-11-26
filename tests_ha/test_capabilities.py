@@ -11,12 +11,16 @@ The lookup key matters: two mowers of the same model share one copy, which is
 the mistake the error-code table made (see [[test_store_firmware_checks]]).
 """
 
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from homeassistant.core import HomeAssistant
 from pymammotion.data.model.device import MowingDevice
-from pymammotion.http.model.product_params import ProductParam, ProductParamData
+from pymammotion.http.model.product_params import (
+    ProductParam,
+    ProductParamData,
+    WorkSettingCode,
+)
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.mammotion.config import MammotionConfigStore
@@ -83,7 +87,6 @@ def _coordinator(
     coordinator.manager.reauth_required = None
     coordinator._cloud_api_call = AsyncMock(return_value=returns)
     coordinator._capability_miss = {}
-    coordinator._capability_cache = {}
     return coordinator
 
 
@@ -337,12 +340,14 @@ async def test_the_schema_is_parsed_once_per_model(hass: HomeAssistant) -> None:
     store = await _store(hass)
     coordinator = _coordinator(store, returns=_schema())
     await coordinator._async_ensure_capabilities(coordinator.data)
-    store.model_capabilities = MagicMock(wraps=store.model_capabilities)
 
-    for _ in range(5):
-        assert coordinator.capability("3") is not None
+    with patch.object(
+        ProductParamData, "from_dict", wraps=ProductParamData.from_dict
+    ) as parse:
+        for _ in range(5):
+            assert coordinator.capability("3") is not None
 
-    assert store.model_capabilities.call_count == 1
+    assert parse.call_count == 1
 
 
 async def test_a_refetch_replaces_the_parsed_copy(hass: HomeAssistant) -> None:
@@ -354,8 +359,42 @@ async def test_a_refetch_replaces_the_parsed_copy(hass: HomeAssistant) -> None:
 
     changed = ProductParamData(detail_vos=[_BLADE_HEIGHT], product_key=_PRODUCT_KEY)
     upgraded = _coordinator(store, firmware="3.0.0.0", returns=changed)
-    upgraded._capability_cache = coordinator._capability_cache
     await upgraded._async_ensure_capabilities(upgraded.data)
 
     assert upgraded.capability("15") is None
     assert upgraded.capability("3") is not None
+
+
+@pytest.mark.parametrize(
+    ("laps_range", "expected"),
+    [
+        pytest.param(["0", "1", "2", "3", "4", "100"], True, id="listed"),
+        pytest.param(["0", "1", "2", "3", "4"], False, id="not-listed"),
+    ],
+)
+async def test_auto_laps_are_offered_only_where_the_schema_lists_them(
+    hass: HomeAssistant, laps_range: list[str], expected: bool
+) -> None:
+    """The app's ``hasBoundaryAuto``: the range of the laps row carries 100."""
+    store = await _store(hass)
+    schema = ProductParamData(
+        detail_vos=[
+            ProductParam(code="10", range=laps_range),
+            ProductParam(code="11", range=["0", "1", "2", "3"]),
+        ],
+        product_key=_PRODUCT_KEY,
+    )
+    coordinator = _coordinator(store, returns=schema)
+    await coordinator._async_ensure_capabilities(coordinator.data)
+
+    assert coordinator.offers_auto_laps(WorkSettingCode.edge_mode) is expected
+    assert coordinator.offers_auto_laps(WorkSettingCode.obstacle_edge_mode) is False
+
+
+async def test_auto_laps_are_not_offered_before_the_schema_is_known(
+    hass: HomeAssistant,
+) -> None:
+    """With no row to read, Auto stays hidden, as in the app."""
+    coordinator = _coordinator(await _store(hass))
+
+    assert coordinator.offers_auto_laps(WorkSettingCode.edge_mode) is False

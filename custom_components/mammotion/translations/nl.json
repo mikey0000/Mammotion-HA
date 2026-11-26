@@ -660,7 +660,8 @@
           "one": "Één",
           "two": "Twee",
           "three": "Drie",
-          "four": "Vier"
+          "four": "Vier",
+          "auto": "Automatisch"
         }
       },
       "obstacle_laps": {
@@ -670,7 +671,8 @@
           "one": "Één",
           "two": "Twee",
           "three": "Drie",
-          "four": "Vier"
+          "four": "Vier",
+          "auto": "Automatisch"
         }
       },
       "border_mode": {
@@ -913,7 +915,8 @@
         "1": "Eén ronde",
         "2": "Twee ronden",
         "3": "Drie ronden",
-        "4": "Vier ronden"
+        "4": "Vier ronden",
+        "100": "Automatisch"
       }
     },
     "obstacle_laps": {
@@ -922,7 +925,8 @@
         "1": "Eén ronde",
         "2": "Twee ronden",
         "3": "Drie ronden",
-        "4": "Vier ronden"
+        "4": "Vier ronden",
+        "100": "Automatisch"
       }
     },
     "notify": {
@@ -1332,7 +1336,7 @@
         },
         "edge_mode": {
           "name": "Randmodus",
-          "description": "Alleen maaier: rondes langs de rand vóór het maaien, 0–4."
+          "description": "Alleen maaier: rondes langs de rand vóór het maaien, 0–4, 100 = Automatisch."
         },
         "route_model": {
           "name": "Rijpatroon",
@@ -1923,6 +1927,9 @@
     },
     "planned_route_unavailable": {
       "message": "{device_name} heeft de geplande route niet gedeeld. Schakel via de cloud in de opties 'Maaipad ophalen inschakelen (cloud)' in, of verbind via Bluetooth."
+    },
+    "auto_laps_unsupported": {
+      "message": "Automatische rondes ({field}) worden niet aangeboden door {device_name} of de firmware ervan. Kies in plaats daarvan een aantal rondes."
     }
   },
   "issues": {

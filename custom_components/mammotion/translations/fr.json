@@ -660,7 +660,8 @@
           "one": "Un",
           "two": "Deux",
           "three": "Trois",
-          "four": "Quatre"
+          "four": "Quatre",
+          "auto": "Automatique"
         }
       },
       "obstacle_laps": {
@@ -670,7 +671,8 @@
           "one": "Un",
           "two": "Deux",
           "three": "Trois",
-          "four": "Quatre"
+          "four": "Quatre",
+          "auto": "Automatique"
         }
       },
       "border_mode": {
@@ -913,7 +915,8 @@
         "1": "Un tour",
         "2": "Deux tours",
         "3": "Trois tours",
-        "4": "Quatre tours"
+        "4": "Quatre tours",
+        "100": "Automatique"
       }
     },
     "obstacle_laps": {
@@ -922,7 +925,8 @@
         "1": "Un tour",
         "2": "Deux tours",
         "3": "Trois tours",
-        "4": "Quatre tours"
+        "4": "Quatre tours",
+        "100": "Automatique"
       }
     },
     "notify": {
@@ -1332,7 +1336,7 @@
         },
         "edge_mode": {
           "name": "Mode bordure",
-          "description": "Tondeuse uniquement : tours de bordure avant la tonte, de 0 à 4."
+          "description": "Tondeuse uniquement : tours de bordure avant la tonte, de 0 à 4, 100 = Automatique."
         },
         "route_model": {
           "name": "Motif de trajet",
@@ -1923,6 +1927,9 @@
     },
     "planned_route_unavailable": {
       "message": "{device_name} n'a pas transmis l'itinéraire planifié. Via le cloud, activez « Activer la récupération du trajet de tonte (cloud) » dans les options, ou connectez-vous en Bluetooth."
+    },
+    "auto_laps_unsupported": {
+      "message": "Les tours automatiques ({field}) ne sont pas proposés par {device_name} ou son firmware. Choisissez plutôt un nombre de tours."
     }
   },
   "issues": {

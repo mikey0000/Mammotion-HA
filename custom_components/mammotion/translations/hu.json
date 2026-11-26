@@ -660,7 +660,8 @@
           "one": "Egy",
           "two": "Kettő",
           "three": "Három",
-          "four": "Négy"
+          "four": "Négy",
+          "auto": "Automatikus"
         }
       },
       "obstacle_laps": {
@@ -670,7 +671,8 @@
           "one": "Egy",
           "two": "Kettő",
           "three": "Három",
-          "four": "Négy"
+          "four": "Négy",
+          "auto": "Automatikus"
         }
       },
       "border_mode": {
@@ -913,7 +915,8 @@
         "1": "Egy kör",
         "2": "Két kör",
         "3": "Három kör",
-        "4": "Négy kör"
+        "4": "Négy kör",
+        "100": "Automatikus"
       }
     },
     "obstacle_laps": {
@@ -922,7 +925,8 @@
         "1": "Egy kör",
         "2": "Két kör",
         "3": "Három kör",
-        "4": "Négy kör"
+        "4": "Négy kör",
+        "100": "Automatikus"
       }
     },
     "notify": {
@@ -1332,7 +1336,7 @@
         },
         "edge_mode": {
           "name": "Szegélymód",
-          "description": "Csak fűnyíró: szegélykörök száma nyírás előtt, 0–4."
+          "description": "Csak fűnyíró: szegélykörök száma nyírás előtt, 0–4, 100 = Automatikus."
         },
         "route_model": {
           "name": "Útvonalminta",
@@ -1923,6 +1927,9 @@
     },
     "planned_route_unavailable": {
       "message": "{device_name} nem osztotta meg a megtervezett útvonalat. Felhőn keresztül kapcsolja be a beállításokban a „Nyírási útvonal lekérésének engedélyezése (felhő)” opciót, vagy csatlakozzon Bluetooth-on."
+    },
+    "auto_laps_unsupported": {
+      "message": "Az automatikus körszámot ({field}) a(z) {device_name} vagy a firmware-e nem kínálja. Válasszon helyette körszámot."
     }
   },
   "issues": {

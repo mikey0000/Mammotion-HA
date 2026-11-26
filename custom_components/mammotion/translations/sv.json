@@ -660,7 +660,8 @@
           "one": "Ett",
           "two": "Två",
           "three": "Tre",
-          "four": "Fyra"
+          "four": "Fyra",
+          "auto": "Automatiskt"
         }
       },
       "obstacle_laps": {
@@ -670,7 +671,8 @@
           "one": "Ett",
           "two": "Två",
           "three": "Tre",
-          "four": "Fyra"
+          "four": "Fyra",
+          "auto": "Automatiskt"
         }
       },
       "border_mode": {
@@ -913,7 +915,8 @@
         "1": "Ett varv",
         "2": "Två varv",
         "3": "Tre varv",
-        "4": "Fyra varv"
+        "4": "Fyra varv",
+        "100": "Automatiskt"
       }
     },
     "obstacle_laps": {
@@ -922,7 +925,8 @@
         "1": "Ett varv",
         "2": "Två varv",
         "3": "Tre varv",
-        "4": "Fyra varv"
+        "4": "Fyra varv",
+        "100": "Automatiskt"
       }
     },
     "notify": {
@@ -1332,7 +1336,7 @@
         },
         "edge_mode": {
           "name": "Kantläge",
-          "description": "Endast klippare: varv längs kanten före klippning, 0–4."
+          "description": "Endast klippare: varv längs kanten före klippning, 0–4, 100 = Automatiskt."
         },
         "route_model": {
           "name": "Körmönster",
@@ -1923,6 +1927,9 @@
     },
     "planned_route_unavailable": {
       "message": "{device_name} delade inte den planerade rutten. Slå på 'Aktivera hämtning av klippväg (moln)' i alternativen via molnet, eller anslut via Bluetooth."
+    },
+    "auto_laps_unsupported": {
+      "message": "Automatiskt antal varv ({field}) erbjuds inte av {device_name} eller dess firmware. Välj ett antal varv i stället."
     }
   },
   "issues": {

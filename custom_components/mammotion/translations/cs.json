@@ -660,7 +660,8 @@
           "one": "Jednou",
           "two": "Dvakrát",
           "three": "Třikrát",
-          "four": "Čtyřikrát"
+          "four": "Čtyřikrát",
+          "auto": "Automaticky"
         }
       },
       "obstacle_laps": {
@@ -670,7 +671,8 @@
           "one": "Jednou",
           "two": "Dvakrát",
           "three": "Třikrát",
-          "four": "Čtyřikrát"
+          "four": "Čtyřikrát",
+          "auto": "Automaticky"
         }
       },
       "border_mode": {
@@ -913,7 +915,8 @@
         "1": "Jedno kolo",
         "2": "Dvě kola",
         "3": "Tři kola",
-        "4": "Čtyři kola"
+        "4": "Čtyři kola",
+        "100": "Automaticky"
       }
     },
     "obstacle_laps": {
@@ -922,7 +925,8 @@
         "1": "Jedno kolo",
         "2": "Dvě kola",
         "3": "Tři kola",
-        "4": "Čtyři kola"
+        "4": "Čtyři kola",
+        "100": "Automaticky"
       }
     },
     "notify": {
@@ -1332,7 +1336,7 @@
         },
         "edge_mode": {
           "name": "Režim okrajů",
-          "description": "Pouze sekačka: počet objezdů obvodu před sečením, 0–4."
+          "description": "Pouze sekačka: počet objezdů obvodu před sečením, 0–4, 100 = Automaticky."
         },
         "route_model": {
           "name": "Vzor trasy",
@@ -1923,6 +1927,9 @@
     },
     "planned_route_unavailable": {
       "message": "{device_name} nesdílela naplánovanou trasu. Přes cloud zapněte v možnostech „Povolit načítání trasy sečení (cloud)“, nebo se připojte přes Bluetooth."
+    },
+    "auto_laps_unsupported": {
+      "message": "Automatický počet objezdů ({field}) není u zařízení {device_name} nebo jeho firmwaru k dispozici. Zvolte místo toho počet objezdů."
     }
   },
   "issues": {

@@ -14,6 +14,7 @@ from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers import entity_registry as er
 from pymammotion.data.model.hash_list import Plan
 from pymammotion.data.model.pool_state import PoolPlan
+from pymammotion.http.model.product_params import WorkSettingCode
 from task_service_support import TaskMower, setup_task_mower, setup_task_spino
 
 from custom_components.mammotion.const import DOMAIN
@@ -391,4 +392,83 @@ async def test_edit_task_refuses_changing_to_a_detection_mode_the_mower_does_not
         )
 
     assert err.value.translation_key == "detection_strategy_unsupported"
+    task_mower.coordinator.async_edit_mower_task.assert_not_awaited()
+
+
+async def test_create_task_refuses_auto_perimeter_laps_the_model_does_not_offer(
+    hass: HomeAssistant, entity_registry: er.EntityRegistry
+) -> None:
+    """The app shows Auto only where the model's cloud schema lists 100; the enum alone takes it."""
+    task_mower = setup_task_mower(hass, entity_registry)
+    task_mower.coordinator.offers_auto_laps.side_effect = lambda code: (
+        code == WorkSettingCode.obstacle_edge_mode
+    )
+
+    with pytest.raises(ServiceValidationError) as err:
+        await hass.services.async_call(
+            DOMAIN,
+            SERVICE_CREATE_TASK,
+            {"entity_id": task_mower.mower, "name": "Back lawn", "edge_mode": 100},
+            blocking=True,
+        )
+
+    assert err.value.translation_key == "auto_laps_unsupported"
+    assert err.value.translation_placeholders["field"] == "edge_mode"
+    task_mower.coordinator.async_create_mower_task.assert_not_awaited()
+
+
+async def test_create_task_sends_auto_perimeter_laps_where_the_model_offers_them(
+    hass: HomeAssistant, entity_registry: er.EntityRegistry
+) -> None:
+    """Auto travels as the app's sentinel, 100."""
+    task_mower = setup_task_mower(hass, entity_registry)
+    task_mower.coordinator.offers_auto_laps.return_value = True
+
+    await hass.services.async_call(
+        DOMAIN,
+        SERVICE_CREATE_TASK,
+        {"entity_id": task_mower.mower, "name": "Back lawn", "edge_mode": 100},
+        blocking=True,
+    )
+
+    assert _sent_plan(task_mower, "async_create_mower_task").edge_mode == 100
+
+
+async def test_edit_task_lets_a_schedule_keep_the_auto_laps_it_holds(
+    hass: HomeAssistant, entity_registry: er.EntityRegistry
+) -> None:
+    """A schedule set to Auto in the app is fed back unchanged even with no schema cached."""
+    task_mower = setup_task_mower(
+        hass, entity_registry, Plan(plan_id=_PLAN_ID, edge_mode=100)
+    )
+    task_mower.coordinator.offers_auto_laps.return_value = False
+
+    await hass.services.async_call(
+        DOMAIN,
+        SERVICE_EDIT_TASK,
+        {"entity_id": task_mower.buttons[_PLAN_ID], "edge_mode": 100},
+        blocking=True,
+    )
+
+    assert _sent_plan(task_mower, "async_edit_mower_task").edge_mode == 100
+
+
+async def test_edit_task_refuses_changing_to_auto_laps_the_model_does_not_offer(
+    hass: HomeAssistant, entity_registry: er.EntityRegistry
+) -> None:
+    """Only the value the schedule already holds is exempt from the schema check."""
+    task_mower = setup_task_mower(
+        hass, entity_registry, Plan(plan_id=_PLAN_ID, edge_mode=0)
+    )
+    task_mower.coordinator.offers_auto_laps.return_value = False
+
+    with pytest.raises(ServiceValidationError) as err:
+        await hass.services.async_call(
+            DOMAIN,
+            SERVICE_EDIT_TASK,
+            {"entity_id": task_mower.buttons[_PLAN_ID], "edge_mode": 100},
+            blocking=True,
+        )
+
+    assert err.value.translation_key == "auto_laps_unsupported"
     task_mower.coordinator.async_edit_mower_task.assert_not_awaited()

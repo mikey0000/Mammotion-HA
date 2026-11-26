@@ -23,7 +23,9 @@ from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers import service
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pymammotion.data.model.device import MowingDevice
+from pymammotion.data.model.mowing_modes import BorderPatrolMode, ObstacleLapsMode
 from pymammotion.data.model.report_info import DeviceData, ReportData
+from pymammotion.http.model.product_params import WorkSettingCode
 from pymammotion.messaging.command_queue import Priority
 from pymammotion.utility.constant.device_constant import WorkMode
 from pymammotion.utility.constant.poll_policy import MOWING_ACTIVE_MODES
@@ -33,6 +35,7 @@ from . import MammotionConfigEntry
 from .const import COMMAND_EXCEPTIONS, DOMAIN, LOGGER
 from .coordinator import MammotionReportUpdateCoordinator
 from .entity import MammotionBaseEntity, supports_grass_collection
+from .services import _in_enum, check_auto_laps
 
 #: Home Assistant 2026.10 added the lawn mower stop action and the idle activity.
 HAS_STOP_AND_IDLE = (MAJOR_VERSION, MINOR_VERSION) >= (2026, 10)
@@ -83,8 +86,8 @@ START_MOW_SCHEMA: dict[str | vol.Marker, Any] = {
         vol.Coerce(int), vol.Range(min=-180, max=180)
     ),
     vol.Optional("toward_mode"): vol.All(vol.Coerce(int), vol.In([0, 1, 2])),
-    vol.Optional("mowing_laps"): vol.All(vol.Coerce(int), vol.In([0, 1, 2, 3, 4])),
-    vol.Optional("obstacle_laps"): vol.All(vol.Coerce(int), vol.In([0, 1, 2, 3, 4])),
+    vol.Optional("mowing_laps"): _in_enum(BorderPatrolMode),
+    vol.Optional("obstacle_laps"): _in_enum(ObstacleLapsMode),
     vol.Optional("start_progress"): vol.All(vol.Coerce(int), vol.Range(min=0, max=100)),
     vol.Optional("auto_change_direction"): vol.All(vol.Coerce(int), vol.In([0, 1])),
     vol.Optional("ride_boundary_distance"): vol.All(
@@ -114,7 +117,7 @@ MODIFY_RUNNING_JOB_SCHEMA: dict[str | vol.Marker, Any] = {
     vol.Optional("ultra_wave"): vol.All(vol.Coerce(int), vol.In([0, 1, 2, 10, 11, 12])),
     vol.Optional("channel_width"): vol.All(vol.Coerce(int), vol.Range(min=5, max=35)),
     vol.Optional("channel_mode"): vol.All(vol.Coerce(int), vol.In([0, 1, 2, 3])),
-    vol.Optional("obstacle_laps"): vol.All(vol.Coerce(int), vol.In([0, 1, 2, 3, 4])),
+    vol.Optional("obstacle_laps"): _in_enum(ObstacleLapsMode),
     vol.Optional("auto_change_direction"): vol.All(vol.Coerce(int), vol.In([0, 1])),
     # The cloud schema caps progress at 99.
     vol.Optional("start_progress"): vol.All(vol.Coerce(int), vol.Range(min=0, max=99)),
@@ -375,6 +378,21 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
             },
         )
 
+    def _check_auto_laps(self, kwargs: dict[str, Any]) -> None:
+        """Refuse Auto perimeter or no-go zone laps the model does not offer."""
+        check_auto_laps(
+            self.coordinator,
+            "mowing_laps",
+            kwargs.get("mowing_laps"),
+            WorkSettingCode.edge_mode,
+        )
+        check_auto_laps(
+            self.coordinator,
+            "obstacle_laps",
+            kwargs.get("obstacle_laps"),
+            WorkSettingCode.obstacle_edge_mode,
+        )
+
     async def async_start_mowing(self, **kwargs: Any) -> None:
         """Start a job, or resume the paused one when no new route is asked for."""
         await self._async_start_job(plan_only=False, **kwargs)
@@ -383,6 +401,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
         """Plan the job *kwargs* describe and, unless *plan_only*, start it."""
         trans_key = "pause_failed"
         self._drop_retired_job_field(SERVICE_START_MOWING, kwargs)
+        self._check_auto_laps(kwargs)
 
         await self.coordinator.async_ensure_fresh_state(wait=True)
 
@@ -718,6 +737,7 @@ class MammotionLawnMowerEntity(MammotionBaseEntity, LawnMowerEntity):  # type: i
     async def async_modify_running_job(self, **kwargs: Any) -> None:
         """Change settings on the job already running, without re-planning it."""
         self._drop_retired_job_field(SERVICE_MODIFY_RUNNING_JOB, kwargs)
+        self._check_auto_laps(kwargs)
         await self.coordinator.async_modify_running_job(
             priority=Priority.USER, **kwargs
         )

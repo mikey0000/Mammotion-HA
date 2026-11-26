@@ -65,7 +65,7 @@ from pymammotion.data.model.device_config import (
 from pymammotion.data.model.device_info import ChargeSettings, RainProtectionSettings
 from pymammotion.data.model.enums import CollectorState, DumpState
 from pymammotion.data.model.hash_list import Plan, SvgMessage
-from pymammotion.data.model.mowing_modes import RainProtectionMode
+from pymammotion.data.model.mowing_modes import BorderPatrolMode, RainProtectionMode
 from pymammotion.data.model.pool_state import PoolPlan, SpinoToggle
 from pymammotion.data.model.report_info import Maintain, NetUsedType
 from pymammotion.data.mqtt.event import ThingEventMessage
@@ -87,7 +87,7 @@ from pymammotion.http.model.map_backup import (
     BackupMapResult,
     BackupProgressType,
 )
-from pymammotion.http.model.product_params import ProductParam, ProductParamData
+from pymammotion.http.model.product_params import ProductParam, WorkSettingCode
 from pymammotion.http.model.rain_protection import WeatherServerSync
 from pymammotion.mammotion.commands.mammotion_command import MammotionCommand
 from pymammotion.messaging.command_queue import Priority
@@ -545,6 +545,28 @@ class MammotionBaseUpdateCoordinator[DataT](DataUpdateCoordinator[DataT]):  # ty
             "solution": solution,
             "text": text,
         }
+
+    def capability(self, code: str) -> ProductParam | None:
+        """Return the cloud's description of one work setting, when it is known.
+
+        ``code`` is what ``WorkingSettingManage`` switches on in the app (a
+        ``WorkSettingCode``).  The schema is fetched by the version coordinator
+        and shared through the store, so any of a mower's coordinators can ask.
+
+        The bounds are advisory and must not be used to clamp: the cloud
+        reports ``max`` 0.6 for work speed on models that run at 1.0.
+        """
+        int_mod = getattr(getattr(self.data, "mower_state", None), "internal_model", "")
+        product_key = self.device.product_key
+        if not int_mod or not product_key:
+            return None
+        return self._store.model_capability(product_key, int_mod, code)
+
+    def offers_auto_laps(self, code: WorkSettingCode) -> bool:
+        """Return whether the model's schema offers Auto for these laps, as the app's ``hasBoundaryAuto`` tests."""
+        return (row := self.capability(code)) is not None and row.offers(
+            BorderPatrolMode.auto
+        )
 
     async def _async_refresh_error_codes(self) -> None:
         """Keep the process-wide error-code table current; cheap after the first call."""
@@ -3814,8 +3836,6 @@ class MammotionDeviceVersionUpdateCoordinator(
         self._firmware_check_attempted: datetime.datetime | None = None
         #: (product_key, int_mod) -> the firmware we asked at and got nothing for.
         self._capability_miss: dict[tuple[str, str], str] = {}
-        #: (product_key, int_mod) -> the parsed schema, so a lookup is cheap.
-        self._capability_cache: dict[tuple[str, str], dict[str, ProductParam]] = {}
 
         mowing_device = self.manager.get_device_by_name(self.device_name)
         if self.data is None:
@@ -3956,35 +3976,11 @@ class MammotionDeviceVersionUpdateCoordinator(
             product_key,
             int_mod,
         )
-        self._capability_cache.pop((product_key, int_mod), None)
         await self._store.async_set_model_capabilities(
             product_key,
             int_mod,
             {**params.to_dict(), "fetched_for_version": firmware},
         )
-
-    def capability(self, code: str) -> ProductParam | None:
-        """Return the cloud's description of one work setting, when it is known.
-
-        ``code`` is what ``WorkingSettingManage`` switches on in the app: "3"
-        is blade height, "12" the bypass strategy, "15" ride-boundary distance.
-
-        The bounds are advisory and must not be used to clamp: the cloud
-        reports ``max`` 0.6 for work speed on models that run at 1.0.
-        """
-        int_mod = getattr(getattr(self.data, "mower_state", None), "internal_model", "")
-        product_key = self.device.product_key
-        if not int_mod or not product_key:
-            return None
-        cached = self._capability_cache.get((product_key, int_mod))
-        if cached is None:
-            stored = self._store.model_capabilities(product_key, int_mod)
-            if stored is None:
-                return None
-            # Parsed once per model: a lookup runs per entity per update.
-            cached = ProductParamData.from_dict(stored).by_code()
-            self._capability_cache[(product_key, int_mod)] = cached
-        return cached.get(code)
 
     def _firmware_check_due(self) -> bool:
         """Return True when the cloud could tell us something new right now."""

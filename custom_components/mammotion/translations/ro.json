@@ -660,7 +660,8 @@
           "one": "unu",
           "two": "doi",
           "three": "trei",
-          "four": "patru"
+          "four": "patru",
+          "auto": "Automat"
         }
       },
       "obstacle_laps": {
@@ -670,7 +671,8 @@
           "one": "unu",
           "two": "doi",
           "three": "trei",
-          "four": "patru"
+          "four": "patru",
+          "auto": "Automat"
         }
       },
       "border_mode": {
@@ -913,7 +915,8 @@
         "1": "O tură",
         "2": "Două ture",
         "3": "Trei ture",
-        "4": "Patru ture"
+        "4": "Patru ture",
+        "100": "Automat"
       }
     },
     "obstacle_laps": {
@@ -922,7 +925,8 @@
         "1": "O tură",
         "2": "Două ture",
         "3": "Trei ture",
-        "4": "Patru ture"
+        "4": "Patru ture",
+        "100": "Automat"
       }
     },
     "notify": {
@@ -1332,7 +1336,7 @@
         },
         "edge_mode": {
           "name": "Mod margine",
-          "description": "Doar mașina de tuns: ture pe margine înainte de tuns, 0–4."
+          "description": "Doar mașina de tuns: ture pe margine înainte de tuns, 0–4, 100 = Automat."
         },
         "route_model": {
           "name": "Model de traseu",
@@ -1923,6 +1927,9 @@
     },
     "planned_route_unavailable": {
       "message": "{device_name} nu a partajat traseul planificat. Prin cloud, activați în opțiuni „Activează preluarea traseului de tuns (cloud)” sau conectați-vă prin Bluetooth."
+    },
+    "auto_laps_unsupported": {
+      "message": "Turele automate ({field}) nu sunt oferite de {device_name} sau de firmware-ul său. Alegeți în schimb un număr de ture."
     }
   },
   "issues": {

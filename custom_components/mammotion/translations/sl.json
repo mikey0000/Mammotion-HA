@@ -660,7 +660,8 @@
           "one": "Eden",
           "two": "Dva",
           "three": "Tri",
-          "four": "Štiri"
+          "four": "Štiri",
+          "auto": "Samodejno"
         }
       },
       "obstacle_laps": {
@@ -670,7 +671,8 @@
           "one": "Eden",
           "two": "Dva",
           "three": "Tri",
-          "four": "Štiri"
+          "four": "Štiri",
+          "auto": "Samodejno"
         }
       },
       "border_mode": {
@@ -913,7 +915,8 @@
         "1": "En krog",
         "2": "Dva kroga",
         "3": "Trije krogi",
-        "4": "Štirje krogi"
+        "4": "Štirje krogi",
+        "100": "Samodejno"
       }
     },
     "obstacle_laps": {
@@ -922,7 +925,8 @@
         "1": "En krog",
         "2": "Dva kroga",
         "3": "Trije krogi",
-        "4": "Štirje krogi"
+        "4": "Štirje krogi",
+        "100": "Samodejno"
       }
     },
     "notify": {
@@ -1332,7 +1336,7 @@
         },
         "edge_mode": {
           "name": "Način robov",
-          "description": "Samo kosilnica: število krogov ob robu pred košnjo, 0–4."
+          "description": "Samo kosilnica: število krogov ob robu pred košnjo, 0–4, 100 = Samodejno."
         },
         "route_model": {
           "name": "Vzorec poti",
@@ -1923,6 +1927,9 @@
     },
     "planned_route_unavailable": {
       "message": "{device_name} ni delila načrtovane poti. Prek oblaka v možnostih vklopite »Omogoči pridobivanje poti košnje (oblak)« ali se povežite prek povezave Bluetooth."
+    },
+    "auto_laps_unsupported": {
+      "message": "Samodejno število krogov ({field}) ni na voljo za {device_name} ali njegovo vdelano programsko opremo. Namesto tega izberite število krogov."
     }
   },
   "issues": {

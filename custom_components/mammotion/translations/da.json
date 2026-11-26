@@ -660,7 +660,8 @@
           "one": "En",
           "two": "To",
           "three": "Tre",
-          "four": "Fire"
+          "four": "Fire",
+          "auto": "Automatisk"
         }
       },
       "obstacle_laps": {
@@ -670,7 +671,8 @@
           "one": "En",
           "two": "To",
           "three": "Tre",
-          "four": "Fire"
+          "four": "Fire",
+          "auto": "Automatisk"
         }
       },
       "border_mode": {
@@ -913,7 +915,8 @@
         "1": "En omgang",
         "2": "To omgange",
         "3": "Tre omgange",
-        "4": "Fire omgange"
+        "4": "Fire omgange",
+        "100": "Automatisk"
       }
     },
     "obstacle_laps": {
@@ -922,7 +925,8 @@
         "1": "En omgang",
         "2": "To omgange",
         "3": "Tre omgange",
-        "4": "Fire omgange"
+        "4": "Fire omgange",
+        "100": "Automatisk"
       }
     },
     "notify": {
@@ -1332,7 +1336,7 @@
         },
         "edge_mode": {
           "name": "Kanttilstand",
-          "description": "Kun plæneklipper: omgange langs kanten før klipning, 0–4."
+          "description": "Kun plæneklipper: omgange langs kanten før klipning, 0–4, 100 = Automatisk."
         },
         "route_model": {
           "name": "Kørselsmønster",
@@ -1923,6 +1927,9 @@
     },
     "planned_route_unavailable": {
       "message": "{device_name} delte ikke den planlagte rute. Slå 'Aktivér hentning af klippesti (sky)' til i indstillingerne via skyen, eller opret forbindelse via Bluetooth."
+    },
+    "auto_laps_unsupported": {
+      "message": "Automatiske omgange ({field}) tilbydes ikke af {device_name} eller dens firmware. Vælg et antal omgange i stedet."
     }
   },
   "issues": {

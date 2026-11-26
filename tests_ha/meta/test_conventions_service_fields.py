@@ -27,7 +27,7 @@ _SCHEMA_MODULES = ("services.py", "lawn_mower.py", "camera.py")
 
 #: Module -> ``vol.In([<int literals>])`` choices still typed by hand.
 HAND_TYPED_CHOICES: dict[str, int] = {
-    "custom_components/mammotion/lawn_mower.py": 12,
+    "custom_components/mammotion/lawn_mower.py": 9,
     "custom_components/mammotion/services.py": 1,  # auto_change_direction: an on/off flag, no enum
 }
 
@@ -58,6 +58,10 @@ _PLAN_NOT_EDITABLE: dict[str, str] = {
     "result": "device reply code",
     "model": "undocumented; an edit re-sends the stored value",
     "week": "derived from weeks by Plan.week_for_send",
+    "use_trimmer": (
+        "pending: needs the edge-cutter and schema code 40 gate; an edit re-sends the stored value, "
+        "a create sends the app default (use the trimmer)"
+    ),
     "reserved": (
         "byte 2 is `enabled`; bytes 0-1 (mow order, obstacle laps) need a "
         "pymammotion Plan helper for the echo offset (#947)"

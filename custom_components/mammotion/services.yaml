@@ -57,13 +57,18 @@ modify_running_job:
           max: 3
           step: 1
     obstacle_laps:
-      example: 1
+      example: "1"
       required: false
       selector:
-        number:
-          min: 0
-          max: 4
-          step: 1
+        select:
+          translation_key: "obstacle_laps"
+          options:
+            - "0"
+            - "1"
+            - "2"
+            - "3"
+            - "4"
+            - "100"
     auto_change_direction:
       example: 1
       required: false
@@ -221,6 +226,7 @@ start_mow:
             - "2"
             - "3"
             - "4"
+            - "100"
       required: false
     obstacle_laps:
       example: "1"
@@ -233,6 +239,7 @@ start_mow:
             - "2"
             - "3"
             - "4"
+            - "100"
       required: false
     start_progress:
       example: 0
@@ -399,6 +406,7 @@ plan_route:
             - "2"
             - "3"
             - "4"
+            - "100"
       required: false
     obstacle_laps:
       example: "1"
@@ -411,6 +419,7 @@ plan_route:
             - "2"
             - "3"
             - "4"
+            - "100"
       required: false
     start_progress:
       example: 0
@@ -860,6 +869,7 @@ edit_task:
             - "2"
             - "3"
             - "4"
+            - "100"
     route_model:
       required: false
       example: "0"
@@ -1051,6 +1061,7 @@ create_task:
             - "2"
             - "3"
             - "4"
+            - "100"
     route_model:
       required: false
       example: "0"

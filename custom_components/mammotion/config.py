@@ -7,6 +7,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.storage import Store
 from pymammotion.http.model.http import ErrorInfo
+from pymammotion.http.model.product_params import ProductParam, ProductParamData
 
 from .const import DOMAIN
 
@@ -49,6 +50,8 @@ class MammotionConfigStore(Store):  # type: ignore[misc]
         # "<product_key>/<int_mod>" rather than by device: it describes the
         # model, so two mowers of the same model share one copy.
         self.capabilities: dict[str, dict[str, Any]] = {}
+        # Each schema parsed and keyed by code, so a per-entity lookup is cheap.
+        self._parsed_capabilities: dict[str, dict[str, ProductParam]] = {}
         # Devices purged while their coordinators may still be polling, until
         # the reload that drops them pops this store.
         self._removed: set[str] = set()
@@ -83,6 +86,7 @@ class MammotionConfigStore(Store):  # type: ignore[misc]
         self.transport_settings = data.get("transports", {})
         self.firmware_checks = data.get("firmware_checks", {})
         self.capabilities = data.get("capabilities", {})
+        self._parsed_capabilities.clear()
 
     def transport_enabled(self, device_name: str, transport: str) -> bool:
         """Return the stored switch position of a device's transport, on by default."""
@@ -130,11 +134,25 @@ class MammotionConfigStore(Store):  # type: ignore[misc]
         """Return the stored schema for a model, or None when it has none yet."""
         return self.capabilities.get(self.capability_key(product_key, int_mod))
 
+    def model_capability(
+        self, product_key: str, int_mod: str, code: str
+    ) -> ProductParam | None:
+        """Return one row of a model's stored schema, or None when it is not known."""
+        key = self.capability_key(product_key, int_mod)
+        if (parsed := self._parsed_capabilities.get(key)) is None:
+            if (stored := self.capabilities.get(key)) is None:
+                return None
+            parsed = ProductParamData.from_dict(stored).by_code()
+            self._parsed_capabilities[key] = parsed
+        return parsed.get(code)
+
     async def async_set_model_capabilities(
         self, product_key: str, int_mod: str, schema: dict[str, Any]
     ) -> None:
         """Persist a model's schema right away; it is fetched about once per model."""
-        self.capabilities[self.capability_key(product_key, int_mod)] = schema
+        key = self.capability_key(product_key, int_mod)
+        self.capabilities[key] = schema
+        self._parsed_capabilities.pop(key, None)
         await self.async_save(self._data_to_save())
 
     async def async_device_data(self, device_name: str) -> dict[str, Any] | None:

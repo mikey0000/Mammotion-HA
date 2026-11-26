@@ -23,10 +23,15 @@ from pymammotion.data.model.mowing_modes import (
 )
 from pymammotion.data.model.pool_state import PoolPlan
 from pymammotion.http.model.map_backup import BACKUP_STATE_DONE, BackupMapItem
+from pymammotion.http.model.product_params import WorkSettingCode
 from pymammotion.utility.device_type import DeviceType
 
 from .const import DOMAIN, LOGGER
-from .coordinator import MammotionReportUpdateCoordinator, MammotionSpinoCoordinator
+from .coordinator import (
+    MammotionBaseUpdateCoordinator,
+    MammotionReportUpdateCoordinator,
+    MammotionSpinoCoordinator,
+)
 from .entity import device_firmware_version
 
 if TYPE_CHECKING:
@@ -615,6 +620,37 @@ def _check_auto_change_direction(
         )
 
 
+def check_auto_laps(
+    coordinator: MammotionBaseUpdateCoordinator[Any],
+    field: str,
+    value: int | None,
+    code: WorkSettingCode,
+) -> None:
+    """Refuse Auto laps for *field* where the model's schema does not offer them."""
+    if value == BorderPatrolMode.auto and not coordinator.offers_auto_laps(code):
+        raise ServiceValidationError(
+            translation_domain=DOMAIN,
+            translation_key="auto_laps_unsupported",
+            translation_placeholders={
+                "device_name": coordinator.device_name,
+                "field": field,
+            },
+        )
+
+
+def _check_auto_edge_laps(
+    coordinator: MammotionReportUpdateCoordinator,
+    data: Mapping[str, Any],
+    stored: Plan | None = None,
+) -> None:
+    """Refuse Auto perimeter laps the model does not offer; the schedule's own value is let through."""
+    if stored is not None and data.get("edge_mode") == stored.edge_mode:
+        return
+    check_auto_laps(
+        coordinator, "edge_mode", data.get("edge_mode"), WorkSettingCode.edge_mode
+    )
+
+
 def _check_detection_strategy(
     coordinator: MammotionReportUpdateCoordinator,
     data: Mapping[str, Any],
@@ -920,6 +956,7 @@ def async_setup_services(hass: HomeAssistant) -> None:  # noqa: C901
             base = mower[0].data.map.plan[mower[1]]
             _check_auto_change_direction(mower[0], call.data)
             _check_detection_strategy(mower[0], call.data, base)
+            _check_auto_edge_laps(mower[0], call.data, base)
             await mower[0].async_edit_mower_task(
                 _build_mower_plan(dict(call.data), base)
             )
@@ -944,6 +981,7 @@ def async_setup_services(hass: HomeAssistant) -> None:  # noqa: C901
             mower = cast(MammotionReportUpdateCoordinator, coord)
             _check_auto_change_direction(mower, call.data)
             _check_detection_strategy(mower, call.data)
+            _check_auto_edge_laps(mower, call.data)
             await mower.async_create_mower_task(_build_mower_plan(dict(call.data)))
         else:
             _check_spino_speed(call.data)
