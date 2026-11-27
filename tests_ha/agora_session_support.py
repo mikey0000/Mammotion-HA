@@ -9,14 +9,21 @@ from __future__ import annotations
 
 from collections.abc import Awaitable, Callable
 from typing import Any
+from unittest.mock import AsyncMock, MagicMock, create_autospec
 
 import pytest
-from pyagorartc import APResponse, CloseReason, IceCandidate
+from homeassistant.core import HomeAssistant
+from pyagorartc import APResponse, CloseReason, IceCandidate, RemoteStream
+from pymammotion.aliyun.model.dev_by_account_response import Device
+from pymammotion.client import MammotionClient
 from pymammotion.http.model.camera_stream import Camera, StreamSubscriptionResponse
 
 from custom_components.mammotion import camera as camera_module
+from custom_components.mammotion.camera import CAMERAS, MammotionWebRTCCamera
+from custom_components.mammotion.coordinator import MammotionBaseUpdateCoordinator
 
 ANSWER_SDP = "v=0\r\no=- 0 0 IN IP4 127.0.0.1\r\n"
+CAMERA_DEVICE = "Yuka-000CLD"
 
 # One gateway block (flag 4096) and one TURN block, as choose_server returns them.
 AP_PAYLOAD: dict[str, Any] = {
@@ -96,6 +103,8 @@ class FakeAgoraSession:
         self.on_closed = on_closed
         self.kwargs = kwargs
         self.candidates: list[IceCandidate] = []
+        # What the gateway announced by the end of the join, as the real property.
+        self.remote_streams: tuple[RemoteStream, ...] = ()
         self.joined_with: tuple[str, str] | None = None
         self.close_calls = 0
         self.close_reason: CloseReason | None = None
@@ -150,3 +159,36 @@ def install_fake_sessions(
 
     monkeypatch.setattr(camera_module, "AgoraSession", factory)
     return created
+
+
+def make_camera_coordinator(
+    stream: StreamSubscriptionResponse | None = None,
+) -> MagicMock:
+    """Build a spec'd coordinator on WiFi holding a fresh token and AP answer."""
+    coordinator = MagicMock(spec=MammotionBaseUpdateCoordinator)
+    coordinator.device = MagicMock(spec=Device)
+    coordinator.manager = create_autospec(MammotionClient, instance=True)
+    coordinator.unique_name = CAMERA_DEVICE
+    coordinator.device.device_name = CAMERA_DEVICE
+    coordinator.device.iot_id = "iot-123"
+    coordinator.is_on_4g = False
+    coordinator.all_cameras_streaming = True
+    coordinator.streams_all_cameras = True
+    coordinator.async_check_stream_expiry = AsyncMock(
+        return_value=(stream or make_stream_data(), make_ap_response())
+    )
+    coordinator.async_send_command = AsyncMock()
+    coordinator.async_register_camera_session = AsyncMock()
+    coordinator.async_release_camera_session = AsyncMock()
+    coordinator.manager.get_stream_subscription = AsyncMock()
+    return coordinator
+
+
+def make_camera(
+    hass: HomeAssistant, coordinator: MagicMock, slot: int = 0
+) -> MammotionWebRTCCamera:
+    """Build the camera for CAMERAS[slot] on *coordinator*, attached to *hass*."""
+    camera = MammotionWebRTCCamera(coordinator, CAMERAS[slot], hass)
+    camera.hass = hass
+    camera.entity_id = f"camera.{CAMERAS[slot].key}"
+    return camera

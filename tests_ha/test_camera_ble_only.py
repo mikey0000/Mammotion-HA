@@ -45,6 +45,7 @@ def _mower(name: str, iot_id: str) -> MagicMock:
 def _entry(*mowers: MagicMock) -> MagicMock:
     entry = MagicMock()
     entry.runtime_data.mowers = list(mowers)
+    entry.options = {}
     return entry
 
 

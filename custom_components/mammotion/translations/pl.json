@@ -64,13 +64,18 @@
           "movement_use_wifi": "Wysyłaj polecenia ruchu przez Wi-Fi",
           "mow_path_fetch_enabled": "Włącz pobieranie ścieżki koszenia (chmura)",
           "full_map_fetch_enabled": "Włącz pełne pobieranie mapy (chmura) — gdy wyłączone, pobierane są tylko nazwy obszarów",
-          "notify": "Pokazuj trwałe powiadomienia dla"
+          "notify": "Pokazuj trwałe powiadomienia dla",
+          "go2rtc_url": "Serwer go2rtc do retransmisji kamer (np. Frigate)"
         },
         "data_description": {
           "movement_use_wifi": "Wysyła dotychczasowe polecenie ruchu przez Wi-Fi zamiast korzystać ze zdalnego sterowania przez chmurę. Bez tej opcji przyciski przesuwania i akcje ruchu działają przez chmurę od oprogramowania 1.30.31.19 w LUBA 2, LUBA 2X, YUKA, LUBA mini i YUKA mini, od 2.3.31.69 w LUBA 3, LUBA mini 2 i YUKA mini 2 oraz w nowszych modelach, dla których serwer Mammotion zgłasza obsługę, tylko gdy Zdalne sterowanie przez chmurę jest włączone i potwierdzone. Włącz, aby używać dotychczasowego polecenia z dowolnym oprogramowaniem, np. by porównać oba sposoby na LUBA 3; połączone Bluetooth nadal ma pierwszeństwo.",
-          "notify": "Powiadomienia autotestu są domyślnie włączone, pozostałe wyłączone. Każde powiadomienie wyzwala też encję zdarzeń powiadomień kosiarki i zdarzenie mammotion_event na magistrali, których automatyzacje mogą użyć zamiast tego."
+          "notify": "Powiadomienia autotestu są domyślnie włączone, pozostałe wyłączone. Każde powiadomienie wyzwala też encję zdarzeń powiadomień kosiarki i zdarzenie mammotion_event na magistrali, których automatyzacje mogą użyć zamiast tego.",
+          "go2rtc_url": "Adres API serwera go2rtc, na przykład serwera Frigate: http://frigate:1984. Każda kamera jest tam rejestrowana jako strumień nazwany od kosiarki i kamery, na przykład mammotion_luba_mnab12cd_camera, który go2rtc udostępnia przez RTSP na porcie 8554. go2rtc musi mieć dostęp do wewnętrznego adresu URL Home Assistant. Pozostaw puste, aby wyłączyć retransmisję."
         }
       }
+    },
+    "error": {
+      "invalid_go2rtc_url": "Wpisz adres http:// lub https://, na przykład http://frigate:1984."
     }
   },
   "entity": {
