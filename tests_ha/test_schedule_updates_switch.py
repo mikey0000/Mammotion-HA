@@ -200,6 +200,7 @@ def test_the_switch_cannot_strand_itself() -> None:
     """It is the only way back from updates-off, so it overrides the base check."""
     coordinator = _coordinator(enabled=False)
     coordinator.is_online = MagicMock(return_value=False)
+    coordinator.manager.mower.return_value.availability.is_available = False
     entity = _switch_entity(coordinator)
 
     assert MammotionBaseEntity.available.fget(entity) is False
@@ -255,6 +256,7 @@ def test_transport_switches_stay_available_with_no_transport(
     coordinator._cloud_enabled = False
     coordinator._bluetooth_enabled = False
     coordinator.is_online = MagicMock(return_value=False)
+    coordinator.manager.mower.return_value.availability.is_available = False
     entity = MammotionSwitchEntity.__new__(MammotionSwitchEntity)
     entity.coordinator = coordinator
     entity.entity_description = description
