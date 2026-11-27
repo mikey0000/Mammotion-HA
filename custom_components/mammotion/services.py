@@ -345,7 +345,7 @@ def _get_mower_by_entity_id(
 
     entries: list[MammotionConfigEntry] = hass.config_entries.async_entries(DOMAIN)
     for entry in entries:
-        if not entry.runtime_data:
+        if not getattr(entry, "runtime_data", None):
             continue
         mower = next(
             (
@@ -377,7 +377,7 @@ def _resolve_mower_task(
         return None
 
     for cfg in hass.config_entries.async_entries(DOMAIN):
-        if not cfg.runtime_data:
+        if not getattr(cfg, "runtime_data", None):
             continue
         for mower in cfg.runtime_data.mowers:
             prefix = mower.reporting_coordinator.unique_name + "_"
@@ -404,7 +404,7 @@ def _resolve_spino_task(
         return None
 
     for cfg in hass.config_entries.async_entries(DOMAIN):
-        if not cfg.runtime_data:
+        if not getattr(cfg, "runtime_data", None):
             continue
         for spino in cfg.runtime_data.spino:
             prefix = spino.coordinator.unique_name + "_"
@@ -434,7 +434,7 @@ def _resolve_device(
         return None
 
     for cfg in hass.config_entries.async_entries(DOMAIN):
-        if not cfg.runtime_data:
+        if not getattr(cfg, "runtime_data", None):
             continue
         for mower in cfg.runtime_data.mowers:
             if entry.unique_id.startswith(mower.reporting_coordinator.unique_name):
