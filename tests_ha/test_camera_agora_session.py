@@ -39,6 +39,7 @@ from pymammotion.http.model.http import Response
 from pymammotion.messaging.command_queue import Priority
 from webrtc_models import RTCIceCandidateInit
 
+from custom_components.mammotion import camera as camera_module
 from custom_components.mammotion.camera import (
     CAMERAS,
     MammotionWebRTCCamera,
@@ -198,12 +199,43 @@ async def test_no_deadline_without_a_4g_budget(
     assert sessions[0].kwargs["deadline"] is None
 
 
-async def test_keepalive_stops_on_wifi_without_poking_the_mower(
+@pytest.mark.regression
+async def test_keepalive_rearms_the_encoder_on_wifi(
     camera: MammotionWebRTCCamera, coordinator: MagicMock
 ) -> None:
-    """False tells the session to stop calling; WiFi needs no ``refresh_fpv``."""
-    assert await camera._fpv_keepalive() is False
-    coordinator.async_send_command.assert_not_awaited()
+    """WiFi was left unpoked; a Luba mini AWD then left the channel every ~54 s.
+
+    Its peer-left recovery sometimes failed, which ended the stream.
+    """
+    coordinator.async_send_command.return_value = True
+
+    assert await camera._fpv_keepalive() is True
+    coordinator.async_send_command.assert_awaited_once_with(
+        "refresh_fpv", priority=Priority.USER
+    )
+
+
+async def test_wifi_keepalive_pokes_at_most_every_interval(
+    camera: MammotionWebRTCCamera,
+    coordinator: MagicMock,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The session calls every 3 s; WiFi sends one ``refresh_fpv`` per interval."""
+    now = [1000.0]
+    monkeypatch.setattr(
+        camera_module, "time", SimpleNamespace(monotonic=lambda: now[0])
+    )
+    coordinator.async_send_command.return_value = True
+
+    sent = []
+    for step in range(11):  # 0 s .. 30 s in 3 s ticks
+        now[0] = 1000.0 + 3 * step
+        assert await camera._fpv_keepalive() is True
+        sent.append(coordinator.async_send_command.await_count)
+
+    interval = camera_module.WIFI_FPV_KEEPALIVE_INTERVAL_S
+    assert sent[-1] == 1 + int(30 // interval)
+    assert sent[0] == 1  # the first call pokes straight away
 
 
 async def test_keepalive_rearms_the_encoder_on_4g(
@@ -236,11 +268,12 @@ async def test_a_keepalive_that_did_not_land_says_so(
     assert await camera._fpv_keepalive() is False
 
 
+@pytest.mark.parametrize("on_4g", [True, False], ids=["4g", "wifi"])
 async def test_a_keepalive_the_coordinator_did_not_send_says_so(
-    camera: MammotionWebRTCCamera, coordinator: MagicMock
+    camera: MammotionWebRTCCamera, coordinator: MagicMock, on_4g: bool
 ) -> None:
     """A send that returns False is as undelivered as one that raises."""
-    coordinator.is_on_4g = True
+    coordinator.is_on_4g = on_4g
     coordinator.async_send_command.return_value = False
 
     assert await camera._fpv_keepalive() is False
